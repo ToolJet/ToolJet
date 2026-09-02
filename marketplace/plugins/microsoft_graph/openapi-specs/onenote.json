@@ -1,0 +1,1865 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microsoft Graph OneNote API",
+    "description": "Microsoft Graph API specification for OneNote notebooks, section groups, sections, and pages",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Microsoft Graph",
+      "url": "https://developer.microsoft.com/graph"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0",
+      "description": "Microsoft Graph v1.0 endpoint"
+    }
+  ],
+  "security": [
+    {
+      "oauth2": ["Notes.Read", "Notes.Create", "Notes.ReadWrite", "Notes.Read.All", "Notes.ReadWrite.All"]
+    }
+  ],
+  "paths": {
+    "/me/onenote/notebooks": {
+      "get": {
+        "summary": "List notebooks",
+        "description": "Retrieve the OneNote notebooks that are owned by the signed-in user",
+        "operationId": "listNotebooks",
+        "tags": ["Notebooks"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notebooks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotebookCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create notebook",
+        "description": "Create a new OneNote notebook for the signed-in user",
+        "operationId": "createNotebook",
+        "tags": ["Notebooks"],
+        "requestBody": {
+          "description": "The notebook to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotebookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notebook created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notebook"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Create"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/notebooks/{notebook-id}": {
+      "get": {
+        "summary": "Get notebook",
+        "description": "Retrieve the properties and relationships of a single OneNote notebook",
+        "operationId": "getNotebook",
+        "tags": ["Notebooks"],
+        "parameters": [
+          {
+            "name": "notebook-id",
+            "in": "path",
+            "description": "The unique identifier of the notebook",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notebook retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notebook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/notebooks/{notebook-id}/sections": {
+      "get": {
+        "summary": "List notebook sections",
+        "description": "Retrieve the sections that live directly under the specified notebook",
+        "operationId": "listNotebookSections",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "name": "notebook-id",
+            "in": "path",
+            "description": "The unique identifier of the notebook",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sections retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create section in notebook",
+        "description": "Create a new section directly under the specified notebook",
+        "operationId": "createNotebookSection",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "name": "notebook-id",
+            "in": "path",
+            "description": "The unique identifier of the notebook",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The section to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Section created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenoteSection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Create"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/notebooks/{notebook-id}/sectionGroups": {
+      "get": {
+        "summary": "List notebook section groups",
+        "description": "Retrieve the section groups that live directly under the specified notebook",
+        "operationId": "listNotebookSectionGroups",
+        "tags": ["SectionGroups"],
+        "parameters": [
+          {
+            "name": "notebook-id",
+            "in": "path",
+            "description": "The unique identifier of the notebook",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section groups retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionGroupCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/sectionGroups": {
+      "get": {
+        "summary": "List section groups",
+        "description": "Retrieve the section groups across all notebooks owned by the signed-in user",
+        "operationId": "listSectionGroups",
+        "tags": ["SectionGroups"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section groups retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionGroupCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/sectionGroups/{sectionGroup-id}/sections": {
+      "get": {
+        "summary": "List section group sections",
+        "description": "Retrieve the sections that live directly under the specified section group",
+        "operationId": "listSectionGroupSections",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "name": "sectionGroup-id",
+            "in": "path",
+            "description": "The unique identifier of the section group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sections retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create section in section group",
+        "description": "Create a new section directly under the specified section group",
+        "operationId": "createSectionGroupSection",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "name": "sectionGroup-id",
+            "in": "path",
+            "description": "The unique identifier of the section group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The section to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Section created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenoteSection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Create"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/sections": {
+      "get": {
+        "summary": "List sections",
+        "description": "Retrieve the sections across all notebooks owned by the signed-in user",
+        "operationId": "listSections",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sections retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/sections/{section-id}": {
+      "get": {
+        "summary": "Get section",
+        "description": "Retrieve the properties and relationships of a single OneNote section",
+        "operationId": "getSection",
+        "tags": ["Sections"],
+        "parameters": [
+          {
+            "name": "section-id",
+            "in": "path",
+            "description": "The unique identifier of the section",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenoteSection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/sections/{section-id}/pages": {
+      "get": {
+        "summary": "List section pages",
+        "description": "Retrieve the pages in the specified OneNote section",
+        "operationId": "listSectionPages",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "section-id",
+            "in": "path",
+            "description": "The unique identifier of the section",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/pagelevel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create page",
+        "description": "Create a new page in the specified OneNote section. Supply the page as OneNote HTML in <code>htmlContent</code> &mdash; the plugin sends it to Microsoft Graph as a <code>text/html</code> request body.",
+        "operationId": "createPage",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "section-id",
+            "in": "path",
+            "description": "The unique identifier of the section",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The page to create, as OneNote HTML",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Page created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenotePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Create"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/pages": {
+      "get": {
+        "summary": "List pages",
+        "description": "Retrieve the pages across all notebooks owned by the signed-in user",
+        "operationId": "listPages",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/pagelevel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/pages/{page-id}": {
+      "get": {
+        "summary": "Get page",
+        "description": "Retrieve the properties and relationships of a single OneNote page",
+        "operationId": "getPage",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenotePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete page",
+        "description": "Delete the specified OneNote page",
+        "operationId": "deletePage",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Page deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/pages/{page-id}/content": {
+      "get": {
+        "summary": "Get page content",
+        "description": "Retrieve the HTML content of the specified OneNote page. The response is returned as an HTML string, not JSON.",
+        "operationId": "getPageContent",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/includeIDs"
+          },
+          {
+            "$ref": "#/components/parameters/preAuthenticated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page content retrieved successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "The page content as OneNote HTML"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update page content",
+        "description": "Update the content of the specified OneNote page by applying a list of patch commands. Supply <code>commands</code> as a JSON array of <code>{ target, action, position, content }</code> objects.",
+        "operationId": "updatePageContent",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The patch commands to apply to the page",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchPageContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Page content updated successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/pages/{page-id}/parentNotebook": {
+      "get": {
+        "summary": "Get page parent notebook",
+        "description": "Retrieve the notebook that contains the specified OneNote page",
+        "operationId": "getPageParentNotebook",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notebook retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notebook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/pages/{page-id}/parentSection": {
+      "get": {
+        "summary": "Get page parent section",
+        "description": "Retrieve the section that contains the specified OneNote page",
+        "operationId": "getPageParentSection",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "page-id",
+            "in": "path",
+            "description": "The unique identifier of the page",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnenoteSection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    },
+    "/me/onenote/resources/{resource-id}/content": {
+      "get": {
+        "summary": "Get resource content",
+        "description": "Download an image or file embedded in a OneNote page. The plugin returns the binary payload as <code>{ base64, mimeType, size }</code>.",
+        "operationId": "getResourceContent",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "name": "resource-id",
+            "in": "path",
+            "description": "The unique identifier of the embedded resource",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resource content retrieved successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Notes.Read"]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Notebook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name of the item"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "self": {
+            "type": "string",
+            "description": "The endpoint where you can get details about the item",
+            "readOnly": true
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether this is the user's default notebook",
+            "readOnly": true
+          },
+          "isShared": {
+            "type": "boolean",
+            "description": "Whether the notebook is shared",
+            "readOnly": true
+          },
+          "userRole": {
+            "type": "string",
+            "description": "The role of the signed-in user for the notebook",
+            "readOnly": true
+          },
+          "sectionsUrl": {
+            "type": "string",
+            "description": "The URL for the sections navigation property",
+            "readOnly": true
+          },
+          "sectionGroupsUrl": {
+            "type": "string",
+            "description": "The URL for the sectionGroups navigation property",
+            "readOnly": true
+          },
+          "links": {
+            "$ref": "#/components/schemas/NotebookLinks"
+          }
+        }
+      },
+      "NotebookLinks": {
+        "type": "object",
+        "properties": {
+          "oneNoteClientUrl": {
+            "$ref": "#/components/schemas/ExternalLink"
+          },
+          "oneNoteWebUrl": {
+            "$ref": "#/components/schemas/ExternalLink"
+          }
+        }
+      },
+      "NotebookCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to the next page of results, when the collection is paged"
+          },
+          "value": {
+            "type": "array",
+            "description": "The list of notebooks",
+            "items": {
+              "$ref": "#/components/schemas/Notebook"
+            }
+          }
+        }
+      },
+      "CreateNotebookRequest": {
+        "type": "object",
+        "required": ["displayName"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name of the notebook. Cannot contain ? * \\ / : < > | ' \" # % and cannot start or end with a space.",
+            "example": "Product research"
+          }
+        }
+      },
+      "SectionGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name of the item"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "self": {
+            "type": "string",
+            "description": "The endpoint where you can get details about the item",
+            "readOnly": true
+          },
+          "sectionsUrl": {
+            "type": "string",
+            "description": "The URL for the sections navigation property",
+            "readOnly": true
+          },
+          "sectionGroupsUrl": {
+            "type": "string",
+            "description": "The URL for the sectionGroups navigation property",
+            "readOnly": true
+          }
+        }
+      },
+      "SectionGroupCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to the next page of results, when the collection is paged"
+          },
+          "value": {
+            "type": "array",
+            "description": "The list of section groups",
+            "items": {
+              "$ref": "#/components/schemas/SectionGroup"
+            }
+          }
+        }
+      },
+      "OnenoteSection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name of the item"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "self": {
+            "type": "string",
+            "description": "The endpoint where you can get details about the item",
+            "readOnly": true
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether this is the user's default section",
+            "readOnly": true
+          },
+          "pagesUrl": {
+            "type": "string",
+            "description": "The URL for the pages navigation property",
+            "readOnly": true
+          }
+        }
+      },
+      "SectionCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to the next page of results, when the collection is paged"
+          },
+          "value": {
+            "type": "array",
+            "description": "The list of sections",
+            "items": {
+              "$ref": "#/components/schemas/OnenoteSection"
+            }
+          }
+        }
+      },
+      "CreateSectionRequest": {
+        "type": "object",
+        "required": ["displayName"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name of the section. Cannot contain ? * \\ / : < > | & # ' \" % ~ and cannot start or end with a space.",
+            "example": "Meeting notes"
+          }
+        }
+      },
+      "OnenotePage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the page",
+            "readOnly": true
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the page"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the page was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the page was last modified",
+            "readOnly": true
+          },
+          "level": {
+            "type": "integer",
+            "description": "The indentation level of the page",
+            "readOnly": true
+          },
+          "order": {
+            "type": "integer",
+            "description": "The order of the page within its section",
+            "readOnly": true
+          },
+          "contentUrl": {
+            "type": "string",
+            "description": "The URL for the page's HTML content",
+            "readOnly": true
+          },
+          "self": {
+            "type": "string",
+            "description": "The endpoint where you can get details about the page",
+            "readOnly": true
+          },
+          "links": {
+            "$ref": "#/components/schemas/PageLinks"
+          },
+          "parentSection": {
+            "$ref": "#/components/schemas/OnenoteSection"
+          },
+          "parentNotebook": {
+            "$ref": "#/components/schemas/Notebook"
+          }
+        }
+      },
+      "PageLinks": {
+        "type": "object",
+        "properties": {
+          "oneNoteClientUrl": {
+            "$ref": "#/components/schemas/ExternalLink"
+          },
+          "oneNoteWebUrl": {
+            "$ref": "#/components/schemas/ExternalLink"
+          }
+        }
+      },
+      "PageCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to the next page of results, when the collection is paged"
+          },
+          "value": {
+            "type": "array",
+            "description": "The list of pages",
+            "items": {
+              "$ref": "#/components/schemas/OnenotePage"
+            }
+          }
+        }
+      },
+      "CreatePageRequest": {
+        "type": "object",
+        "required": ["htmlContent"],
+        "properties": {
+          "htmlContent": {
+            "type": "string",
+            "description": "The page as OneNote HTML. The document title becomes the page title, and data-absolute-enabled/style attributes control positioning. Sent to Microsoft Graph as a text/html request body.",
+            "example": "<!DOCTYPE html><html><head><title>Sprint planning</title><meta name=\"created\" content=\"2026-08-20T10:00:00-08:00\" /></head><body><p>Agenda</p><ul><li>Roadmap review</li></ul></body></html>"
+          }
+        }
+      },
+      "PatchPageContentRequest": {
+        "type": "object",
+        "required": ["commands"],
+        "properties": {
+          "commands": {
+            "type": "array",
+            "description": "A JSON array of patch commands to apply to the page, in order. Each command targets an element by data-id, generated id, or the 'body'/'title' keywords.",
+            "items": {
+              "$ref": "#/components/schemas/PatchCommand"
+            },
+            "example": [
+              {
+                "target": "#para-id",
+                "action": "insert",
+                "position": "after",
+                "content": "<p>Added by ToolJet</p>"
+              }
+            ]
+          }
+        }
+      },
+      "PatchCommand": {
+        "type": "object",
+        "required": ["target", "action"],
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "The element to update: a data-id, a generated id, or 'body' / 'title'"
+          },
+          "action": {
+            "type": "string",
+            "description": "The change to apply to the target element",
+            "enum": ["append", "insert", "prepend", "replace", "delete"]
+          },
+          "position": {
+            "type": "string",
+            "description": "Where to place the new content relative to the target element",
+            "enum": ["after", "before"]
+          },
+          "content": {
+            "type": "string",
+            "description": "The new content, as OneNote HTML. Not used by the delete action."
+          }
+        }
+      },
+      "ExternalLink": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string",
+            "description": "The url of the link"
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The identifier of the identity"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The display name of the identity"
+          }
+        }
+      },
+      "IdentitySet": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "application": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "device": {
+            "$ref": "#/components/schemas/Identity"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "target": {
+                "type": "string",
+                "description": "The target of the error"
+              },
+              "innererror": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "request-id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "expand": {
+        "name": "$expand",
+        "in": "query",
+        "description": "Expand related entities",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "sections,sectionGroups"
+      },
+      "select": {
+        "name": "$select",
+        "in": "query",
+        "description": "Select properties to be returned",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "id,displayName,lastModifiedDateTime"
+      },
+      "orderby": {
+        "name": "$orderby",
+        "in": "query",
+        "description": "Order items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "lastModifiedDateTime desc"
+      },
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Number of items to return",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Number of items to skip",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "filter": {
+        "name": "$filter",
+        "in": "query",
+        "description": "Filter items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "displayName eq 'Product research'"
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Full-text search across the collection",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "pagelevel": {
+        "name": "pagelevel",
+        "in": "query",
+        "description": "Include the level and order properties of each page in the response",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "includeIDs": {
+        "name": "includeIDs",
+        "in": "query",
+        "description": "Return generated data-id values for the page elements, for use as patch command targets",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "preAuthenticated": {
+        "name": "preAuthenticated",
+        "in": "query",
+        "description": "Return pre-authenticated image and file URLs that are valid for one hour",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Authentication credentials are missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "The authenticated user does not have permission to perform this operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "The requested resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "The request is malformed or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "Notes.Read": "Read the signed-in user's OneNote notebooks",
+              "Notes.Create": "Create the signed-in user's OneNote notebooks",
+              "Notes.ReadWrite": "Read and write the signed-in user's OneNote notebooks",
+              "Notes.Read.All": "Read all OneNote notebooks the signed-in user can access",
+              "Notes.ReadWrite.All": "Read and write all OneNote notebooks the signed-in user can access",
+              "offline_access": "Maintain access to data you have given access to"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Notebooks",
+      "description": "Operations on OneNote notebooks"
+    },
+    {
+      "name": "SectionGroups",
+      "description": "Operations on OneNote section groups"
+    },
+    {
+      "name": "Sections",
+      "description": "Operations on OneNote sections"
+    },
+    {
+      "name": "Pages",
+      "description": "Operations on OneNote pages and their content"
+    },
+    {
+      "name": "Resources",
+      "description": "Operations on images and files embedded in pages"
+    }
+  ]
+}

@@ -215,35 +215,24 @@ describe('switchPage — the re-entrancy guard', () => {
     expect(state().getCurrentPageId('canvas')).toBe('page-b');
   });
 
-  // BUG, still unfixed: the guard is released far too early.
+  // Regression guard: pageSwitchInProgress used to be cleared from inside
+  // cleanUpStore, called at the very START of doSwitch's body — leaving
+  // everything after that, including the `await yieldToMain()` further down,
+  // unguarded. A second switchPage landing in that window was accepted, and
+  // both doSwitch bodies reached `startExposedValueBatch()`. The batch is
+  // ref-counted (batchManager.ts:50-57), so depth became 2 while only one
+  // flush was ever issued for it — every exposed-value write in the app
+  // buffered forever and the canvas froze.
   //
-  // switchPage sets pageSwitchInProgress = true (appSlice.js:266), but
-  // cleanUpStore(true) sets it back to FALSE (appSlice.js:374-376) and is
-  // called at the very START of doSwitch's body (appSlice.js:299). Everything
-  // after that — including the `await yieldToMain()` at appSlice.js:351 — runs
-  // completely unguarded.
-  //
-  // A second switchPage landing in that window is accepted, and both doSwitch
-  // bodies reach `startExposedValueBatch()` (appSlice.js:353). The batch is
-  // ref-counted (batchManager.ts:50-57), so depth becomes 2 while only one
-  // flush will ever be issued for it. From then on every exposed-value write in
-  // the app is buffered and never applied: the canvas freezes.
-  //
-  // Right behaviour: pageSwitchInProgress must stay true until doSwitch
-  // finishes (or fails), so the second call is rejected like the same-tick one
-  // above. Fix = stop clearing the flag inside cleanUpStore and clear it at the
-  // end of doSwitch instead.
-  test.failing('BUG: a second call during the async window is accepted and leaks a batch', async () => {
+  // Fixed by never clearing the flag mid-doSwitch at all.
+  test('a second call during the async window is rejected, not accepted', async () => {
     seedModule();
 
     state().switchPage('page-b', 'b');
     // EXACTLY one hop, not settle(): it resolves the first `await yieldToMain()`
-    // and leaves doSwitch parked on the second, i.e. inside the unguarded
-    // window that cleanUpStore opened. settle() here would run the switch to
-    // completion and the call below would be a legitimate new switch, not a
-    // re-entrant one. NOTE: assert nothing about pageSwitchInProgress — an
-    // assertion on the defect itself would keep this test throwing even after
-    // the fix, so it could never be retired.
+    // and leaves doSwitch parked on the second — the window that used to be
+    // unguarded. settle() here would run the switch to completion and the call
+    // below would be a legitimate new switch, not a re-entrant one.
     await hop();
 
     state().switchPage('page-a', 'a');
@@ -251,10 +240,45 @@ describe('switchPage — the re-entrancy guard', () => {
 
     // The in-flight switch owns the destination; the late call must be rejected.
     expect(state().getCurrentPageId('canvas')).toBe('page-b');
-    // And a page switch owns exactly ONE bracket, so one flush must close it.
-    // Today depth is 2 and the canvas is frozen from here on.
+    // A page switch owns exactly ONE bracket, so one flush must close it.
     state().flushExposedValueBatch();
     expect(state().isExposedValueBatching()).toBe(false);
+  });
+
+  // Regression guard for the gap the fix above still left open: doSwitch opens
+  // its exposed-value batch as its very last step, but that batch is only
+  // flushed later, by the isComponentLayoutReady effect in useAppData.js once
+  // Suspense/layout settles for the new page — NOT by doSwitch itself. If the
+  // guard were released as soon as doSwitch's own synchronous work finished
+  // (rather than when the batch it opened actually flushes), two perfectly
+  // ordinary, non-racing clicks — switch to page B, then switch to page A a
+  // moment later, before B's layout has settled — would each open the batch,
+  // stacking depth to 2 with only one flush ever issued. No race window, no
+  // CPU throttling needed to hit it.
+  test('a second call after doSwitch finishes, but before its batch flushes, is rejected', async () => {
+    seedModule();
+
+    state().switchPage('page-b', 'b');
+    await settle();
+    // doSwitch has fully finished and opened its batch; nothing in this
+    // store-only test has flushed it yet (that's useAppData's job, not
+    // exercised here) — this is the ordinary post-switch state, not a defect.
+    expect(state().isExposedValueBatching()).toBe(true);
+
+    state().switchPage('page-a', 'a');
+    expect(toast).toHaveBeenCalledWith('Please wait, page switch in progress', { icon: '⚠️' });
+    await settle();
+
+    // The late call must be rejected — it must not have opened a second,
+    // never-to-be-closed nested batch.
+    expect(state().getCurrentPageId('canvas')).toBe('page-b');
+    state().flushExposedValueBatch();
+    expect(state().isExposedValueBatching()).toBe(false);
+    // The other half of the guard's lifecycle: the post-flush callback must
+    // actually release it. Without this assertion, a removed or broken
+    // callback would leave pageSwitchInProgress stuck true forever — every
+    // later switch permanently rejected — while this test still passed.
+    expect(state().pageSwitchInProgress).toBe(false);
   });
 });
 
