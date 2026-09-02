@@ -7,6 +7,7 @@ import {
   BaseEntity,
   JoinColumn,
   ManyToOne,
+  Generated,
 } from 'typeorm';
 import { Organization } from '@entities/organization.entity';
 
@@ -22,6 +23,7 @@ export class CustomComponentLibrary extends BaseEntity {
   organizationId: string;
 
   @Column({ name: 'correlation_id', type: 'uuid' })
+  @Generated('uuid')
   correlationId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
