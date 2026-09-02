@@ -3,10 +3,6 @@ id: supported-tools
 title: Supported Tools
 ---
 
-:::caution BETA
-ToolJet MCP is currently in beta and not recommended for production use.
-:::
-
 ToolJet MCP exposes 50 tools to your AI client. You never call these by name: you describe what you want in plain language, and your agent selects the tools it needs. This page is a reference for what your agent is able to do once connected.
 
 For what these add up to in practice, see the [Overview](/docs/build-with-ai/mcp/overview). To connect a client, see [Setup](/docs/build-with-ai/mcp/setup).

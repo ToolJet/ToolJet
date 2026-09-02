@@ -3,10 +3,6 @@ id: security
 title: Security Best Practices
 ---
 
-:::caution BETA
-ToolJet MCP is currently in beta and not recommended for production use.
-:::
-
 Connecting an AI agent to your ToolJet workspace gives it real access to real data. This page covers what that access includes, how to scope it, and the safeguards built into the server.
 
 ## Understand What the Agent Can Reach
