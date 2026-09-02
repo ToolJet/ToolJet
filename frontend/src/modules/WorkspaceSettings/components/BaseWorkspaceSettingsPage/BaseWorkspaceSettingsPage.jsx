@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import Layout from '@/_ui/Layout';
+import Beta from '@/_ui/Beta';
 import { authenticationService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
@@ -120,15 +121,19 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
                           handleClick(item);
                         }}
                         selectedItem={selectedTab == item.id}
-                        renderBadgeForItems={[]}
-                        renderBadge={() => (
-                          <span
-                            style={{ width: '40px', textTransform: 'lowercase' }}
-                            className="badge bg-color-primary badge-pill"
-                          >
-                            new
-                          </span>
-                        )}
+                        renderBadgeForItems={['Custom component libraries']}
+                        renderBadge={() =>
+                          item.isBeta ? (
+                            <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                          ) : (
+                            <span
+                              style={{ width: '40px', textTransform: 'lowercase' }}
+                              className="badge bg-color-primary badge-pill"
+                            >
+                              new
+                            </span>
+                          )
+                        }
                         dataCy={item.name.toLowerCase().replace(/\s+/g, '-')}
                       >
                         {item.name}

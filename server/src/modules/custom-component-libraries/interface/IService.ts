@@ -36,6 +36,7 @@ export interface ICustomComponentLibrariesService {
     organizationId: string,
     libraryId: string,
     files: UploadFiles,
+    version: string,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }>;
   serveRevisionFile(libraryId: string, version: string, file: string): Promise<ServedFile>;
