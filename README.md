@@ -18,7 +18,7 @@ Self-host it, or use ToolJet Cloud.
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img width="2608" height="1578" alt="Screenshot 2026-09-01 at 6 56 04 PM" src="https://github.com/user-attachments/assets/a6451f99-4533-49f3-93c9-58191fe33447" />
+  <img width="3672" height="2064" alt="githubneutral 1" src="https://github.com/user-attachments/assets/0290a1be-155a-496b-ae61-bedd2562e778" />
 </p>
 
 
