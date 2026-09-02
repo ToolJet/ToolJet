@@ -21,9 +21,9 @@ import {
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
-import { createRestAPIQuery } from "Support/utils/dataSource";
+import { createRestAPIQuery } from "Support/utils/marketplace/datasources/dataSource";
 import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
-import { performQueryAction } from "Support/utils/queries";
+import { performQueryAction } from "Support/utils/appBuilder/querymanager/queries";
 import { multiEnvSelector } from "Selectors/eeCommon";
 
 describe("App Version", () => {

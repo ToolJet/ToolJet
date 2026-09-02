@@ -29,7 +29,7 @@ import {
   commonWidgetText,
   codeMirrorInputLabel,
 } from "Texts/common";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // QUARANTINED — but NOT for the cold-drag THROW anymore (that is FIXED suite-wide
 // in dragAndDropWidget: a scoped cy.on('fail') trap recovers the cypress-real-dnd

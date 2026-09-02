@@ -9,12 +9,12 @@ import {
     addInputOnQueryField,
     query,
     selectQueryFromLandingPage
-} from "Support/utils/queries";
+} from "Support/utils/appBuilder/querymanager/queries";
 
 import { deleteDownloadsFolder } from "Support/utils/common";
 import {
     resizeQueryPanel
-} from "Support/utils/dataSource";
+} from "Support/utils/marketplace/datasources/dataSource";
 import { openNode, verifyNodeData } from "Support/utils/inspector";
 import {
     addNewPage

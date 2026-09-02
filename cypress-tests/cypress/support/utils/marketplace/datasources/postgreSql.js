@@ -7,7 +7,7 @@ import { commonWidgetText } from "Texts/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { closeDSModal } from "Support/utils/dataSource";
+import { closeDSModal } from "Support/utils/marketplace/datasources/dataSource";
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.buttonAddNewQueries).click();

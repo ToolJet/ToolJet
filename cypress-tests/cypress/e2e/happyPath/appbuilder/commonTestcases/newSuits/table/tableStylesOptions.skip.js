@@ -11,7 +11,7 @@ import {
 } from "Support/utils/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { deleteDownloadsFolder } from "Support/utils/common";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // ---------------------------------------------------------------------------
 // Chunk 5 (DEFERRED STUB) — Table styles, table-option toggles and download menu.

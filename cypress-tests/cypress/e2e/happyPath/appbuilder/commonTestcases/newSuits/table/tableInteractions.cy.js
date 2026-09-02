@@ -19,7 +19,7 @@ import {
 } from "Support/utils/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // ---------------------------------------------------------------------------
 // Chunk 3 — Table selection / pagination / sort / filter / search (NewTable).

@@ -18,12 +18,12 @@ import {
   renameQueryFromEditor,
   selectQueryFromLandingPage,
   waitForQueryAction,
-} from "Support/utils/queries";
+} from "Support/utils/appBuilder/querymanager/queries";
 
 import {
   resizeQueryPanel,
   verifypreview
-} from "Support/utils/dataSource";
+} from "Support/utils/marketplace/datasources/dataSource";
 import { openNode, verifyNodeData } from "Support/utils/inspector";
 import {
   addNewPage

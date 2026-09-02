@@ -9,9 +9,9 @@ import {
   addSuccessNotification,
   chainQuery,
   selectRunQueryEvent,
-} from "Support/utils/queries";
+} from "Support/utils/appBuilder/querymanager/queries";
 
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 describe("Chaining of queries", () => {
   beforeEach(() => {

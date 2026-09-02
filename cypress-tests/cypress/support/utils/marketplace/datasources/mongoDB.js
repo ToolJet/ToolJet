@@ -1,7 +1,7 @@
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
-} from "Support/utils/postgreSql";
+} from "Support/utils/marketplace/datasources/postgreSql";
 import { mongoDbText } from "Texts/mongoDb";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";

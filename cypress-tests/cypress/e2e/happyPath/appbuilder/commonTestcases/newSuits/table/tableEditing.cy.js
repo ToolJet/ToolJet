@@ -13,7 +13,7 @@ import {
 } from "Support/utils/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // ---------------------------------------------------------------------------
 // Chunk 1 — Table inline editing + add row (NewTable).

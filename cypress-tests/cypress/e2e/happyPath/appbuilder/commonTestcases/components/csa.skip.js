@@ -13,7 +13,7 @@ import {
 } from "Support/utils/commonWidget";
 import { verifyComponent } from "Support/utils/basicComponents";
 import { commonWidgetText } from "Texts/common";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // QUARANTINED (whole describe): all 12 CSA tests fail (Tabs/Form/Dropdown/Textarea confirmed failing, rest same pattern). Each test does the multi-drag + selectEvent("Control Component") + selectCSA(...) flow that flakes on the 2nd in-test drag after the Radix popover ("No dragIntercepted") — the SAME suite-wide CSA blocker quarantined in textHappyPath/numberInput/passwordInput. Needs the dedicated CSA drag/popover rewrite. FIXED & KEPT: beforeEach `[data-tooltip-content="Hide query panel"]` (gone from QueryPanel.jsx) → resizeQueryPanel(0) — spec now reaches the tests instead of dying in the hook. testIsolation:false applied.
 describe.skip("Editor- CSA", { testIsolation: false }, () => {

@@ -11,7 +11,7 @@ import {
   verifySingleValueOnTable,
 } from "Support/utils/table";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // ---------------------------------------------------------------------------
 // Chunk 4 (DEFERRED STUB) — Table column data types.

@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/marketplace/datasources/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";

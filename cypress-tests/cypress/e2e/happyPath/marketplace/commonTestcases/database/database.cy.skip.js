@@ -21,7 +21,7 @@ import {
   editRowAndVerify,
   exportTableAndVerify,
   bulkUploadDataTemplateDownloadAndVerify,
-} from "Support/utils/database";
+} from "Support/utils/marketplace/tjdb/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
 import { randomString } from "Support/utils/editor/textInput";

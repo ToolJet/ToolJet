@@ -10,7 +10,7 @@ import {
 } from "Support/utils/table";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { deleteDownloadsFolder } from "Support/utils/common";
-import { resizeQueryPanel } from "Support/utils/dataSource";
+import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
 
 // ---------------------------------------------------------------------------
 // NewTable rewrite (was Table). The widget migrated Table -> NewTable and the
