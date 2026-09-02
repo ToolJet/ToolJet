@@ -5,6 +5,7 @@ import { build } from '../../lib/library/builder';
 import { ApiClient } from '../../lib/library/api-client';
 import { ProjectConfig, ProjectConfigEntry } from '../../lib/library/project-config';
 import { writeLibraryConfig } from '../../lib/library/scaffolder';
+import { validateOriginUrl, validateApiToken } from '../../lib/library/target-validation';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class ComponentDeploy extends Command {
@@ -16,7 +17,7 @@ export default class ComponentDeploy extends Command {
     `$ tooljet library deploy --version 1.0.0`,
     `$ tooljet library deploy -v 1.0.0`,
     `$ tooljet library deploy --version 1.0.0 --message "Add dark mode support"`,
-    `$ tooljet library deploy --version 1.0.0 --origin-url https://app.tooljet.ai --api-token <token>`,
+    `$ tooljet library deploy --version 1.0.0 --url https://app.tooljet.ai --token <token>`,
     `$ tooljet lib deploy --version 1.0.0`,
     `$ tooljet lib deploy --version 1.0.0 --message "Add dark mode support"`,
   ];
@@ -32,11 +33,11 @@ export default class ComponentDeploy extends Command {
       description: 'Publish even if the build reports TypeScript errors',
       default: false,
     }),
-    'origin-url': Flags.string({
-      description: 'ToolJet origin URL to deploy to, bypassing the stored login (must be used with --api-token)',
+    url: Flags.string({
+      description: 'ToolJet origin URL to deploy to, bypassing the stored login (must be used with --token)',
     }),
-    'api-token': Flags.string({
-      description: 'API token to deploy with, bypassing the stored login (must be used with --origin-url)',
+    token: Flags.string({
+      description: 'API token to deploy with, bypassing the stored login (must be used with --url)',
     }),
   };
 
@@ -99,15 +100,15 @@ export default class ComponentDeploy extends Command {
     }
   }
 
-  // Resolves { workspaceId, apiToken, url, config } either from --origin-url/--api-token
+  // Resolves { workspaceId, apiToken, url, config } either from --url/--token
   // (find-or-create against that workspace directly) or from the stored login + project's
   // workspaces map (existing behavior). Exits with a clear error on any failure.
   private async resolveTarget(flags: {
-    'origin-url'?: string;
-    'api-token'?: string;
+    url?: string;
+    token?: string;
   }): Promise<{ workspaceId: string; apiToken: string; url: string; config: ProjectConfigEntry; usedFlags: boolean }> {
-    const originUrl = flags['origin-url'];
-    const apiToken = flags['api-token'];
+    const originUrl = flags.url;
+    const apiToken = flags.token;
 
     if (!originUrl && !apiToken) {
       const { workspaceId, apiToken, url } = Auth.resolveOrExit();
@@ -121,7 +122,19 @@ export default class ComponentDeploy extends Command {
     }
 
     if (!originUrl || !apiToken) {
-      this.log(formatError('--origin-url and --api-token must be provided together'));
+      this.log(formatError('--url and --token must be provided together'));
+      process.exit(1);
+    }
+
+    const originUrlError = validateOriginUrl(originUrl);
+    if (originUrlError !== true) {
+      this.log(formatError(originUrlError));
+      process.exit(1);
+    }
+
+    const apiTokenError = validateApiToken(apiToken);
+    if (apiTokenError !== true) {
+      this.log(formatError(apiTokenError));
       process.exit(1);
     }
 

@@ -64,7 +64,7 @@ export class ProjectConfig {
     if (!entry) {
       console.log(
         formatError(
-          `This project isn't registered for workspace "${workspaceId}". Run \`tooljet login\` to switch workspaces, or pass --origin-url and --api-token to target specific workspace directly.`
+          `This project isn't registered for workspace "${workspaceId}". Run \`tooljet login\` to switch workspaces, or pass --url and --token to target specific workspace directly.`
         )
       );
       process.exit(1);
