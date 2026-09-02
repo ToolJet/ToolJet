@@ -36,7 +36,7 @@ The token is a credential with the same reach as the account that created it. Tr
 
 - **Keep it out of version control.** It sits in plain text in your shell profile or your client's configuration file. If that file lives in a repository, the token is in your git history.
 - **Use a project-local file that is already ignored.** For a single project, `.claude/settings.local.json` is git-ignored by default; `.claude/settings.json` is not.
-- **Always use an `https://` instance URL.** The token is sent to `TOOLJET_URL` on every call, so an `http://` origin exposes it on the wire.
+- **Always use an `https://` instance URL.** The token is sent to your ToolJet instance on every call, so an `http://` origin exposes it on the wire.
 - **Do not paste it into a chat with your agent.** It belongs in the environment, not in a conversation that may be logged or retained by your model provider.
 - **Rotate it if it is ever exposed**, including in a screen share or a support thread.
 
