@@ -18,7 +18,7 @@ Self-host it, or use ToolJet Cloud.
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-  <img width="3672" height="2064" alt="githubneutral 1" src="https://github.com/user-attachments/assets/0290a1be-155a-496b-ae61-bedd2562e778" />
+  <img width="3672" height="2064" alt="githubneutral 3" src="https://github.com/user-attachments/assets/07abfe2b-5903-4f85-b953-aa08bdda64b8" />
 </p>
 
 
