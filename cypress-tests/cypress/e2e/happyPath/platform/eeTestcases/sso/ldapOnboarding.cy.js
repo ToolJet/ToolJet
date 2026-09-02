@@ -19,7 +19,7 @@ import { usersText } from "Texts/manageUsers";
 import { sanitize } from "Support/utils/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { apiRequest as baseApiRequest } from "Support/utils/externalApi";
-import { navigateAndVerifyInspector } from "Support/utils/inspector";
+import { navigateAndVerifyInspector } from "Support/utils/appBuilder/inspector";
 
 const apiBaseUrl = Cypress.env("API_URL");
 const authHeader = {

@@ -5,7 +5,7 @@ import {
   openEditorSidebar,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 export const verifyComponent = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName), {

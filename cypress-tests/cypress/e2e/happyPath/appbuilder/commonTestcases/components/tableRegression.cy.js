@@ -7,10 +7,10 @@ import {
   verifyTableElements,
   addFilter,
   resizeTableWidget,
-} from "Support/utils/table";
+} from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { deleteDownloadsFolder } from "Support/utils/common";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // NewTable rewrite (was Table). The widget migrated Table -> NewTable and the

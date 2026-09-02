@@ -6,7 +6,7 @@ import {
   renameListView,
   clickListViewRow,
   addRecordClickedAlertHandler,
-} from "Support/utils/listviewWidget";
+} from "Support/utils/appBuilder/components/listView";
 import {
   verifyAndModifyParameter,
   openEditorSidebar,

@@ -9,9 +9,9 @@ import {
   deleteAndVerifyColumn,
   selectDropdownOption,
   verifySingleValueOnTable,
-} from "Support/utils/table";
+} from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // Chunk 4 (DEFERRED STUB) — Table column data types.

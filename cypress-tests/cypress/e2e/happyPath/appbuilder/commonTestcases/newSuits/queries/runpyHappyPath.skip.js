@@ -19,12 +19,12 @@ import {
   selectQueryFromLandingPage,
   waitForQueryAction,
 } from "Support/utils/appBuilder/querymanager/queries";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import {
-  resizeQueryPanel,
   verifypreview
 } from "Support/utils/marketplace/datasources/dataSource";
-import { openNode, verifyNodeData } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import {
   addNewPage
 } from "Support/utils/multipage";

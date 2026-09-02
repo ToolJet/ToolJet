@@ -17,13 +17,13 @@ import {
   renameQueryFromEditor,
   selectQueryFromLandingPage
 } from "Support/utils/appBuilder/querymanager/queries";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import { deleteDownloadsFolder } from "Support/utils/common";
 import {
-  resizeQueryPanel,
   verifypreview
 } from "Support/utils/marketplace/datasources/dataSource";
-import { openNode, verifyNodeData } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 describe("RunJS", () => {
   beforeEach(() => {

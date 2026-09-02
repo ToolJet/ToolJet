@@ -9,7 +9,7 @@ import {
   verifyNodes,
   openSubNode,
   backFromDetail,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspector";
 import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
 

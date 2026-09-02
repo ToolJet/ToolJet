@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { buttonText } from "Texts/button";
 
-import { addBasicData, verifyBasicData } from "Support/utils/button";
+import { addBasicData, verifyBasicData } from "Support/utils/appBuilder/components/button";
 
 import { openEditorSidebar } from "Support/utils/commonWidget";
 

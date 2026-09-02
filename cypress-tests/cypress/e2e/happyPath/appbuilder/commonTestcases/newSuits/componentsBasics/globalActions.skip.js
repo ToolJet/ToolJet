@@ -10,12 +10,12 @@ import {
     query,
     selectQueryFromLandingPage
 } from "Support/utils/appBuilder/querymanager/queries";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import { deleteDownloadsFolder } from "Support/utils/common";
 import {
-    resizeQueryPanel
 } from "Support/utils/marketplace/datasources/dataSource";
-import { openNode, verifyNodeData } from "Support/utils/inspector";
+import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import {
     addNewPage
 } from "Support/utils/multipage";

@@ -5,7 +5,7 @@ import {
     verifyCSA
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
+import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec

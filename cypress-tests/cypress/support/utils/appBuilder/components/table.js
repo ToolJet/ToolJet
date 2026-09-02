@@ -1,6 +1,6 @@
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
 import { tableSelector } from "Selectors/table";
-import { verifyNodeData } from "Support/utils/inspector";
+import { verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { selectEvent, configureCSA } from "Support/utils/events";
 import { tableText } from "Texts/table";
 

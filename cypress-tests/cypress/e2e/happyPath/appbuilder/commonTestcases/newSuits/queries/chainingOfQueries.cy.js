@@ -11,7 +11,7 @@ import {
   selectRunQueryEvent,
 } from "Support/utils/appBuilder/querymanager/queries";
 
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 describe("Chaining of queries", () => {
   beforeEach(() => {

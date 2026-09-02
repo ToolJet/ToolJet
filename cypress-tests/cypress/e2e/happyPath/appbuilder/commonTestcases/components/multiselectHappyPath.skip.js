@@ -13,7 +13,7 @@ import {
   selectFromMultiSelect,
   verifyMultiselectStatus,
   verifyMultiselectOptions,
-} from "Support/utils/multiselectWidget";
+} from "Support/utils/appBuilder/components/multiSelect";
 import {
   openAccordion,
   verifyAndModifyParameter,

@@ -17,9 +17,6 @@ export const verifyCouldnotConnectWithAlert = (alertText) => {
   );
 };
 
-export const resizeQueryPanel = (height = "90") => {
-  cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
-};
 
 export const deleteWorkflowAndDS = (appName, datasourceName) => {
   cy.deleteWorkflow(appName);

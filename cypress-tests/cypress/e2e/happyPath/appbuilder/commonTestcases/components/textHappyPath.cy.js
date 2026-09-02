@@ -4,7 +4,7 @@ import {
   openNode,
   openAndVerifyNode,
   verifyNodes,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspector";
 import { commonWidgetSelector } from "Selectors/common";
 import {
   editAndVerifyWidgetName,

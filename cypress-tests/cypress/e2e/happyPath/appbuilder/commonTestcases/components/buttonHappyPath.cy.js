@@ -3,8 +3,8 @@ import { buttonText } from "Texts/button";
 import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
-import { verifyControlComponentAction } from "Support/utils/button";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { verifyControlComponentAction } from "Support/utils/appBuilder/components/button";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import {
   openAccordion,

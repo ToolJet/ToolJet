@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { verifyLayout } from "Support/utils/commonWidget";
-import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/inspector";
+import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 // Contexts facet — the checkbox across device + data-binding contexts.
 // testIsolation:false for cypress-real-dnd; each test re-creates its app.

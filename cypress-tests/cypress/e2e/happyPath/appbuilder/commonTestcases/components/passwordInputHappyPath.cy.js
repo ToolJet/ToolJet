@@ -7,7 +7,7 @@ import {
   openAndVerifyNode,
   verifyNodes,
   verifyNodeData,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspector";
 import { passwordInputText } from "Texts/passwordInput";
 
 // REGENERATED 2026-06-24 — replaces the quarantined legacy spec.

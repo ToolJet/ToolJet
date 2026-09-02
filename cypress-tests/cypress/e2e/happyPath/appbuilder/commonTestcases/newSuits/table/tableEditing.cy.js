@@ -10,10 +10,10 @@ import {
   verifySingleValueOnTable,
   verifyTableExposedVars,
   addNewRow,
-} from "Support/utils/table";
+} from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { addMultiEventsWithAlert } from "Support/utils/events";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // Chunk 1 — Table inline editing + add row (NewTable).

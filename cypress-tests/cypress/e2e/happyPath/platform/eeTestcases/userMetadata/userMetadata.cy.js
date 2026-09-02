@@ -18,7 +18,7 @@ import {
 import {
   navigateAndVerifyInspector,
   navigateToInspectorNodes,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspector";
 import { navigateToManageUsers, logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { onboardingText } from "Texts/onboarding";

@@ -8,10 +8,10 @@ import {
   verifyAndModifyToggleFx,
   dataCsvAssertionHelper,
   dataPdfAssertionHelper,
-} from "Support/utils/table";
+} from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { deleteDownloadsFolder } from "Support/utils/common";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // Chunk 5 (DEFERRED STUB) — Table styles, table-option toggles and download menu.

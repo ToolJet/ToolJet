@@ -6,7 +6,7 @@ import {
     verifyAndModifySwitch,
     verifyAndModifyToggleFx,
 } from "Support/utils/commonWidget";
-import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/inspector";
+import { openNode, openAndVerifyNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 // Userflow facet — an end-to-end builder journey for the Checkbox: place it,
 // observe its default, configure it, and confirm both the on-canvas render and

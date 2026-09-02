@@ -7,7 +7,7 @@ import {
   closeModal,
   launchButton,
   addAndVerifyColor,
-} from "Support/utils/modal";
+} from "Support/utils/appBuilder/components/modal";
 
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { selectCSA, selectEvent } from "Support/utils/events";

@@ -6,7 +6,7 @@ import {
   verifyComponent,
   deleteComponentAndVerify,
   verifyComponentWithOutLabel,
-} from "Support/utils/basicComponents";
+} from "Support/utils/appBuilder/components/basicComponents";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -29,7 +29,7 @@ import {
   commonWidgetText,
   codeMirrorInputLabel,
 } from "Texts/common";
-import { resizeQueryPanel } from "Support/utils/marketplace/datasources/dataSource";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // QUARANTINED — but NOT for the cold-drag THROW anymore (that is FIXED suite-wide
 // in dragAndDropWidget: a scoped cy.on('fail') trap recovers the cypress-real-dnd

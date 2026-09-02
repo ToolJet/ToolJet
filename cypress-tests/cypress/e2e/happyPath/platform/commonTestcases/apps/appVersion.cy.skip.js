@@ -20,7 +20,7 @@ import { verifyModal, closeModal } from "Support/utils/common";
 import {
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
-} from "Support/utils/basicComponents";
+} from "Support/utils/appBuilder/components/basicComponents";
 import { createRestAPIQuery } from "Support/utils/marketplace/datasources/dataSource";
 import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
 import { performQueryAction } from "Support/utils/appBuilder/querymanager/queries";

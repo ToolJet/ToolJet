@@ -9,7 +9,7 @@ import {
   openNode,
   verifyNodes,
   verifyNodeData,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspector";
 
 // REGENERATED 2026-06-19 — replaces the quarantined legacy spec.
 //
