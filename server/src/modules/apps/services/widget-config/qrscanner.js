@@ -32,6 +32,16 @@ export const qrscannerConfig = {
         defaultValue: false,
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
   },
   exposedVariables: {
     lastDetectedValue: '',
@@ -44,6 +54,7 @@ export const qrscannerConfig = {
     properties: {},
     events: [],
     styles: {
+      padding: { value: 'default' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },
