@@ -3820,15 +3820,12 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
-          // Imported apps and modules must be marked synced whenever git sync is enabled —
-          // regardless of single- vs multi-branch mode, and regardless of whether this version
-          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
-          // version) — so they participate in the default-branch git flow (unsynced rows are
-          // treated as new/uncommitted content and can't be pushed). Workflows are excluded —
-          // they don't sync via git. Sub-branch (feature-branch) imports are also excluded:
-          // that's genuinely new, unpushed content on that branch, so the push flow still
-          // needs to pick it up.
-          isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // A device import (isGitApp=false) has never been committed to git — stays false,
+          // same as every other creation path (AppsService.create, feature-branch, datasource).
+          // Git-repo imports/pulls (isGitApp=true, ee/app-git/*) keep the original behavior:
+          // that content genuinely came from git and matches remote.
+          isSynced: isGitApp && isGitSyncConfigured && !isWorkflow && !isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
