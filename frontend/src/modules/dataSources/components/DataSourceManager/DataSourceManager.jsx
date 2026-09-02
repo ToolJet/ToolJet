@@ -1181,6 +1181,9 @@ class DataSourceManagerComponent extends React.Component {
                             )}
                           </div>
                           {(() => {
+                            // Dummy/unresolved data sources show their own "missing, pull from git" warning below;
+                            // the global-setting branching warning isn't relevant when the data source is missing.
+                            if (selectedDataSource.is_dummy) return null;
                             const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
                             if (!isInitialized || !orgGitConfig) return null;
                             const isBranchingEnabled =
