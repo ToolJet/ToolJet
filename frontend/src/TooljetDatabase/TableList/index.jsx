@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ListItem } from '../TableListItem';
 import { BreadCrumbContext } from '../../App/App';
 import Search from '../Search';
@@ -20,7 +20,7 @@ const List = () => {
     setSelectedTable,
     loadingState,
     setLoadingState,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);

@@ -352,17 +352,31 @@ export const createFormComponentSlice = (set, get) => ({
             // Merge component changes into state
             const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId];
 
-            // Handle component definition updates
+            // Handle component definition updates.
+            // Mutate at the individual attr level (definition[defType][prop][attr]) so immer emits
+            // fine-grained patches that filterAndFormatPatches can replay correctly on undo.
+            // A whole-object replacement like `definition[defType] = { ...old, ...diff }` produces
+            // a single coarse patch with no property name in the path — undo becomes a no-op and
+            // the phantom "undefined" key corrupts the app JSON.
+            // Exception: scalar / non-object property values (e.g. validation.mandatory = true) are
+            // assigned directly because they have no attr level to iterate.
             if (componentDiff.component?.definition) {
               for (const [defType, defValues] of Object.entries(componentDiff.component.definition)) {
                 if (!pageComponent.component.definition[defType]) {
                   pageComponent.component.definition[defType] = {};
                 }
-                // Correctly merge the new values from diff into the existing definition
-                pageComponent.component.definition[defType] = {
-                  ...pageComponent.component.definition[defType],
-                  ...defValues,
-                };
+                for (const [propName, propValue] of Object.entries(defValues)) {
+                  if (propValue === null || typeof propValue !== 'object' || Array.isArray(propValue)) {
+                    pageComponent.component.definition[defType][propName] = propValue;
+                    continue;
+                  }
+                  if (!pageComponent.component.definition[defType][propName]) {
+                    pageComponent.component.definition[defType][propName] = {};
+                  }
+                  for (const [attrName, attrValue] of Object.entries(propValue)) {
+                    lodashSet(pageComponent.component, ['definition', defType, propName, attrName], attrValue);
+                  }
+                }
               }
             }
           }
