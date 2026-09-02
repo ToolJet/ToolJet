@@ -20,6 +20,8 @@ interface Features {
   [FEATURE_KEY.PROMOTE_TABLE]: FeatureConfig;
   [FEATURE_KEY.PROMOTE_TABLE_PREVIEW]: FeatureConfig;
   [FEATURE_KEY.REPAIR_BASELINE]: FeatureConfig;
+  [FEATURE_KEY.ADD_RAW_SQL_MIGRATION]: FeatureConfig;
+  [FEATURE_KEY.REVERT_MIGRATION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

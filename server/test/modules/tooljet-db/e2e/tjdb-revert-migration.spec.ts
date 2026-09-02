@@ -49,7 +49,7 @@ describe('TooljetDb revert migration', () => {
 
     async function setUpWorkspace() {
       const email = `revert-${uuidv4()}@tooljet.io`;
-      const { user } = await createUser(app, {
+      const { user, organization } = await createUser(app, {
         email,
         firstName: 'Revert',
         lastName: 'Test',
@@ -69,7 +69,7 @@ describe('TooljetDb revert migration', () => {
         .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
 
       const { tokenCookie } = await login(app, email);
-      return { organizationId, tenantSchema, cookie: tokenCookie, environments, branchId: branch.id };
+      return { organizationId, tenantSchema, cookie: tokenCookie, environments, branchId: branch.id, organization };
     }
 
     // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
@@ -137,6 +137,57 @@ describe('TooljetDb revert migration', () => {
         .set(headers(organizationId, cookie))
         .send({ refs: {}, ...body });
     }
+
+    it('403s a caller without tjdb_crud, and still succeeds for one with it', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie, organization } = workspace;
+
+          await createTable(organizationId, cookie, 'revert_gate_tbl');
+          await addColumn(organizationId, cookie, 'revert_gate_tbl', 'note');
+          const internalTable = await internalTableFor(organizationId, 'revert_gate_tbl');
+          const addColumnMigration = await getDefaultDataSource().manager.findOneOrFail(InternalTableMigration, {
+            where: { internalTableId: internalTable.id, kind: 'structured' as any },
+            order: { sequence: 'DESC' },
+          });
+
+          const endUserEmail = `revert-no-crud-${uuidv4()}@tooljet.io`;
+          await createUser(app, {
+            email: endUserEmail,
+            groups: ['end-user'],
+            organization,
+          });
+          const { tokenCookie: endUserCookie } = await login(app, endUserEmail);
+
+          const revertSql = { sql: 'ALTER TABLE "{{self}}" DROP COLUMN note', confirmed: true };
+
+          const forbidden = await revertMigration(
+            organizationId,
+            endUserCookie,
+            internalTable.id,
+            addColumnMigration.id,
+            revertSql
+          );
+          expect(forbidden.statusCode).toBe(403);
+
+          const allowed = await revertMigration(
+            organizationId,
+            cookie,
+            internalTable.id,
+            addColumnMigration.id,
+            revertSql
+          );
+          expect([200, 201]).toContain(allowed.statusCode);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
 
     it('404s when the migration belongs to a different table', async () => {
       expect(tjdbAvailable).toBe(true);

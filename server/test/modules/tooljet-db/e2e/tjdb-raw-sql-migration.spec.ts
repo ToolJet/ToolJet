@@ -46,7 +46,7 @@ describe('TooljetDb raw SQL migration', () => {
 
     async function setUpWorkspace() {
       const email = `raw-sql-${uuidv4()}@tooljet.io`;
-      const { user } = await createUser(app, {
+      const { user, organization } = await createUser(app, {
         email,
         firstName: 'RawSql',
         lastName: 'Test',
@@ -64,7 +64,7 @@ describe('TooljetDb raw SQL migration', () => {
         .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
 
       const { tokenCookie } = await login(app, email);
-      return { organizationId, tenantSchema, cookie: tokenCookie };
+      return { organizationId, tenantSchema, cookie: tokenCookie, organization };
     }
 
     // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
@@ -214,6 +214,42 @@ describe('TooljetDb raw SQL migration', () => {
             where: { internalTableId: internalTable.id },
           });
           expect(after).toBe(before);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    it('403s a caller without tjdb_crud, and still succeeds for one with it', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie, organization } = workspace;
+
+          await createTable(organizationId, cookie, 'raw_sql_gate_tbl');
+          const { internalTable } = await tableAndRelation(organizationId, 'raw_sql_gate_tbl');
+
+          const endUserEmail = `raw-sql-no-crud-${uuidv4()}@tooljet.io`;
+          await createUser(app, {
+            email: endUserEmail,
+            groups: ['end-user'],
+            organization,
+          });
+          const { tokenCookie: endUserCookie } = await login(app, endUserEmail);
+
+          const forbidden = await runRawSql(organizationId, endUserCookie, internalTable.id, {
+            sql: `ALTER TABLE "{{self}}" ADD COLUMN gate_probe character varying`,
+          });
+          expect(forbidden.statusCode).toBe(403);
+
+          const allowed = await runRawSql(organizationId, cookie, internalTable.id, {
+            sql: `ALTER TABLE "{{self}}" ADD COLUMN gate_probe character varying`,
+          });
+          expect([200, 201]).toContain(allowed.statusCode);
         });
       } finally {
         if (organizationId) await cleanupWorkspace(organizationId);

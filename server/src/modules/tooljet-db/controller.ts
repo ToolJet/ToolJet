@@ -308,10 +308,9 @@ export class TooljetDbController {
 
   // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
   // identity operation, not a display-name one.
-  // TODO(B4): gate this route behind FEATURE_KEY.ADD_RAW_SQL_MIGRATION + FeatureAbilityGuard, same
-  // shape as promoteTable above — the licence/permission key itself is Task B4's job.
+  @InitFeature(FEATURE_KEY.ADD_RAW_SQL_MIGRATION)
   @Post('/organizations/:organizationId/table/:tableId/migrations/sql')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async recordRawSqlMigration(
     @Param('organizationId') organizationId: string,
     @Param('tableId') tableId: string,
@@ -321,9 +320,9 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  // Same deferred-gating shape as recordRawSqlMigration above - TODO(B4) covers this route too.
+  @InitFeature(FEATURE_KEY.REVERT_MIGRATION)
   @Post('/organizations/:organizationId/table/:tableId/migrations/:migrationId/revert')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async revertMigration(
     @Param('organizationId') organizationId: string,
     @Param('tableId') tableId: string,
