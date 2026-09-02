@@ -22,7 +22,7 @@ import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPan
 import { deleteDownloadsFolder } from "Support/utils/common";
 import {
   verifypreview
-} from "Support/utils/marketplace/datasources/dataSource";
+} from "Support/utils/appBuilder/querymanager/queries";
 import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 describe("RunJS", () => {

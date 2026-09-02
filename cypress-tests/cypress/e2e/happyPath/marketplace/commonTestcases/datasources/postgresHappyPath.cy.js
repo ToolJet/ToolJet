@@ -3,7 +3,7 @@ import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { postgresUIConfig, postgresFormConfig, postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/marketplace/datasources/postgres";
-import { verifyPreviewData } from "Support/utils/marketplace/datasources/dataSource";
+import { verifyPreviewData } from "Support/utils/appBuilder/querymanager/queries";
 import { dataSourceSelector } from "Constants/selectors/dataSource";
 
 const data = {};

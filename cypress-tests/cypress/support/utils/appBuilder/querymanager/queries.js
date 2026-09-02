@@ -1,6 +1,8 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { selectEvent } from "Support/utils/appBuilder/events";
-import { commonQuerySelectors } from "Selectors/common";
+import { commonSelectors, commonQuerySelectors } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { navigateToAppEditor } from "Support/utils/common";
 import { postgreSqlText } from "Texts/postgreSql";
 
 export const selectQueryFromLandingPage = (dbName, label) => {
@@ -199,4 +201,206 @@ export const performQueryAction = (queryName, action, newName) => {
       .verifyVisibleElement("have.text", postgreSqlText.yes)
       .click();
   }
+};
+
+// ── Query create / preview (moved from marketplace/datasources/dataSource.js;
+//    these operate the query panel, not the datasource connection) ────────────
+
+export const verifypreview = (type, data) => {
+  cy.get(`[data-cy="preview-tab-${type}"]`).click();
+  cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
+    "contain.text",
+    data,
+    [{ timeout: 15000 }]
+  );
+};
+
+export const addQueryN = (queryName, query, dbName) => {
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="gds-querymanager-search-bar"]').length > 0) {
+      cy.clearAndType('[data-cy="gds-querymanager-search-bar"]', `${dbName}`);
+    }
+  });
+  cy.intercept("POST", "/api/data-queries/**").as("createQuery");
+
+  cy.get(`[data-cy="${dbName}-add-query-card"] > .text-truncate`).click();
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+  cy.forceClickOnCanvas();
+
+  cy.wait("@createQuery").then((interception) => {
+    const dataQueryId = interception.response.body.id;
+    cy.visit("/my-workspace");
+    cy.apiAddQuery(queryName, query, dataQueryId);
+    cy.openApp();
+  });
+};
+
+export const addQuery = (queryName, query, dbName) => {
+  cy.get('[data-cy="show-ds-popover-button"]').click();
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.intercept("POST", "/api/data-queries/**").as("createQuery");
+  cy.contains(`[id*="react-select-"]`, dbName).click();
+
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+
+  cy.wait("@createQuery").then((interception) => {
+    const dataQueryId = interception.response.body.id;
+    cy.visit("/my-workspace");
+    cy.apiAddQuery(queryName, query, dataQueryId);
+    cy.openApp();
+  });
+};
+
+export const addDsAndAddQuery = (queryName, query, dbName) => {
+  cy.get('[data-cy="show-ds-popover-button"]').click();
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.contains(`[id*="react-select-"]`, dbName).click();
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+  cy.get(postgreSqlSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.wait(1000);
+  cy.get(dataSourceSelector.queryPreviewButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    `Query (${queryName}) completed.`
+  );
+};
+
+export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
+  cy.get('[data-cy="show-ds-popover-button"]').click();
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.intercept("POST", "/api/data-queries").as("createQuery");
+  cy.contains(`[id*="react-select-"]`, dbName).click();
+
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+
+  cy.wait("@createQuery").then((interception) => {
+    const dataQueryId = interception.response.body.id;
+    cy.visit("/my-workspace");
+    cy.apiAddQuery(queryName, query, dataQueryId);
+    navigateToAppEditor(appName);
+    cy.wait(2000);
+  });
+};
+
+export const createDataQuery = (appName, url, key, value) => {
+  let appId, versionId;
+  cy.task("dbConnection", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    appId = resp.rows[0].id;
+
+    cy.task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select id from app_versions where app_id='${appId}';`,
+    }).then((resp) => {
+      versionId = resp.rows[0].id;
+
+      cy.getCookie("tj_auth_token").then((cookie) => {
+        const headers = {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        };
+
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/data-queries`,
+          headers: headers,
+          body: {
+            app_id: appId,
+            app_version_id: versionId,
+            name: "restapi1",
+            kind: "restapi",
+            options: {
+              method: "get",
+              url: `{{constants.${url}}}`,
+              url_params: [["", ""]],
+              headers: [[`{{constants.${key}}}`, `{{constants.${value}}}`]],
+              body: [["", ""]],
+              json_body: null,
+              body_toggle: false,
+              transformationLanguage: "javascript",
+              enableTransformation: false,
+            },
+            data_source_id: null,
+          },
+        }).then((response) => {
+          expect(response.status).to.equal(201);
+        });
+      });
+    });
+  });
+};
+
+export const createRestAPIQuery = (
+  queryName,
+  dsName,
+  key = "",
+  value = "",
+  url = "",
+  run = true,
+  kind = "restapi"
+) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+    };
+
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+      headers: headers,
+    }).then((response) => {
+      const editingVersionId = response.body.editing_version.id;
+
+      const data_source_id = Cypress.env(`${dsName}`);
+
+      const requestBody = {
+        app_id: Cypress.env("appId"),
+        app_version_id: editingVersionId,
+        name: queryName,
+        kind: kind,
+        options: {
+          method: "get",
+          url: url,
+          url_params: [["", ""]],
+          headers: [[`${key}`, `${value}`]],
+          body: [["", ""]],
+          json_body: null,
+          body_toggle: false,
+          runOnPageLoad: run,
+          transformationLanguage: "javascript",
+          enableTransformation: false,
+        },
+        data_source_id: data_source_id,
+        plugin_id: null,
+      };
+
+      cy.request({
+        method: "POST",
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        headers: headers,
+        body: requestBody,
+      }).then((response) => {
+        expect(response.status).to.equal(201);
+        cy.log("Data query created successfully:", response.body);
+      });
+    });
+  });
+};
+
+export const verifyPreviewData = (expectedData) => {
+  cy.get('[data-cy="query-preview-button"]').click();
+  cy.wait(2000);
+  cy.get('[data-cy="preview-json-data-container"]>ul>li>ul>li>div').click();
+  cy.get('[data-cy="preview-json-data-container"]')
+    .should("be.visible")
+    .and("contain", expectedData);
 };

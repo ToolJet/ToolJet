@@ -23,7 +23,7 @@ import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPan
 
 import {
   verifypreview
-} from "Support/utils/marketplace/datasources/dataSource";
+} from "Support/utils/appBuilder/querymanager/queries";
 import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import {
   addNewPage
