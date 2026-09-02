@@ -189,7 +189,6 @@ export const addSupportCSAData = (field, data) => {
     .click({ force: true })
     .clearAndTypeOnCodeMirror(data);
   commitEventConfig();
-  cy.wait("@events");
 };
 
 // Set a CSA `select`-type parameter. Its combobox shares
@@ -244,6 +243,7 @@ export const addMultiEventsWithAlert = (events, isWait = true) => {
   events.forEach((eventObj, index) => {
     selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index, isWait);
     addSupportCSAData("alert-message", eventObj.message);
+    cy.wait("@events");
   });
 };
 // ---------------------------------------------------------------------------
