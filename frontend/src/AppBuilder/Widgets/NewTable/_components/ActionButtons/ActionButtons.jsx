@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { createTableRowEventOptions } from '../../_utils/tableEventUtils';
 export const ActionButtons = ({ actions, row, cell, fireEvent, setExposedVariables, id }) => {
   const { getTableActionEvents } = useTableStore();
   const actionButtonRadius = useTableStore((state) => state.getTableStyles(id)?.actionButtonRadius, shallow);
@@ -14,10 +15,13 @@ export const ActionButtons = ({ actions, row, cell, fireEvent, setExposedVariabl
         selectedRow: row.original,
       });
 
-      fireEvent('onTableActionButtonClicked', {
-        action,
-        tableActionEvents: getTableActionEvents(id),
-      });
+      fireEvent(
+        'onTableActionButtonClicked',
+        createTableRowEventOptions(row.index, {
+          action,
+          tableActionEvents: getTableActionEvents(id),
+        })
+      );
     },
     [id, row, setExposedVariables, fireEvent, getTableActionEvents]
   );
