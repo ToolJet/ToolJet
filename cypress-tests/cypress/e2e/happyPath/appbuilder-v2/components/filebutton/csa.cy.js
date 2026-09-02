@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/fileButton";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { selectEvent, selectCSA } from "Support/utils/events";
+import { selectEvent, configureCSA } from "Support/utils/events";
 import { resizeQueryPanel } from "Support/utils/dataSource";
 import { openNode, openSubNode, backFromDetail, verifyNodeData } from "Support/utils/inspector";
 
@@ -29,7 +29,7 @@ describe(
     });
   };
 
-  const wireCSA = (csaDisplayName, flipValueToggle) => {
+  const wireCSA = (csaDisplayName, value) => {
     // No deselect before this drag — right-sidebar-components-button is a tab
     // toggle, and deselecting first would close the catalog instead of opening it.
     openEditorSidebar(widget);
@@ -37,11 +37,11 @@ describe(
     waitForDropSettle("button1");
     openEditorSidebar("button1");
     selectEvent("On click", "Control Component");
-    selectCSA(widget, csaDisplayName);
-    if (flipValueToggle) {
-      cy.get('[data-cy="event-Value-toggle-button"]').should("be.visible").click();
-    }
-    cy.forceClickOnCanvas();
+    configureCSA(
+      widget,
+      csaDisplayName,
+      value === undefined ? [] : [{ label: "Value", type: "toggle", value }]
+    );
   };
 
   const triggerCSA = () => {
@@ -158,7 +158,7 @@ describe(
     cy.get(fileButtonSelector.widget(widget)).should("exist");
     verifyExposedValue("isVisible", "Boolean", "true");
 
-    wireCSA("Set visibility", true);
+    wireCSA("Set visibility", false);
     triggerCSA();
 
     cy.get(fileButtonSelector.widget(widget)).should("not.exist");
