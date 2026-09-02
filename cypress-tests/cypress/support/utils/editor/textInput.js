@@ -107,35 +107,60 @@ export const verifyCSA = (component) => {
  * @tjDom    canvas drag-drop buttons → Control Component events + CSA action values
  */
 export const addCSA = (componentName, actions) => {
+  // The component-under-test drop (in the caller's beforeEach) may leave the
+  // components panel OPEN; addCSA's first button drag would then toggle it shut
+  // (its own components-button click closes an already-open panel → the widget
+  // search box goes missing). Close it once up front so each drag re-opens it.
+  cy.get("body").then(($b) => {
+    if ($b.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
+    }
+  });
+
   actions.forEach((action, index) => {
     cy.forceClickOnCanvas();
     cy.wait(200);
     const xOffset = 100 + (index % 6) * 150;
     const yOffset = 300 + Math.floor(index / 6) * 100;
     cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
+    // `add-event-handler` only renders once the dropped button's inspector is
+    // open (a bare drop no longer auto-opens it). Buttons auto-name button1..N
+    // in drop order, so index+1 is the one just dropped.
+    openEditorSidebar(`button${index + 1}`);
     selectEvent(action.event, "Control Component");
     selectCSA(componentName, action.action);
-    // The CSA action's value renders as a fxEditor CodeHinter wrapped in a
-    // constant `action-options-text-input-field` (EventManager.jsx:1042). The
-    // inner fx/input data-cy is `event-<param.displayName>-*` (varies per action:
-    // Text, Value, …), so target the constant wrapper instead. String params
-    // default to code (fx active → `.cm-line` present); boolean params default to
-    // a toggle, so click the fx button first to reveal the code editor.
-    if (action.value) {
-      cy.wait(500);
-      cy.get('[data-cy="action-options-text-input-field"]:visible')
-        .last()
-        .clearAndTypeOnCodeMirror(action.value);
-    } if (action.valueToggle) {
-      cy.wait(500);
-      cy.get('[data-cy="action-options-text-input-field"]:visible')
-        .last()
-        .find(".fx-button")
-        .click({ force: true });
-      cy.get('[data-cy="action-options-text-input-field"]:visible')
-        .last()
-        .clearAndTypeOnCodeMirror(action.valueToggle);
-    }
+    cy.waitForAutoSave();
 
+    // Route the value by the param's RENDERED field type — boolean params render
+    // as a TOGGLE (`event-<Label>-toggle-button`), text/code params as a
+    // CodeHinter (`action-options-text-input-field`). action.value and
+    // action.valueToggle are unified; the rendered field (not the key) decides.
+    // Setting the toggle directly avoids the fx→code CodeHinter remount that
+    // detaches the typed subject (probe-confirmed).
+    const rawValue = action.value ?? action.valueToggle;
+    if (rawValue !== undefined) {
+      cy.wait(600);
+      const toggleSel = '[data-cy^="event-"][data-cy$="-toggle-button"]:visible';
+      cy.get("body").then(($b) => {
+        if ($b.find(toggleSel).length) {
+          const desired = rawValue !== "{{false}}" && rawValue !== false;
+          // Read state, then click via a FRESH cy.get (requeryable) — NOT
+          // cy.wrap($t) (a snapshot that detaches if the toggle re-renders,
+          // making the click a silent no-op → the assertion never flips).
+          cy.get(toggleSel)
+            .invoke("prop", "checked")
+            .then((checked) => {
+              if (checked !== desired) {
+                cy.get(toggleSel).click({ force: true });
+              }
+            });
+          cy.get(toggleSel).should(desired ? "be.checked" : "not.be.checked");
+        } else {
+          // Plain get (no `.last()`) so Cypress can auto-requery on re-render.
+          cy.get('[data-cy="action-options-text-input-field"]:visible')
+            .clearAndTypeOnCodeMirror(rawValue);
+        }
+      });
+    }
   });
 };

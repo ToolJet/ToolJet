@@ -24,24 +24,7 @@ describe('Checkbox Component Tests', { testIsolation: false }, () => {
     //   setVisibility   — source: checkbox.js:187 (param: disable, toggle, default {{false}})
     //   setDisable      — source: checkbox.js:192 (param: disable, toggle, default {{false}})
     //   setLoading      — source: checkbox.js:197 (param: loading, toggle, default {{false}})
-    // SKIP — blocked on an addCSA rework (helper-author + CI). A ~10-run
-    // investigation peeled back four layers in the current build; the shared
-    // addCSA (used by ~25 specs) was reverted to baseline rather than left
-    // half-reworked. Findings for the follow-up:
-    //   1. Panel toggle: the beforeEach drop leaves the components panel open, so
-    //      addCSA's FIRST button drag toggles it shut → close it once up front.
-    //   2. add-event-handler is NOT rendered after a bare drop; the dropped
-    //      button's inspector must be opened first (openEditorSidebar). A generic
-    //      fix needs the just-dropped button's runtime name (index+1 assumes no
-    //      pre-existing buttons — unsafe for all 25 consumers).
-    //   3. The CodeHinter value editor (fx-button → code) re-renders continuously
-    //      and detaches clearAndTypeOnCodeMirror's internal `.last()` mid-type.
-    //   4. CSA params are heterogeneous: some render as a toggle
-    //      (`event-<Label>-toggle-button`), some as a code field — addCSA's flat
-    //      value/valueToggle split can't route them; it needs per-param-type
-    //      handling like setCSAParam(type: toggle|select|code).
-    // Un-skip once addCSA is reworked to route by param type + settle re-renders.
-    it.skip('should verify all the CSA from checkbox (On click)', () => {
+    it('should verify all the CSA from checkbox (On click)', () => {
         const actions = [
             // button1: hide the widget — setVisibility(false) — source: checkbox.js:187
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" },
@@ -61,52 +44,46 @@ describe('Checkbox Component Tests', { testIsolation: false }, () => {
             { event: "On click", action: "Set loading", valueToggle: "{{true}}" },
         ];
 
-        // The beforeEach checkbox drop leaves the components panel open. addCSA's
-        // FIRST button drag would then toggle it closed (search box hidden); its
-        // later drags are fine because each action's CSA-config closes the panel.
-        // Close it once up front so addCSA's first drag re-opens it cleanly.
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
-
         addCSA("checkbox1", actions);
 
-        // NOTE: the indexed `verifyCSA` helper is numberInput-specific (asserts
-        // `have.value` on a text input across buttons 1-9). Checkbox has no
-        // matching text-value DOM contract, so explicit assertions are used
-        // here per the facet-spec "or explicit assertions per the reference".
+        // Button onClick CSAs fire at RUNTIME, not in edit mode (an edit-mode
+        // click just selects the widget — probe-confirmed). Verify effects in
+        // PREVIEW, where runtime state (visibility/disable/value/loading) applies.
+        cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
+        cy.openInCurrentTab(commonWidgetSelector.previewButton);
+        cy.wait(2500);
 
-        // button1 → widget hidden
-        cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-        cy.get(commonWidgetSelector.draggableWidget("checkbox1")).should("not.be.visible");
+        const W = commonWidgetSelector.draggableWidget("checkbox1");
+        const input = '[data-cy="checkbox1"] .form-check-input';
+        const btn = (n) => commonWidgetSelector.draggableWidget(`button${n}`);
 
-        // button2 → widget visible again
-        cy.get(commonWidgetSelector.draggableWidget("button2")).click();
-        cy.get(commonWidgetSelector.draggableWidget("checkbox1")).should("be.visible");
+        // b1 setVisibility(false) → hidden; b2 setVisibility(true) → visible
+        cy.get(btn(1)).click();
+        cy.get(W).should("not.be.visible");
+        cy.get(btn(2)).click();
+        cy.get(W).should("be.visible");
 
-        // button3 → disabled
-        cy.get(commonWidgetSelector.draggableWidget("button3")).click();
-        // RESOLVE-LIVE: exact disabled-state DOM for checkbox (attr vs input
-        // .be.disabled vs wrapper class) unknown — no indexed checkbox helper.
-        cy.get(commonWidgetSelector.draggableWidget("checkbox1")).scrollIntoView();
+        // b3 setDisable(true) → .disabled; b4 setDisable(false) → enabled
+        cy.get(btn(3)).click();
+        cy.get(W).should("have.class", "disabled");
+        cy.get(btn(4)).click();
+        cy.get(W).should("not.have.class", "disabled");
 
-        // button4 → enabled
-        cy.get(commonWidgetSelector.draggableWidget("button4")).click();
+        // b5 setValue(true) → checked; b6 setValue(false) → unchecked
+        cy.get(btn(5)).click();
+        cy.get(input).should("be.checked");
+        cy.get(btn(6)).click();
+        cy.get(input).should("not.be.checked");
 
-        // button5 → setValue(true): checkbox checked
-        cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-        // RESOLVE-LIVE: exact checked-state DOM (input[type=checkbox]:checked
-        // location within draggable-widget-checkbox1) unknown — no indexed helper.
+        // b7 toggle → flips (currently unchecked → checked) — source: checkbox.js:178
+        cy.get(btn(7)).click();
+        cy.get(input).should("be.checked");
 
-        // button6 → setValue(false): checkbox unchecked
-        cy.get(commonWidgetSelector.draggableWidget("button6")).click();
+        // b8 setLoading(true) → loader visible
+        cy.get(btn(8)).click();
+        cy.get(W).parent().find(".tj-widget-loader").should("be.visible");
 
-        // button7 → toggle: flips checked state — source: checkbox.js:178
-        cy.get(commonWidgetSelector.draggableWidget("button7")).click();
-
-        // button8 → setLoading(true): loader visible
-        cy.get(commonWidgetSelector.draggableWidget("button8")).click();
-        // RESOLVE-LIVE: exact loader DOM for checkbox (loader class / location)
-        // unknown — numberInput uses .tj-widget-loader under .parent(); confirm
-        // checkbox markup live before asserting.
+        cy.go("back"); // return to the editor
     });
 
     // @deprecated — displayName: "Set checked (Deprecated)"; source: checkbox.js:202.
