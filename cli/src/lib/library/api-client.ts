@@ -78,9 +78,10 @@ export class ApiClient {
   async publishRevision(
     libraryId: string,
     distDir: string,
+    version: string,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }> {
-    const form = buildUploadFormData(distDir, message ? { message } : {});
+    const form = buildUploadFormData(distDir, { version, ...(message ? { message } : {}) });
     return this.sendForm('POST', `/custom-component-libraries/${libraryId}/revisions`, form);
   }
 
