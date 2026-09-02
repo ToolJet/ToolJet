@@ -1,4 +1,5 @@
-import { QueryError, OAuthUnauthorizedClientError } from './query.error';
+import { QueryError, OAuthUnauthorizedClientError, classifyQueryErrorCategory } from './query.error';
+import type { QueryErrorCategory } from './query.error';
 import { QueryResult } from './query_result.type';
 import { User } from './user.type';
 import { App } from './app.type';
@@ -43,6 +44,7 @@ import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuil
 export {
   QueryError,
   OAuthUnauthorizedClientError,
+  classifyQueryErrorCategory,
   QueryResult,
   QueryService,
   User,
@@ -80,3 +82,5 @@ export {
   QueryBuilderError,
   createQueryBuilder,
 };
+
+export type { QueryErrorCategory };

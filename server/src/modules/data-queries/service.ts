@@ -302,6 +302,7 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
+          category: error?.category || 'unknown',
           message: error?.message,
           description: error?.description,
           data: error?.data,
@@ -311,6 +312,7 @@ export class DataQueriesService implements IDataQueriesService {
         console.error(error);
         result = {
           status: 'failed',
+          category: error?.category || 'unknown',
           message: error?.message || 'Internal server error',
           description: error?.message,
           data: error?.data || {},
@@ -318,7 +320,9 @@ export class DataQueriesService implements IDataQueriesService {
       }
     }
 
-    return result;
+    return (result as any)?.status === 'failed' && !(result as any).category
+      ? { ...(result as any), category: 'unknown' }
+      : result;
   }
 
   async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
@@ -329,6 +333,7 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
+          category: error?.category || 'unknown',
           message: error?.message,
           description: error?.description,
           data: error?.data,
@@ -337,13 +342,16 @@ export class DataQueriesService implements IDataQueriesService {
         console.error(error);
         result = {
           status: 'failed',
+          category: error?.category || 'unknown',
           message: 'Internal server error',
           description: error?.message,
           data: {},
         };
       }
     }
-    return result;
+    return (result as any)?.status === 'failed' && !(result as any).category
+      ? { ...(result as any), category: 'unknown' }
+      : result;
   }
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
