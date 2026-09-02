@@ -17,6 +17,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import Beta from '@/_ui/Beta';
 import './styles.scss';
 
 // Simple error boundary component for module errors
@@ -314,7 +315,16 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               </Tab>
             )}
             {hasCustomComponentLibrariesAccess && (
-              <Tab eventKey="custom" title={t('globals.custom', 'Custom')} darkMode={darkMode}>
+              <Tab
+                eventKey="custom"
+                title={
+                  <>
+                    {t('globals.custom', 'Custom')}
+                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                  </>
+                }
+                darkMode={darkMode}
+              >
                 {searchBox()}
                 <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
