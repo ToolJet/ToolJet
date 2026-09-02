@@ -11,8 +11,9 @@ import {
 } from 'src/helpers/tooljet_db.helper';
 import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
-import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
 import { RawSqlMigrationDto } from '../dto/raw-sql-migration.dto';
+import { RevertMigrationDto } from '../dto/revert-migration.dto';
 
 /**
  * Records a raw SQL migration step: substitutes `{{placeholders}}`, runs the statement as the
@@ -95,6 +96,48 @@ export class TooljetDbRawSqlMigrationService {
     } finally {
       await tooljetDbTenantConnection.destroy();
     }
+  }
+
+  /**
+   * A revert is just a user-authored raw SQL migration whose `reverts_migration_id` the caller
+   * cannot spoof - it's forced from the URL, not the body. The chain only ever grows: this appends
+   * a new migration, it never touches or removes the one being reverted.
+   *
+   * Only one destructive case exists today: undoing an `add_column` drops that column and its
+   * data. Same discriminator `ADJUDICATION_PREDICATES.add_column` and `replayStructuredMigration`
+   * use to identify the action - reimplementing it here would risk drifting from theirs.
+   */
+  async revert(
+    organizationId: string,
+    tableId: string,
+    migrationId: string,
+    dto: RevertMigrationDto
+  ): Promise<InternalTableMigration> {
+    // Org-scope before anything else: recordRawSqlMigration below re-checks this itself, but
+    // deciding whether to reveal the destructive-column warning on `targetMigration` first would
+    // leak that column's name to a caller who supplied someone else's org id.
+    const internalTable = await this.manager.findOne(InternalTable, { where: { id: tableId, organizationId } });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableId);
+
+    const targetMigration = await this.manager.findOne(InternalTableMigration, { where: { id: migrationId } });
+    if (!targetMigration || targetMigration.internalTableId !== tableId) {
+      throw new NotFoundException(`Migration not found for this table: ${migrationId}`);
+    }
+
+    const payload = targetMigration.payload as StructuredMigrationPayload;
+    const isAddColumn = targetMigration.kind === 'structured' && payload?.action === 'add_column';
+    if (isAddColumn && !dto.confirmed) {
+      throw new BadRequestException(
+        `Reverting this migration will drop column "${payload.request.column.column_name}" and permanently ` +
+          `delete its data. Pass confirmed: true to proceed.`
+      );
+    }
+
+    return this.recordRawSqlMigration(organizationId, tableId, {
+      sql: dto.sql,
+      refs: dto.refs,
+      reverts_migration_id: migrationId,
+    });
   }
 
   /**

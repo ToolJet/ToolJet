@@ -26,6 +26,7 @@ import { decamelizeKeys } from 'humps';
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
+import { RevertMigrationDto } from './dto/revert-migration.dto';
 import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
 import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
 import { TooljetDbRawSqlMigrationService } from './services/tooljet-db-raw-sql-migration.service';
@@ -317,6 +318,19 @@ export class TooljetDbController {
     @Body() rawSqlMigrationDto: RawSqlMigrationDto
   ) {
     const result = await this.rawSqlMigrationService.recordRawSqlMigration(organizationId, tableId, rawSqlMigrationDto);
+    return decamelizeKeys({ result });
+  }
+
+  // Same deferred-gating shape as recordRawSqlMigration above - TODO(B4) covers this route too.
+  @Post('/organizations/:organizationId/table/:tableId/migrations/:migrationId/revert')
+  @UseGuards(JwtAuthGuard)
+  async revertMigration(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Param('migrationId') migrationId: string,
+    @Body() revertMigrationDto: RevertMigrationDto
+  ) {
+    const result = await this.rawSqlMigrationService.revert(organizationId, tableId, migrationId, revertMigrationDto);
     return decamelizeKeys({ result });
   }
 }
