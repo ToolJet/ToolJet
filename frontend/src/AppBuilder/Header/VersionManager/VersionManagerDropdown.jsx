@@ -590,8 +590,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               {searchQuery
                 ? 'No versions found'
                 : gitVersionStatus.size === 0 && isGitSyncEnabled
-                ? 'No versions available — click Refresh to check git'
-                : 'No versions available'}
+                  ? 'No versions available — click Refresh to check git'
+                  : 'No versions available'}
             </div>
           ) : (
             mergedVersions.map((version) => {
@@ -688,7 +688,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           <div
             style={{
               position: 'absolute',
-              zIndex: 1061,
+              zIndex: 1050,
             }}
           >
             {renderPopover(props)}

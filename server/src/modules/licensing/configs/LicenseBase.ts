@@ -613,6 +613,7 @@ export default class LicenseBase {
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
       aiPlan: this.aiPlan,
+      publicApp: this.publicApp,
     };
   }
 
@@ -729,5 +730,16 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS?.features?.gitSync && !!this.BASIC_PLAN_TERMS?.features?.gitSyncMultiBranch;
     }
     return !!this._isGitSync && !!this._isGitSyncMultiBranch;
+  }
+
+  public get publicApp(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
+    }
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

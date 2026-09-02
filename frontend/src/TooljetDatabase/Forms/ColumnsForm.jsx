@@ -129,11 +129,11 @@ const ColumnsForm = ({
             size="sm"
             style={{ fontSize: '14px' }}
             onClick={() => {
-              setColumns((prevColumns) => ({
+              (setColumns((prevColumns) => ({
                 ...prevColumns,
                 [+Object.keys(prevColumns).pop() + 1 || 0]: { configurations: {} },
               })),
-                setColumnSelection({ index: 0, value: '', configurations: {} });
+                setColumnSelection({ index: 0, value: '', configurations: {} }));
             }}
             data-cy="add-more-columns-button"
           >

@@ -142,8 +142,8 @@ export const useCanvasDropHandler = () => {
             isStub: false,
             versionId: shouldUnpin
               ? ''
-              : hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId ?? '',
-            versionName: shouldUnpin ? '' : hydratedVersion.name ?? '',
+              : (hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId ?? ''),
+            versionName: shouldUnpin ? '' : (hydratedVersion.name ?? ''),
             environmentId: hydratedVersion.current_environment_id,
             moduleContainer: hydrated.module_container,
             defaultSize: {

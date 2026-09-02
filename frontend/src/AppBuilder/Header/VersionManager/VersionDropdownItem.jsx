@@ -77,7 +77,7 @@ const VersionDropdownItem = ({
   const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
   const sourceBranchId = parentVersion?.branchId || parentVersion?.branch_id;
   const sourceBranchName = parentIsBranchVersion
-    ? workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch'
+    ? (workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch')
     : null;
 
   const metadataRef = useRef(null);
