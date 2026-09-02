@@ -37,7 +37,7 @@ describe(
 
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-Filebutton-App`);
+    cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Filebutton-App`);
     cy.openApp();
     cy.dragAndDropWidget("File button", dropX, dropY);
     waitForDropSettle(widget);
