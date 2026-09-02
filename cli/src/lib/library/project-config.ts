@@ -3,23 +3,13 @@ import * as path from 'path';
 
 import { formatError } from '../log';
 
-export interface ProjectConfigEntry {
-  libraryId: string;
-  libraryName: string;
-  correlationId: string;
-}
-
-export interface WorkspaceLibrary {
-  libraryId: string;
-}
-
-// libraryName/correlationId are shared across every workspace this project is registered
-// for (same library, same identity) — only libraryId actually varies per workspace, since
-// that's the workspace-scoped DB row. `workspaces` maps workspaceId -> { libraryId }.
+// correlationId is the one stable, workspace-independent identifier for this local project —
+// generated once at `init` and reused for every workspace it's deployed to (via find-or-create).
+// There's no per-workspace data to track locally any more: existence in a given workspace is
+// checked live against the server on every command instead of cached here.
 export interface ProjectConfigFile {
   libraryName: string;
   correlationId: string;
-  workspaces: Record<string, WorkspaceLibrary>;
 }
 
 export class ProjectConfig {
@@ -48,48 +38,22 @@ export class ProjectConfig {
     return data;
   }
 
-  // Workspace comes from the CLI's current login (Auth.resolveOrExit()), not from the
-  // config file itself — so this is where an authenticated-but-unregistered workspace
-  // gets caught, distinct from a broken/missing config file.
-  static resolveForWorkspaceOrExit(workspaceId: string, projectRoot: string = process.cwd()): ProjectConfigEntry {
-    let file: ProjectConfigFile;
+  static readFileOrExit(projectRoot: string = process.cwd()): ProjectConfigFile {
     try {
-      file = ProjectConfig.readFile(projectRoot);
+      return ProjectConfig.readFile(projectRoot);
     } catch (err) {
       console.log(formatError((err as Error).message));
       process.exit(1);
     }
-
-    const entry = file.workspaces[workspaceId];
-    if (!entry) {
-      console.log(
-        formatError(
-          `This project isn't registered for workspace "${workspaceId}". Run \`tooljet login\` to switch workspaces, or pass --url and --token to target specific workspace directly.`
-        )
-      );
-      process.exit(1);
-    }
-
-    return { libraryId: entry.libraryId, libraryName: file.libraryName, correlationId: file.correlationId };
   }
 
   private static isValid(data: unknown): data is ProjectConfigFile {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
 
-    const { libraryName, correlationId, workspaces } = data as Record<string, unknown>;
+    const { libraryName, correlationId } = data as Record<string, unknown>;
     if (typeof libraryName !== 'string' || !libraryName) return false;
     if (typeof correlationId !== 'string' || !correlationId) return false;
-    if (!workspaces || typeof workspaces !== 'object' || Array.isArray(workspaces)) return false;
 
-    const entries = Object.values(workspaces as Record<string, WorkspaceLibrary>);
-    if (entries.length === 0) return false;
-
-    return entries.every(
-      (entry) =>
-        !!entry &&
-        typeof entry === 'object' &&
-        typeof entry.libraryId === 'string' &&
-        !!entry.libraryId
-    );
+    return true;
   }
 }

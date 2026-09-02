@@ -55,9 +55,21 @@ export class ApiClient {
     return this.request('POST', '/custom-component-libraries', { name });
   }
 
-  // GET /api/custom-component-libraries/:id
-  async verifyLibrary(id: string): Promise<void> {
-    await this.request('GET', `/custom-component-libraries/${id}`);
+  // GET /api/custom-component-libraries/:correlationId — reports whether the library exists,
+  // rather than throwing on a 404, so callers can decide whether to offer to create it.
+  async verifyLibrary(correlationId: string): Promise<{ exists: boolean }> {
+    const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${this.apiToken}` },
+    });
+
+    if (res.status === 404) return { exists: false };
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(parseApiErrorMessage(res.status, text));
+    }
+
+    return { exists: true };
   }
 
   // POST /api/custom-component-libraries/find-or-create
@@ -68,21 +80,21 @@ export class ApiClient {
     return this.request('POST', '/custom-component-libraries/find-or-create', { correlationId, name });
   }
 
-  // POST /api/custom-component-libraries/:id/dev (multipart)
-  async uploadDev(libraryId: string, distDir: string): Promise<{ devUploadedAt: string }> {
+  // POST /api/custom-component-libraries/:correlationId/dev (multipart)
+  async uploadDev(correlationId: string, distDir: string): Promise<{ devUploadedAt: string }> {
     const form = buildUploadFormData(distDir);
-    return this.sendForm('POST', `/custom-component-libraries/${libraryId}/dev`, form);
+    return this.sendForm('POST', `/custom-component-libraries/${correlationId}/dev`, form);
   }
 
-  // POST /api/custom-component-libraries/:id/revisions (multipart)
+  // POST /api/custom-component-libraries/:correlationId/revisions (multipart)
   async publishRevision(
-    libraryId: string,
+    correlationId: string,
     distDir: string,
     version: string,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }> {
     const form = buildUploadFormData(distDir, { version, ...(message ? { message } : {}) });
-    return this.sendForm('POST', `/custom-component-libraries/${libraryId}/revisions`, form);
+    return this.sendForm('POST', `/custom-component-libraries/${correlationId}/revisions`, form);
   }
 
   async login(): Promise<{ email: string; organizationId: string }> {

@@ -5,8 +5,6 @@ const { runner } = require('hygen');
 const Logger = require('hygen/dist/logger').default;
 
 export interface ScaffoldOptions {
-  workspaceId: string;
-  libraryId: string;
   libraryName: string;
   correlationId: string;
 }
@@ -32,27 +30,15 @@ export async function scaffoldTemplate(name: string, displayName: string): Promi
   }
 }
 
-// Writes/merges the library's .tooljet/config.json. Should be called only after the
-// library has been registered on the server, since it embeds the remote libraryId.
-// libraryName/correlationId are shared across every workspace (same library everywhere);
-// only libraryId varies, so it's merged into the `workspaces` map under workspaceId
-// alongside any other workspace already registered for this project.
+// Writes the library's .tooljet/config.json. libraryName/correlationId are the same
+// across every workspace this project gets deployed to — there's nothing per-workspace
+// left to store, since existence in any given workspace is checked live against the server.
 export function writeLibraryConfig(name: string, options: ScaffoldOptions): void {
-  const { workspaceId, libraryId, libraryName, correlationId } = options;
+  const { libraryName, correlationId } = options;
 
   const configPath = path.join(name, '.tooljet', 'config.json');
+  const config = { libraryName, correlationId };
 
-  let existingWorkspaces: Record<string, { libraryId: string }> = {};
-  if (fs.existsSync(configPath)) {
-    const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    existingWorkspaces = existingConfig.workspaces ?? {};
-  }
-
-  const config = {
-    libraryName,
-    correlationId,
-    workspaces: { ...existingWorkspaces, [workspaceId]: { libraryId } },
-  };
   fs.mkdirSync(path.join(name, '.tooljet'), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }

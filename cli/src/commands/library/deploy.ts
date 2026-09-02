@@ -1,12 +1,19 @@
 import { Command, Flags } from '@oclif/core';
+import * as inquirer from 'inquirer';
 
 import { Auth } from '../../lib/library/auth';
 import { build } from '../../lib/library/builder';
 import { ApiClient } from '../../lib/library/api-client';
-import { ProjectConfig, ProjectConfigEntry } from '../../lib/library/project-config';
-import { writeLibraryConfig } from '../../lib/library/scaffolder';
+import { ProjectConfig } from '../../lib/library/project-config';
 import { validateOriginUrl, validateApiToken } from '../../lib/library/target-validation';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
+
+interface ResolvedTarget {
+  workspaceId: string;
+  apiToken: string;
+  url: string;
+  config: { libraryName: string; correlationId: string };
+}
 
 export default class ComponentDeploy extends Command {
   static description = 'Build and publish a new immutable production revision of a component library';
@@ -50,15 +57,12 @@ export default class ComponentDeploy extends Command {
       process.exit(1);
     }
 
-    const { workspaceId, apiToken, url, config, usedFlags } = await this.resolveTarget(flags);
+    const { workspaceId, apiToken, url, config } = await this.resolveTarget(flags);
 
     const currentDir = process.cwd();
     const client = new ApiClient(url, apiToken);
 
     try {
-      // findOrCreateLibrary (flags path) already confirmed the library exists.
-      if (!usedFlags) await client.verifyLibrary(config.libraryId);
-
       this.log(`Building your component library...\n`);
 
       const result = await build(currentDir, { env: 'production' });
@@ -91,34 +95,62 @@ export default class ComponentDeploy extends Command {
 
       this.log('\nUploading build to server...');
 
-      const revision = await client.publishRevision(config.libraryId, result.distDir, version, message);
+      const revision = await client.publishRevision(config.correlationId, result.distDir, version, message);
 
-      this.log(formatSuccess(`\nPublished as ${revision.version} on ${workspaceId} workspace\n`));
+      this.log(`\n${formatSuccess(`Published as ${revision.version} on ${workspaceId} workspace\n`)}`);
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);
     }
   }
 
-  // Resolves { workspaceId, apiToken, url, config } either from --url/--token
-  // (find-or-create against that workspace directly) or from the stored login + project's
-  // workspaces map (existing behavior). Exits with a clear error on any failure.
-  private async resolveTarget(flags: {
-    url?: string;
-    token?: string;
-  }): Promise<{ workspaceId: string; apiToken: string; url: string; config: ProjectConfigEntry; usedFlags: boolean }> {
+  // Resolves { workspaceId, apiToken, url, config } either from --url/--token (always
+  // find-or-create against that workspace directly) or from the stored login + the project's
+  // correlationId (verified live against the server; if missing in this workspace, the user is
+  // prompted before it's created — no local "is this workspace registered" cache any more).
+  // Exits with a clear error on any failure.
+  private async resolveTarget(flags: { url?: string; token?: string }): Promise<ResolvedTarget> {
     const originUrl = flags.url;
     const apiToken = flags.token;
 
     if (!originUrl && !apiToken) {
       const { workspaceId, apiToken, url } = Auth.resolveOrExit();
-      return {
-        workspaceId,
-        apiToken,
-        url,
-        config: ProjectConfig.resolveForWorkspaceOrExit(workspaceId),
-        usedFlags: false,
-      };
+      const { libraryName, correlationId } = ProjectConfig.readFileOrExit();
+      const client = new ApiClient(url, apiToken);
+
+      let verification: { exists: boolean };
+      try {
+        verification = await client.verifyLibrary(correlationId);
+      } catch (err) {
+        this.log(formatError((err as Error).message));
+        process.exit(1);
+      }
+
+      if (!verification.exists) {
+        const { confirmed } = await inquirer.prompt([
+          {
+            name: 'confirmed',
+            type: 'confirm',
+            message: `Library "${libraryName}" wasn't found in workspace "${workspaceId}" — create it there now?`,
+            default: false,
+          },
+        ]);
+
+        if (!confirmed) {
+          this.log(formatError('Aborted — library not created.'));
+          process.exit(1);
+        }
+
+        try {
+          await client.findOrCreateLibrary(correlationId, libraryName);
+        } catch (err) {
+          this.log(formatError((err as Error).message));
+          process.exit(1);
+        }
+        this.log(formatSuccess(`Created library "${libraryName}" on ${workspaceId} workspace`));
+      }
+
+      return { workspaceId, apiToken, url, config: { libraryName, correlationId } };
     }
 
     if (!originUrl || !apiToken) {
@@ -138,14 +170,7 @@ export default class ComponentDeploy extends Command {
       process.exit(1);
     }
 
-    let libraryName: string, correlationId: string;
-    try {
-      ({ libraryName, correlationId } = ProjectConfig.readFile());
-    } catch (err) {
-      this.log(formatError((err as Error).message));
-      process.exit(1);
-    }
-
+    const { libraryName, correlationId } = ProjectConfig.readFileOrExit();
     const client = new ApiClient(originUrl, apiToken);
 
     let resolved;
@@ -156,8 +181,6 @@ export default class ComponentDeploy extends Command {
       process.exit(1);
     }
 
-    const config = { libraryId: resolved.id, libraryName: resolved.name, correlationId: resolved.correlationId };
-    writeLibraryConfig(process.cwd(), { workspaceId: resolved.organizationId, ...config });
     this.log(
       formatSuccess(
         resolved.created
@@ -166,6 +189,11 @@ export default class ComponentDeploy extends Command {
       )
     );
 
-    return { workspaceId: resolved.organizationId, apiToken, url: originUrl, config, usedFlags: true };
+    return {
+      workspaceId: resolved.organizationId,
+      apiToken,
+      url: originUrl,
+      config: { libraryName: resolved.name, correlationId: resolved.correlationId },
+    };
   }
 }
