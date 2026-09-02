@@ -239,7 +239,7 @@ export const keyValuePairConfig = {
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
       accordian: 'Container',
     },
     borderRadius: {
@@ -490,7 +490,7 @@ export const keyValuePairConfig = {
       hoverBackgroundMode: { value: 'auto' },
       paddingInside: { value: '12' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '6' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
