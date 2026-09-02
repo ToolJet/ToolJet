@@ -2,6 +2,7 @@ import { QueryRunner } from 'typeorm';
 import {
   buildTableSchemaSnapshot,
   TableSchemaSnapshotColumn,
+  TableSchemaSnapshotConstraint,
   TableSchemaSnapshotForeignKey,
 } from '@modules/tooljet-db/helpers/table-schema-snapshot';
 
@@ -53,7 +54,7 @@ export async function synthesizeBaseline(
     {
       sequence: 1,
       payload: {
-        ddl: buildCreateTableDdl(schema, tableId, snapshot.columns, snapshot.primary_key),
+        ddl: buildCreateTableDdl(schema, tableId, snapshot.columns, snapshot.primary_key, snapshot.unique_constraints),
         refs: {},
         // Portability contract (also relied on by raw-SQL migrations): the DDL never bakes
         // in a physical relation id. "{{self}}" is the relation this migration is replayed onto;
@@ -98,7 +99,8 @@ export function buildCreateTableDdl(
   schema: string,
   tableId: string,
   columns: TableSchemaSnapshotColumn[],
-  primaryKeyColumns: string[]
+  primaryKeyColumns: string[],
+  uniqueConstraints: TableSchemaSnapshotConstraint[] = []
 ): string {
   const { columns: rewrittenColumns, sequenceDdl, ownershipDdl } = rewriteSerialDefaults(schema, tableId, columns);
 
@@ -109,6 +111,12 @@ export function buildCreateTableDdl(
   });
   if (primaryKeyColumns.length) {
     columnDdl.push(`  PRIMARY KEY (${primaryKeyColumns.map((c) => `"${c}"`).join(', ')})`);
+  }
+  // Constraint name is not preserved - Postgres would auto-generate a different one for this
+  // relation's id anyway, and every snapshot comparison in this codebase already treats
+  // constraint/index names as non-portable. Only the column set has to match.
+  for (const constraint of uniqueConstraints) {
+    columnDdl.push(`  UNIQUE (${constraint.column_names.map((c) => `"${c}"`).join(', ')})`);
   }
   const createTable = `CREATE TABLE "${schema}"."{{self}}" (\n${columnDdl.join(',\n')}\n)`;
   return [...sequenceDdl, createTable, ...ownershipDdl].join(';\n');

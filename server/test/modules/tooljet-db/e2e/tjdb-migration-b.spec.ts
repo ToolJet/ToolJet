@@ -7,6 +7,7 @@
  * @group database
  */
 import { INestApplication } from '@nestjs/common';
+import { execFileSync } from 'child_process';
 import { v4 as uuidv4 } from 'uuid';
 import {
   createUser,
@@ -180,6 +181,41 @@ describe('TjdbRolloutMigrationB', () => {
       } finally {
         await tjdbQueryRunner.release();
       }
+    }
+
+    /** `pg_dump --schema-only` for exactly one relation, run as a real separate connection against
+     *  the physical TJDB database - not through the suite's transaction proxy, since B's claim is
+     *  about the actual database state. Two kinds of line carry no signal and are stripped before
+     *  comparison: `--` comments (a run timestamp) and pg16+'s `\restrict`/`\unrestrict` lines (a
+     *  fresh random token every run, unrelated to the schema itself). */
+    function schemaOnlyDump(schema: string, relationId: string): string {
+      const options = getTooljetDbDataSource().options as any;
+      const raw = execFileSync(
+        'pg_dump',
+        [
+          '--schema-only',
+          '--no-owner',
+          '--no-privileges',
+          '-h',
+          options.host,
+          '-p',
+          String(options.port),
+          '-U',
+          options.username,
+          '-d',
+          options.database,
+          '-t',
+          `${schema}.${relationId}`,
+        ],
+        { env: { ...process.env, PGPASSWORD: options.password }, encoding: 'utf-8' }
+      );
+      return raw
+        .split('\n')
+        .filter(
+          (line) =>
+            line.trim() && !line.startsWith('--') && !line.startsWith('\\restrict') && !line.startsWith('\\unrestrict')
+        )
+        .join('\n');
     }
 
     it('licensed workspace: existing relation moves to production, an empty development twin is created', async () => {
@@ -396,9 +432,11 @@ describe('TjdbRolloutMigrationB', () => {
     // the real connection topology twice, so a regression that releases the migration's shared TJDB
     // runner after the first replay would leave the later twins missing their sequence-2 row.
     //
-    // MUST STAY LAST IN THE FILE: `withRealTransactions` rebuilds the suite transaction on exit,
-    // which discards the outer `beforeEach` savepoint - a following test's `afterEach` would then
-    // `ROLLBACK TO` a savepoint that no longer exists and abort its transaction.
+    // MUST STAY LAST IN THE FILE (this one and the pg_dump test below it): `withRealTransactions`
+    // rebuilds the suite transaction on exit, which discards the outer `beforeEach` savepoint - a
+    // following *non*-`withRealTransactions` test's `afterEach` would then `ROLLBACK TO` a
+    // savepoint that no longer exists and abort its transaction. Two `withRealTransactions` tests
+    // back-to-back are fine - each resets the transaction itself on the way in and out.
     it('up(queryRunner): a real migration run moves a licensed workspace, including its FK twins', async () => {
       expect(tooljetDbAvailable).toBe(true);
 
@@ -456,5 +494,37 @@ describe('TjdbRolloutMigrationB', () => {
         }
       });
     }, 180_000);
+
+    // Real commit required: `pg_dump` opens its own connection outside any of this suite's
+    // transactions, so it can only see rows/tables that were actually committed. MUST STAY LAST -
+    // see the comment on the previous test.
+    it('changes nothing about the pre-existing relation: pg_dump --schema-only is byte-identical before and after, filtered to the relation that already existed', async () => {
+      expect(tooljetDbAvailable).toBe(true);
+
+      await withRealTransactions(async () => {
+        const organizationId = await newWorkspace(`mig-b-pgdump-${uuidv4()}@tooljet.io`);
+        try {
+          const { tableId, schema } = await seedMigrationATable(organizationId, 'pgdump_tbl');
+
+          // B never issues DDL against a pre-existing physical table - only its relation row's
+          // environment_id changes. Filtering the dump to exactly this relation is what makes a
+          // byte-identical result mean something: B does create new relations (the development
+          // twin), and an unfiltered dump of the whole schema would trivially differ because of
+          // those.
+          const before = schemaOnlyDump(schema, tableId);
+          await assign(tableId, organizationId);
+          const after = schemaOnlyDump(schema, tableId);
+
+          expect(after).toEqual(before);
+        } finally {
+          await getTooljetDbDataSource()
+            .query(`DROP SCHEMA IF EXISTS "workspace_${organizationId}" CASCADE`)
+            .catch(() => undefined);
+          await getDefaultDataSource()
+            .query(`DELETE FROM organizations WHERE id = $1`, [organizationId])
+            .catch(() => undefined);
+        }
+      });
+    }, 60_000);
   });
 });
