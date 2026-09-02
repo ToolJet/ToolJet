@@ -125,8 +125,7 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.label(widget)).should("have.css", "font-size", "28px");
 
-    // 2. Bind to another component's exposed value — a Number Input's own
-    // numeric output, not a boolean ternary, since Label size is itself numeric.
+    // 2. Bind to a Number Input's numeric output (the property is numeric).
     cy.dragAndDropWidget("Number Input", 500, 300);
     waitForDropSettle("numberinput1");
     openEditorSidebar("numberinput1");
@@ -196,29 +195,24 @@ describe(
   });
 
   it("should verify Label color: theme swatch, RGBA picker, and exposed-variable binding", () => {
-    // labelColor sets inline `color` on the label span. A picked colour always
-    // beats the buttonType fallback, so no baseline assert is needed.
+    // labelColor sets inline `color` on the label span.
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("label and icon");
 
-    // 1. Theme swatch — writes a var(--cc-*) token, a different path from the
-    // RGBA picker. Text/Primary is avoided: computedLabelColor (FileButton.jsx:68)
-    // already falls back to it, so picking it would assert an already-true state.
-    let defaultColor;
-    cy.get(fileButtonSelector.label(widget)).then(($el) => {
-      defaultColor = getComputedStyle($el[0]).color;
-    });
+    // Default is the surface1 token, passed straight through by
+    // computedLabelColor because buttonType is 'solid'.
+    expectThemeColour(fileButtonSelector.label(widget), "color", "var(--cc-surface1-surface)");
 
+    // 1. Theme swatch. Text/Primary is avoided: computedLabelColor
+    // (FileButton.jsx:68) already falls back to it on non-solid buttons.
     selectThemeColour("Label color", "SystemStatus/Error");
+    // The token itself must be stored, not a resolved literal that happens to
+    // match — so check the inline style as well as the rendered colour.
     cy.get(fileButtonSelector.label(widget))
       .should("have.attr", "style")
       .and("include", "var(--cc-error-systemStatus)");
-    // Each theme resolves its tokens to different hexes, so assert the label
-    // actually re-rendered instead of pinning one literal rgb.
-    cy.get(fileButtonSelector.label(widget)).then(($el) => {
-      expect(getComputedStyle($el[0]).color).to.not.equal(defaultColor);
-    });
+    expectThemeColour(fileButtonSelector.label(widget), "color", "var(--cc-error-systemStatus)");
 
     // 2. RGBA picker — a literal colour, which must win over the theme token.
     openEditorSidebar(widget);
@@ -228,8 +222,7 @@ describe(
     selectColourFromColourPicker("Label color", directColor);
     verifyWidgetColorCss(fileButtonSelector.label(widget), "color", directColor, true);
 
-    // 3. Bind to another component's exposed value — a Color Picker's own
-    // colour output, since Label color is itself a colour.
+    // 3. Bind to a Color Picker's exposed colour.
     // Re-select filebutton1: the picker's dismiss-click deselected it and
     // flipped the sidebar to Components, so the drag would miss.
     openEditorSidebar(widget);
@@ -246,7 +239,6 @@ describe(
     commitChange();
     cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("colorpicker1");
     verifyAndModifyParameter("Default value", "#00ff00");
     commitChange();
@@ -271,8 +263,7 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.icon(widget)).should("have.class", "tabler-icon-check");
 
-    // 2. Bind to another component's exposed value — a Text Input's own string
-    // output, since an icon name is itself a string.
+    // 2. Bind to a Text Input's string output (an icon name is a string).
     cy.dragAndDropWidget("Text Input", 500, 300);
     waitForDropSettle("textinput1");
     openEditorSidebar("textinput1");
@@ -286,7 +277,6 @@ describe(
     commitChange();
     cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.class", "tabler-icon-check");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("textinput1");
     verifyAndModifyParameter("Default value", "IconStar");
     commitChange();
@@ -299,6 +289,10 @@ describe(
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("label and icon");
+
+    // Default is the surface1 token, passed straight through by
+    // computedIconColor because buttonType is 'solid'.
+    expectThemeColour(fileButtonSelector.icon(widget), "stroke", "var(--cc-surface1-surface)");
 
     // 1. Theme swatch. Text/Primary is avoided: computedIconColor
     // (FileButton.jsx:75) already falls back to it on non-solid buttons.
@@ -336,7 +330,6 @@ describe(
     commitChange();
     cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.css", "stroke", "rgb(255, 0, 0)");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("colorpicker1");
     verifyAndModifyParameter("Default value", "#00ff00");
     commitChange();
@@ -356,10 +349,9 @@ describe(
         .get(`[data-cy="togglr-button-${value}"]`)
         .filter((_i, el) => Cypress.$(el).closest(".ToggleGroup").find('[data-cy="togglr-button-center"]').length === 0);
 
-    // Default is "left": icon renders before the label (flex-direction row, not reversed).
+    // Default "left": icon before the label, so flex-direction stays row.
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row");
 
-    // 1. Direct change — flip to "right": icon now renders after the label (row-reverse).
     iconDirectionToggle("right").click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row-reverse");
@@ -369,7 +361,7 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row");
 
-    // isFxNotRequired: true — no fx button exists for this field, so no bind-to-exposed-variable step.
+    // isFxNotRequired: no fx button on this field, so there's no bind step.
   });
 
   it("should verify Loader color: theme swatch, RGBA picker, and exposed-variable binding", () => {
@@ -385,6 +377,9 @@ describe(
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("label and icon");
+
+    // Default is the surface1 token, passed through because buttonType is 'solid'.
+    expectThemeColour(`${fileButtonSelector.loader(widget)} svg`, "color", "var(--cc-surface1-surface)");
 
     // 1. Theme swatch. Text/Primary avoided for the same reason as Icon color
     // (FileButton.jsx:79 already falls back to it).
@@ -415,7 +410,6 @@ describe(
     commitChange();
     cy.get(`${fileButtonSelector.loader(widget)} svg`).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("colorpicker1");
     verifyAndModifyParameter("Default value", "#00ff00");
     commitChange();
@@ -435,28 +429,25 @@ describe(
         .get(`[data-cy="togglr-button-${value}"]`)
         .filter((_i, el) => Cypress.$(el).closest(".ToggleGroup").find('[data-cy="togglr-button-center"]').length > 0);
 
-    // Default is "center": the button centers its content (tw-justify-center -> justify-content: center).
+    // Default "center" -> tw-justify-center -> justify-content: center.
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "center");
 
-    // 1. Direct change — flip to "left": justify-content becomes flex-start.
     contentAlignmentToggle("left").click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "flex-start");
 
-    // Flip to "right": justify-content becomes flex-end.
     contentAlignmentToggle("right").click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "flex-end");
 
-    // Flip back to "center" to prove reversibility.
     contentAlignmentToggle("center").click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "center");
 
-    // isFxNotRequired: true — no fx button exists for this field, so no bind-to-exposed-variable step.
+    // isFxNotRequired: no fx button on this field, so there's no bind step.
   });
 
-  it("should verify Button type: direct toggle only (isFxNotRequired skips the bind step), and gates Background/Box shadow", () => {
+  it("should verify Button type: direct toggle only and gates Background/Box shadow", () => {
     // buttonType is a `switch` with isFxNotRequired, and gates backgroundColor
     // and boxShadow on buttonType === 'solid'.
     openEditorSidebar(widget);
@@ -478,7 +469,6 @@ describe(
       expect(pickedVar, "picker wrote --button-primary").to.not.equal("");
     });
 
-    // 1. Flip to Outline: background goes transparent, and both fields hide.
     // Re-select filebutton1: the picker's dismiss-click deselected it.
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -491,7 +481,6 @@ describe(
     cy.get(commonWidgetSelector.parameterLabel("Background")).should("not.exist");
     cy.get(commonWidgetSelector.parameterLabel("Box shadow")).should("not.exist");
 
-    // Flip back to "Solid": Background/Box shadow reappear and the trigger's background returns to the picked colour.
     cy.get('[data-cy="togglr-button-solid"]').click();
     cy.waitForAutoSave();
     cy.get(commonWidgetSelector.parameterLabel("Background")).should("have.text", "Background");
@@ -502,7 +491,7 @@ describe(
       expect($btn[0].style.getPropertyValue("--button-primary").trim()).to.equal(pickedVar);
     });
 
-    // isFxNotRequired: true — no fx button exists for this field, so no bind-to-exposed-variable step.
+    // isFxNotRequired: no fx button on this field, so there's no bind step.
   });
 
   it("should verify Background: theme swatch, RGBA picker, and exposed-variable binding", () => {
@@ -549,7 +538,6 @@ describe(
     cy.get(fileButtonSelector.button(widget)).scrollIntoView();
     expectBgVar(fileButtonSelector.button(widget), "#ff0000");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("colorpicker1");
     verifyAndModifyParameter("Default value", "#00ff00");
     commitChange();
@@ -569,12 +557,11 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "border-radius", "20px");
 
-    // 2. Bind to another component's exposed value — a Number Input's own
-    // numeric output, not a boolean ternary, since Border radius is itself numeric.
+    // 2. Bind to a Number Input's numeric output (the property is numeric).
     cy.dragAndDropWidget("Number Input", 500, 300);
     waitForDropSettle("numberinput1");
     openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "45");
+    verifyAndModifyParameter("Default value", "15");
     commitChange();
 
     openEditorSidebar(widget);
@@ -582,13 +569,12 @@ describe(
     openAccordion("button");
     enableFxAndBind("Border radius", "{{components.numberinput1.value}}");
     commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "45px");
+    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "15px");
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "60");
+    verifyAndModifyParameter("Default value", "6");
     commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "60px");
+    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "6px");
   });
 
   it("should verify Box shadow: direct change and exposed-variable binding", () => {
@@ -597,6 +583,13 @@ describe(
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("button");
+
+    // Default is '0px 0px 0px 0px #00000040'. The alpha byte 0x40 serialises as
+    // 0.25 or 0.251 depending on the browser, so match the shape rather than
+    // pinning one rounding.
+    cy.get(fileButtonSelector.button(widget))
+      .should("have.css", "box-shadow")
+      .and("match", /^rgba\(0, 0, 0, 0\.25\d*\) 0px 0px 0px 0px$/);
 
     // 1. Fill x/y/blur/spread in the popover, then pick a colour.
     const directParam = fake.boxShadowParam;
@@ -631,7 +624,6 @@ describe(
       `rgb(255, 0, 0) ${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px`
     );
 
-    // Prove the binding is live: change the source, not the target.
     openEditorSidebar("colorpicker1");
     verifyAndModifyParameter("Default value", "#00ff00");
     commitChange();
@@ -649,23 +641,21 @@ describe(
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("button");
 
-    // Default is "default": the trigger keeps the base Button component's own non-zero padding.
+    // Default keeps the base Button component's own non-zero padding.
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
       expect($btn.css("padding")).to.not.equal("0px");
     });
 
-    // 1. Direct change — flip to "None": padding collapses to 0.
     cy.get('[data-cy="togglr-button-none"]').click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "padding", "0px");
 
-    // Flip back to "Default" to prove reversibility.
     cy.get('[data-cy="togglr-button-default"]').click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
       expect($btn.css("padding")).to.not.equal("0px");
     });
 
-    // isFxNotRequired: true — no fx button exists for this field, so no bind-to-exposed-variable step.
+    // isFxNotRequired: no fx button on this field, so there's no bind step.
   });
 });
