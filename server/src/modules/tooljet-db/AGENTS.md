@@ -263,14 +263,19 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   'add_column'`), separate from `ADJUDICATION_PREDICATES` — extending "what's destructive" means
   adding a case there, not in the recorder.
 
-- **Two org-scoped read routes, both licence-filtered like `view_tables`** (unlicensed orgs see only
-  the priority-1 environment): `GET .../organizations/:organizationId/baseline-report`
-  (`listBaselineErrors` — every relation currently carrying a `baseline_error`; safe by construction,
-  since it inner-joins `InternalTableRelation`→`AppEnvironment` and an unlicensed environment never has
-  a relation to join through) and `GET .../organizations/:organizationId/table/:tableId/migrations`
-  (`getTableMigrations` — one table's full migration chain plus per-environment applied state).
+- **Two org-scoped read routes**: `GET .../organizations/:organizationId/baseline-report`
+  (`listBaselineErrors` — every relation currently carrying a `baseline_error`) and
+  `GET .../organizations/:organizationId/table/:tableId/migrations` (`getTableMigrations` — one
+  table's full migration chain plus per-environment applied state, **licence-filtered like
+  `view_tables`**: unlicensed orgs see only the priority-1 environment). `listBaselineErrors` is
+  **not** licence-filtered — it inner-joins `InternalTableRelation`→`AppEnvironment`, so an
+  environment that never got a relation can't appear, but a relation created while licensed (e.g. by
+  migration B) still shows up if the org's license later lapses. Known, accepted gap: the route is
+  admin/`tjdbCRUD`-gated and repair-oriented, not a general-audience read — add the same filter here
+  only if that audience assumption changes.
   `TABLE_MIGRATIONS` is gated in the open `can([VIEW_TABLE, VIEW_TABLES, JOIN_TABLES, ...])` block
-  (`ability/index.ts`), not behind `tjdbCRUD` — same as `VIEW_TABLE`/`VIEW_TABLES`.
+  (`ability/index.ts`), not behind `tjdbCRUD` — same as `VIEW_TABLE`/`VIEW_TABLES`. `BASELINE_REPORT`
+  stays behind `tjdbCRUD`/admin.
 - **`view_tables`' per-environment shape**: `{ environment_id, environment_name, has_relation,
   baseline_error }` — matches `getTableMigrations`/`listBaselineErrors`'s field names. `has_relation`
   is `view_tables`'s own addition (no equivalent elsewhere): the other two routes imply "no relation"
@@ -279,8 +284,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   through the resolved `InternalTableRelation` for that environment, not `internal_tables` directly.
 - **"Applied on environment X" is always `computeMissingMigrations(internalTableId, sourceRelation,
   targetRelation: null, manager)`, never a second/duplicate query** — called with `targetRelation:
-  null` it drops the anti-join and returns X's entire confirmed set. `getTableMigrations` and
-  `listBaselineErrors` both rely on this; don't re-derive "applied" some other way.
+  null` it drops the anti-join and returns X's entire confirmed set. `getTableMigrations`
+  relies on this; don't re-derive "applied" some other way. (`listBaselineErrors` doesn't need it —
+  it reports `baseline_error` directly off the relation row, not migration-applied state.)
 
 ## Related modules
 
