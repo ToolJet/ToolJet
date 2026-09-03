@@ -19,6 +19,7 @@ import {
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
@@ -408,12 +409,60 @@ export class TooljetDbTableOperationsService {
     };
   }
 
+  /**
+   * Per table, which environments have a relation. Shape is edition-agnostic: CE's org has exactly
+   * one app_environments row (its implicit environment) so `environments` comes back with one
+   * entry; EE/licensed orgs get one entry per licensed environment. Callers (frontend) read the
+   * same field names regardless of edition - only the entry count differs.
+   */
   protected async viewTables(organizationId: string) {
-    return await this.manager.find(InternalTable, {
+    const tables = await this.manager.find(InternalTable, {
       where: { organizationId },
       select: ['id', 'tableName'],
       order: { tableName: 'ASC' },
     });
+    if (isEmpty(tables)) return tables;
+
+    // Same gate resolveEnvironmentId() uses: every org has all app_environments rows seeded
+    // (seedOrgEnvironmentsAndDefaultBranch runs unconditionally), so licensing has to filter the
+    // list here rather than at row-creation time - a CE org's other rows exist in the DB, they're
+    // just not this org's to see.
+    const multiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+    const allEnvironments = await this.manager.find(AppEnvironment, {
+      where: { organizationId },
+      order: { priority: 'ASC' },
+    });
+    const environments = multiEnvironmentEnabled
+      ? allEnvironments
+      : allEnvironments.filter((environment) => environment.priority === 1);
+    const branchId = await this.relationResolverService.resolveBranchIdFor(organizationId, this.manager);
+    const relations = await this.manager.find(InternalTableRelation, {
+      where: { internalTableId: In(tables.map((table) => table.id)), branchId },
+    });
+
+    const relationsByTable = new Map<string, InternalTableRelation[]>();
+    for (const relation of relations) {
+      const list = relationsByTable.get(relation.internalTableId);
+      if (list) list.push(relation);
+      else relationsByTable.set(relation.internalTableId, [relation]);
+    }
+
+    return tables.map((table) => ({
+      id: table.id,
+      tableName: table.tableName,
+      environments: environments.map((environment) => {
+        const relation = relationsByTable.get(table.id)?.find((r) => r.environmentId === environment.id);
+        return {
+          id: environment.id,
+          name: environment.name,
+          hasRelation: !!relation,
+          hasBaselineError: !!relation?.baselineError,
+        };
+      }),
+    }));
   }
 
   protected addQuotesIfString(value) {
