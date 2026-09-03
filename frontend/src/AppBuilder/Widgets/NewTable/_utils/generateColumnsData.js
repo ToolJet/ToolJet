@@ -26,6 +26,7 @@ import {
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
+import { createTableRowEventOptions } from './tableEventUtils';
 import SelectSearch from 'react-select-search';
 import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
@@ -415,10 +416,13 @@ export default function generateColumnsData({
                   activeColor={column.activeColor}
                   onChange={(value, tableColumnEvents) => {
                     handleCellValueChange(row.index, column.key || column.name, value, row.original);
-                    fireEvent('OnTableToggleCellChanged', {
-                      column: column,
-                      tableColumnEvents,
-                    });
+                    fireEvent(
+                      'OnTableToggleCellChanged',
+                      createTableRowEventOptions(row.index, {
+                        column: column,
+                        tableColumnEvents,
+                      })
+                    );
                   }}
                   horizontalAlignment={column?.horizontalAlignment}
                 />
@@ -587,11 +591,14 @@ export default function generateColumnsData({
                       buttonEvents.push(...inlineEvents);
                     }
 
-                    fireEvent('OnTableButtonColumnClicked', {
-                      column,
-                      buttonId,
-                      tableColumnEvents: buttonEvents,
-                    });
+                    fireEvent(
+                      'OnTableButtonColumnClicked',
+                      createTableRowEventOptions(row.index, {
+                        column,
+                        buttonId,
+                        tableColumnEvents: buttonEvents,
+                      })
+                    );
                   }}
                 />
               );

@@ -10,6 +10,7 @@ import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
+import { createTableRowEventOptions } from '../../_utils/tableEventUtils';
 
 const CONDENSED_ROW_HEIGHT = 40;
 const DEFAULT_ROW_HEIGHT = 46;
@@ -136,7 +137,7 @@ export const TableData = ({
         selectedRow: row?.original ?? {},
         selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
       });
-      fireEvent('onRowClicked');
+      fireEvent('onRowClicked', createTableRowEventOptions(row.index));
       return;
     }
     if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
