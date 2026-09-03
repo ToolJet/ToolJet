@@ -57,6 +57,7 @@ const Table = ({ collapseSidebar }) => {
     setConfigurations,
     getConfigurationProperty,
     canEditTjdb,
+    selectedEnvironment,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -114,7 +115,6 @@ const Table = ({ collapseSidebar }) => {
 
       tooljetDatabaseService
         .findOne(
-          organizationId,
           foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
           `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
         )
@@ -366,30 +366,32 @@ const Table = ({ collapseSidebar }) => {
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
-      tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
-          return;
-        }
+      tooljetDatabaseService
+        .viewTable(organizationId, selectedTable.table_name, selectedEnvironment?.id)
+        .then(({ data = [], error }) => {
+          if (error) {
+            toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
+            return;
+          }
 
-        const { foreign_keys = [], configurations = {} } = data?.result || {};
-        setConfigurations(configurations);
-        if (data?.result?.columns?.length > 0) {
-          setColumns(
-            data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-              Header: column_name,
-              accessor: column_name,
-              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-              ...rest,
-            }))
-          );
-        }
-        if (foreign_keys.length > 0) {
-          setForeignKeys([...foreign_keys]);
-        } else {
-          setForeignKeys([]);
-        }
-      });
+          const { foreign_keys = [], configurations = {} } = data?.result || {};
+          setConfigurations(configurations);
+          if (data?.result?.columns?.length > 0) {
+            setColumns(
+              data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
+                Header: column_name,
+                accessor: column_name,
+                dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+                ...rest,
+              }))
+            );
+          }
+          if (foreign_keys.length > 0) {
+            setForeignKeys([...foreign_keys]);
+          } else {
+            setForeignKeys([]);
+          }
+        });
     } else {
       setColumns([]);
     }
@@ -411,6 +413,13 @@ const Table = ({ collapseSidebar }) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
+
+  // Environment switch alone (same table) still needs a re-fetch - the columns/foreign keys/
+  // configurations returned are the selected environment's relation, not the table's in general.
+  useEffect(() => {
+    if (!isEmpty(selectedTable)) fetchTableMetadata();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.id]);
 
   useEffect(() => {
     if (!isEditRowDrawerOpen && isDirectRowExpand) {
@@ -1233,15 +1242,15 @@ const Table = ({ collapseSidebar }) => {
                       key={column.Header}
                       width={230}
                       style={{ height: index === 0 ? '32px' : '' }}
-                      title={(column?.constraints_type?.is_primary_key ?? false) ? '' : column?.Header}
+                      title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
                         darkMode
                           ? 'table-header-dark tj-database-column-header tj-text-xsm'
                           : !darkMode
-                            ? 'table-header tj-database-column-header tj-text-xsm'
-                            : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
-                              ? 'table-header-click tj-database-column-header tj-text-xsm'
-                              : 'table-header tj-database-column-header tj-text-xsm'
+                          ? 'table-header tj-database-column-header tj-text-xsm'
+                          : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                          ? 'table-header-click tj-database-column-header tj-text-xsm'
+                          : 'table-header tj-database-column-header tj-text-xsm'
                       }
                       data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                       {...column.getHeaderProps()}
@@ -1321,7 +1330,7 @@ const Table = ({ collapseSidebar }) => {
                           }}
                         >
                           <IndeterminateCheckbox
-                            checked={!isDirectRowExpand ? (selectedRowIds[row.id] ?? false) : false}
+                            checked={!isDirectRowExpand ? selectedRowIds[row.id] ?? false : false}
                             onChange={() => toggleRowSelection(row.id)}
                           />
 
@@ -1358,20 +1367,20 @@ const Table = ({ collapseSidebar }) => {
                                 !darkMode
                                   ? `table-columnHeader-click`
                                   : editColumnHeader?.clickedColumn === index &&
-                                      editColumnHeader?.columnEditPopover === true &&
-                                      darkMode
-                                    ? `table-columnHeader-click-dark`
-                                    : editColumnHeader?.hoveredColumn === index && !darkMode
-                                      ? 'table-cell-hover-background'
-                                      : editColumnHeader?.hoveredColumn === index && darkMode
-                                        ? 'table-cell-hover-background-dark'
-                                        : cellClick.rowIndex === rIndex &&
-                                            cellClick.cellIndex === index &&
-                                            cellClick.editable === true
-                                          ? 'table-editable-parent-cell'
-                                          : darkMode
-                                            ? `table-cell table-cell-dark`
-                                            : `table-cell`
+                                    editColumnHeader?.columnEditPopover === true &&
+                                    darkMode
+                                  ? `table-columnHeader-click-dark`
+                                  : editColumnHeader?.hoveredColumn === index && !darkMode
+                                  ? 'table-cell-hover-background'
+                                  : editColumnHeader?.hoveredColumn === index && darkMode
+                                  ? 'table-cell-hover-background-dark'
+                                  : cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.editable === true
+                                  ? 'table-editable-parent-cell'
+                                  : darkMode
+                                  ? `table-cell table-cell-dark`
+                                  : `table-cell`
                               }`,
                               {
                                 'table-cell-selected': selectedRowIds[row.id] ?? false,
@@ -1390,10 +1399,10 @@ const Table = ({ collapseSidebar }) => {
                                       getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
                                     )
                                   : cell.column.dataType === 'jsonb' &&
-                                      typeof cell?.value !== 'string' &&
-                                      cell?.value !== null
-                                    ? JSON.stringify(cell?.value)
-                                    : cell?.value,
+                                    typeof cell?.value !== 'string' &&
+                                    cell?.value !== null
+                                  ? JSON.stringify(cell?.value)
+                                  : cell?.value,
                                 index
                               )}
                               placement="bottom"
@@ -1417,11 +1426,11 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.errorState === true
                                     ? 'tjdb-cell-error'
                                     : cellClick.rowIndex === rIndex &&
-                                        cellClick.cellIndex === index &&
-                                        cellClick.editable === true &&
-                                        !isCellUpdateInProgress
-                                      ? 'tjdb-selected-cell'
-                                      : 'tjdb-column-select-border'
+                                      cellClick.cellIndex === index &&
+                                      cellClick.editable === true &&
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
                                 }`}
                                 id={`tjdb-cell-row${rIndex}-column${index}`}
                               >
@@ -1628,15 +1637,15 @@ const Table = ({ collapseSidebar }) => {
                                             {isBoolean(cell?.value)
                                               ? cell?.value?.toString()
                                               : cell.column?.dataType === 'timestamp with time zone'
-                                                ? convertDateToTimeZoneFormatted(
-                                                    cell?.value,
-                                                    getConfigurationProperty(
-                                                      cell.column.Header,
-                                                      'timezone',
-                                                      getLocalTimeZone()
-                                                    )
+                                              ? convertDateToTimeZoneFormatted(
+                                                  cell?.value,
+                                                  getConfigurationProperty(
+                                                    cell.column.Header,
+                                                    'timezone',
+                                                    getLocalTimeZone()
                                                   )
-                                                : cell.render('Cell')}
+                                                )
+                                              : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip
                                             message={'Open referenced table'}

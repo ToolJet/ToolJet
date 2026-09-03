@@ -5,8 +5,8 @@ import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(headers, tableId, query = '') {
-  return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${query}`, headers);
+function findOne(tableId, query = '') {
+  return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${query}`);
 }
 
 function findAll(organizationId) {
@@ -28,8 +28,13 @@ function createTable(organizationId, tableName, columns, foreignKeyColumns, chec
   });
 }
 
-function viewTable(organizationId, tableName) {
-  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableName}`);
+function viewTable(organizationId, tableName, environmentId) {
+  const query = environmentId ? `?environment_id=${environmentId}` : '';
+  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
+}
+
+function getTableMigrations(organizationId, tableId) {
+  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations`);
 }
 
 function bulkUpload(organizationId, tableName, file) {
@@ -140,6 +145,7 @@ export const tooljetDatabaseService = {
   findOne,
   findAll,
   viewTable,
+  getTableMigrations,
   createRow,
   createTable,
   createColumn,
