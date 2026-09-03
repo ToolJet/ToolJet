@@ -46,6 +46,7 @@ const TableForm = ({
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
+  const [migrationName, setMigrationName] = useState('');
   const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
 
   const [columns, setColumns] = useState(
@@ -206,7 +207,8 @@ const TableForm = ({
       tableName,
       Object.values(columns),
       foreignKeyDetails,
-      checkingValues
+      checkingValues,
+      migrationName
     );
     setFetching(false);
     if (error) {
@@ -238,7 +240,8 @@ const TableForm = ({
       organizationId,
       selectedTable.table_name,
       tableName,
-      data
+      data,
+      migrationName
     );
     setFetching(false);
 
@@ -347,6 +350,24 @@ const TableForm = ({
               <div className={cx('mt-1', isErrorText ? 'text-danger' : 'text-muted')} style={{ fontSize: '11px' }}>
                 {helperText}
               </div>
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })} data-cy="migration-name-label">
+              Migration name (optional)
+            </div>
+            <div className="tj-app-input">
+              <input
+                type="text"
+                placeholder={isEditMode ? `Edit table "${selectedTable.table_name}"` : `Create table "${tableName}"`}
+                name="migration-name"
+                className="form-control"
+                data-cy="migration-name-input-field"
+                autoComplete="off"
+                maxLength={120}
+                value={migrationName}
+                onChange={(e) => setMigrationName(e.target.value)}
+              />
             </div>
           </div>
         </div>

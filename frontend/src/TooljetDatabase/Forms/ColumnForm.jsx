@@ -34,6 +34,7 @@ const ColumnForm = ({
   initiator,
 }) => {
   const [columnName, setColumnName] = useState('');
+  const [migrationName, setMigrationName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
@@ -193,7 +194,8 @@ const ColumnForm = ({
       isSerialType,
       isCheckingValues,
       foreignKeyDetails,
-      reqConfigurations
+      reqConfigurations,
+      migrationName
     );
     setFetching(false);
     if (error) {
@@ -302,6 +304,21 @@ const ColumnForm = ({
               setColumnName(e.target.value);
             }}
             autoFocus
+          />
+        </div>
+        <div className="mb-3 tj-app-input">
+          <div className="form-label" data-cy="migration-name-input-field-label">
+            Migration name (optional)
+          </div>
+          <input
+            value={migrationName}
+            type="text"
+            placeholder={`Add column "${columnName || ''}"`}
+            className="form-control"
+            data-cy="migration-name-input-field"
+            autoComplete="off"
+            maxLength={120}
+            onChange={(e) => setMigrationName(e.target.value)}
           />
         </div>
         <div className="column-datatype-selector mb-3 data-type-dropdown-section" data-cy="data-type-dropdown-section">
@@ -448,8 +465,8 @@ const ColumnForm = ({
                       dataType === 'serial'
                         ? 'Auto-generated'
                         : foreignKeyDefaultValue?.value === null
-                          ? 'Null'
-                          : 'Enter a value'
+                        ? 'Null'
+                        : 'Enter a value'
                     }
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
@@ -481,12 +498,12 @@ const ColumnForm = ({
               dataType?.value === 'serial'
                 ? 'Foreign key relation cannot be created for serial type column'
                 : dataType?.value === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType?.value === 'timestamp with time zone'
-                    ? 'Foreign key relation cannot be created with this data type'
-                    : isJsonbColumnType
-                      ? 'Foreign key relation cannot be created for jsonb type column'
-                      : 'Fill in column details to create a foreign key relation'
+                ? 'Foreign key relation cannot be created for boolean type column'
+                : dataType?.value === 'timestamp with time zone'
+                ? 'Foreign key relation cannot be created with this data type'
+                : isJsonbColumnType
+                ? 'Foreign key relation cannot be created for jsonb type column'
+                : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -618,10 +635,10 @@ const ColumnForm = ({
               dataType?.value === 'boolean'
                 ? 'Unique constraint cannot be added for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
-                  ? 'Unique constraint cannot be added for this type column'
-                  : isJsonbColumnType
-                    ? 'Unique constraint cannot be added for JSON type column'
-                    : ''
+                ? 'Unique constraint cannot be added for this type column'
+                : isJsonbColumnType
+                ? 'Unique constraint cannot be added for JSON type column'
+                : ''
             }
             placement="top"
             tooltipClassName="tootip-table"

@@ -22,6 +22,42 @@ export interface StructuredMigrationPayload<TRequest = any> {
   request: TRequest;
 }
 
+/**
+ * A migration always gets a name - `migration_name` on the request is a user override (the six
+ * form-backed actions expose it; the three confirm-only ones - drop_table/drop_column/
+ * delete_foreign_key - never will, so they always fall through to this), otherwise this generates
+ * one from the request shape each action already carries.
+ */
+function defaultMigrationName(payload: StructuredMigrationPayload): string {
+  const { action, request } = payload;
+  switch (action) {
+    case 'create_table':
+      return `Create table "${request.table_name}"`;
+    case 'drop_table':
+      return `Drop table "${request.table_name}"`;
+    case 'edit_table':
+      return request.new_table_name
+        ? `Rename table to "${request.new_table_name}"`
+        : `Edit table "${request.table_name}"`;
+    case 'add_column':
+      return `Add column "${request.column?.column_name}"`;
+    case 'drop_column':
+      return `Drop column "${request.column?.column_name}"`;
+    case 'edit_column':
+      return request.column?.new_column_name
+        ? `Rename column "${request.column?.column_name}" to "${request.column?.new_column_name}"`
+        : `Edit column "${request.column?.column_name}"`;
+    case 'create_foreign_key':
+      return `Add foreign key on "${request.table_name}"`;
+    case 'update_foreign_key':
+      return `Update foreign key on "${request.table_name}"`;
+    case 'delete_foreign_key':
+      return `Remove foreign key on "${request.table_name}"`;
+    default:
+      return action;
+  }
+}
+
 function columnNamed(snapshot: TableSchemaSnapshot, name: string) {
   return snapshot.columns.find((column) => column.name === name);
 }
@@ -149,6 +185,7 @@ export class TooljetDbMigrationRecorderService {
   ): Promise<InternalTableMigration> {
     const sequence = await this.nextSequence(internalTable.id, entityManager);
     const branchId = await this.relationResolverService.resolveBranchIdFor(internalTable.organizationId, entityManager);
+    const userGivenName = (payload.request as { migration_name?: string })?.migration_name?.trim();
 
     const migration = entityManager.create(InternalTableMigration, {
       internalTableId: internalTable.id,
@@ -156,6 +193,7 @@ export class TooljetDbMigrationRecorderService {
       branchId,
       kind: 'structured',
       payload,
+      name: (userGivenName || defaultMigrationName(payload)).slice(0, 120),
       resultingSchema: null,
       tooljetVersion: globalThis.TOOLJET_VERSION || null,
       createdBy: (RequestContext.currentContext?.req as any)?.user?.id ?? null,

@@ -155,6 +155,7 @@ export class TooljetDbController {
       table_name: tableName,
       column: addColumnBody.column,
       foreign_keys: addColumnBody?.foreign_keys || [],
+      migration_name: addColumnBody.migration_name,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'add_column', params, undefined);
     return decamelizeKeys({ result });
@@ -212,12 +213,14 @@ export class TooljetDbController {
     @Body('column') columnDto: EditColumnTableDto,
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string
+    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       column: columnDto,
       foreign_key_id_to_delete: foreignKeyIdToDelete || '',
+      migration_name: migrationName,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params, undefined);
     return decamelizeKeys({ result });
@@ -229,12 +232,14 @@ export class TooljetDbController {
   async createForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_keys: foreign_keys,
       shouldDestroyDbConnection: true,
+      migration_name: migrationName,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params, undefined);
     return decamelizeKeys({ result });
@@ -247,12 +252,14 @@ export class TooljetDbController {
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Body('foreign_key_id') foreign_key_id: string,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_key_id: foreign_key_id,
       foreign_keys: foreign_keys,
+      migration_name: migrationName,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params, undefined);
     return decamelizeKeys({ result });

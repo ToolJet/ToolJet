@@ -32,6 +32,8 @@ const ForeignKeyTableForm = ({
   selectedForeignkeyIndex,
   setIsForeignKeyDraweOpen,
   initiator,
+  migrationName = '',
+  setMigrationName = () => {},
 }) => {
   const createForeignKey = () => {
     handleCreateForeignKey();
@@ -101,6 +103,21 @@ const ForeignKeyTableForm = ({
         setOnUpdate={setOnUpdate}
         onUpdate={onUpdate}
       />
+      <div className="mb-3 tj-app-input px-3">
+        <div className="form-label" data-cy="fk-migration-name-input-field-label">
+          Migration name (optional)
+        </div>
+        <input
+          value={migrationName}
+          type="text"
+          placeholder={`${isEditMode || isEditColumn ? 'Edit' : 'Add'} foreign key on "${tableName}"`}
+          className="form-control"
+          data-cy="fk-migration-name-input-field"
+          autoComplete="off"
+          maxLength={120}
+          onChange={(e) => setMigrationName(e.target.value)}
+        />
+      </div>
       <DrawerFooter
         fetching={false}
         isEditMode={isEditMode}

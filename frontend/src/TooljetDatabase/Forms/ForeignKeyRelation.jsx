@@ -43,6 +43,7 @@ function ForeignKeyRelation({
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
+  const [migrationName, setMigrationName] = useState('');
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const existingReferencedTableName = foreignKeyDetails[selectedForeignkeyIndex]?.referenced_table_name;
@@ -61,6 +62,7 @@ function ForeignKeyRelation({
     setTargetColumn([]);
     setOnDelete([]);
     setOnUpdate([]);
+    setMigrationName('');
   };
 
   const handleCreateForeignKey = () => {
@@ -121,7 +123,7 @@ function ForeignKeyRelation({
         on_update: onUpdate?.value,
       },
     ];
-    const { error } = await tooljetDatabaseService.createForeignKey(organizationId, tableName, data);
+    const { error } = await tooljetDatabaseService.createForeignKey(organizationId, tableName, data, migrationName);
 
     if (error) {
       toast.error(error?.message ?? `Failed to edit foreign key`);
@@ -160,7 +162,7 @@ function ForeignKeyRelation({
       },
     ];
 
-    const { error } = await tooljetDatabaseService.editForeignKey(organizationId, tableName, id, data);
+    const { error } = await tooljetDatabaseService.editForeignKey(organizationId, tableName, id, data, migrationName);
 
     if (error) {
       toast.error(error?.message ?? `Failed to edit foreign key`);
@@ -418,8 +420,8 @@ function ForeignKeyRelation({
                 ? setOnChangeInForeignKey(true)
                 : handleEditForeignKeyInCreate()
               : newChangesInForeignKey?.length > 0
-                ? setOnChangeInForeignKey(true)
-                : handleEditForeignKey()
+              ? setOnChangeInForeignKey(true)
+              : handleEditForeignKey()
           }
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}
@@ -435,6 +437,8 @@ function ForeignKeyRelation({
           onDelete={onDelete}
           setOnUpdate={setOnUpdate}
           onUpdate={onUpdate}
+          migrationName={migrationName}
+          setMigrationName={setMigrationName}
           editForeignKeyInCreateTable={editForeignKeyInCreateTable}
           selectedForeignkeyIndex={selectedForeignkeyIndex}
           setIsForeignKeyDraweOpen={setIsForeignKeyDraweOpen}

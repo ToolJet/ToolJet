@@ -20,11 +20,19 @@ async function getTablesLimit() {
   return res;
 }
 
-function createTable(organizationId, tableName, columns, foreignKeyColumns, checkingValues = false) {
+function createTable(
+  organizationId,
+  tableName,
+  columns,
+  foreignKeyColumns,
+  checkingValues = false,
+  migrationName = ''
+) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table`, {
     table_name: tableName,
     columns,
     ...(checkingValues && { foreign_keys: foreignKeyColumns }),
+    ...(migrationName && { migration_name: migrationName }),
   });
 }
 
@@ -56,7 +64,8 @@ function createColumn(
   isCheckSerialType = false,
   checkingValues = false,
   foreignKeyArray,
-  configurations = {}
+  configurations = {},
+  migrationName = ''
 ) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
@@ -70,6 +79,7 @@ function createColumn(
       configurations,
     },
     ...(checkingValues && { foreign_keys: foreignKeyArray }),
+    ...(migrationName && { migration_name: migrationName }),
   });
 }
 
@@ -81,7 +91,7 @@ function updateTable(organizationId, tableName, columns) {
   });
 }
 
-function renameTable(organizationId, tableName, newTableName, data = []) {
+function renameTable(organizationId, tableName, newTableName, data = [], migrationName = '') {
   let bodyData = deepClone(data);
   bodyData.forEach((obj) => {
     ['new_column', 'old_column'].forEach(function (key) {
@@ -93,19 +103,22 @@ function renameTable(organizationId, tableName, newTableName, data = []) {
     table_name: tableName,
     ...(newTableName !== tableName && { new_table_name: newTableName }),
     columns: bodyData,
+    ...(migrationName && { migration_name: migrationName }),
   });
 }
 
-function editForeignKey(organizationId, tableName, id, data = []) {
+function editForeignKey(organizationId, tableName, id, data = [], migrationName = '') {
   return tooljetAdapter.put(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
     foreign_key_id: id,
     foreign_keys: data,
+    ...(migrationName && { migration_name: migrationName }),
   });
 }
 
-function createForeignKey(organizationId, tableName, data = []) {
+function createForeignKey(organizationId, tableName, data = [], migrationName = '') {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey`, {
     foreign_keys: data,
+    ...(migrationName && { migration_name: migrationName }),
   });
 }
 
