@@ -1,0 +1,9 @@
+{
+  "name": "dep-gate-test",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated fixture to exercise the dependency vulnerability gate. Not shipped.",
+  "dependencies": {
+    "ms": "2.1.3"
+  }
+}
