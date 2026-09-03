@@ -42,6 +42,10 @@ describe(
     cy.dragAndDropWidget("File button", dropX, dropY);
     waitForDropSettle(widget);
   });
+  
+  afterEach(function () {
+    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  });
 
   it("should file button render properly", () => {
     cy.get(fileButtonSelector.draggableWidget(widget)).should("exist");
