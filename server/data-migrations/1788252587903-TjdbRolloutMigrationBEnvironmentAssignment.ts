@@ -50,7 +50,7 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
         `${importPath}/tooljet-db/services/tooljet-db-table-operations.service`
       );
 
-      await runMigrationB({
+      await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
         licenseTermsService: nestApp.get(LicenseTermsService, { strict: false }),
         environmentAssignmentService: nestApp.get(EnvironmentAssignmentClass, { strict: false }),
         tableOperationsService: nestApp.get(TableOperationsClass, { strict: false }),
@@ -113,85 +113,90 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       await tjdbConnection.destroy();
     }
   }
+
+  /**
+   * The workspace loop. A static method (not a standalone top-level export) so the e2e suite can
+   * drive it with a real (non-proxied) QueryRunner's manager instead of booting a second Nest
+   * context inside Jest - TypeORM's migration loader treats every top-level function export in
+   * this directory as a migration class to instantiate, so a bare `export async function` here
+   * blows up `migration:run` with "TypeError: ... is not a constructor".
+   */
+  public static async runMigrationB(deps: MigrationBDeps): Promise<void> {
+    const { licenseTermsService, environmentAssignmentService, tableOperationsService, appManager, tjdbQueryRunner } =
+      deps;
+
+    const organizations: Array<{ id: string }> = await appManager.query(`SELECT id FROM organizations`);
+    console.log(
+      `${MIGRATION_NAME}: [START] Assigning TJDB data to environments: ${organizations.length} workspace(s).`
+    );
+    const progress = new MigrationProgress(MIGRATION_NAME, organizations.length || 1);
+
+    for (const { id: organizationId } of organizations) {
+      try {
+        const licensed = await licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+        if (!licensed) continue;
+
+        const tables: Array<{ id: string }> = await appManager.query(
+          `SELECT id FROM internal_tables WHERE organization_id = $1 AND deleted_at IS NULL`,
+          [organizationId]
+        );
+
+        // Pass 1: re-point every migration-A relation to production and create its development twin.
+        // SAVEPOINT per table (migration A's pattern) - one bad row cannot poison the shared transaction.
+        for (const { id: internalTableId } of tables) {
+          await appManager.query(`SAVEPOINT tjdb_env_assignment`);
+          try {
+            await environmentAssignmentService.assignExistingTableToEnvironments(
+              internalTableId,
+              organizationId,
+              appManager,
+              tjdbQueryRunner
+            );
+            await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
+          } catch (error) {
+            await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
+            console.error(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
+              error
+            );
+          }
+        }
+
+        // Pass 2: replay each baseline foreign-key migration, once every development twin in the
+        // workspace exists (a baseline FK resolves its referenced table in the twin's own environment).
+        // SAVEPOINT per table: applyMigrations runs adjudicatePending + recordApplications on the
+        // shared transaction *before* its own inner savepoint, so an error there would otherwise
+        // abort the whole migration run.
+        for (const { id: internalTableId } of tables) {
+          await appManager.query(`SAVEPOINT tjdb_env_fk_replay`);
+          try {
+            await replayForeignKeyBaseline(appManager, tableOperationsService, tjdbQueryRunner, internalTableId);
+            await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
+          } catch (error) {
+            await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
+            console.error(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error(`${MIGRATION_NAME}: workspace=${organizationId} failed; continuing.`, error);
+      } finally {
+        progress.show();
+      }
+    }
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.`);
+  }
 }
 
-export interface MigrationBDeps {
+interface MigrationBDeps {
   licenseTermsService: LicenseTermsService;
   environmentAssignmentService: TooljetDbEnvironmentAssignmentService;
   tableOperationsService: TooljetDbTableOperationsService;
   appManager: EntityManager;
   tjdbQueryRunner: QueryRunner;
-}
-
-/**
- * The workspace loop, exported so the e2e suite can drive it with a real (non-proxied) QueryRunner's
- * manager instead of booting a second Nest context inside Jest.
- */
-export async function runMigrationB(deps: MigrationBDeps): Promise<void> {
-  const { licenseTermsService, environmentAssignmentService, tableOperationsService, appManager, tjdbQueryRunner } =
-    deps;
-
-  const organizations: Array<{ id: string }> = await appManager.query(`SELECT id FROM organizations`);
-  console.log(`${MIGRATION_NAME}: [START] Assigning TJDB data to environments: ${organizations.length} workspace(s).`);
-  const progress = new MigrationProgress(MIGRATION_NAME, organizations.length || 1);
-
-  for (const { id: organizationId } of organizations) {
-    try {
-      const licensed = await licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
-      if (!licensed) continue;
-
-      const tables: Array<{ id: string }> = await appManager.query(
-        `SELECT id FROM internal_tables WHERE organization_id = $1 AND deleted_at IS NULL`,
-        [organizationId]
-      );
-
-      // Pass 1: re-point every migration-A relation to production and create its development twin.
-      // SAVEPOINT per table (migration A's pattern) - one bad row cannot poison the shared transaction.
-      for (const { id: internalTableId } of tables) {
-        await appManager.query(`SAVEPOINT tjdb_env_assignment`);
-        try {
-          await environmentAssignmentService.assignExistingTableToEnvironments(
-            internalTableId,
-            organizationId,
-            appManager,
-            tjdbQueryRunner
-          );
-          await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
-        } catch (error) {
-          await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
-          console.error(
-            `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
-            error
-          );
-        }
-      }
-
-      // Pass 2: replay each baseline foreign-key migration, once every development twin in the
-      // workspace exists (a baseline FK resolves its referenced table in the twin's own environment).
-      // SAVEPOINT per table: applyMigrations runs adjudicatePending + recordApplications on the
-      // shared transaction *before* its own inner savepoint, so an error there would otherwise
-      // abort the whole migration run.
-      for (const { id: internalTableId } of tables) {
-        await appManager.query(`SAVEPOINT tjdb_env_fk_replay`);
-        try {
-          await replayForeignKeyBaseline(appManager, tableOperationsService, tjdbQueryRunner, internalTableId);
-          await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
-        } catch (error) {
-          await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
-          console.error(
-            `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
-            error
-          );
-        }
-      }
-    } catch (error) {
-      console.error(`${MIGRATION_NAME}: workspace=${organizationId} failed; continuing.`, error);
-    } finally {
-      progress.show();
-    }
-  }
-
-  console.log(`${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.`);
 }
 
 async function replayForeignKeyBaseline(

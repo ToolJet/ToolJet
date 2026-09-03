@@ -25,10 +25,7 @@ import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthes
 // EE tokens: getProviders() registers the edition-resolved class as the DI token.
 import { TooljetDbEnvironmentAssignmentService } from '@ee/tooljet-db/services/tooljet-db-environment-assignment.service';
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
-import {
-  runMigrationB,
-  TjdbRolloutMigrationBEnvironmentAssignment1788252587903,
-} from '../../../../data-migrations/1788252587903-TjdbRolloutMigrationBEnvironmentAssignment';
+import { TjdbRolloutMigrationBEnvironmentAssignment1788252587903 } from '../../../../data-migrations/1788252587903-TjdbRolloutMigrationBEnvironmentAssignment';
 
 describe('TjdbRolloutMigrationB', () => {
   describe('EE (plan: enterprise)', () => {
@@ -375,7 +372,7 @@ describe('TjdbRolloutMigrationB', () => {
       const tjdbQueryRunner = getTooljetDbDataSource().createQueryRunner();
       await tjdbQueryRunner.connect();
       try {
-        await runMigrationB({
+        await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
           licenseTermsService,
           environmentAssignmentService: service,
           tableOperationsService,
@@ -415,7 +412,7 @@ describe('TjdbRolloutMigrationB', () => {
         const tjdbQueryRunner = getTooljetDbDataSource().createQueryRunner();
         await tjdbQueryRunner.connect();
         try {
-          await runMigrationB({
+          await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
             licenseTermsService,
             environmentAssignmentService: service,
             tableOperationsService,
