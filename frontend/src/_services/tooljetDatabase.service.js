@@ -49,6 +49,10 @@ function bulkUpload(organizationId, tableName, file) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/bulk-upload`, file);
 }
 
+function sqlExecution(organizationId, tableId, body) {
+  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/sql`, body);
+}
+
 function createRow(headers, tableId, data) {
   return tooljetAdapter.post(`/tooljet-db/proxy/${tableId}`, data, headers);
 }
@@ -170,6 +174,7 @@ export const tooljetDatabaseService = {
   renameTable,
   getTablesLimit,
   bulkUpload,
+  sqlExecution,
   joinTables,
   updateColumn,
   editForeignKey,

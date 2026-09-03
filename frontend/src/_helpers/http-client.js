@@ -101,7 +101,14 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
-      payload.error = !isEmpty(text) && JSON.parse(text);
+      // text already failed JSON.parse once above for a non-JSON error body (e.g. a plain-text
+      // 404 like "Cannot POST /..." from a route that doesn't exist) - re-parsing it here would
+      // throw again, unhandled, and callers would never see an error at all.
+      try {
+        payload.error = !isEmpty(text) && JSON.parse(text);
+      } catch {
+        payload.error = { message: !isEmpty(text) ? text : response.statusText || 'Request failed' };
+      }
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;

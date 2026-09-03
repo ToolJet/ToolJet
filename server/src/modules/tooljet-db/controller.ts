@@ -27,9 +27,11 @@ import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestFor
 import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from './dto/revert-migration.dto';
+import { SqlExecutionDto } from './dto/sql-execution.dto';
 import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
 import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
 import { TooljetDbRawSqlMigrationService } from './services/tooljet-db-raw-sql-migration.service';
+import { TooljetDbDataOperationsService } from './services/tooljet-db-data-operations.service';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -61,6 +63,7 @@ export class TooljetDbController {
     protected readonly promoteService: TooljetDbPromoteService,
     protected readonly environmentAssignmentService: TooljetDbEnvironmentAssignmentService,
     protected readonly rawSqlMigrationService: TooljetDbRawSqlMigrationService,
+    protected readonly dataOperationsService: TooljetDbDataOperationsService,
     protected readonly logger: Logger
   ) {
     this.pinoLogger = logger;
@@ -363,6 +366,26 @@ export class TooljetDbController {
     @Body() revertMigrationDto: RevertMigrationDto
   ) {
     const result = await this.rawSqlMigrationService.revert(organizationId, tableId, migrationId, revertMigrationDto);
+    return decamelizeKeys({ result });
+  }
+
+  // Naming mirrors the sibling migrations/sql route, minus "migrations" — this isn't one: it's a
+  // one-off DML action against whatever environment is currently open, not a tracked schema
+  // migration step. :tableId scopes the ability check only, same convention as .../migrations —
+  // the SQL itself isn't restricted to this table, matching sql_execution's existing behavior
+  // when run from Query Manager.
+  @InitFeature(FEATURE_KEY.SQL_EXECUTION)
+  @Post('/organizations/:organizationId/table/:tableId/sql')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async sqlExecution(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() sqlExecutionDto: SqlExecutionDto
+  ) {
+    const result = await this.dataOperationsService.sqlExecution(
+      { sql_execution: { sqlQuery: sqlExecutionDto.sql } },
+      { app: { organization_id: organizationId, environment_id: sqlExecutionDto.environment_id } }
+    );
     return decamelizeKeys({ result });
   }
 }

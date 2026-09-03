@@ -17,8 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { BulkUploadPrimaryKey } from './BulkUploadPrimaryKey';
 import BulkUpsertPrimaryKey from './BulkUpsertPrimaryKey';
-import { fetchEdition } from '@/modules/common/helpers/utils';
-import config from 'config';
+import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -59,21 +58,6 @@ const ToolJetDbOperations = ({
   const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
 
   const skipJoinTableUpdateRef = useRef(false);
-
-  // Check if SQL mode should be disabled
-  const isSqlModeDisabled = () => {
-    // Check legacy environment variable for backward compatibility
-    if (window.public_config?.TJDB_SQL_MODE_DISABLE === 'true') {
-      return true;
-    }
-
-    const edition = fetchEdition(config);
-    if (edition === 'cloud') {
-      return true;
-    }
-
-    return false;
-  };
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -571,14 +555,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'GUI mode' && !darkMode
                     ? 'white'
                     : activeTab === 'GUI mode' && darkMode
-                      ? '#242f3c'
-                      : 'transparent',
+                    ? '#242f3c'
+                    : 'transparent',
                 color:
                   activeTab === 'GUI mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'GUI mode' && darkMode
-                      ? 'white'
-                      : '#687076',
+                    ? 'white'
+                    : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-gui-mode-tab"
@@ -593,14 +577,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'SQL mode' && !darkMode
                     ? 'white'
                     : activeTab === 'SQL mode' && darkMode
-                      ? '#242f3c'
-                      : 'transparent',
+                    ? '#242f3c'
+                    : 'transparent',
                 color:
                   activeTab === 'SQL mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'SQL mode' && darkMode
-                      ? 'white'
-                      : '#687076',
+                    ? 'white'
+                    : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-sql-mode-tab"

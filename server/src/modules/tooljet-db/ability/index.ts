@@ -73,7 +73,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
     }
     if (superAdmin || isAdmin || isBuilder) {
-      can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
+      can([FEATURE_KEY.BULK_UPLOAD, FEATURE_KEY.SQL_EXECUTION], InternalTable);
     }
 
     if (isPublicAppRequest || isUserLoggedin) {

@@ -1,0 +1,25 @@
+// Padding/gutter treatment matches AppBuilder/CodeEditor/styles.scss's .codehinter-multi-line-input -
+// this page can't use that component (resolver/store-bound), so the visual polish is copied here
+// rather than the component itself.
+.tj-db-seed-data-editor {
+  position: relative;
+
+  .cm-content {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .cm-gutters {
+    width: 42px;
+    background-color: var(--interactive-default) !important;
+    color: var(--text-disabled) !important;
+    border-right: 1px solid var(--borders-disabled-on-white) !important;
+  }
+
+  .tj-db-seed-data-search-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    z-index: 1;
+    cursor: pointer;
+  }
+}

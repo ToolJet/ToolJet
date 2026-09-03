@@ -11,6 +11,8 @@ export const AddNewDataPopOver = ({
   toggleAddNewDataMenu,
   handleOnClickCreateNewRow,
   handleOnClickBulkUpdateData,
+  handleOnClickSeedData,
+  hideSeedDataOption,
 }) => {
   if (disabled) return children;
   const popover = (
@@ -49,6 +51,22 @@ export const AddNewDataPopOver = ({
           </div>
           <div className="col text-truncate tj-text-xsm font-weight-500">Bulk upload data</div>
         </div>
+        {!hideSeedDataOption && (
+          <div
+            className="row mt-3 cursor-pointer"
+            data-cy="seed-data-sql-option"
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleAddNewDataMenu(false);
+              handleOnClickSeedData(true);
+            }}
+          >
+            <div className="col-auto">
+              <SolidIcon name="code" width="14" fill={'#889096'} />
+            </div>
+            <div className="col text-truncate tj-text-xsm font-weight-500">Seed data with SQL</div>
+          </div>
+        )}
       </Popover.Body>
     </Popover>
   );

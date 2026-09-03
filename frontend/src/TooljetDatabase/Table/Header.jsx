@@ -4,6 +4,8 @@ import EditRowDrawer from '../Drawers/EditRowDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
 import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
+import SeedDataDrawer from '../Drawers/SeedDataDrawer';
+import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -23,6 +25,8 @@ const Header = ({
   setIsCreateRowDrawerOpen,
   setIsBulkUploadDrawerOpen,
   isBulkUploadDrawerOpen,
+  isSeedDataDrawerOpen,
+  setIsSeedDataDrawerOpen,
   selectedRowIds,
   handleDeleteRow,
   rows,
@@ -145,6 +149,10 @@ const Header = ({
     setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
   };
 
+  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
+    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
+  };
+
   return (
     <>
       <div className="database-table-header-wrapper">
@@ -162,6 +170,8 @@ const Header = ({
                         toggleAddNewDataMenu={toggleAddNewDataMenu}
                         handleOnClickCreateNewRow={handleOnClickCreateNewRow}
                         handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                        handleOnClickSeedData={handleOnClickSeedData}
+                        hideSeedDataOption={isSqlModeDisabled()}
                       >
                         <span className="col-auto">
                           <ButtonSolid
@@ -284,6 +294,7 @@ const Header = ({
         isBulkUploading={isBulkUploading}
         errors={errors}
       />
+      <SeedDataDrawer isSeedDataDrawerOpen={isSeedDataDrawerOpen} setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen} />
     </>
   );
 };

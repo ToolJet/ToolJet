@@ -1,4 +1,6 @@
 import React from 'react';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import config from 'config';
 import BigInt from './Icons/Biginteger.svg';
 import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
@@ -284,26 +286,26 @@ export default function tjdbDropdownStyles(
         state.isDisabled && darkMode
           ? darkDisabledBackground
           : state.isDisabled && !darkMode
-            ? lightDisabledBackground
-            : state.isFocused && !darkMode
-              ? lightFocussedBackground
-              : state.isFocused && darkMode
-                ? darkFocussedBackground
-                : !darkMode
-                  ? lightBackground
-                  : darkBackground,
+          ? lightDisabledBackground
+          : state.isFocused && !darkMode
+          ? lightFocussedBackground
+          : state.isFocused && darkMode
+          ? darkFocussedBackground
+          : !darkMode
+          ? lightBackground
+          : darkBackground,
       borderColor:
         state.isFocused && !darkMode
           ? lightFocussedBorder
           : state.isFocused && darkMode
-            ? darkFocussedBorder
-            : darkMode && state.isDisabled
-              ? !darkMode && state.isDisabled
-                ? lightDisabledBorder
-                : darkDisabledBorder
-              : darkMode
-                ? darkBorder
-                : lightBorder,
+          ? darkFocussedBorder
+          : darkMode && state.isDisabled
+          ? !darkMode && state.isDisabled
+            ? lightDisabledBorder
+            : darkDisabledBorder
+          : darkMode
+          ? darkBorder
+          : lightBorder,
       '&:hover': {
         borderColor: darkMode ? darkBorderHover : lightBorderHover,
       },
@@ -369,4 +371,18 @@ export const listAllPrimaryKeyColumns = (columns) => {
     if ((column?.constraints_type?.is_primary_key ?? false) && column.accessor) primarykeyColumns.push(column.accessor);
   });
   return primarykeyColumns;
+};
+
+export const isSqlModeDisabled = () => {
+  // Check legacy environment variable for backward compatibility
+  if (window.public_config?.TJDB_SQL_MODE_DISABLE === 'true') {
+    return true;
+  }
+
+  const edition = fetchEdition(config);
+  if (edition === 'cloud') {
+    return true;
+  }
+
+  return false;
 };

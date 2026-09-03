@@ -14,7 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType, isSqlModeDisabled } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
@@ -65,6 +65,7 @@ const Table = ({ collapseSidebar }) => {
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
+  const [isSeedDataDrawerOpen, setIsSeedDataDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
@@ -1112,6 +1113,10 @@ const Table = ({ collapseSidebar }) => {
     setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
   };
 
+  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
+    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
+  };
+
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
   const emptyData = filterEnable
@@ -1134,6 +1139,8 @@ const Table = ({ collapseSidebar }) => {
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
         setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+        isSeedDataDrawerOpen={isSeedDataDrawerOpen}
+        setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
         rows={rows}
@@ -1725,6 +1732,8 @@ const Table = ({ collapseSidebar }) => {
                   toggleAddNewDataMenu={toggleAddNewDataMenu}
                   handleOnClickCreateNewRow={handleOnClickCreateNewRow}
                   handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                  handleOnClickSeedData={handleOnClickSeedData}
+                  hideSeedDataOption={isSqlModeDisabled()}
                 >
                   <span className="col-auto">
                     <ButtonSolid

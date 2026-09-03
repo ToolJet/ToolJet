@@ -20,4 +20,5 @@ export enum FEATURE_KEY {
   TABLE_MIGRATIONS = 'table_migrations',
   ADD_RAW_SQL_MIGRATION = 'add_raw_sql_migration',
   REVERT_MIGRATION = 'revert_migration',
+  SQL_EXECUTION = 'sql_execution',
 }

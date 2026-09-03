@@ -46,7 +46,7 @@ const CreateRowDrawer = ({
             });
 
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
+              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);

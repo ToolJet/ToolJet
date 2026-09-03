@@ -92,11 +92,7 @@ const EditRowDrawer = ({
             });
 
             tooljetDatabaseService
-              .findOne(
-                organizationId,
-                selectedTable.id,
-                `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`
-              )
+              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}&offset=${pageRange - 1}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
