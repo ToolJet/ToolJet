@@ -135,6 +135,22 @@ describe('Statistics widget', () => {
       // absence is `Boolean(iconVisibility)` and not just a pending dynamic import.
       expect(statRoot(container).querySelector(':scope > svg, :scope > span')).not.toBeInTheDocument();
     });
+
+    test('the icon SVG carries an inline color style so filled icons pick up iconColor via currentColor', async () => {
+      // @tabler/icons-react v2.x maps the `color` prop to SVG `stroke`, not CSS
+      // `color`. Filled icons use `fill="currentColor"` on their paths, so CSS
+      // `color` must also be set for them to obey iconColor.
+      const { container } = widget.render({
+        properties: { icon: binding('IconDatabaseDollar') },
+        styles: { iconVisibility: binding('{{true}}'), iconColor: binding('#e74c3c') },
+      });
+
+      await waitFor(() => expect(statRoot(container).querySelector(':scope > svg')).toBeInTheDocument(), {
+        timeout: 30000,
+      });
+      const svg = statRoot(container).querySelector(':scope > svg');
+      expect(svg).toHaveStyle({ color: '#e74c3c' });
+    });
   });
 
   describe('formatting numeric values that come back from a query', () => {

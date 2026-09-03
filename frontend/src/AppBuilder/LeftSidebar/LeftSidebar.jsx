@@ -278,7 +278,8 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
+          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries', 'apphistory'].includes(selectedSidebarItem))
+            return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

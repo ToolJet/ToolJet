@@ -8,6 +8,10 @@ export const datePickerV2Config = {
     height: 40,
   },
   validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
     minDate: {
       type: 'code',
       placeholder: 'DD/MM/YYYY',
@@ -32,10 +36,6 @@ export const datePickerV2Config = {
     customRule: {
       type: 'code',
       displayName: 'Custom validation',
-    },
-    mandatory: {
-      type: 'toggle',
-      displayName: 'Make this field mandatory',
     },
   },
   others: {
