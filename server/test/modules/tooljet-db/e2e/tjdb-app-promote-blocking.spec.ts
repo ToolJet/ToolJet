@@ -240,5 +240,43 @@ describe('An app cannot be promoted past its tables', () => {
       const message = response.body.message.error ?? response.body.message;
       expect(message).toContain('orders');
     });
+
+    // The External API release route must surface the same tableWarnings the interactive
+    // promote route does — not just log them server-side and drop them from the response.
+    it('surfaces tableWarnings on the External API release route when a table is behind but present', async () => {
+      const { user, organization, devEnv, prodEnv } = await seedOrg('tjdb-promote-extapi-warn@tooljet.io');
+      const table = await seedTable(organization.id, 'orders', [devEnv, prodEnv]); // relation exists both places
+      const branchId = (await resolveOrSeedDefaultBranch(organization.id)).id;
+      const devRelation = await findEntityOrFail(InternalTableRelation, {
+        internalTableId: table.id,
+        environmentId: devEnv.id,
+      });
+      const prodRelation = await findEntityOrFail(InternalTableRelation, {
+        internalTableId: table.id,
+        environmentId: prodEnv.id,
+      });
+      // 3 migrations confirmed on dev (source) and prod (target); 2 more confirmed on dev only.
+      await seedMigrations(table, branchId, 3, [devRelation.id, prodRelation.id]);
+      await seedMigrations(table, branchId, 2, [devRelation.id]);
+
+      const app = await createApplication(nestApp, { name: 'App-ExtApi-Warn', user, type: 'front-end' });
+      const version = await createApplicationVersion(nestApp, app as any);
+      await updateEntity(AppVersion, version.id, { status: AppVersionStatus.PUBLISHED } as any);
+      await queryTable(version, organization.id, table);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/git-sync/release`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ versionId: version.id });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.tableWarnings).toEqual([
+        expect.objectContaining({ tableId: table.id, tableName: 'orders', missingCount: 2 }),
+      ]);
+
+      // Still deployed — a behind-but-present table is informational only, never a block.
+      const reloaded = await findEntityOrFail(AppVersion, { id: version.id });
+      expect(reloaded.currentEnvironmentId).toBe(prodEnv.id);
+    });
   });
 });
