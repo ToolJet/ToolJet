@@ -1,10 +1,10 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { fileButtonSelector } from "Selectors/fileButton";
+import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { selectEvent, configureCSA } from "Support/utils/events";
-import { resizeQueryPanel } from "Support/utils/dataSource";
-import { openNode, openSubNode, backFromDetail, verifyNodeData } from "Support/utils/inspector";
+import { selectEvent, configureCSA } from "Support/utils/appBuilder/events";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+import { openNode, openSubNode, backFromDetail, verifyNodeData } from "Support/utils/appBuilder/inspectorTree";
 
 describe(
   "File Button CSA",
