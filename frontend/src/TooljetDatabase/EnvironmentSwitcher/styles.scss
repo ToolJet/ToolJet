@@ -27,9 +27,9 @@
   }
 
   &__history-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -58,24 +58,17 @@
 
   &__badge {
     color: var(--text-default);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
     font-size: 12px;
     line-height: 18px;
-  }
-
-  &__divider,
-  &__footer-divider {
-    background-color: var(--border-weak);
   }
 
   &__divider {
     width: 1px;
     height: 16px;
     flex-shrink: 0;
-  }
-
-  &__footer-divider {
-    height: 1px;
-    margin: 4px 0;
+    background-color: var(--border-weak);
   }
 
   &__name {
@@ -85,8 +78,8 @@
   }
 
   &__popover {
-    min-width: 220px;
-    border-radius: 12px;
+    width: 237px;
+    border-radius: 10px;
     border: 1px solid var(--border-weak);
     box-shadow: var(--elevation-400-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.12));
 
@@ -107,16 +100,47 @@
   }
 
   &__row {
-    gap: 10px;
-    padding: 10px 8px;
+    gap: 8px;
+    height: 32px;
+    padding: 0 8px;
 
     &:hover {
       background-color: var(--interactive-hover);
     }
 
+    &.disabled {
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      .tjdb-environment-switcher__row-name,
+      .tjdb-environment-switcher__row-badge {
+        color: var(--text-placeholder);
+      }
+    }
+
     &-check {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1 0 0;
+      min-width: 0;
+    }
+
+    &-dot-wrap {
+      width: 16px;
+      height: 16px;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -125,22 +149,36 @@
 
     &-name {
       color: var(--text-default);
-      font-size: 14px;
+      font-size: 12px;
+      line-height: 18px;
+      letter-spacing: -0.24px;
       flex: 1;
+      min-width: 0;
       text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     &-badge {
       color: var(--text-placeholder);
-      font-size: 13px;
+      font-size: 12px;
+      line-height: 18px;
+      letter-spacing: -0.24px;
+      flex-shrink: 0;
     }
   }
 
   &__footer {
     justify-content: space-between;
-    padding: 8px;
+    padding: 8px 12px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-weak);
+    border-radius: 0;
     color: var(--text-placeholder);
-    font-size: 13px;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: -0.22px;
 
     &:hover {
       color: var(--text-default);
