@@ -19,8 +19,17 @@ on:
         required: false
         default: "us-west-1"
 
+permissions:
+  contents: read
+
 jobs:
+  release-vulnerability-gate:
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
   check-version:
+    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
     name: check-version
     outputs:
