@@ -1471,3 +1471,13 @@ export function formatToDDMMYYYY(isoDate) {
 
   return `${day}/${month}/${year}`;
 }
+
+export function utilityFuncForNameSeed(componentDef) {
+  const component = componentDef.component.component;
+  switch (component) {
+    case 'LibraryComponent':
+      return componentDef.component.definition?.properties?.componentName?.value ?? componentDef.component.component;
+    default:
+      return componentDef.component.component;
+  }
+}

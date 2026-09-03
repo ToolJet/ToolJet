@@ -122,6 +122,7 @@ const RenderWidget = ({
   const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
   const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
+  const resetComponentExposedValues = useStore((state) => state.resetComponentExposedValues, shallow);
   const resolvedValidation = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
@@ -200,6 +201,10 @@ const RenderWidget = ({
   const resetComponent = useCallback(() => {
     setKey(Math.random());
   }, []);
+
+  const resetExposedVariables = useCallback(() => {
+    resetComponentExposedValues(id, moduleId);
+  }, [id, moduleId, resetComponentExposedValues]);
 
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
@@ -336,6 +341,7 @@ const RenderWidget = ({
           fireEvent={fireEventWrapper}
           validate={validate}
           resetComponent={resetComponent}
+          resetExposedVariables={resetExposedVariables}
           onComponentClick={onComponentClick}
           darkMode={darkMode}
           componentName={componentName}

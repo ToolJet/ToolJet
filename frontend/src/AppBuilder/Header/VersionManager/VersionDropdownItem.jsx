@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -31,6 +31,7 @@ const VersionDropdownItem = ({
   const versions = useVersionManagerStore((state) => state.versions);
   const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
+  const customComponentLibraries = useStore((state) => state.globalSettings?.customComponentLibraries);
 
   const isDraft = version.status === 'DRAFT';
   const isPublished = version.status === 'PUBLISHED';
@@ -98,6 +99,13 @@ const VersionDropdownItem = ({
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft && shouldShowActionButtons; // Show create version button for drafts
+
+  const devPinnedLibrariesCount = useMemo(() => {
+    const pins = customComponentLibraries ?? {};
+    return Object.values(pins).filter((value) => typeof value === 'string' && value.startsWith('dev:')).length;
+  }, [customComponentLibraries]);
+
+  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
 
   const renderMenu = (
     <Popover
@@ -275,19 +283,36 @@ const VersionDropdownItem = ({
 
                 {/* Create version button - shown for drafts */}
                 {canCreateVersion && (
-                  <Button
-                    variant="outline"
-                    size="small"
-                    className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuVersionId?.(null);
-                      onCreateVersion?.(version);
-                    }}
-                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                  <ToolTip
+                    message={
+                      isSaveVersionBlockedByDevPin
+                        ? `Cannot save: ${devPinnedLibrariesCount} custom component librar${
+                            devPinnedLibrariesCount === 1 ? 'y is' : 'ies are'
+                          } pinned to a developer preview build. Select a published revision before saving this version.`
+                        : ''
+                    }
+                    placement="bottom"
+                    show={isSaveVersionBlockedByDevPin}
+                    width="280px"
                   >
-                    Save version
-                  </Button>
+                    <span>
+                      <Button
+                        variant="outline"
+                        size="small"
+                        className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                        disabled={isSaveVersionBlockedByDevPin}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isSaveVersionBlockedByDevPin) return;
+                          setOpenMenuVersionId?.(null);
+                          onCreateVersion?.(version);
+                        }}
+                        data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                      >
+                        Save version
+                      </Button>
+                    </span>
+                  </ToolTip>
                 )}
 
                 {/* More menu */}

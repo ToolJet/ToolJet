@@ -19,6 +19,7 @@ import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
+import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -70,6 +71,8 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       scope.setTags({ source: undefined, appId: undefined, versionId: undefined, organizationId: undefined });
     };
   }, [isEditorLoading, appId, currentVersionId]);
+
+  useCustomComponentDevPreviewSync(appId);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
