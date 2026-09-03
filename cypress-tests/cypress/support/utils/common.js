@@ -104,8 +104,7 @@ export const navigateToAppEditor = (appName) => {
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
     // cy.waitForElement('[data-cy="ai-icon"]');
-    cy.waitForElement('[data-cy="home-page-search-bar"]');
-    cy.wait(1000)
+    cy.wait(3000)
   }
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
     cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
