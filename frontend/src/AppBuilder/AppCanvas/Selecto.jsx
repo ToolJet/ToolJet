@@ -1,57 +1,31 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import Selecto from 'react-selecto';
 import './selecto.scss';
 import { shallow } from 'zustand/shallow';
-import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { resolveMarqueeCanvasId, isInMarqueeCanvas, mergeMarqueeSelection } from './Utils/marqueeSelection';
+import { CANVAS_HEADER_ID, CANVAS_FOOTER_ID } from './appCanvasConstants';
 
 const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const getComponentDefinition = useStore((state) => state.getComponentDefinition);
   const canvasStartId = useRef(null);
 
-  const filterSelectedComponentsByHighestLevel = (selectedIds) => {
-    const highestLevelComponents = findHighestLevelofSelection(
-      selectedIds.map((id) => {
-        const component = getComponentDefinition(id, moduleId);
-        return {
-          ...component,
-          id,
-        };
-      })
-    );
-    if (highestLevelComponents.length === 1) {
-      return selectedIds.filter((id) => highestLevelComponents[0].id !== id);
-    }
-    return selectedIds;
-  };
+  const belongsToMarqueeCanvas = (id) =>
+    isInMarqueeCanvas(getComponentDefinition(id, moduleId)?.component?.parent, canvasStartId.current);
 
   const onAreaSelectStart = (e) => {
-    const target = e.inputEvent.target;
-    const componentId = target.getAttribute('component-id');
-
-    // For canvas header/footer, we don't have a specific canvasStartId to track
-    if (componentId === 'canvas-header' || componentId === 'canvas-footer') {
-      canvasStartId.current = null;
-      return;
-    }
-
-    if (componentId !== 'canvas') {
-      const realCanvasEl = target.closest('.real-canvas');
-      canvasStartId.current = realCanvasEl ? realCanvasEl.getAttribute('data-parentId') : null;
-    } else {
-      canvasStartId.current = null;
-    }
+    canvasStartId.current = resolveMarqueeCanvasId(e.inputEvent.target);
   };
 
   const onAreaSelection = (e) => {
     // First filter the components
-    const selectedIds = e.added.map((el) => el.getAttribute('widgetid'));
-    const filteredIds = filterSelectedComponentsByHighestLevel(selectedIds);
+    // Scoped with the same predicate onAreaSelectionEnd uses,
+    // so the live highlight always matches what actually ends up selected on release.
+    const filteredIds = e.added.map((el) => el.getAttribute('widgetid')).filter(belongsToMarqueeCanvas);
 
     // Then apply the 'active-target' class only to the filtered components
     e.added.forEach((el) => {
@@ -67,49 +41,24 @@ const EditorSelecto = () => {
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      const realCanvasEl = e.inputEvent.target.closest('.real-canvas');
-      const canvasSelectEndId = realCanvasEl ? realCanvasEl.getAttribute('data-parentId') : null;
-      const isCanvasSelectStartEndSame = canvasStartId.current === canvasSelectEndId;
       let isMultiSelect = null;
-      let selectedIds = e.added.map((el, index) => {
+
+      const selectedIds = e.added.map((el, index) => {
         const id = el.getAttribute('widgetid');
         isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
         return id;
       });
 
-      // Adding this to include partially selected components as well
-      const partiallySelectedIds = e.beforeSelected
-        .filter((el) => !e.selected.includes(el))
-        .map((el) => el.getAttribute('widgetid'));
-      const allSelectedIds = [...selectedIds, ...partiallySelectedIds];
+      if (selectedIds.length > 0) {
+        // Only the marquee's own hits are scoped.
+        const scopedIds = selectedIds.filter(belongsToMarqueeCanvas);
 
-      if (allSelectedIds.length > 0) {
-        const newSelection = isMultiSelect
-          ? [...getSelectedComponents().filter((id) => !allSelectedIds.includes(id)), ...allSelectedIds]
-          : allSelectedIds;
-
-        const isCanvasModal =
-          getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'Modal' ||
-          getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'ModalV2';
-
-        const _selectedComponents = !isCanvasSelectStartEndSame
-          ? newSelection
-          : filterSelectedComponentsByHighestLevel(newSelection);
-
-        if (isCanvasModal) {
-          setSelectedComponents(
-            _selectedComponents.filter(
-              (id) => getComponentDefinition(id, moduleId)?.component?.parent === canvasStartId.current
-            )
-          );
-        } else {
-          setSelectedComponents(_selectedComponents);
-        }
+        setSelectedComponents(mergeMarqueeSelection(scopedIds, getSelectedComponents(), isMultiSelect));
       }
       canvasStartId.current = null;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setSelectedComponents, setActiveRightSideBarTab, getSelectedComponents]
+    [setSelectedComponents, getSelectedComponents]
   );
 
   const handleDragCondition = useCallback(
@@ -125,8 +74,8 @@ const EditorSelecto = () => {
       const isSubContainer = target.getAttribute('component-id') !== 'canvas' || target.getAttribute('data-parentId');
       const isShiftKeyPressed = e.inputEvent.shiftKey;
       const isPageCanvasHeaderOrFooter =
-        target.getAttribute('component-id') === 'canvas-header' ||
-        target.getAttribute('component-id') === 'canvas-footer';
+        target.getAttribute('component-id') === CANVAS_HEADER_ID ||
+        target.getAttribute('component-id') === CANVAS_FOOTER_ID;
       if (isAppCanvas || (isShiftKeyPressed && isSubContainer) || isPageCanvasHeaderOrFooter) {
         return true;
       }
@@ -151,7 +100,7 @@ const EditorSelecto = () => {
 
       return false;
     },
-    [setSelectedComponents, setActiveRightSideBarTab, getSelectedComponents]
+    [setSelectedComponents, getSelectedComponents]
   );
 
   return (
