@@ -78,6 +78,7 @@ function ComboboxContent({
   sideOffset = 6,
   align = 'start',
   alignOffset = 0,
+  collisionPadding,
   anchor,
   ...props
 }) {
@@ -88,6 +89,7 @@ function ComboboxContent({
         sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
+        collisionPadding={collisionPadding}
         anchor={anchor}
         className="tw-isolate tw-z-50"
       >
