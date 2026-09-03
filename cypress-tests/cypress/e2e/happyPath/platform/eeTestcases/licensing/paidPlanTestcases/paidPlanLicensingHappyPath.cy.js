@@ -5,11 +5,11 @@ import {
   multiEnvSelector,
   instanceSettingsSelector,
   whiteLabellingSelectors,
-} from "Selectors/eeCommon";
-import { licenseSelectors } from "Selectors/license";
-import { groupsSelector } from "Selectors/manageGroups";
-import { usersSelector } from "Selectors/manageUsers";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+} from "Selectors/platform/eeCommon";
+import { licenseSelectors } from "Selectors/platform/license";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { usersSelector } from "Selectors/platform/manageUsers";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import * as common from "Support/utils/common";
 import {
   getLicenseExpiryDate,
@@ -22,9 +22,9 @@ import {
   verifyTotalLimitsWithPlan,
 } from "Support/utils/license";
 import { settingsText, workspaceSettingsText } from "Texts/common";
-import { licenseText } from "Texts/license";
-import { dashboardSelector } from "Selectors/dashboard";
-import { workflowSelector } from "Selectors/workflows";
+import { licenseText } from "Texts/platform/license";
+import { dashboardSelector } from "Selectors/platform/dashboard";
+import { workflowSelector } from "Selectors/platform/workflows";
 
 describe("License Page", () => {
   const data = {
