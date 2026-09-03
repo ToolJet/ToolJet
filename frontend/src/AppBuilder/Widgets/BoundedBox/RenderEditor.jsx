@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { v4 as uuid } from 'uuid';
+import { getAnnotationLabelStyle } from './annotationLabel';
 
 export const RenderEditor = ({
   annotation,
@@ -12,6 +13,7 @@ export const RenderEditor = ({
   darkMode,
   selectElementStyles,
   getExposedAnnotations,
+  containerSize,
 }) => {
   useEffect(() => {
     if (geometry) {
@@ -25,11 +27,7 @@ export const RenderEditor = ({
     <div
       style={{
         position: 'absolute',
-        left: `${annotation.geometry.x}%`,
-        top: `${annotation.geometry.y + annotation.geometry.height}%`,
-        right: `${annotation.geometry.x + annotation.geometry.width}%`,
-        width: `${annotation.geometry.width}%`,
-        minWidth: '125px',
+        ...getAnnotationLabelStyle(geometry, containerSize),
       }}
       className="col"
     >

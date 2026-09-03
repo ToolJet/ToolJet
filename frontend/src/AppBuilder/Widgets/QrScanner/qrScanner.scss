@@ -1,0 +1,16 @@
+.qr-scanner__reader {
+  width: 100%;
+  height: 100%;
+
+  // react-qr-reader@2.2.1 hardcodes a square with padding-top: 100%.
+  > section {
+    width: 100%;
+    height: 100%;
+    padding-top: 0 !important;
+  }
+
+  // Fill the rectangular widget instead of cropping or letterboxing the feed.
+  video {
+    object-fit: fill !important;
+  }
+}
