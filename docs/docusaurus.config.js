@@ -544,6 +544,8 @@ module.exports = {
           {
             from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
             to: '/docs/beta/gitsync-env-vars',
+          },
+          {
             from: '/docs/tooljet-api/',
             to: '/api/',
           },
@@ -554,7 +556,11 @@ module.exports = {
           {
             from: '/docs/user-management/sso/scim/overview/',
             to: '/api/scim/',
-          }
+          },
+          {
+            from: "/docs/build-with-ai/tooljet-mcp/",
+            to: "/docs/build-with-ai/mcp/overview/",
+          },
         ],
       },
     ],
