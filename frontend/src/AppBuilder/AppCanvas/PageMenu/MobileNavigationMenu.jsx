@@ -137,7 +137,7 @@ const MobileNavigationMenu = ({
     const { toggleSidebar } = useSidebar();
 
     const switchPageWrapper = (page, currentPageId) => {
-      const isPageSwitched = switchPage(page, currentPageId);
+      const isPageSwitched = switchPage(page, currentPageId, moduleId);
       if (isPageSwitched) {
         toggleSidebar();
       }
