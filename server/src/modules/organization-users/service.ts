@@ -44,6 +44,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     const { firstName, lastName, addGroups, role, userMetadata } = updateOrgUserDto;
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id: organizationUserId, organizationId: user.organizationId },
+      relations: ['user'],
     });
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Step 1 - Update user details - Only super admin can
@@ -79,6 +80,26 @@ export class OrganizationUsersService implements IOrganizationUsersService {
 
       // Step 4 - validate license
       await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
+
+      const auditLogEntry = {
+        userId: user.id,
+        organizationId: organizationUser.organizationId,
+        resourceId: organizationUser.userId,
+        resourceName: organizationUser.user.email,
+        resourceData: {
+          updated_user: {
+            id: organizationUser.userId,
+            email: organizationUser.user.email,
+            first_name: firstName,
+            last_name: lastName,
+            role,
+            groups: addGroups,
+            metadata: userMetadata,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+
       return;
     });
   }

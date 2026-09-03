@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -548,6 +549,81 @@ describe('OrganizationUsersController', () => {
           .send();
 
         expect(developerRequestResponse.statusCode).toBe(403);
+      });
+    });
+
+    describe('PUT /api/organization-users/:id | Update user', () => {
+      it('should allow an admin to update a user and emit an audit log entry', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceId: targetUserData.user.id,
+          resourceName: targetUserData.user.email,
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              metadata: { department: 'finance' },
+            },
+          },
+        });
+      });
+
+      it('should return 403 for non-admin users', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin2@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const developerUserData = await createUser(app, {
+          email: 'update-developer@tooljet.io',
+          groups: ['developer', 'end-user'],
+          organization,
+        });
+        const developerSession = await buildTestSession(developerUserData.user, organization.id);
+        developerUserData['tokenCookie'] = developerSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target2@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(403);
       });
     });
   });
