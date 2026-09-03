@@ -24,7 +24,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/tooljet-db-table-operations.service.ts` | DDL actions (`create_table`, `join_tables`, `view_table`, etc.) — the `perform()` dispatch table. |
 | `services/tooljet-db-data-operations.service.ts` | Row-level actions (`list_rows`, `create_row`, `update_rows`, `delete_rows`). |
 | `services/tooljet-db-migration-recorder.service.ts` | Bookkeeping for the migration chain: `record`/`confirm`/`discard`/`adjudicatePending`. Wired into every one of the nine structured `perform()` ops (see invariant below); `view_table` calls `adjudicatePending` only. The `*Applications`/`confirm`/`discard`/`adjudicatePending` methods take an optional trailing `manager?` so a data migration can drive them on its own transaction's connection. |
-| `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B's per-table routine: re-points a migration-A relation (`id === internal_table_id`) to the highest-priority environment and materializes an empty `LIKE`-cloned development twin. Every app-DB statement runs on a caller-supplied `appManager` (no `this.manager`) so migration B can share migration A's transaction; idempotent on the `id === internal_table_id` predicate. Also called by task 7 for a single repaired table. |
+| `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B's per-table routine: re-points a migration-A relation (`id === internal_table_id`) to the highest-priority environment and materializes an empty `LIKE`-cloned development twin. Every app-DB statement runs on a caller-supplied `appManager` (no `this.manager`) so migration B can share migration A's transaction; idempotent on the `id === internal_table_id` predicate. Also called by task 7 for a single repaired table. Also owns the two read routes below. |
 | `services/tooljet-db-promote.service.ts` (CE stub, real logic in `server/ee/tooljet-db/services/`) | `POST .../table/:tableId/promote`: resolves source → next-highest-priority target environment, finds-or-creates the target relation, computes the missing migration set (`computeMissingMigrations`), and replays it via `applyMigrations`. CE throws `ForbiddenException`; the licence/permission gates live in EE. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape (columns, primary key, unique constraints, indexes, foreign keys). Used by the recorder and by the rollout migration's baseline synthesis - kept byte-identical between the two on purpose. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
@@ -262,6 +262,25 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `TooljetDbRawSqlMigrationService.revert()`** (`kind === 'structured' && payload.action ===
   'add_column'`), separate from `ADJUDICATION_PREDICATES` — extending "what's destructive" means
   adding a case there, not in the recorder.
+
+- **Two org-scoped read routes, both licence-filtered like `view_tables`** (unlicensed orgs see only
+  the priority-1 environment): `GET .../organizations/:organizationId/baseline-report`
+  (`listBaselineErrors` — every relation currently carrying a `baseline_error`; safe by construction,
+  since it inner-joins `InternalTableRelation`→`AppEnvironment` and an unlicensed environment never has
+  a relation to join through) and `GET .../organizations/:organizationId/table/:tableId/migrations`
+  (`getTableMigrations` — one table's full migration chain plus per-environment applied state).
+  `TABLE_MIGRATIONS` is gated in the open `can([VIEW_TABLE, VIEW_TABLES, JOIN_TABLES, ...])` block
+  (`ability/index.ts`), not behind `tjdbCRUD` — same as `VIEW_TABLE`/`VIEW_TABLES`.
+- **`view_tables`' per-environment shape**: `{ environment_id, environment_name, has_relation,
+  baseline_error }` — matches `getTableMigrations`/`listBaselineErrors`'s field names. `has_relation`
+  is `view_tables`'s own addition (no equivalent elsewhere): the other two routes imply "no relation"
+  by omission or an empty applied set, but `view_tables` is the one place a caller needs "no relation
+  at all" made explicit. `view_table` (singular) takes an `environmentId` query param and reads
+  through the resolved `InternalTableRelation` for that environment, not `internal_tables` directly.
+- **"Applied on environment X" is always `computeMissingMigrations(internalTableId, sourceRelation,
+  targetRelation: null, manager)`, never a second/duplicate query** — called with `targetRelation:
+  null` it drops the anti-join and returns X's entire confirmed set. `getTableMigrations` and
+  `listBaselineErrors` both rely on this; don't re-derive "applied" some other way.
 
 ## Related modules
 

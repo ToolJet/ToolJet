@@ -12,6 +12,8 @@ import { buildTableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { BaselineMigration, rewriteSerialDefaults, synthesizeBaseline } from '../helpers/baseline-synthesis';
 import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
 import { computeMissingMigrations } from './tooljet-db-promote.service';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 
 type AssignmentResult = { productionRelationId: string; developmentRelationId: string };
 
@@ -68,7 +70,8 @@ export class TooljetDbEnvironmentAssignmentService {
     private readonly manager: EntityManager,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
-    private readonly migrationRecorderService: TooljetDbMigrationRecorderService
+    private readonly migrationRecorderService: TooljetDbMigrationRecorderService,
+    private readonly licenseTermsService: LicenseTermsService
   ) {}
 
   /**
@@ -214,7 +217,16 @@ export class TooljetDbEnvironmentAssignmentService {
       order: { sequence: 'ASC', id: 'ASC' },
     });
 
-    const environments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    // Same gate viewTables() uses: every org has all app_environments rows seeded regardless of
+    // license, so an unlicensed org must have the extra rows filtered here, not at row-creation time.
+    const multiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+    const allEnvironments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    const environments = multiEnvironmentEnabled
+      ? allEnvironments
+      : allEnvironments.filter((environment) => environment.priority === 1);
     const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
     const relationByEnvironmentId = new Map(relations.map((relation) => [relation.environmentId, relation]));
 

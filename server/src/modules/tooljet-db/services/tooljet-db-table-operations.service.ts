@@ -456,10 +456,10 @@ export class TooljetDbTableOperationsService {
       environments: environments.map((environment) => {
         const relation = relationsByTable.get(table.id)?.find((r) => r.environmentId === environment.id);
         return {
-          id: environment.id,
-          name: environment.name,
-          hasRelation: !!relation,
-          hasBaselineError: !!relation?.baselineError,
+          environment_id: environment.id,
+          environment_name: environment.name,
+          has_relation: !!relation,
+          baseline_error: relation?.baselineError ?? null,
         };
       }),
     }));

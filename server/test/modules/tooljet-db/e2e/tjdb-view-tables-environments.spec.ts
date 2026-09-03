@@ -2,7 +2,7 @@
  * view_tables per-environment state: shape must be edition-agnostic - same field names in the
  * response regardless of edition, only the number of `environments` entries differs. CE (no
  * multi-environment license) gets one entry (its implicit environment); licensed EE gets one
- * entry per environment, with correct hasRelation/hasBaselineError presence flags.
+ * entry per environment, with correct has_relation/baseline_error presence.
  *
  * @group database
  */
@@ -94,10 +94,10 @@ describe('TooljetDbController | view_tables environments', () => {
       expect(table.environments).toHaveLength(1);
       expect(table.environments[0]).toMatchObject({
         has_relation: true,
-        has_baseline_error: false,
+        baseline_error: null,
       });
-      expect(typeof table.environments[0].id).toBe('string');
-      expect(typeof table.environments[0].name).toBe('string');
+      expect(typeof table.environments[0].environment_id).toBe('string');
+      expect(typeof table.environments[0].environment_name).toBe('string');
     });
   });
 
@@ -185,10 +185,10 @@ describe('TooljetDbController | view_tables environments', () => {
       expect(table).toBeTruthy();
       expect(table.environments).toHaveLength(3);
 
-      const byId = Object.fromEntries(table.environments.map((e) => [e.id, e]));
-      expect(byId[devEnvId]).toMatchObject({ has_relation: true, has_baseline_error: true });
-      expect(byId[stagingEnvId]).toMatchObject({ has_relation: false, has_baseline_error: false });
-      expect(byId[productionEnvId]).toMatchObject({ has_relation: false, has_baseline_error: false });
+      const byId = Object.fromEntries(table.environments.map((e) => [e.environment_id, e]));
+      expect(byId[devEnvId]).toMatchObject({ has_relation: true, baseline_error: 'could not baseline' });
+      expect(byId[stagingEnvId]).toMatchObject({ has_relation: false, baseline_error: null });
+      expect(byId[productionEnvId]).toMatchObject({ has_relation: false, baseline_error: null });
     });
   });
 });

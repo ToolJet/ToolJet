@@ -66,7 +66,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PROMOTE_TABLE_PREVIEW,
           FEATURE_KEY.REPAIR_BASELINE,
           FEATURE_KEY.BASELINE_REPORT,
-          FEATURE_KEY.TABLE_MIGRATIONS,
           FEATURE_KEY.ADD_RAW_SQL_MIGRATION,
           FEATURE_KEY.REVERT_MIGRATION,
         ],
@@ -81,6 +80,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    can([FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES], InternalTable);
+    can(
+      [FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES, FEATURE_KEY.TABLE_MIGRATIONS],
+      InternalTable
+    );
   }
 }
