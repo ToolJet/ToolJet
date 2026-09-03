@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { fileButtonSelector } from "Selectors/fileButton";
+import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import {
   openEditorSidebar,
   openAccordion,
