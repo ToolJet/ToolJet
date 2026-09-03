@@ -31,6 +31,8 @@ import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { InternalTableMigration } from '@entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { DataQuery } from '@entities/data_query.entity';
 
@@ -110,6 +112,27 @@ describe('An app cannot be promoted past its tables', () => {
       } as any);
     }
 
+    // Seeds `count` confirmed migrations against `appliedRelationIds` — used to make a source
+    // relation "ahead" of a target relation that only gets a subset of them.
+    async function seedMigrations(table: InternalTable, branchId: string, count: number, appliedRelationIds: string[]) {
+      for (let i = 0; i < count; i++) {
+        const migration = await saveEntity(InternalTableMigration, {
+          internalTableId: table.id,
+          sequence: String(i + 1),
+          branchId,
+          kind: 'structured',
+          payload: { op: 'noop' },
+        } as any);
+        for (const relationId of appliedRelationIds) {
+          await saveEntity(InternalTableMigrationApplication, {
+            migrationId: migration.id,
+            relationId,
+            appliedAt: new Date(),
+          } as any);
+        }
+      }
+    }
+
     async function promote(app: App, version: AppVersion, cookie: string[], organizationId: string, envId: string) {
       return request(nestApp.getHttpServer())
         .put(`/api/v2/apps/${app.id}/versions/${version.id}/promote`)
@@ -148,6 +171,38 @@ describe('An app cannot be promoted past its tables', () => {
       const response = await promote(app as any, version, cookie, organization.id, devEnv.id);
 
       expect(response.statusCode).toBe(200);
+    });
+
+    it('warns, but does not block, when the table resolves in the target but is missing migrations there', async () => {
+      const { user, organization, cookie, devEnv, stagingEnv } = await seedOrg('tjdb-promote-warn@tooljet.io');
+      const table = await seedTable(organization.id, 'orders', [devEnv, stagingEnv]); // relation exists both places
+      const branchId = (await resolveOrSeedDefaultBranch(organization.id)).id;
+      const devRelation = await findEntityOrFail(InternalTableRelation, {
+        internalTableId: table.id,
+        environmentId: devEnv.id,
+      });
+      const stagingRelation = await findEntityOrFail(InternalTableRelation, {
+        internalTableId: table.id,
+        environmentId: stagingEnv.id,
+      });
+      // 5 migrations confirmed on dev (source); staging (target) only has 3 of them.
+      await seedMigrations(table, branchId, 3, [devRelation.id, stagingRelation.id]);
+      await seedMigrations(table, branchId, 2, [devRelation.id]);
+
+      const app = await createApplication(nestApp, { name: 'App-Warn', user, type: 'front-end' });
+      const version = await createApplicationVersion(nestApp, app as any);
+      await queryTable(version, organization.id, table);
+
+      const response = await promote(app as any, version, cookie, organization.id, devEnv.id);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.tableWarnings).toEqual([
+        expect.objectContaining({ tableId: table.id, tableName: 'orders', missingCount: 2 }),
+      ]);
+
+      // Still promoted — a behind-but-present table is informational only, never a block.
+      const reloaded = await findEntityOrFail(AppVersion, { id: version.id });
+      expect(reloaded.currentEnvironmentId).toBe(stagingEnv.id);
     });
 
     it('does not block on a soft-deleted table', async () => {
