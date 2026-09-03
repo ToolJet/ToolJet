@@ -3109,16 +3109,16 @@ export const createComponentsSlice = (set, get) => ({
       queries: getQueryIdNameMapping(moduleId),
     };
 
+    // The trailing path (".value", "?.value", "[0].name", ...) is matched with an include-list
+    // of what a JS member-path can actually contain, instead of an exclude-list of characters
+    // that "shouldn't" appear there — an exclude-list has to anticipate every operator that
+    // might sit next to a reference (this is what missed `<`/`>` previously); an include-list
+    // of valid identifier/index characters can't miss anything because it's a closed set.
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
-    return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?((?:\??\.[A-Za-z_$][\w$]*|\[\d+\]|\['[^']*'\]|\["[^"]*"\])*)/g;
+    return input.replace(regex, (match, category, prefix, id, closingBracket, path) => {
       if (mappings[category] && mappings[category][id]) {
-        let name;
-        if (category === 'components') {
-          name = mappings[category][id];
-        } else {
-          name = mappings[category][id];
-        }
+        const name = mappings[category][id];
 
         // Reconstruct the string with the name instead of UUID
         let result = `${category}`;
@@ -3137,15 +3137,8 @@ export const createComponentsSlice = (set, get) => ({
           result += name;
         }
 
-        // Handle optional chaining after the name
-        if (optionalChaining) {
-          result += optionalChaining;
-        }
-
-        // Add the property if it exists
-        if (property) {
-          result += property;
-        }
+        // Append the rest of the member path as-is (already validated by the regex above)
+        result += path;
 
         return result;
       }
