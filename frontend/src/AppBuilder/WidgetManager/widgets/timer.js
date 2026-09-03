@@ -32,6 +32,14 @@ export const timerConfig = {
         defaultValue: 'countUp',
       },
     },
+    format: {
+      type: 'code',
+      displayName: 'Time format',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'hh:mm:ss:SSS',
+      },
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
@@ -80,6 +88,9 @@ export const timerConfig = {
       },
       type: {
         value: 'countUp',
+      },
+      format: {
+        value: 'hh:mm:ss:SSS',
       },
       collapseWhenHidden: { value: '{{false}}' },
     },

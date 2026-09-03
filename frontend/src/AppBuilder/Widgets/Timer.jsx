@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { formatTimerValue } from './utils';
 
 export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
@@ -129,17 +130,6 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     onStart(true);
   };
 
-  const prependZero = (value, count = 1) => {
-    if (!value) {
-      return count === 2 ? '000' : '00';
-    }
-    if (count === 2) {
-      return `${value.toString().length === 1 ? `00${value}` : value.toString().length === 2 ? `0${value}` : value}`;
-    } else {
-      return `${value.toString().length === 1 ? `0${value}` : value}`;
-    }
-  };
-
   const isCountDownFinished = () => {
     return time.hour === 0 && time.minute === 0 && time.second === 0 && time.mSecond === 0;
   };
@@ -160,12 +150,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       data-cy={dataCy}
     >
       <div className="timer-wrapper">
-        <div className="counter-container">
-          {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
-            time.mSecond,
-            2
-          )}`}
-        </div>
+        <div className="counter-container">{formatTimerValue(time, properties.format)}</div>
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
             <a

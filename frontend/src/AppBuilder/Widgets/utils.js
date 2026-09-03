@@ -59,6 +59,34 @@ export function getSafeRenderableValue(value) {
       })();
 }
 
+export const DEFAULT_TIMER_FORMAT = 'hh:mm:ss:SSS';
+
+export function padTimeUnit(value, digits = 2) {
+  const numeric = Number(value);
+  return String(Number.isFinite(numeric) ? numeric : 0).padStart(digits, '0');
+}
+
+/**
+ * Formats a timer's {hour, minute, second, mSecond} into a display string using
+ * a token-based format. Supported tokens: hh/HH (hours), mm/MM (minutes),
+ * ss/SS (seconds) padded to 2 digits, and SSS (milliseconds) padded to 3.
+ * SSS is matched before SS so milliseconds never collide with seconds.
+ * Falsy/blank formats fall back to DEFAULT_TIMER_FORMAT.
+ */
+export function formatTimerValue(time = {}, format = DEFAULT_TIMER_FORMAT) {
+  const safeFormat = format || DEFAULT_TIMER_FORMAT;
+  const tokens = {
+    HH: padTimeUnit(time.hour, 2),
+    hh: padTimeUnit(time.hour, 2),
+    MM: padTimeUnit(time.minute, 2),
+    mm: padTimeUnit(time.minute, 2),
+    SSS: padTimeUnit(time.mSecond, 3),
+    SS: padTimeUnit(time.second, 2),
+    ss: padTimeUnit(time.second, 2),
+  };
+  return safeFormat.replace(/SSS|hh|HH|mm|MM|ss|SS/g, (match) => tokens[match]);
+}
+
 export const getFormattedSteps = (steps) => {
   if (Array.isArray(steps)) return steps;
   if (typeof steps === 'string') {
