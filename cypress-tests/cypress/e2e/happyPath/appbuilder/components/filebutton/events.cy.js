@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { fileButtonSelector } from "Selectors/fileButton";
-import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/events";
+import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
+import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 
 describe(
