@@ -4,7 +4,7 @@ import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { getMouseDistanceFromParentDiv } from './Grid/gridUtils';
+import { getElementOffsetFromParent, clampToGridBounds, clampTop } from './Grid/gridUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -50,7 +50,7 @@ export const addNewWidgetToTheEditor = (
   const { e } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
-  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
+  const { left: _left, top: _top } = getElementOffsetFromParent(
     e,
     parentId === 'canvas' ? 'real-canvas' : parentId,
     parentCanvasType
@@ -62,7 +62,8 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
   let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  left = Math.round(left / gridWidth);
+  left = left / gridWidth;
+  top = clampTop(top);
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
@@ -99,14 +100,8 @@ export const addNewWidgetToTheEditor = (
     copyModuleDefault('collapse_when_hidden', 'collapseWhenHidden');
   }
 
-  // Ensure minimum width
-  width = Math.max(width, 1);
-
-  // Adjust position and width if exceeding grid bounds
-  if (width + left > NO_OF_GRIDS) {
-    left = Math.max(0, NO_OF_GRIDS - width);
-    width = Math.min(width, NO_OF_GRIDS);
-  }
+  // `left` comes from the ghost element's offset, so it can be negative near the parent's left edge
+  ({ left, width } = clampToGridBounds(left, width));
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
