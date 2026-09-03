@@ -234,6 +234,10 @@ describe(
     closeQueryPanel();
   });
 
+  afterEach(function () {
+    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  });
+
   it("should verify Button text: direct change and exposed-variable binding", () => {
     openEditorSidebar(widget);
     verifyAndModifyParameter("Button text", "Direct Button Text");

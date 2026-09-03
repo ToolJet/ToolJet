@@ -97,6 +97,10 @@ describe(
     waitForDropSettle(widget);
   });
 
+  afterEach(function () {
+    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  });
+
   it("should clear the selected file via the Clear CSA", () => {
     cy.get(fileButtonSelector.inputField(widget)).selectFile(validFile, { force: true });
     cy.get(fileButtonSelector.label(widget)).should("have.text", "tooljet.png");

@@ -111,6 +111,10 @@ describe(
     waitForDropSettle(widget);
   });
 
+  afterEach(function () {
+    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  });
+
   it("should verify Label size: direct change and exposed-variable binding", () => {
     // labelSize sets inline fontSize on the label span; lives in the collapsed
     // "label and icon" accordion of the Styles tab (Properties is the default tab).
