@@ -1,3 +1,8 @@
+/**
+ * SPEC — Number Input Component Tests.
+ * FOR AI: 1 case — should verify all the exposed values on inspector.
+ * Helpers: addCSA, verifyCSA, addMultiEventsWithAlert, openAndVerifyNode, openNode, verifyfunctions, verifyNodes.
+ */
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {

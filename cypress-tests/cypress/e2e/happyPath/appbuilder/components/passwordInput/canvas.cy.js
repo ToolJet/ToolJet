@@ -1,5 +1,5 @@
 /**
- * SPEC — Number Input — canvas facet.
+ * SPEC — Password Input — canvas facet.
  * FOR AI: 11 cases — drag-and-drop places the widget; move repositions the widget; resize changes the widget dimensions (+8 more).
  * Helpers: getWidgetRect, verifyWidgetMoved, verifyWidgetResized, verifyWidgetCount, duplicateWidgetByKeyboard, duplicateWidgetFromMenu, copyPasteWidget.
  */
@@ -29,20 +29,20 @@ import {
 // duplicate (keyboard + menu), copy-paste, cut, nudge, multi-select, rename,
 // delete, undo/redo. testIsolation:false for cypress-real-dnd (its CDP client
 // is cached per spec run); each test re-creates its own app in beforeEach.
-describe('Number Input — canvas facet', { testIsolation: false }, () => {
-    const W = 'numberinput1';
+describe('Password Input — canvas facet', { testIsolation: false }, () => {
+    const W = 'passwordinput1';
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-NumberInput-Canvas`);
+        cy.apiCreateApp(`${fake.companyName}-PasswordInput-Canvas`);
         cy.openApp();
-        cy.dragAndDropWidget('Number Input', 400, 200);
+        cy.dragAndDropWidget('Password Input', 400, 200);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('drag-and-drop places the widget', () => {
         cy.get(commonWidgetSelector.draggableWidget(W)).should('exist');
-        verifyWidgetCount('numberinput', 1);
+        verifyWidgetCount('passwordinput', 1);
     });
 
     it('move repositions the widget', () => {
@@ -71,17 +71,17 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
 
     it('duplicate via keyboard (Cmd/Ctrl+D)', () => {
         duplicateWidgetByKeyboard(W);
-        verifyWidgetCount('numberinput', 2);
+        verifyWidgetCount('passwordinput', 2);
     });
 
     it('duplicate via ⋮ menu', () => {
         duplicateWidgetFromMenu(W);
-        verifyWidgetCount('numberinput', 2);
+        verifyWidgetCount('passwordinput', 2);
     });
 
     it('copy-paste (Cmd/Ctrl+C then +V)', () => {
         copyPasteWidget(W);
-        verifyWidgetCount('numberinput', 2);
+        verifyWidgetCount('passwordinput', 2);
     });
 
     it('cut removes the widget, paste restores it', () => {
@@ -94,10 +94,10 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
     it('multi-select then select-all', () => {
         // add a second widget (toggle panel closed so dragAndDrop re-opens it)
         cy.get('[data-cy="right-sidebar-components-button"]').click();
-        cy.dragAndDropWidget('Number Input', 650, 200);
+        cy.dragAndDropWidget('Password Input', 650, 200);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
 
-        multiSelectWidgets(['numberinput1', 'numberinput2']);
+        multiSelectWidgets(['passwordinput1', 'passwordinput2']);
         verifySelectedWidgetCount(2);
 
         selectAllWidgets();

@@ -1,5 +1,5 @@
 /**
- * SPEC — Number Input — inspector facet.
+ * SPEC — Password Input — inspector facet.
  * FOR AI: 1 case — should verify exposed values + functions on inspector.
  * Helpers: openAndVerifyNode, openNode, verifyNodes, verifyNodeData.
  */
@@ -8,19 +8,19 @@ import { commonWidgetSelector } from "Selectors/common";
 import { openAndVerifyNode, openNode, verifyNodes, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec run.
-describe('Number Input — inspector facet', { testIsolation: false }, () => {
-    const W = 'numberinput1';
+describe('Password Input — inspector facet', { testIsolation: false }, () => {
+    const W = 'passwordinput1';
 
-    // source: numberinput.js exposedVariables (value:0, isMandatory, isVisible, isDisabled, isLoading)
+    // source: passwordinput.js exposedVariables (value:'', isMandatory, isVisible, isDisabled, isLoading)
     const exposedValues = [
-        { key: "value", type: "Number", value: "0" },
+        { key: "value", type: "String", value: "\"\"" },
         { key: "isMandatory", type: "Boolean", value: "false" },
         { key: "isVisible", type: "Boolean", value: "true" },
         { key: "isDisabled", type: "Boolean", value: "false" },
         { key: "isLoading", type: "Boolean", value: "false" },
     ];
 
-    // CSA handles — source: numberinput.js actions
+    // CSA handles — source: passwordinput.js actions
     const functions = [
         { key: "setText", type: "Function" },
         { key: "clear", type: "Function" },
@@ -33,9 +33,9 @@ describe('Number Input — inspector facet', { testIsolation: false }, () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-NumberInput-App`);
+        cy.apiCreateApp(`${fake.companyName}-PasswordInput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Number Input", 500, 100);
+        cy.dragAndDropWidget("Password Input", 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
