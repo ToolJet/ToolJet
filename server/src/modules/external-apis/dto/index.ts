@@ -551,6 +551,12 @@ export class ExportTjdbTableAsCsvDto {
   @IsNumber()
   @Min(0)
   offset?: number;
+
+  // Which environment's relation to export from. Unset falls back to the resolver's own default
+  // (development) - same resolveEnvironment/getRelation seam the read routes use.
+  @IsOptional()
+  @IsUUID()
+  environmentId?: string;
 }
 
 export class BanUserDto {
