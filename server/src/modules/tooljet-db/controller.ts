@@ -321,6 +321,17 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
+  // Scoped to one table, unlike baseline-report — the full migration chain, per-environment applied
+  // state (reusing computeMissingMigrations, not a second "applied" query), and this table's
+  // baseline-skip reason if it has one.
+  @InitFeature(FEATURE_KEY.TABLE_MIGRATIONS)
+  @Get('/organizations/:organizationId/table/:tableId/migrations')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async tableMigrations(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.getTableMigrations(tableId, organizationId);
+    return decamelizeKeys({ result });
+  }
+
   // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
   // identity operation, not a display-name one.
   @InitFeature(FEATURE_KEY.ADD_RAW_SQL_MIGRATION)

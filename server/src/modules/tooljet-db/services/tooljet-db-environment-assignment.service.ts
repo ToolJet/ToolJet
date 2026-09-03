@@ -7,10 +7,11 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { InternalTableMigration } from '@entities/internal_table_migration.entity';
+import { InternalTableMigration, InternalTableMigrationKind } from '@entities/internal_table_migration.entity';
 import { buildTableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { BaselineMigration, rewriteSerialDefaults, synthesizeBaseline } from '../helpers/baseline-synthesis';
 import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { computeMissingMigrations } from './tooljet-db-promote.service';
 
 type AssignmentResult = { productionRelationId: string; developmentRelationId: string };
 
@@ -22,6 +23,27 @@ export type BaselineErrorRow = {
   environmentId: string;
   environmentName: string;
   baselineError: string;
+};
+
+export type TableMigrationChainEntry = {
+  id: string;
+  kind: InternalTableMigrationKind;
+  name: string | null;
+  sequence: string;
+  createdAt: Date;
+  createdBy: string | null;
+};
+
+export type EnvironmentMigrationState = {
+  environmentId: string;
+  environmentName: string;
+  appliedMigrationIds: string[];
+  baselineError: string | null;
+};
+
+export type TableMigrationsResult = {
+  migrations: TableMigrationChainEntry[];
+  environments: EnvironmentMigrationState[];
 };
 
 /**
@@ -166,6 +188,62 @@ export class TooljetDbEnvironmentAssignmentService {
       .addSelect('environment.name', 'environmentName')
       .addSelect('relation.baseline_error', 'baselineError')
       .getRawMany();
+  }
+
+  /**
+   * One table's full migration chain plus, per environment, which of those migrations are confirmed
+   * applied there and whether that environment's relation carries a `baseline_error`.
+   *
+   * "Applied on environment X" is never re-derived here — `computeMissingMigrations` already answers
+   * it: called with `targetRelation: null` it drops the anti-join and returns X's entire confirmed
+   * set (see its own doc comment), which is exactly "applied so far", not a diff. An environment with
+   * no relation yet (never promoted to) reports an empty applied set and no baseline error, the same
+   * "nothing confirmed" meaning a null relation already carries there.
+   *
+   * The baseline-error reason reuses `listBaselineErrors`'s column/join shape, scoped to this table's
+   * relations instead of the whole organization, rather than a second `baseline_error` query shape.
+   */
+  async getTableMigrations(internalTableId: string, organizationId: string): Promise<TableMigrationsResult> {
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { id: internalTableId, organizationId },
+    });
+    if (!internalTable) throw new NotFoundException('Table not found');
+
+    const migrations = await this.manager.find(InternalTableMigration, {
+      where: { internalTableId },
+      order: { sequence: 'ASC', id: 'ASC' },
+    });
+
+    const environments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
+    const relationByEnvironmentId = new Map(relations.map((relation) => [relation.environmentId, relation]));
+
+    const environmentStates = await Promise.all(
+      environments.map(async (environment): Promise<EnvironmentMigrationState> => {
+        const relation = relationByEnvironmentId.get(environment.id);
+        const appliedMigrations = relation
+          ? await computeMissingMigrations(internalTableId, relation, null, this.manager)
+          : [];
+        return {
+          environmentId: environment.id,
+          environmentName: environment.name,
+          appliedMigrationIds: appliedMigrations.map((migration) => migration.id),
+          baselineError: relation?.baselineError ?? null,
+        };
+      })
+    );
+
+    return {
+      migrations: migrations.map((migration) => ({
+        id: migration.id,
+        kind: migration.kind,
+        name: migration.name,
+        sequence: migration.sequence,
+        createdAt: migration.createdAt,
+        createdBy: migration.createdBy,
+      })),
+      environments: environmentStates,
+    };
   }
 
   /**
