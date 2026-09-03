@@ -97,12 +97,17 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.VIEW_TABLE)
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
+  async table(
+    @Body() body,
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Query('environment_id', new ParseUUIDPipe({ optional: true })) environmentId?: string
+  ) {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'view_table',
       { table_name: tableName },
-      undefined
+      environmentId
     );
     const decamelizedResult = decamelizeKeys({ result });
     decamelizedResult['result']['configurations'] = result.configurations || {};
