@@ -11,7 +11,7 @@ import {
 import { sanitizeInput } from 'src/helpers/utils.helper';
 
 @ValidatorConstraint({ name: 'AllowedCharactersValidator', async: false })
-class AllowedCharactersValidator implements ValidatorConstraintInterface {
+export class AllowedCharactersValidator implements ValidatorConstraintInterface {
   private errorMsg: string;
 
   validate(value: string) {

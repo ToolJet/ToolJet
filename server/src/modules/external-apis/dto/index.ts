@@ -10,6 +10,7 @@ import {
   MaxLength,
   Matches,
   ValidateIf,
+  Validate,
   IsNotEmpty,
   IsDefined,
   IsObject,
@@ -28,6 +29,8 @@ import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
+import { sanitizeInput } from '@helpers/utils.helper';
+import { AllowedCharactersValidator } from '@modules/folders/dto';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
@@ -760,4 +763,43 @@ export class ImportWorkflowV2Dto {
   @IsDefined()
   @IsObject()
   definition: Record<string, any>;
+}
+
+// Shared across App/Module/Workflow Folders — same validators as the internal
+// CreateFolderDto/UpdateFolderDto (server/src/modules/folders/dto/index.ts).
+export class CreateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty({ message: "Folder name can't be empty" })
+  @Transform(({ value }) => sanitizeInput(value).trim())
+  @Validate(AllowedCharactersValidator)
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  name: string;
+}
+
+export class UpdateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
+  @MinLength(0, { message: 'Folder name cannot be empty' })
+  name: string;
+}
+
+export class ListFoldersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
 }

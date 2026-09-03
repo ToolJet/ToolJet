@@ -20,6 +20,9 @@ import {
   RenameWorkflowV2Dto,
   ListWorkflowsV2QueryDto,
   ImportWorkflowV2Dto,
+  CreateFolderV2Dto,
+  UpdateFolderV2Dto,
+  ListFoldersV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -152,4 +155,18 @@ export interface IExternalApisWorkflowsControllerV2 {
     appVersion?: string,
     exportAllVersions?: boolean
   ): Promise<any>;
+}
+
+// Shared by the App/Module/Workflow Folders controllers — identical shape for all three,
+// the resource type is fixed per-controller rather than passed by the caller.
+export interface IExternalApisFoldersControllerV2 {
+  createFolder(workspaceIdentifier: string, dto: CreateFolderV2Dto): Promise<any>;
+
+  listFolders(workspaceIdentifier: string, query: ListFoldersV2QueryDto): Promise<any>;
+
+  getFolder(workspaceIdentifier: string, folderIdentifier: string): Promise<any>;
+
+  updateFolder(workspaceIdentifier: string, folderIdentifier: string, dto: UpdateFolderV2Dto): Promise<any>;
+
+  deleteFolder(workspaceIdentifier: string, folderIdentifier: string): Promise<void>;
 }

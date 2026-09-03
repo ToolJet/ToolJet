@@ -24,19 +24,13 @@ export class FolderAppsService implements IFolderAppsService {
     protected gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
-  async create(
-    folderId: string,
-    appId: string,
-    branchId?: string,
-    organizationId?: string,
-    manager?: EntityManager
-  ): Promise<FolderApp> {
+  async create(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<FolderApp> {
     const { branchId: resolvedBranchId, isDefaultFallback } = await this.resolveEffectiveBranchId(
       appId,
       branchId,
       organizationId
     );
-    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback, manager);
+    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback);
   }
 
   async bulkCreate(
@@ -53,13 +47,7 @@ export class FolderAppsService implements IFolderAppsService {
     return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId, isDefaultFallback);
   }
 
-  async remove(
-    folderId: string,
-    appId: string,
-    branchId?: string,
-    organizationId?: string,
-    manager?: EntityManager
-  ): Promise<void> {
+  async remove(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<void> {
     const { branchId: resolvedBranchId, isDefaultFallback } = await this.resolveEffectiveBranchId(
       appId,
       branchId,
@@ -70,7 +58,7 @@ export class FolderAppsService implements IFolderAppsService {
         ? { folderId, appId, branchId: isDefaultFallback ? Or(Equal(resolvedBranchId), IsNull()) : resolvedBranchId }
         : { folderId, appId, branchId: IsNull() };
       return await manager.delete(FolderApp, where);
-    }, manager);
+    });
   }
 
   // branch_id is mandatory on folder_apps for every app type (workflows included — they are

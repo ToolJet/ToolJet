@@ -347,6 +347,19 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }, manager);
   }
 
+  async remove(
+    folderId: string,
+    appId: string,
+    branchId?: string,
+    matchNullAsDefaultBranch = false,
+    manager?: EntityManager
+  ): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
+      await manager.delete(FolderApp, { folderId, appId, ...branchFilter });
+    }, manager);
+  }
+
   protected addViewableFrontendFilter(
     query: SelectQueryBuilder<AppBase>,
     folderAppIds: string[],
