@@ -1,12 +1,12 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { fileButtonSelector } from "Selectors/fileButton";
+import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import {
   openAndVerifyNode,
   openNode,
   verifyNodes,
   verifyNodeData,
-} from "Support/utils/inspector";
+} from "Support/utils/appBuilder/inspectorTree";
 import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
 
 // testIsolation:false — cypress-real-dnd's drag intercept goes stale on AUT

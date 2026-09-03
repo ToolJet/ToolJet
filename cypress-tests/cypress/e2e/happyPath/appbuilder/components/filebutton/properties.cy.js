@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { fileButtonSelector } from "Selectors/fileButton";
+import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
-import { openNode, openSubNode, backFromDetail, verifyNodeData } from "Support/utils/inspector";
+import { openNode, openSubNode, backFromDetail, verifyNodeData } from "Support/utils/appBuilder/inspectorTree";
 
 // FilePicker.jsx hand-rolls this field, so it has no `parameter*` data-cy.
 // Its name comes from paramName (`fileType`), not its "File type" label.
