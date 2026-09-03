@@ -137,7 +137,7 @@ const Container = React.memo(
         height: draggedItem.component.defaultSize.height,
       };
 
-      activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+      activateMoveableGhost(componentSize, clientOffset);
       updateGhostSize(componentSize);
     }, [
       id,
@@ -193,7 +193,7 @@ const Container = React.memo(
         // drag preview - main canvas hover never fires when its drop region is covered
         // by the modal backdrop.
         if (clientOffset) {
-          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+          activateMoveableGhost(componentSize, clientOffset);
           updateGhostSize(componentSize);
         }
       },
