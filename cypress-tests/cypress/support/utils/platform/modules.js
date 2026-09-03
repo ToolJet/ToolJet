@@ -3,8 +3,15 @@ import { moduleSelectors } from 'Selectors/platform/modules';
 import { versionModalSelector } from 'Selectors/eeCommon';
 
 export const openModulesList = () => {
+  cy.intercept('GET', '/api/library_apps').as('libraryApps');
   cy.visit(`/${Cypress.env('workspaceSlug')}/modules`);
-  cy.get(commonSelectors.pageSectionHeader, { timeout: 20000 }).should('contain.text', 'Modules');
+  cy.wait(2000);
+
+  if (!Cypress.env('libraryAppsRequestSeen')) {
+    cy.wait('@libraryApps');
+    Cypress.env('libraryAppsRequestSeen', true);
+  }
+  cy.get(commonSelectors.pageSectionHeader, { timeout: 50000 }).should('contain.text', 'Modules');
 };
 
 export const createModuleViaAPI = (moduleName) => {

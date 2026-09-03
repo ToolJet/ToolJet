@@ -33,6 +33,7 @@ const initialState = {
       canvas: {
         canvasHeight: null,
         app: {},
+        linkedApps: {}, // Map<correlationId, { slug }> of apps referenced by go-to-app pages/events
         isViewer: false,
         isComponentLayoutReady: false,
       },
@@ -67,6 +68,25 @@ export const createAppSlice = (set, get) => ({
       },
       false,
       'setApp'
+    ),
+  setLinkedApps: (linkedApps, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].linkedApps = linkedApps ?? {};
+      },
+      false,
+      'setLinkedApps'
+    ),
+  upsertLinkedApp: (correlationId, info, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        if (!correlationId) return;
+        const current = state.appStore.modules[moduleId].linkedApps ?? {};
+        current[correlationId] = { ...(current[correlationId] ?? {}), ...info };
+        state.appStore.modules[moduleId].linkedApps = current;
+      },
+      false,
+      'upsertLinkedApp'
     ),
   setAppName: (name, moduleId = 'canvas') =>
     set(
@@ -146,7 +166,7 @@ export const createAppSlice = (set, get) => ({
       }
       const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
       const top = temporaryLayout?.top ?? layout.top;
-      const height = visibility ? (temporaryLayout?.height ?? layout.height) : 10;
+      const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
       return Math.max(max, top + height);
     }, 0);
 

@@ -689,7 +689,9 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
 
     if (pushOnly) return 'Push Commit';
     if (!allowPush) return 'Pull Commit';
-    return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
+    // Feature branch: both Push and Pull tabs are shown, so a single generic
+    // "Commit" header covers both instead of flipping with the active tab.
+    return 'Commit';
   })();
 
   return (

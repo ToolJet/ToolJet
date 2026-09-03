@@ -229,24 +229,6 @@ Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   });
 });
 
-Cypress.Commands.add("apiGetAppIdByName", (appName) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/apps`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const app = response.body.apps.find((app) => app.name === appName);
-        expect(app, `App with name "${appName}" not found`).to.exist;
-        return app.id;
-      });
-  });
-});
-
 Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   const { page = 1 } = options;
 
@@ -410,6 +392,7 @@ Cypress.Commands.add(
         const isEnterprise = Cypress.env("environment") === "Enterprise";
         const typeMap = {
           app: { type: "app", endpoint: "app" },
+          module: { type: "module", endpoint: "data-source" },
           workflow: { type: "workflow", endpoint: "data-source" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
@@ -494,6 +477,9 @@ Cypress.Commands.add(
               workflow: "app",
               data_source: "data-source",
               folder: "folder",
+              modules:"data-source",
+              workflow_folder: "workflow-folder",
+              module_folder: "module-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -1347,6 +1333,7 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
       });
   });
 });
+
 
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {

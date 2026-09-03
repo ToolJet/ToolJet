@@ -44,8 +44,11 @@ describe('AppGitFileOperationsUtil (pure)', () => {
   });
 
   describe('validateAppJsonForImport', () => {
-    it('throws BadRequestException when the params have no name', () => {
-      expect(() => util.validateAppJsonForImport({ schemaDetails: { multiPages: true } }, 'x')).toThrow(
+    // The name to assign comes from the on-disk directory (the `appName` arg), not an
+    // app.json `name` field (no longer carried) — so import fails when that directory
+    // name is missing, regardless of the payload.
+    it('throws BadRequestException when there is no directory name to assign', () => {
+      expect(() => util.validateAppJsonForImport({ schemaDetails: { multiPages: true } }, '')).toThrow(
         BadRequestException
       );
       expect(convertMock).not.toHaveBeenCalled();

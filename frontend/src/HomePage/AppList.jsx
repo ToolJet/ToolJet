@@ -28,29 +28,36 @@ const AppList = (props) => {
       {!props.isLoading && props.meta.total_count > 0 && (
         <div className="">
           <div className="homepage-app-card-list-item-wrap">
-            {props.apps.map((app) => {
-              return (
-                <div className="homepage-app-card-list-item" key={app.id}>
-                  <AppCard
-                    app={app}
-                    key={app.id}
-                    currentFolder={props.currentFolder}
-                    canCreateApp={props.canCreateApp}
-                    canDeleteApp={props.canDeleteApp}
-                    canUpdateApp={props.canUpdateApp}
-                    canViewApp={props.canViewApp}
-                    deleteApp={props.deleteApp}
-                    exportApp={props.exportApp}
-                    appActionModal={props.appActionModal}
-                    refreshApps={props.refreshApps}
-                    appType={props.appType}
-                    basicPlan={props?.basicPlan || false}
-                    moduleEnabled={props?.moduleEnabled || false}
-                    ownedFolders={props.ownedFolders}
-                  />
-                </div>
-              );
-            })}
+            {/* Apps on the current page/folder view that haven't been pushed to git yet —
+                handed to each card's PushAppsModal so the "Select app" picker can offer
+                any of them, not just the one whose card was clicked. */}
+            {(() => {
+              const unsyncedApps = props.apps.filter((a) => !a.is_app_synced);
+              return props.apps.map((app) => {
+                return (
+                  <div className="homepage-app-card-list-item" key={app.id}>
+                    <AppCard
+                      app={app}
+                      key={app.id}
+                      currentFolder={props.currentFolder}
+                      canCreateApp={props.canCreateApp}
+                      canDeleteApp={props.canDeleteApp}
+                      canUpdateApp={props.canUpdateApp}
+                      canViewApp={props.canViewApp}
+                      deleteApp={props.deleteApp}
+                      exportApp={props.exportApp}
+                      appActionModal={props.appActionModal}
+                      refreshApps={props.refreshApps}
+                      appType={props.appType}
+                      basicPlan={props?.basicPlan || false}
+                      moduleEnabled={props?.moduleEnabled || false}
+                      ownedFolders={props.ownedFolders}
+                      siblingUnsyncedApps={unsyncedApps}
+                    />
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
       )}

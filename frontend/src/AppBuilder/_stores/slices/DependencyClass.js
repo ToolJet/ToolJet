@@ -3,6 +3,29 @@ const { DepGraph } = require('dependency-graph');
 class DependencyGraph {
   constructor() {
     this.graph = new DepGraph();
+    /**
+     * Monotonic counter, bumped on every structural change to the graph.
+     *
+     * Exists for readers that *derive* from the graph rather than being wired for
+     * re-render by it — the Dependencies panel. This object is mutated in place and its
+     * identity never changes, so no selector can otherwise tell that an edge moved, and
+     * such readers silently go stale. A selector returning this number changes value when
+     * the graph does, which is all a subscriber needs.
+     *
+     * It lives on the class rather than in dependencySlice on purpose. Immer does not draft
+     * class instances, so bumping it here is compatible with the mutators' existing
+     * `return { ...state }`; bumping a plain slice field there would trip Immer's
+     * "returned a new value *and* modified its draft" guard. It also catches the few places
+     * that reach the graph directly instead of going through the slice.
+     *
+     * Affects no traversal or resolution behaviour — nothing reads it but the panel.
+     */
+    this.version = 0;
+  }
+
+  /** Records a structural change. Read-only accessors must never call this. */
+  touch() {
+    this.version += 1;
   }
 
   getNodeData(path) {
@@ -30,12 +53,14 @@ class DependencyGraph {
 
     this.graph.addDependency(fromPath, toPath); // queries.queryID.data -> components.componentID.property.text
     this.graph.setNodeData(toPath, nodeData);
+    this.touch();
   }
 
   removeDependency(toPath, clearToPath = false) {
     const dependents = this.getDirectDependents(toPath);
     let oldFromPath = null;
     if (dependents.length === 0) return;
+    this.touch();
     for (const dependent of dependents) {
       if (!toPath.startsWith(dependent)) {
         oldFromPath = dependent;
@@ -75,6 +100,7 @@ class DependencyGraph {
 
   removeNodes(nodes) {
     const potentialOrphans = new Set();
+    if (nodes.length) this.touch();
 
     nodes.forEach((node) => {
       const dependents = this.getDependents(node);
@@ -184,6 +210,7 @@ class DependencyGraph {
   removeLeafNode(path) {
     if (!this.hasNode(path)) return;
     this.graph.removeNode(path);
+    this.touch();
   }
 
   getOverallOrder() {

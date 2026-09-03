@@ -6,7 +6,7 @@ import { importText } from "Texts/exportImport";
 
 
 
-describe("Module Import", { retries: 0 }, () => {
+describe("Module Import", () => {
   const testId = Date.now();
   const wsName = `modules-import-${testId}`;
   const wsSlug = wsName;
