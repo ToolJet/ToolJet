@@ -16,6 +16,14 @@ type AssignmentResult = { productionRelationId: string; developmentRelationId: s
 
 export type RepairBaselineResult = { baseline_error: null; migrations_recorded: number };
 
+export type BaselineErrorRow = {
+  tableId: string;
+  tableName: string;
+  environmentId: string;
+  environmentName: string;
+  baselineError: string;
+};
+
 /**
  * Rollout migration B's per-table routine, factored out so migration B can loop it and task 7 can
  * call it for a single repaired table. See ~/Documents/Obsidian/.mind/feature/tjdb-environments-architecture.md.
@@ -135,6 +143,29 @@ export class TooljetDbEnvironmentAssignmentService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
     }
+  }
+
+  /**
+   * Every relation in the organization currently carrying a `baseline_error` — the un-actioned
+   * counterpart to `repairBaseline`. Pure read: lists what needs repair, doesn't attempt it.
+   *
+   * Named/exported so a sibling read (e.g. gating raw SQL migrations on a clean baseline) can reuse
+   * this same `baseline_error IS NOT NULL` predicate instead of re-deriving it.
+   */
+  async listBaselineErrors(organizationId: string): Promise<BaselineErrorRow[]> {
+    return this.manager
+      .createQueryBuilder(InternalTableRelation, 'relation')
+      .innerJoin(InternalTable, 'table', 'table.id = relation.internal_table_id')
+      .innerJoin(AppEnvironment, 'environment', 'environment.id = relation.environment_id')
+      .where('table.organization_id = :organizationId', { organizationId })
+      .andWhere('table.deleted_at IS NULL')
+      .andWhere('relation.baseline_error IS NOT NULL')
+      .select('table.id', 'tableId')
+      .addSelect('table.table_name', 'tableName')
+      .addSelect('environment.id', 'environmentId')
+      .addSelect('environment.name', 'environmentName')
+      .addSelect('relation.baseline_error', 'baselineError')
+      .getRawMany();
   }
 
   /**

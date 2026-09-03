@@ -65,6 +65,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PROMOTE_TABLE,
           FEATURE_KEY.PROMOTE_TABLE_PREVIEW,
           FEATURE_KEY.REPAIR_BASELINE,
+          FEATURE_KEY.BASELINE_REPORT,
           FEATURE_KEY.ADD_RAW_SQL_MIGRATION,
           FEATURE_KEY.REVERT_MIGRATION,
         ],

@@ -16,6 +16,7 @@ export enum FEATURE_KEY {
   PROMOTE_TABLE = 'promote_table',
   PROMOTE_TABLE_PREVIEW = 'promote_table_preview',
   REPAIR_BASELINE = 'repair_baseline',
+  BASELINE_REPORT = 'baseline_report',
   ADD_RAW_SQL_MIGRATION = 'add_raw_sql_migration',
   REVERT_MIGRATION = 'revert_migration',
 }

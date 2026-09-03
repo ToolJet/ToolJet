@@ -311,6 +311,16 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
+  // Org-wide, not scoped to a table — lists every relation currently blocked on baseline_error so a
+  // "baseline report" view can point at all of them at once, repair links included.
+  @InitFeature(FEATURE_KEY.BASELINE_REPORT)
+  @Get('/organizations/:organizationId/baseline-report')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async baselineReport(@Param('organizationId') organizationId: string) {
+    const result = await this.environmentAssignmentService.listBaselineErrors(organizationId);
+    return decamelizeKeys({ result });
+  }
+
   // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
   // identity operation, not a display-name one.
   @InitFeature(FEATURE_KEY.ADD_RAW_SQL_MIGRATION)
