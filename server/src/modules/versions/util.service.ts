@@ -218,8 +218,10 @@ export class VersionUtilService implements IVersionUtilService {
    *      in-memory entities. Satisfies `chk_app_versions_branch_metadata` and
    *      preserves continuity for the user's next edit. No child entities
    *      (pages / queries / etc.) are cloned — same model as the migration.
-   *   2. NULL out branch_id on the just-published row. Released snapshots
-   *      become branchless in the new model.
+   *   2. Nothing else. The just-published row KEEPS its default-branch
+   *      branch_id — see the closing comment in this method. An earlier
+   *      model detached it here; that CHECK constraint is gone and released
+   *      rows are no longer branchless.
    *
    * No-op when:
    *   - row isn't VERSION-type (sub-branch BRANCH publishes have their own flow)
