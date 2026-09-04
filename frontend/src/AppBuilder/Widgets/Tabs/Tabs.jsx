@@ -13,6 +13,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScrollArrows';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { resolveAdjacentTab } from './adjacentTab';
 import './tabs.scss';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
@@ -90,10 +91,14 @@ export const Tabs = function Tabs({
     parsedTabs = resolveWidgetFieldValue(parsedTabs);
   }
 
-  parsedTabs = parsedTabs?.map((parsedTab, index) => ({
-    ...parsedTab,
-    id: parsedTab.id ? parsedTab.id : index,
-  }));
+  parsedTabs = Array.isArray(parsedTabs)
+    ? parsedTabs
+        .filter((parsedTab) => parsedTab && typeof parsedTab === 'object')
+        .map((parsedTab, index) => ({
+          ...parsedTab,
+          id: parsedTab.id ? parsedTab.id : index,
+        }))
+    : [];
   const highlightColor = styles?.highlightColor ?? '#f44336';
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
@@ -150,6 +155,7 @@ export const Tabs = function Tabs({
     shallow
   );
   const [tabItems, setTabItems] = useState(parsedTabs);
+  const parsedTabsRef = useRef(parsedTabs);
   const tabItemsRef = useRef(tabItems);
 
   useDynamicHeight({
@@ -170,11 +176,16 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    if (JSON.stringify(tabItemsRef.current) !== JSON.stringify(parsedTabs)) {
-      setTabItems(parsedTabs);
+    if (JSON.stringify(parsedTabsRef.current) !== JSON.stringify(parsedTabs)) {
+      parsedTabsRef.current = parsedTabs;
       tabItemsRef.current = parsedTabs;
+      setTabItems(parsedTabs);
     }
   }, [parsedTabs]);
+
+  useEffect(() => {
+    tabItemsRef.current = tabItems;
+  }, [tabItems]);
 
   useEffect(() => {
     if (!parsedScrollToTopOnTabSwitch) return;
@@ -187,6 +198,21 @@ export const Tabs = function Tabs({
   }, [currentTab, parsedScrollToTopOnTabSwitch]);
 
   useEffect(() => {
+    // Reads the live tab list rather than this effect's closure: the effect does
+    // not re-run on tabItems, so setTabVisibility/setTabDisable would otherwise
+    // be invisible to these actions.
+    const switchToTab = (id) => {
+      if (id === null || id === undefined || currentTab == id) return;
+      setCurrentTab(id);
+      setExposedVariables({
+        currentTab: id,
+        // eslint-disable-next-line eqeqeq
+        currentTabTitle: tabItemsRef.current?.find((tab) => tab.id == id)?.title,
+      });
+      fireEvent('onTabSwitch');
+      setSelectedComponents([]);
+    };
+
     const exposedVariables = {
       setTab: async function (id) {
         if (currentTab != id) {
@@ -198,6 +224,15 @@ export const Tabs = function Tabs({
           fireEvent('onTabSwitch');
           setSelectedComponents([]);
         }
+      },
+      // Skip hidden and disabled tabs, clamp at the ends. A clamped move
+      // resolves to null and switchToTab treats that as a no-op, so
+      // onTabSwitch does not fire for a switch that did not happen.
+      setNextTab: async function () {
+        switchToTab(resolveAdjacentTab(tabItemsRef.current, currentTab, 'next'));
+      },
+      setPreviousTab: async function () {
+        switchToTab(resolveAdjacentTab(tabItemsRef.current, currentTab, 'previous'));
       },
       setTabDisable: async function (id, value) {
         setTabItems((prevTabItems) => {
