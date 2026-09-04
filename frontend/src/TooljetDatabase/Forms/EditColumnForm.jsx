@@ -5,13 +5,8 @@ import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, {
-  dataTypes,
-  formatOptionLabel,
-  serialDataType,
-  getColumnDataType,
-  renderDatatypeIcon,
-} from '../constants';
+import { useTjdbActions } from '../_stores/tjdbStore';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, renderDatatypeIcon } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import WarningInfo from '../Icons/Edit-information.svg';
@@ -60,6 +55,7 @@ const ColumnForm = ({
     configurations,
     setConfigurations,
   } = useContext(TooljetDatabaseContext);
+  const { fetchTableMetadata } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [migrationName, setMigrationName] = useState('');
@@ -315,30 +311,11 @@ const ColumnForm = ({
   };
 
   const fetchMetaDataApi = async () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      setConfigurations(data?.result?.configurations || {});
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
-    });
+    const metadata = await fetchTableMetadata(organizationId, selectedTable.table_name);
+    if (!metadata) return;
+    setConfigurations(metadata.configurations);
+    if (metadata.columns.length > 0) setColumns(metadata.columns);
+    setForeignKeys([...metadata.foreignKeys]);
   };
 
   const onCloseForeignKeyDrawer = () => {

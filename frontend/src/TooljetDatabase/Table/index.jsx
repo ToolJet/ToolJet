@@ -14,7 +14,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType, isSqlModeDisabled } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, isSqlModeDisabled } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
@@ -365,35 +365,16 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const fetchTableMetadata = () => {
-    if (!isEmpty(selectedTable)) {
-      return tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
-          return;
-        }
-
-        const { foreign_keys = [], configurations = {} } = data?.result || {};
-        setConfigurations(configurations);
-        if (data?.result?.columns?.length > 0) {
-          setColumns(
-            data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-              Header: column_name,
-              accessor: column_name,
-              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-              ...rest,
-            }))
-          );
-        }
-        if (foreign_keys.length > 0) {
-          setForeignKeys([...foreign_keys]);
-        } else {
-          setForeignKeys([]);
-        }
-      });
+  const fetchTableMetadata = async () => {
+    if (isEmpty(selectedTable)) {
+      setColumns([]);
+      return;
     }
-    setColumns([]);
-    return Promise.resolve();
+    const metadata = await fetchMetadata(organizationId, selectedTable.table_name);
+    if (!metadata) return;
+    setConfigurations(metadata.configurations);
+    if (metadata.columns.length > 0) setColumns(metadata.columns);
+    setForeignKeys([...metadata.foreignKeys]);
   };
 
   const onSelectedTableChange = () => {
@@ -413,7 +394,7 @@ const Table = ({ collapseSidebar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
-  const { registerEnvironmentSwitchHandler } = useTjdbActions();
+  const { registerEnvironmentSwitchHandler, fetchTableMetadata: fetchMetadata } = useTjdbActions();
 
   // Steps 3-5 of the ordered environment switch (see switchEnvironment in tjdbStore.js). This
   // component owns every derived cache involved, which is why the store calls back into it rather

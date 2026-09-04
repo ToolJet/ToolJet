@@ -4,6 +4,9 @@ import { immer } from 'zustand/middleware/immer';
 // tooljetDatabase.service.js, which imports this store back - going through the barrel would
 // close an ESM import cycle and leave `currentEnvironmentId` in the TDZ at module-eval time.
 import { appEnvironmentService } from '@/_services/app_environment.service';
+import { toast } from 'react-hot-toast';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { getColumnDataType } from '@/TooljetDatabase/constants';
 
 const initialState = {
   environments: [],
@@ -36,6 +39,33 @@ export const useTjdbStore = create(
             state.selectedEnvironment = sorted[0] ?? null;
           });
           return sorted;
+        },
+
+        // The single metadata read. Six copies of this body used to exist, and exactly one of them
+        // passed the environment - which is why five paths rendered development's schema while the
+        // user was on staging. viewTable now injects environment_id itself, so the duplication is
+        // the only remaining hazard; this removes it.
+        //
+        // Returns rather than sets: setColumns/setForeignKeys/setConfigurations live in
+        // TooljetDatabaseContext and stay there (design doc 3.4), so a store action cannot call them.
+        fetchTableMetadata: async (organizationId, tableName) => {
+          const { data = [], error } = await tooljetDatabaseService.viewTable(organizationId, tableName);
+          if (error) {
+            toast.error(error?.message ?? `Error fetching metadata for table "${tableName}"`);
+            return null;
+          }
+          const { foreign_keys = [], configurations = {}, columns: rawColumns = [] } = data?.result || {};
+          return {
+            rawColumns,
+            columns: rawColumns.map(({ column_name, data_type, ...rest }) => ({
+              Header: column_name,
+              accessor: column_name,
+              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+              ...rest,
+            })),
+            foreignKeys: foreign_keys,
+            configurations,
+          };
         },
 
         setQueryFilters: (next) =>

@@ -8,7 +8,8 @@ import { ToolTip } from '@/_components';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
-import { dataTypes, getColumnDataType } from '../constants';
+import { dataTypes } from '../constants';
+import { useTjdbActions } from '../_stores/tjdbStore';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -26,6 +27,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     setConfigurations,
     canEditTjdb,
   } = useContext(TooljetDatabaseContext);
+  const { fetchTableMetadata } = useTjdbActions();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
@@ -106,29 +108,11 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   };
 
   const isEditTable = (tableName) => {
-    tooljetDatabaseService.viewTable(organizationId, tableName).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      setConfigurations(data?.result?.configurations || {});
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
+    fetchTableMetadata(organizationId, tableName).then((metadata) => {
+      if (!metadata) return;
+      setConfigurations(metadata.configurations);
+      if (metadata.columns.length > 0) setColumns(metadata.columns);
+      setForeignKeys([...metadata.foreignKeys]);
     });
     handleRefetchQuery({}, {}, 1, pageSize);
     setPageCount(1);

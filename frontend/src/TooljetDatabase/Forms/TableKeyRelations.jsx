@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import TableDetailsDropdown from './TableDetailsDropdown';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import Source from '../Icons/Source.svg';
 import Setting from '../Icons/setting.svg';
 import Target from '../Icons/Target.svg';
@@ -34,6 +35,7 @@ function SourceKeyRelation({
   onUpdate,
 }) {
   const { tables, organizationId, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { fetchTableMetadata } = useTjdbActions();
   const [targetColumnList, setTargetColumnList] = useState([]);
 
   async function fetchTables() {
@@ -159,31 +161,24 @@ function SourceKeyRelation({
   }, []);
 
   const handleSelectColumn = (table_name = '') => {
-    if (table_name?.length > 0) {
-      tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-          return;
-        }
-
-        const { foreign_keys = [] } = data?.result || {};
-        if (data?.result?.columns?.length > 0) {
-          setTargetColumnList(
-            data?.result?.columns.map((item) => ({
-              name: item.column_name,
-              label: item.column_name,
-              icon: dataTypes.filter(
-                (obj) =>
-                  obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
-              )[0]?.icon,
-              value: item.column_name,
-              dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
-            }))
-          );
-        }
-      });
-      // setTargetColumn({ value: '', label: '', dataType: '' });
-    }
+    if (!table_name?.length) return;
+    fetchTableMetadata(organizationId, table_name).then((metadata) => {
+      if (!metadata) return;
+      if (metadata.rawColumns.length > 0) {
+        setTargetColumnList(
+          metadata.rawColumns.map((item) => ({
+            name: item.column_name,
+            label: item.column_name,
+            icon: dataTypes.filter(
+              (obj) =>
+                obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
+            )[0]?.icon,
+            value: item.column_name,
+            dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
+          }))
+        );
+      }
+    });
   };
 
   const targetTableColumns =
@@ -198,8 +193,8 @@ function SourceKeyRelation({
           }
         })
       : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
-        ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
-        : [];
+      ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
+      : [];
 
   useEffect(() => {
     if ((isEditMode && !createForeignKeyInEdit) || !createForeignKeyInEdit) {
@@ -226,11 +221,11 @@ function SourceKeyRelation({
     (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'serial')
       ? true
       : sourceColumn?.dataType === 'bigint' &&
-          (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
-        ? true
-        : sourceColumn?.dataType === targetColumn?.dataType
-          ? true
-          : false;
+        (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
+      ? true
+      : sourceColumn?.dataType === targetColumn?.dataType
+      ? true
+      : false;
 
   useEffect(() => {
     if (!isSameDataTypeColumns) {

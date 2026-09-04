@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/_components';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
 import { TooljetDatabaseContext } from '../index';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import cx from 'classnames';
 
 function ForeignKeyRelation({
@@ -44,6 +45,7 @@ function ForeignKeyRelation({
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
   const [migrationName, setMigrationName] = useState('');
+  const { fetchTableMetadata } = useTjdbActions();
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const existingReferencedTableName = foreignKeyDetails[selectedForeignkeyIndex]?.referenced_table_name;
@@ -83,34 +85,24 @@ function ForeignKeyRelation({
   };
 
   const fetchMetaDataApi = async () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.reduce((acc, { column_name, data_type, constraints_type, ...rest }, index) => {
-            acc[index] = {
-              column_name: column_name,
-              data_type: getColumnDataType({ column_default: rest.column_default, data_type }),
-              constraints_type: constraints_type,
-              dataTypeDetails: dataTypes.filter((item) => item.value === data_type),
-              column_default: rest.column_default,
-              ...rest,
-            };
-            return acc;
-          }, {})
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
-    });
+    const metadata = await fetchTableMetadata(organizationId, selectedTable.table_name);
+    if (!metadata) return;
+    if (metadata.rawColumns.length > 0) {
+      setColumns(
+        metadata.rawColumns.reduce((acc, { column_name, data_type, constraints_type, ...rest }, index) => {
+          acc[index] = {
+            column_name: column_name,
+            data_type: getColumnDataType({ column_default: rest.column_default, data_type }),
+            constraints_type: constraints_type,
+            dataTypeDetails: dataTypes.filter((item) => item.value === data_type),
+            column_default: rest.column_default,
+            ...rest,
+          };
+          return acc;
+        }, {})
+      );
+    }
+    setForeignKeys([...metadata.foreignKeys]);
   };
 
   const handleCreateForeignKeyinEditMode = async () => {
