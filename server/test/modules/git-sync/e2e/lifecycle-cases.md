@@ -48,9 +48,8 @@ and only falls back to `run-ci/<uuid>` when unset. (The old static defaults `gsm
 (error classifier + sanitizer, connection-error handler, webhook signature + dedup, datasource/resource
 FS readers, branching-tag/target helpers, `git-tree-sha` ls-remote/ls-tree parsing,
 `AppGitFileOperationsUtil` layout resolvers + `validateAppJsonForImport` normalization,
-the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/branchExists/
-resolveTagToSha argv shaping — and `PlatformGitPushService`'s fs-only meta helpers
-(`deleteAppFromRepo`, `readAppMeta`/`writeAppMeta`)). `test:gitsync` chains unit then e2e.
+and the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/
+branchExists/resolveTagToSha argv shaping). `test:gitsync` chains unit then e2e.
 
 ### Coverage (git-sync files only)
 

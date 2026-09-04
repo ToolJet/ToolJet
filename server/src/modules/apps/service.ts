@@ -540,16 +540,6 @@ export class AppsService implements IAppsService {
     // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
     // overlay below picks any version row's metadata per app.
     const branchId = await this.resolveDashboardBranchId(user, appListDto.branchId);
-    // if (!branchId && type === 'front-end') {
-    //   const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-    //   if (orgGit) {
-    //     const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-    //       where: { organizationId: user.organizationId, isDefault: true },
-    //       select: ['id'],
-    //     });
-    //     branchId = defaultBranch?.id;
-    //   }
-    // }
     const pageNum = parseInt(page || '1');
     const manager = this.appRepository.manager;
 

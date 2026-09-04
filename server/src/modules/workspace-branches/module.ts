@@ -38,10 +38,10 @@ export class WorkspaceBranchesModule extends SubModule {
       'git-sync-queue.processor',
     ]);
 
-    const { PlatformGitPullService, PlatformGitPushService, GitConflictDetectionService } = await this.getProviders(
+    const { PlatformGitPullService, GitConflictDetectionService } = await this.getProviders(
       configs,
       'platform-git-sync',
-      ['pull.service', 'push.service', 'git-conflict-detection.service']
+      ['pull.service', 'git-conflict-detection.service']
     );
 
     return this.cacheModule(cacheKey, {
@@ -76,7 +76,6 @@ export class WorkspaceBranchesModule extends SubModule {
         GitSyncQueueService,
         FeatureAbilityFactory,
         PlatformGitPullService,
-        PlatformGitPushService,
         GitConflictDetectionService,
         ...(isMainImport
           ? [
@@ -87,13 +86,7 @@ export class WorkspaceBranchesModule extends SubModule {
             ]
           : []),
       ],
-      exports: [
-        WorkspaceBranchService,
-        GitSyncQueueService,
-        PlatformGitPullService,
-        PlatformGitPushService,
-        GitConflictDetectionService,
-      ],
+      exports: [WorkspaceBranchService, GitSyncQueueService, PlatformGitPullService, GitConflictDetectionService],
     });
   }
 }
