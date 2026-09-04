@@ -103,6 +103,10 @@
 
   &__row-content {
     flex: 1;
+    // Flex items default to min-width: auto, which stops them shrinking below their content's
+    // intrinsic width - without this an unwrapped SQL line in the expanded code view pushes the
+    // row (and the drawer) wider instead of staying contained.
+    min-width: 0;
   }
 
   &__row-title {
@@ -155,6 +159,12 @@
 
   &__row-content > .cm-editor {
     margin-top: 8px;
+  }
+
+  .cm-editor {
+    max-width: 100%;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
   }
 
   // The `.migration-history-drawer` root class this file's BEM selectors nest under lands on

@@ -5,11 +5,12 @@ import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, CodeXml } from 'lucide-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { sql as sqlLang } from '@codemirror/lang-sql';
+import { EditorView } from '@codemirror/view';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -22,7 +23,7 @@ const ReadOnlySqlView = ({ sql }) => {
     <CodeMirror
       value={sql || '-- No SQL available for this migration'}
       theme={darkMode ? okaidia : githubLight}
-      extensions={[sqlLang()]}
+      extensions={[sqlLang(), EditorView.lineWrapping]}
       editable={false}
       basicSetup={{
         lineNumbers: true,
@@ -170,7 +171,7 @@ const MigrationHistoryDrawer = ({
                 className={cx('migration-history-drawer__code-button', { active: isExpanded })}
                 onClick={() => setExpandedMigrationId(isExpanded ? null : migration.id)}
               >
-                {'</>'}
+                <CodeXml size={16} className="migration-history-drawer__code-icon" />
               </button>
             </div>
           );
