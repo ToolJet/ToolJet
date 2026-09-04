@@ -214,6 +214,11 @@
         .spin-loader {
             position: relative;
             width: auto;
+
+        
+            .load div {
+                background-color: var(--cc-primary-brand, var(--indigo9));
+            }
         }
     }
 }
