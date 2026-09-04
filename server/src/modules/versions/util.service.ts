@@ -22,12 +22,8 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
-import {
-  resolveAllModuleViewersForVersion,
-  ResolvedModuleViewer,
-  resolveAllWorkflowRefsForVersion,
-  resolveWorkflowRef,
-} from './module-ref.util';
+import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import { resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
@@ -290,6 +286,7 @@ export class VersionUtilService implements IVersionUtilService {
         // draft seeded from it should stay marked synced too.
         isSynced: sourceVersion?.isSynced ?? appVersion.isSynced ?? false,
         isStub: false,
+        workflowEnabled: (sourceVersion as any)?.workflowEnabled ?? (appVersion as any)?.workflowEnabled ?? false,
         appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
         slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
         icon: (sourceVersion as any)?.icon ?? (appVersion as any)?.icon ?? null,
@@ -501,6 +498,10 @@ export class VersionUtilService implements IVersionUtilService {
         appName: versionFrom?.appName ?? app.name ?? app.id,
         icon: versionFrom?.icon ?? null,
         isPublic: versionFrom?.isPublic ?? false,
+        // Must survive a revert: replaceDraftVersion deletes and recreates the default branch's
+        // DRAFT, and propagate_workflow_enabled then fans whatever this row holds across every
+        // published row of the workflow.
+        workflowEnabled: versionFrom?.workflowEnabled ?? false,
       })
     );
 
@@ -590,6 +591,7 @@ export class VersionUtilService implements IVersionUtilService {
           appName: versionFrom?.appName ?? app.name ?? app.id,
           icon: versionFrom?.icon ?? null,
           isPublic: versionFrom?.isPublic ?? false,
+          workflowEnabled: versionFrom?.workflowEnabled ?? false,
         })
       );
 
@@ -643,6 +645,105 @@ export class VersionUtilService implements IVersionUtilService {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check if module version is in use', error?.stack || error);
       throw new BadRequestException('Failed to check if module version is in use');
+    }
+  }
+
+  // Twin of checkDraftModulesInApp for embedded workflows. Blocks on what a pin RESOLVES TO,
+  // never on what it says, so a future sentinel needs no change here.
+  //
+  // Unlike the module twin, an absent pin is NOT an offender: for a workflow query it means
+  // "run whatever's released", which is a legitimate published target.
+  async checkDraftWorkflowsInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const coRels = Array.from(new Set(refs.map((r) => r.workflowCoRel)));
+      const workflowApps: { coRel: string; name: string }[] = await manager.query(
+        `SELECT DISTINCT ON (a.co_relation_id) a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1) AND a.type = $2 AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
+        [coRels, APP_TYPES.WORKFLOW, organizationId]
+      );
+      const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
+
+      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned' };
+      const offenders: Offender[] = [];
+      const seenCoRel = new Set<string>();
+
+      for (const ref of refs) {
+        if (seenCoRel.has(ref.workflowCoRel)) continue;
+        seenCoRel.add(ref.workflowCoRel);
+        const name = nameByCoRel.get(ref.workflowCoRel) ?? 'unknown workflow';
+
+        // consumerBranchId omitted deliberately: the question here is whether the target is
+        // publishable, not which branch to follow, so __current_branch__ resolves to the
+        // default-branch draft and is caught by the DRAFT check below.
+        let resolved: { appId: string | null; appVersionId: string | null };
+        try {
+          resolved = await resolveWorkflowRef(
+            manager,
+            optionsByDataQueryId.get(ref.dataQueryId) ?? {},
+            organizationId,
+            defaultBranchId
+          );
+        } catch {
+          offenders.push({ name, kind: 'invalid-pin' });
+          continue;
+        }
+
+        if (!resolved.appVersionId) {
+          offenders.push({ name, kind: 'no-row' });
+          continue;
+        }
+
+        const row = await manager.findOne(AppVersion, {
+          where: { id: resolved.appVersionId },
+          select: ['id', 'status'],
+        });
+        if (!row || row.status === AppVersionStatus.DRAFT) {
+          offenders.push({ name, kind: 'draft-pinned' });
+        }
+      }
+
+      if (offenders.length === 0) return;
+
+      const formatEntry = (o: Offender) =>
+        o.kind === 'no-row'
+          ? `Workflow "${o.name}" has no saved version yet. Save the workflow first.`
+          : o.kind === 'invalid-pin'
+            ? `Workflow "${o.name}" pin is invalid. Pin a saved version.`
+            : `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
+
+      const workflowList = offenders.map(formatEntry).join(' ');
+      throw new BadRequestException({
+        message: {
+          error:
+            offenders.length === 1
+              ? `Save blocked - ${formatEntry(offenders[0])}`
+              : `Save blocked - ${offenders.length} workflows need saving. ${workflowList}`,
+          details: workflowList,
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check draft workflows in app', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions');
     }
   }
 
@@ -807,7 +908,11 @@ export class VersionUtilService implements IVersionUtilService {
       );
       const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
 
-      type Offender = { name: string; kind: 'no-row' | 'unresolved-pin' | 'not-promoted'; versionName?: string };
+      type Offender = {
+        name: string;
+        kind: 'no-row' | 'unresolved-pin' | 'not-promoted' | 'draft-pinned';
+        versionName?: string;
+      };
       const offenders: Offender[] = [];
       const seenCoRel = new Set<string>();
 
@@ -836,11 +941,15 @@ export class VersionUtilService implements IVersionUtilService {
         const row = await manager
           .createQueryBuilder(AppVersion, 'av')
           .leftJoin('app_environments', 'e', 'e.id = av.current_environment_id')
-          .select(['av.name AS "versionName"', 'e.priority AS "envPriority"'])
+          .select(['av.name AS "versionName"', 'av.status AS "status"', 'e.priority AS "envPriority"'])
           .where('av.id = :id', { id: resolved.appVersionId })
-          .getRawOne<{ versionName: string; envPriority: number | null }>();
+          .getRawOne<{ versionName: string; status: string; envPriority: number | null }>();
 
-        if (!row || row.envPriority === null || row.envPriority < targetPriority) {
+        // A draft pin reported as "not promoted" names a uuid and suggests a remedy that
+        // cannot work, so classify it separately.
+        if (row?.status === AppVersionStatus.DRAFT) {
+          offenders.push({ name, kind: 'draft-pinned' });
+        } else if (!row || row.envPriority === null || row.envPriority < targetPriority) {
           offenders.push({ name, kind: 'not-promoted', versionName: row?.versionName });
         }
       }
@@ -850,6 +959,7 @@ export class VersionUtilService implements IVersionUtilService {
       const formatEntry = (o: Offender) => {
         if (o.kind === 'no-row') return `Workflow "${o.name}" has no saved version. Save the workflow first.`;
         if (o.kind === 'unresolved-pin') return `Workflow "${o.name}" pin is invalid. Pin a saved version.`;
+        if (o.kind === 'draft-pinned') return `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
         return `Workflow "${o.name}" version "${o.versionName ?? 'unresolved'}" not promoted to ${targetEnvironmentName} yet.`;
       };
       const workflowList = offenders.map(formatEntry).join(' ');

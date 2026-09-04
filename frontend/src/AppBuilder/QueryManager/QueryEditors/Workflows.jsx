@@ -11,6 +11,19 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { useTranslation } from 'react-i18next';
 import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import {
+  DEFAULT_BRANCH_DRAFT_SENTINEL,
+  WORKFLOW_CURRENT_BRANCH_SENTINEL,
+  VERSION_BADGES,
+  getIsWorkflowSynced,
+  hasDefaultBranchDraft,
+  isCurrentBranchRow,
+  scopeVersionsForPicker,
+  versionBadge,
+  versionLabel,
+} from '@/_helpers/versionLabels';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
@@ -25,6 +38,13 @@ export function Workflows({ options, optionsChanged, currentState }) {
   // Portable ids post-migration — plain value match, no name-fallback needed.
   const resolvedWorkflowId = workflowOptions.find((o) => o.value === options.workflowId)?.value ?? null;
   const resolvedWorkflowVersionId = versionOptions.find((o) => o.value === options.workflowVersionId)?.value ?? null;
+
+  const { activeBranchId, currentBranch } = useWorkspaceBranchesStore((state) => ({
+    activeBranchId: state.activeBranchId,
+    currentBranch: state.currentBranch,
+  }));
+  const { isGitSyncEnabled, defaultBranch: defaultBranchName } = useGitSyncConfig();
+  const isOnMain = !!(currentBranch?.is_default ?? currentBranch?.isDefault);
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -62,13 +82,30 @@ export function Workflows({ options, optionsChanged, currentState }) {
   useEffect(() => {
     if (resolvedWorkflowAppId) {
       appVersionService
-        .getAll(resolvedWorkflowAppId)
+        // includeDefaultBranchVersions: without it a feature branch only gets that branch's
+        // row, so the main-draft entry and the saved versions would be missing.
+        .getAll(resolvedWorkflowAppId, undefined, true)
         .then((data) => {
-          const versions = (data?.versions || []).map((v) => ({
-            value: v.name,
-            name: v.name,
+          const all = data?.versions || [];
+          const isSynced = isGitSyncEnabled && getIsWorkflowSynced(all);
+
+          // Published versions keep storing `v.name` — the value is persisted on the query, so
+          // changing it would orphan every saved workflow query. Only the branch row stores a
+          // sentinel, and that row is new.
+          const rowEntries = scopeVersionsForPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
+            value: isCurrentBranchRow(v, activeBranchId) ? WORKFLOW_CURRENT_BRANCH_SENTINEL : v.name,
+            name: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName }),
+            badge: versionBadge(v),
           }));
-          setVersionOptions(versions);
+
+          // One entry off a boolean, never one per draft row: an unsynced workflow may hold
+          // several default-branch drafts. Hidden on main, where Current branch already is main.
+          const mainDraftEntry =
+            isSynced && hasDefaultBranchDraft(all) && !isOnMain
+              ? [{ value: DEFAULT_BRANCH_DRAFT_SENTINEL, name: defaultBranchName, badge: VERSION_BADGES.DRAFT }]
+              : [];
+
+          setVersionOptions([...mainDraftEntry, ...rowEntries]);
         })
         .catch(() => {
           setVersionOptions([]);
@@ -77,7 +114,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       setVersionOptions([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedWorkflowAppId]);
+  }, [resolvedWorkflowAppId, activeBranchId, isGitSyncEnabled, isOnMain, defaultBranchName]);
 
   useEffect(() => {
     optionsChanged({

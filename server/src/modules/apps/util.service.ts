@@ -494,6 +494,7 @@ export class AppsUtilService implements IAppsUtilService {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
+    const workflowEnabled = appUpdateDto.workflow_enabled;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
@@ -506,6 +507,9 @@ export class AppsUtilService implements IAppsUtilService {
     if (name !== undefined) versionParams.appName = name;
     if (icon !== undefined) versionParams.icon = icon;
     if (isPublic !== undefined) versionParams.isPublic = isPublic;
+    // Fifth branch-scoped version column. Never lands in appParams — apps.workflow_enabled
+    // follows apps.is_public into disuse.
+    if (workflowEnabled !== undefined) versionParams.workflowEnabled = workflowEnabled;
 
     // App-level fields (always written to apps table) -- name/slug/icon/isPublic
     // never land here for any type; they're version-level fields above.

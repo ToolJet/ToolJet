@@ -6,6 +6,7 @@ import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
 import { APP_TYPES } from '@modules/apps/constants';
 import { isUUID } from 'class-validator';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class WebhookGuard implements CanActivate {
@@ -42,8 +43,41 @@ export class WebhookGuard implements CanActivate {
     // Workflow must be enabled inorder to use it
     if (!workflowApp.isMaintenanceOn) throw new HttpException(`Workflow is disabled or does not exist`, 403);
 
-    // WebHook endpoint must be enabled inorder to use it
-    if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
+    // WebHook endpoint must be enabled inorder to use it. Enablement is branch-scoped on
+    // app_versions, and propagate_workflow_enabled keeps a branch's version rows in step, so one
+    // rule covers every case: no ?version= reads the released row, a version name reads that row.
+    //
+    // Scoped to the trigger routes — status/stream/terminate share this guard and ignore
+    // ?version=, so an unscoped read would let a stray param pick their gate.
+    const routePath = request?.route?.path ?? '';
+    const acceptsVersion = routePath.endsWith('/trigger') || routePath.endsWith('/trigger-async');
+
+    // Express `qs` yields an array for ?version[]=a&version[]=b, same as the workspace header above.
+    const rawVersion = request?.query?.version;
+    const versionRef = Array.isArray(rawVersion) ? rawVersion[0] : rawVersion;
+
+    let enablementRow: AppVersion = null;
+    if (acceptsVersion && versionRef) {
+      enablementRow = await this.manager.findOne(AppVersion, {
+        where: { appId: workflowApp.id, name: versionRef },
+        select: ['id', 'workflowEnabled'],
+      });
+      // An unknown version is deliberately not a 403 — fall through so the service raises its 404
+      // naming the version. A 403 here reads as "webhook disabled" and misdirects debugging.
+    }
+
+    const enablementSource =
+      enablementRow ??
+      (workflowApp.currentVersionId
+        ? await this.manager.findOne(AppVersion, {
+            where: { id: workflowApp.currentVersionId },
+            select: ['id', 'workflowEnabled'],
+          })
+        : null);
+
+    if (!enablementSource?.workflowEnabled) {
+      throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
+    }
 
     // Workspace Level -
     if (workflowsLimit.workspace) {

@@ -374,14 +374,23 @@ export class AppsRepository extends Repository<App> {
   }
   async findAllOrganizationWorkflows(
     organizationId: string,
-    workflowIds?: string[]
+    workflowIds?: string[],
+    activeBranchId?: string
   ): Promise<{ id: string; name: string; co_relation_id: string }[]> {
     if (workflowIds && !workflowIds.length) return [];
 
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
+    // A workflow created on a feature branch has no default-branch VERSION row, and apps.name
+    // is null for every app, so without the branch arm the name resolves to NULL and callers
+    // render the co_relation_id.
+    const useBranchArm = !!activeBranchId && activeBranchId !== defaultBranchId;
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id'])
-      .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .addSelect(
+        useBranchArm
+          ? 'COALESCE(av_meta.app_name, av_branch.app_name, app.name) AS name'
+          : 'COALESCE(av_meta.app_name, app.name) AS name'
+      )
       .addSelect('app.co_relation_id AS co_relation_id')
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
@@ -402,6 +411,15 @@ export class AppsRepository extends Repository<App> {
          )`,
       { defaultBranchId }
     );
+    if (useBranchArm) {
+      qb.leftJoin(
+        'app_versions',
+        'av_branch',
+        `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
+           AND av_branch.version_type = 'branch' AND av_branch.is_stub = false`,
+        { activeBranchId }
+      );
+    }
     return await qb.orderBy('app.created_at', 'ASC').getRawMany();
   }
 
@@ -510,5 +528,6 @@ export class AppsRepository extends Repository<App> {
     app.slug = version.slug ?? app.slug;
     app.icon = version.icon ?? app.icon;
     app.isPublic = version.isPublic ?? app.isPublic;
+    app.workflowEnabled = version.workflowEnabled ?? app.workflowEnabled;
   }
 }

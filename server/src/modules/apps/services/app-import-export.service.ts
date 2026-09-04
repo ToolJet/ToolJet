@@ -3743,6 +3743,9 @@ export class AppImportExportService {
           appName: resolvedAppName,
           icon: appVersion.icon ?? importMeta?.icon ?? null,
           isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
+          // Branch-scoped, and NOT stripped from the version rows on export (unlike the four
+          // above) because it is genuinely per-version state rather than app metadata.
+          workflowEnabled: appVersion.workflowEnabled ?? false,
         });
       }
       if (isNormalizedAppDefinitionSchema) {

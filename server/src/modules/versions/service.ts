@@ -126,7 +126,11 @@ export class VersionService implements IVersionService {
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
-  async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
+  async getAllVersions(
+    app: App,
+    branchId?: string,
+    includeDefaultBranchVersions = false
+  ): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = branchId;
     const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
     const gitEnabled = details.isEnabled;
@@ -141,7 +145,7 @@ export class VersionService implements IVersionService {
     // NOT for modules: listModuleVersions intentionally returns saved versions on
     // all branches so the ModuleViewer inspector can detect pinned states and avoid
     // showing "Current branch" when the pin is valid.
-    if (effectiveBranchId && app.type !== APP_TYPES.MODULE) {
+    if (effectiveBranchId && app.type !== APP_TYPES.MODULE && !includeDefaultBranchVersions) {
       const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
         where: { id: effectiveBranchId },
         select: ['id', 'isDefault'],
@@ -392,6 +396,7 @@ export class VersionService implements IVersionService {
       ) {
         if (app.type !== 'module') {
           await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+          await this.versionsUtilService.checkDraftWorkflowsInApp(appVersion.id, user.organizationId, manager);
         }
         return this.versionsUtilService.createPublishedVersionFromBranchDraft(
           app,
@@ -408,6 +413,7 @@ export class VersionService implements IVersionService {
 
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+        await this.versionsUtilService.checkDraftWorkflowsInApp(appVersion.id, user.organizationId, manager);
       }
 
       if (appVersion.status !== AppVersionStatus.DRAFT) {

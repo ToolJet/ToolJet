@@ -10,5 +10,5 @@ export interface IWorkflowWebhooksController {
     req: Request
   ): Promise<any>;
 
-  updateWorkflow(id: any, workflowValuesToUpdate: any): Promise<any>;
+  updateWorkflow(id: any, workflowValuesToUpdate: any, user?: any): Promise<any>;
 }

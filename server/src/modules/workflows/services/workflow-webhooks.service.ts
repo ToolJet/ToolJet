@@ -9,7 +9,7 @@ export class WorkflowWebhooksService implements IWorkflowWebhooksService {
     return;
   }
 
-  async updateWorkflow(workflowId, workflowValuesToUpdate): Promise<any> {
+  async updateWorkflow(workflowId, workflowValuesToUpdate, _branchId?: string): Promise<any> {
     return;
   }
 

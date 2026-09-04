@@ -355,6 +355,7 @@ export class AppsService implements IAppsService {
       if (appUpdateDto.slug !== undefined) blockedFields.push('slug');
       if (appUpdateDto.icon !== undefined) blockedFields.push('icon');
       if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
+      if (appUpdateDto.workflow_enabled !== undefined) blockedFields.push('workflow_enabled');
 
       if (blockedFields.length > 0) {
         // Require an explicit branch_id (resolved from the branch_id query param). Without it
