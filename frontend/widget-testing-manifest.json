@@ -128,7 +128,8 @@
     },
     {
       "componentType": "RadioButtonV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "src/test/app-builder/widgets/RadioButtonV2/TESTING.md"
     },
     {
       "componentType": "FileInput",
