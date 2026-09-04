@@ -167,7 +167,8 @@
           "connection_type": {
             "const": "string"
           }
-        }
+        },
+        "required": ["connection_type"]
       },
       "then": {
         "required": [
@@ -178,10 +179,14 @@
     {
       "if": {
         "properties": {
+          "ssl_enabled": {
+            "const": true
+          },
           "ssl_certificate": {
             "const": "ca_certificate"
           }
-        }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": {
         "required": [
@@ -192,10 +197,14 @@
     {
       "if": {
         "properties": {
+          "ssl_enabled": {
+            "const": true
+          },
           "ssl_certificate": {
             "const": "self_signed"
           }
-        }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": {
         "required": [
@@ -211,7 +220,8 @@
           "ssh_enabled": {
             "const": "enabled"
           }
-        }
+        },
+        "required": ["ssh_enabled"]
       },
       "then": {
         "required": [

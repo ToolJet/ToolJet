@@ -4,7 +4,7 @@ import { fake } from "Fixtures/fake";
 import { inviteUser } from "Support/utils/onboarding";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import { logout } from "Support/utils/common";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 describe("Password reset functionality", () => {

@@ -3,8 +3,8 @@ import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mssqlUIConfig, mssqlFormConfig } from "Constants/constants/marketplace/datasources/mssql";
-import { sqlServerSelector } from "Constants/selectors/sqlServer";
-import { sqlServerText } from "Constants/texts/sqlServer";
+import { sqlServerSelector } from "Constants/selectors/marketplace/sqlServer";
+import { sqlServerText } from "Constants/texts/marketplace/sqlServer";
 
 const data = {};
 
