@@ -117,8 +117,7 @@ const Table = ({ collapseSidebar }) => {
       tooljetDatabaseService
         .findOne(
           foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
-          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`,
-          selectedEnvironment?.id
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
         )
         .then(({ headers, data = [], error }) => {
           if (error) {
@@ -709,7 +708,7 @@ const Table = ({ collapseSidebar }) => {
 
         let query = `?${primaryKey?.accessor}=in.(${deletionKeys.toString()})`;
 
-        const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
+        const { error } = await tooljetDatabaseService.deleteRows(selectedTable.id, query);
 
         if (error) {
           toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
@@ -770,7 +769,6 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
-    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -784,7 +782,7 @@ const Table = ({ collapseSidebar }) => {
     const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    const { error } = await tooljetDatabaseService.updateRows(selectedTable.id, cellData, query);
 
     if (error) {
       handleProgressAnimation(

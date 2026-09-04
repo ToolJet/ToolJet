@@ -3,12 +3,12 @@ import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
-import { appEnvironmentService } from '@/_services';
 import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
+import { useTjdbStore, useTjdbActions } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
 export { TooljetDatabaseContext };
@@ -33,8 +33,9 @@ export const TooljetDatabase = (props) => {
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
-  const [environments, setEnvironments] = useState([]);
-  const [selectedEnvironment, setSelectedEnvironment] = useState(null);
+  const environments = useTjdbStore((state) => state.environments);
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const { loadEnvironments } = useTjdbActions();
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -59,7 +60,6 @@ export const TooljetDatabase = (props) => {
   } = usePostgrestQueryBuilder({
     organizationId,
     selectedTable,
-    selectedEnvironment,
     setSelectedTableData,
     setTotalRecords,
     setLoadingState,
@@ -113,7 +113,10 @@ export const TooljetDatabase = (props) => {
       getConfigurationProperty,
       environments,
       selectedEnvironment,
-      setSelectedEnvironment,
+      setSelectedEnvironment: (environment) =>
+        useTjdbStore.setState((state) => {
+          state.selectedEnvironment = environment;
+        }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -143,15 +146,8 @@ export const TooljetDatabase = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Org-scoped (no app_id) - CE gets back a single-entry list (its one licensed environment),
-  // EE/licensed orgs get dev/staging/production ordered by priority. Default selection is always
-  // the lowest-priority entry (development).
   useEffect(() => {
-    appEnvironmentService.getAllEnvironments().then(({ environments: fetchedEnvironments = [] }) => {
-      const sorted = [...fetchedEnvironments].sort((a, b) => a.priority - b.priority);
-      setEnvironments(sorted);
-      setSelectedEnvironment(sorted[0] ?? null);
-    });
+    loadEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

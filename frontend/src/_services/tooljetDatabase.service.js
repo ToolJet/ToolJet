@@ -2,13 +2,24 @@ import HttpClient from '@/_helpers/http-client';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { authHeader } from '@/_helpers';
 import _ from 'lodash';
+import { currentEnvironmentId } from '@/TooljetDatabase/_stores/tjdbStore';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(tableId, query = '', environmentId) {
+// The ONLY way to address /tooljet-db/proxy/*. environment_id is injected here, never passed in -
+// the same ambient-scope treatment HttpClient.request already gives tj-workspace-id
+// (frontend/src/_helpers/http-client.js: `options.headers['tj-workspace-id'] = session?...`).
+// When nothing is selected the param is omitted rather than thrown on: the App Builder's TJDB
+// query editor (SelectBox.jsx, ToolJetDbOperations.jsx) calls these functions with the TJDB store
+// never mounted, and the backend already defaults a missing environment_id to development.
+function proxyUrl(tableId, query = '') {
+  const environmentId = currentEnvironmentId();
   const envQuery = environmentId ? `environment_id=${environmentId}` : '';
-  const combinedQuery = [query, envQuery].filter(Boolean).join('&');
-  return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${combinedQuery}`);
+  return `/tooljet-db/proxy/${tableId}?${[query, envQuery].filter(Boolean).join('&')}`;
+}
+
+function findOne(tableId, query = '') {
+  return tooljetAdapter.get(proxyUrl(tableId, query));
 }
 
 function findAll(organizationId) {
@@ -38,7 +49,8 @@ function createTable(
   });
 }
 
-function viewTable(organizationId, tableName, environmentId) {
+function viewTable(organizationId, tableName) {
+  const environmentId = currentEnvironmentId();
   const query = environmentId ? `?environment_id=${environmentId}` : '';
   return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
 }
@@ -67,8 +79,8 @@ function sqlExecution(organizationId, tableId, body) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/sql`, body);
 }
 
-function createRow(headers, tableId, data) {
-  return tooljetAdapter.post(`/tooljet-db/proxy/${tableId}`, data, headers);
+function createRow(tableId, data) {
+  return tooljetAdapter.post(proxyUrl(tableId), data);
 }
 
 function createColumn(
@@ -144,8 +156,8 @@ function deleteForeignKey(organizationId, tableName, id) {
   return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}`);
 }
 
-function updateRows(headers, tableId, data, query = '') {
-  return tooljetAdapter.patch(`/tooljet-db/proxy/${tableId}?${query}`, data, headers);
+function updateRows(tableId, data, query = '') {
+  return tooljetAdapter.patch(proxyUrl(tableId, query), data);
 }
 
 function updateColumn(organizationId, tableName, columns) {
@@ -156,8 +168,8 @@ function updateColumn(organizationId, tableName, columns) {
   );
 }
 
-function deleteRows(headers, tableId, query = '') {
-  return tooljetAdapter.delete(`/tooljet-db/proxy/${tableId}?${query}`, headers);
+function deleteRows(tableId, query = '') {
+  return tooljetAdapter.delete(proxyUrl(tableId, query));
 }
 
 function deleteColumn(organizationId, tableName, columnName) {
@@ -166,10 +178,6 @@ function deleteColumn(organizationId, tableName, columnName) {
 
 function deleteTable(organizationId, tableName) {
   return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}`);
-}
-
-function joinTables(headers, organizationId, data) {
-  return tooljetAdapter.post(`tooljet-db/organizations/${organizationId}/join`, data, headers);
 }
 
 export const tooljetDatabaseService = {
@@ -191,7 +199,6 @@ export const tooljetDatabaseService = {
   getTablesLimit,
   bulkUpload,
   sqlExecution,
-  joinTables,
   updateColumn,
   editForeignKey,
   createForeignKey,

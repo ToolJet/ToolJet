@@ -128,11 +128,7 @@ const ColumnForm = ({
 
       const query = selectQuery.url.toString();
 
-      const { data = [], error } = await tooljetDatabaseService.findOne(
-        organizationId,
-        referencedColumns.referenced_table_id,
-        query
-      );
+      const { data = [], error } = await tooljetDatabaseService.findOne(referencedColumns.referenced_table_id, query);
 
       if (error) {
         toast.error(error?.message ?? `Failed to validate default value`);
