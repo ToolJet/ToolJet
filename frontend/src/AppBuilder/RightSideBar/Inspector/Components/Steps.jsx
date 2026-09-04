@@ -18,6 +18,7 @@ import { shallow } from 'zustand/shallow';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -136,7 +137,8 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
     reorderOptions(source.index, destination.index);
   };
 
-  const handleOnFxPress = (active, index, key) => {
+  // `newValue` rides along so fx-off is one rebuild — `options` is a render-time snapshot.
+  const handleOnFxPress = (active, index, key, newValue) => {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
@@ -144,6 +146,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
           [key]: {
             ...option[key],
             fxActive: active,
+            ...(newValue !== undefined && { value: newValue }),
           },
         };
       }
@@ -154,6 +157,8 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const stashKey = (property) =>
+      getFxStashKey({ componentId: component?.id, listName: 'steps', item, index, property });
     return (
       <Popover
         className={`${darkMode && 'dark-theme theme-dark'} inspector-steps-options-popover`}
@@ -222,7 +227,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               }
               paramName={'visible'}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
-              fxStashKey={`${component?.id}-steps-${index}-visible`}
+              fxStashKey={stashKey('visible')}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -243,7 +248,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               paramName={'disable'}
               onChange={(value) => handleLabelChange('disabled', { value }, index)}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'disabled', newValue)}
-              fxStashKey={`${component?.id}-steps-${index}-disabled`}
+              fxStashKey={stashKey('disabled')}
               fxActive={item?.disabled?.fxActive}
               fieldMeta={{
                 type: 'toggle',

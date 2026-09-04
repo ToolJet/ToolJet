@@ -692,8 +692,9 @@ const DynamicEditorBridge = (props) => {
     setForceCodeBox(fxActive);
   }, [component, fxActive]);
 
+  const isCssVar = paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue.includes('var(');
   let modifiedValue = initialValue;
-  if (paramType === 'colorSwatches' && typeof initialValue === 'string' && initialValue?.includes('var(')) {
+  if (isCssVar) {
     modifiedValue = getCssVarValue(document.documentElement, initialValue);
   }
 
@@ -718,7 +719,9 @@ const DynamicEditorBridge = (props) => {
                 // Resolution and the dependency graph read `value` and ignore fxActive, so the
                 // expression has to leave `value` for fx-off to have any effect.
                 const frozenValue = getFrozenFxValue({
-                  resolvedValue: paramType === 'colorSwatches' ? modifiedValue : value,
+                  // A colour swatch only needs `modifiedValue` for the css-var expansion; anything
+                  // else has to freeze the resolved value, or the expression stays live.
+                  resolvedValue: paramType === 'colorSwatches' && isCssVar ? modifiedValue : value,
                   hasError: !!error,
                   paramType,
                   fieldMeta,

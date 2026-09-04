@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
@@ -17,6 +18,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -125,6 +127,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       currentNumber += 1;
     }
     return {
+      id: uuidv4(),
       value,
       label,
       ...(isCaptionEnabled ? { caption: null } : {}),
@@ -305,6 +308,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   }, [isMultiSelect, component?.id]);
 
   const _renderOverlay = (item, index) => {
+    const stashKey = (property) =>
+      getFxStashKey({ componentId: component?.id, listName: 'options', item, index, property });
+    // Keyed by identity, not position: reordering must not hand a stash to another option.
     return (
       <Popover
         className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
@@ -367,7 +373,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'default', newValue)}
-              fxStashKey={`${component?.id}-options-${index}-default`}
+              fxStashKey={stashKey('default')}
               fxActive={item?.default?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -389,7 +395,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleVisibilityChange(value, index)}
               paramName={'visible'}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
-              fxStashKey={`${component?.id}-options-${index}-visible`}
+              fxStashKey={stashKey('visible')}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -410,7 +416,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'disable', newValue)}
-              fxStashKey={`${component?.id}-options-${index}-disable`}
+              fxStashKey={stashKey('disable')}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',

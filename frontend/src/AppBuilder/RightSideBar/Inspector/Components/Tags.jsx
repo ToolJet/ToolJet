@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { renderElement } from '../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
@@ -17,6 +18,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export const Tags = ({
   component,
@@ -106,6 +108,7 @@ export const Tags = ({
       currentNumber += 1;
     }
     return {
+      id: uuidv4(),
       title,
       icon: { value: 'IconHome' },
       iconVisibility: { value: '{{true}}' },
@@ -180,7 +183,8 @@ export const Tags = ({
     updateOptions(updatedOptions);
   };
 
-  const handleOnFxPress = (active, index, property) => {
+  // `newValue` rides along so fx-off is one rebuild — `currentOptions` is a render-time snapshot.
+  const handleOnFxPress = (active, index, property, newValue) => {
     const updatedOptions = currentOptions.map((option, i) => {
       if (i === index) {
         return {
@@ -188,6 +192,7 @@ export const Tags = ({
           [property]: {
             ...option[property],
             fxActive: active,
+            ...(newValue !== undefined && { value: newValue }),
           },
         };
       }
@@ -197,6 +202,8 @@ export const Tags = ({
   };
 
   const _renderOverlay = (item, index) => {
+    const stashKey = (property) =>
+      getFxStashKey({ componentId: component?.id, listName: 'options', item, index, property });
     const iconVisibility =
       item?.iconVisibility?.value !== undefined
         ? getResolvedValue(item?.iconVisibility?.value)
@@ -294,7 +301,7 @@ export const Tags = ({
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
               onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
-              fxStashKey={`${component?.id}-options-${index}-visible`}
+              fxStashKey={stashKey('visible')}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',

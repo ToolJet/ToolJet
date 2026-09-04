@@ -17,6 +17,7 @@ export const StylesTabElements = ({
   darkMode,
   currentState,
   onColumnItemChange,
+  onColumnItemPropertiesChange,
   getPopoverFieldSource,
   component,
   selectedButtonId,
@@ -152,6 +153,7 @@ export const StylesTabElements = ({
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
+                multiCallbackFunction={onColumnItemPropertiesChange}
                 property="textColor"
                 props={column}
                 component={component}
@@ -167,6 +169,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="cellBackgroundColor"
               props={column}
               component={component}
@@ -186,6 +189,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="linkColor"
               props={column}
               component={component}
@@ -200,6 +204,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="underlineColor"
               props={column}
               component={component}
@@ -237,6 +242,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property={column.iconType === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
               props={column}
               component={component}
@@ -251,6 +257,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="unselectedBgColor"
               props={column}
               component={component}
@@ -270,6 +277,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="cellBackgroundColor"
               props={column}
               component={component}

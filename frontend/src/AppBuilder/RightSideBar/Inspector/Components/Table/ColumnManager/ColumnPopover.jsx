@@ -12,6 +12,7 @@ export const ColumnPopoverContent = ({
   darkMode,
   currentState,
   onColumnItemChange,
+  onColumnItemPropertiesChange,
   getPopoverFieldSource,
   setColumnPopoverRootCloseBlocker,
   component,
@@ -166,6 +167,7 @@ export const ColumnPopoverContent = ({
             darkMode={darkMode}
             currentState={currentState}
             onColumnItemChange={onColumnItemChange}
+            onColumnItemPropertiesChange={onColumnItemPropertiesChange}
             getPopoverFieldSource={getPopoverFieldSource}
             setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
             component={component}
@@ -184,6 +186,7 @@ export const ColumnPopoverContent = ({
             darkMode={darkMode}
             currentState={currentState}
             onColumnItemChange={onColumnItemChange}
+            onColumnItemPropertiesChange={onColumnItemPropertiesChange}
             getPopoverFieldSource={getPopoverFieldSource}
             component={component}
             selectedButtonId={selectedButtonId}

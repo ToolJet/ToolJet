@@ -20,3 +20,16 @@ export const takeFxExpression = (key) => {
   stash.delete(key);
   return expression;
 };
+
+/**
+ * Stash key for one field of one item in a list (options, columns, steps, tabs...).
+ *
+ * Keyed by the item's own id, never its position: a parked expression must not be handed to
+ * whichever item later occupies that slot. `value`/`name`/`title` cover items saved before
+ * ids were added; `index` is the last resort for lists with no identifier at all.
+ */
+export const getFxStashKey = ({ componentId, listName, item, index, property }) => {
+  if (!componentId || !property) return undefined;
+  const itemId = item?.id ?? item?.value ?? item?.name ?? item?.title ?? index;
+  return `${componentId}-${listName}-${itemId}-${property}`;
+};

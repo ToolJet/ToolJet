@@ -48,6 +48,7 @@ export const KeyValuePair = (props) => {
     duplicateField,
     reorderFields,
     updateFieldProperty,
+    updateFieldProperties,
     updateFieldEvents,
     setAllFieldsEditable,
   } = useFieldManager({ component, paramUpdated, currentState });
@@ -108,6 +109,7 @@ export const KeyValuePair = (props) => {
           darkMode={darkMode}
           currentState={currentState}
           onFieldItemChange={updateFieldProperty}
+          onFieldItemPropertiesChange={updateFieldProperties}
           getPopoverFieldSource={getPopoverFieldSource}
           setFieldPopoverRootCloseBlocker={setRootCloseBlocker}
           component={component}
@@ -120,6 +122,7 @@ export const KeyValuePair = (props) => {
       darkMode,
       currentState,
       updateFieldProperty,
+      updateFieldProperties,
       getPopoverFieldSource,
       setRootCloseBlocker,
       component,

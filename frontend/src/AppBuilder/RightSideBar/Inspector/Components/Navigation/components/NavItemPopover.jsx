@@ -3,6 +3,7 @@ import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 const NAV_ITEM_EVENT_META = { name: 'Navigation', events: { onClick: { displayName: 'On click' } } };
 
 const NavItemPopover = forwardRef(
@@ -43,7 +44,7 @@ const NavItemPopover = forwardRef(
       onItemChange(propertyPath, value, item.id, parentId);
     };
 
-    const getFxStashKey = (property) => `${componentId}-navItems-${item.id}-${property}`;
+    const stashKey = (property) => getFxStashKey({ componentId, listName: 'navItems', item, property });
 
     const handleDelete = () => {
       onDeleteItem(item.id, parentId);
@@ -148,7 +149,7 @@ const NavItemPopover = forwardRef(
                       ...(newValue !== undefined && { value: newValue }),
                     })
                   }
-                  fxStashKey={getFxStashKey('icon')}
+                  fxStashKey={stashKey('icon')}
                   fxActive={item?.icon?.fxActive}
                   fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                   paramType={'icon'}
@@ -174,7 +175,7 @@ const NavItemPopover = forwardRef(
                       ...(newValue !== undefined && { value: newValue }),
                     })
                   }
-                  fxStashKey={getFxStashKey('visible')}
+                  fxStashKey={stashKey('visible')}
                   fxActive={item?.visible?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Hide this item' }}
                   paramType={'toggle'}
@@ -196,7 +197,7 @@ const NavItemPopover = forwardRef(
                       ...(newValue !== undefined && { value: newValue }),
                     })
                   }
-                  fxStashKey={getFxStashKey('disable')}
+                  fxStashKey={stashKey('disable')}
                   fxActive={item?.disable?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Disable item' }}
                   paramType={'toggle'}

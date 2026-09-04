@@ -151,6 +151,29 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     [items, paramUpdated, propertyName, typeProp, nonEditableTypes, isAllEditable, onPropertyChange]
   );
 
+  // Single write for callers changing several fields at once; two writes would clobber each other.
+  const updateProperties = useCallback(
+    (index, changes) => {
+      const newItems = [...items];
+      let item = { ...newItems[index] };
+
+      Object.entries(changes).forEach(([property, value]) => {
+        if (onPropertyChange) {
+          item = onPropertyChange(item, property, value) || item;
+        }
+        item[property] = value;
+      });
+      newItems[index] = item;
+
+      if (nonEditableTypes.includes(newItems[index][typeProp])) {
+        newItems[index].isEditable = '{{false}}';
+      }
+
+      paramUpdated({ name: propertyName }, 'value', newItems, 'properties', true);
+    },
+    [items, paramUpdated, propertyName, typeProp, nonEditableTypes, onPropertyChange]
+  );
+
   // Update item events
   const updateEvents = useCallback(
     (itemId, events) => {
@@ -194,6 +217,7 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     duplicateItem,
     reorderItems,
     updateProperty,
+    updateProperties,
     updateEvents,
     setAllEditable,
     getPopoverFieldSource,

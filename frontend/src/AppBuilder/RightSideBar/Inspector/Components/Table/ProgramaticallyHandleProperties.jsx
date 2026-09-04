@@ -1,10 +1,12 @@
 import { resolveReferences } from '@/_helpers/utils';
 import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export const ProgramaticallyHandleProperties = ({
   index,
   callbackFunction,
+  multiCallbackFunction,
   property,
   props = {},
   component,
@@ -89,6 +91,8 @@ export const ProgramaticallyHandleProperties = ({
 
   const value = getValueBasedOnProperty(property, props);
 
+  const stashItem = Array.isArray(props) ? props?.[index] : props;
+
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;
@@ -120,8 +124,8 @@ export const ProgramaticallyHandleProperties = ({
         : [];
 
     const checkFxActiveFieldIsArrray = (fxActiveFieldsProperty) => {
-      // adding error handling mechanism for fxActiveFieldsProperty , if props.fxActiveFields is array , then return props.fxActiveFields or else return [], this will make sure, fxActiveFields wil always be array
-      return Array.isArray(fxActiveFieldsProperty) ? fxActiveFieldsProperty : [];
+      // Copied, not aliased: push/splice below would otherwise edit the live component definition.
+      return Array.isArray(fxActiveFieldsProperty) ? [...fxActiveFieldsProperty] : [];
     };
 
     const fxActiveFields = fxActiveFieldsPropExists ? checkFxActiveFieldIsArrray(props.fxActiveFields) : fxActive;
@@ -157,12 +161,31 @@ export const ProgramaticallyHandleProperties = ({
         paramName={param.name}
         paramLabel={paramMeta.displayName}
         fieldMeta={paramMeta}
-        onFxPress={(active) => {
-          const resultFxActiveFields = calculateFxActiveFields(active, props, property);
-          callbackFunction(index, 'fxActiveFields', resultFxActiveFields);
-        }}
+        // fx-off writes the frozen value and `fxActiveFields` together; two writes would clobber.
+        {...(multiCallbackFunction
+          ? {
+              onFxToggle: (active, newValue) => {
+                const changes = { fxActiveFields: calculateFxActiveFields(active, props, property) };
+                if (newValue !== undefined) {
+                  changes[property] = newValue;
+                }
+                multiCallbackFunction(index, changes);
+              },
+            }
+          : {
+              onFxPress: (active) => {
+                const resultFxActiveFields = calculateFxActiveFields(active, props, property);
+                callbackFunction(index, 'fxActiveFields', resultFxActiveFields);
+              },
+            })}
         fxActive={calcFxActiveState(props, property)}
-        fxStashKey={`${component?.id}-columns-${index}-${property}`}
+        fxStashKey={getFxStashKey({
+          componentId: component?.id,
+          listName: 'columns',
+          item: stashItem,
+          index,
+          property,
+        })}
         component={component.component}
         className={options.className}
       />

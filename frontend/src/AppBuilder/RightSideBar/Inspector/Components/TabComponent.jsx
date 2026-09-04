@@ -17,6 +17,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -274,6 +275,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const stashKey = (property) =>
+      getFxStashKey({ componentId: component?.id, listName: 'tabItems', item, index, property });
     const iconVisibility =
       item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
 
@@ -368,7 +371,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                 handleValueChange(item, { value }, 'loading', index);
               }}
               onFxToggle={(active, newValue) => handleOnFxPress(item, 'loading', active, newValue)}
-              fxStashKey={`${component?.id}-tabItems-${index}-loading`}
+              fxStashKey={stashKey('loading')}
               fxActive={item?.loading?.fxActive}
               fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
               paramType={'toggle'}
@@ -388,7 +391,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
               onFxToggle={(active, newValue) => handleOnFxPress(item, 'visible', active, newValue)}
-              fxStashKey={`${component?.id}-tabItems-${index}-visible`}
+              fxStashKey={stashKey('visible')}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -410,7 +413,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramName={'disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
               onFxToggle={(active, newValue) => handleOnFxPress(item, 'disable', active, newValue)}
-              fxStashKey={`${component?.id}-tabItems-${index}-disable`}
+              fxStashKey={stashKey('disable')}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',

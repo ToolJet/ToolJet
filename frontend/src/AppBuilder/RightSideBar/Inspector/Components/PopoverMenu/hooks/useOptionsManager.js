@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -63,6 +64,7 @@ export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = '
     }
 
     return {
+      id: uuidv4(),
       format: 'plain',
       label,
       description: ``,

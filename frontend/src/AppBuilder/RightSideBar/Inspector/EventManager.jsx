@@ -54,6 +54,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import toast from 'react-hot-toast';
 import './EventManager.scss';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export const EventManager = ({
   sourceId,
@@ -1091,7 +1092,13 @@ export const EventManager = ({
                                 event
                               )
                             }
-                            fxStashKey={`${sourceId}-event-${index}-${param.handle}`}
+                            fxStashKey={getFxStashKey({
+                              componentId: sourceId,
+                              listName: 'event',
+                              item: event,
+                              index,
+                              property: param.handle,
+                            })}
                           />
                         </div>
                       </FieldRow>

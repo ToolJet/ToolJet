@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 const TreeSelectItemPopover = forwardRef(
   (
@@ -44,8 +45,8 @@ const TreeSelectItemPopover = forwardRef(
 
     // Instance-scoped: TreeSelect and Cascader instances sharing an item value must not share a
     // stash entry.
-    const getFxStashKey = (property) =>
-      componentId && `${componentId}-treeItems-${parentValue ?? 'root'}-${item.value}-${property}`;
+    const stashKey = (property) =>
+      getFxStashKey({ componentId, listName: `treeItems-${parentValue ?? 'root'}`, item, property });
 
     return (
       <Popover
@@ -132,7 +133,7 @@ const TreeSelectItemPopover = forwardRef(
                         ...(newValue !== undefined && { value: newValue }),
                       })
                     }
-                    fxStashKey={getFxStashKey('selected')}
+                    fxStashKey={stashKey('selected')}
                     fxActive={item?.selected?.fxActive}
                     fieldMeta={{ type: 'toggle', displayName: 'Selected' }}
                     paramType={'toggle'}
@@ -157,7 +158,7 @@ const TreeSelectItemPopover = forwardRef(
                         ...(newValue !== undefined && { value: newValue }),
                       })
                     }
-                    fxStashKey={getFxStashKey('expanded')}
+                    fxStashKey={stashKey('expanded')}
                     fxActive={item?.expanded?.fxActive}
                     fieldMeta={{ type: 'toggle', displayName: 'Expanded' }}
                     paramType={'toggle'}
@@ -182,7 +183,7 @@ const TreeSelectItemPopover = forwardRef(
                     ...(newValue !== undefined && { value: newValue }),
                   })
                 }
-                fxStashKey={getFxStashKey('visible')}
+                fxStashKey={stashKey('visible')}
                 fxActive={item?.visible?.fxActive}
                 fieldMeta={{ type: 'toggle', displayName: 'Visibility' }}
                 paramType={'toggle'}
@@ -204,7 +205,7 @@ const TreeSelectItemPopover = forwardRef(
                     ...(newValue !== undefined && { value: newValue }),
                   })
                 }
-                fxStashKey={getFxStashKey('disable')}
+                fxStashKey={stashKey('disable')}
                 fxActive={item?.disable?.fxActive}
                 fieldMeta={{ type: 'toggle', displayName: 'Disable' }}
                 paramType={'toggle'}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -23,6 +24,7 @@ export const OptionsList = ({
   getPopoverFieldSource,
   setColumnPopoverRootCloseBlocker,
   onColumnItemChange,
+  onColumnItemPropertiesChange,
   component,
   paramToUpdate,
 }) => {
@@ -68,7 +70,7 @@ export const OptionsList = ({
       n += 1;
       label = `${labelPrefix} ${n}`;
     }
-    options.push({ label, value: label });
+    options.push({ id: uuidv4(), label, value: label });
     column.options = options;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -293,6 +295,7 @@ export const OptionsList = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={onColumnItemChange}
+          multiCallbackFunction={onColumnItemPropertiesChange}
           property="autoAssignColors"
           props={column}
           component={component}
@@ -309,6 +312,7 @@ export const OptionsList = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={onColumnItemChange}
+            multiCallbackFunction={onColumnItemPropertiesChange}
             property="allowMultipleSelection"
             props={column}
             component={component}
@@ -325,6 +329,7 @@ export const OptionsList = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={onColumnItemChange}
+          multiCallbackFunction={onColumnItemPropertiesChange}
           property="useDynamicOptions"
           props={column}
           component={component}
@@ -355,6 +360,7 @@ export const OptionsList = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="optionsLoadingState"
               props={column}
               component={component}

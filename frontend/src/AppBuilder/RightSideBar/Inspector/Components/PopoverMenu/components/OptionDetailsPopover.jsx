@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 const OptionDetailsPopover = forwardRef(
   (
@@ -23,8 +24,7 @@ const OptionDetailsPopover = forwardRef(
     const iconVisibility = item?.iconVisibility;
     const { dataCy: dataCyPrefix, popoverFields, popoverClassName, popoverTitle } = config;
 
-    // Instance-scoped: two Menu-style widgets must not share a stash entry per option index.
-    const getFxStashKey = (property) => componentId && `${componentId}-options-${index}-${property}`;
+    const stashKey = (property) => getFxStashKey({ componentId, listName: 'options', item, index, property });
 
     // Common CodeHinter props
     const commonCodeHinterProps = {
@@ -177,7 +177,7 @@ const OptionDetailsPopover = forwardRef(
                         index
                       )
                     }
-                    fxStashKey={getFxStashKey('icon')}
+                    fxStashKey={stashKey('icon')}
                     fxActive={item?.icon?.fxActive}
                     fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                     paramType={'icon'}
@@ -204,7 +204,7 @@ const OptionDetailsPopover = forwardRef(
                         index
                       )
                     }
-                    fxStashKey={getFxStashKey('default')}
+                    fxStashKey={stashKey('default')}
                     fxActive={item?.default?.fxActive}
                     fieldMeta={{
                       type: 'toggle',
@@ -234,7 +234,7 @@ const OptionDetailsPopover = forwardRef(
                         index
                       )
                     }
-                    fxStashKey={getFxStashKey('visible')}
+                    fxStashKey={stashKey('visible')}
                     fxActive={item?.visible?.fxActive}
                     fieldMeta={{
                       type: 'toggle',
@@ -263,7 +263,7 @@ const OptionDetailsPopover = forwardRef(
                         index
                       )
                     }
-                    fxStashKey={getFxStashKey('disable')}
+                    fxStashKey={stashKey('disable')}
                     fxActive={item?.disable?.fxActive}
                     fieldMeta={{
                       type: 'toggle',
