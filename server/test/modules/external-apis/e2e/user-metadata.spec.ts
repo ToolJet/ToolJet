@@ -139,10 +139,6 @@ describe('ExternalApisController — user metadata', () => {
             updated_user: {
               id: memberId,
               email: memberEmail,
-              first_name: undefined,
-              last_name: undefined,
-              role: undefined,
-              groups: undefined,
               metadata: { 'audit-check': 'yes' },
             },
           },

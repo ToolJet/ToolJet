@@ -90,10 +90,6 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           updated_user: {
             id: organizationUser.userId,
             email: organizationUser.user.email,
-            first_name: firstName,
-            last_name: lastName,
-            role,
-            groups: addGroups,
             metadata: userMetadata,
           },
         },
