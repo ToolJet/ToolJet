@@ -304,8 +304,12 @@ export class DataSourcesService implements IDataSourcesService {
     return dataSource;
   }
 
-  async testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id);
+  async testConnection(
+    testDataSourceDto: TestDataSourceDto,
+    organization_id: string,
+    dataSourceId?: string
+  ): Promise<object> {
+    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId);
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
