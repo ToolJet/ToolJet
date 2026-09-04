@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
 import {
   bannerElementsVerification,
@@ -8,8 +8,8 @@ import {
   onboardingStepTwo,
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { onboardingText } from "Texts/platform/onboarding";
-import { multiEnvSelector } from "Selectors/platform/eeCommon";
+import { onboardingText } from "Texts/onboarding";
+import { multiEnvSelector } from "Selectors/eeCommon";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");

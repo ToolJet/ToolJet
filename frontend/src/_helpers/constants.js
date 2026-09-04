@@ -18,9 +18,6 @@ export const USER_COLORS = [
 
 export const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
 
-// Temporarily hide inline AI actions that are not served by the standalone MCP agent.
-export const INLINE_AI_FEATURES_ENABLED = false;
-
 export const ON_BOARDING_ROLES = [
   'Head of engineering',
   'Head of product',

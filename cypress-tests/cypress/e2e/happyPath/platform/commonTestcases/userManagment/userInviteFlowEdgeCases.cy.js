@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/platform/manageUsers";
+import { usersSelector } from "Selectors/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import {
@@ -9,7 +9,7 @@ import {
   visitWorkspaceInvitation,
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { usersText } from "Texts/platform/manageUsers";
+import { usersText } from "Texts/manageUsers";
 
 import {
   logout,
@@ -17,7 +17,7 @@ import {
   searchUser,
 } from "Support/utils/common";
 
-import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { onboardingSelectors } from "Selectors/onboarding";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 
 const data = {};

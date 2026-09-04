@@ -38,23 +38,6 @@ export class AiConversation {
   @Column({ type: 'json', nullable: true, default: {} })
   metadata: Record<string, any>;
 
-  /**
-   * The LLM this chat runs on, pinned when the conversation is created and rewritten
-   * whenever the builder switches provider with this chat open.
-   *
-   * Null means the chat predates per-conversation selection; it resolves to the builder's
-   * workspace default (organization_users.llm_provider) and is pinned on first touch.
-   */
-  @Column({ name: 'llm_provider', nullable: true })
-  llmProvider: string;
-
-  /** The model chosen under `llmProvider`. Null = that provider's default ("Auto"). */
-  @Column({ name: 'llm_model', nullable: true })
-  llmModel: string;
-
-  @Column({ name: 'llm_model_context_window', nullable: true })
-  llmModelContextWindow: number;
-
   @Column({
     type: 'enum',
     enum: ['generate', 'learn'],

@@ -1,4 +1,4 @@
-import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from 'Support/utils/common';
 export const apiRequest = (method, url, body = {}, headers = {}) => {
     return cy.request({

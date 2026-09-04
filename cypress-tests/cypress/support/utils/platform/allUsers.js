@@ -2,25 +2,25 @@ import { commonSelectors } from "Selectors/common";
 import {
   commonEeSelectors,
   instanceSettingsSelector,
-} from "Selectors/platform/eeCommon";
-import { usersSelector } from "Selectors/platform/manageUsers";
+} from "Selectors/eeCommon";
+import { usersSelector } from "Selectors/manageUsers";
 import {
   instanceAllUsersSelectors,
   usersTableElementsInInstance,
-} from "Selectors/platform/superAdminSelectors";
+} from "Selectors/superAdminSelectors";
 import {
   openInstanceSettings,
   openUserActionMenu,
 } from "Support/utils/platform/eeCommon";
-import { instanceSettingsText } from "Texts/platform/eeCommon";
+import { instanceSettingsText } from "Texts/eeCommon";
 import {
   instanceAllUsersText,
   usersTableElementsInInstanceText,
-} from "Texts/platform/superAdminText";
+} from "Texts/superAdminText";
 
-import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { onboardingSelectors } from "Selectors/onboarding";
 
-import { usersText } from "Texts/platform/manageUsers";
+import { usersText } from "Texts/manageUsers";
 
 export const openAllUsersPage = () => {
   openInstanceSettings();

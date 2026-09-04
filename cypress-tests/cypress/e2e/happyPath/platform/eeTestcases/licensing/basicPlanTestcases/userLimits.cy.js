@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/platform/manageUsers";
+import { usersSelector } from "Selectors/manageUsers";
 import { navigateToManageUsers } from "Support/utils/common";
 import {
   archiveUserAndVerify,

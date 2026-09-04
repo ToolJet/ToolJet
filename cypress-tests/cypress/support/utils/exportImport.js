@@ -3,13 +3,13 @@ import {
   appVersionSelectors,
   exportAppModalSelectors,
   importSelectors,
-} from "Selectors/platform/exportImport";
+} from "Selectors/exportImport";
 import { verifyModal } from "Support/utils/common";
 import {
   appVersionText,
   exportAppModalText,
   importText,
-} from "Texts/platform/exportImport";
+} from "Texts/exportImport";
 
 export const verifyElementsOfExportModal = (
   currentVersionName,

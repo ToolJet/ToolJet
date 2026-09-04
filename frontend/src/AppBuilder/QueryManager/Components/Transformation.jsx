@@ -13,7 +13,6 @@ import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 import { AI_QUERY_SUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
-import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const defaultValue = {
   javascript: `// write your code here
@@ -201,7 +200,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
                 {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
               </span>
             </OverlayTrigger>
-            {INLINE_AI_FEATURES_ENABLED && <WriteTransformationButton />}
+            <WriteTransformationButton />
           </div>
 
           <p className="tw-text-text-placeholder tw-mb-0" data-cy="transformation-info">

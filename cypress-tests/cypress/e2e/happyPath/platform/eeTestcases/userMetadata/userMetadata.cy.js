@@ -1,7 +1,7 @@
 import { commonSelectors, inspectorSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/platform/manageUsers";
-import { usersSelector } from "Selectors/platform/manageUsers";
+import { usersText } from "Texts/manageUsers";
+import { usersSelector } from "Selectors/manageUsers";
 import {
   fillUserInviteForm,
   confirmInviteElements,
@@ -18,10 +18,10 @@ import {
 import {
   navigateAndVerifyInspector,
   navigateToInspectorNodes,
-} from "Support/utils/appBuilder/inspector";
+} from "Support/utils/inspector";
 import { navigateToManageUsers, logout } from "Support/utils/common";
-import { onboardingSelectors } from "Selectors/platform/onboarding";
-import { onboardingText } from "Texts/platform/onboarding";
+import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingText } from "Texts/onboarding";
 
 const data = {};
 const metadata = [["Department", "Engineering"]];

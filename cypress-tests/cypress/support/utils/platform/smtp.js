@@ -1,12 +1,12 @@
 import {
     smtpSelectors,
     whiteLabelSelectors
-} from "Selectors/platform/superAdminSelectors";
+} from "Selectors/superAdminSelectors";
 
 import {
     SMTP_TEXT,
     whitelabelText,
-} from "Texts/platform/superAdminText";
+} from "Texts/superAdminText";
 
 import {
     openInstanceSettings,

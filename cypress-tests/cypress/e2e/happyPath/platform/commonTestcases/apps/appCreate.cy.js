@@ -3,8 +3,8 @@ import { fake } from "Fixtures/fake";
 import { viewAppCardOptions } from "Support/utils/common";
 import { commonText } from "Texts/common";
 
-import { importSelectors } from "Selectors/platform/exportImport";
-import { importText } from "Texts/platform/exportImport";
+import { importSelectors } from "Selectors/exportImport";
+import { importText } from "Texts/exportImport";
 
 describe("App creation", () => {
     const data = {};

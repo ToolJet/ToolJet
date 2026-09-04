@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { ssoEeSelector } from "Selectors/platform/eeCommon";
+import { ssoEeSelector } from "Selectors/eeCommon";
 import { sanitize } from "Support/utils/common";
 import {
   apiCreateGroup,

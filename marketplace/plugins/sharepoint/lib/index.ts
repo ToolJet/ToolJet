@@ -32,7 +32,6 @@ export default class Sharepoint implements QueryService {
     let sp_client_id = '';
     let sp_client_secret = '';
     let tenant = '';
-    let redirectHost = '';
 
     for (const item of sourceOptions) {
       if (item.key === 'sp_client_id') {
@@ -44,13 +43,10 @@ export default class Sharepoint implements QueryService {
       if (item.key === 'sp_tenant_id') {
         tenant = item.value;
       }
-      if (item.key === 'tj_redirect_host') {
-        redirectHost = item.value;
-      }
     }
 
     const accessTokenUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`;
-    const host = redirectHost || process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

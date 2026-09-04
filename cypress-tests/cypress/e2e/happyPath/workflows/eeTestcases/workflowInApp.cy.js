@@ -1,11 +1,11 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
-import { postgreSqlText } from "Texts/marketplace/postgreSql";
-import { deleteDatasource } from "Support/utils/marketplace/datasources/dataSource";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
+import { postgreSqlSelector } from "Selectors/postgreSql";
+import { postgreSqlText } from "Texts/postgreSql";
+import { deleteDatasource } from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { workflowsText } from "Texts/workflows";
+import { workflowSelector } from "Selectors/workflows";
 import {
   enterJsonInputInStartNode,
   verifyPreviewOutputText,

@@ -11,7 +11,6 @@ export const NumberInput = ({
   showNativeStepper = false,
 }) => {
   const inputId = `${String(cyLabel)}-input`;
-  const prefixIcon = meta?.prefixIcon;
 
   const getStepValue = () => {
     const numericValue = Number(value);
@@ -24,22 +23,12 @@ export const NumberInput = ({
 
   return (
     <div className="form-text tj-number-input-element">
-      {prefixIcon && (
-        <SolidIcon
-          name={prefixIcon}
-          width="16"
-          fill="var(--icons-default)"
-          style={{ position: 'absolute', left: '10px', top: '8px', pointerEvents: 'none' }}
-          data-cy={`${inputId}-prefix-icon`}
-        />
-      )}
       <input
         style={{
           width: '142px',
           height: '32px',
           caretColor: allowTyping ? undefined : 'transparent',
           cursor: allowTyping ? undefined : 'default',
-          paddingLeft: prefixIcon ? '30px' : undefined,
         }}
         data-cy={inputId}
         type="number"

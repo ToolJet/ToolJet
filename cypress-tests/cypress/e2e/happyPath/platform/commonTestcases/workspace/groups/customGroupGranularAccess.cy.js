@@ -1,13 +1,13 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
     createVersionFromDraft,
     appPromote,
     promoteEnv,
     releaseApp,
 } from "Support/utils/platform/multiEnv";
-import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsSelector } from "Selectors/manageGroups";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
@@ -22,7 +22,7 @@ import {
     verifyEnvironmentAccess,
     signup,
 } from "Support/utils/userPermissions";
-import { groupsText } from "Texts/platform/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 import {
   openVersionSwitcher,
   createDraftVersion,

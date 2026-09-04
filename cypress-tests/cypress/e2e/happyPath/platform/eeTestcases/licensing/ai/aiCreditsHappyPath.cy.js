@@ -7,7 +7,7 @@ import {
   verifyAiChatWorksWithCredits,
   verifyCopilotInQueryPanel,
 } from "Support/utils/platform/ai";
-import { licenseText } from "Texts/platform/license";
+import { licenseText } from "Texts/license";
 import { aiText } from "Texts/platform/ai";
 
 describe("AI Credits Plan - Happy Path", () => {

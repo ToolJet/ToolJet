@@ -5,7 +5,7 @@ import {
 } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout } from "Support/utils/common";
-import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { onboardingSelectors } from "Selectors/onboarding";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { whitelabelTestData, smtpConfig } from "Constants/constants/whitelabel";
 import {

@@ -4,8 +4,8 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
-import { profileSelector } from "Selectors/platform/profile";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
 
@@ -103,8 +103,7 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
-    // cy.waitForElement('[data-cy="ai-icon"]');
-    cy.wait(3000)
+    cy.waitForElement('[data-cy="ai-icon"]');
   }
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
     cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();

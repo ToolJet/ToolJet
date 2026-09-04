@@ -3,14 +3,15 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   selectAndAddDataSource,
   fillConnectionForm,
-} from "Support/utils/marketplace/datasources/postgreSql";
+} from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
 import {
   deleteDatasource,
+  addQuery,
   verifyValueOnInspector,
-} from "Support/utils/marketplace/datasources/dataSource";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import { dataSourceText } from "Texts/marketplace/dataSource";
+} from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { dataSourceText } from "Texts/dataSource";
 import {
   navigateToManageGroups,
   pinInspector,
@@ -18,7 +19,7 @@ import {
 } from "Support/utils/common";
 import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
 import { resolveHost } from "Support/utils/apps";
-import { addQuery, addSuccessNotification } from "Support/utils/appBuilder/querymanager/queries";
+import { addSuccessNotification } from "Support/utils/queries";
 
 const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");

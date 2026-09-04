@@ -17,9 +17,9 @@ import {
   verifyAppDelete,
 } from "Support/utils/dashboard";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/platform/dashboard";
+import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/platform/dashboard";
+import { dashboardText } from "Texts/dashboard";
 import { logout } from "Support/utils/common";
 
 

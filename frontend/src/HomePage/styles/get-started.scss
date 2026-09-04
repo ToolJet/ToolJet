@@ -48,15 +48,6 @@
       max-height: 180px;
     }
 
-    // Reserve the footer's height (32px) plus a gap at the end of the content so the LAST line can
-    // always be scrolled clear of the model picker. This handles the end of the document; the footer
-    // being opaque (below) is what protects the rows passing through the viewport mid-scroll. Both
-    // are needed: padding alone leaves scrolled text visible under a transparent footer, and an
-    // opaque footer alone would permanently hide the final line.
-    .cm-content {
-      padding-bottom: 2.5rem;
-    }
-
     // CodeMirror's own cursor for the empty doc isn't reliably aligned with the absolutely-
     // positioned placeholder overlay text (varies by device/DPR) — hide it and use our own
     // caret (.slot-placeholder-caret) instead, which is laid out inline with the overlay text.
@@ -66,24 +57,14 @@
 
     .ai-builder-footer {
       display: flex;
-      // Opaque, matching the composer surface. The footer sits absolutely across the bottom of the
-      // input, so once the prompt is long enough for CodeMirror to scroll, text passes THROUGH a
-      // transparent footer and collides with the model picker. Padding on .cm-content cannot fix
-      // that: it reserves space at the end of the scrollable content, not at the bottom of the
-      // viewport, so mid-scroll rows still render underneath. Making the footer opaque hides them,
-      // and the content padding below still lets the final line scroll clear of it.
-      // Use --page-weak, not --interactive-weak: the composer surface is itself transparent
-      // (--interactive-weak resolves to rgba(255,255,255,0)), so it shows the .get-started-page
-      // background through it. --page-weak is that background, and is theme-aware.
-      background-color: var(--page-weak);
+      background-color: transparent;
       justify-content: flex-end;
       align-items: center;
       gap: 8px;
       position: absolute;
       bottom: 0;
-      left: 0;
       right: 0;
-      width: auto;
+      width: fit-content;
       border-radius: 0 0 8px 8px;
       border-top: 0px !important;
 

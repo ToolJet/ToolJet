@@ -17,7 +17,7 @@ import {
   verifyNoAiCreditSection,
   verifySaveButtonDisabled
 } from "Support/utils/platform/ai";
-import { licenseText } from "Texts/platform/license";
+import { licenseText } from "Texts/license";
 import { aiText } from "Texts/platform/ai";
 
 const validApiKey = Cypress.env("anthropic_api_key");

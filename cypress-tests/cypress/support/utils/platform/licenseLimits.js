@@ -1,5 +1,5 @@
-import { instanceSettingsSelector } from "Constants/selectors/platform/eeCommon";
-import { licenseSelectors } from "Constants/selectors/platform/license";
+import { instanceSettingsSelector } from "Constants/selectors/eeCommon";
+import { licenseSelectors } from "Constants/selectors/license";
 import { commonSelectors } from "Selectors/common";
 import { openEditUserModal } from "Support/utils/platform/allUsers";
 

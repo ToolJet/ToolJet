@@ -12,12 +12,12 @@ import {
     verifySecretInStaticQueryRaw,
     verifyStaticQueryPreview,
 } from "Support/utils/workspaceConstants";
-import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
+import { workspaceConstantsText } from "Texts/workspaceConstants";
 
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 import { setUpSlug } from "Support/utils/apps";
 import { sanitize } from "Support/utils/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 
 
 const data = {};

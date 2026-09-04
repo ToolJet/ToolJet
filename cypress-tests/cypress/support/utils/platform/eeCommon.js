@@ -6,20 +6,20 @@ import {
   multiEnvSelector,
   ssoEeSelector,
   workspaceSelector,
-} from "Selectors/platform/eeCommon";
-import { ssoEeText } from "Texts/platform/eeCommon";
+} from "Selectors/eeCommon";
+import { ssoEeText } from "Texts/eeCommon";
 import * as common from "Support/utils/common";
-import { groupsSelector } from "Selectors/platform/manageGroups";
-import { ssoSelector } from "Selectors/platform/manageSSO";
-import { usersSelector } from "Selectors/platform/manageUsers";
+import { groupsSelector } from "Selectors/manageGroups";
+import { ssoSelector } from "Selectors/manageSSO";
+import { usersSelector } from "Selectors/manageUsers";
 import {
   // verifyOnboardingQuestions,
   // verifyCloudOnboardingQuestions,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
-import { ssoText } from "Texts/platform/manageSSO";
-import { usersText } from "Texts/platform/manageUsers";
+import { ssoText } from "Texts/manageSSO";
+import { usersText } from "Texts/manageUsers";
 // import { appPromote } from "Support/utils/multiEnv";
 
 export const oidcSSOPageElements = () => {

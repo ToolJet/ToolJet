@@ -51,10 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           ? req.headers['tj-workspace-id'][0]
           : req.headers['tj-workspace-id'];
 
-      /* A PAT session is bound to exactly one workspace at mint time, so its single
-         organizationId is unambiguous — no tj-workspace-id header required. Previously gated on
-         payload.appId, which only the app-scoped embed flow sets; workspace PATs have no appId. */
-      if (!organizationId && payload?.isPATLogin && payload?.organizationIds?.length === 1) {
+      if (!organizationId && payload?.isPATLogin && payload?.appId) {
         organizationId = payload.organizationIds[0];
       }
 
@@ -115,8 +112,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
-        user.isPATLogin = !!payload.isPATLogin;
-        user.patAppId = payload.appId;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)

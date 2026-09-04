@@ -48,6 +48,5 @@ export enum MODULES {
   SCIM = 'SCIM',
   CUSTOM_DOMAINS = 'customDomains',
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
-  PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
   FRONTEND_METRICS = 'FrontendMetrics',
 }

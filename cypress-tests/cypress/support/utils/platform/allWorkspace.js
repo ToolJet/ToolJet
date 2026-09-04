@@ -1,14 +1,14 @@
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/platform/eeCommon";
-import { instanceSettingsText } from "Texts/platform/eeCommon";
+import { commonEeSelectors } from "Selectors/eeCommon";
+import { instanceSettingsText } from "Texts/eeCommon";
 
 import {
     instanceWorkspaceSelectors,
-} from "Selectors/platform/superAdminSelectors";
+} from "Selectors/superAdminSelectors";
 
 import {
     instanceWorkspaceText,
-} from "Texts/platform/superAdminText";
+} from "Texts/superAdminText";
 
 import {
     openInstanceSettings,

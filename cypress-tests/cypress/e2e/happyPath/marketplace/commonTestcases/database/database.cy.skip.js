@@ -2,8 +2,8 @@ import {
   databaseSelectors,
   filterSelectors,
   sortSelectors,
-} from "Selectors/marketplace/database";
-import { databaseText, filterText, sortText } from "Texts/marketplace/database";
+} from "Selectors/database";
+import { databaseText, filterText, sortText } from "Texts/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
   verifyAllElementsOfPage,
@@ -21,10 +21,10 @@ import {
   editRowAndVerify,
   exportTableAndVerify,
   bulkUploadDataTemplateDownloadAndVerify,
-} from "Support/utils/marketplace/tjdb/database";
+} from "Support/utils/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
-import { randomString } from "Support/utils/appBuilder/csa";
+import { randomString } from "Support/utils/editor/textInput";
 
 describe("Database Functionality", () => {
   const data = {};

@@ -1,6 +1,0 @@
-{
-  "assertions": [
-    { "path": "name", "equals": "Compatibility fixture" },
-    { "path": "schemaVersion", "equals": 1 }
-  ]
-}

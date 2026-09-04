@@ -1,0 +1,12 @@
+export const awsTextractText = {
+  awsTextract: "AWS Textract",
+  cypressawsLambda: "cypress-aws-textract",
+  labelAccesskey: "Access key",
+  labelSecretKey: "Secret key",
+  placeholderAccessKey: "Enter access key",
+  placeholderSecretKey: "**************",
+  documentName:
+    "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA0IDAgUiA+PiA+PiAvQ29udGVudHMgNSAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgPj4KZW5kb2JqCjUgMCBvYmoKPDwgL0xlbmd0aCAxMjUgPj4Kc3RyZWFtCkJUIC9GMSAxMiBUZiAxMDAgNzAwIFRkICgoSGVsbG8sIEFtYXpvbiBUZXh0cmFjdCEpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDExIDAwMDAwIG4gCjAwMDAwMDAwNTQgMDAwMDAgbgAKMDAwMDAwMDEwMyAwMDAwMCBuIAowMDAwMDAwMTcyIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMjIzCiUlRU9G",
+  bucketName: "reimbursement-receipt-files",
+  keyName: "reimbursement_receipt_1718364944018.png",
+};

@@ -3,9 +3,6 @@ const initialState = {
     modules: {
       canvas: {
         isEditorLoading: true,
-        // Scoped to the canvas widget tree only — keeps the editor chrome (header,
-        // sidebars, AI chat) mounted while the app definition is re-fetched.
-        isCanvasReloading: false,
       },
     },
   },
@@ -31,14 +28,6 @@ export const createLoaderSlice = (set, get) => ({
       },
       false,
       'setEditorLoading'
-    ),
-  setCanvasReloading: (status, moduleId = 'canvas') =>
-    set(
-      (state) => {
-        state.loaderStore.modules[moduleId].isCanvasReloading = status;
-      },
-      false,
-      'setCanvasReloading'
     ),
   setIsLoaderLoading: (status, moduleId = 'canvas') =>
     set(

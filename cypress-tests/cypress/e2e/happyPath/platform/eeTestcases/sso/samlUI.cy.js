@@ -1,9 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, ssoEeSelector } from "Selectors/platform/eeCommon";
-import { ssoSelector } from "Selectors/platform/manageSSO";
+import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
+import { ssoSelector } from "Selectors/manageSSO";
 import { navigateToManageSSO, sanitize } from "Support/utils/common";
-import { ssoEeText, ssoText } from "Texts/platform/manageSSO";
+import { ssoEeText, ssoText } from "Texts/manageSSO";
 
 describe("SAML SSO", () => {
     const data = {};

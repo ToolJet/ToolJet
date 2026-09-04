@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, versionModalSelector } from "Selectors/platform/eeCommon";
-import { versionSwitcherSelectors } from "Selectors/platform/version";
+import { commonEeSelectors, versionModalSelector } from "Selectors/eeCommon";
+import { versionSwitcherSelectors } from "Selectors/version";
 import {createDraftVersion,
   openVersionSwitcher,
   openCreateDraftVersionModal

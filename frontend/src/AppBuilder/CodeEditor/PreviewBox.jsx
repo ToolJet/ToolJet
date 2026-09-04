@@ -19,7 +19,6 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
-import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -510,7 +509,7 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && (
+                {aiFeaturesEnabled && (
                   <ToolTip
                     placement="left"
                     message={<FixIssueTooltipContent />}

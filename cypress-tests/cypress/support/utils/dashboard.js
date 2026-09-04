@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/platform/dashboard";
+import { dashboardSelector } from "Selectors/dashboard";
 import {
   cancelModal,
   closeModal,
@@ -7,7 +7,7 @@ import {
   viewAppCardOptions,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/platform/dashboard";
+import { dashboardText } from "Texts/dashboard";
 
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {

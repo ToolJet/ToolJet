@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
 import {
   Environments,
   EnvironmentValues,

@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 import { apiUpdateProfile } from "Support/utils/platform/apiUtils/commonApi";
 import {
@@ -17,7 +17,7 @@ import {
     verifyPermissionCheckBoxLabelsAndHelperTexts,
     verifyUserRow,
 } from "Support/utils/platform/groupsUI";
-import { groupsText } from "Texts/platform/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 
 describe("User Role UI and Functionality verification", () => {
     const data = {};

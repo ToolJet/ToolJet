@@ -58,7 +58,6 @@ export const KeyValuePair = ({
     accentColor = 'var(--primary)',
     // Container
     padding = 'default',
-    paddingInside = 0,
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-weak-border)',
     borderRadius = 6,
@@ -68,7 +67,6 @@ export const KeyValuePair = ({
   } = styles;
 
   const containerStyles = {
-    padding: paddingInside ? parseFloat(paddingInside) : 0,
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,

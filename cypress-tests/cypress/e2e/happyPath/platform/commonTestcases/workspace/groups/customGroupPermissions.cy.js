@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import { groupsSelector } from "Selectors/platform/manageGroups";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
   createGroupsAndAddUserInGroup,
@@ -12,7 +12,7 @@ import {
   getGroupPermissionInput,
   verifyBuilderPermissions,
 } from "Support/utils/userPermissions";
-import { groupsText } from "Texts/platform/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 import { verifyUserInGroups } from 'Support/utils/externalApi';
 
 describe("Custom Group Permissions", () => {
