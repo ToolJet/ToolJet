@@ -173,6 +173,11 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
    * Resolves the effective environment ID, respecting license restrictions.
    * Throws ForbiddenException if a non-dev environment is requested without multi-environment license.
    * If no environment is requested, defaults to the development environment.
+   *
+   * Deliberately does NOT check that requestedEnvironmentId belongs to organizationId: callers that
+   * join on it (TooljetDbRelationResolverService.resolve) rely on a foreign org's id simply matching
+   * no rows - fail-closed via absence, not a thrown error. See relation-resolver.service.spec.ts's
+   * "foreign workspace's environment id" case for the pinned contract.
    */
   async resolveEnvironmentId(
     organizationId: string,

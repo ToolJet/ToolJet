@@ -5,8 +5,10 @@ import _ from 'lodash';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(tableId, query = '') {
-  return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${query}`);
+function findOne(tableId, query = '', environmentId) {
+  const envQuery = environmentId ? `environment_id=${environmentId}` : '';
+  const combinedQuery = [query, envQuery].filter(Boolean).join('&');
+  return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${combinedQuery}`);
 }
 
 function findAll(organizationId) {

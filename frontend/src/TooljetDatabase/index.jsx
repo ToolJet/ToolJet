@@ -59,6 +59,7 @@ export const TooljetDatabase = (props) => {
   } = usePostgrestQueryBuilder({
     organizationId,
     selectedTable,
+    selectedEnvironment,
     setSelectedTableData,
     setTotalRecords,
     setLoadingState,
@@ -157,6 +158,14 @@ export const TooljetDatabase = (props) => {
   useEffect(() => {
     fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
   }, [selectedTable]);
+
+  // Environment switch alone (same table) still needs a row-data re-fetch - Table/index.jsx's own
+  // effect on selectedEnvironment already re-fetches metadata (columns/FKs), but the rows themselves
+  // come from this hook, not that component. No-op on mount / before a table is selected.
+  useEffect(() => {
+    if (selectedTable?.id) handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.id]);
 
   return (
     // Wraps Layout (not just the page content) so Header - rendered by Layout above

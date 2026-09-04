@@ -8,6 +8,7 @@ import { TooljetDatabaseContext } from './index';
 export const usePostgrestQueryBuilder = ({
   organizationId,
   selectedTable,
+  selectedEnvironment,
   setSelectedTableData,
   setTotalRecords,
   setLoadingState,
@@ -43,7 +44,11 @@ export const usePostgrestQueryBuilder = ({
     }
     query = query + '&' + postgrestQueryBuilder.current.paginationQuery.url.toString();
 
-    const { headers, data, error } = await tooljetDatabaseService.findOne(selectedTable.id, query);
+    const { headers, data, error } = await tooljetDatabaseService.findOne(
+      selectedTable.id,
+      query,
+      selectedEnvironment?.id
+    );
 
     if (error) {
       toast.error(error?.message ?? 'Something went wrong');

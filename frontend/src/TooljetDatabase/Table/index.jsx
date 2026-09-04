@@ -117,7 +117,8 @@ const Table = ({ collapseSidebar }) => {
       tooljetDatabaseService
         .findOne(
           foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
-          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
+          `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`,
+          selectedEnvironment?.id
         )
         .then(({ headers, data = [], error }) => {
           if (error) {

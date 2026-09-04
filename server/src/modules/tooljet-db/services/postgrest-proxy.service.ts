@@ -65,14 +65,18 @@ export class PostgrestProxyService {
       // });
     }
 
+    // environment_id rides the querystring on this route (the editor's direct /proxy/* passthrough
+    // has no other channel for it) and must never reach PostgREST itself, or it's forwarded as a
+    // column filter. Strip it before replaceUrlForPostgrest/resolveAndRewrite see the url.
+    const { url: strippedUrl, environmentId } = extractAndStripEnvironmentId(req.url);
+    req.url = strippedUrl;
+
     // replaceUrlForPostgrest strips the /api/tooljet-db/proxy prefix — resolveAndRewrite is
     // written against the bare `/<uuid>?...` form (see its own doc comment).
-    // No environment on the wire for the editor's direct /proxy/* route; the selector and its
-    // permission check land together in H8. Explicit undefined, never a silent default.
     const { url: rewrittenUrl, tableInfo } = await this.resolveAndRewrite(
       replaceUrlForPostgrest(req.url),
       organizationId,
-      undefined
+      environmentId
     );
     req.url = rewrittenUrl;
     req.headers['tableInfo'] = tableInfo;
@@ -370,6 +374,25 @@ export class PostgrestProxyService {
     }
     return body;
   }
+}
+
+// Pulls `environment_id` off the querystring and returns the url with it removed. Surgical
+// find-and-remove on the raw pairs, not a URLSearchParams round-trip — a full parse/reserialize
+// would re-percent-encode PostgREST operator syntax (`in.(1,2,3)`, `select=a,b`) that's valid
+// unescaped on the wire today, silently changing every other param in the process.
+export function extractAndStripEnvironmentId(url: string): { url: string; environmentId: string | undefined } {
+  const [path, queryString] = url.split('?');
+  if (!queryString) return { url, environmentId: undefined };
+
+  let environmentId: string | undefined;
+  const remaining = queryString.split('&').filter((pair) => {
+    const [key, value] = pair.split('=');
+    if (decodeURIComponent(key) !== 'environment_id') return true;
+    environmentId = value ? decodeURIComponent(value) : undefined;
+    return false;
+  });
+
+  return { url: path + (remaining.length ? '?' + remaining.join('&') : ''), environmentId };
 }
 
 function replaceUrlForPostgrest(url: string) {
