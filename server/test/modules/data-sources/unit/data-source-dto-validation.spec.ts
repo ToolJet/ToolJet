@@ -3,11 +3,11 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateDataSourceDto, UpdateDataSourceDto } from '@modules/data-sources/dto';
 
-// '/' is a filesystem path separator once the datasource is serialized to git
-// (server/ee/git-sync/data-source-fs.util.ts): a name containing it splits into nested
+// '/' and '\' are filesystem path separators once the datasource is serialized to git
+// (server/ee/git-sync/data-source-fs.util.ts): a name containing either splits into nested
 // git folders and silently vanishes on the next pull.
 /** @group platform */
-describe('Datasource name "/" restriction (DTO)', () => {
+describe('Datasource name path-separator restriction (DTO)', () => {
   const nameError = async (dto: object) => {
     const errors = await validate(dto);
     return errors.find((error) => error.property === 'name');
@@ -23,7 +23,16 @@ describe('Datasource name "/" restriction (DTO)', () => {
       expect((await nameError(dto))?.constraints).toHaveProperty('matches');
     });
 
-    it('should accept a slash-free name', async () => {
+    it('should reject a name containing "\\"', async () => {
+      const dto = plainToInstance(CreateDataSourceDto, {
+        name: 'local\\snowflake',
+        kind: 'snowflake',
+        options: {},
+      });
+      expect((await nameError(dto))?.constraints).toHaveProperty('matches');
+    });
+
+    it('should accept a separator-free name', async () => {
       const dto = plainToInstance(CreateDataSourceDto, {
         name: 'local-snowflake',
         kind: 'snowflake',
@@ -39,7 +48,12 @@ describe('Datasource name "/" restriction (DTO)', () => {
       expect((await nameError(dto))?.constraints).toHaveProperty('matches');
     });
 
-    it('should accept a slash-free rename', async () => {
+    it('should reject a rename containing "\\"', async () => {
+      const dto = plainToInstance(UpdateDataSourceDto, { name: 'local\\snowflake' });
+      expect((await nameError(dto))?.constraints).toHaveProperty('matches');
+    });
+
+    it('should accept a separator-free rename', async () => {
       const dto = plainToInstance(UpdateDataSourceDto, { name: 'local-snowflake' });
       expect(await nameError(dto)).toBeUndefined();
     });
