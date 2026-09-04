@@ -34,6 +34,13 @@ const ReadOnlySqlView = ({ sql }) => {
   );
 };
 
+function formatTimestamp(date) {
+  const d = new Date(date);
+  const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const timePart = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return `${datePart} · ${timePart}`;
+}
+
 function statusLine(tabIndex, chainLength, appliedCount) {
   const behindCount = chainLength - appliedCount;
   if (tabIndex === 0) return `Development is ${behindCount} migration${behindCount === 1 ? '' : 's'} ahead of staging`;
@@ -52,7 +59,7 @@ const MigrationHistoryDrawer = ({
   refetchMigrations,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const [detailMigration, setDetailMigration] = useState(null);
+  const [expandedMigrationId, setExpandedMigrationId] = useState(null);
   const [promoteTarget, setPromoteTarget] = useState(null);
 
   const chainLength = migrations.length;
@@ -72,22 +79,10 @@ const MigrationHistoryDrawer = ({
   const canPromote = activeTab < allEnvironments.length - 1 && nextEnv && nextEnvBehind;
 
   const handleClose = () => {
-    setDetailMigration(null);
+    setExpandedMigrationId(null);
     setPromoteTarget(null);
     onClose();
   };
-
-  if (detailMigration) {
-    return (
-      <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer migration-history-drawer">
-        <MigrationDetailView
-          migration={detailMigration}
-          onBack={() => setDetailMigration(null)}
-          onClose={handleClose}
-        />
-      </Drawer>
-    );
-  }
 
   if (promoteTarget) {
     return (
@@ -143,6 +138,7 @@ const MigrationHistoryDrawer = ({
       <div className="migration-history-drawer__list">
         {reversedMigrations.map((migration) => {
           const isApplied = appliedIds.includes(migration.id);
+          const isExpanded = expandedMigrationId === migration.id;
           return (
             <div key={migration.id} className={cx('migration-history-drawer__row', { disabled: !isApplied })}>
               <div className="migration-history-drawer__row-marker" />
@@ -158,10 +154,14 @@ const MigrationHistoryDrawer = ({
                 </div>
                 {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
                 <div className="migration-history-drawer__row-timestamp">
-                  {new Date(migration.createdAt ?? migration.created_at).toLocaleString()}
+                  {formatTimestamp(migration.createdAt ?? migration.created_at)}
                 </div>
+                {isExpanded && <ReadOnlySqlView sql={migration.sql} />}
               </div>
-              <button className="migration-history-drawer__code-button" onClick={() => setDetailMigration(migration)}>
+              <button
+                className={cx('migration-history-drawer__code-button', { active: isExpanded })}
+                onClick={() => setExpandedMigrationId(isExpanded ? null : migration.id)}
+              >
                 {'</>'}
               </button>
             </div>
@@ -171,7 +171,15 @@ const MigrationHistoryDrawer = ({
 
       <div className="migration-history-drawer__footer">
         {canPromote && (
-          <ButtonSolid onClick={() => setPromoteTarget({ environment: nextEnv, sourceHeadId: headMigrationId })}>
+          <ButtonSolid
+            onClick={() =>
+              setPromoteTarget({
+                sourceEnvironment: allEnvironments[activeTab],
+                environment: nextEnv,
+                sourceHeadId: headMigrationId,
+              })
+            }
+          >
             Run in {nextEnv.name}
           </ButtonSolid>
         )}
@@ -180,43 +188,26 @@ const MigrationHistoryDrawer = ({
   );
 };
 
-const MigrationDetailView = ({ migration, onBack, onClose }) => (
-  <>
-    <div className="migration-history-drawer__header">
-      <button className="migration-history-drawer__back" onClick={onBack}>
-        <ArrowLeft size={18} />
-      </button>
-      <span>{migration.name || 'Migration'}</span>
-      <button className="migration-history-drawer__close" onClick={onClose}>
-        &times;
-      </button>
-    </div>
-    <div className="migration-history-drawer__detail-body">
-      <div className="migration-history-drawer__row-timestamp">
-        {new Date(migration.createdAt ?? migration.created_at).toLocaleString()}
-      </div>
-      <ReadOnlySqlView sql={migration.sql} />
-    </div>
-  </>
-);
 const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, onClose, refetchMigrations }) => {
-  const { environment } = promoteTarget;
+  const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
-    tooljetDatabaseService.previewPromoteTable(organizationId, tableId, environment.id).then(({ data, error }) => {
-      if (error) {
-        toast.error(error?.message || 'Could not load the migration preview', { position: 'top-center' });
-        return;
-      }
-      setPendingMigrations(data?.result?.missing_migrations ?? []);
-    });
-  }, [organizationId, tableId, environment.id]);
+    tooljetDatabaseService
+      .previewPromoteTable(organizationId, tableId, sourceEnvironment.id)
+      .then(({ data, error }) => {
+        if (error) {
+          toast.error(error?.message || 'Could not load the migration preview', { position: 'top-center' });
+          return;
+        }
+        setPendingMigrations(data?.result?.missing_migrations ?? []);
+      });
+  }, [organizationId, tableId, sourceEnvironment.id]);
 
   const runPromote = () => {
     setIsRunning(true);
-    tooljetDatabaseService.promoteTable(organizationId, tableId, environment.id).then(({ error }) => {
+    tooljetDatabaseService.promoteTable(organizationId, tableId, sourceEnvironment.id).then(({ error }) => {
       setIsRunning(false);
       if (error) {
         toast.error(error?.message || `Could not run migrations in ${environment.name}`, { position: 'top-center' });
@@ -261,9 +252,7 @@ const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, on
                 <div className="migration-history-drawer__row-title">
                   <span>{migration.name || migration.id}</span>
                 </div>
-                <div className="migration-history-drawer__row-timestamp">
-                  {new Date(migration.created_at).toLocaleString()}
-                </div>
+                <div className="migration-history-drawer__row-timestamp">{formatTimestamp(migration.created_at)}</div>
                 <ReadOnlySqlView sql={migration.sql} />
               </div>
             ))}

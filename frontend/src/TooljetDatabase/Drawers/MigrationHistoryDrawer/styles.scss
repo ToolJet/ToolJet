@@ -146,6 +146,15 @@
     height: 32px;
     flex-shrink: 0;
     cursor: pointer;
+
+    &.active {
+      background-color: var(--background-accent-weak, rgba(67, 104, 250, 0.12));
+      color: var(--text-accent, #4368fa);
+    }
+  }
+
+  &__row-content > .cm-editor {
+    margin-top: 8px;
   }
 
   &__footer {
