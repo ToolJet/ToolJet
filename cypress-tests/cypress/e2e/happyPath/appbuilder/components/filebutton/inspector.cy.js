@@ -1,4 +1,8 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+import {
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
@@ -7,7 +11,6 @@ import {
   verifyNodes,
   verifyNodeData,
 } from "Support/utils/appBuilder/inspectorTree";
-import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
 
 // Inspector facet — the widget's exposed contract at default.
 // Covers all 7 config.exposedVariables — source: fileButton.js:287-294

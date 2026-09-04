@@ -64,6 +64,11 @@ export {
   editAndVerifyWidgetName,
   addAndVerifyTooltip,
   verifyTooltip,
+  enableFxAndBind,
+  clearParameter,
+  expectNoFxButton,
+  alignmentToggle,
+  locateAlignmentToggle,
 } from "./appBuilder/properties";
 
 export {
@@ -75,6 +80,11 @@ export {
   verifyAndModifyStylePickerFx,
   verifyStylesGeneralAccordion,
   checkPaddingOfContainer,
+  openStyleAccordion,
+  selectThemeColour,
+  expectThemeColour,
+  expectStyleVar,
+  expectFontWeight,
 } from "./appBuilder/styles";
 
 export {
@@ -106,6 +116,9 @@ export {
   verifyWidgetMoved,
   verifyWidgetResized,
   verifyWidgetCount,
+  waitForDropSettle,
+  dropWidget,
+  clickWidgetInput,
 } from "./appBuilder/canvas";
 
 export {

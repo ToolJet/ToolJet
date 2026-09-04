@@ -14,6 +14,11 @@
 | - | `verifyPropertiesGeneralAccordion` | appBuilder/properties.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
 | - | `selectFromSidebarDropdown` | appBuilder/properties.js | properties | `selectFromSidebarDropdown('Alignment', 'center')` |
 | - | `addValueOnInput` | appBuilder/properties.js | properties | `addValueOnInput('Border radius', '8')` |
+| fx | `enableFxAndBind` | appBuilder/properties.js | properties | `enableFxAndBind('Loading state', '{{components.toggleswitch1.value}}')` |
+| code | `clearParameter` | appBuilder/properties.js | properties | `clearParameter('Min size (bytes)')` |
+| fx | `expectNoFxButton` | appBuilder/properties.js | properties | `expectNoFxButton(() => cy.get('[data-cy="togglr-button-none"]'), 'Border radius')` |
+| - | `alignmentToggle` | appBuilder/properties.js | styles | `alignmentToggle('right', false).click()   // a 2-option icon-direction group` |
+| - | `locateAlignmentToggle` | appBuilder/properties.js | styles | `expectNoFxButton(locateAlignmentToggle(false), 'Label size')` |
 | colorSwatches | `selectColourFromColourPicker` | appBuilder/styles.js | styles | `selectColourFromColourPicker('Background', ['255','0','0','100'])` |
 | boxShadow | `fillBoxShadowParams` | appBuilder/styles.js | styles | `fillBoxShadowParams(['X', 'Y', 'Blur', 'Spread'], [2, 4, 6, 0])` |
 | boxShadow | `verifyBoxShadowCss` | appBuilder/styles.js | styles | `verifyBoxShadowCss('textinput1', [0,0,0,1], [2,4,6,0])` |
@@ -22,6 +27,11 @@
 | - | `verifyLoaderColor` | appBuilder/styles.js | styles | `verifyLoaderColor('button1', ['255','0','0','100'])` |
 | - | `verifyStylesGeneralAccordion` | appBuilder/styles.js | styles | `verifyStylesGeneralAccordion('textinput1', [2,4,6,0], '#ff0000', [255,0,0,100])` |
 | - | `checkPaddingOfContainer` | appBuilder/styles.js | styles | `checkPaddingOfContainer('container1', '16', 'Box')` |
+| - | `openStyleAccordion` | appBuilder/styles.js | styles | `openStyleAccordion('checkbox1', 'label and icon')` |
+| - | `selectThemeColour` | appBuilder/styles.js | styles | `selectThemeColour('Label color', 'SystemStatus/Error')` |
+| - | `expectThemeColour` | appBuilder/styles.js | styles | `expectThemeColour(sel, 'color', 'var(--cc-error-systemStatus)')` |
+| - | `expectStyleVar` | appBuilder/styles.js | styles | `expectStyleVar(sel, '--button-primary', '#ff0000')` |
+| - | `expectFontWeight` | appBuilder/styles.js | styles | `expectFontWeight(sel, '700')` |
 | - | `verifyWidgetText` | appBuilder/components.js | properties | `verifyWidgetText('textinput1', 'Hello')` |
 | - | `addTextWidgetToVerifyValue` | appBuilder/components.js | canvas | `addTextWidgetToVerifyValue('components.textinput1.value')` |
 | - | `verifyContainerElements` | appBuilder/components.js | properties | `verifyContainerElements()` |
@@ -62,7 +72,11 @@
 | - | `verifyWidgetMoved` | appBuilder/canvas.js | canvas | `verifyWidgetMoved('button1', before)   // before = getWidgetRect result` |
 | - | `verifyWidgetResized` | appBuilder/canvas.js | canvas | `verifyWidgetResized('button1', before) // before = getWidgetRect result` |
 | - | `verifyWidgetCount` | appBuilder/canvas.js | canvas | `verifyWidgetCount('button', 2)   // button1 + button2 after a clone` |
+| - | `waitForDropSettle` | appBuilder/canvas.js | canvas | `waitForDropSettle('checkbox1')` |
+| - | `dropWidget` | appBuilder/canvas.js | canvas | `dropWidget('Text Input', 'textinput1', 500, 300)` |
+| - | `clickWidgetInput` | appBuilder/canvas.js | canvas | `clickWidgetInput('toggleswitch1')` |
 | events | `selectEvent` | appBuilder/events.js | events | `selectEvent('On click', 'Show Alert')` |
+| - | `selectSearchableOption` | appBuilder/events.js | events | `selectSearchableOption('[data-cy="query-selection-field"]', 'myquery')` |
 | csa | `selectCSA` | appBuilder/events.js | csa | `selectCSA('textinput1', 'Set text')` |
 | - | `addSupportCSAData` | appBuilder/events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |
 | - | `selectSupportCSAData` | appBuilder/events.js | csa | `selectSupportCSAData('First option')` |
@@ -70,6 +84,7 @@
 | events | `addMultiEventsWithAlert` | appBuilder/events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])` |
 | - | `setCSAParam` | appBuilder/events.js | csa | `setCSAParam({ label: 'Column key', type: 'toggle', value: true })` |
 | csa | `configureCSA` | appBuilder/events.js | csa | `configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])` |
+| - | `selectQueryForEvent` | appBuilder/events.js | events | `selectEvent('On click', 'Run query'); selectQueryForEvent('mysquery')` |
 | - | `verifyControlComponentAction` | appBuilder/csa.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
 | - | `randomString` | appBuilder/csa.js | common | `randomString(8)` |
 | csa | `verifyCSA` | appBuilder/csa.js | csa | `verifyCSA('textinput1')` |
@@ -115,6 +130,7 @@
 | - | `createRestAPIQuery` | appBuilder/querymanager/queries.js | common | `createRestAPIQuery('getData', 'restDs', '', '', 'https://api.example.com', true)` |
 | - | `verifyPreviewData` | appBuilder/querymanager/queries.js | common | `verifyPreviewData('expected value')` |
 | - | `resizeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `resizeQueryPanel('90')   // set panel height to 90%` |
+| - | `closeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `closeQueryPanel()` |
 | - | `addBasicData` | appBuilder/components/button.js | properties | `addBasicData({ widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |
 | - | `verifyBasicData` | appBuilder/components/button.js | properties | `verifyBasicData('btnClone', { widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |
 | - | `tableWidgetOuter` | appBuilder/components/table.js | canvas | `cy.get(tableWidgetOuter('table1')).first().click()` |

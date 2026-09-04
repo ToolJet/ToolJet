@@ -1,10 +1,12 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
-import { openEditorSidebar } from "Support/utils/commonWidget";
-import { waitForDropSettle } from "Support/utils/appBuilder/components/fileButton";
+import {
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 
 // Events facet — both config.events, each asserted in the editor AND in preview.
 //   onFileSelected:151 — fires on an accepted file AND on a rejected one
@@ -36,14 +38,6 @@ describe(
     cy.verifyToastMessage(commonSelectors.toastMessage, message, false);
   };
 
-  // Same tab rather than a new one, so the rest of the test keeps running in
-  // the same Cypress context. Navigating reloads, so any toast still fading
-  // out from the editor half is gone by the time preview asserts.
-  const openPreview = () => {
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.waitForElement(fileButtonSelector.button(widget));
-  };
-
   before(() => {
     cy.writeFile(oversizeFile, "x".repeat(oversizeFileBytes));
   });
@@ -65,7 +59,7 @@ describe(
     addEventWithAlert("On file selected", selectedMsg);
     selectFile(validFile);
     expectToast(selectedMsg);
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     selectFile(validFile);
     expectToast(selectedMsg);
   });
@@ -75,7 +69,7 @@ describe(
     selectFile(validFile);
     expectToast(loadedMsg);
     cy.get(fileButtonSelector.label(widget)).should("have.text", "tooljet.png");
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     selectFile(validFile);
     expectToast(loadedMsg);
     cy.get(fileButtonSelector.label(widget)).should("have.text", "tooljet.png");
@@ -86,7 +80,7 @@ describe(
     selectFile(oversizeFile);
     expectToast(selectedMsg);
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     selectFile(oversizeFile);
     expectToast(selectedMsg);
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
@@ -98,7 +92,7 @@ describe(
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
     cy.get(commonSelectors.toastMessage).should("not.contain.text", loadedMsg);
     cy.get(fileButtonSelector.label(widget)).should("not.have.text", "filebutton-oversize.txt");
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     selectFile(oversizeFile);
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
     cy.get(commonSelectors.toastMessage).should("not.contain.text", loadedMsg);
@@ -108,7 +102,7 @@ describe(
     addMultiEventsWithAlert(events);
     cy.waitForElement(fileButtonSelector.button(widget));
     cy.get(commonSelectors.toastMessage).should("not.exist");
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     cy.waitForElement(fileButtonSelector.button(widget));
     cy.get(commonSelectors.toastMessage).should("not.exist");
   });
