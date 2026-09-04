@@ -16,9 +16,12 @@ import {
   closeParsedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
-// Userflow facet — end-to-end builder journeys. Each test combines SEVERAL fields the
-// way a real app would, then drives the result as an end user; the failures worth
-// catching here are interactions between settings that each pass in isolation.
+// Userflow facet — end-to-end builder journeys. No config items of its own; it covers
+// COMBINATIONS that properties.cy.js only exercises in isolation.
+//   mandatory CSV upload — buttonText:15 + fileType:110 + parseContent:27 + enableValidation:105
+//   multi-file parsing   — enableMultiple:21 + parseContent:27, plus isParsing:289 settling
+// The failures worth catching here are interactions between settings that each pass
+// on their own.
 
 describe(
   "File Button userflow",

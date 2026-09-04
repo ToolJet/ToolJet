@@ -5,9 +5,11 @@ import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
 import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
 
-// Basics facet — CI-reliable smoke: the widget mounts, renders its documented defaults,
-// and a configured value survives a reload. If this is red, every other facet is noise.
-// The Inspector tree lives in inspector.cy.js.
+// Basics facet — CI-reliable smoke; if this is red, every other facet is noise.
+// Covers: definition defaults buttonText:15 · icon:181 — source: fileButton.js
+//         the 4 conditional children asserted ABSENT at default (clear-button,
+//         invalid-feedback, loader, mandatory-indicator), and edit-survives-reload.
+// Not here: exposed values → inspector.cy.js · drop placement → canvas.cy.js
 describe(
   "File Button basics",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },

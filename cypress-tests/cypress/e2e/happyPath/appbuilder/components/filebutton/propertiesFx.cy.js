@@ -23,10 +23,19 @@ import {
   hoverTriggerInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
-// The fx / dynamic-binding half of the properties facet; the direct-control half lives
-// in properties.cy.js. Every test binds the field to a COMPANION widget then drives the
-// companion — changing the source is what proves the binding stays live rather than
-// having resolved once at bind time. Each test sets up its own pre-state.
+// PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
+// Covers all 16 fx-capable items across the two blocks — 10 of 11 config.properties
+// (fileButton.js:14-102) and all 6 config.validation (fileButton.js:104-149).
+//   properties  buttonText:15 · enableMultiple:21 · parseContent:27 · parseFileType:33
+//               delimiter:47 · enableClearSelection:57 · loadingState:63 · visibility:69
+//               disabledState:75 · tooltip:95
+//   validation  enableValidation:105 · fileType:110 · minSize:115 · maxSize:123
+//               minFileCount:131 · maxFileCount:140
+// Negative: tooltipFormat:81 is the one isFxNotRequired item — asserted to expose NO fx button.
+//
+// Every test binds the field to a COMPANION widget then drives the companion — changing
+// the source is what proves the binding stays live rather than resolving once at bind
+// time. Each test sets up its own pre-state.
 
 describe(
   "File Button properties fx",
