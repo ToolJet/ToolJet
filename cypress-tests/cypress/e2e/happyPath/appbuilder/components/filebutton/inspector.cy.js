@@ -9,10 +9,11 @@ import {
 } from "Support/utils/appBuilder/inspectorTree";
 import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
 
-// Inspector facet — the widget's contract as the app tree exposes it: every declared
-// exposed variable at its documented default, and every CSA handle present as a
-// callable Function. Config-derived, so a config change that drops or renames either
-// list fails here first.
+// Inspector facet — the widget's exposed contract at default.
+// Covers all 7 config.exposedVariables — source: fileButton.js:287-294
+//        all 6 config.actions handles as Functions — source: fileButton.js:296-323
+//        (both lists cited line-by-line below)
+// Config-derived, so a config change dropping or renaming either list fails here first.
 describe(
   "File Button inspector",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },

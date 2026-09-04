@@ -11,6 +11,11 @@ import {
   selectQueryForEvent,
 } from "Support/utils/appBuilder/components/fileButton";
 
+// CSA facet — every handle driven by TWO triggers (a Control Component event and a
+// RunJS query) in TWO environments (editor and preview).
+// Covers all 6 config.actions handles — source: fileButton.js:296-323
+//   clear:298 (no params) · setFocus:302 · setBlur:306
+//   setVisibility:310 · setDisable:315 · setLoading:320  (each takes a `value` toggle)
 describe(
   "File Button CSA",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },

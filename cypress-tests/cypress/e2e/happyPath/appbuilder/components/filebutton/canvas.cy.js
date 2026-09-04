@@ -22,9 +22,12 @@ import {
 } from "Support/utils/commonWidget";
 import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
 
-// Canvas facet — component lifecycle: drag/drop, move, resize, nudge, duplicate,
-// copy-paste, cut, multi-select, rename, delete, undo/redo. Only the widget name and
-// the drop-placement assertion are File-Button-specific.
+// Canvas facet — component lifecycle. Config-independent: no config.properties or
+// config.styles item is exercised here, so there is nothing to cite.
+// Covers: drop placement · move · resize · nudge · duplicate (keyboard + menu) ·
+//         copy-paste · cut/paste · multi-select + select-all · rename · delete+undo/redo
+// KNOWN RED: the two clipboard cases — see the block above them.
+// Only the widget name and the drop-placement assertion are File-Button-specific.
 describe(
   "File Button canvas",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
@@ -103,7 +106,10 @@ describe(
     verifyWidgetCount(namePrefix, 2);
   });
 
-  // ── SKIPPED: shared-harness limitation, NOT a File Button issue ─────────────
+  // ── KNOWN RED: shared-harness limitation, NOT a File Button issue ───────────
+  // These two currently FAIL and are left failing rather than skipped, so the gap
+  // stays visible on every run.
+  //
   // Both clipboard ops fail because pasteWidget() drives realPress([mod,'v']), which
   // needs the browser to read the SYSTEM clipboard — unavailable in this headless
   // Chrome run. Note cutWidget's own internal assertion still passes: Cmd+X removes
@@ -117,13 +123,13 @@ describe(
   // passes, including both duplicate paths, which rules out widget-specific causes.
   //
   // Fix belongs with the shared canvas helper's owner (clipboard permissions, or a
-  // clipboard-API-based helper instead of real key events). Un-skip once that lands.
-  it.skip("copy-paste (Cmd/Ctrl+C then +V)", () => {
+  // clipboard-API-based helper instead of real key events), not worked around here.
+  it("copy-paste (Cmd/Ctrl+C then +V)", () => {
     copyPasteWidget(widget);
     verifyWidgetCount(namePrefix, 2);
   });
 
-  it.skip("cut removes the widget, paste restores it", () => {
+  it("cut removes the widget, paste restores it", () => {
     cutWidget(widget); // asserts removal internally
     cy.forceClickOnCanvas();
     pasteWidget();

@@ -12,7 +12,9 @@ import {
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Customer-issues facet — regression guards for defects found while automating this
-// widget.
+// widget. Open bugs against config.validation items — maxFileCount:140 (over-cap
+// silently sliced; non-numeric discards the selection) and maxSize:123 (non-numeric
+// weakens the cap ~50x). source: fileButton.js · useFilePicker.js:45, 347
 //
 // ⚠ EVERY TEST ASSERTS THE **CORRECT** BEHAVIOUR, NOT TODAY'S, so all of them fail
 // against the current build and are skipped until their fixes land. Asserting the buggy
