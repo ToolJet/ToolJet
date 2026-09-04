@@ -26,7 +26,12 @@ Cypress.Commands.add(
       // (typed "custombtn"), and `#ff0000` dropped its `#` (typed "ff0000",
       // breaking hex-colour fx values). `#` is added to the class and `-` stays
       // last so it's a literal.
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
+      // {{/}}/(( must come FIRST (alternation is first-match-wins), or a
+      // {{...}} expression types as scrambled single braces, not one pair —
+      // e.g. "{{components.toggleswitch1.valu}e}". The reduce below already
+      // branches on "{{" / "}}" / "((" tokens, which single-brace-only
+      // alternatives can never produce.
+      const regex = /(\{\{|\}\}|\{|\}|\(\(|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
