@@ -2,13 +2,14 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar } from "Support/utils/commonWidget";
-import { selectEvent, configureCSA } from "Support/utils/appBuilder/events";
+import {
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
+import { selectEvent, configureCSA, selectQueryForEvent } from "Support/utils/appBuilder/events";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import {
-  waitForDropSettle,
   verifyExposedValue,
-  selectQueryForEvent,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // CSA facet — every handle driven by TWO triggers (a Control Component event and a
@@ -87,14 +88,6 @@ describe(
     if (editor) cy.waitForAutoSave();
   };
 
-  // Widget data-cy attributes are identical in preview — RenderWidget emits them
-  // unconditionally (RenderWidget.jsx:323). Same tab, because the Preview control is a
-  // target="_blank" link and the test must stay in one Cypress context.
-  const openPreview = () => {
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.waitForElement(fileButtonSelector.button(widget));
-  };
-
   // Both triggers, in whichever environment is current.
   const runBothTriggers = (afterControlComponent, afterRunJS, opts = {}) => {
     clickButton("button1", opts);
@@ -147,7 +140,7 @@ describe(
     verifyExposedValue("files", "Array", "[0]");
 
     // ── preview ── (reload drops `files`, so preview starts empty)
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     holdFile();
     clickButton("button1", PREVIEW);
     expectCleared();
@@ -173,7 +166,7 @@ describe(
     runBothTriggers(expectFocused, expectFocused);
 
     // ── preview ──
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     expectNotFocused();
     runBothTriggers(expectFocused, expectFocused, PREVIEW);
   });
@@ -197,7 +190,7 @@ describe(
     expectBlurred();
 
     // ── preview ──
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     focusTrigger();
     clickButton("button1", PREVIEW);
     expectBlurred();
@@ -226,7 +219,7 @@ describe(
     verifyExposedValue("isVisible", "Boolean", "true");
 
     // ── preview ──
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     expectShown();
     runBothTriggers(expectHidden, expectShown, PREVIEW);
   });
@@ -256,7 +249,7 @@ describe(
     verifyExposedValue("isDisabled", "Boolean", "false");
 
     // ── preview ──
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     expectEnabled();
     runBothTriggers(expectDisabled, expectEnabled, PREVIEW);
   });
@@ -288,7 +281,7 @@ describe(
     verifyExposedValue("isLoading", "Boolean", "false");
 
     // ── preview ──
-    openPreview();
+    cy.openPreview(fileButtonSelector.button(widget));
     expectIdle();
     runBothTriggers(expectLoading, expectIdle, PREVIEW);
   });

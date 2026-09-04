@@ -1,9 +1,14 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
-import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
+import {
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 
 // Basics facet — CI-reliable smoke; if this is red, every other facet is noise.
 // Covers: definition defaults buttonText:15 · icon:181 — source: fileButton.js

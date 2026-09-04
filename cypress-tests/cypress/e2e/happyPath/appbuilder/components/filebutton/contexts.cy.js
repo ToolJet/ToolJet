@@ -1,9 +1,12 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar } from "Support/utils/commonWidget";
-import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
+import {
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 
 // Contexts facet — the widget across device contexts.
 // Covers both config.others items — source: fileButton.js:11-12
