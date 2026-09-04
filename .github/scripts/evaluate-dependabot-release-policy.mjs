@@ -8,14 +8,18 @@ const enforcement = {
   anyOverdue: new Date('2026-12-31T00:00:00Z'),
 };
 
-// Remediation windows measured from an alert's creation date. Severities without
-// an entry here have no policy-defined deadline and never block on the overdue
-// rules below.
+// Remediation windows (in days) measured from an alert's creation date, keyed by
+// `scope:severity`. Any scope:severity without an entry here has no policy-defined
+// deadline and never blocks on the overdue rules below.
 const defaultDeadlineDays = {
   'runtime:critical': 2,
   'runtime:high': 7,
+  'runtime:moderate': 30,
+  'runtime:low': 60,
   'development:critical': 30,
   'development:high': 30,
+  'development:moderate': 30,
+  'development:low': 60,
 };
 
 function parseJson(path) {

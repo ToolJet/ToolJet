@@ -87,18 +87,56 @@ test('blocks an overdue development Critical from 31 December 2026', () => {
   assert.match(result.stderr, /overdue since/);
 });
 
-test('does not block a moderate alert even after 31 December 2026', () => {
+test('blocks an overdue moderate alert from 31 December 2026 (30-day window)', () => {
   const result = evaluate(
     [alert({ severity: 'moderate', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' })],
+    '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /overdue since/);
+});
+
+test('treats medium as moderate with the same 30-day window', () => {
+  const result = evaluate(
+    [alert({ severity: 'medium', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' })],
+    '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /MODERATE/);
+});
+
+test('does not block a moderate alert still within its 30-day window', () => {
+  const result = evaluate(
+    [alert({ severity: 'moderate', scope: 'runtime', createdAt: '2026-12-15T00:00:00Z' })],
     '2026-12-31T00:00:00Z'
   );
   assert.equal(result.status, 0, result.stderr);
 });
 
-test('treats medium as moderate, which stays unenforced after 31 December 2026', () => {
+test('blocks an overdue low alert from 31 December 2026 (60-day window)', () => {
   const result = evaluate(
-    [alert({ severity: 'medium', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' })],
+    [alert({ severity: 'low', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' })],
     '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /overdue since/);
+});
+
+test('does not block a low alert still within its 60-day window', () => {
+  const result = evaluate(
+    [alert({ severity: 'low', scope: 'runtime', createdAt: '2026-11-15T00:00:00Z' })],
+    '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('does not enforce moderate or low before 31 December 2026', () => {
+  const result = evaluate(
+    [
+      alert({ number: 1, severity: 'moderate', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' }),
+      alert({ number: 2, severity: 'low', scope: 'runtime', createdAt: '2026-01-01T00:00:00Z' }),
+    ],
+    '2026-12-30T23:59:59Z'
   );
   assert.equal(result.status, 0, result.stderr);
 });
