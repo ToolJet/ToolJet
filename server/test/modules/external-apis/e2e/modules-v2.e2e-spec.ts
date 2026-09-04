@@ -6,7 +6,9 @@
  * External API v2 — Modules (`api-spec-viewer.html` §4)
  *
  * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/modules (all EE, gated by
- * FEATURE_KEY.*_MODULE_V2, license EXTERNAL_API).
+ * FEATURE_KEY.*_MODULE_V2, license EXTERNAL_API). Edition/plan gating (CE 404s, starter 451s)
+ * is shared guard infrastructure identical across every v2 route, not per-resource behavior,
+ * so it isn't covered here — see apps-v2.e2e-spec.ts's header for the full rationale.
  *
  * Known, deliberate spec deviations (do not "fix" these tests to match the spec):
  *   1. Error body shape is NestJS's default AllExceptionsFilter ({statusCode, message, ...}),
@@ -68,35 +70,28 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   afterEach(() => jest.resetAllMocks());
   afterAll(async () => closeTestApp(app), 60000);
 
+  it('enforces the ExternalApiSecurityGuard and resolveWorkspaceByIdentifier', async () => {
+    const { user } = await createUser(app, { email: `mv2-auth-${Date.now()}@tooljet.io` });
+    await request(app.getHttpServer()).post(base(user.defaultOrganizationId)).send({ name: 'X' }).expect(403);
+    await request(app.getHttpServer())
+      .post(base(user.defaultOrganizationId))
+      .set('Authorization', 'Basic wrong-token')
+      .send({ name: 'X' })
+      .expect(403);
+    await request(app.getHttpServer())
+      .post(base('not-a-real-workspace'))
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X' })
+      .expect(404);
+  });
+
   // ---------------------------------------------------------------------------
   // POST /modules — Create
   // ---------------------------------------------------------------------------
 
   describe('POST /api/v2/ext/workspaces/:workspaceIdentifier/modules', () => {
-    it('returns 403 without Authorization header', async () => {
-      const { user } = await createUser(app, { email: `mv2-c1-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer()).post(base(user.defaultOrganizationId)).send({ name: 'X' }).expect(403);
-    });
-
-    it('returns 403 with an invalid Authorization token', async () => {
-      const { user } = await createUser(app, { email: `mv2-c2-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer())
-        .post(base(user.defaultOrganizationId))
-        .set('Authorization', 'Basic wrong-token')
-        .send({ name: 'X' })
-        .expect(403);
-    });
-
-    it('returns 404 when the workspace does not resolve', async () => {
-      await request(app.getHttpServer())
-        .post(base('not-a-real-workspace'))
-        .set('Authorization', getExtAuth())
-        .send({ name: 'X' })
-        .expect(404);
-    });
-
     it('returns 400 when name is missing', async () => {
-      const { user } = await createUser(app, { email: `mv2-c3-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-c1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
@@ -105,7 +100,7 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
     });
 
     it('creates a module and returns {id, name} with no slug/folder_id', async () => {
-      const { user } = await createUser(app, { email: `mv2-c4-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-c2-${Date.now()}@tooljet.io` });
       const res = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
@@ -118,39 +113,33 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
       expect(res.body.name).toBe('Audit Log Panel');
     });
 
-    it('rejects a duplicate module name in the workspace (FINDING: 400, not the spec-mandated 409)', async () => {
+    it('rejects a duplicate module name (FINDING: 400 not 409), but allows sharing a name with an App', async () => {
       // Same as Apps v2 — AppsUtilService.create()'s pre-flight guard throws BadRequestException,
       // never reaching the catchDbException/APP_NAME_UNIQUE path that would 409. Spec explicitly
       // promises 409 here (api-spec-viewer.html:1061).
-      const { user } = await createUser(app, { email: `mv2-c5-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-c3-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Dup Module' })
         .expect(201);
-
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Dup Module' })
         .expect(400);
-    });
 
-    it('a Module can share a name with an existing App in the same workspace (no cross-type collision)', async () => {
       // The apps.name column's own DB-level unique index (app_name_organization_id_unique) is
-      // NOT type-scoped, but it's moot: apps.name is always null for API-created resources (see
-      // the Create Module FINDING above), so that constraint can never fire — Postgres treats
-      // NULL as distinct from NULL under a unique index. The uniqueness check that actually runs,
-      // AppsUtilService.create()'s pre-flight AppVersion.app_name query, IS type-scoped
-      // (`.andWhere('app.type = :type', {type})`, server/src/modules/apps/util.service.ts:98) —
-      // confirmed here, correcting an earlier hypothesis that this would collide.
-      const { user } = await createUser(app, { email: `mv2-c6-${Date.now()}@tooljet.io` });
+      // NOT type-scoped, but it's moot: apps.name is always null for API-created resources, so
+      // that constraint can never fire (Postgres treats NULL as distinct from NULL under a
+      // unique index). The uniqueness check that actually runs, AppsUtilService.create()'s
+      // pre-flight AppVersion.app_name query, IS type-scoped
+      // (`.andWhere('app.type = :type', {type})`, server/src/modules/apps/util.service.ts:98).
       await request(app.getHttpServer())
         .post(`/api/v2/ext/workspaces/${user.defaultOrganizationId}/apps`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Shared Name' })
         .expect(201);
-
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
@@ -164,27 +153,15 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('PATCH /api/v2/ext/workspaces/:workspaceIdentifier/modules/:moduleIdentifier', () => {
-    it('returns 403 without Authorization header', async () => {
+    it('returns 404 for a nonexistent module and 400 when name is missing from the body', async () => {
       const { user } = await createUser(app, { email: `mv2-r1-${Date.now()}@tooljet.io` });
-      const seeded = await createApplication(app, { name: 'R', user, type: APP_TYPES.MODULE });
-      await request(app.getHttpServer())
-        .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
-        .send({ name: 'Renamed' })
-        .expect(403);
-    });
-
-    it('returns 404 when the module does not exist', async () => {
-      const { user } = await createUser(app, { email: `mv2-r2-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Renamed' })
         .expect(404);
-    });
 
-    it('returns 400 when name is missing from the body', async () => {
-      const { user } = await createUser(app, { email: `mv2-r3-${Date.now()}@tooljet.io` });
-      const seeded = await createApplication(app, { name: 'R3', user, type: APP_TYPES.MODULE });
+      const seeded = await createApplication(app, { name: 'R', user, type: APP_TYPES.MODULE });
       await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
@@ -192,35 +169,25 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
         .expect(400);
     });
 
-    it('renames the module and reflects the new name in the response', async () => {
+    it('renames the module and rejects a name that already exists', async () => {
       // renameModuleV2 returns dto.name directly, bypassing the null apps.name read — this is
       // the one Modules v2 response that correctly reflects the name.
-      const { user } = await createUser(app, { email: `mv2-r4-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-r2-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Old Name', user, type: APP_TYPES.MODULE });
       const res = await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
         .send({ name: 'New Name' })
         .expect(200);
-
       expect(res.body).toMatchObject({ id: seeded.id, name: 'New Name' });
-    });
 
-    it('returns 409 when renaming to a name that already exists in the workspace', async () => {
-      const { user } = await createUser(app, { email: `mv2-r5-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Taken Name' })
         .expect(201);
-      const seeded = await request(app.getHttpServer())
-        .post(base(user.defaultOrganizationId))
-        .set('Authorization', getExtAuth())
-        .send({ name: 'Renameable' })
-        .expect(201);
-
       await request(app.getHttpServer())
-        .patch(`${base(user.defaultOrganizationId)}/${seeded.body.id}`)
+        .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Taken Name' })
         .expect(409);
@@ -232,23 +199,15 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/modules', () => {
-    it('returns 403 without Authorization header', async () => {
+    it('returns an empty list, then lists only module-type apps with correct shape', async () => {
       const { user } = await createUser(app, { email: `mv2-l1-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer()).get(base(user.defaultOrganizationId)).expect(403);
-    });
 
-    it('returns an empty list with pagination shape', async () => {
-      const { user } = await createUser(app, { email: `mv2-l2-${Date.now()}@tooljet.io` });
-      const res = await request(app.getHttpServer())
+      const empty = await request(app.getHttpServer())
         .get(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .expect(200);
+      expect(empty.body).toMatchObject({ data: [], pagination: { page: 1, per_page: 20, total_count: 0 } });
 
-      expect(res.body).toMatchObject({ data: [], pagination: { page: 1, per_page: 20, total_count: 0 } });
-    });
-
-    it('lists only module-type apps, excluding front-end apps and workflows', async () => {
-      const { user } = await createUser(app, { email: `mv2-l3-${Date.now()}@tooljet.io` });
       await createApplication(app, { name: 'A Front-end App', user, type: APP_TYPES.FRONT_END });
       await createApplication(app, { name: 'A Workflow', user, type: APP_TYPES.WORKFLOW }, false);
       const mod = await request(app.getHttpServer())
@@ -261,52 +220,40 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
         .get(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .expect(200);
-
       expect(res.body.pagination.total_count).toBe(1);
-      expect(res.body.data[0].id).toBe(mod.body.id);
+      expect(res.body.data[0]).toMatchObject({ id: mod.body.id, name: 'Real Module' });
       expect(res.body.data[0]).not.toHaveProperty('slug');
       expect(res.body.data[0]).not.toHaveProperty('folder_id');
     });
 
-    it('filters by ?search= against name, seeded via the real API', async () => {
-      const { user } = await createUser(app, { email: `mv2-l4-${Date.now()}@tooljet.io` });
+    it('filters by ?search=, seeded via the real API, and paginates', async () => {
+      const { user } = await createUser(app, { email: `mv2-l2-${Date.now()}@tooljet.io` });
       const findable = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Findable Widget' })
         .expect(201);
-      await request(app.getHttpServer())
-        .post(base(user.defaultOrganizationId))
-        .set('Authorization', getExtAuth())
-        .send({ name: 'Something Else' })
-        .expect(201);
-
-      const res = await request(app.getHttpServer())
-        .get(`${base(user.defaultOrganizationId)}?search=findable`)
-        .set('Authorization', getExtAuth())
-        .expect(200);
-
-      expect(res.body.pagination.total_count).toBe(1);
-      expect(res.body.data[0].id).toBe(findable.body.id);
-    });
-
-    it('paginates with ?page and ?per_page', async () => {
-      const { user } = await createUser(app, { email: `mv2-l5-${Date.now()}@tooljet.io` });
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 2; i++) {
         await request(app.getHttpServer())
           .post(base(user.defaultOrganizationId))
           .set('Authorization', getExtAuth())
-          .send({ name: `Page Module ${i}` })
+          .send({ name: `Other Module ${i}` })
           .expect(201);
       }
 
-      const res = await request(app.getHttpServer())
+      const searched = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}?search=findable`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(searched.body.pagination.total_count).toBe(1);
+      expect(searched.body.data[0].id).toBe(findable.body.id);
+
+      const paged = await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}?page=1&per_page=2`)
         .set('Authorization', getExtAuth())
         .expect(200);
-
-      expect(res.body.data).toHaveLength(2);
-      expect(res.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 3 });
+      expect(paged.body.data).toHaveLength(2);
+      expect(paged.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 3 });
     });
   });
 
@@ -315,59 +262,44 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/modules/:moduleIdentifier', () => {
-    it('returns 404 when the module does not exist', async () => {
+    it('returns 404 for a nonexistent module and for an App of the same id (type-scoped)', async () => {
       const { user } = await createUser(app, { email: `mv2-g1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .expect(404);
-    });
 
-    it('returns 404 when a front-end App with that id/name exists but no Module does (type-scoped)', async () => {
-      const { user } = await createUser(app, { email: `mv2-g2-${Date.now()}@tooljet.io` });
       const seededApp = await request(app.getHttpServer())
         .post(`/api/v2/ext/workspaces/${user.defaultOrganizationId}/apps`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Only An App' })
         .expect(201);
-
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${seededApp.body.id}`)
         .set('Authorization', getExtAuth())
         .expect(404);
     });
 
-    it('resolves by id', async () => {
-      const { user } = await createUser(app, { email: `mv2-g3-${Date.now()}@tooljet.io` });
-      const created = await request(app.getHttpServer())
-        .post(base(user.defaultOrganizationId))
-        .set('Authorization', getExtAuth())
-        .send({ name: 'Resolve By Id' })
-        .expect(201);
-
-      const res = await request(app.getHttpServer())
-        .get(`${base(user.defaultOrganizationId)}/${created.body.id}`)
-        .set('Authorization', getExtAuth())
-        .expect(200);
-
-      expect(res.body.id).toBe(created.body.id);
-    });
-
-    it('resolves by name', async () => {
-      const { user } = await createUser(app, { email: `mv2-g4-${Date.now()}@tooljet.io` });
-      const uniqueName = `Resolve By Name ${Date.now()}`;
+    it('resolves by id and by name', async () => {
+      const { user } = await createUser(app, { email: `mv2-g2-${Date.now()}@tooljet.io` });
+      const uniqueName = `Resolve Me ${Date.now()}`;
       const created = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: uniqueName })
         .expect(201);
 
-      const res = await request(app.getHttpServer())
+      const byId = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}/${created.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(byId.body.id).toBe(created.body.id);
+
+      const byName = await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${encodeURIComponent(uniqueName)}`)
         .set('Authorization', getExtAuth())
         .expect(200);
-
-      expect(res.body.id).toBe(created.body.id);
+      expect(byName.body.id).toBe(created.body.id);
     });
   });
 
@@ -376,31 +308,18 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('DELETE /api/v2/ext/workspaces/:workspaceIdentifier/modules/:moduleIdentifier', () => {
-    it('returns 403 without Authorization header', async () => {
+    it('returns 404 for a nonexistent module, and 204 + no-longer-resolvable on delete', async () => {
       const { user } = await createUser(app, { email: `mv2-d1-${Date.now()}@tooljet.io` });
-      const seeded = await createApplication(app, { name: 'D1', user, type: APP_TYPES.MODULE });
-      await request(app.getHttpServer())
-        .delete(`${base(user.defaultOrganizationId)}/${seeded.id}`)
-        .expect(403);
-    });
-
-    it('returns 404 when the module does not exist', async () => {
-      const { user } = await createUser(app, { email: `mv2-d2-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .delete(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .expect(404);
-    });
 
-    it('deletes the module and it no longer resolves afterward', async () => {
-      const { user } = await createUser(app, { email: `mv2-d3-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'To Delete', user, type: APP_TYPES.MODULE });
-
       await request(app.getHttpServer())
         .delete(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
         .expect(204);
-
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
@@ -409,7 +328,7 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
 
     it('returns 400 when the module is referenced by a ModuleViewer component in another app', async () => {
       // Delete-time guard unique to Modules (service.ts:1197-1209) — not present for Apps/Workflows.
-      const { user } = await createUser(app, { email: `mv2-d4-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-d2-${Date.now()}@tooljet.io` });
       const seededModule = await createApplication(app, { name: 'In Use Module', user, type: APP_TYPES.MODULE });
       const referencingApp = await createApplication(app, { name: 'Referencing App', user, type: APP_TYPES.FRONT_END });
       const version = await createApplicationVersion(app, referencingApp);
@@ -448,16 +367,8 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('POST /api/v2/ext/workspaces/:workspaceIdentifier/modules/import', () => {
-    it('returns 403 without Authorization header', async () => {
-      const { user } = await createUser(app, { email: `mv2-i1-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer())
-        .post(`${base(user.defaultOrganizationId)}/import`)
-        .send({ definition: {} })
-        .expect(403);
-    });
-
     it('returns 400 when definition is missing', async () => {
-      const { user } = await createUser(app, { email: `mv2-i2-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-i1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(`${base(user.defaultOrganizationId)}/import`)
         .set('Authorization', getExtAuth())
@@ -467,7 +378,7 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
 
     it('imports an exported module and it appears in the workspace listing', async () => {
       // Unlike Apps v2, importModuleV2 doesn't call generateWorkspaceSlug (no slug on modules).
-      const { user } = await createUser(app, { email: `mv2-i3-${Date.now()}@tooljet.io` });
+      const { user } = await createUser(app, { email: `mv2-i2-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Export Source Module', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, seeded);
 
@@ -475,19 +386,15 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
         .get(`${base(user.defaultOrganizationId)}/${seeded.id}/export`)
         .set('Authorization', getExtAuth())
         .expect(200);
-
       expect(exportRes.body).toHaveProperty('definition');
 
-      const { organization: otherOrg } = await createUser(app, { email: `mv2-i3-other-${Date.now()}@tooljet.io` });
-
+      const { organization: otherOrg } = await createUser(app, { email: `mv2-i2-other-${Date.now()}@tooljet.io` });
       const importRes = await request(app.getHttpServer())
         .post(`${base(otherOrg.id)}/import`)
         .set('Authorization', getExtAuth())
         .send({ definition: exportRes.body.definition })
         .expect(201);
-
-      expect(importRes.body).toHaveProperty('id');
-      expect(importRes.body.name).toBe('Export Source Module');
+      expect(importRes.body).toMatchObject({ name: 'Export Source Module' });
 
       const listRes = await request(app.getHttpServer())
         .get(base(otherOrg.id))
@@ -496,33 +403,27 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
       expect(listRes.body.pagination.total_count).toBe(1);
     });
 
-    it('rejects a front-end app definition on the module import endpoint', async () => {
-      const { user } = await createUser(app, { email: `mv2-i4-${Date.now()}@tooljet.io` });
+    it('rejects a front-end app definition, and 422s on a newer tooljet_version (FINDING: code field not delivered)', async () => {
+      const { user } = await createUser(app, { email: `mv2-i3-${Date.now()}@tooljet.io` });
       const seededApp = await createApplication(app, { name: 'App To Reject', user, type: APP_TYPES.FRONT_END });
       await createApplicationVersion(app, seededApp);
-
       const exportRes = await request(app.getHttpServer())
         .get(`/api/v2/ext/workspaces/${user.defaultOrganizationId}/apps/${seededApp.id}/export`)
         .set('Authorization', getExtAuth())
         .expect(200);
-
       await request(app.getHttpServer())
         .post(`${base(user.defaultOrganizationId)}/import`)
         .set('Authorization', getExtAuth())
         .send({ definition: exportRes.body.definition })
         .expect(400);
-    });
 
-    it('returns 422 when tooljet_version is newer than the server (FINDING: code field not delivered)', async () => {
-      const { user } = await createUser(app, { email: `mv2-i5-${Date.now()}@tooljet.io` });
-      const res = await request(app.getHttpServer())
+      const versionRes = await request(app.getHttpServer())
         .post(`${base(user.defaultOrganizationId)}/import`)
         .set('Authorization', getExtAuth())
         .send({ definition: { name: 'Future Module', tooljet_version: '9999.0.0' } })
         .expect(422);
-
-      expect(res.body.code).toBeUndefined();
-      expect(res.body.message).toBeTruthy();
+      expect(versionRes.body.code).toBeUndefined();
+      expect(versionRes.body.message).toBeTruthy();
     });
   });
 
@@ -531,21 +432,17 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
   // ---------------------------------------------------------------------------
 
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/modules/:moduleIdentifier/export', () => {
-    it('returns 404 when the module does not exist', async () => {
+    it('returns 404 for a nonexistent module, and {definition} with no version-list params', async () => {
+      // Export Module v2 has no ?appVersion/?exportAllVersions (unlike Apps/Workflows) — mirrors
+      // v1's exportModule signature exactly; not a bug, just an intentional asymmetry.
       const { user } = await createUser(app, { email: `mv2-e1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}/export`)
         .set('Authorization', getExtAuth())
         .expect(404);
-    });
 
-    it('exports the module as {definition}, with no appVersion/exportAllVersions params', async () => {
-      // Export Module v2 has no ?appVersion/?exportAllVersions (unlike Apps/Workflows) — mirrors
-      // v1's exportModule signature exactly; not a bug, just an intentional asymmetry.
-      const { user } = await createUser(app, { email: `mv2-e2-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Export Shape Module', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, seeded);
-
       const res = await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${seeded.id}/export?appVersion=ignored&exportAllVersions=true`)
         .set('Authorization', getExtAuth())
@@ -554,100 +451,5 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
       expect(Object.keys(res.body)).toEqual(['definition']);
       expect(res.body.definition).toHaveProperty('tooljet_version');
     });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Plan / feature-gating
-// ---------------------------------------------------------------------------
-
-describe('ExternalApisModulesControllerV2 (EE plan: starter)', () => {
-  let app: INestApplication;
-
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
-    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
-  });
-
-  afterEach(() => jest.resetAllMocks());
-  afterAll(async () => closeTestApp(app), 60000);
-
-  it('GET /modules returns 451 — externalApi not included in starter plan', async () => {
-    const { user } = await createUser(app, { email: `mv2-starter-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .get(base(user.defaultOrganizationId))
-      .set('Authorization', getExtAuth())
-      .expect(451);
-  });
-});
-
-describe('ExternalApisModulesControllerV2 (CE)', () => {
-  let app: INestApplication;
-
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ce' }));
-    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
-  });
-
-  afterEach(() => jest.resetAllMocks());
-  afterAll(async () => closeTestApp(app), 60000);
-
-  it('POST /modules returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce1-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .post(base(user.defaultOrganizationId))
-      .set('Authorization', getExtAuth())
-      .send({ name: 'X' })
-      .expect(404);
-  });
-
-  it('PATCH /modules/:moduleIdentifier returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce2-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .patch(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
-      .set('Authorization', getExtAuth())
-      .send({ name: 'X' })
-      .expect(404);
-  });
-
-  it('GET /modules returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce3-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .get(base(user.defaultOrganizationId))
-      .set('Authorization', getExtAuth())
-      .expect(404);
-  });
-
-  it('GET /modules/:moduleIdentifier returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce4-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
-      .set('Authorization', getExtAuth())
-      .expect(404);
-  });
-
-  it('DELETE /modules/:moduleIdentifier returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce5-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .delete(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
-      .set('Authorization', getExtAuth())
-      .expect(404);
-  });
-
-  it('POST /modules/import returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce6-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .post(`${base(user.defaultOrganizationId)}/import`)
-      .set('Authorization', getExtAuth())
-      .send({ definition: {} })
-      .expect(404);
-  });
-
-  it('GET /modules/:moduleIdentifier/export returns 404 — route not registered on CE', async () => {
-    const { user } = await createUser(app, { email: `mv2-ce7-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}/export`)
-      .set('Authorization', getExtAuth())
-      .expect(404);
   });
 });

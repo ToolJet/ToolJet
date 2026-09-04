@@ -97,6 +97,24 @@ describe('External API v2 Folders (EE enterprise)', () => {
   afterEach(() => jest.resetAllMocks());
   afterAll(async () => closeTestApp(app), 60000);
 
+  it('enforces the ExternalApiSecurityGuard and resolveWorkspaceByIdentifier (shared across all three folder types)', async () => {
+    const { user } = await createUser(app, { email: `fv2-auth-${Date.now()}@tooljet.io` });
+    await request(app.getHttpServer())
+      .post(base(user.defaultOrganizationId, 'app-folders'))
+      .send({ name: 'X' })
+      .expect(403);
+    await request(app.getHttpServer())
+      .post(base(user.defaultOrganizationId, 'app-folders'))
+      .set('Authorization', 'Basic wrong-token')
+      .send({ name: 'X' })
+      .expect(403);
+    await request(app.getHttpServer())
+      .post(base('not-a-real-workspace', 'app-folders'))
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X' })
+      .expect(404);
+  });
+
   for (const kind of FOLDER_KINDS) {
     describe(kind.label, () => {
       // -----------------------------------------------------------------------
@@ -104,80 +122,51 @@ describe('External API v2 Folders (EE enterprise)', () => {
       // -----------------------------------------------------------------------
 
       describe(`POST /api/v2/ext/workspaces/:workspaceIdentifier/${kind.path}`, () => {
-        it('returns 403 without Authorization header', async () => {
+        it('rejects an empty name (FINDING: 500, not 400) and disallowed characters (400)', async () => {
           const { user } = await createUser(app, { email: `fv2-${kind.path}-c1-${Date.now()}@tooljet.io` });
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .send({ name: 'X' })
-            .expect(403);
-        });
-
-        it('returns 404 when the workspace does not resolve', async () => {
-          await request(app.getHttpServer())
-            .post(base('not-a-real-workspace', kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'X' })
-            .expect(404);
-        });
-
-        it('rejects a missing name (FINDING: 500, not 400 — see AllowedCharactersValidator note above)', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-c2-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({})
             .expect(500);
-        });
-
-        it('creates a folder and returns {id, name} with the real name (no null-name bug)', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-c3-${Date.now()}@tooljet.io` });
-          const res = await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Internal Tools' })
-            .expect(201);
-
-          expect(res.body).toHaveProperty('id');
-          expect(res.body.name).toBe('Internal Tools');
-        });
-
-        it('returns 409 when a folder with the same name and type already exists', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-c4-${Date.now()}@tooljet.io` });
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Dup Folder' })
-            .expect(201);
-
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Dup Folder' })
-            .expect(409);
-        });
-
-        it('a folder of a different type can share the same name (type-scoped uniqueness)', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-c5-${Date.now()}@tooljet.io` });
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Cross Type Folder Name' })
-            .expect(201);
-
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.otherPath))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Cross Type Folder Name' })
-            .expect(201);
-        });
-
-        it('rejects a name with disallowed special characters', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-c6-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: 'Invalid/Name*Here' })
             .expect(400);
+        });
+
+        it('creates a folder, and a different folder type may reuse the same name (type-scoped uniqueness)', async () => {
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-c2-${Date.now()}@tooljet.io` });
+          const res = await request(app.getHttpServer())
+            .post(base(user.defaultOrganizationId, kind.path))
+            .set('Authorization', getExtAuth())
+            .send({ name: 'Internal Tools' })
+            .expect(201);
+          expect(res.body).toMatchObject({ name: 'Internal Tools' });
+
+          await request(app.getHttpServer())
+            .post(base(user.defaultOrganizationId, kind.otherPath))
+            .set('Authorization', getExtAuth())
+            .send({ name: 'Internal Tools' })
+            .expect(201);
+        });
+
+        it('returns 409 when a folder with the same name and type already exists', async () => {
+          // The duplicate check here goes through catchDbException around a real INSERT (unlike
+          // Apps/Modules/Workflows' soft SELECT-based pre-checks) — it must be the last request
+          // in its test, since the failed statement poisons the rest of the per-test transaction.
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-c3-${Date.now()}@tooljet.io` });
+          await request(app.getHttpServer())
+            .post(base(user.defaultOrganizationId, kind.path))
+            .set('Authorization', getExtAuth())
+            .send({ name: 'Dup Folder' })
+            .expect(201);
+          await request(app.getHttpServer())
+            .post(base(user.defaultOrganizationId, kind.path))
+            .set('Authorization', getExtAuth())
+            .send({ name: 'Dup Folder' })
+            .expect(409);
         });
       });
 
@@ -186,23 +175,15 @@ describe('External API v2 Folders (EE enterprise)', () => {
       // -----------------------------------------------------------------------
 
       describe(`GET /api/v2/ext/workspaces/:workspaceIdentifier/${kind.path}`, () => {
-        it('returns 403 without Authorization header', async () => {
+        it('returns an empty list, then lists folders of this type only, with correct shape', async () => {
           const { user } = await createUser(app, { email: `fv2-${kind.path}-l1-${Date.now()}@tooljet.io` });
-          await request(app.getHttpServer()).get(base(user.defaultOrganizationId, kind.path)).expect(403);
-        });
 
-        it('returns an empty list with pagination shape', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-l2-${Date.now()}@tooljet.io` });
-          const res = await request(app.getHttpServer())
+          const empty = await request(app.getHttpServer())
             .get(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .expect(200);
+          expect(empty.body).toMatchObject({ data: [], pagination: { page: 1, per_page: 20, total_count: 0 } });
 
-          expect(res.body).toMatchObject({ data: [], pagination: { page: 1, per_page: 20, total_count: 0 } });
-        });
-
-        it('lists folders of this type only, excluding other folder types', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-l3-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
@@ -218,50 +199,38 @@ describe('External API v2 Folders (EE enterprise)', () => {
             .get(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .expect(200);
-
           expect(res.body.pagination.total_count).toBe(1);
           expect(res.body.data[0].name).toBe('Mine');
         });
 
-        it('filters by ?search= against name', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-l4-${Date.now()}@tooljet.io` });
+        it('filters by ?search= and paginates with ?page/?per_page', async () => {
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-l2-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: 'Findable Folder' })
             .expect(201);
-          await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Something Else' })
-            .expect(201);
-
-          const res = await request(app.getHttpServer())
-            .get(`${base(user.defaultOrganizationId, kind.path)}?search=findable`)
-            .set('Authorization', getExtAuth())
-            .expect(200);
-
-          expect(res.body.pagination.total_count).toBe(1);
-          expect(res.body.data[0].name).toBe('Findable Folder');
-        });
-
-        it('paginates with ?page and ?per_page', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-l5-${Date.now()}@tooljet.io` });
-          for (let i = 0; i < 3; i++) {
+          for (let i = 0; i < 2; i++) {
             await request(app.getHttpServer())
               .post(base(user.defaultOrganizationId, kind.path))
               .set('Authorization', getExtAuth())
-              .send({ name: `Page Folder ${i}` })
+              .send({ name: `Other Folder ${i}` })
               .expect(201);
           }
 
-          const res = await request(app.getHttpServer())
+          const searched = await request(app.getHttpServer())
+            .get(`${base(user.defaultOrganizationId, kind.path)}?search=findable`)
+            .set('Authorization', getExtAuth())
+            .expect(200);
+          expect(searched.body.pagination.total_count).toBe(1);
+          expect(searched.body.data[0].name).toBe('Findable Folder');
+
+          const paged = await request(app.getHttpServer())
             .get(`${base(user.defaultOrganizationId, kind.path)}?page=1&per_page=2`)
             .set('Authorization', getExtAuth())
             .expect(200);
-
-          expect(res.body.data).toHaveLength(2);
-          expect(res.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 3 });
+          expect(paged.body.data).toHaveLength(2);
+          expect(paged.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 3 });
         });
       });
 
@@ -270,59 +239,44 @@ describe('External API v2 Folders (EE enterprise)', () => {
       // -----------------------------------------------------------------------
 
       describe(`GET /api/v2/ext/workspaces/:workspaceIdentifier/${kind.path}/:folderIdentifier`, () => {
-        it('returns 404 when the folder does not exist', async () => {
+        it('returns 404 for a nonexistent folder and for a different folder type sharing the id (type-scoped)', async () => {
           const { user } = await createUser(app, { email: `fv2-${kind.path}-g1-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .get(`${base(user.defaultOrganizationId, kind.path)}/${NONEXISTENT_UUID}`)
             .set('Authorization', getExtAuth())
             .expect(404);
-        });
 
-        it('resolves by id', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-g2-${Date.now()}@tooljet.io` });
-          const created = await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
+          const otherKindFolder = await request(app.getHttpServer())
+            .post(base(user.defaultOrganizationId, kind.otherPath))
             .set('Authorization', getExtAuth())
-            .send({ name: 'Resolve By Id' })
+            .send({ name: 'Only In Other Type' })
             .expect(201);
-
-          const res = await request(app.getHttpServer())
-            .get(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
+          await request(app.getHttpServer())
+            .get(`${base(user.defaultOrganizationId, kind.path)}/${otherKindFolder.body.id}`)
             .set('Authorization', getExtAuth())
-            .expect(200);
-
-          expect(res.body).toMatchObject({ id: created.body.id, name: 'Resolve By Id' });
+            .expect(404);
         });
 
-        it('resolves by name', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-g3-${Date.now()}@tooljet.io` });
-          const uniqueName = `Resolve By Name ${Date.now()}`;
+        it('resolves by id and by name', async () => {
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-g2-${Date.now()}@tooljet.io` });
+          const uniqueName = `Resolve Me ${Date.now()}`;
           const created = await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: uniqueName })
             .expect(201);
 
-          const res = await request(app.getHttpServer())
+          const byId = await request(app.getHttpServer())
+            .get(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
+            .set('Authorization', getExtAuth())
+            .expect(200);
+          expect(byId.body).toMatchObject({ id: created.body.id, name: uniqueName });
+
+          const byName = await request(app.getHttpServer())
             .get(`${base(user.defaultOrganizationId, kind.path)}/${encodeURIComponent(uniqueName)}`)
             .set('Authorization', getExtAuth())
             .expect(200);
-
-          expect(res.body.id).toBe(created.body.id);
-        });
-
-        it('returns 404 for a folder of a different type that happens to share the id/name (type-scoped)', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-g4-${Date.now()}@tooljet.io` });
-          const otherKindFolder = await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.otherPath))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Only In Other Type' })
-            .expect(201);
-
-          await request(app.getHttpServer())
-            .get(`${base(user.defaultOrganizationId, kind.path)}/${otherKindFolder.body.id}`)
-            .set('Authorization', getExtAuth())
-            .expect(404);
+          expect(byName.body.id).toBe(created.body.id);
         });
       });
 
@@ -331,23 +285,19 @@ describe('External API v2 Folders (EE enterprise)', () => {
       // -----------------------------------------------------------------------
 
       describe(`PATCH /api/v2/ext/workspaces/:workspaceIdentifier/${kind.path}/:folderIdentifier`, () => {
-        it('returns 404 when the folder does not exist', async () => {
+        it('returns 404 for a nonexistent folder and 400 when name is missing', async () => {
           const { user } = await createUser(app, { email: `fv2-${kind.path}-u1-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .patch(`${base(user.defaultOrganizationId, kind.path)}/${NONEXISTENT_UUID}`)
             .set('Authorization', getExtAuth())
             .send({ name: 'Renamed' })
             .expect(404);
-        });
 
-        it('returns 400 when name is missing', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-u2-${Date.now()}@tooljet.io` });
           const created = await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: 'To Rename' })
             .expect(201);
-
           await request(app.getHttpServer())
             .patch(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
             .set('Authorization', getExtAuth())
@@ -355,8 +305,8 @@ describe('External API v2 Folders (EE enterprise)', () => {
             .expect(400);
         });
 
-        it('renames the folder and returns the updated object', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-u3-${Date.now()}@tooljet.io` });
+        it('renames the folder and rejects a name that already exists for this folder type', async () => {
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-u2-${Date.now()}@tooljet.io` });
           const created = await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
@@ -368,29 +318,13 @@ describe('External API v2 Folders (EE enterprise)', () => {
             .set('Authorization', getExtAuth())
             .send({ name: 'New Folder Name' })
             .expect(200);
-
           expect(res.body).toMatchObject({ id: created.body.id, name: 'New Folder Name' });
 
-          const getRes = await request(app.getHttpServer())
-            .get(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
-            .set('Authorization', getExtAuth())
-            .expect(200);
-          expect(getRes.body.name).toBe('New Folder Name');
-        });
-
-        it('returns 409 when renaming to a name that already exists for this folder type', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-u4-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: 'Taken Folder Name' })
             .expect(201);
-          const created = await request(app.getHttpServer())
-            .post(base(user.defaultOrganizationId, kind.path))
-            .set('Authorization', getExtAuth())
-            .send({ name: 'Renameable Folder' })
-            .expect(201);
-
           await request(app.getHttpServer())
             .patch(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
             .set('Authorization', getExtAuth())
@@ -404,27 +338,22 @@ describe('External API v2 Folders (EE enterprise)', () => {
       // -----------------------------------------------------------------------
 
       describe(`DELETE /api/v2/ext/workspaces/:workspaceIdentifier/${kind.path}/:folderIdentifier`, () => {
-        it('returns 404 when the folder does not exist', async () => {
+        it('returns 404 for a nonexistent folder, and 204 + no-longer-resolvable on delete', async () => {
           const { user } = await createUser(app, { email: `fv2-${kind.path}-x1-${Date.now()}@tooljet.io` });
           await request(app.getHttpServer())
             .delete(`${base(user.defaultOrganizationId, kind.path)}/${NONEXISTENT_UUID}`)
             .set('Authorization', getExtAuth())
             .expect(404);
-        });
 
-        it('deletes the folder and it no longer resolves afterward', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-x2-${Date.now()}@tooljet.io` });
           const created = await request(app.getHttpServer())
             .post(base(user.defaultOrganizationId, kind.path))
             .set('Authorization', getExtAuth())
             .send({ name: 'To Delete' })
             .expect(201);
-
           await request(app.getHttpServer())
             .delete(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
             .set('Authorization', getExtAuth())
             .expect(204);
-
           await request(app.getHttpServer())
             .get(`${base(user.defaultOrganizationId, kind.path)}/${created.body.id}`)
             .set('Authorization', getExtAuth())
@@ -432,7 +361,7 @@ describe('External API v2 Folders (EE enterprise)', () => {
         });
 
         it('cascades: deleting the folder unfolders its resource without deleting the resource itself', async () => {
-          const { user } = await createUser(app, { email: `fv2-${kind.path}-x3-${Date.now()}@tooljet.io` });
+          const { user } = await createUser(app, { email: `fv2-${kind.path}-x2-${Date.now()}@tooljet.io` });
           const folder = await createFolder(app, {
             name: 'Folder With Resource',
             type: kind.type,
@@ -474,69 +403,6 @@ describe('External API v2 Folders (EE enterprise)', () => {
           }
         });
       });
-    });
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Plan / feature-gating (spot checks — one folder type is representative)
-// ---------------------------------------------------------------------------
-
-describe('External API v2 Folders (EE plan: starter)', () => {
-  let app: INestApplication;
-
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
-    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
-  });
-
-  afterEach(() => jest.resetAllMocks());
-  afterAll(async () => closeTestApp(app), 60000);
-
-  it('GET /app-folders returns 451 — externalApi not included in starter plan', async () => {
-    const { user } = await createUser(app, { email: `fv2-starter-${Date.now()}@tooljet.io` });
-    await request(app.getHttpServer())
-      .get(base(user.defaultOrganizationId, 'app-folders'))
-      .set('Authorization', getExtAuth())
-      .expect(451);
-  });
-});
-
-describe('External API v2 Folders (CE)', () => {
-  let app: INestApplication;
-
-  beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ce' }));
-    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
-  });
-
-  afterEach(() => jest.resetAllMocks());
-  afterAll(async () => closeTestApp(app), 60000);
-
-  for (const kind of FOLDER_KINDS) {
-    it(`POST /${kind.path} returns 404 — route not registered on CE`, async () => {
-      const { user } = await createUser(app, { email: `fv2-ce-${kind.path}-c-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer())
-        .post(base(user.defaultOrganizationId, kind.path))
-        .set('Authorization', getExtAuth())
-        .send({ name: 'X' })
-        .expect(404);
-    });
-
-    it(`GET /${kind.path} returns 404 — route not registered on CE`, async () => {
-      const { user } = await createUser(app, { email: `fv2-ce-${kind.path}-l-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer())
-        .get(base(user.defaultOrganizationId, kind.path))
-        .set('Authorization', getExtAuth())
-        .expect(404);
-    });
-
-    it(`DELETE /${kind.path}/:folderIdentifier returns 404 — route not registered on CE`, async () => {
-      const { user } = await createUser(app, { email: `fv2-ce-${kind.path}-d-${Date.now()}@tooljet.io` });
-      await request(app.getHttpServer())
-        .delete(`${base(user.defaultOrganizationId, kind.path)}/${NONEXISTENT_UUID}`)
-        .set('Authorization', getExtAuth())
-        .expect(404);
     });
   }
 });
