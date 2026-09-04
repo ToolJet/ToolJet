@@ -1,4 +1,4 @@
-import { resolveAllWorkflowRefsForVersion } from '@modules/versions/module-ref.util';
+import { resolveAllWorkflowRefsForVersion } from '@modules/versions/workflow-ref.util';
 
 describe('resolveAllWorkflowRefsForVersion', () => {
   const organizationId = 'org-1';
