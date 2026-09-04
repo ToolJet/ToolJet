@@ -1,45 +1,27 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
+import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
   openEditorSidebar,
   openAccordion,
-  verifyAndModifyParameter,
   selectColourFromColourPicker,
   verifyWidgetColorCss,
   fillBoxShadowParams,
   verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
+import {
+  waitForDropSettle,
+  commitChange,
+  closeQueryPanel,
+  expectBgVar,
+} from "Support/utils/appBuilder/components/fileButton";
 
-// A toggle property needs fx turned on first before it becomes a code field.
-const enableFxAndBind = (paramName, expression) => {
-  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
-  verifyAndModifyParameter(paramName, expression);
-};
-
-const commitChange = () => {
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-};
-
-// Selecting a companion widget re-scrolls the canvas, so every filebutton1
-// check below scrolls it back into view first rather than assuming it's visible.
-
-// Canvas keeps settling after a drop — poll position until it stops before acting.
-const waitForDropSettle = (widgetName, attemptsLeft = 6) => {
-  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el) => {
-    const top = $el[0].getBoundingClientRect().top;
-    cy.wrap(null).then(() => {
-      cy.wait(150);
-      cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el2) => {
-        const top2 = $el2[0].getBoundingClientRect().top;
-        if (Math.abs(top2 - top) > 1 && attemptsLeft > 0) {
-          waitForDropSettle(widgetName, attemptsLeft - 1);
-        }
-      });
-    });
-  });
-};
+// Direct-control half: each style driven by its own number input, dropdown, theme
+// swatch, RGBA picker or toggle group. The fx half lives in stylesFx.cy.js.
+//
+// Selecting a companion widget re-scrolls the canvas, so every filebutton1 check below
+// scrolls it back into view first rather than assuming it's visible.
 
 // labelWeight is a `type: 'select'` react-select, whose menu portals out of the
 // wrapper — so the option is matched from the menu, not by descending the field.
@@ -47,16 +29,6 @@ const selectLabelWeight = (option) => {
   cy.get('[data-cy="dropdown-label-weight"]').find(".react-select__control").click();
   cy.get(".react-select__menu").contains(option).click();
   cy.waitForAutoSave();
-};
-
-// The collapsed state persists in localStorage across tests, so check before
-// clicking — an unguarded toggle re-OPENS the panel on the second test.
-const closeQueryPanel = () => {
-  cy.get(".query-pane").then(($panel) => {
-    if (!$panel.hasClass("collapsed")) {
-      cy.get('[data-cy="query-manager-toggle-button"]').click();
-    }
-  });
 };
 
 // The shared selectColourFromColourPicker clicks past the Theme view to reach
@@ -87,27 +59,18 @@ const expectThemeColour = (selector, cssProp, token) => {
   });
 };
 
-// Read the CONFIGURED background from `--button-primary` (FileButton.jsx:157),
-// never the rendered background-color: the widget derives a hover shade from it
-// (:143), so a cursor over the trigger passes headless and fails in open mode.
-const expectBgVar = (selector, expected) => {
-  cy.get(selector).should(($btn) => {
-    expect($btn[0].style.getPropertyValue("--button-primary").trim()).to.equal(expected);
-  });
-};
-
 describe(
   "File Button styles",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
   () => {
-  const widget = "filebutton1";
+  const widget = fileButtonText.defaultWidgetName;
 
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Filebutton-App`);
     cy.openApp();
     closeQueryPanel();
-    cy.dragAndDropWidget("File button", 500, 100);
+    cy.dragAndDropWidget(fileButtonText.defaultWidgetText, 500, 100);
     waitForDropSettle(widget);
   });
 
@@ -115,7 +78,7 @@ describe(
     if (this.currentTest.state === "passed") cy.apiDeleteApp();
   });
 
-  it("should verify Label size: direct change and exposed-variable binding", () => {
+  it("should verify Label size: direct change", () => {
     // labelSize sets inline fontSize on the label span; lives in the collapsed
     // "label and icon" accordion of the Styles tab (Properties is the default tab).
     openEditorSidebar(widget);
@@ -128,77 +91,30 @@ describe(
     cy.get('[data-cy="label-size-input"]').clear().type("28");
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.label(widget)).should("have.css", "font-size", "28px");
-
-    // 2. Bind to a Number Input's numeric output (the property is numeric).
-    cy.dragAndDropWidget("Number Input", 500, 300);
-    waitForDropSettle("numberinput1");
-    openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "32");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    enableFxAndBind("Label size", "{{components.numberinput1.value}}");
-    commitChange();
-    cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-size", "32px");
-
-    // Prove the binding is live: change the source, not the target.
-    openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "50");
-    commitChange();
-    cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-size", "50px");
   });
 
-  it("should verify Label weight: all three options by dropdown and by binding", () => {
+  it("should verify Label weight: all three options by dropdown", () => {
     // labelWeight maps to a Tailwind CLASS (fontWeightClass, FileButton.jsx:16),
     // not an inline style. Normal 400, Medium 500 (default), Bold 700.
     const weight = (expected) =>
       cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-weight", expected);
-
-    // The binding is driven from the source component, which also proves it
-    // stays live instead of resolving once.
-    const bindWeight = (value, expected) => {
-      openEditorSidebar("textinput1");
-      verifyAndModifyParameter("Default value", value);
-      commitChange();
-      weight(expected);
-    };
 
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("label and icon");
     weight("500");
 
-    // 1. Every option from the dropdown, ordered so each pick is a real change
-    // rather than re-selecting the value already in effect.
+    // Ordered so each pick is a real change rather than re-selecting the value
+    // already in effect.
     selectLabelWeight("Bold");
     weight("700");
     selectLabelWeight("Normal");
     weight("400");
     selectLabelWeight("Medium");
     weight("500");
-
-    // 2. The same three through a binding, from a Text Input's string output.
-    // These are the config's raw option values, not the display names.
-    cy.dragAndDropWidget("Text Input", 500, 300);
-    waitForDropSettle("textinput1");
-    openEditorSidebar("textinput1");
-    verifyAndModifyParameter("Default value", "normal");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    enableFxAndBind("Label weight", "{{components.textinput1.value}}");
-    commitChange();
-    weight("400");
-
-    bindWeight("bold", "700");
-    bindWeight("medium", "500");
   });
 
-  it("should verify Label color: theme swatch, RGBA picker, and exposed-variable binding", () => {
+  it("should verify Label color: theme swatch and RGBA picker", () => {
     // labelColor sets inline `color` on the label span.
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -225,37 +141,15 @@ describe(
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Label color", directColor);
     verifyWidgetColorCss(fileButtonSelector.label(widget), "color", directColor, true);
-
-    // 3. Bind to a Color Picker's exposed colour.
-    // Re-select filebutton1: the picker's dismiss-click deselected it and
-    // flipped the sidebar to Components, so the drag would miss.
-    openEditorSidebar(widget);
-    cy.dragAndDropWidget("Color Picker", 500, 300);
-    waitForDropSettle("colorpicker1");
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#ff0000");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    enableFxAndBind("Label color", "{{components.colorpicker1.selectedColorHex}}");
-    commitChange();
-    cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
-
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#00ff00");
-    commitChange();
-    cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "color", "rgb(0, 255, 0)");
   });
 
-  it("should verify Icon: direct change and exposed-variable binding", () => {
+  it("should verify Icon: direct change", () => {
     // Config says visibility:false, but the live panel renders a real icon
     // picker — that flag is not honoured here.
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("label and icon");
-    cy.get(fileButtonSelector.icon(widget)).should("have.class", "tabler-icon-file-search");
+    cy.get(fileButtonSelector.icon(widget)).should("have.class", fileButtonText.defaultIconClass);
 
     // tabler-icons-react derives the rendered class from the icon's kebab name,
     // so the class IS the observable effect.
@@ -266,28 +160,9 @@ describe(
     cy.get(".icon-list").first().click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.icon(widget)).should("have.class", "tabler-icon-check");
-
-    // 2. Bind to a Text Input's string output (an icon name is a string).
-    cy.dragAndDropWidget("Text Input", 500, 300);
-    waitForDropSettle("textinput1");
-    openEditorSidebar("textinput1");
-    verifyAndModifyParameter("Default value", "IconCheck");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    enableFxAndBind("Icon", "{{components.textinput1.value}}");
-    commitChange();
-    cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.class", "tabler-icon-check");
-
-    openEditorSidebar("textinput1");
-    verifyAndModifyParameter("Default value", "IconStar");
-    commitChange();
-    cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.class", "tabler-icon-star");
   });
 
-  it("should verify Icon color: theme swatch, RGBA picker, and exposed-variable binding", () => {
+  it("should verify Icon color: theme swatch and RGBA picker", () => {
     // showLabel:false means no label div renders, so the data-cy falls back to
     // the raw key. Pass "iconColor" to the helpers below, not "Icon color".
     openEditorSidebar(widget);
@@ -311,33 +186,6 @@ describe(
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("iconColor", directColor);
     verifyWidgetColorCss(fileButtonSelector.icon(widget), "stroke", directColor, true);
-
-    // 3. Bind to a Color Picker's exposed colour.
-    // Re-select filebutton1: the picker's dismiss-click deselected it.
-    openEditorSidebar(widget);
-    cy.dragAndDropWidget("Color Picker", 500, 300);
-    waitForDropSettle("colorpicker1");
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#ff0000");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    // No label renders, so enableFxAndBind's label assertion can't be reused —
-    // drive the fx button and CodeMirror directly.
-    cy.get(commonWidgetSelector.parameterFxButton("iconColor")).click();
-    cy.get(commonWidgetSelector.parameterInputField("iconColor")).clearAndTypeOnCodeMirror(" ");
-    cy.get(commonWidgetSelector.parameterInputField("iconColor")).clearAndTypeOnCodeMirror(
-      "{{components.colorpicker1.selectedColorHex}}"
-    );
-    commitChange();
-    cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.css", "stroke", "rgb(255, 0, 0)");
-
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#00ff00");
-    commitChange();
-    cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.css", "stroke", "rgb(0, 255, 0)");
   });
 
   it("should verify Icon direction: direct toggle only", () => {
@@ -365,10 +213,10 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row");
 
-    // isFxNotRequired: no fx button on this field, so there's no bind step.
+    // isFxNotRequired — the absent fx button is asserted in stylesFx.cy.js.
   });
 
-  it("should verify Loader color: theme swatch, RGBA picker, and exposed-variable binding", () => {
+  it("should verify Loader color: theme swatch and RGBA picker", () => {
     // computedLoaderColor goes straight into <Loader color={...}>. Unlike
     // Button/PopoverMenu it writes no `--loader-color` var, so verifyLoaderColor
     // doesn't apply — assert the loader svg's computed `color`.
@@ -397,27 +245,6 @@ describe(
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Loader color", directColor);
     verifyWidgetColorCss(`${fileButtonSelector.loader(widget)} svg`, "color", directColor, true);
-
-    // 3. Bind to a Color Picker's exposed colour.
-    // Re-select filebutton1: the picker's dismiss-click deselected it.
-    openEditorSidebar(widget);
-    cy.dragAndDropWidget("Color Picker", 500, 300);
-    waitForDropSettle("colorpicker1");
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#ff0000");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    enableFxAndBind("Loader color", "{{components.colorpicker1.selectedColorHex}}");
-    commitChange();
-    cy.get(`${fileButtonSelector.loader(widget)} svg`).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
-
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#00ff00");
-    commitChange();
-    cy.get(`${fileButtonSelector.loader(widget)} svg`).scrollIntoView().should("have.css", "color", "rgb(0, 255, 0)");
   });
 
   it("should verify Content alignment: direct toggle only", () => {
@@ -448,7 +275,7 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "center");
 
-    // isFxNotRequired: no fx button on this field, so there's no bind step.
+    // isFxNotRequired — the absent fx button is asserted in stylesFx.cy.js.
   });
 
   it("should verify Button type: direct toggle only and gates Background/Box shadow", () => {
@@ -495,10 +322,10 @@ describe(
       expect($btn[0].style.getPropertyValue("--button-primary").trim()).to.equal(pickedVar);
     });
 
-    // isFxNotRequired: no fx button on this field, so there's no bind step.
+    // isFxNotRequired — the absent fx button is asserted in stylesFx.cy.js.
   });
 
-  it("should verify Background: theme swatch, RGBA picker, and exposed-variable binding", () => {
+  it("should verify Background: theme swatch and RGBA picker", () => {
     // backgroundColor is conditionallyRender'd on buttonType==='solid', which is
     // the default, so buttonType is left untouched here.
     openEditorSidebar(widget);
@@ -524,32 +351,9 @@ describe(
       const v = $btn[0].style.getPropertyValue("--button-primary").trim();
       expect(v, "theme token replaced by a literal").to.match(/^(#|rgba?\()/);
     });
-
-    // 3. Bind to a Color Picker's exposed colour.
-    // Re-select filebutton1: the picker's dismiss-click deselected it.
-    openEditorSidebar(widget);
-    cy.dragAndDropWidget("Color Picker", 500, 300);
-    waitForDropSettle("colorpicker1");
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#ff0000");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
-    enableFxAndBind("Background", "{{components.colorpicker1.selectedColorHex}}");
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView();
-    expectBgVar(fileButtonSelector.button(widget), "#ff0000");
-
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#00ff00");
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView();
-    expectBgVar(fileButtonSelector.button(widget), "#00ff00");
   });
 
-  it("should verify Border radius: direct change and exposed-variable binding", () => {
+  it("should verify Border radius: direct change", () => {
     // borderRadius sets inline `${value}px` on the trigger, in the "button" accordion.
     openEditorSidebar(widget);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -560,28 +364,9 @@ describe(
     cy.get('[data-cy="border-radius-input"]').clear().type("20");
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "border-radius", "20px");
-
-    // 2. Bind to a Number Input's numeric output (the property is numeric).
-    cy.dragAndDropWidget("Number Input", 500, 300);
-    waitForDropSettle("numberinput1");
-    openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "15");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
-    enableFxAndBind("Border radius", "{{components.numberinput1.value}}");
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "15px");
-
-    openEditorSidebar("numberinput1");
-    verifyAndModifyParameter("Default value", "6");
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "6px");
   });
 
-  it("should verify Box shadow: direct change and exposed-variable binding", () => {
+  it("should verify Box shadow: direct change", () => {
     // boxShadow writes the raw CSS shorthand onto the trigger's inline style, and
     // is conditionallyRender'd on the default buttonType==='solid'.
     openEditorSidebar(widget);
@@ -595,7 +380,7 @@ describe(
       .should("have.css", "box-shadow")
       .and("match", /^rgba\(0, 0, 0, 0\.25\d*\) 0px 0px 0px 0px$/);
 
-    // 1. Fill x/y/blur/spread in the popover, then pick a colour.
+    // Fill x/y/blur/spread in the popover, then pick a colour.
     const directParam = fake.boxShadowParam;
     const directColor = fake.randomRgba;
     cy.get(commonWidgetSelector.stylePicker("Box shadow")).click();
@@ -604,41 +389,9 @@ describe(
     // verifyBoxShadowCss defaults to the outer draggable-widget wrapper, but
     // FileButton puts boxShadow on its inner <button> — pass that selector.
     verifyBoxShadowCss(fileButtonSelector.button(widget), directColor, directParam, "css");
-
-    // 2. Bind only the colour sub-part, leaving x/y/blur/spread as literals.
-    // Re-select filebutton1: the picker's dismiss-click deselected it.
-    openEditorSidebar(widget);
-    cy.dragAndDropWidget("Color Picker", 500, 300);
-    waitForDropSettle("colorpicker1");
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#ff0000");
-    commitChange();
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
-    enableFxAndBind(
-      "Box shadow",
-      `${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px {{components.colorpicker1.selectedColorHex}}`
-    );
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should(
-      "have.css",
-      "box-shadow",
-      `rgb(255, 0, 0) ${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px`
-    );
-
-    openEditorSidebar("colorpicker1");
-    verifyAndModifyParameter("Default value", "#00ff00");
-    commitChange();
-    cy.get(fileButtonSelector.button(widget)).scrollIntoView().should(
-      "have.css",
-      "box-shadow",
-      `rgb(0, 255, 0) ${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px`
-    );
   });
 
-  it("should verify Padding: direct toggle only (isFxNotRequired skips the bind step)", () => {
+  it("should verify Padding: direct toggle only", () => {
     // padding is a `switch` with isFxNotRequired. 'none' adds tw-p-0, overriding
     // the Button component's own non-zero default.
     openEditorSidebar(widget);
@@ -660,6 +413,6 @@ describe(
       expect($btn.css("padding")).to.not.equal("0px");
     });
 
-    // isFxNotRequired: no fx button on this field, so there's no bind step.
+    // isFxNotRequired — the absent fx button is asserted in stylesFx.cy.js.
   });
 });
