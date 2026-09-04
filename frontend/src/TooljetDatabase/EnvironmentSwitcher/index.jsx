@@ -45,12 +45,29 @@ const deriveEnvironmentStatus = (isSelected, hasTableContext, hasRelation, migra
 };
 
 const EnvironmentSwitcher = () => {
-  const { organizationId, tables, selectedTable, environments, selectedEnvironment, setSelectedEnvironment } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    tables,
+    setTables,
+    selectedTable,
+    environments,
+    selectedEnvironment,
+    setSelectedEnvironment,
+  } = useContext(TooljetDatabaseContext);
   const [isOpen, setIsOpen] = useState(false);
   const [tableMigrations, setTableMigrations] = useState(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const buttonRef = useRef(null);
+
+  // Re-fetches the org's tables (with their per-environment has_relation) - a promote creates a
+  // relation in a new environment, and that has to actually be re-read, not inferred client-side.
+  const refetchTables = React.useCallback(() => {
+    if (!organizationId) return;
+    tooljetDatabaseService.findAll(organizationId).then(({ data, error }) => {
+      if (error) return;
+      setTables(data?.result ?? []);
+    });
+  }, [organizationId, setTables]);
 
   const fetchTableMigrations = React.useCallback(() => {
     if (!organizationId || !selectedTable?.id) {
@@ -188,6 +205,9 @@ const EnvironmentSwitcher = () => {
         organizationId={organizationId}
         selectedTable={selectedTable}
         refetchMigrations={fetchTableMigrations}
+        refetchTables={refetchTables}
+        selectedEnvironment={selectedEnvironment}
+        setSelectedEnvironment={setSelectedEnvironment}
       />
     </div>
   );

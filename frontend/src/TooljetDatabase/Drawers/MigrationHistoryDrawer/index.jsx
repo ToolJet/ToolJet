@@ -59,10 +59,21 @@ const MigrationHistoryDrawer = ({
   organizationId,
   selectedTable,
   refetchMigrations,
+  refetchTables,
+  selectedEnvironment,
+  setSelectedEnvironment,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [expandedMigrationId, setExpandedMigrationId] = useState(null);
   const [promoteTarget, setPromoteTarget] = useState(null);
+
+  // Open on whichever environment the switcher is currently viewing, not always Development.
+  useEffect(() => {
+    if (!isOpen) return;
+    const index = allEnvironments.findIndex((env) => env.id === selectedEnvironment?.id);
+    setActiveTab(index >= 0 ? index : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const chainLength = migrations.length;
   const latestMigrationId = migrations[chainLength - 1]?.id ?? null;
@@ -88,7 +99,7 @@ const MigrationHistoryDrawer = ({
 
   if (promoteTarget) {
     return (
-      <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer migration-history-drawer">
+      <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer">
         <PromotePreviewView
           promoteTarget={promoteTarget}
           organizationId={organizationId}
@@ -96,108 +107,122 @@ const MigrationHistoryDrawer = ({
           onBack={() => setPromoteTarget(null)}
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
+          refetchTables={refetchTables}
+          setSelectedEnvironment={setSelectedEnvironment}
         />
       </Drawer>
     );
   }
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer migration-history-drawer">
-      <div className="migration-history-drawer__header">
-        <span>Migration history</span>
-        <button className="migration-history-drawer__close" onClick={handleClose}>
-          &times;
-        </button>
-      </div>
+    <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer">
+      <div className="migration-history-drawer">
+        <div className="migration-history-drawer__header">
+          <span>Migration history</span>
+          <button className="migration-history-drawer__close" onClick={handleClose}>
+            &times;
+          </button>
+        </div>
 
-      <div className="migration-history-drawer__tabs">
-        {TAB_LABELS.map((label, index) => {
-          const licensed = index < allEnvironments.length;
-          const hasRelation =
-            licensed &&
-            (relationsByEnvironment.find((r) => r.environment_id === allEnvironments[index].id)?.has_relation ?? false);
-          const available = licensed && hasRelation;
-          const tab = (
-            <button
-              key={label}
-              className={cx('migration-history-drawer__tab', { active: index === activeTab, disabled: !available })}
-              disabled={!available}
-              onClick={() => available && setActiveTab(index)}
-            >
-              {label}
-            </button>
-          );
-          if (available) return tab;
-          const tooltipMessage = licensed
-            ? 'Table does not exist in this environment'
-            : "Your plan doesn't support multiple environments";
-          return (
-            <ToolTip key={label} message={tooltipMessage} placement="top">
-              <div>{tab}</div>
-            </ToolTip>
-          );
-        })}
-      </div>
-
-      <div className="migration-history-drawer__status">
-        <span className="migration-history-drawer__status-label">STATUS</span>
-        <p>{statusLine(activeTab, chainLength, appliedCount)}</p>
-      </div>
-
-      <div className="migration-history-drawer__list">
-        {reversedMigrations.map((migration) => {
-          const isApplied = appliedIds.includes(migration.id);
-          const isExpanded = expandedMigrationId === migration.id;
-          return (
-            <div key={migration.id} className={cx('migration-history-drawer__row', { disabled: !isApplied })}>
-              <div className="migration-history-drawer__row-marker" />
-              <div className="migration-history-drawer__row-content">
-                <div className="migration-history-drawer__row-title">
-                  <span>m{migrations.findIndex((m) => m.id === migration.id) + 1}</span>
-                  {migration.id === latestMigrationId && (
-                    <span className="migration-history-drawer__badge latest">Latest</span>
-                  )}
-                  {migration.id === headMigrationId && (
-                    <span className="migration-history-drawer__badge here">{TAB_LABELS[activeTab]} is here</span>
-                  )}
-                </div>
-                {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
-                <div className="migration-history-drawer__row-timestamp">
-                  {formatTimestamp(migration.createdAt ?? migration.created_at)}
-                </div>
-                {isExpanded && <ReadOnlySqlView sql={migration.sql} />}
-              </div>
+        <div className="migration-history-drawer__tabs">
+          {TAB_LABELS.map((label, index) => {
+            const licensed = index < allEnvironments.length;
+            const hasRelation =
+              licensed &&
+              (relationsByEnvironment.find((r) => r.environment_id === allEnvironments[index].id)?.has_relation ??
+                false);
+            const available = licensed && hasRelation;
+            const tab = (
               <button
-                className={cx('migration-history-drawer__code-button', { active: isExpanded })}
-                onClick={() => setExpandedMigrationId(isExpanded ? null : migration.id)}
+                key={label}
+                className={cx('migration-history-drawer__tab', { active: index === activeTab, disabled: !available })}
+                disabled={!available}
+                onClick={() => available && setActiveTab(index)}
               >
-                <CodeXml size={16} className="migration-history-drawer__code-icon" />
+                {label}
               </button>
-            </div>
-          );
-        })}
-      </div>
+            );
+            if (available) return tab;
+            const tooltipMessage = licensed
+              ? 'Table does not exist in this environment'
+              : "Your plan doesn't support multiple environments";
+            return (
+              <ToolTip key={label} message={tooltipMessage} placement="top">
+                <div>{tab}</div>
+              </ToolTip>
+            );
+          })}
+        </div>
 
-      <div className="migration-history-drawer__footer">
-        {canPromote && (
-          <ButtonSolid
-            onClick={() =>
-              setPromoteTarget({
-                sourceEnvironment: allEnvironments[activeTab],
-                environment: nextEnv,
-                sourceHeadId: headMigrationId,
-              })
-            }
-          >
-            Run in {nextEnv.name}
-          </ButtonSolid>
-        )}
+        <div className="migration-history-drawer__status">
+          <span className="migration-history-drawer__status-label">STATUS</span>
+          <p>{statusLine(activeTab, chainLength, appliedCount)}</p>
+        </div>
+
+        <div className="migration-history-drawer__list">
+          {reversedMigrations.map((migration) => {
+            const isApplied = appliedIds.includes(migration.id);
+            const isExpanded = expandedMigrationId === migration.id;
+            return (
+              <div key={migration.id} className={cx('migration-history-drawer__row', { disabled: !isApplied })}>
+                <div className="migration-history-drawer__row-marker" />
+                <div className="migration-history-drawer__row-content">
+                  <div className="migration-history-drawer__row-title">
+                    <span>m{migrations.findIndex((m) => m.id === migration.id) + 1}</span>
+                    {migration.id === latestMigrationId && (
+                      <span className="migration-history-drawer__badge latest">Latest</span>
+                    )}
+                    {migration.id === headMigrationId && (
+                      <span className="migration-history-drawer__badge here">{TAB_LABELS[activeTab]} is here</span>
+                    )}
+                  </div>
+                  {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
+                  <div className="migration-history-drawer__row-timestamp">
+                    {formatTimestamp(migration.createdAt ?? migration.created_at)}
+                  </div>
+                  {isExpanded && <ReadOnlySqlView sql={migration.sql} />}
+                </div>
+                <button
+                  className={cx('migration-history-drawer__code-button', { active: isExpanded })}
+                  onClick={() => setExpandedMigrationId(isExpanded ? null : migration.id)}
+                >
+                  <CodeXml size={16} className="migration-history-drawer__code-icon" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="migration-history-drawer__footer">
+          {canPromote && (
+            <ButtonSolid
+              onClick={() =>
+                setPromoteTarget({
+                  sourceEnvironment: allEnvironments[activeTab],
+                  environment: nextEnv,
+                  sourceHeadId: headMigrationId,
+                })
+              }
+            >
+              Run in {nextEnv.name}
+            </ButtonSolid>
+          )}
+        </div>
       </div>
     </Drawer>
   );
 };
 
-const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, onClose, refetchMigrations }) => {
+const PromotePreviewView = ({
+  promoteTarget,
+  organizationId,
+  tableId,
+  onBack,
+  onClose,
+  refetchMigrations,
+  refetchTables,
+  setSelectedEnvironment,
+}) => {
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -224,6 +249,8 @@ const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, on
       }
       toast.success(`Migrations applied to ${environment.name}`, { position: 'top-center' });
       refetchMigrations();
+      refetchTables?.();
+      setSelectedEnvironment?.(environment);
       onBack();
     });
   };
@@ -231,7 +258,7 @@ const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, on
   const latest = pendingMigrations?.[pendingMigrations.length - 1];
 
   return (
-    <>
+    <div className="migration-history-drawer">
       <div className="migration-history-drawer__header">
         <button className="migration-history-drawer__back" onClick={onBack}>
           <ArrowLeft size={18} />
@@ -286,7 +313,7 @@ const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, on
           </ButtonSolid>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -27,10 +27,17 @@
     background-color: var(--background-surface-layer-02, rgba(136, 144, 153, 0.08));
     border-radius: 6px;
     padding: 4px;
+
+    // A disabled tab is wrapped in a ToolTip's own div (for the "why is this disabled" message),
+    // which isn't a flex item with flex:1 itself - without this it shrinks to its content's width
+    // instead of taking an equal share, throwing off the other tabs' widths.
+    > * {
+      flex: 1;
+    }
   }
 
   &__tab {
-    flex: 1;
+    width: 100%;
     padding: 6px 12px;
     border: none;
     border-radius: 4px;
@@ -167,15 +174,7 @@
     font-family: 'IBM Plex Mono', monospace;
   }
 
-  // The `.migration-history-drawer` root class this file's BEM selectors nest under lands on
-  // `Drawer`'s `.drawer-container` wrapper (its `className` prop), not on an element around this
-  // content - so the flex-column/height:100% rules above don't govern this footer's position. The
-  // `.drawer` element that actually scrolls has `overflow-y: auto` (see `_styles/drawer.scss`),
-  // which is what `position: sticky` needs - same fix `DrawerFooter` already uses.
   &__footer {
-    position: sticky;
-    bottom: 0;
-    background-color: var(--surfaces-surface-01);
     padding: 16px 20px;
     border-top: 1px solid var(--border-weak);
     display: flex;
@@ -190,6 +189,8 @@
   }
 
   &__detail-body {
+    flex: 1;
+    overflow-y: auto;
     padding: 16px 20px;
   }
 
