@@ -1,4 +1,5 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
@@ -9,13 +10,14 @@ import {
   verifyWidgetColorCss,
   fillBoxShadowParams,
   verifyBoxShadowCss,
-} from "Support/utils/commonWidget";
-import {
   waitForDropSettle,
-  commitChange,
-  closeQueryPanel,
-  expectBgVar,
-} from "Support/utils/appBuilder/components/fileButton";
+  expectStyleVar,
+  alignmentToggle,
+  expectFontWeight,
+  selectThemeColour,
+  expectThemeColour,
+  openStyleAccordion,
+} from "Support/utils/commonWidget";
 
 // Styles facet — direct-control half; the fx half is in stylesFx.cy.js.
 // Covers all 13 config.styles items — source: fileButton.js:155-285
@@ -33,34 +35,6 @@ const selectLabelWeight = (option) => {
   cy.get('[data-cy="dropdown-label-weight"]').find(".react-select__control").click();
   cy.get(".react-select__menu").contains(option).click();
   cy.waitForAutoSave();
-};
-
-// The shared selectColourFromColourPicker clicks past the Theme view to reach
-// the RGBA inputs, so the Theme list needs its own step. Its rows have no
-// data-cy: they are labelled "Category/Type" and write var(--cc-<type>-<category>).
-const selectThemeColour = (paramName, optionLabel) => {
-  cy.get(commonWidgetSelector.stylePicker(paramName)).last().click();
-  cy.get('[data-cy="togglr-button-swatches"]').click();
-  cy.get(".codebuilder-color-swatches-options")
-    .filter((_i, el) => el.innerText.trim().startsWith(optionLabel))
-    .first()
-    .click();
-  commitChange();
-};
-
-// Resolve a var(--cc-*) token through the app's OWN document, so the assertion
-// is exact without hardcoding any theme's hex.
-const expectThemeColour = (selector, cssProp, token) => {
-  cy.get(selector).should(($el) => {
-    const el = $el[0];
-    const doc = el.ownerDocument;
-    const probe = doc.createElement("div");
-    probe.style.color = token;
-    doc.body.appendChild(probe);
-    const expected = doc.defaultView.getComputedStyle(probe).color;
-    probe.remove();
-    expect(doc.defaultView.getComputedStyle(el)[cssProp]).to.equal(expected);
-  });
 };
 
 describe(
@@ -85,9 +59,7 @@ describe(
   it("should verify Label size: direct change", () => {
     // labelSize sets inline fontSize on the label span; lives in the collapsed
     // "label and icon" accordion of the Styles tab (Properties is the default tab).
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     cy.get(fileButtonSelector.label(widget)).should("have.css", "font-size", "14px");
 
     // numberInput renders a plain <input type="number"> (data-cy `<param>-input`)
@@ -100,29 +72,22 @@ describe(
   it("should verify Label weight: all three options by dropdown", () => {
     // labelWeight maps to a Tailwind CLASS (fontWeightClass, FileButton.jsx:16),
     // not an inline style. Normal 400, Medium 500 (default), Bold 700.
-    const weight = (expected) =>
-      cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-weight", expected);
-
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-    weight("500");
+    openStyleAccordion(widget, "label and icon");
+    expectFontWeight(fileButtonSelector.label(widget), "500");
 
     // Ordered so each pick is a real change rather than re-selecting the value
     // already in effect.
     selectLabelWeight("Bold");
-    weight("700");
+    expectFontWeight(fileButtonSelector.label(widget), "700");
     selectLabelWeight("Normal");
-    weight("400");
+    expectFontWeight(fileButtonSelector.label(widget), "400");
     selectLabelWeight("Medium");
-    weight("500");
+    expectFontWeight(fileButtonSelector.label(widget), "500");
   });
 
   it("should verify Label color: theme swatch and RGBA picker", () => {
     // labelColor sets inline `color` on the label span.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
 
     // Default is the surface1 token, passed straight through by
     // computedLabelColor because buttonType is 'solid'.
@@ -139,9 +104,7 @@ describe(
     expectThemeColour(fileButtonSelector.label(widget), "color", "var(--cc-error-systemStatus)");
 
     // 2. RGBA picker — a literal colour, which must win over the theme token.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Label color", directColor);
     verifyWidgetColorCss(fileButtonSelector.label(widget), "color", directColor, true);
@@ -150,9 +113,7 @@ describe(
   it("should verify Icon: direct change", () => {
     // Config says visibility:false, but the live panel renders a real icon
     // picker — that flag is not honoured here.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     cy.get(fileButtonSelector.icon(widget)).should("have.class", fileButtonText.defaultIconClass);
 
     // tabler-icons-react derives the rendered class from the icon's kebab name,
@@ -169,9 +130,7 @@ describe(
   it("should verify Icon color: theme swatch and RGBA picker", () => {
     // showLabel:false means no label div renders, so the data-cy falls back to
     // the raw key. Pass "iconColor" to the helpers below, not "Icon color".
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
 
     // Default is the surface1 token, passed straight through by
     // computedIconColor because buttonType is 'solid'.
@@ -184,9 +143,7 @@ describe(
 
     // 2. RGBA picker — a literal, which must win over the theme token. TablerIcon
     // forwards `color` to the SVG's `stroke`, so `stroke` is the real effect.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("iconColor", directColor);
     verifyWidgetColorCss(fileButtonSelector.icon(widget), "stroke", directColor, true);
@@ -194,26 +151,17 @@ describe(
 
   it("should verify Icon direction: direct toggle only", () => {
     // No displayName/label renders for this field; find it by its own alignleft/alignright toggle buttons.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-
-    // contentAlignment lives in the same accordion and reuses the same left/right data-cy
-    // values via its own 3-way toggle — scope to the 2-option group with no "center" sibling.
-    const iconDirectionToggle = (value) =>
-      cy
-        .get(`[data-cy="togglr-button-${value}"]`)
-        .filter((_i, el) => Cypress.$(el).closest(".ToggleGroup").find('[data-cy="togglr-button-center"]').length === 0);
+    openStyleAccordion(widget, "label and icon");
 
     // Default "left": icon before the label, so flex-direction stays row.
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row");
 
-    iconDirectionToggle("right").click();
+    alignmentToggle("right", false).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row-reverse");
 
     // Flip back to "left" to prove the switch isn't one-directional.
-    iconDirectionToggle("left").click();
+    alignmentToggle("left", false).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "flex-direction", "row");
 
@@ -230,9 +178,7 @@ describe(
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.loader(widget)).should("be.visible");
 
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
 
     // Default is the surface1 token, passed through because buttonType is 'solid'.
     expectThemeColour(`${fileButtonSelector.loader(widget)} svg`, "color", "var(--cc-surface1-surface)");
@@ -243,9 +189,7 @@ describe(
     expectThemeColour(`${fileButtonSelector.loader(widget)} svg`, "color", "var(--cc-error-systemStatus)");
 
     // 2. RGBA picker — a literal colour, which must win over the theme token.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Loader color", directColor);
     verifyWidgetColorCss(`${fileButtonSelector.loader(widget)} svg`, "color", directColor, true);
@@ -253,29 +197,20 @@ describe(
 
   it("should verify Content alignment: direct toggle only", () => {
     // No displayName label div renders for this field; find it by its own left/center/right toggle buttons.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("label and icon");
-
-    // contentAlignment shares the same left/right data-cy values as Icon direction's own toggle —
-    // scope to the 3-option group that DOES have a "center" sibling (Icon direction has none).
-    const contentAlignmentToggle = (value) =>
-      cy
-        .get(`[data-cy="togglr-button-${value}"]`)
-        .filter((_i, el) => Cypress.$(el).closest(".ToggleGroup").find('[data-cy="togglr-button-center"]').length > 0);
+    openStyleAccordion(widget, "label and icon");
 
     // Default "center" -> tw-justify-center -> justify-content: center.
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "center");
 
-    contentAlignmentToggle("left").click();
+    alignmentToggle("left", true).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "flex-start");
 
-    contentAlignmentToggle("right").click();
+    alignmentToggle("right", true).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "flex-end");
 
-    contentAlignmentToggle("center").click();
+    alignmentToggle("center", true).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "justify-content", "center");
 
@@ -285,9 +220,7 @@ describe(
   it("should verify Button type: direct toggle only and gates Background/Box shadow", () => {
     // buttonType is a `switch` with isFxNotRequired, and gates backgroundColor
     // and boxShadow on buttonType === 'solid'.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
 
     // Default is "solid": Background and Box shadow fields are visible.
     cy.get(commonWidgetSelector.parameterLabel("Background")).should("have.text", "Background");
@@ -295,7 +228,7 @@ describe(
 
     // Give the Outline->Solid round trip something to preserve. Checks read the
     // inline style, not the rendered colour: the picker is imprecise (quarantined
-    // in buttonHappyPath.cy.js) and the render is hover-dependent (see expectBgVar).
+    // in buttonHappyPath.cy.js) and the render is hover-dependent (see expectStyleVar).
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Background", directColor);
     let pickedVar;
@@ -305,9 +238,7 @@ describe(
     });
 
     // Re-select filebutton1: the picker's dismiss-click deselected it.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
     cy.get('[data-cy="togglr-button-outline"]').click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
@@ -332,22 +263,18 @@ describe(
   it("should verify Background: theme swatch and RGBA picker", () => {
     // backgroundColor is conditionallyRender'd on buttonType==='solid', which is
     // the default, so buttonType is left untouched here.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
 
     // The config default is the brand token, so this is assertable exactly.
-    expectBgVar(fileButtonSelector.button(widget), "var(--cc-primary-brand)");
+    expectStyleVar(fileButtonSelector.button(widget), "--button-primary", "var(--cc-primary-brand)");
 
     // 1. Theme swatch. Brand/Primary is avoided — that IS the default here.
     selectThemeColour("Background", "SystemStatus/Error");
-    expectBgVar(fileButtonSelector.button(widget), "var(--cc-error-systemStatus)");
+    expectStyleVar(fileButtonSelector.button(widget), "--button-primary", "var(--cc-error-systemStatus)");
 
     // 2. RGBA picker. It doesn't always land on the exact typed RGBA, so assert
     // it replaced the token with a literal rather than pinning the value.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
     const directColor = fake.randomRgba;
     selectColourFromColourPicker("Background", directColor);
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
@@ -359,9 +286,7 @@ describe(
 
   it("should verify Border radius: direct change", () => {
     // borderRadius sets inline `${value}px` on the trigger, in the "button" accordion.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
     cy.get(fileButtonSelector.button(widget)).should("have.css", "border-radius", "6px");
 
     // numberInput is a plain <input type="number"> until fx is enabled.
@@ -373,9 +298,7 @@ describe(
   it("should verify Box shadow: direct change", () => {
     // boxShadow writes the raw CSS shorthand onto the trigger's inline style, and
     // is conditionallyRender'd on the default buttonType==='solid'.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
 
     // Default is '0px 0px 0px 0px #00000040'. The alpha byte 0x40 serialises as
     // 0.25 or 0.251 depending on the browser, so match the shape rather than
@@ -398,9 +321,7 @@ describe(
   it("should verify Padding: direct toggle only", () => {
     // padding is a `switch` with isFxNotRequired. 'none' adds tw-p-0, overriding
     // the Button component's own non-zero default.
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion("button");
+    openStyleAccordion(widget, "button");
 
     // Default keeps the base Button component's own non-zero padding.
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {

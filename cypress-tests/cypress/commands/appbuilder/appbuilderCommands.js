@@ -112,6 +112,27 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 /**
+ * @tjCmd   navigation · leave the editor for the app preview, in the SAME tab
+ * @tjUsage cy.openPreview()  ·  cy.openPreview(fileButtonSelector.button('filebutton1'))
+ */
+// Same tab, not a new one: the Preview control is a `target="_blank"` link
+// (HeaderActions.jsx), and a second tab would leave the rest of the test running against
+// the editor. openInCurrentTab strips the target before clicking.
+//
+// Widget selectors carry over unchanged — RenderWidget emits every widget `data-cy`
+// unconditionally (RenderWidget.jsx:323) and the viewer mounts the same AppCanvas; only
+// ConfigHandle, the Moveable classes and the grid are editor-only. What preview does NOT
+// have is the query panel, the Inspector, and the autosave indicator — so `cy.waitForAutoSave()`
+// after this will hang for its full timeout and fail.
+//
+// Pass `waitForSelector` to block until the app has actually rendered; navigation alone
+// resolves before the widgets mount.
+Cypress.Commands.add("openPreview", (waitForSelector) => {
+  cy.openInCurrentTab(commonWidgetSelector.previewButton);
+  if (waitForSelector) cy.waitForElement(waitForSelector);
+});
+
+/**
  * @tjCmd   wait · pause until the editor autosave indicator clears, confirming all changes are saved
  * @tjUsage cy.waitForAutoSave()
  */
