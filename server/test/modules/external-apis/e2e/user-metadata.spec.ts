@@ -5,6 +5,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createUser, initTestApp, closeTestApp } from 'test-helper';
 
 jest.setTimeout(120_000);
@@ -16,6 +17,7 @@ describe('ExternalApisController — user metadata', () => {
 
     // Workspace + member shared across all metadata tests
     let orgId: string;
+    let adminId: string;
     let memberId: string;
     let memberEmail: string;
 
@@ -27,6 +29,7 @@ describe('ExternalApisController — user metadata', () => {
       // Admin creates the workspace
       const { user: admin } = await createUser(app, { email: 'metadata-admin@tooljet.io' });
       orgId = admin.defaultOrganizationId;
+      adminId = admin.id;
 
       // Member created via ext API so they have real org membership + OrganizationUser row
       const res = await request(app.getHttpServer())
@@ -111,6 +114,35 @@ describe('ExternalApisController — user metadata', () => {
 
         expect(res.body.userDetails).toEqual(expect.arrayContaining([{ key: 'plan', value: 'enterprise' }]));
         expect(res.body.userDetails.find((d: { key: string }) => d.key === 'plan').value).toBe('enterprise');
+      });
+
+      it('should emit an audit log entry attributed to the workspace admin', async () => {
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .send({ userDetails: [{ key: 'audit-check', value: 'yes' }] })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminId,
+          organizationId: orgId,
+          resourceId: memberId,
+          resourceName: memberEmail,
+          resourceData: {
+            updated_user: {
+              id: memberId,
+              email: memberEmail,
+              metadata: { 'audit-check': 'yes' },
+            },
+          },
+        });
       });
 
       it('should accept an empty userDetails array and succeed', async () => {
