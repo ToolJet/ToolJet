@@ -19,8 +19,16 @@ import {
   hoverTriggerInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
-// Direct-control half: each property driven by its own toggle/dropdown/code field.
-// The fx/dynamic-binding half lives in propertiesFx.cy.js.
+// Properties facet — direct-control half; the fx half is in propertiesFx.cy.js.
+// Covers all 11 config.properties (fileButton.js:14-102) + all 6 config.validation
+// (fileButton.js:104-149) — two separate top-level blocks, one Inspector panel.
+//   properties  buttonText:15 · enableMultiple:21 · parseContent:27 · parseFileType:33
+//               delimiter:47 · enableClearSelection:57 · loadingState:63 · visibility:69
+//               disabledState:75 · tooltipFormat:81 (3 formats) · tooltip:95
+//   validation  enableValidation:105 · fileType:110 (7 options, accept+reject each)
+//               minSize:115 · maxSize:123 · minFileCount:131 · maxFileCount:140
+// Not here: maxFileCount over-cap → customerIssues.cy.js (open bug) ·
+//           others.showOnDesktop/showOnMobile → contexts.cy.js
 
 // One node per format (WidgetTooltip.jsx): plainText -> plain <span>,
 // markdown -> .widget-tooltip-markdown, html -> .widget-tooltip-html.

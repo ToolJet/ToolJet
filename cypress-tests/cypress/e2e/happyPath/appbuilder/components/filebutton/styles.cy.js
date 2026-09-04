@@ -17,8 +17,12 @@ import {
   expectBgVar,
 } from "Support/utils/appBuilder/components/fileButton";
 
-// Direct-control half: each style driven by its own number input, dropdown, theme
-// swatch, RGBA picker or toggle group. The fx half lives in stylesFx.cy.js.
+// Styles facet — direct-control half; the fx half is in stylesFx.cy.js.
+// Covers all 13 config.styles items — source: fileButton.js:155-285
+//   label and icon  labelSize:155 · labelWeight:164 · labelColor:175 · icon:181 · iconColor:190
+//                   iconDirection:196* · loaderColor:208 · contentAlignment:214*
+//   button          buttonType:226* · backgroundColor:237 · borderRadius:253 · boxShadow:262 · padding:275*
+// * = isFxNotRequired; their absent fx button is asserted in stylesFx.cy.js
 //
 // Selecting a companion widget re-scrolls the canvas, so every filebutton1 check below
 // scrolls it back into view first rather than assuming it's visible.
