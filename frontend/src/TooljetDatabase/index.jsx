@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
-import { useTjdbStore, useTjdbActions } from './_stores/tjdbStore';
+import { useTjdbActions } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
 export { TooljetDatabaseContext };
@@ -29,14 +29,7 @@ export const TooljetDatabase = (props) => {
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
-  const environments = useTjdbStore((state) => state.environments);
-  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
-  const queryFilters = useTjdbStore((state) => state.queryFilters);
-  const sortFilters = useTjdbStore((state) => state.sortFilters);
-  const pageCount = useTjdbStore((state) => state.pageCount);
-  const pageSize = useTjdbStore((state) => state.pageSize);
-  const { loadEnvironments, switchEnvironment, setQueryFilters, setSortFilters, setPageCount, setPageSize } =
-    useTjdbActions();
+  const { loadEnvironments } = useTjdbActions();
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -95,15 +88,7 @@ export const TooljetDatabase = (props) => {
       buildPaginationQuery,
       resetSortQuery,
       resetFilterQuery,
-      queryFilters,
-      setQueryFilters,
-      sortFilters,
-      setSortFilters,
       resetAll,
-      pageCount,
-      setPageCount,
-      pageSize,
-      setPageSize,
       handleRefetchQuery,
       loadingState,
       setLoadingState,
@@ -112,9 +97,6 @@ export const TooljetDatabase = (props) => {
       configurations,
       setConfigurations,
       getConfigurationProperty,
-      environments,
-      selectedEnvironment,
-      setSelectedEnvironment: switchEnvironment,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -125,14 +107,8 @@ export const TooljetDatabase = (props) => {
       selectedTable,
       selectedTableData,
       totalRecords,
-      queryFilters,
-      sortFilters,
-      pageCount,
-      pageSize,
       foreignKeys,
       configurations,
-      environments,
-      selectedEnvironment,
     ]
   );
 

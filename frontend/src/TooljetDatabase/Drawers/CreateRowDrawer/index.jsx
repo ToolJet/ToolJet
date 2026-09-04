@@ -6,6 +6,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateRowDrawer = ({
   isCreateRowDrawerOpen,
@@ -13,16 +14,10 @@ const CreateRowDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const {
-    organizationId,
-    selectedTable,
-    setSelectedTableData,
-    setTotalRecords,
-    pageSize,
-    setSortFilters,
-    setQueryFilters,
-    columns,
-  } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
+    useContext(TooljetDatabaseContext);
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { setSortFilters, setQueryFilters } = useTjdbActions();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
 
   return (

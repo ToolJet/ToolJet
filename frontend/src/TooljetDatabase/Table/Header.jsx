@@ -17,6 +17,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import config from 'config';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -47,19 +49,19 @@ const Header = ({
   const [uploadResult, setUploadResult] = useState(null);
   const {
     totalRecords,
-    sortFilters,
-    setSortFilters,
     handleBuildSortQuery,
     resetFilterQuery,
     resetSortQuery,
-    queryFilters,
-    setQueryFilters,
     handleBuildFilterQuery,
     selectedTable,
     organizationId,
     handleRefetchQuery,
-    pageSize,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageSize } = useTjdbStore(
+    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters, pageSize: state.pageSize }),
+    shallow
+  );
+  const { setQueryFilters, setSortFilters } = useTjdbActions();
 
   useEffect(() => {
     setErrors({ client: [], server: [] });

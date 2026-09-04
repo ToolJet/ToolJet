@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
-import { useTjdbActions } from '../../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateColumnDrawer = ({
   setIsCreateColumnDrawerOpen,
@@ -11,17 +11,10 @@ const CreateColumnDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const {
-    organizationId,
-    selectedTable,
-    setColumns,
-    setPageCount,
-    handleRefetchQuery,
-    pageSize,
-    setForeignKeys,
-    setConfigurations,
-  } = useContext(TooljetDatabaseContext);
-  const { fetchTableMetadata } = useTjdbActions();
+  const { organizationId, selectedTable, setColumns, handleRefetchQuery, setForeignKeys, setConfigurations } =
+    useContext(TooljetDatabaseContext);
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { fetchTableMetadata, setPageCount } = useTjdbActions();
 
   return (
     <>

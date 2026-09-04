@@ -5,6 +5,7 @@ import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
+import { useTjdbStore } from '../../_stores/tjdbStore';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import CodeMirror from '@uiw/react-codemirror';
@@ -30,15 +31,10 @@ const basicSetup = {
 };
 
 const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
-  const {
-    organizationId,
-    selectedTable,
-    selectedEnvironment,
-    setSelectedTableData,
-    setTotalRecords,
-    pageSize,
-    columns,
-  } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
+    useContext(TooljetDatabaseContext);
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const pageSize = useTjdbStore((state) => state.pageSize);
   const [sql, setSql] = useState('');
   const [isRunningSql, setIsRunningSql] = useState(false);
   const [error, setError] = useState(null);

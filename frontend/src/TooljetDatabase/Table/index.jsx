@@ -32,6 +32,7 @@ import {
   getLocalTimeZone,
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
+import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import './styles.scss';
 
@@ -43,13 +44,7 @@ const Table = ({ collapseSidebar }) => {
     selectedTableData,
     setSelectedTableData,
     setColumns,
-    queryFilters,
-    setQueryFilters,
-    sortFilters,
-    setSortFilters,
     resetAll,
-    pageSize,
-    pageCount,
     handleRefetchQuery,
     loadingState,
     setForeignKeys,
@@ -59,6 +54,21 @@ const Table = ({ collapseSidebar }) => {
     getConfigurationProperty,
     canEditTjdb,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
+    (state) => ({
+      queryFilters: state.queryFilters,
+      sortFilters: state.sortFilters,
+      pageCount: state.pageCount,
+      pageSize: state.pageSize,
+    }),
+    shallow
+  );
+  const {
+    registerEnvironmentSwitchHandler,
+    fetchTableMetadata: fetchMetadata,
+    setQueryFilters,
+    setSortFilters,
+  } = useTjdbActions();
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
@@ -393,8 +403,6 @@ const Table = ({ collapseSidebar }) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
-
-  const { registerEnvironmentSwitchHandler, fetchTableMetadata: fetchMetadata } = useTjdbActions();
 
   // Steps 3-5 of the ordered environment switch (see switchEnvironment in tjdbStore.js). This
   // component owns every derived cache involved, which is why the store calls back into it rather

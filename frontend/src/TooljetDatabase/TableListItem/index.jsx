@@ -9,7 +9,7 @@ import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import { dataTypes } from '../constants';
-import { useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -19,15 +19,14 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     selectedTable,
     setSelectedTable,
     selectedTableData,
-    setPageCount,
     handleRefetchQuery,
-    pageSize,
     setColumns,
     setForeignKeys,
     setConfigurations,
     canEditTjdb,
   } = useContext(TooljetDatabaseContext);
-  const { fetchTableMetadata } = useTjdbActions();
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { fetchTableMetadata, setPageCount } = useTjdbActions();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);

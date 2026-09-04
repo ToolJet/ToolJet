@@ -5,7 +5,8 @@ import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { useTjdbActions } from '../_stores/tjdbStore';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType, renderDatatypeIcon } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
@@ -46,15 +47,20 @@ const ColumnForm = ({
     organizationId,
     selectedTable,
     handleRefetchQuery,
-    queryFilters,
-    pageCount,
-    pageSize,
-    sortFilters,
     setForeignKeys,
     foreignKeys,
     configurations,
     setConfigurations,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
+    (state) => ({
+      queryFilters: state.queryFilters,
+      sortFilters: state.sortFilters,
+      pageCount: state.pageCount,
+      pageSize: state.pageSize,
+    }),
+    shallow
+  );
   const { fetchTableMetadata } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);

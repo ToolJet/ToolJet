@@ -7,6 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { listAllPrimaryKeyColumns } from '../../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore } from '../../_stores/tjdbStore';
 
 const EditRowDrawer = ({
   isEditRowDrawerOpen,
@@ -23,11 +25,13 @@ const EditRowDrawer = ({
     setSelectedTableData,
     setTotalRecords,
     columns,
-    pageCount,
     // totalRecords,
-    pageSize,
     // selectedTableData,
   } = useContext(TooljetDatabaseContext);
+  const { pageCount, pageSize } = useTjdbStore(
+    (state) => ({ pageCount: state.pageCount, pageSize: state.pageSize }),
+    shallow
+  );
   const [selectedRowObj, setSelectedRowObj] = useState({});
 
   React.useEffect(() => {
