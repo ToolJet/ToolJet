@@ -89,6 +89,23 @@ jobs:
         if: steps.scope.outputs.frontend == 'true'
         run: npm run test:layout
 
+      # Existing untouched widgets remain a report-only backfill. New widget
+      # definitions and modified widget tests must already have an approved
+      # behavior contract before CI accepts them.
+      - name: Validate widget testing contracts
+        if: steps.scope.outputs.frontend == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[] | [.status, .filename] | @tsv' | \
+              npm run validate:widget-testing-contracts -- --changed-files-stdin
+          else
+            npm run validate:widget-testing-contracts
+          fi
+
       # The whole suite runs in seconds, so there is no reason to scope it to
       # changed files — doing that let PRs pass green without running a test.
       - name: Run full test suite with coverage

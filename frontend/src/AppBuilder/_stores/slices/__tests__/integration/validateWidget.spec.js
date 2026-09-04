@@ -60,10 +60,11 @@ beforeEach(() => {
   seedPage();
 });
 
-// The three widget types whose options can carry a falsy `value`. Kept as a
-// literal list here on purpose: if production adds a fourth option widget and
-// forgets it, the corresponding case below is what should fail.
-const OPTION_VALUE_WIDGETS = ['DropdownV2', 'MultiselectV2', 'Cascader'];
+// The widget types whose options can carry a falsy `value`. Kept as a literal
+// list here on purpose: if production adds another option widget and forgets
+// it, the corresponding case below is what should fail. RadioButtonV2 was
+// exactly that miss — see [RadioButtonV2-VAL-002] below.
+const OPTION_VALUE_WIDGETS = ['DropdownV2', 'MultiselectV2', 'Cascader', 'RadioButtonV2'];
 
 describe('mandatory + falsy values', () => {
   test.each(OPTION_VALUE_WIDGETS)('%s: a selected option whose value is `false` counts as FILLED', (componentType) => {
@@ -77,6 +78,26 @@ describe('mandatory + falsy values', () => {
 
   test.each(OPTION_VALUE_WIDGETS)('%s: a selected option whose value is `0` counts as FILLED', (componentType) => {
     expect(validate({ componentType, widgetValue: 0, validationObject: { mandatory: { value: true } } })).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+  });
+
+  test('[RadioButtonV2-VAL-002] a selected radio option whose value is `false` counts as filled', () => {
+    // A radio group answers itself by selection, not by the truthiness of the
+    // selected option's value: `{ label: 'No', value: false }` is an answer.
+    expect(
+      validate({ componentType: 'RadioButtonV2', widgetValue: false, validationObject: { mandatory: { value: true } } })
+    ).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+  });
+
+  test('[DropdownV2-VAL-001] a selected empty-string option counts as filled', () => {
+    expect(
+      validate({ componentType: 'DropdownV2', widgetValue: '', validationObject: { mandatory: { value: true } } })
+    ).toEqual({
       isValid: true,
       validationError: null,
     });
@@ -108,7 +129,7 @@ describe('mandatory + falsy values', () => {
     ).toEqual({ isValid: true, validationError: null });
   });
 
-  test('an empty array counts as EMPTY, even for an option widget', () => {
+  test('[MultiselectV2-VAL-001] an empty array counts as EMPTY, even for an option widget', () => {
     // Arrays short-circuit the scalar branch entirely: `[]` is "nothing
     // selected" for a MultiselectV2, and `[false]` is "one option selected".
     expect(
@@ -116,7 +137,7 @@ describe('mandatory + falsy values', () => {
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
-  test('an array holding only `false` counts as FILLED', () => {
+  test('[MultiselectV2-VAL-001] an array holding only `false` counts as FILLED', () => {
     expect(
       validate({
         componentType: 'MultiselectV2',
@@ -266,7 +287,8 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
-  test('minSelection: too few array entries are rejected', () => {
+  test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
+    // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
     expect(
       validate({
         componentType: 'MultiselectV2',
@@ -276,7 +298,8 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'Minimum 2 selections required' });
   });
 
-  test('maxSelection: too many array entries are rejected', () => {
+  test('[MultiselectV2-VAL-003] three selected under maxSelection: 2 is invalid', () => {
+    // Break this catches: dropping the maxSelection branch so three selected values pass a maximum of 2.
     expect(
       validate({
         componentType: 'MultiselectV2',
@@ -284,6 +307,17 @@ describe('the other validators that actually exist', () => {
         validationObject: { maxSelection: { value: 2 } },
       })
     ).toEqual({ isValid: false, validationError: 'Maximum 2 selections allowed' });
+  });
+
+  test('[MultiselectV2-VAL-003] two selected under minSelection and maxSelection of 2 is valid', () => {
+    // Break this catches: off-by-one on either bound so exactly two selections is rejected.
+    expect(
+      validate({
+        componentType: 'MultiselectV2',
+        widgetValue: ['a', 'b'],
+        validationObject: { minSelection: { value: 2 }, maxSelection: { value: 2 } },
+      })
+    ).toEqual({ isValid: true, validationError: null });
   });
 
   test('selection-count validators are skipped for a non-array value', () => {
