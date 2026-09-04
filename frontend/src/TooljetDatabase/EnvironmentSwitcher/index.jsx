@@ -5,6 +5,7 @@ import { Overlay, Popover } from 'react-bootstrap';
 import { IconChevronRight } from '@tabler/icons-react';
 import { TooljetDatabaseContext } from '../context';
 import { tooljetDatabaseService } from '@/_services';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
@@ -45,15 +46,10 @@ const deriveEnvironmentStatus = (isSelected, hasTableContext, hasRelation, migra
 };
 
 const EnvironmentSwitcher = () => {
-  const {
-    organizationId,
-    tables,
-    setTables,
-    selectedTable,
-    environments,
-    selectedEnvironment,
-    setSelectedEnvironment,
-  } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables, setTables, selectedTable } = useContext(TooljetDatabaseContext);
+  const environments = useTjdbStore((state) => state.environments);
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const { switchEnvironment } = useTjdbActions();
   const [isOpen, setIsOpen] = useState(false);
   const [tableMigrations, setTableMigrations] = useState(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -160,7 +156,7 @@ const EnvironmentSwitcher = () => {
                     className={cx('tjdb-environment-switcher__row', { disabled })}
                     disabled={disabled}
                     onClick={() => {
-                      setSelectedEnvironment(environment);
+                      switchEnvironment(environment);
                       setIsOpen(false);
                     }}
                     data-cy={`${environment.name}-environment-option`}
@@ -206,8 +202,6 @@ const EnvironmentSwitcher = () => {
         selectedTable={selectedTable}
         refetchMigrations={fetchTableMigrations}
         refetchTables={refetchTables}
-        selectedEnvironment={selectedEnvironment}
-        setSelectedEnvironment={setSelectedEnvironment}
       />
     </div>
   );

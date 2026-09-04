@@ -22,20 +22,21 @@ export const TooljetDatabase = (props) => {
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
-  const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
 
   const [totalRecords, setTotalRecords] = useState(0);
   const [loadingState, setLoadingState] = useState(false);
 
-  const [queryFilters, setQueryFilters] = useState({});
-  const [sortFilters, setSortFilters] = useState({});
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
   const environments = useTjdbStore((state) => state.environments);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
-  const { loadEnvironments } = useTjdbActions();
+  const queryFilters = useTjdbStore((state) => state.queryFilters);
+  const sortFilters = useTjdbStore((state) => state.sortFilters);
+  const pageCount = useTjdbStore((state) => state.pageCount);
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { loadEnvironments, switchEnvironment, setQueryFilters, setSortFilters, setPageCount, setPageSize } =
+    useTjdbActions();
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -113,10 +114,7 @@ export const TooljetDatabase = (props) => {
       getConfigurationProperty,
       environments,
       selectedEnvironment,
-      setSelectedEnvironment: (environment) =>
-        useTjdbStore.setState((state) => {
-          state.selectedEnvironment = environment;
-        }),
+      setSelectedEnvironment: switchEnvironment,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -129,6 +127,8 @@ export const TooljetDatabase = (props) => {
       totalRecords,
       queryFilters,
       sortFilters,
+      pageCount,
+      pageSize,
       foreignKeys,
       configurations,
       environments,
@@ -154,14 +154,6 @@ export const TooljetDatabase = (props) => {
   useEffect(() => {
     fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
   }, [selectedTable]);
-
-  // Environment switch alone (same table) still needs a row-data re-fetch - Table/index.jsx's own
-  // effect on selectedEnvironment already re-fetches metadata (columns/FKs), but the rows themselves
-  // come from this hook, not that component. No-op on mount / before a table is selected.
-  useEffect(() => {
-    if (selectedTable?.id) handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEnvironment?.id]);
 
   return (
     // Wraps Layout (not just the page content) so Header - rendered by Layout above

@@ -11,6 +11,7 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { sql as sqlLang } from '@codemirror/lang-sql';
 import { EditorView } from '@codemirror/view';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -60,12 +61,11 @@ const MigrationHistoryDrawer = ({
   selectedTable,
   refetchMigrations,
   refetchTables,
-  selectedEnvironment,
-  setSelectedEnvironment,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [expandedMigrationId, setExpandedMigrationId] = useState(null);
   const [promoteTarget, setPromoteTarget] = useState(null);
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
 
   // Open on whichever environment the switcher is currently viewing, not always Development.
   useEffect(() => {
@@ -108,7 +108,6 @@ const MigrationHistoryDrawer = ({
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
           refetchTables={refetchTables}
-          setSelectedEnvironment={setSelectedEnvironment}
         />
       </Drawer>
     );
@@ -221,11 +220,11 @@ const PromotePreviewView = ({
   onClose,
   refetchMigrations,
   refetchTables,
-  setSelectedEnvironment,
 }) => {
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const { switchEnvironment } = useTjdbActions();
 
   useEffect(() => {
     tooljetDatabaseService
@@ -250,7 +249,7 @@ const PromotePreviewView = ({
       toast.success(`Migrations applied to ${environment.name}`, { position: 'top-center' });
       refetchMigrations();
       refetchTables?.();
-      setSelectedEnvironment?.(environment);
+      switchEnvironment(environment);
       onBack();
     });
   };

@@ -32,6 +32,7 @@ import {
   getLocalTimeZone,
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -57,7 +58,6 @@ const Table = ({ collapseSidebar }) => {
     setConfigurations,
     getConfigurationProperty,
     canEditTjdb,
-    selectedEnvironment,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -367,35 +367,33 @@ const Table = ({ collapseSidebar }) => {
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
-      tooljetDatabaseService
-        .viewTable(organizationId, selectedTable.table_name, selectedEnvironment?.id)
-        .then(({ data = [], error }) => {
-          if (error) {
-            toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
-            return;
-          }
+      return tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
+          return;
+        }
 
-          const { foreign_keys = [], configurations = {} } = data?.result || {};
-          setConfigurations(configurations);
-          if (data?.result?.columns?.length > 0) {
-            setColumns(
-              data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-                Header: column_name,
-                accessor: column_name,
-                dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-                ...rest,
-              }))
-            );
-          }
-          if (foreign_keys.length > 0) {
-            setForeignKeys([...foreign_keys]);
-          } else {
-            setForeignKeys([]);
-          }
-        });
-    } else {
-      setColumns([]);
+        const { foreign_keys = [], configurations = {} } = data?.result || {};
+        setConfigurations(configurations);
+        if (data?.result?.columns?.length > 0) {
+          setColumns(
+            data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
+              Header: column_name,
+              accessor: column_name,
+              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
+              ...rest,
+            }))
+          );
+        }
+        if (foreign_keys.length > 0) {
+          setForeignKeys([...foreign_keys]);
+        } else {
+          setForeignKeys([]);
+        }
+      });
     }
+    setColumns([]);
+    return Promise.resolve();
   };
 
   const onSelectedTableChange = () => {
@@ -415,12 +413,33 @@ const Table = ({ collapseSidebar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
-  // Environment switch alone (same table) still needs a re-fetch - the columns/foreign keys/
-  // configurations returned are the selected environment's relation, not the table's in general.
+  const { registerEnvironmentSwitchHandler } = useTjdbActions();
+
+  // Steps 3-5 of the ordered environment switch (see switchEnvironment in tjdbStore.js). This
+  // component owns every derived cache involved, which is why the store calls back into it rather
+  // than trying to hold them itself.
+  //
+  // selectedRowIds MUST be cleared: stale row ids from development, carried into staging, feed
+  // handleDeleteRow - a cross-environment delete by primary key.
+  const handleEnvironmentSwitch = async () => {
+    setSelectedTableData([]);
+    setColumns([]);
+    setConfigurations({});
+    setForeignKeys([]);
+    setCahedOptions({});
+    setReferencedColumnDetails([]);
+    setSelectedRowIds({});
+    await fetchTableMetadata();
+    handleRefetchQuery({}, {}, 1, useTjdbStore.getState().pageSize);
+  };
+
+  // Deliberately no dependency array: re-registering on every render is what keeps the handler's
+  // closure over selectedTable/columns fresh. The store slot holds exactly one handler, so this is
+  // an assignment, not an accumulating subscription.
   useEffect(() => {
-    if (!isEmpty(selectedTable)) fetchTableMetadata();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEnvironment?.id]);
+    registerEnvironmentSwitchHandler(handleEnvironmentSwitch);
+    return () => registerEnvironmentSwitchHandler(null);
+  });
 
   useEffect(() => {
     if (!isEditRowDrawerOpen && isDirectRowExpand) {

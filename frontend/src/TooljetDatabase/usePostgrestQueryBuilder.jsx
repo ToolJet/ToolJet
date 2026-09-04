@@ -1,9 +1,9 @@
-import { useRef, useContext } from 'react';
+import { useRef } from 'react';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
-import { TooljetDatabaseContext } from './index';
+import { useTjdbStore } from './_stores/tjdbStore';
 
 export const usePostgrestQueryBuilder = ({
   organizationId,
@@ -12,7 +12,10 @@ export const usePostgrestQueryBuilder = ({
   setTotalRecords,
   setLoadingState,
 }) => {
-  const { pageSize } = useContext(TooljetDatabaseContext);
+  // Read at call time, not render time: this hook runs in the same component that defines the
+  // Provider, so a useContext read here resolves against createContext's default, never the live
+  // value. getState() has no such tree dependency.
+  const pageSize = () => useTjdbStore.getState().pageSize;
 
   const postgrestQueryBuilder = useRef({
     filterQuery: new PostgrestQueryBuilder(),
@@ -71,7 +74,7 @@ export const usePostgrestQueryBuilder = ({
       }
     });
 
-    buildPaginationQuery(pageSize, 0);
+    buildPaginationQuery(pageSize(), 0);
   };
 
   const buildPaginationQuery = (limit, offset) => {
@@ -128,7 +131,7 @@ export const usePostgrestQueryBuilder = ({
       }
     });
 
-    const offset = currentPage === 1 ? 0 : (currentPage - 1) * pageSize;
+    const offset = currentPage === 1 ? 0 : (currentPage - 1) * pageSize();
     postgrestQueryBuilder.current.paginationQuery.limit(pageLimit);
     postgrestQueryBuilder.current.paginationQuery.offset(offset);
 
