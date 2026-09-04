@@ -33,6 +33,15 @@ export abstract class LicenseInitService {
    * - 1720352990850-CreateDefaultGroupInExistingWorkspace.ts
    */
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
+  /**
+   * Migration-only plan resolution. These wrap license loading so a data migration can make
+   * plan-gated decisions WITHOUT importing the edition-specific `License` static or booting extra
+   * services. Both read through the passed `manager` (the migration's shared queryRunner).
+   * - getPlanForMigration: instance-level plan (self-hosted CE/EE); reuses initForMigration.
+   * - getPlanForMigrationCloud: per-organization plan from organization_license (Cloud).
+   */
+  abstract getPlanForMigration(manager?: EntityManager): Promise<string>;
+  abstract getPlanForMigrationCloud(manager: EntityManager, organizationId: string): Promise<string>;
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;
   abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;
