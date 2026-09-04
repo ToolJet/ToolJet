@@ -120,7 +120,8 @@
     },
     {
       "componentType": "Checkbox",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "src/test/app-builder/widgets/Checkbox/TESTING.md"
     },
     {
       "componentType": "ToggleSwitchV2",
