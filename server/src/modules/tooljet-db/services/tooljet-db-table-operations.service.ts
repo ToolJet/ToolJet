@@ -385,8 +385,34 @@ export class TooljetDbTableOperationsService {
       //   primaryKeyColumnList
       // );
 
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunner.commitTransaction();
+      let appDbCommitted = false;
+      try {
+        await queryRunner.commitTransaction();
+        appDbCommitted = true;
+        await tjdbQueryRunner.commitTransaction();
+      } catch (commitErr) {
+        if (appDbCommitted) {
+          // App DB committed but ToolJet DB failed — compensate by deleting the metadata row.
+          try { await this.manager.delete(InternalTable, { id: internalTable.id }); } catch (_) {}
+          try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+        } else {
+          try { await queryRunner.rollbackTransaction(); } catch (_) {}
+          try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+        }
+        //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+        if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
+        //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+        if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
+        const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
+          ([tableName, tableId]): { id: string; tableName: string } => ({ id: tableId as string, tableName })
+        );
+        throw new TooljetDatabaseError(
+          commitErr.message,
+          { origin: 'create_table', internalTables: [...referencedColumnInfoForError] },
+          commitErr
+        );
+      }
+
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
 
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
@@ -395,10 +421,10 @@ export class TooljetDbTableOperationsService {
       if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
       return { id: internalTable.id, table_name: tableName };
     } catch (err) {
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.rollbackTransaction();
-      await queryRunner.release();
-      await tjdbQueryRunner.release();
+      try { await queryRunner.rollbackTransaction(); } catch (_) {}
+      try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+      try { await queryRunner.release(); } catch (_) {}
+      try { await tjdbQueryRunner.release(); } catch (_) {}
       const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
         ([tableName, tableId]): { id: string; tableName: string } => {
           return {
@@ -447,20 +473,38 @@ export class TooljetDbTableOperationsService {
       await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
       await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: internalTable.id }));
 
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunner.commitTransaction();
+      let appDbCommitted = false;
+      try {
+        await queryRunner.commitTransaction();
+        appDbCommitted = true;
+        await tjdbQueryRunner.commitTransaction();
+      } catch (commitErr) {
+        if (appDbCommitted) {
+          // App DB committed the delete; ToolJet DB DDL failed — compensate by re-saving the row.
+          try { await this.manager.save(InternalTable, internalTable); } catch (_) {}
+          try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+        } else {
+          try { await queryRunner.rollbackTransaction(); } catch (_) {}
+          try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+        }
+        throw new TooljetDatabaseError(
+          commitErr.message,
+          { origin: 'drop_table', internalTables: [internalTable] },
+          commitErr
+        );
+      }
       return true;
     } catch (err) {
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.rollbackTransaction();
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'drop_table',
-          internalTables: [internalTable],
-        },
-        err
-      );
+      if (!(err instanceof TooljetDatabaseError)) {
+        try { await queryRunner.rollbackTransaction(); } catch (_) {}
+        try { await tjdbQueryRunner.rollbackTransaction(); } catch (_) {}
+        throw new TooljetDatabaseError(
+          err.message,
+          { origin: 'drop_table', internalTables: [internalTable] },
+          err
+        );
+      }
+      throw err;
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
@@ -780,33 +824,59 @@ export class TooljetDbTableOperationsService {
         await tjdbQueryRunnner.createForeignKeys(tableName, foreignKeys);
       }
 
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunnner.commitTransaction();
+      let appDbCommitted = false;
+      try {
+        await queryRunner.commitTransaction();
+        appDbCommitted = true;
+        await tjdbQueryRunnner.commitTransaction();
+      } catch (commitErr) {
+        if (appDbCommitted) {
+          // App DB committed the config update; ToolJet DB DDL failed — compensate by reverting config.
+          try { await this.manager.save(InternalTable, internalTable); } catch (_) {}
+          try { await tjdbQueryRunnner.rollbackTransaction(); } catch (_) {}
+        } else {
+          try { await queryRunner.rollbackTransaction(); } catch (_) {}
+          try { await tjdbQueryRunnner.rollbackTransaction(); } catch (_) {}
+        }
+        try { await queryRunner.release(); } catch (_) {}
+        try { await tjdbQueryRunnner.release(); } catch (_) {}
+        const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
+          ([tableName, tableId]): { id: string; tableName: string } => ({ id: tableId as string, tableName })
+        );
+        throw new TooljetDatabaseError(
+          commitErr.message,
+          { origin: 'add_column', internalTables: [internalTable, ...referencedColumnInfoForError] },
+          commitErr
+        );
+      }
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
       await tjdbQueryRunnner.release();
     } catch (err) {
-      await tjdbQueryRunnner.rollbackTransaction();
-      await tjdbQueryRunnner.release();
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
+      if (!(err instanceof TooljetDatabaseError)) {
+        try { await tjdbQueryRunnner.rollbackTransaction(); } catch (_) {}
+        try { await tjdbQueryRunnner.release(); } catch (_) {}
+        try { await queryRunner.rollbackTransaction(); } catch (_) {}
+        try { await queryRunner.release(); } catch (_) {}
+        const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
+          ([tableName, tableId]): { id: string; tableName: string } => {
+            return {
+              id: tableId as string,
+              tableName: tableName,
+            };
+          }
+        );
 
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'add_column',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
-        },
-        err
-      );
+        throw new TooljetDatabaseError(
+          err.message,
+          {
+            origin: 'add_column',
+            internalTables: [internalTable, ...referencedColumnInfoForError],
+          },
+          err
+        );
+      }
+      throw err;
     }
   }
 
