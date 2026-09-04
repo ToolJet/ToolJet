@@ -19,19 +19,28 @@ module.exports = defineConfig({
       return require("./cypress/plugins/index.js")(on, config);
     },
 
-    baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
-    // Specs are grouped by product area since the 2026-09-04 restructure; edition is
-    // carried by the filename suffix (.ee / .ce / plain = both). This config runs the
-    // full platform surface, so it globs every area rather than listing them.
+    baseUrl: "http://localhost:3000",
+
     specPattern: [
-      // Must run first — provisions the instance's first user. Kept explicit for ordering.
-      "cypress/e2e/happyPath/platform/onboarding/firstUserOnboarding.cy.js",
+      "cypress/e2e/happyPath/platform/onboarding/firstUserOnboarding.cy.js",   
+      "cypress/e2e/happyPath/platform/licensing/basicPlan/**/*.cy.js",        
+      "cypress/e2e/happyPath/platform/licensing/paidPlan/**/*.cy.js",          
+      "cypress/e2e/happyPath/platform/licensing/updateLicense.ee.cy.js",       
+      "cypress/e2e/happyPath/platform/onboarding/googleSso.ee.cy.js",          
+      "cypress/e2e/happyPath/platform/onboarding/ldapOnboarding.ee.cy.js",
+      "cypress/e2e/happyPath/platform/onboarding/oidcOkta.ee.cy.js",
+      "cypress/e2e/happyPath/platform/onboarding/openId.ee.cy.js",
+      "cypress/e2e/happyPath/platform/onboarding/samlUI.ee.cy.js",
+      "cypress/e2e/happyPath/platform/onboarding/instanceLogin*.ee.cy.js",     
+      "cypress/e2e/happyPath/platform/workspace/multiEnvironment.ee.cy.js",    
+      "cypress/e2e/happyPath/platform/externalApi/**/*.cy.js",                 
+      "cypress/e2e/happyPath/platform/access/userMetadata.ee.cy.js",          
+      "cypress/e2e/happyPath/platform/superAdmin/**/*.cy.js",                  
+      "cypress/e2e/happyPath/platform/modules/**/*.cy.js",                     
+      "cypress/e2e/happyPath/platform/onboarding/manageSSO.ce.cy.js",          
       "cypress/e2e/happyPath/platform/**/*.cy.js",
     ],
-    // gitSync runs from cypress-gitsync.config.js under its own CI label
-    // (run-cypress-git-sync-ee); licensing/ai is covered by the BYOK/AI suite. Neither
-    // was matched by this config before the restructure, so the resolved set is
-    // unchanged at 77 specs.
+
     excludeSpecPattern: [
       "cypress/e2e/happyPath/platform/gitSync/**/*.cy.js",
       "cypress/e2e/happyPath/platform/licensing/ai/**/*.cy.js",
