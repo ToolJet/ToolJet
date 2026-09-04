@@ -1,18 +1,19 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
+import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { openEditorSidebar } from "Support/utils/commonWidget";
+import { waitForDropSettle } from "Support/utils/appBuilder/components/fileButton";
 
 describe(
   "File Button events",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
   () => {
-  const widget = "filebutton1";
-  const validFile = "cypress/fixtures/Image/tooljet.png";
+  const widget = fileButtonText.defaultWidgetName;
   // Generated rather than committed: the only way to trip the widget's default
   // 1MB maxSize is a file larger than it, and a >1MB binary does not belong in the repo.
-  const oversizeFile = "cypress/downloads/filebutton-oversize.txt";
+  const { validFile, oversizeFile, oversizeFileBytes } = fileButtonFixtures;
   const selectedMsg = "File selected event";
   const loadedMsg = "File loaded event";
 
@@ -39,31 +40,15 @@ describe(
     cy.waitForElement(fileButtonSelector.button(widget));
   };
 
-  // Canvas keeps settling after a drop — poll position until it stops before acting.
-  const waitForDropSettle = (widgetName, attemptsLeft = 6) => {
-    cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el) => {
-      const top = $el[0].getBoundingClientRect().top;
-      cy.wrap(null).then(() => {
-        cy.wait(150);
-        cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el2) => {
-          const top2 = $el2[0].getBoundingClientRect().top;
-          if (Math.abs(top2 - top) > 1 && attemptsLeft > 0) {
-            waitForDropSettle(widgetName, attemptsLeft - 1);
-          }
-        });
-      });
-    });
-  };
-
   before(() => {
-    cy.writeFile(oversizeFile, "x".repeat(1200000));
+    cy.writeFile(oversizeFile, "x".repeat(oversizeFileBytes));
   });
 
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Filebutton-App`);
     cy.openApp();
-    cy.dragAndDropWidget("File button", 500, 100);
+    cy.dragAndDropWidget(fileButtonText.defaultWidgetText, 500, 100);
     waitForDropSettle(widget);
     openEditorSidebar(widget);
   });
