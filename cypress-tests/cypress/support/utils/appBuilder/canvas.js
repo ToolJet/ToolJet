@@ -20,6 +20,9 @@
 //   verifyWidgetMoved                -                    → canvas
 //   verifyWidgetResized              -                    → canvas
 //   verifyWidgetCount                -                    → canvas
+//   waitForDropSettle                -                    → canvas
+//   dropWidget                       -                    → canvas
+//   clickWidgetInput                 -                    → canvas
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/canvas: on-canvas **component lifecycle** helpers
@@ -321,4 +324,63 @@ export const verifyWidgetCount = (namePrefix, expectedCount) => {
     "have.length",
     expectedCount
   );
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  waitForDropSettle('checkbox1')
+ * @tjDom    draggable-widget-<name> bounding rect, polled until stable
+ */
+// The canvas keeps settling after a drop: a position assertion made straight after one
+// can miss, and a widget dropped near the top can end up scrolled out of view for the
+// rest of the test. Poll the dropped widget's top edge across ~150ms reads until it
+// stops moving.
+export const waitForDropSettle = (widgetName, attemptsLeft = 6) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el) => {
+    const top = $el[0].getBoundingClientRect().top;
+    cy.wrap(null).then(() => {
+      cy.wait(150);
+      cy.get(`[data-cy="draggable-widget-${widgetName}"]`).then(($el2) => {
+        const top2 = $el2[0].getBoundingClientRect().top;
+        if (Math.abs(top2 - top) > 1 && attemptsLeft > 0) {
+          waitForDropSettle(widgetName, attemptsLeft - 1);
+        }
+      });
+    });
+  });
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  dropWidget('Text Input', 'textinput1', 500, 300)
+ * @tjDom    right-sidebar-components-button toggle + widget-search-box-search-bar
+ */
+// cy.dragAndDropWidget opens the Components panel by clicking a button that TOGGLES it,
+// so it only works from a CLOSED panel: a drop straight after another drop clicks it
+// shut and then times out on the search box. Collapse first so a drop works from either
+// state. Specs that chain drops without this pass only by accident, because an
+// openEditorSidebar in between happened to swap the sidebar to the Inspector.
+//
+// The instance name is passed, not derived, because callers reference it in bindings.
+export const dropWidget = (widgetName, instanceName, x = 500, y = 300) => {
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
+    }
+  });
+  cy.dragAndDropWidget(widgetName, x, y);
+  waitForDropSettle(instanceName);
+};
+
+/**
+ * @tjBlock  canvas
+ * @tjUsage  clickWidgetInput('toggleswitch1')
+ * @tjDom    <name> widget root → nested <input>, force-clicked
+ */
+// Flips a companion source widget from the canvas. Driving the SOURCE rather than the
+// bound field is what proves a binding stays live instead of having resolved once at
+// bind time.
+export const clickWidgetInput = (name) => {
+  cy.get(`[data-cy="${name}"]`).find("input").click({ force: true });
+  cy.waitForAutoSave();
 };

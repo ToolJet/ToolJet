@@ -1,26 +1,29 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
 import {
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
   dropWidget,
-  dropCompanionToggle,
   enableFxAndBind,
-  commitChange,
-  closeQueryPanel,
-  verifyExposedValue,
-  clearSelectedFile,
   clearParameter,
   clickWidgetInput,
+  expectNoFxButton,
+} from "Support/utils/commonWidget";
+import {
+  commitChange,
+  verifyExposedValue,
+  clearSelectedFile,
   selectFileType,
   validationFileTypeWrapper,
   expectRejectionToast,
   openParsedValue,
   closeParsedValue,
-  expectNoFxButton,
   widgetTooltip,
-  hoverTriggerInPreview,
+  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -36,6 +39,10 @@ import {
 // Every test binds the field to a COMPANION widget then drives the companion — changing
 // the source is what proves the binding stays live rather than resolving once at bind
 // time. Each test sets up its own pre-state.
+
+// Toggle Switch is this spec's boolean fx source — a value the test can flip to prove a
+// binding is live. Local rather than shared: propertiesFx is its only consumer.
+const dropCompanionToggle = (x, y) => dropWidget("Toggle Switch", "toggleswitch1", x, y);
 
 describe(
   "File Button properties fx",
@@ -161,7 +168,7 @@ describe(
 
     // Only observable on the preview — the editor canvas swallows the pointer
     // events Radix needs to open it.
-    hoverTriggerInPreview(widget);
+    hoverInPreview(fileButtonSelector.button(widget));
     cy.get(widgetTooltip).should("contain.text", "Bound tooltip text");
   });
 

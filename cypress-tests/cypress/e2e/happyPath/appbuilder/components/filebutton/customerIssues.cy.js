@@ -1,14 +1,17 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar, verifyAndModifyParameter } from "Support/utils/commonWidget";
 import {
+  openEditorSidebar,
+  verifyAndModifyParameter,
   dropWidget,
-  commitChange,
-  closeQueryPanel,
-  clearSelectedFile,
   clearParameter,
+} from "Support/utils/commonWidget";
+import {
+  commitChange,
+  clearSelectedFile,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Customer-issues facet — regression guards for defects found while automating this

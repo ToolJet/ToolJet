@@ -1,22 +1,26 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
 import {
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
   dropWidget,
+  clearParameter,
+} from "Support/utils/commonWidget";
+import {
   commitChange,
-  closeQueryPanel,
   verifyExposedValue,
   clearSelectedFile,
-  clearParameter,
   selectFileType,
   selectValidationFileType,
   expectRejectionToast,
   openParsedValue,
   closeParsedValue,
   widgetTooltip,
-  hoverTriggerInPreview,
+  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Properties facet — direct-control half; the fx half is in propertiesFx.cy.js.
@@ -46,12 +50,12 @@ const setTooltip = (format, content) => {
 };
 
 // Configure in the editor, then verify on the preview — where the tooltip can
-// actually open (see hoverTriggerInPreview).
+// actually open (see hoverInPreview).
 const showTooltipInPreview = (name, format, content) => {
   openEditorSidebar(name);
   openAccordion("Additional Actions");
   setTooltip(format, content);
-  hoverTriggerInPreview(name);
+  hoverInPreview(fileButtonSelector.button(name));
 };
 
 describe(
