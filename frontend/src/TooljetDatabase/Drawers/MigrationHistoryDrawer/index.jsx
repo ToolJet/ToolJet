@@ -4,12 +4,35 @@ import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
-import MultiLineCodeEditor from '@/AppBuilder/CodeEditor/MultiLineCodeEditor';
 import { tooljetDatabaseService } from '@/_services';
 import { ArrowLeft, Download } from 'lucide-react';
+import CodeMirror from '@uiw/react-codemirror';
+import { okaidia } from '@uiw/codemirror-theme-okaidia';
+import { githubLight } from '@uiw/codemirror-theme-github';
+import { sql as sqlLang } from '@codemirror/lang-sql';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
+
+// Standalone (non resolver-bound) CodeMirror, same shape as SeedDataDrawer's — the App Builder's
+// MultiLineCodeEditor needs the AppBuilder module store/context that doesn't exist on this page.
+const ReadOnlySqlView = ({ sql }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  return (
+    <CodeMirror
+      value={sql || '-- No SQL available for this migration'}
+      theme={darkMode ? okaidia : githubLight}
+      extensions={[sqlLang()]}
+      editable={false}
+      basicSetup={{
+        lineNumbers: true,
+        foldGutter: false,
+        highlightActiveLine: false,
+        highlightActiveLineGutter: false,
+      }}
+    />
+  );
+};
 
 function statusLine(tabIndex, chainLength, appliedCount) {
   const behindCount = chainLength - appliedCount;
@@ -172,15 +195,7 @@ const MigrationDetailView = ({ migration, onBack, onClose }) => (
       <div className="migration-history-drawer__row-timestamp">
         {new Date(migration.createdAt ?? migration.created_at).toLocaleString()}
       </div>
-      <MultiLineCodeEditor
-        lang="sql"
-        initialValue={migration.sql || '-- No SQL available for this migration'}
-        readOnly
-        editable={false}
-        lineNumbers
-        foldGutter={false}
-        height="auto"
-      />
+      <ReadOnlySqlView sql={migration.sql} />
     </div>
   </>
 );
@@ -249,15 +264,7 @@ const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, on
                 <div className="migration-history-drawer__row-timestamp">
                   {new Date(migration.created_at).toLocaleString()}
                 </div>
-                <MultiLineCodeEditor
-                  lang="sql"
-                  initialValue={migration.sql || '-- No SQL available for this migration'}
-                  readOnly
-                  editable={false}
-                  lineNumbers
-                  foldGutter={false}
-                  height="auto"
-                />
+                <ReadOnlySqlView sql={migration.sql} />
               </div>
             ))}
           </>
