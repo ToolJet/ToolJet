@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
 import {
   resolveGeneralProperties,
@@ -532,6 +533,19 @@ const typeResolver = (type) => {
 const validBooleanChecker = (input) => {
   if (/^(true|false)$/i.test(input) == true) return JSON.parse(input);
   return true;
+};
+
+export const resolveFormDataExposedVarValue = (childData) => {
+  if (!childData) return null;
+
+  if (childData.type === 'ModuleViewer') return omit(childData, ['name', 'formKey', 'type', 'id']);
+
+  if (childData.hasOwnProperty('value')) return childData.value;
+  if (childData.hasOwnProperty('values')) return childData.values;
+  if (childData.hasOwnProperty('file')) return childData.file;
+  if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
+
+  return null;
 };
 
 export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60, footerHeight = 60) => {
