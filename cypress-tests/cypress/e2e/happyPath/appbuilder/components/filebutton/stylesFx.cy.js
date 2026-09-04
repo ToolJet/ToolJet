@@ -1,17 +1,23 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
-import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Support/utils/commonWidget";
 import {
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
   waitForDropSettle,
   dropWidget,
   enableFxAndBind,
-  commitChange,
-  closeQueryPanel,
-  expectBgVar,
+  expectStyleVar,
   expectNoFxButton,
   locateAlignmentToggle,
+  expectFontWeight,
+  openStyleAccordion,
+} from "Support/utils/commonWidget";
+import {
+  commitChange,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // StylesFx facet — fx/dynamic-binding half; the direct half is in styles.cy.js.
@@ -29,14 +35,6 @@ describe(
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
   () => {
   const widget = fileButtonText.defaultWidgetName;
-
-  // Any companion-widget selection flips the sidebar away, so each phase re-opens the
-  // Styles tab and the accordion.
-  const openStyleAccordion = (accordion) => {
-    openEditorSidebar(widget);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(accordion);
-  };
 
   // The standard colour source: a Color Picker seeded to red.
   const dropColorPicker = () => {
@@ -73,7 +71,7 @@ describe(
     verifyAndModifyParameter("Default value", "32");
     commitChange();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     enableFxAndBind("Label size", "{{components.numberinput1.value}}");
     commitChange();
     cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-size", "32px");
@@ -88,16 +86,13 @@ describe(
   it("should verify Label weight follows a bound string through all three options", () => {
     // labelWeight maps to a Tailwind CLASS (fontWeightClass, FileButton.jsx:16),
     // not an inline style. Normal 400, Medium 500 (default), Bold 700.
-    const weight = (expected) =>
-      cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "font-weight", expected);
-
     // Driven from the source component, which also proves the binding stays live
     // instead of resolving once.
     const bindWeight = (value, expected) => {
       openEditorSidebar("textinput1");
       verifyAndModifyParameter("Default value", value);
       commitChange();
-      weight(expected);
+      expectFontWeight(fileButtonSelector.label(widget), expected);
     };
 
     // These are the config's raw option values, not the display names.
@@ -106,10 +101,10 @@ describe(
     verifyAndModifyParameter("Default value", "normal");
     commitChange();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     enableFxAndBind("Label weight", "{{components.textinput1.value}}");
     commitChange();
-    weight("400");
+    expectFontWeight(fileButtonSelector.label(widget), "400");
 
     bindWeight("bold", "700");
     bindWeight("medium", "500");
@@ -118,7 +113,7 @@ describe(
   it("should verify Label color follows a bound colour", () => {
     dropColorPicker();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     enableFxAndBind("Label color", "{{components.colorpicker1.selectedColorHex}}");
     commitChange();
     cy.get(fileButtonSelector.label(widget)).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
@@ -136,7 +131,7 @@ describe(
     verifyAndModifyParameter("Default value", "IconCheck");
     commitChange();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     enableFxAndBind("Icon", "{{components.textinput1.value}}");
     commitChange();
     cy.get(fileButtonSelector.icon(widget)).scrollIntoView().should("have.class", "tabler-icon-check");
@@ -150,7 +145,7 @@ describe(
   it("should verify Icon color follows a bound colour", () => {
     dropColorPicker();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     // showLabel:false — no label div renders, so enableFxAndBind's label assertion can't
     // be reused. Drive the fx button and CodeMirror directly, keyed on the raw config key.
     cy.get(commonWidgetSelector.parameterFxButton("iconColor")).click();
@@ -177,7 +172,7 @@ describe(
 
     dropColorPicker();
 
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
     enableFxAndBind("Loader color", "{{components.colorpicker1.selectedColorHex}}");
     commitChange();
     // computedLoaderColor goes straight into <Loader color={...}>; unlike
@@ -194,15 +189,15 @@ describe(
     // the default, so buttonType is left untouched here.
     dropColorPicker();
 
-    openStyleAccordion("button");
+    openStyleAccordion(widget, "button");
     enableFxAndBind("Background", "{{components.colorpicker1.selectedColorHex}}");
     commitChange();
     cy.get(fileButtonSelector.button(widget)).scrollIntoView();
-    expectBgVar(fileButtonSelector.button(widget), "#ff0000");
+    expectStyleVar(fileButtonSelector.button(widget), "--button-primary", "#ff0000");
 
     recolourPicker("#00ff00");
     cy.get(fileButtonSelector.button(widget)).scrollIntoView();
-    expectBgVar(fileButtonSelector.button(widget), "#00ff00");
+    expectStyleVar(fileButtonSelector.button(widget), "--button-primary", "#00ff00");
   });
 
   it("should verify Border radius resolves and re-resolves a numeric binding", () => {
@@ -211,7 +206,7 @@ describe(
     verifyAndModifyParameter("Default value", "15");
     commitChange();
 
-    openStyleAccordion("button");
+    openStyleAccordion(widget, "button");
     enableFxAndBind("Border radius", "{{components.numberinput1.value}}");
     commitChange();
     cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("have.css", "border-radius", "15px");
@@ -231,7 +226,7 @@ describe(
 
     dropColorPicker();
 
-    openStyleAccordion("button");
+    openStyleAccordion(widget, "button");
     enableFxAndBind(
       "Box shadow",
       `${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px {{components.colorpicker1.selectedColorHex}}`
@@ -253,7 +248,7 @@ describe(
   // control field so a "not.exist" cannot pass against a shut accordion.
 
   it("should verify Icon direction and Content alignment expose no fx button", () => {
-    openStyleAccordion("label and icon");
+    openStyleAccordion(widget, "label and icon");
 
     // Both render the same togglr-button-left/right values, told apart by
     // contentAlignment's extra `center`. iconDirection has displayName:'' so it has no
@@ -263,7 +258,7 @@ describe(
   });
 
   it("should verify Button type and Padding expose no fx button", () => {
-    openStyleAccordion("button");
+    openStyleAccordion(widget, "button");
 
     // Both are `switch` fields; locate each by an option button only it renders.
     expectNoFxButton(() => cy.get('[data-cy="togglr-button-outline"]').scrollIntoView(), "Border radius"); // buttonType

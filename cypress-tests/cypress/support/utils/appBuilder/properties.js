@@ -12,6 +12,11 @@
 //   verifyPropertiesGeneralAccordion -                    → properties
 //   selectFromSidebarDropdown        -                    → properties
 //   addValueOnInput                  -                    → properties
+//   enableFxAndBind                  fx                   → properties
+//   clearParameter                   code                 → properties
+//   expectNoFxButton                 fx                   → properties
+//   alignmentToggle                  -                    → styles
+//   locateAlignmentToggle            -                    → styles
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/properties: right-Inspector **Properties tab** helpers.
@@ -272,3 +277,91 @@ export const addValueOnInput = (property, value) => {
     .click()
     .type(`${value}`);
 };
+
+/**
+ * @tjType   fx
+ * @tjBlock  properties
+ * @tjUsage  enableFxAndBind('Loading state', '{{components.toggleswitch1.value}}')
+ * @tjDom    parameter fx toggle button, then the CodeMirror field it swaps in
+ */
+// A toggle property must have fx turned ON before it becomes a code field at all.
+// Distinct from verifyAndModifyToggleFx, which verifies a braced DEFAULT then flips it —
+// this one binds an arbitrary expression.
+export const enableFxAndBind = (paramName, expression) => {
+  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
+  verifyAndModifyParameter(paramName, expression);
+};
+
+/**
+ * @tjType   code
+ * @tjBlock  properties
+ * @tjUsage  clearParameter('Min size (bytes)')
+ * @tjDom    parameter-<name> CodeMirror content, asserted digit-free
+ */
+// Leaves a `type:'code'` field truly EMPTY. verifyAndModifyParameter cannot: it types a
+// space before the value, and a space is a non-empty string, which a widget reads
+// differently from nothing.
+export const clearParameter = (paramName) => {
+  cy.get(commonWidgetSelector.parameterLabel(paramName)).scrollIntoView().should("have.text", paramName);
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).clearAndTypeOnCodeMirror("");
+  // No digits left, rather than have.text "": an empty CodeMirror can render a
+  // .cm-placeholder whose text would count. Any leftover value has a digit.
+  cy.get(commonWidgetSelector.parameterInputField(paramName))
+    .find(".cm-content")
+    .invoke("text")
+    .should("not.match", /\d/);
+};
+
+// One field's whole row. SingleLineCodeEditor wraps every parameter in this, with the
+// label div (`.field`), the fx button and the control as siblings INSIDE it — so
+// `.field` is the label alone, never the row.
+const fieldRow = ".wrapper-div-code-editor";
+
+// The negative case for isFxNotRequired fields — 58 widget configs declare at least one.
+// renderFx() returns null outright when isFxNotRequired is defined
+// (SingleLineCodeEditor.jsx:699), so the button is ABSENT FROM THE DOM, not merely
+// hidden; the .fx-button-container opacity rule only dims buttons that do render.
+//
+// Located by a CALLBACK returning the field's own control, not by param name, because
+// name is unusable for common cases: a field with displayName:'' has no label at all,
+// and a switch can SHARE a displayName with an fx-capable code field (checkbox and File
+// Button both hit this with 'Tooltip'), so `<name>-fx-button` genuinely exists.
+//
+// controlParamName is not decoration: a bare "not.exist" also passes when the selector
+// is wrong or the accordion is shut, which asserts nothing at all. The control is an
+// fx-CAPABLE field in the same open accordion and MUST resolve.
+/**
+ * @tjType   fx
+ * @tjBlock  properties
+ * @tjUsage  expectNoFxButton(() => cy.get('[data-cy="togglr-button-none"]'), 'Border radius')
+ * @tjDom    the located field's row, asserted to contain no .fx-button
+ */
+export const expectNoFxButton = (locateField, controlParamName) => {
+  cy.get(commonWidgetSelector.parameterFxButton(controlParamName)).should("exist");
+  locateField().closest(fieldRow).should("have.length", 1).find(".fx-button").should("not.exist");
+};
+
+/**
+ * @tjBlock  styles
+ * @tjUsage  alignmentToggle('right', false).click()   // a 2-option icon-direction group
+ * @tjDom    togglr-button-<value>, disambiguated by whether the group has `center`
+ */
+// Icon-direction and content-alignment groups render the SAME togglr-button-left/right
+// data-cy values, so a bare selector hits whichever comes first in document order. They
+// differ only in the third option: content-alignment has a `center`, icon-direction has
+// just left/right. Pass hasCenter to say which you mean.
+export const alignmentToggle = (value, hasCenter) =>
+  cy
+    .get(`[data-cy="togglr-button-${value}"]`)
+    .filter(
+      (_i, el) =>
+        (Cypress.$(el).closest(".ToggleGroup").find('[data-cy="togglr-button-center"]').length > 0) === hasCenter
+    );
+
+// expectNoFxButton takes a locator callback, so bind the value it should probe.
+/**
+ * @tjBlock  styles
+ * @tjUsage  expectNoFxButton(locateAlignmentToggle(false), 'Label size')
+ * @tjDom    curries alignmentToggle('left', hasCenter) into a locator callback
+ */
+export const locateAlignmentToggle = (hasCenter) => () => alignmentToggle("left", hasCenter);

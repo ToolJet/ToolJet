@@ -1,4 +1,5 @@
 import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
@@ -19,8 +20,8 @@ import {
   deleteWidgetFromMenu,
   undo,
   redo,
+  waitForDropSettle,
 } from "Support/utils/commonWidget";
-import { waitForDropSettle, closeQueryPanel } from "Support/utils/appBuilder/components/fileButton";
 
 // Canvas facet — component lifecycle. Config-independent: no config.properties or
 // config.styles item is exercised here, so there is nothing to cite.
@@ -106,24 +107,19 @@ describe(
     verifyWidgetCount(namePrefix, 2);
   });
 
-  // ── KNOWN RED: shared-harness limitation, NOT a File Button issue ───────────
-  // These two currently FAIL and are left failing rather than skipped, so the gap
-  // stays visible on every run.
+  // ── HEADLESS-ONLY failures — the shared helpers are CORRECT ─────────────────
+  // These two fail under `cypress run` (headless) and PASS under `--headed` — measured
+  // 2026-09-04: 11/11 headed vs 9/11 headless. pasteWidget() drives
+  // realPress([mod,'v']), which needs a real browser window to reach the SYSTEM
+  // clipboard; headless has none. Note cutWidget's own internal assertion still passes
+  // either way, because Cmd+X removes the widget whether or not the clipboard write
+  // landed — so the failure only ever surfaces at the paste.
   //
-  // Both clipboard ops fail because pasteWidget() drives realPress([mod,'v']), which
-  // needs the browser to read the SYSTEM clipboard — unavailable in this headless
-  // Chrome run. Note cutWidget's own internal assertion still passes: Cmd+X removes
-  // the widget whether or not the clipboard write landed, so the failure only
-  // surfaces at the paste.
-  //
-  // Attributed by control, not assumed: the lead's golden checkbox/canvas.cy.js uses
-  // these same three helpers and fails the SAME two tests with the SAME errors
-  // ("Found '1', expected '2'" and "draggable-widget-checkbox1 never found"),
-  // 9 passing / 2 failing — identical to this spec. Every non-clipboard op here
-  // passes, including both duplicate paths, which rules out widget-specific causes.
-  //
-  // Fix belongs with the shared canvas helper's owner (clipboard permissions, or a
-  // clipboard-API-based helper instead of real key events), not worked around here.
+  // Not a File Button issue and not a helper bug: checkbox, numberInput, passwordInput
+  // and textInput canvas specs all fail the same two tests in CI, because CI is
+  // headless. Do not "fix" them here. The open decision belongs to the shared
+  // canvas.js owner: tag these headed-only, or reimplement via the clipboard API
+  // instead of real key events.
   it("copy-paste (Cmd/Ctrl+C then +V)", () => {
     copyPasteWidget(widget);
     verifyWidgetCount(namePrefix, 2);
