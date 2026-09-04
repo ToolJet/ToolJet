@@ -21,7 +21,7 @@ export interface IDataSourcesUtilService {
     userId: string
   ): Promise<any>;
 
-  testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
+  testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string, dataSourceId?: string): Promise<object>;
 
   fetchAPITokenFromPlugins(
     dataSource: DataSource,
