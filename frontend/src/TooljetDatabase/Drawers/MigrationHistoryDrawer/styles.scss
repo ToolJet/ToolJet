@@ -154,4 +154,15 @@
     display: flex;
     justify-content: flex-end;
   }
+
+  &__back {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-default);
+  }
+
+  &__detail-body {
+    padding: 16px 20px;
+  }
 }

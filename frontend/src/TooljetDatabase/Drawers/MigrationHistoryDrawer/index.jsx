@@ -3,6 +3,8 @@ import cx from 'classnames';
 import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
+import MultiLineCodeEditor from '@/AppBuilder/CodeEditor/MultiLineCodeEditor';
+import { ArrowLeft } from 'lucide-react';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -153,7 +155,33 @@ const MigrationHistoryDrawer = ({
   );
 };
 
-const MigrationDetailView = ({ migration, onBack, onClose }) => null; // Task 6 fills this in
+const MigrationDetailView = ({ migration, onBack, onClose }) => (
+  <>
+    <div className="migration-history-drawer__header">
+      <button className="migration-history-drawer__back" onClick={onBack}>
+        <ArrowLeft size={18} />
+      </button>
+      <span>{migration.name || 'Migration'}</span>
+      <button className="migration-history-drawer__close" onClick={onClose}>
+        &times;
+      </button>
+    </div>
+    <div className="migration-history-drawer__detail-body">
+      <div className="migration-history-drawer__row-timestamp">
+        {new Date(migration.createdAt ?? migration.created_at).toLocaleString()}
+      </div>
+      <MultiLineCodeEditor
+        lang="sql"
+        initialValue={migration.sql || '-- No SQL available for this migration'}
+        readOnly
+        editable={false}
+        lineNumbers
+        foldGutter={false}
+        height="auto"
+      />
+    </div>
+  </>
+);
 const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, onClose, refetchMigrations }) => null; // Task 7 fills this in
 
 export default MigrationHistoryDrawer;
