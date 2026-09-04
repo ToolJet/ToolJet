@@ -11,6 +11,7 @@ import { InternalTableMigration, InternalTableMigrationKind } from '@entities/in
 import { buildTableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { BaselineMigration, rewriteSerialDefaults, synthesizeBaseline } from '../helpers/baseline-synthesis';
 import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { TooljetDbMigrationSqlCompilerService } from './tooljet-db-migration-sql-compiler.service';
 import { computeMissingMigrations } from './tooljet-db-promote.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -34,6 +35,7 @@ export type TableMigrationChainEntry = {
   sequence: string;
   createdAt: Date;
   createdBy: string | null;
+  sql: string | null;
 };
 
 export type EnvironmentMigrationState = {
@@ -71,7 +73,8 @@ export class TooljetDbEnvironmentAssignmentService {
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly migrationRecorderService: TooljetDbMigrationRecorderService,
-    private readonly licenseTermsService: LicenseTermsService
+    private readonly licenseTermsService: LicenseTermsService,
+    private readonly migrationSqlCompilerService: TooljetDbMigrationSqlCompilerService
   ) {}
 
   /**
@@ -253,6 +256,7 @@ export class TooljetDbEnvironmentAssignmentService {
         sequence: migration.sequence,
         createdAt: migration.createdAt,
         createdBy: migration.createdBy,
+        sql: this.migrationSqlCompilerService.compile(migration),
       })),
       environments: environmentStates,
     };

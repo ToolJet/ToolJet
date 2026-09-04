@@ -137,6 +137,8 @@ describe('TooljetDb table migrations', () => {
       // create_table + add_column, in order.
       expect(migrations).toHaveLength(2);
       expect(migrations.map((m: any) => m.kind)).toEqual(['structured', 'structured']);
+      expect(migrations[0].sql).toBe('CREATE TABLE behind_tbl (\n  id integer NOT NULL\n);');
+      expect(migrations[1].sql).toBe('ALTER TABLE behind_tbl\n  ADD COLUMN title character varying;');
       const migrationIds = migrations.map((m: any) => m.id);
 
       // CE is unlicensed for MULTI_ENVIRONMENT, same filter view_tables applies: only the
