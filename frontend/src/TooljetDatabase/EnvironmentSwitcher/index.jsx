@@ -184,6 +184,7 @@ const EnvironmentSwitcher = () => {
         migrations={migrations}
         environments={tableMigrations?.environments ?? []}
         allEnvironments={environments}
+        relationsByEnvironment={relationsByEnvironment}
         organizationId={organizationId}
         selectedTable={selectedTable}
         refetchMigrations={fetchTableMigrations}

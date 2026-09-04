@@ -54,6 +54,7 @@ const MigrationHistoryDrawer = ({
   migrations,
   environments,
   allEnvironments,
+  relationsByEnvironment = [],
   organizationId,
   selectedTable,
   refetchMigrations,
@@ -110,7 +111,11 @@ const MigrationHistoryDrawer = ({
 
       <div className="migration-history-drawer__tabs">
         {TAB_LABELS.map((label, index) => {
-          const available = index < allEnvironments.length;
+          const licensed = index < allEnvironments.length;
+          const hasRelation =
+            licensed &&
+            (relationsByEnvironment.find((r) => r.environment_id === allEnvironments[index].id)?.has_relation ?? false);
+          const available = licensed && hasRelation;
           const tab = (
             <button
               key={label}
@@ -122,8 +127,11 @@ const MigrationHistoryDrawer = ({
             </button>
           );
           if (available) return tab;
+          const tooltipMessage = licensed
+            ? 'Table does not exist in this environment'
+            : "Your plan doesn't support multiple environments";
           return (
-            <ToolTip key={label} message="Your plan doesn't support multiple environments" placement="top">
+            <ToolTip key={label} message={tooltipMessage} placement="top">
               <div>{tab}</div>
             </ToolTip>
           );

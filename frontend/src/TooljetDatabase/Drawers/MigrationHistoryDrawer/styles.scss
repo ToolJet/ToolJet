@@ -157,7 +157,15 @@
     margin-top: 8px;
   }
 
+  // The `.migration-history-drawer` root class this file's BEM selectors nest under lands on
+  // `Drawer`'s `.drawer-container` wrapper (its `className` prop), not on an element around this
+  // content - so the flex-column/height:100% rules above don't govern this footer's position. The
+  // `.drawer` element that actually scrolls has `overflow-y: auto` (see `_styles/drawer.scss`),
+  // which is what `position: sticky` needs - same fix `DrawerFooter` already uses.
   &__footer {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--surfaces-surface-01);
     padding: 16px 20px;
     border-top: 1px solid var(--border-weak);
     display: flex;
