@@ -28,6 +28,7 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
+import { TooljetDbController } from '@ee/tooljet-db/controller';
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 
 describe('TooljetDb raw SQL migration', () => {
@@ -214,6 +215,61 @@ describe('TooljetDb raw SQL migration', () => {
             where: { internalTableId: internalTable.id },
           });
           expect(after).toBe(before);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    // Bug A: the SQL itself succeeds, but something after it (here, the migration record write)
+    // throws. Before the fix, the SQL had already been committed on its own connection with no
+    // transaction wrapping it - so it stayed applied with no migration row for anything to ever
+    // detect. After the fix, the SQL's own connection is still inside a transaction when the later
+    // failure happens, so rolling it back undoes the SQL too.
+    it('rolls back the SQL when the migration record write fails after it', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie, tenantSchema } = workspace;
+
+          await createTable(organizationId, cookie, 'raw_sql_record_fail_tbl');
+          const { internalTable, relation } = await tableAndRelation(organizationId, 'raw_sql_record_fail_tbl');
+
+          const migrationsBefore = await getDefaultDataSource().manager.count(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+          });
+
+          // Spy on the instance the controller actually calls through, not app.get()'s own copy -
+          // TooljetDbModule is cached twice (with and without the controller), same gotcha
+          // tjdb-promote.spec.ts's lock/permission tests work around.
+          const rawSqlMigrationService = (app.get(TooljetDbController) as any).rawSqlMigrationService;
+          const recordRawSqlSpy = jest
+            .spyOn(rawSqlMigrationService.migrationRecorderService, 'recordRawSql')
+            .mockRejectedValueOnce(new Error('boom'));
+
+          try {
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN never_recorded character varying`,
+            });
+            expect(res.statusCode).toBeGreaterThanOrEqual(400);
+          } finally {
+            recordRawSqlSpy.mockRestore();
+          }
+
+          const migrationsAfter = await getDefaultDataSource().manager.count(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+          });
+          expect(migrationsAfter).toBe(migrationsBefore);
+
+          const [column] = await getTooljetDbDataSource().query(
+            `SELECT 1 FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = 'never_recorded'`,
+            [tenantSchema, relation.id]
+          );
+          expect(column).toBeUndefined();
         });
       } finally {
         if (organizationId) await cleanupWorkspace(organizationId);

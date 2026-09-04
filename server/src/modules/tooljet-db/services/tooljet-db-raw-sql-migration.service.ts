@@ -52,6 +52,14 @@ export class TooljetDbRawSqlMigrationService {
     const tenantSchema = findTenantSchema(organizationId);
     const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
 
+    // The SQL runs inside its own transaction on this connection, held open until the migration
+    // record (on the app DB) is safely written - a failure anywhere in between rolls the SQL back
+    // too, so the SQL is never applied with no record of it (there being no pending-application row
+    // for arbitrary SQL for anything to later detect and reconcile).
+    const tjdbQueryRunner = tooljetDbTenantConnection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
     try {
       const sql = await this.substitutePlaceholders(
         dto,
@@ -64,12 +72,11 @@ export class TooljetDbRawSqlMigrationService {
       // Bare, unqualified `{{placeholders}}` (e.g. the architecture doc's own
       // `ALTER TABLE {{students}} ...` example) need the tenant schema on the search path to
       // resolve - the same reason sqlExecution sets it before running caller SQL.
-      await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
-      await tooljetDbTenantConnection.query(sql);
+      await tjdbQueryRunner.query(`SET search_path TO "${tenantSchema}"`);
+      await tjdbQueryRunner.query(sql);
 
-      const queryRunner = tooljetDbTenantConnection.createQueryRunner();
       const priorColumnNames = relation.configurations?.columns?.column_names || {};
-      const snapshot = await buildTableSchemaSnapshot(queryRunner, tenantSchema, relation.id, priorColumnNames);
+      const snapshot = await buildTableSchemaSnapshot(tjdbQueryRunner, tenantSchema, relation.id, priorColumnNames);
 
       // Reconcile first, then patch the minted uuids back into the snapshot itself - resultingSchema
       // is recorded as this migration's output, and a later migration's replay reads column
@@ -79,10 +86,9 @@ export class TooljetDbRawSqlMigrationService {
       snapshot.columns.forEach((column) => (column.uuid = reconciled.column_names[column.name]));
       relation.configurations = { columns: reconciled };
 
-      // One transaction: the relation's configurations write and the migration record must land
-      // together, or a crash between them drops this step from a chain that never shrinks, with
-      // nothing (no pending row) left for anything to later detect.
-      return await this.manager.transaction(async (transactionManager) => {
+      // The relation's configurations write and the migration record must land together, or a
+      // crash between them drops this step from a chain that never shrinks.
+      const result = await this.manager.transaction(async (transactionManager) => {
         await transactionManager.save(relation);
         return this.migrationRecorderService.recordRawSql(
           { sql: dto.sql, refs: dto.refs },
@@ -93,7 +99,14 @@ export class TooljetDbRawSqlMigrationService {
           transactionManager
         );
       });
+
+      await tjdbQueryRunner.commitTransaction();
+      return result;
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      throw err;
     } finally {
+      await tjdbQueryRunner.release();
       await tooljetDbTenantConnection.destroy();
     }
   }

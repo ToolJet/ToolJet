@@ -15,6 +15,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { InternalTableRepository } from './repository';
 
 export class TooljetDbModule extends SubModule {
   constructor(
@@ -76,6 +77,7 @@ export class TooljetDbModule extends SubModule {
       providers: [
         AbilityUtilService,
         RolesRepository,
+        InternalTableRepository,
         TooljetDbTableOperationsService,
         TooljetDbBulkUploadService,
         TooljetDbDataOperationsService,

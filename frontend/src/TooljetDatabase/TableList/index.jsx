@@ -126,6 +126,7 @@ const List = () => {
               key={index}
               active={id === selectedTable.id}
               text={table_name}
+              tableId={id}
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable({ table_name, id });

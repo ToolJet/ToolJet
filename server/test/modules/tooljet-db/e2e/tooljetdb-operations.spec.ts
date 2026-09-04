@@ -22,11 +22,19 @@ import {
   getDefaultDataSource,
   closeTestApp,
   ensureAppEnvironments,
+  createApplication,
+  createApplicationVersion,
+  saveEntity,
+  updateEntity,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
+import { App } from '@entities/app.entity';
+import { Organization } from '@entities/organization.entity';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
+import { DataQuery } from '@entities/data_query.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbController', () => {
@@ -1038,6 +1046,112 @@ describe('TooljetDbController', () => {
         expect(migrations.every((migration) => migration.resultingSchema !== null)).toBe(true);
       });
 
+      // The three confirm-only ops (drop_table/drop_column/delete_foreign_key) took only
+      // @Param()s, so migration_name could never reach them - their routes now accept a body too.
+      it('records the given migration_name for drop_column, delete_foreign_key and drop_table, and falls back to the default name when omitted', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'named_deletes_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'note',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+              {
+                column_name: 'parent_id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('named_deletes_parent_tbl'))
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'named_deletes_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        const appManager = getDefaultDataSource().manager;
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'named_deletes_tbl' },
+          withDeleted: true,
+        });
+
+        const viewRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        const foreignKeyId = viewRes.body.result.foreign_keys[0].constraint_name;
+
+        // drop_column, given a name.
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl/column/note`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({ migration_name: 'Drop the note column' })
+          .expect((res) => expect(res.statusCode).toBe(200));
+
+        // delete_foreign_key, name omitted - falls back to defaultMigrationName.
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl/foreignkey/${foreignKeyId}`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .expect((res) => expect(res.statusCode).toBe(200));
+
+        // drop_table, given a name.
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({ migration_name: 'Drop named_deletes_tbl' })
+          .expect((res) => expect(res.statusCode).toBe(200));
+
+        const migrations = await appManager.find(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+          order: { sequence: 'ASC' },
+        });
+        const byAction = Object.fromEntries(migrations.map((m) => [(m.payload as any).action, m]));
+        expect(byAction['drop_column'].name).toBe('Drop the note column');
+        expect(byAction['delete_foreign_key'].name).toBe('Remove foreign key on "named_deletes_tbl"');
+        expect(byAction['drop_table'].name).toBe('Drop named_deletes_tbl');
+      });
+
       it('a create_table request carrying foreign keys records one migration, and a follow-up op on the same table gets a distinct, larger sequence', async function () {
         expect(tooljetDbAvailable).toBe(true);
 
@@ -1260,6 +1374,110 @@ describe('TooljetDbController', () => {
           where: { id: ghostMigration.id },
         });
         expect(ghostStillThere).toBeNull();
+      });
+    });
+
+    describe('GET .../table/:tableId/dependents', () => {
+      it('counts a table_id reference and a join-condition-only reference as distinct apps, includes a workflow, excludes an old unreleased version, and dedupes multiple queries on one app', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('deps_target_tbl'))
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+        const appManager = getDefaultDataSource().manager;
+        const table = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'deps_target_tbl' },
+        });
+
+        const adminOrg = await appManager.findOneOrFail(Organization, { where: { id: adminOrgId } });
+        const { user } = await createUser(app, {
+          email: 'deps-fixture@tooljet.io',
+          firstName: 'Deps',
+          lastName: 'Fixture',
+          groups: ['admin'],
+          organization: adminOrg,
+        });
+
+        const ds = await saveEntity(DataSourceEntity, {
+          name: 'tooljetdb',
+          kind: 'tooljetdb',
+          type: 'static',
+          scope: 'global',
+          organizationId: adminOrgId,
+        } as any);
+
+        // Direct reference: app.currentVersionId points at the version carrying the query.
+        const directApp = await createApplication(app, { name: 'Direct-Ref-App', user, type: 'front-end' });
+        const directVersion = await createApplicationVersion(app, directApp as any);
+        await saveEntity(DataQuery, {
+          name: 'getRows',
+          options: { table_id: table.id, operation: 'list_rows' },
+          dataSourceId: ds.id,
+          appVersionId: directVersion.id,
+        } as any);
+        // A second query on the SAME app/version, also referencing the table - must not create a
+        // second dependent entry.
+        await saveEntity(DataQuery, {
+          name: 'getMoreRows',
+          options: { table_id: table.id, operation: 'list_rows' },
+          dataSourceId: ds.id,
+          appVersionId: directVersion.id,
+        } as any);
+        await updateEntity(App, directApp.id, { currentVersionId: directVersion.id });
+
+        // Join-condition-only reference, on a workflow.
+        const joinApp = await createApplication(app, { name: 'Join-Ref-Workflow', user, type: 'workflow' });
+        const joinVersion = await createApplicationVersion(app, joinApp as any);
+        await saveEntity(DataQuery, {
+          name: 'joinQuery',
+          options: {
+            operation: 'join_tables',
+            join_table: {
+              joins: [
+                {
+                  conditions: {
+                    conditionsList: [{ leftField: { table: table.id, name: 'id' }, rightField: { name: '1' } }],
+                  },
+                },
+              ],
+            },
+          },
+          dataSourceId: ds.id,
+          appVersionId: joinVersion.id,
+        } as any);
+        await updateEntity(App, joinApp.id, { currentVersionId: joinVersion.id });
+
+        // Old, unreleased, non-current version on a third app - a table_id reference here must not
+        // count: it is neither the app's current version nor ever released.
+        const staleApp = await createApplication(app, { name: 'Stale-Version-App', user, type: 'front-end' });
+        const staleOldVersion = await createApplicationVersion(app, staleApp as any);
+        await saveEntity(DataQuery, {
+          name: 'staleQuery',
+          options: { table_id: table.id, operation: 'list_rows' },
+          dataSourceId: ds.id,
+          appVersionId: staleOldVersion.id,
+        } as any);
+        const staleCurrentVersion = await createApplicationVersion(app, staleApp as any);
+        await updateEntity(App, staleApp.id, { currentVersionId: staleCurrentVersion.id });
+
+        const res = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/${table.id}/dependents`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(res.statusCode).toBe(200);
+
+        const { count, dependents } = res.body.result;
+        expect(count).toBe(2);
+        const byId = Object.fromEntries(dependents.map((d: any) => [d.id, d]));
+        expect(byId[directApp.id]).toMatchObject({ name: 'Direct-Ref-App', type: 'front-end' });
+        expect(byId[directApp.id].queries).toHaveLength(2);
+        expect(byId[joinApp.id]).toMatchObject({ name: 'Join-Ref-Workflow', type: 'workflow' });
+        expect(byId[staleApp.id]).toBeUndefined();
       });
     });
 

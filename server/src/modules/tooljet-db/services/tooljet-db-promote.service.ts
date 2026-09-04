@@ -26,6 +26,8 @@ export type PreviewResult = {
 };
 
 /**
+ * Computes the list of migrations that are applied in the `source` environment but not in the `target` environment.
+ *
  * The migrations `source` has confirmed that `target` has not, ordered by `(sequence, id)`.
  *
  * "Confirmed" is `applied_at IS NOT NULL` on the application row — never a high-water mark. The set

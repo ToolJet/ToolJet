@@ -18,6 +18,7 @@ export enum FEATURE_KEY {
   REPAIR_BASELINE = 'repair_baseline',
   BASELINE_REPORT = 'baseline_report',
   TABLE_MIGRATIONS = 'table_migrations',
+  TABLE_DEPENDENTS = 'table_dependents',
   ADD_RAW_SQL_MIGRATION = 'add_raw_sql_migration',
   REVERT_MIGRATION = 'revert_migration',
   SQL_EXECUTION = 'sql_execution',

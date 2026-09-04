@@ -83,6 +83,15 @@ function sqlExecution(organizationId, tableId, body) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/sql`, body);
 }
 
+// A tracked migration step, unlike sqlExecution above (a one-off DML action against whatever
+// environment is currently open). Runs against the table's own development relation.
+function recordRawSqlMigration(organizationId, tableId, sql, refs = {}) {
+  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations/sql`, {
+    sql,
+    refs,
+  });
+}
+
 function createRow(tableId, data) {
   return tooljetAdapter.post(proxyUrl(tableId), data);
 }
@@ -156,8 +165,11 @@ function createForeignKey(organizationId, tableName, data = [], migrationName = 
   });
 }
 
-function deleteForeignKey(organizationId, tableName, id) {
-  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}`);
+function deleteForeignKey(organizationId, tableName, id, migrationName = '') {
+  return tooljetAdapter.delete(
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}`,
+    migrationName ? { migration_name: migrationName } : null
+  );
 }
 
 function updateRows(tableId, data, query = '') {
@@ -176,12 +188,22 @@ function deleteRows(tableId, query = '') {
   return tooljetAdapter.delete(proxyUrl(tableId, query));
 }
 
-function deleteColumn(organizationId, tableName, columnName) {
-  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}/column/${columnName}`);
+function deleteColumn(organizationId, tableName, columnName, migrationName = '') {
+  return tooljetAdapter.delete(
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/column/${columnName}`,
+    migrationName ? { migration_name: migrationName } : null
+  );
 }
 
-function deleteTable(organizationId, tableName) {
-  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}`);
+function deleteTable(organizationId, tableName, migrationName = '') {
+  return tooljetAdapter.delete(
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}`,
+    migrationName ? { migration_name: migrationName } : null
+  );
+}
+
+function getTableDependents(organizationId, tableId) {
+  return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/dependents`);
 }
 
 export const tooljetDatabaseService = {
@@ -189,6 +211,7 @@ export const tooljetDatabaseService = {
   findAll,
   viewTable,
   getTableMigrations,
+  getTableDependents,
   previewPromoteTable,
   promoteTable,
   createRow,
@@ -203,6 +226,7 @@ export const tooljetDatabaseService = {
   getTablesLimit,
   bulkUpload,
   sqlExecution,
+  recordRawSqlMigration,
   updateColumn,
   editForeignKey,
   createForeignKey,

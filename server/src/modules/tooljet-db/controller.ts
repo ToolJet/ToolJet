@@ -136,11 +136,15 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.DROP_TABLE)
   @Delete('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async dropTable(@Param('organizationId') organizationId, @Param('tableName') tableName) {
+  async dropTable(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('migration_name') migrationName?: string
+  ) {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'drop_table',
-      { table_name: tableName },
+      { table_name: tableName, migration_name: migrationName },
       undefined
     );
     return decamelizeKeys({ result });
@@ -170,11 +174,13 @@ export class TooljetDbController {
   async dropColumn(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Param('columnName') columnName
+    @Param('columnName') columnName,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       column: { column_name: columnName },
+      migration_name: migrationName,
     };
 
     const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params, undefined);
@@ -274,11 +280,13 @@ export class TooljetDbController {
   async deleteForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Param('foreignKeyId') foreignKeyId: string
+    @Param('foreignKeyId') foreignKeyId: string,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_key_id: foreignKeyId,
+      migration_name: migrationName,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params, undefined);
     return decamelizeKeys({ result });
@@ -339,6 +347,16 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async tableMigrations(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.getTableMigrations(tableId, organizationId);
+    return decamelizeKeys({ result });
+  }
+
+  // A floor, not a "will break" count - only finds query references, and only through the app's
+  // current draft or an ever-released version. See InternalTableRepository.findDependents.
+  @InitFeature(FEATURE_KEY.TABLE_DEPENDENTS)
+  @Get('/organizations/:organizationId/table/:tableId/dependents')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async tableDependents(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.getDependents(tableId, organizationId);
     return decamelizeKeys({ result });
   }
 

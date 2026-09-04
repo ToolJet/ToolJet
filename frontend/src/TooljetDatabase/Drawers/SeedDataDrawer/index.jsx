@@ -8,27 +8,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { useTjdbStore } from '../../_stores/tjdbStore';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import CodeMirror from '@uiw/react-codemirror';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
-import { sql as sqlLang } from '@codemirror/lang-sql';
-import { EditorView } from '@codemirror/view';
-import { search, openSearchPanel } from '@codemirror/search';
+import SqlEditor from '../../_components/SqlEditor';
 import './styles.scss';
-
-// Same basicSetup shape as AppBuilder/Widgets/CodeEditor.jsx - the only other standalone (non
-// resolver-bound) CodeMirror usage in this codebase.
-const basicSetup = {
-  lineNumbers: true,
-  syntaxHighlighting: true,
-  bracketMatching: true,
-  foldGutter: true,
-  highlightActiveLine: false,
-  autocompletion: true,
-  highlightActiveLineGutter: false,
-  completionKeymap: true,
-  searchKeymap: true,
-};
 
 const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
@@ -38,8 +19,6 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   const [sql, setSql] = useState('');
   const [isRunningSql, setIsRunningSql] = useState(false);
   const [error, setError] = useState(null);
-  const [editorView, setEditorView] = useState(null);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleClose = () => {
     setIsSeedDataDrawerOpen(false);
@@ -123,32 +102,13 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
           </span>
         </div>
         <div className="card-body tjdb-seed-data-drawer" style={{ padding: '0.5rem 1rem 1rem 1rem' }}>
-          <div
-            className="tj-db-seed-data-editor tw-overflow-hidden tw-rounded"
-            style={{ border: '1px solid var(--slate5)' }}
-            data-cy="seed-data-sql-textarea"
-          >
-            {editorView && (
-              <span
-                className="tj-db-seed-data-search-btn"
-                data-cy="seed-data-sql-search-button"
-                onClick={() => openSearchPanel(editorView)}
-              >
-                <SolidIcon name="search" width="14" fill="#889096" />
-              </span>
-            )}
-            <CodeMirror
-              value={sql}
-              height="25vh"
-              theme={darkMode ? okaidia : githubLight}
-              extensions={[sqlLang(), EditorView.lineWrapping, search()]}
-              onChange={setSql}
-              basicSetup={basicSetup}
-              placeholder="INSERT INTO your_table (column1, column2) VALUES (value1, value2);"
-              indentWithTab={true}
-              onCreateEditor={(view) => setEditorView(view)}
-            />
-          </div>
+          <SqlEditor
+            value={sql}
+            onChange={setSql}
+            height="25vh"
+            placeholder="INSERT INTO your_table (column1, column2) VALUES (value1, value2);"
+            dataCy="seed-data-sql-textarea"
+          />
           {error && (
             <div className="text-danger mt-2" data-cy="seed-data-sql-error">
               {error}

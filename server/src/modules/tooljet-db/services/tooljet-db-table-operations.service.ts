@@ -2687,12 +2687,16 @@ export class TooljetDbTableOperationsService {
    * confirmed once it commits - no new `internal_table_migrations` row is minted for the replay,
    * and none of the source migrations' `resulting_schema` (authoring-time truth) is touched.
    *
-   * Atomicity: the six table/column ops share one app-DB + TJDB transaction and roll back
-   * together, matching apply()'s existing contract for those six. The three foreign-key ops always
-   * run in their own committed transaction, same as the live perform() path - they were not
-   * refactored to share a transaction here (see AGENTS.md on why their apply* shape differs). A
-   * chain that mixes a foreign-key op with a later op that fails therefore leaves that foreign
-   * key's DDL applied even though this call throws; nothing exercises that interleaving today.
+   * Atomicity is per migration, not per batch: each migration gets its own app-DB + TJDB
+   * transaction, committed and confirmed before the next one replays. This is deliberate, not a
+   * shortcut - replayRawSqlMigration always opens its own tenant connection (raw SQL must never run
+   * as admin, replay included), so a structured migration's DDL sitting uncommitted in a shared
+   * batch transaction would be invisible to a raw_sql migration replayed right after it in the same
+   * batch. A failure partway through discards only the pending rows this call never reached
+   * (`discardApplications`, never the ones already confirmed) and rethrows, leaving the batch
+   * resumable from exactly that migration on the next promote - never skipped, since an applied set
+   * with a gap would let a later migration's missing-set computation apply it onto a target still
+   * missing its prerequisite.
    */
   async applyMigrations(
     migrationIds: string[],
@@ -2723,38 +2727,65 @@ export class TooljetDbTableOperationsService {
     const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
     const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
     await tjdbQueryRunner.connect();
-    await tjdbQueryRunner.startTransaction();
+
+    // Per-migration commit, not one transaction around the whole batch: replayRawSqlMigration runs
+    // on its own tenant connection (raw SQL must never run as admin, replay included), so an
+    // uncommitted structured change earlier in this same batch is invisible to it. Committing after
+    // each migration - and confirming it immediately - makes every later migration in the batch see
+    // everything before it, and turns a mid-batch failure into a resume point instead of a wipe:
+    // discardApplications only touches the pending rows this call never got to.
+    const remainingIds = new Set(migrationIds);
+    let priorSchema: TableSchemaSnapshot | null = null;
+    let appliedAny = false;
 
     try {
       const sharedConnectionManagers = { appManager: queryRunner.manager, tjdbManager: tjdbQueryRunner.manager };
-      let priorSchema: TableSchemaSnapshot | null = null;
       for (const sourceMigration of migrations) {
-        if (sourceMigration.kind === 'baseline') {
-          await this.replayBaselineMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
-        } else if (sourceMigration.kind === 'raw_sql') {
-          await this.replayRawSqlMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
-        } else {
-          await this.replayStructuredMigration(
-            sourceMigration,
-            priorSchema,
-            organizationId,
-            targetRelation,
-            sharedConnectionManagers
-          );
+        await queryRunner.startTransaction();
+        await tjdbQueryRunner.startTransaction();
+        try {
+          if (sourceMigration.kind === 'baseline') {
+            await this.replayBaselineMigration(
+              sourceMigration,
+              organizationId,
+              targetRelation,
+              sharedConnectionManagers
+            );
+          } else if (sourceMigration.kind === 'raw_sql') {
+            await this.replayRawSqlMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
+          } else {
+            await this.replayStructuredMigration(
+              sourceMigration,
+              priorSchema,
+              organizationId,
+              targetRelation,
+              sharedConnectionManagers
+            );
+          }
+          await queryRunner.commitTransaction();
+          await tjdbQueryRunner.commitTransaction();
+        } catch (err) {
+          await queryRunner.rollbackTransaction();
+          await tjdbQueryRunner.rollbackTransaction();
+          throw err;
         }
+
+        appliedAny = true;
+        remainingIds.delete(sourceMigration.id);
+        await this.migrationRecorderService.confirmApplications([sourceMigration.id], targetRelation, appManager);
         priorSchema = sourceMigration.resultingSchema;
       }
 
-      await queryRunner.commitTransaction();
-      await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirmApplications(migrationIds, targetRelation, appManager);
     } catch (err) {
-      await this.migrationRecorderService.discardApplications(migrationIds, targetRelation, appManager);
-      await queryRunner.rollbackTransaction();
-      await tjdbQueryRunner.rollbackTransaction();
+      // Never skip: only the pending ids this call never reached are discarded, not the ones
+      // already confirmed above - an applied set with a gap would make a later promote's missing-set
+      // computation apply a downstream migration onto a target that never got its prerequisite.
+      await this.migrationRecorderService.discardApplications(Array.from(remainingIds), targetRelation, appManager);
+      // The schema did change for whatever committed before the failure - a partial-failure caller
+      // still needs PostgREST to see it.
+      if (appliedAny) await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
 
       // TooljetDatabaseError's constructor assumes a QueryFailedError shape (it indexes
       // err.driverError) and throws a TypeError on anything else - a fail-closed NotFoundException

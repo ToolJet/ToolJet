@@ -131,8 +131,8 @@ class HttpClient {
     return this.request(HttpVerb.Patch, url, headers, data);
   }
 
-  delete(url, headers = {}) {
-    return this.request(HttpVerb.Delete, url, headers);
+  delete(url, data = null, headers = {}) {
+    return this.request(HttpVerb.Delete, url, headers, data);
   }
 }
 

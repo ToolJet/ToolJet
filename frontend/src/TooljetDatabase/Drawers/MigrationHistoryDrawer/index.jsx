@@ -6,35 +6,13 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
 import { ArrowLeft, Download, CodeXml } from 'lucide-react';
-import CodeMirror from '@uiw/react-codemirror';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
-import { sql as sqlLang } from '@codemirror/lang-sql';
-import { EditorView } from '@codemirror/view';
+import SqlEditor from '../../_components/SqlEditor';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
 
-// Standalone (non resolver-bound) CodeMirror, same shape as SeedDataDrawer's — the App Builder's
-// MultiLineCodeEditor needs the AppBuilder module store/context that doesn't exist on this page.
-const ReadOnlySqlView = ({ sql }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  return (
-    <CodeMirror
-      value={sql || '-- No SQL available for this migration'}
-      theme={darkMode ? okaidia : githubLight}
-      extensions={[sqlLang(), EditorView.lineWrapping]}
-      editable={false}
-      basicSetup={{
-        lineNumbers: true,
-        foldGutter: false,
-        highlightActiveLine: false,
-        highlightActiveLineGutter: false,
-      }}
-    />
-  );
-};
+const ReadOnlySqlView = ({ sql }) => <SqlEditor value={sql} dataCy="migration-history-sql-view" />;
 
 function formatTimestamp(date) {
   const d = new Date(date);

@@ -23,6 +23,7 @@ import { getLocalTimeZone, timeZonesWithOffsets } from '@/AppBuilder/QueryManage
 import defaultStyles from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 
 const ColumnForm = ({
   onCreate,
@@ -34,12 +35,11 @@ const ColumnForm = ({
   initiator,
 }) => {
   const [columnName, setColumnName] = useState('');
-  const [migrationName, setMigrationName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
-  const [fetching, setFetching] = useState(false);
 
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
   const [timezone, setTimezone] = useState(getLocalTimeZone());
   const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
@@ -166,7 +166,7 @@ const ColumnForm = ({
     setDataType(value);
   };
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     const isSerialType = dataType.value === 'serial' ? true : false;
     if (isEmpty(columnName)) {
       toast.error('Column name cannot be empty');
@@ -179,31 +179,34 @@ const ColumnForm = ({
 
     const isCheckingValues = foreignKeyDetails?.length > 0 && isForeignKey ? true : false;
 
-    setFetching(true);
     const reqConfigurations = {};
     if (dataType.value === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
 
-    const { error } = await tooljetDatabaseService.createColumn(
-      organizationId,
-      selectedTable.table_name,
-      columnName,
-      dataType.value,
-      defaultValue,
-      isNotNull,
-      isUniqueConstraint,
-      isSerialType,
-      isCheckingValues,
-      foreignKeyDetails,
-      reqConfigurations,
-      migrationName
-    );
-    setFetching(false);
-    if (error) {
-      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-      return;
-    }
-    toast.success(`Column created successfully`);
-    onCreate && onCreate();
+    runMigration({
+      titlePlaceholder: `Add column "${columnName}"`,
+      changes: [{ type: '+', label: `Add column "${columnName}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      run: (migrationName) =>
+        tooljetDatabaseService.createColumn(
+          organizationId,
+          selectedTable.table_name,
+          columnName,
+          dataType.value,
+          defaultValue,
+          isNotNull,
+          isUniqueConstraint,
+          isSerialType,
+          isCheckingValues,
+          foreignKeyDetails,
+          reqConfigurations,
+          migrationName
+        ),
+      onSuccess: () => {
+        toast.success(`Column created successfully`);
+        onCreate && onCreate();
+      },
+    });
   };
 
   const handleCreateForeignKey = () => {
@@ -304,21 +307,6 @@ const ColumnForm = ({
               setColumnName(e.target.value);
             }}
             autoFocus
-          />
-        </div>
-        <div className="mb-3 tj-app-input">
-          <div className="form-label" data-cy="migration-name-input-field-label">
-            Migration name (optional)
-          </div>
-          <input
-            value={migrationName}
-            type="text"
-            placeholder={`Add column "${columnName || ''}"`}
-            className="form-control"
-            data-cy="migration-name-input-field"
-            autoComplete="off"
-            maxLength={120}
-            onChange={(e) => setMigrationName(e.target.value)}
           />
         </div>
         <div className="column-datatype-selector mb-3 data-type-dropdown-section" data-cy="data-type-dropdown-section">
@@ -667,7 +655,6 @@ const ColumnForm = ({
         </div>
       </div>
       <DrawerFooter
-        fetching={fetching}
         onClose={onClose}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
@@ -700,6 +687,7 @@ const ColumnForm = ({
         // confirmIcon={<DeleteIcon />}
         footerStyle={footerStyle}
       />
+      {migrationModal}
     </div>
   );
 };

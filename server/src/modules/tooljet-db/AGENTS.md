@@ -174,10 +174,17 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   stored `{action, request}` is reassembled into whatever shape that op's `apply*` expects by
   `replayStructuredMigration`, and a baseline migration's `{ddl, refs, column_uuids}` is executed
   directly by `replayBaselineMigration`. It records one `internal_table_migration_application` row
-  per migration id being replayed — up front, before any DDL runs — then confirms all of them
-  together on success or discards all of them together on failure. Never mints a synthetic
-  "replay" migration of its own; every applied row points at a real migration that already exists
-  on the source relation's chain.
+  per migration id being replayed — up front, before any DDL runs, all still pending — then commits
+  and confirms **per migration**, in `(sequence, id)` order, not once for the whole batch: each
+  migration gets its own app-DB + TJDB transaction, committed and confirmed before the next one
+  replays. A failure partway through discards only the pending rows the call never reached, never
+  the ones already confirmed, and rethrows — the batch is resumable from exactly that migration on
+  the next promote, never skipped. This is deliberate, not a shortcut: `replayRawSqlMigration`
+  always opens its own tenant connection (raw SQL must never run as admin, replay included), so a
+  structured migration's DDL sitting uncommitted in a shared batch transaction would be invisible to
+  a raw_sql migration replayed right after it in the same batch. Never mints a synthetic "replay"
+  migration of its own; every applied row points at a real migration that already exists on the
+  source relation's chain.
   - **No `uuidv4()` here either.** A column a migration minted the first time it ran is already
     sitting in that migration's own `resulting_schema` (confirm() wrote it there when it first
     applied) — replay reads it from there (the migration's own schema for a column it inserted,
@@ -190,11 +197,8 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
     never-persisted stand-in `InternalTableMigration` (real `internalTableId`, random `id`) instead
     of its own real migration row, so their internal `confirm()`/`discard()` calls become harmless
     no-op updates/deletes; the real DDL still runs exactly as it does on the live path, and the
-    real applications for the whole call are recorded/confirmed separately, up front. Known
-    gap: this means a chain that mixes a foreign-key op with a later op that fails leaves that
-    foreign key's DDL applied even though the whole `applyMigrations` call throws — full
-    cross-op-type atomicity would need the FK three refactored onto the other six's shared-
-    transaction shape, which is out of scope here (see the six-vs-three signature split above).
+    real application row for that migration is recorded/confirmed by `applyMigrations`' own
+    per-migration commit, same as every other op kind.
   - `buildEditTableColumnDiff` is `normalizeEditTable`'s column-diff logic (insert/update/delete,
     every uuid) pulled out as a pure function so replay's `edit_table` case can reuse it unchanged
     — only `mintColumnUuid` differs (`uuidv4()` live, a `resulting_schema` read on replay).
@@ -217,21 +221,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
     would otherwise silently resolve to `undefined`.
   - **Known preconditions/gaps, most inherited from before `applyMigrations` had a real request-path
     caller:**
-    1. **Live, reachable in production as of promote (Task 4) — not fixed there, recorded here for
-       the plan owner.** The three foreign-key ops are not atomic with the other six during replay
-       (see above) — a chain mixing a foreign-key op with a later failing op leaves that key's DDL
-       applied even though the whole call throws. On an *incremental* promote (target already has
-       the table) this is now reachable from a real request: promote applies an FK op, a later op in
-       the same batch fails, the FK DDL stays applied while every application row for the batch is
-       discarded (`applyMigrations`'s own catch), and the next promote replays that FK op again and
-       fails with "constraint already exists" — the same stuck state Critical #2 of the Task 4 round-1
-       review describes for the crash-recovery path, but with no crash required.
-    2. Replay's `edit_column` case never calls `writeThroughColumnConfigurations` — that's a
+    1. Replay's `edit_column` case never calls `writeThroughColumnConfigurations` — that's a
        settings-only write with nothing to promote, and lives in the *handler* between `normalize`
        and `apply`, not in either. A promoted/replayed relation gets correct column *identity* but
        only whatever display-setting configuration was in place at replay time via the *inserting*
        migration, not every display-setting change ever recorded against the column.
-    3. `applyMigrations` requires `targetRelation` (and any FK sibling relations it references) to
+    2. `applyMigrations` requires `targetRelation` (and any FK sibling relations it references) to
        already be committed and visible to a fresh read — `record()`'s own transaction and
        `resolveSiblingByCoRelationId`'s lookup can't see a relation created inside the caller's
        still-open transaction. This is the two-phase recorder's requirement (`recordApplications`
@@ -240,7 +235,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
        difference against the target's confirmed applications sees the same "everything missing"
        state either way — a retry (e.g. promote's own retry) replays the full chain again instead of
        leaving the relation stuck half-created.
-    4. A replayed `serial` column's sequence always starts at 1 on the target — correct for a
+    3. A replayed `serial` column's sequence always starts at 1 on the target — correct for a
        schema-only replay (nothing to seed it from), but a future replay that also copies rows
        would need to advance the target's sequence past whatever it inserts, or later inserts will
        collide with the copied ids.

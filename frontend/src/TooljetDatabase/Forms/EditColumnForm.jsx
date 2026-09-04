@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
+import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
@@ -17,7 +18,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
-import { ConfirmDialog } from '@/_components';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -29,6 +29,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 
 const ColumnForm = ({
   onClose,
@@ -64,20 +65,16 @@ const ColumnForm = ({
   const { fetchTableMetadata } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
-  const [migrationName, setMigrationName] = useState('');
+  const { runMigration, modal: migrationModal } = useMigrationModal();
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
-  const [onDeletePopup, setOnDeletePopup] = useState(false);
-  const [fetching, setFetching] = useState(false);
   const [isNotNull, setIsNotNull] = useState(nullValue);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
-  const [onChangeInForeignKey, setOnChangeInForeignKey] = useState(false);
   const [selectedForeignkeyIndex, setSelectedForeignKeyIndex] = useState([]);
   const [sourceColumn, setSourceColumn] = useState([]);
-  const [fkMigrationName, setFkMigrationName] = useState('');
   const [targetTable, setTargetTable] = useState([]);
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
@@ -224,7 +221,7 @@ const ColumnForm = ({
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
 
-  const handleCreateForeignKeyinEditMode = async () => {
+  const handleCreateForeignKeyinEditMode = () => {
     const data = [
       {
         column_names: [sourceColumn?.value],
@@ -234,22 +231,21 @@ const ColumnForm = ({
         on_update: onUpdate?.value,
       },
     ];
-    const { error } = await tooljetDatabaseService.createForeignKey(
-      organizationId,
-      selectedTable.table_name,
-      data,
-      fkMigrationName
-    );
 
-    if (error) {
-      toast.error(error?.message ?? `Failed to edit foreign key`);
-      return;
-    }
-
-    await fetchMetaDataApi();
-    toast.success(`Foreign key created successfully`);
-    setCreateForeignKeyInEdit(false);
-    setIsForeignKeyDraweOpen(false);
+    runMigration({
+      titlePlaceholder: `Add foreign key on "${selectedTable.table_name}"`,
+      changes: [{ type: '+', label: `Add foreign key on "${selectedTable.table_name}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      run: (migrationName) =>
+        tooljetDatabaseService.createForeignKey(organizationId, selectedTable.table_name, data, migrationName),
+      onSuccess: async () => {
+        await fetchMetaDataApi();
+        toast.success(`Foreign key created successfully`);
+        setCreateForeignKeyInEdit(false);
+        setIsForeignKeyDraweOpen(false);
+      },
+    });
   };
 
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
@@ -336,79 +332,93 @@ const ColumnForm = ({
 
   const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
 
-  const handleEdit = async () => {
-    const reqConfigurations = {};
-    if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
-
-    const colDetails = {
-      column: {
-        column_name: selectedColumn?.Header,
-        data_type: selectedColumn?.dataType,
-        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
-        constraints_type: {
-          is_not_null: isNotNull,
-          is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
-          is_unique: isUniqueConstraint,
-        },
-        configurations: { ...columnConfigurations, ...reqConfigurations },
-        ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-      },
-
-      ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
-      ...(migrationName && { migration_name: migrationName }),
-    };
-
-    if (
+  const handleEdit = () => {
+    const hasChange =
       columnName !== selectedColumn?.Header ||
       defaultValue?.length > 0 ||
       defaultValue !== selectedColumn?.column_default ||
       nullValue !== isNotNull ||
       uniqueConstraintValue !== isUniqueConstraint ||
-      !isForeignKey
-    ) {
-      setFetching(true);
-      const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
-      setFetching(false);
-      if (error) {
-        toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
-        return;
-      }
+      !isForeignKey;
+
+    const finish = () => {
+      fetchMetaDataApi();
+      handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+      toast.success(`Column edited successfully`);
+      onClose && onClose();
+    };
+
+    // Nothing actually changed - close without a request, same as before this modal existed.
+    if (!hasChange) {
+      finish();
+      return;
     }
 
-    fetchMetaDataApi();
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-    toast.success(`Column edited successfully`);
-    onClose && onClose();
+    const isRenamed = columnName !== selectedColumn?.Header;
+    runMigration({
+      titlePlaceholder: isRenamed
+        ? `Rename column "${selectedColumn?.Header}" to "${columnName}"`
+        : `Edit column "${selectedColumn?.Header}"`,
+      changes: [
+        {
+          type: '✎',
+          label: isRenamed
+            ? `Rename column "${selectedColumn?.Header}" to "${columnName}"`
+            : `Edit column "${selectedColumn?.Header}"`,
+        },
+      ],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      run: (migrationName) => {
+        const reqConfigurations = {};
+        if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
+
+        const colDetails = {
+          column: {
+            column_name: selectedColumn?.Header,
+            data_type: selectedColumn?.dataType,
+            ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
+            constraints_type: {
+              is_not_null: isNotNull,
+              is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
+              is_unique: isUniqueConstraint,
+            },
+            configurations: { ...columnConfigurations, ...reqConfigurations },
+            ...(isRenamed ? { new_column_name: columnName } : {}),
+          },
+          ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
+          ...(migrationName && { migration_name: migrationName }),
+        };
+        return tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
+      },
+      onSuccess: finish,
+    });
   };
 
   const toolTipPlacementStyle = {
     width: '126px',
   };
 
-  const handleDeleteForeignKeyColumn = async () => {
+  const handleDeleteForeignKeyColumn = () => {
     const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
-    const { error } = await tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id);
-
-    if (error) {
-      toast.error(error?.message ?? `Failed to delete foreign key`);
-      return;
-    }
-
-    fetchMetaDataApi();
-    setOnDeletePopup(false);
-    setIsForeignKey(false);
-    setForeignKeyDetails([]);
-    onCloseForeignKeyDrawer();
-    toast.success(`Foreign key deleted successfully`);
+    runMigration({
+      titlePlaceholder: `Remove foreign key on "${selectedTable.table_name}"`,
+      changes: [{ type: '-', label: `Remove foreign key on "${selectedTable.table_name}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: false,
+      run: (migrationName) =>
+        tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id, migrationName),
+      onSuccess: () => {
+        fetchMetaDataApi();
+        setIsForeignKey(false);
+        setForeignKeyDetails([]);
+        onCloseForeignKeyDrawer();
+        toast.success(`Foreign key deleted successfully`);
+      },
+    });
   };
 
-  const footerStyle = {
-    borderTop: '1px solid var(--slate5)',
-    paddingTop: '12px',
-    marginTop: '0px',
-  };
-
-  const handleEditForeignKey = async () => {
+  const handleEditForeignKey = () => {
     const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
     const data = [
       {
@@ -420,22 +430,30 @@ const ColumnForm = ({
       },
     ];
 
-    const { error } = await tooljetDatabaseService.editForeignKey(
-      organizationId,
-      selectedTable.table_name,
-      id,
-      data,
-      fkMigrationName
-    );
-
-    if (error) {
-      toast.error(error?.message ?? `Failed to edit foreign key`);
-      return;
-    }
-
-    fetchMetaDataApi();
-    onCloseForeignKeyDrawer();
-    toast.success(`Foreign key edited successfully`);
+    runMigration({
+      titlePlaceholder: `Edit foreign key on "${selectedTable.table_name}"`,
+      changes: [{ type: '✎', label: `Edit foreign key on "${selectedTable.table_name}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      // Folded in from the old "Change in foreign key relation" ConfirmDialog.
+      banner:
+        newChangesInForeignKey.length > 0 ? (
+          <div className="mb-3">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })}>Change in foreign key relation</div>
+            <div className="tw-text-muted tw-mb-2" style={{ fontSize: '13px' }}>
+              Updating the foreign key relation will drop the current constraint and add the new one. This will also
+              replace the default value set in the target table columns with those of the source table.
+            </div>
+          </div>
+        ) : null,
+      run: (migrationName) =>
+        tooljetDatabaseService.editForeignKey(organizationId, selectedTable.table_name, id, data, migrationName),
+      onSuccess: () => {
+        fetchMetaDataApi();
+        onCloseForeignKeyDrawer();
+        toast.success(`Foreign key edited successfully`);
+      },
+    });
   };
 
   const changesInForeignKey = () => {
@@ -636,21 +654,6 @@ const ColumnForm = ({
                 setColumnName(e.target.value);
               }}
               autoFocus
-            />
-          </div>
-          <div className="mb-3 tj-app-input">
-            <div className="form-label" data-cy="migration-name-input-field-label">
-              Migration name (optional)
-            </div>
-            <input
-              value={migrationName}
-              type="text"
-              placeholder={`Edit column "${selectedColumn?.Header}"`}
-              className="form-control"
-              data-cy="migration-name-input-field"
-              autoComplete="off"
-              maxLength={120}
-              onChange={(e) => setMigrationName(e.target.value)}
             />
           </div>
           <div
@@ -958,14 +961,10 @@ const ColumnForm = ({
               onDelete={onDelete}
               setOnUpdate={setOnUpdate}
               onUpdate={onUpdate}
-              migrationName={fkMigrationName}
-              setMigrationName={setFkMigrationName}
-              handleEditForeignKey={() =>
-                newChangesInForeignKey.length > 0 ? setOnChangeInForeignKey(true) : handleEditForeignKey()
-              }
+              handleEditForeignKey={handleEditForeignKey}
               createForeignKeyInEdit={createForeignKeyInEdit}
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
-              onDeletePopup={() => setOnDeletePopup(true)}
+              onDeletePopup={handleDeleteForeignKeyColumn}
               selectedForeignkeyIndex={selectedForeignkeyIndex}
               initiator="ForeignKeyTableForm"
             />
@@ -1077,7 +1076,6 @@ const ColumnForm = ({
         </div>
         <DrawerFooter
           isEditMode={true}
-          fetching={fetching}
           onClose={onClose}
           onEdit={handleEdit}
           shouldDisableCreateBtn={disabledSaveButton}
@@ -1085,59 +1083,7 @@ const ColumnForm = ({
           initiator={initiator}
         />
       </div>
-      <ConfirmDialog
-        title={'Delete foreign key'}
-        show={onDeletePopup}
-        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={handleDeleteForeignKeyColumn}
-        onCancel={() => {
-          setOnDeletePopup(false);
-        }}
-        darkMode={darkMode}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => {
-          setOnDeletePopup(false);
-        }}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
-        // confirmIcon={<DeleteIcon />}
-        footerStyle={footerStyle}
-      />
-      <ConfirmDialog
-        title={'Change in foreign key relation'}
-        show={onChangeInForeignKey}
-        message={
-          <div>
-            <span>
-              Updating the foreign key relation will drop the current constraint and add the new one. This will also
-              replace the default value set in the target table columns with those of the source table. Read docs to
-              know more.
-            </span>
-            <p className="mt-3 mb-0">Are you sure you want to continue?</p>
-          </div>
-        }
-        onConfirm={() => {
-          handleEditForeignKey();
-          setOnChangeInForeignKey(false);
-        }}
-        onCancel={() => setOnChangeInForeignKey(false)}
-        darkMode={darkMode}
-        confirmButtonType="primary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => setOnChangeInForeignKey(false)}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
-        footerStyle={footerStyle}
-        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        // newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-        foreignKeyChanges={newChangesInForeignKey}
-        existingReferencedTableName={existingReferencedTableName}
-        existingReferencedColumnName={existingReferencedColumnName}
-        currentReferencedTableName={currentReferencedTableName}
-        currentReferencedColumnName={currentReferencedColumnName}
-      />
+      {migrationModal}
     </>
   );
 };

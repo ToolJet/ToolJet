@@ -10,8 +10,9 @@ import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import { dataTypes } from '../constants';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 
-export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
+export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     organizationId,
@@ -33,6 +34,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -65,19 +67,18 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       });
   };
 
-  const handleDeleteTable = async () => {
-    const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
-    if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteTable(organizationId, text);
-
-      if (error) {
-        toast.error(error?.message ?? `Failed to delete table "${text}"`);
-        return;
-      }
-
-      toast.success(`Table "${text}" deleted successfully`);
-      onDeleteCallback && onDeleteCallback();
-    }
+  const handleDeleteTable = () => {
+    runMigration({
+      titlePlaceholder: `Drop table "${text}"`,
+      changes: [{ type: '-', label: `Drop table "${text}"` }],
+      tableId,
+      showSqlEditor: false,
+      run: (migrationName) => tooljetDatabaseService.deleteTable(organizationId, text, migrationName),
+      onSuccess: () => {
+        toast.success(`Table "${text}" deleted successfully`);
+        onDeleteCallback && onDeleteCallback();
+      },
+    });
   };
 
   const formColumns = columns.reduce((acc, column, currentIndex) => {
@@ -200,6 +201,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}
       />
+      {migrationModal}
     </div>
   );
 };

@@ -35,6 +35,15 @@
     justify-content: center;
     color: var(--icon-default, var(--text-default));
     padding: 0;
+
+    svg {
+      width: 16px !important;
+      height: 16px !important;
+      min-width: 16px;
+      min-height: 16px;
+      flex-shrink: 0;
+      display: block;
+    }
   }
 
   &__dot {

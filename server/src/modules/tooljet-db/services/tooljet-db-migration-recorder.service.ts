@@ -23,10 +23,9 @@ export interface StructuredMigrationPayload<TRequest = any> {
 }
 
 /**
- * A migration always gets a name - `migration_name` on the request is a user override (the six
- * form-backed actions expose it; the three confirm-only ones - drop_table/drop_column/
- * delete_foreign_key - never will, so they always fall through to this), otherwise this generates
- * one from the request shape each action already carries.
+ * A migration always gets a name - `migration_name` on the request is a user override (all nine
+ * actions expose it, drop_table/drop_column/delete_foreign_key included, now that their routes
+ * accept a body), otherwise this generates one from the request shape each action already carries.
  */
 function defaultMigrationName(payload: StructuredMigrationPayload): string {
   const { action, request } = payload;

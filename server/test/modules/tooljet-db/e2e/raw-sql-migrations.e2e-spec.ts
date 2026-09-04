@@ -15,6 +15,7 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
+import { IsNull, Not } from 'typeorm';
 import {
   createUser,
   initTestApp,
@@ -28,6 +29,7 @@ import {
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
 // EE token: getProviders() registers the edition-resolved class as the DI token, same reason
 // tooljetdb-migration-replay.spec.ts imports it from @ee rather than @modules.
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
@@ -120,6 +122,23 @@ describe('TooljetDb raw SQL migrations and revert - acceptance (DEV-91)', () => 
           },
         });
       expect([200, 201]).toContain(res.statusCode);
+    }
+
+    async function editColumn(
+      organizationId: string,
+      cookie: string[],
+      tableName: string,
+      columnName: string,
+      constraints_type: Record<string, boolean>
+    ) {
+      const res = await request
+        .agent(app.getHttpServer())
+        .patch(`/api/tooljet-db/organizations/${organizationId}/table/${tableName}/column`)
+        .set(headers(organizationId, cookie))
+        .send({
+          column: { column_name: columnName, data_type: 'character varying', constraints_type },
+        });
+      expect(res.statusCode).toBe(200);
     }
 
     async function tableAndRelation(organizationId: string, tableName: string) {
@@ -402,6 +421,153 @@ describe('TooljetDb raw SQL migrations and revert - acceptance (DEV-91)', () => 
             [tenantSchema, stagingRelationAfter.id]
           );
           expect(idColumn).toBeTruthy();
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    // Regression for the modal's decision to interleave structured + raw SQL steps in one save:
+    // replayRawSqlMigration opens its own tenant connection (raw SQL must never run as admin), so a
+    // raw_sql migration replayed in the same applyMigrations batch as a structured migration that
+    // precedes it cannot see that structured migration's uncommitted DDL - "column age does not
+    // exist" - unless each migration commits before the next one replays.
+    it('promotes a structured add_column followed by a raw SQL step against that new column in one batch', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie, environments } = workspace;
+          const devEnvId = environments.find((e) => e.priority === 1).id;
+
+          await createTable(organizationId, cookie, 'interleave_tbl');
+          await addColumn(organizationId, cookie, 'interleave_tbl', 'age');
+          const { internalTable } = await tableAndRelation(organizationId, 'interleave_tbl');
+
+          const sqlRes = await runRawSql(organizationId, cookie, internalTable.id, {
+            sql: `UPDATE "{{self}}" SET age = '0'`,
+          });
+          expect([200, 201]).toContain(sqlRes.statusCode);
+
+          // First promote for this table: create_table + add_column + the raw_sql step above are
+          // all missing on staging, so promote replays all three in one applyMigrations batch -
+          // exactly the structured-then-raw_sql interleaving the bug requires.
+          const promoteRes = await promote(organizationId, cookie, internalTable.id, devEnvId);
+          expect([200, 201]).toContain(promoteRes.statusCode);
+          expect(promoteRes.body.result).toMatchObject({ applied_migrations: 3 });
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    // Regression for per-migration commit: a chain of 5 where m4 fails on the TARGET's data (a
+    // pre-existing row it can't satisfy a new NOT NULL against) must leave m1-m3 confirmed, m4/m5
+    // untouched, and a second promote after fixing the data must apply exactly m4-m5 - never
+    // re-replay m1-m3, never skip m4.
+    it('resumes from the failed migration on target data conflict, confirming nothing out of order', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie, tenantSchema, environments } = workspace;
+          const devEnvId = environments.find((e) => e.priority === 1).id;
+          const stagingEnvId = environments.find((e) => e.priority === 2).id;
+
+          // m1 (create_table, with 'gpa'). m2, m3: padding, unrelated to the eventual failure.
+          await createTable(organizationId, cookie, 'resume_tbl');
+          await addColumn(organizationId, cookie, 'resume_tbl', 'note');
+          await editColumn(organizationId, cookie, 'resume_tbl', 'gpa', {
+            is_not_null: false,
+            is_primary_key: false,
+            is_unique: true,
+          });
+
+          const { internalTable } = await tableAndRelation(organizationId, 'resume_tbl');
+          const manager = getDefaultDataSource().manager;
+          const devMigrationsBefore = await manager.find(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+            order: { sequence: 'ASC' },
+          });
+          expect(devMigrationsBefore).toHaveLength(3);
+          const [m1, m2, m3] = devMigrationsBefore;
+
+          // m1-m3 promote cleanly - staging's physical table now exists with 'note' still nullable.
+          const firstPromote = await promote(organizationId, cookie, internalTable.id, devEnvId);
+          expect([200, 201]).toContain(firstPromote.statusCode);
+          const stagingRelation = await manager.findOneOrFail(InternalTableRelation, {
+            where: { internalTableId: internalTable.id, environmentId: stagingEnvId },
+          });
+          expect(
+            await manager.count(InternalTableMigrationApplication, {
+              where: { relationId: stagingRelation.id, appliedAt: Not(IsNull()) },
+            })
+          ).toBe(3);
+
+          // Data conflict on the TARGET only - dev's own 'note' column never gets a NULL row, so m5
+          // authors fine against dev.
+          await getTooljetDbDataSource().query(
+            `INSERT INTO "${tenantSchema}"."${stagingRelation.id}" (id) VALUES (999)`
+          );
+
+          // m4, m5, m6 are all missing on staging and land in ONE promote batch (the second one
+          // below) - m4 must succeed and replay-commit *before* m5 replays, m5 fails on staging's
+          // data, m6 is never reached. Per-migration commit is what makes m4 survive m5's failure:
+          // the old shared-transaction-per-batch code rolled m4's DDL back too.
+          await addColumn(organizationId, cookie, 'resume_tbl', 'extra');
+          await editColumn(organizationId, cookie, 'resume_tbl', 'note', {
+            is_not_null: true,
+            is_primary_key: false,
+            is_unique: false,
+          });
+          await addColumn(organizationId, cookie, 'resume_tbl', 'final');
+
+          const devMigrations = await manager.find(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+            order: { sequence: 'ASC' },
+          });
+          expect(devMigrations).toHaveLength(6);
+          const [, , , m4, m5, m6] = devMigrations;
+
+          const secondPromote = await promote(organizationId, cookie, internalTable.id, devEnvId);
+          expect(secondPromote.statusCode).toBe(400);
+          expect(JSON.stringify(secondPromote.body)).toMatch(/null/i);
+
+          // m1-m4 stayed confirmed (m4 committed before m5 even started replaying); m5/m6 got no
+          // row at all - recordApplications' pending rows for them were discarded, not left
+          // dangling or wrongly confirmed.
+          const applicationsAfterFailure = await manager.find(InternalTableMigrationApplication, {
+            where: { relationId: stagingRelation.id },
+          });
+          const confirmedIds = applicationsAfterFailure.filter((a) => a.appliedAt).map((a) => a.migrationId);
+          expect(confirmedIds.sort()).toEqual([m1.id, m2.id, m3.id, m4.id].sort());
+          const allIds = applicationsAfterFailure.map((a) => a.migrationId);
+          expect(allIds).not.toContain(m5.id);
+          expect(allIds).not.toContain(m6.id);
+
+          // Fix the data, then resume: only m5-m6 are missing (m4 is already confirmed), so only
+          // they apply.
+          await getTooljetDbDataSource().query(`DELETE FROM "${tenantSchema}"."${stagingRelation.id}" WHERE id = 999`);
+          const thirdPromote = await promote(organizationId, cookie, internalTable.id, devEnvId);
+          expect([200, 201]).toContain(thirdPromote.statusCode);
+          expect(thirdPromote.body.result).toMatchObject({ applied_migrations: 2 });
+
+          const finalConfirmedIds = (
+            await manager.find(InternalTableMigrationApplication, {
+              where: { relationId: stagingRelation.id, appliedAt: Not(IsNull()) },
+            })
+          )
+            .map((a) => a.migrationId)
+            .sort();
+          expect(finalConfirmedIds).toEqual([m1.id, m2.id, m3.id, m4.id, m5.id, m6.id].sort());
+          // No gap at any point: right after the failure, confirmed was exactly {m1,m2,m3,m4} - the
+          // prefix of the full chain by sequence - never e.g. {m1,m2,m4} with m3 missing.
         });
       } finally {
         if (organizationId) await cleanupWorkspace(organizationId);

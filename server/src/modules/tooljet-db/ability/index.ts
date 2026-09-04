@@ -81,7 +81,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     }
 
     can(
-      [FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES, FEATURE_KEY.TABLE_MIGRATIONS],
+      [
+        FEATURE_KEY.VIEW_TABLE,
+        FEATURE_KEY.VIEW_TABLES,
+        FEATURE_KEY.JOIN_TABLES,
+        FEATURE_KEY.TABLE_MIGRATIONS,
+        FEATURE_KEY.TABLE_DEPENDENTS,
+      ],
       InternalTable
     );
   }

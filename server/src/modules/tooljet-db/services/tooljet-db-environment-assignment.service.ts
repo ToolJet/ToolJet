@@ -15,6 +15,7 @@ import { TooljetDbMigrationSqlCompilerService } from './tooljet-db-migration-sql
 import { computeMissingMigrations } from './tooljet-db-promote.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { InternalTableRepository, TableDependent } from '../repository';
 
 type AssignmentResult = { productionRelationId: string; developmentRelationId: string };
 
@@ -74,7 +75,8 @@ export class TooljetDbEnvironmentAssignmentService {
     private readonly tooljetDbManager: EntityManager,
     private readonly migrationRecorderService: TooljetDbMigrationRecorderService,
     private readonly licenseTermsService: LicenseTermsService,
-    private readonly migrationSqlCompilerService: TooljetDbMigrationSqlCompilerService
+    private readonly migrationSqlCompilerService: TooljetDbMigrationSqlCompilerService,
+    private readonly internalTableRepository: InternalTableRepository
   ) {}
 
   /**
@@ -260,6 +262,23 @@ export class TooljetDbEnvironmentAssignmentService {
       })),
       environments: environmentStates,
     };
+  }
+
+  /**
+   * Thin wrapper over `InternalTableRepository.findDependents` - only reason to exist here rather
+   * than the controller calling the repository directly is the same `internalTableId` →
+   * `organizationId` NotFoundException guard every other table-scoped read in this service uses.
+   */
+  async getDependents(
+    internalTableId: string,
+    organizationId: string
+  ): Promise<{ count: number; dependents: TableDependent[] }> {
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { id: internalTableId, organizationId },
+    });
+    if (!internalTable) throw new NotFoundException('Table not found');
+
+    return this.internalTableRepository.findDependents(internalTableId, organizationId);
   }
 
   /**

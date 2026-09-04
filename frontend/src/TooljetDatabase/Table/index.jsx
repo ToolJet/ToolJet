@@ -7,7 +7,6 @@ import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import { CellEditMenu } from '../Menu/CellEditMenu';
-import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
@@ -19,7 +18,6 @@ import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import WarningDark from '../Icons/warning-dark.svg';
-import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -34,6 +32,7 @@ import {
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -72,6 +71,7 @@ const Table = ({ collapseSidebar }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
@@ -81,8 +81,6 @@ const Table = ({ collapseSidebar }) => {
   const [editColumnHeader, setEditColumnHeader] = useState({
     hoveredColumn: null,
     clickedColumn: null,
-    columnHeaderValue: null,
-    deletePopupModal: false,
     columnEditPopover: false,
   });
 
@@ -732,19 +730,19 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const handleDeleteColumn = async () => {
-    const columnName = editColumnHeader?.columnHeaderValue;
-    setEditColumnHeader((prevState) => ({
-      ...prevState,
-      deletePopupModal: false,
-    }));
-    const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
-    if (error) {
-      toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
-      return;
-    }
-    await fetchTableMetadata();
-    toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+  const handleDeleteColumn = (columnName) => {
+    runMigration({
+      titlePlaceholder: `Drop column "${columnName}"`,
+      changes: [{ type: '-', label: `Drop column "${columnName}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: false,
+      run: (migrationName) =>
+        tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName, migrationName),
+      onSuccess: async () => {
+        await fetchTableMetadata();
+        toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+      },
+    });
   };
 
   const handleProgressAnimation = (message, status) => {
@@ -857,12 +855,8 @@ const Table = ({ collapseSidebar }) => {
   }, [editColumnHeader.columnEditPopover]);
 
   const handleDelete = (column) => {
-    setEditColumnHeader((prevState) => ({
-      ...prevState,
-      deletePopupModal: true,
-      columnHeaderValue: column,
-    }));
     closeMenu();
+    handleDeleteColumn(column);
   };
 
   if (!selectedTable) return null;
@@ -1130,12 +1124,6 @@ const Table = ({ collapseSidebar }) => {
     ? 'No data found matching the criteria specified in current filters.'
     : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
   const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
-
-  const footerStyle = {
-    borderTop: '1px solid var(--slate5)',
-    paddingTop: '12px',
-    marginTop: '0px',
-  };
 
   return (
     <div>
@@ -1798,33 +1786,7 @@ const Table = ({ collapseSidebar }) => {
           initiator="EditColumnForm"
         />
       </Drawer>
-      <ConfirmDialog
-        title={'Delete Column'}
-        show={editColumnHeader?.deletePopupModal}
-        message={
-          'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
-        }
-        onConfirm={handleDeleteColumn}
-        onCancel={() => {
-          setEditColumnHeader((prevState) => ({
-            ...prevState,
-            deletePopupModal: false,
-          }));
-        }}
-        darkMode={darkMode}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => {
-          setEditColumnHeader((prevState) => ({
-            ...prevState,
-            deletePopupModal: false,
-          }));
-        }}
-        confirmButtonText={'Delete Column'}
-        cancelButtonText={'Cancel'}
-        confirmIcon={<DeleteIcon />}
-        footerStyle={footerStyle}
-      />
+      {migrationModal}
     </div>
   );
 };
