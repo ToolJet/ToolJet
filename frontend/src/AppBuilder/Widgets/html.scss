@@ -16,3 +16,12 @@
 .real-canvas.flex-container-canvas .html-widget-container {
   scrollbar-color: inherit;
 }
+
+
+.viewer .html-widget-container {
+  scrollbar-width: none;
+
+  &:hover {
+    scrollbar-width: auto;
+  }
+}
