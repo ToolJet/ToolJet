@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
+import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import MultiLineCodeEditor from '@/AppBuilder/CodeEditor/MultiLineCodeEditor';
-import { ArrowLeft } from 'lucide-react';
+import { tooljetDatabaseService } from '@/_services';
+import { ArrowLeft, Download } from 'lucide-react';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -182,6 +184,105 @@ const MigrationDetailView = ({ migration, onBack, onClose }) => (
     </div>
   </>
 );
-const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, onClose, refetchMigrations }) => null; // Task 7 fills this in
+const PromotePreviewView = ({ promoteTarget, organizationId, tableId, onBack, onClose, refetchMigrations }) => {
+  const { environment } = promoteTarget;
+  const [pendingMigrations, setPendingMigrations] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    tooljetDatabaseService.previewPromoteTable(organizationId, tableId, environment.id).then(({ data, error }) => {
+      if (error) {
+        toast.error(error?.message || 'Could not load the migration preview', { position: 'top-center' });
+        return;
+      }
+      setPendingMigrations(data?.result?.missing_migrations ?? []);
+    });
+  }, [organizationId, tableId, environment.id]);
+
+  const runPromote = () => {
+    setIsRunning(true);
+    tooljetDatabaseService.promoteTable(organizationId, tableId, environment.id).then(({ error }) => {
+      setIsRunning(false);
+      if (error) {
+        toast.error(error?.message || `Could not run migrations in ${environment.name}`, { position: 'top-center' });
+        return;
+      }
+      toast.success(`Migrations applied to ${environment.name}`, { position: 'top-center' });
+      refetchMigrations();
+      onBack();
+    });
+  };
+
+  const latest = pendingMigrations?.[pendingMigrations.length - 1];
+
+  return (
+    <>
+      <div className="migration-history-drawer__header">
+        <button className="migration-history-drawer__back" onClick={onBack}>
+          <ArrowLeft size={18} />
+        </button>
+        <span>
+          Run {latest?.name || 'migration'} in {environment.name}
+        </span>
+        <button className="migration-history-drawer__close" onClick={onClose}>
+          &times;
+        </button>
+      </div>
+      <div className="migration-history-drawer__detail-body">
+        {pendingMigrations === null ? (
+          <p>Loading…</p>
+        ) : (
+          <>
+            <p>
+              The following{' '}
+              <strong>
+                {pendingMigrations.length} migration{pendingMigrations.length === 1 ? '' : 's'}
+              </strong>{' '}
+              will be applied to the {environment.name} table. Migration can cause loss of data, it is recommended to
+              download backup before proceeding.
+            </p>
+            {pendingMigrations.map((migration) => (
+              <div key={migration.id} className="migration-history-drawer__preview-item">
+                <div className="migration-history-drawer__row-title">
+                  <span>{migration.name || migration.id}</span>
+                </div>
+                <div className="migration-history-drawer__row-timestamp">
+                  {new Date(migration.created_at).toLocaleString()}
+                </div>
+                <MultiLineCodeEditor
+                  lang="sql"
+                  initialValue={migration.sql || '-- No SQL available for this migration'}
+                  readOnly
+                  editable={false}
+                  lineNumbers
+                  foldGutter={false}
+                  height="auto"
+                />
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      <div className="migration-history-drawer__footer migration-history-drawer__footer--promote">
+        <ButtonSolid
+          variant="secondary"
+          // ponytail: real table-data backup/export doesn't exist yet — this button matches the
+          // approved design but is intentionally inert until that feature is built.
+          onClick={() => toast('Backing up table data isn’t available yet', { position: 'top-center' })}
+        >
+          <Download size={16} /> Download backup
+        </ButtonSolid>
+        <div className="migration-history-drawer__footer-actions">
+          <ButtonSolid variant="tertiary" onClick={onBack}>
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid onClick={runPromote} disabled={isRunning || !pendingMigrations?.length} isLoading={isRunning}>
+            Run in {environment.name}
+          </ButtonSolid>
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default MigrationHistoryDrawer;

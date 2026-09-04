@@ -165,4 +165,17 @@
   &__detail-body {
     padding: 16px 20px;
   }
+
+  &__preview-item {
+    margin-bottom: 16px;
+  }
+
+  &__footer--promote {
+    justify-content: space-between;
+  }
+
+  &__footer-actions {
+    display: flex;
+    gap: 8px;
+  }
 }
