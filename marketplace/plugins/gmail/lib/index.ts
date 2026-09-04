@@ -33,16 +33,13 @@ export default class Gmail implements QueryService {
     this.validateSourceOptions(sourceOptions);
 
     const { client_id, oauth_type } = sourceOptions;
-    const tj_redirect_host = (sourceOptions as any).tj_redirect_host;
 
-    const isTooljetManagedApp = oauth_type?.value === "tooljet_app";
-    const clientId = isTooljetManagedApp
-      ? process.env.GOOGLE_CLIENT_ID
-      : client_id?.value;
+    const clientId =
+      oauth_type?.value === "tooljet_app"
+        ? process.env.GOOGLE_CLIENT_ID
+        : client_id?.value;
 
-    const host = isTooljetManagedApp
-      ? process.env.TOOLJET_HOST
-      : tj_redirect_host?.value || process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const redirectBaseUrl = `${host}${subpath ? subpath : "/"}`;
 
@@ -70,7 +67,7 @@ export default class Gmail implements QueryService {
       ];
     }
 
-    let clientId: string | undefined, clientSecret: string | undefined, oauth_type: string | undefined, redirectHost: string | undefined
+    let clientId: string | undefined, clientSecret: string | undefined, oauth_type: string | undefined
 
     for (const item of sourceOptions) {
       if (item.key === "client_id") {
@@ -82,13 +79,9 @@ export default class Gmail implements QueryService {
       if (item.key === "oauth_type") {
         oauth_type = item.value;
       }
-      if (item.key === "tj_redirect_host") {
-        redirectHost = item.value;
-      }
     }
 
-    const isTooljetManagedApp = oauth_type === 'tooljet_app';
-    if (isTooljetManagedApp) {
+    if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
       clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     }
@@ -99,7 +92,7 @@ export default class Gmail implements QueryService {
     } as SourceOptions);
 
     const accessTokenUrl = "https://oauth2.googleapis.com/token";
-    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : redirectHost || process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
 
     const fullUrl = `${host}${subpath ? subpath : "/"}`;

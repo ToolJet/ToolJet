@@ -247,13 +247,6 @@ RUN mkdir -p /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
 
-# Bake AWS RDS cert bundle as fallback for deployments with no outbound internet access
-RUN mkdir -p /home/appuser/certs \
-    && (wget -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
-        || echo "Warning: bake-time RDS cert download failed, image will rely on runtime refresh only") \
-    && chown -R appuser:0 /home/appuser/certs \
-    && chmod -R g=u /home/appuser/certs
-
 # Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
 RUN mkdir -p /app/server/tooljet/gitsync \
       && chown -R appuser:0 /app/server/tooljet \

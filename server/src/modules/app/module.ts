@@ -1,5 +1,3 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
@@ -36,7 +34,6 @@ import { EmailModule } from '@modules/email/module';
 import { OrganizationConstantModule } from '@modules/organization-constants/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
-import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
@@ -112,7 +109,6 @@ export class AppModule implements OnModuleInit, NestModule {
       await FoldersModule.register(configs, true),
       await FolderAppsModule.register(configs, true),
       await DataQueryFoldersModule.register(configs, true),
-      await PersonalAccessTokensModule.register(configs, true),
       await SMTPModule.register(configs, true),
       await RolesModule.register(configs, true),
       await GroupPermissionsModule.register(configs, true),
@@ -194,10 +190,6 @@ export class AppModule implements OnModuleInit, NestModule {
       imports: [...modules, ...imports],
       controllers: [AppController],
       providers: [
-        /* Bound here rather than in main.ts so enforcement is part of the module graph: any
-           consumer that builds this module gets it, including the e2e harness, which never runs
-           main.ts. Registering it only at bootstrap made the check depend on the entry point. */
-        { provide: APP_INTERCEPTOR, useClass: PatScopeInterceptor },
         ShutdownHook,
         GetConnection,
         ClearSSOResponseScheduler,

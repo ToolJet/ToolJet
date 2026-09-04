@@ -621,11 +621,10 @@ export default class Snowflake implements QueryService {
     };
 
     const oauth_type = getOptionValue('oauth_type');
-    const isTooljetManagedApp = oauth_type === 'tooljet_app';
     let client_id = '';
     let client_secret = '';
 
-    if (isTooljetManagedApp) {
+    if (oauth_type === 'tooljet_app') {
       client_id = process.env.SNOWFLAKE_CLIENT_ID;
       client_secret = process.env.SNOWFLAKE_CLIENT_SECRET;
     } else {
@@ -643,7 +642,7 @@ export default class Snowflake implements QueryService {
     if (!scopeParts.includes('offline_access')) scopeParts.push('offline_access');
     const scope = scopeParts.join(' ');
 
-    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : getOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
@@ -717,11 +716,10 @@ export default class Snowflake implements QueryService {
     }
 
     const oauth_type = sourceOptions['oauth_type'];
-    const isTooljetManagedApp = oauth_type === 'tooljet_app';
     let client_id = sourceOptions['client_id'];
     let client_secret = sourceOptions['client_secret'];
 
-    if (isTooljetManagedApp) {
+    if (oauth_type === 'tooljet_app') {
       client_id = process.env.SNOWFLAKE_CLIENT_ID;
       client_secret = process.env.SNOWFLAKE_CLIENT_SECRET;
     }
@@ -750,7 +748,7 @@ export default class Snowflake implements QueryService {
     }
     const scope = scopeParts.join(' ');
 
-    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : sourceOptions['tj_redirect_host'] || process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

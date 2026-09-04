@@ -181,11 +181,6 @@ const useAppData = (
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
   const previousRestoreTimestamp = usePrevious(restoreTimestamp);
-  // Used to trigger the same refresh in place, without unmounting the editor chrome
-  const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
-  const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
-  const setCanvasReloading = useStore((state) => state.setCanvasReloading);
-  const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
   const location = useRouter().location;
 
@@ -763,22 +758,10 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
-    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
-    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
-    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
+    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isForceRefreshTriggered || isHotReload) {
-      if (isHotReload) {
-        setCanvasReloading(true, moduleId);
-        // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
-        // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
-        // true once the rebuilt canvas settles — that transition is what re-runs the on-load
-        // queries, onPageLoad events and JS libraries.
-        setIsComponentLayoutReady(false, moduleId);
-      } else {
-        setEditorLoading(true, moduleId);
-      }
+    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+      setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
@@ -828,19 +811,7 @@ const useAppData = (
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
-        // A hot reload keeps the user where they are; everything else lands on the home page
-        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
-        setCurrentPageId(pageToLoad.id, moduleId);
-        if (isHotReload) {
-          // We're staying on the same page, and the refresh may have renamed it — so refresh the
-          // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
-          // hot reload to leave the version/env/history flows behaving exactly as before.
-          setCurrentPageHandle(pageToLoad?.handle, moduleId);
-          setResolvedPageConstants(
-            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
-            moduleId
-          );
-        }
+        setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
@@ -913,20 +884,10 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
-        if (isHotReload) {
-          // The canvas stayed mounted, so pair the batch the same way initial load does: open it
-          // before the rebuilt canvas settles and let the layout-ready effect flush it.
-          startExposedValueBatch();
-          // Datasources/modules may be new in this definition (the env branch above only covers
-          // datasources, and only when the environment changed).
-          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
-          if (appData.modules) setModuleDefinition(appData.modules);
-        }
-        setCanvasReloading(false, moduleId);
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

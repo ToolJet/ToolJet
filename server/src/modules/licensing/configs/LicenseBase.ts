@@ -607,7 +607,6 @@ export default class LicenseBase {
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
       aiPlan: this.aiPlan,
-      publicApp: this.publicApp,
     };
   }
 
@@ -713,16 +712,5 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.jsLibraries;
-  }
-
-  public get publicApp(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
-    }
-
-    if (this._app?.features?.publicApp === undefined) {
-      return false;
-    }
-    return !!this._app?.features?.publicApp;
   }
 }
