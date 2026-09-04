@@ -60,6 +60,7 @@ export const ButtonStylesTab = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+            multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
             property="buttonBackgroundColor"
             props={button}
             component={component}
@@ -77,6 +78,7 @@ export const ButtonStylesTab = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
           property="buttonLabelColor"
           props={button}
           component={component}
@@ -93,6 +95,7 @@ export const ButtonStylesTab = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
           property="buttonBorderColor"
           props={button}
           component={component}
@@ -109,6 +112,7 @@ export const ButtonStylesTab = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
           property="buttonLoaderColor"
           props={button}
           component={component}
@@ -138,6 +142,7 @@ export const ButtonStylesTab = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
           property="buttonIconColor"
           props={button}
           component={component}
@@ -170,6 +175,7 @@ export const ButtonStylesTab = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+          multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
           property="buttonBorderRadius"
           props={button}
           component={component}

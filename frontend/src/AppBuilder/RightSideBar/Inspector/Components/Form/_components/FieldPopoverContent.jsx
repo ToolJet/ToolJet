@@ -191,6 +191,7 @@ const FieldPopoverContent = ({
               paramType={'toggle'}
               onChange={(value) => handleFieldChange('mandatory', value)}
               onFxPress={(active) => handleFxChange('mandatory', active)}
+              fxStashKey={`${field?.componentId}-formField-mandatory`}
             />
           </div>
           {mode === 'edit' && (
@@ -211,6 +212,7 @@ const FieldPopoverContent = ({
                 paramType={'toggle'}
                 onChange={(value) => handleFieldChange('visibility', value)}
                 onFxPress={(active) => handleFxChange('visibility', active)}
+                fxStashKey={`${field?.componentId}-formField-visibility`}
               />
             </div>
           )}

@@ -93,15 +93,17 @@ export const Table = (props) => {
     duplicateColumn,
     reorderColumns,
     updateColumnProperty,
+    updateColumnProperties,
     updateColumnEvents,
     setAllColumnsEditable,
     getPopoverFieldSource,
   } = useColumnManager({ component, paramUpdated, currentState });
 
-  const { actions, addAction, removeAction, updateActionProperty, updateActionEvents } = useActionButtonManager({
-    component,
-    paramUpdated,
-  });
+  const { actions, addAction, removeAction, updateActionProperty, updateActionProperties, updateActionEvents } =
+    useActionButtonManager({
+      component,
+      paramUpdated,
+    });
 
   const {
     activeIndex: activeColumnPopoverIndex,
@@ -167,6 +169,7 @@ export const Table = (props) => {
           darkMode={darkMode}
           currentState={currentState}
           onColumnItemChange={updateColumnProperty}
+          onColumnItemPropertiesChange={updateColumnProperties}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
           component={component}
@@ -182,6 +185,7 @@ export const Table = (props) => {
       darkMode,
       currentState,
       updateColumnProperty,
+      updateColumnProperties,
       getPopoverFieldSource,
       setColumnPopoverRootCloseBlocker,
       component,
@@ -271,6 +275,7 @@ export const Table = (props) => {
               index={index}
               darkMode={darkMode}
               callbackFunction={updateActionProperty}
+              multiCallbackFunction={updateActionProperties}
               property="disableActionButton"
               props={action}
               component={component}
@@ -311,6 +316,7 @@ export const Table = (props) => {
       darkMode,
       t,
       updateActionProperty,
+      updateActionProperties,
       currentState,
       component,
       dataQueries,

@@ -20,6 +20,7 @@ export function TreeSelectSortableTree({
   indentationWidth = 15,
   darkMode,
   showSelectionFields = true,
+  componentId,
 }) {
   // Shared popover state: { id, type } or null
   const [activePopover, setActivePopover] = useState(null);
@@ -36,6 +37,7 @@ export function TreeSelectSortableTree({
         activePopover={activePopover}
         setActivePopover={setActivePopover}
         showSelectionFields={showSelectionFields}
+        componentId={componentId}
       />
     );
   };

@@ -79,6 +79,7 @@ export const useFieldManager = ({ component, paramUpdated, currentState }) => {
     duplicateField: listManager.duplicateItem,
     reorderFields: listManager.reorderItems,
     updateFieldProperty: listManager.updateProperty,
+    updateFieldProperties: listManager.updateProperties,
     updateFieldEvents: listManager.updateEvents,
     setAllFieldsEditable: listManager.setAllEditable,
     getPopoverFieldSource: listManager.getPopoverFieldSource,

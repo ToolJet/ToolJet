@@ -64,6 +64,7 @@ export const PropertiesTabElements = ({
   darkMode,
   currentState,
   onFieldItemChange,
+  onFieldItemPropertiesChange,
   getPopoverFieldSource,
   setFieldPopoverRootCloseBlocker,
   component,
@@ -148,6 +149,7 @@ export const PropertiesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onFieldItemChange}
+              multiCallbackFunction={onFieldItemPropertiesChange}
               property="isEditable"
               props={field}
               component={component}
@@ -179,6 +181,7 @@ export const PropertiesTabElements = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={onFieldItemChange}
+            multiCallbackFunction={onFieldItemPropertiesChange}
             property="fieldVisibility"
             props={field}
             component={component}
@@ -196,6 +199,7 @@ export const PropertiesTabElements = ({
             darkMode={darkMode}
             currentState={currentState}
             onColumnItemChange={onFieldItemChange}
+            onColumnItemPropertiesChange={onFieldItemPropertiesChange}
             component={component}
           />
         </div>
@@ -211,6 +215,7 @@ export const PropertiesTabElements = ({
           setColumnPopoverRootCloseBlocker={setFieldPopoverRootCloseBlocker}
           component={component}
           onColumnItemChange={onFieldItemChange}
+          onColumnItemPropertiesChange={onFieldItemPropertiesChange}
           paramToUpdate="fields"
         />
       )}

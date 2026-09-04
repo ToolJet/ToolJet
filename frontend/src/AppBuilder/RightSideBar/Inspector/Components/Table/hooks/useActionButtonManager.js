@@ -49,6 +49,16 @@ export const useActionButtonManager = ({ component, paramUpdated }) => {
     [actionValues, paramUpdated]
   );
 
+  // Single write for callers changing several fields at once; two writes would clobber each other.
+  const updateActionProperties = useCallback(
+    (index, changes) => {
+      const newActions = [...actionValues];
+      newActions[index] = { ...newActions[index], ...changes };
+      paramUpdated({ name: 'actions' }, 'value', newActions, 'properties', true);
+    },
+    [actionValues, paramUpdated]
+  );
+
   // Update action events
   const updateActionEvents = useCallback(
     (index, events) => {
@@ -96,6 +106,7 @@ export const useActionButtonManager = ({ component, paramUpdated }) => {
     addAction,
     removeAction,
     updateActionProperty,
+    updateActionProperties,
     updateActionEvents,
     updateActionEvent,
     updateActionEventOption,

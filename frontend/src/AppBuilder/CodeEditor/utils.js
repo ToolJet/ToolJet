@@ -385,6 +385,41 @@ export const FxParamTypeMapping = Object.freeze({
   query: 'Query',
 });
 
+// These elements store literals brace-wrapped; every other element writes the value bare.
+export const BRACED_FX_PARAM_TYPES = Object.freeze(
+  new Set(['toggle', 'checkbox', 'number', 'slider', 'clientServerSwitch'])
+);
+
+const FX_PARAM_TYPE_FALLBACKS = Object.freeze({
+  toggle: false,
+  checkbox: false,
+  clientServerSwitch: false,
+  number: 0,
+  slider: 0,
+  numberInput: 0,
+  tableRowHeightInput: 0,
+});
+
+// Literal to write into a property's `value` when fx is switched off. Freezes the resolved value so
+// the canvas does not change on what the user experiences as a no-op click.
+export const getFrozenFxValue = ({ resolvedValue, hasError, paramType, fieldMeta, fallbackValue }) => {
+  const isBraced = BRACED_FX_PARAM_TYPES.has(paramType);
+  const format = (value) => (isBraced ? `{{${value}}}` : value);
+
+  // Every paramType stores its literal as text, so a structural value would land as "[object Object]".
+  // Nested item fields declare no validation schema, making this the only guard they get.
+  const isStorable = ['string', 'number', 'boolean'].includes(typeof resolvedValue);
+  // Freeze the schema-coerced value, not the raw one — the runtime applies the same coercion.
+  const [isValid, , coercedValue] =
+    !hasError && isStorable ? validateComponentProperty(resolvedValue, fieldMeta?.validation) : [false];
+
+  if (isValid) return format(coercedValue);
+  // Already formatted by the widget definition; the remaining fallbacks are bare.
+  if (!_.isUndefined(fallbackValue)) return fallbackValue;
+
+  return format(fieldMeta?.validation?.defaultValue ?? FX_PARAM_TYPE_FALLBACKS[paramType] ?? '');
+};
+
 export function computeCoercion(oldValue, newValue) {
   const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
   const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;

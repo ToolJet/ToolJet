@@ -9,6 +9,7 @@ const RatingColumnProperties = ({
   darkMode,
   currentState,
   onColumnItemChange,
+  onColumnItemPropertiesChange,
   getPopoverFieldSource,
   setColumnPopoverRootCloseBlocker,
   component,
@@ -59,6 +60,7 @@ const RatingColumnProperties = ({
           index={index}
           darkMode={darkMode}
           callbackFunction={onColumnItemChange}
+          multiCallbackFunction={onColumnItemPropertiesChange}
           property="allowHalfStar"
           props={column}
           component={component}

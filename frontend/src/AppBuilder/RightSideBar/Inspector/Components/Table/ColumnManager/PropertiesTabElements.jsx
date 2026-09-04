@@ -93,6 +93,7 @@ export const PropertiesTabElements = ({
   darkMode,
   currentState,
   onColumnItemChange,
+  onColumnItemPropertiesChange,
   getPopoverFieldSource,
   setColumnPopoverRootCloseBlocker,
   component,
@@ -105,7 +106,8 @@ export const PropertiesTabElements = ({
   buttonManager,
 }) => {
   const { t } = useTranslation();
-  const { addButton, removeButton, updateButtonProperty, reorderButtons, getButton } = buttonManager;
+  const { addButton, removeButton, updateButtonProperty, updateButtonProperties, reorderButtons, getButton } =
+    buttonManager;
 
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),
@@ -255,6 +257,7 @@ export const PropertiesTabElements = ({
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
+                multiCallbackFunction={onColumnItemPropertiesChange}
                 property="columnVisibility"
                 props={column}
                 component={component}
@@ -280,6 +283,7 @@ export const PropertiesTabElements = ({
           darkMode={darkMode}
           currentState={currentState}
           onButtonPropertyChange={(property, value) => updateButtonProperty(selectedButtonId, property, value)}
+          onButtonPropertiesChange={(changes) => updateButtonProperties(selectedButtonId, changes)}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
           component={component}
           props={props}
@@ -351,6 +355,7 @@ export const PropertiesTabElements = ({
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
+                multiCallbackFunction={onColumnItemPropertiesChange}
                 property="linkTarget"
                 props={column}
                 component={component}
@@ -391,6 +396,7 @@ export const PropertiesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="isEditable"
               props={column}
               component={component}
@@ -420,6 +426,7 @@ export const PropertiesTabElements = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={onColumnItemChange}
+            multiCallbackFunction={onColumnItemPropertiesChange}
             property="disableSort"
             props={column}
             component={component}
@@ -437,6 +444,7 @@ export const PropertiesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="jsonIndentation"
               props={column}
               component={component}
@@ -455,6 +463,7 @@ export const PropertiesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
+              multiCallbackFunction={onColumnItemPropertiesChange}
               property="columnVisibility"
               props={column}
               component={component}
@@ -484,6 +493,7 @@ export const PropertiesTabElements = ({
             darkMode={darkMode}
             currentState={currentState}
             onColumnItemChange={onColumnItemChange}
+            onColumnItemPropertiesChange={onColumnItemPropertiesChange}
             component={component}
           />
         </div>
@@ -495,6 +505,7 @@ export const PropertiesTabElements = ({
           darkMode={darkMode}
           currentState={currentState}
           onColumnItemChange={onColumnItemChange}
+          onColumnItemPropertiesChange={onColumnItemPropertiesChange}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
           component={component}
@@ -512,6 +523,7 @@ export const PropertiesTabElements = ({
           paramToUpdate={'columns'}
           component={component}
           onColumnItemChange={onColumnItemChange}
+          onColumnItemPropertiesChange={onColumnItemPropertiesChange}
         />
       )}
     </>

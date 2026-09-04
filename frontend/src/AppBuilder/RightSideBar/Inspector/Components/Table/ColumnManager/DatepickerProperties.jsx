@@ -76,7 +76,15 @@ const UNIX_TIMESTAMP_OPTIONS = [
   },
 ];
 
-const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnItemChange, component }) => {
+const DatepickerProperties = ({
+  column,
+  index,
+  darkMode,
+  currentState,
+  onColumnItemChange,
+  onColumnItemPropertiesChange,
+  component,
+}) => {
   const { t } = useTranslation();
   const items = [];
   const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
@@ -102,6 +110,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
+                multiCallbackFunction={onColumnItemPropertiesChange}
                 property="isDateSelectionEnabled"
                 props={column}
                 component={component}
@@ -124,7 +133,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                       <FxButton
                         active={isDateDisplayFormatFxOn}
                         onPress={() => {
-                          let resultFxActiveFields = column?.notActiveFxActiveFields || [];
+                          let resultFxActiveFields = [...(column?.notActiveFxActiveFields || [])];
                           if (isDateDisplayFormatFxOn) {
                             resultFxActiveFields.push('dateFormat');
                           } else {
@@ -172,6 +181,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                 index={index}
                 darkMode={darkMode}
                 callbackFunction={onColumnItemChange}
+                multiCallbackFunction={onColumnItemPropertiesChange}
                 property="isTimeChecked"
                 props={column}
                 component={component}
@@ -211,6 +221,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                     index={index}
                     darkMode={darkMode}
                     callbackFunction={onColumnItemChange}
+                    multiCallbackFunction={onColumnItemPropertiesChange}
                     property="isTwentyFourHrFormatEnabled"
                     props={column}
                     component={component}
@@ -258,6 +269,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
             index={index}
             darkMode={darkMode}
             callbackFunction={onColumnItemChange}
+            multiCallbackFunction={onColumnItemPropertiesChange}
             property="parseInUnixTimestamp"
             props={column}
             component={component}
@@ -297,8 +309,8 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                       <FxButton
                         active={isParseDateFormatFxOn}
                         onPress={() => {
-                          let resultFxActiveFields = column?.notActiveFxActiveFields || [];
-                          if (isDateDisplayFormatFxOn) {
+                          let resultFxActiveFields = [...(column?.notActiveFxActiveFields || [])];
+                          if (isParseDateFormatFxOn) {
                             resultFxActiveFields.push('parseDateFormat');
                           } else {
                             resultFxActiveFields = resultFxActiveFields.filter((field) => field !== 'parseDateFormat');

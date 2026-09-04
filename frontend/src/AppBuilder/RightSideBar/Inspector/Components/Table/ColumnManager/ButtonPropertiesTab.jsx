@@ -11,6 +11,7 @@ export const ButtonPropertiesTab = ({
   darkMode,
   currentState,
   onButtonPropertyChange,
+  onButtonPropertiesChange,
   setColumnPopoverRootCloseBlocker,
   component,
   props,
@@ -61,6 +62,7 @@ export const ButtonPropertiesTab = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+            multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
             property="loadingState"
             props={button}
             component={component}
@@ -78,6 +80,7 @@ export const ButtonPropertiesTab = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+            multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
             property="buttonVisibility"
             props={button}
             component={component}
@@ -95,6 +98,7 @@ export const ButtonPropertiesTab = ({
             index={index}
             darkMode={darkMode}
             callbackFunction={(_, prop, val) => onButtonPropertyChange(prop, val)}
+            multiCallbackFunction={(_, changes) => onButtonPropertiesChange(changes)}
             property="disableButton"
             props={button}
             component={component}

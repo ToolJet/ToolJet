@@ -17,6 +17,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -135,7 +136,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     reorderTabItems(source.index, destination.index);
   };
 
-  const handleOnFxPress = (item, property, active) => {
+  // `newValue` rides along so fx-off is one rebuild — `tabItems` is a render-time snapshot.
+  const handleOnFxPress = (item, property, active, newValue) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
@@ -143,6 +145,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
           [property]: {
             ...tabItem[property],
             fxActive: active,
+            ...(newValue !== undefined && { value: newValue }),
           },
         };
       }
@@ -272,6 +275,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const stashKey = (property) =>
+      getFxStashKey({ componentId: component?.id, listName: 'tabItems', item, index, property });
     const iconVisibility =
       item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
 
@@ -365,7 +370,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'loading', index);
               }}
-              onFxPress={(active) => handleOnFxPress(item, 'loading', active)}
+              onFxToggle={(active, newValue) => handleOnFxPress(item, 'loading', active, newValue)}
+              fxStashKey={stashKey('loading')}
               fxActive={item?.loading?.fxActive}
               fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
               paramType={'toggle'}
@@ -384,7 +390,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(item, 'visible', active)}
+              onFxToggle={(active, newValue) => handleOnFxPress(item, 'visible', active, newValue)}
+              fxStashKey={stashKey('visible')}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -405,7 +412,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
-              onFxPress={(active) => handleOnFxPress(item, 'disable', active)}
+              onFxToggle={(active, newValue) => handleOnFxPress(item, 'disable', active, newValue)}
+              fxStashKey={stashKey('disable')}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',

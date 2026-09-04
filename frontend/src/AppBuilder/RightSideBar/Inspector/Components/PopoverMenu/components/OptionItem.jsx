@@ -23,7 +23,7 @@ const OptionItem = ({
   ...restProps
 }) => {
   const { dataCy: dataCyPrefix } = config;
-  const { onDefaultChange, componentType } = restProps;
+  const { onDefaultChange, componentType, componentId } = restProps;
 
   return (
     <Draggable key={item?.value} draggableId={item?.value} index={index}>
@@ -52,6 +52,7 @@ const OptionItem = ({
                   getResolvedValue={getResolvedValue}
                   config={config}
                   componentType={componentType}
+                  componentId={componentId}
                 />
               }
               onToggle={(isOpen) => {

@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 const TreeSelectItemPopover = forwardRef(
   (
@@ -13,6 +14,7 @@ const TreeSelectItemPopover = forwardRef(
       getResolvedValue,
       parentValue = null,
       showSelectionFields = true,
+      componentId,
       ...restProps
     },
     ref
@@ -40,6 +42,11 @@ const TreeSelectItemPopover = forwardRef(
     const handleDelete = () => {
       onDeleteItem(item.value, parentValue);
     };
+
+    // Instance-scoped: TreeSelect and Cascader instances sharing an item value must not share a
+    // stash entry.
+    const stashKey = (property) =>
+      getFxStashKey({ componentId, listName: `treeItems-${parentValue ?? 'root'}`, item, property });
 
     return (
       <Popover
@@ -119,7 +126,14 @@ const TreeSelectItemPopover = forwardRef(
                     paramLabel={'Selected'}
                     paramName={'selected'}
                     onChange={(value) => handleChange('selected.value', value)}
-                    onFxPress={(active) => handleChange('selected.fxActive', active)}
+                    onFxToggle={(active, newValue) =>
+                      handleChange('selected', {
+                        ...item?.selected,
+                        fxActive: active,
+                        ...(newValue !== undefined && { value: newValue }),
+                      })
+                    }
+                    fxStashKey={stashKey('selected')}
                     fxActive={item?.selected?.fxActive}
                     fieldMeta={{ type: 'toggle', displayName: 'Selected' }}
                     paramType={'toggle'}
@@ -137,7 +151,14 @@ const TreeSelectItemPopover = forwardRef(
                     paramLabel={'Expanded'}
                     paramName={'expanded'}
                     onChange={(value) => handleChange('expanded.value', value)}
-                    onFxPress={(active) => handleChange('expanded.fxActive', active)}
+                    onFxToggle={(active, newValue) =>
+                      handleChange('expanded', {
+                        ...item?.expanded,
+                        fxActive: active,
+                        ...(newValue !== undefined && { value: newValue }),
+                      })
+                    }
+                    fxStashKey={stashKey('expanded')}
                     fxActive={item?.expanded?.fxActive}
                     fieldMeta={{ type: 'toggle', displayName: 'Expanded' }}
                     paramType={'toggle'}
@@ -155,7 +176,14 @@ const TreeSelectItemPopover = forwardRef(
                 paramLabel={'Visibility'}
                 paramName={'visible'}
                 onChange={(value) => handleChange('visible.value', value)}
-                onFxPress={(active) => handleChange('visible.fxActive', active)}
+                onFxToggle={(active, newValue) =>
+                  handleChange('visible', {
+                    ...item?.visible,
+                    fxActive: active,
+                    ...(newValue !== undefined && { value: newValue }),
+                  })
+                }
+                fxStashKey={stashKey('visible')}
                 fxActive={item?.visible?.fxActive}
                 fieldMeta={{ type: 'toggle', displayName: 'Visibility' }}
                 paramType={'toggle'}
@@ -170,7 +198,14 @@ const TreeSelectItemPopover = forwardRef(
                 paramLabel={'Disable'}
                 paramName={'disable'}
                 onChange={(value) => handleChange('disable.value', value)}
-                onFxPress={(active) => handleChange('disable.fxActive', active)}
+                onFxToggle={(active, newValue) =>
+                  handleChange('disable', {
+                    ...item?.disable,
+                    fxActive: active,
+                    ...(newValue !== undefined && { value: newValue }),
+                  })
+                }
+                fxStashKey={stashKey('disable')}
                 fxActive={item?.disable?.fxActive}
                 fieldMeta={{ type: 'toggle', displayName: 'Disable' }}
                 paramType={'toggle'}

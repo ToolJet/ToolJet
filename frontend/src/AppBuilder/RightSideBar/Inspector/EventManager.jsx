@@ -54,6 +54,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import toast from 'react-hot-toast';
 import './EventManager.scss';
+import { getFxStashKey } from '@/AppBuilder/CodeEditor/fxExpressionStash';
 
 export const EventManager = ({
   sourceId,
@@ -474,9 +475,11 @@ export const EventManager = ({
   }
 
   //following two are functions responsible for on change and value for the control specific actions
-  const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) => {
-    const newParam = { ...param, value: value };
+  const writeComponentSpecificActionParam = (attrs, index, param, event) => {
     const params = event?.componentSpecificActionParams ?? [];
+    // Merge over the stored param, not just the meta definition, or one attribute drops the other.
+    const storedParam = params.find((paramOfParamList) => paramOfParamList.handle === param.handle);
+    const newParam = { ...param, ...storedParam, ...attrs };
 
     const newParams =
       params.length > 0
@@ -487,6 +490,9 @@ export const EventManager = ({
 
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
   };
+
+  const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) =>
+    writeComponentSpecificActionParam({ value }, index, param, event);
   const valueForComponentSpecificActionHandle = (event, param) => {
     const componentSpecificActionParamsExits = Array.isArray(event?.componentSpecificActionParams);
     const defaultValue = param.defaultValue ?? '';
@@ -501,6 +507,9 @@ export const EventManager = ({
 
     return defaultValue;
   };
+
+  const fxActiveForComponentSpecificActionHandle = (event, param) =>
+    event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.fxActive ?? false;
 
   const constructDataQueryOptions = () => {
     const queries = dataQueries.filter((qry) => isQueryRunnable(qry)).map((qry) => ({ name: qry.name, value: qry.id }));
@@ -1074,6 +1083,22 @@ export const EventManager = ({
                             cyLabel={`event-${param.displayName}`}
                             component={component}
                             isEventManagerParam={true}
+                            fxActive={fxActiveForComponentSpecificActionHandle(event, param)}
+                            onFxToggle={(active, newValue) =>
+                              writeComponentSpecificActionParam(
+                                { fxActive: active, ...(newValue !== undefined && { value: newValue }) },
+                                index,
+                                param,
+                                event
+                              )
+                            }
+                            fxStashKey={getFxStashKey({
+                              componentId: sourceId,
+                              listName: 'event',
+                              item: event,
+                              index,
+                              property: param.handle,
+                            })}
                           />
                         </div>
                       </FieldRow>

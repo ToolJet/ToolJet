@@ -9,6 +9,7 @@ export const FieldPopoverContent = ({
   darkMode,
   currentState,
   onFieldItemChange,
+  onFieldItemPropertiesChange,
   getPopoverFieldSource,
   setFieldPopoverRootCloseBlocker,
   component,
@@ -50,6 +51,7 @@ export const FieldPopoverContent = ({
           darkMode={darkMode}
           currentState={currentState}
           onFieldItemChange={onFieldItemChange}
+          onFieldItemPropertiesChange={onFieldItemPropertiesChange}
           getPopoverFieldSource={getPopoverFieldSource}
           setFieldPopoverRootCloseBlocker={setFieldPopoverRootCloseBlocker}
           component={component}

@@ -66,6 +66,10 @@ module.exports = {
     // markdown *parsing* — only that the widget renders its text — so a
     // renderable pass-through component is the cheap equivalent.
     '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // Same reason as react-markdown: @mdxeditor/editor is ESM-only and imports CSS-in-JS at its
+    // entry. It is reached transitively (CodeHinter -> FixWithAi -> ee AiBuilder) by specs that
+    // never touch the doc editor, so stubbing the package is cheaper than transforming it.
+    '^@mdxeditor/editor$': '<rootDir>/__mocks__/fileMock.js',
     // The remark/rehype plugins are only ever passed as opaque values into the
     // (now stubbed) markdown renderer, so a plain string stub suffices.
     '^(remark|rehype)-.*$': '<rootDir>/__mocks__/fileMock.js',

@@ -71,6 +71,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
         getResolvedValue={getResolvedValue}
         expandedItems={expandedItems}
         onToggleExpand={toggleItemExpanded}
+        componentId={component?.id}
         {...restProps}
       />
     );

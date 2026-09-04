@@ -126,6 +126,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     duplicateColumn: listManager.duplicateItem,
     reorderColumns: listManager.reorderItems,
     updateColumnProperty: listManager.updateProperty,
+    updateColumnProperties: listManager.updateProperties,
     updateColumnEvents: listManager.updateEvents,
     setAllColumnsEditable: listManager.setAllEditable,
     getPopoverFieldSource: listManager.getPopoverFieldSource,
