@@ -134,8 +134,8 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.TEST_CONNECTION)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Post(':id/test-connection')
-  testConnection(@User() user, @Param('id') dataSourceId: string, @Body() testDataSourceDto: TestDataSourceDto) {
-    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId);
+  testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
+    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
