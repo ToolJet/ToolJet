@@ -45,6 +45,18 @@ function getTableMigrations(organizationId, tableId) {
   return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations`);
 }
 
+function previewPromoteTable(organizationId, tableId, environmentId) {
+  return tooljetAdapter.get(
+    `/tooljet-db/organizations/${organizationId}/table/${tableId}/promote/preview?environment_id=${environmentId}`
+  );
+}
+
+function promoteTable(organizationId, tableId, environmentId) {
+  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/promote`, {
+    environment_id: environmentId,
+  });
+}
+
 function bulkUpload(organizationId, tableName, file) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/bulk-upload`, file);
 }
@@ -163,6 +175,8 @@ export const tooljetDatabaseService = {
   findAll,
   viewTable,
   getTableMigrations,
+  previewPromoteTable,
+  promoteTable,
   createRow,
   createTable,
   createColumn,
