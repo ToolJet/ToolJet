@@ -9,6 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import { History } from 'lucide-react';
+import MigrationHistoryDrawer from '../Drawers/MigrationHistoryDrawer';
 
 /**
  * Per-environment status for the currently open table, derived from two backend shapes:
@@ -48,16 +49,24 @@ const EnvironmentSwitcher = () => {
     useContext(TooljetDatabaseContext);
   const [isOpen, setIsOpen] = useState(false);
   const [tableMigrations, setTableMigrations] = useState(null);
+  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const buttonRef = useRef(null);
 
-  useEffect(() => {
-    setTableMigrations(null);
-    if (!organizationId || !selectedTable?.id) return;
+  const fetchTableMigrations = React.useCallback(() => {
+    if (!organizationId || !selectedTable?.id) {
+      setTableMigrations(null);
+      return;
+    }
     tooljetDatabaseService.getTableMigrations(organizationId, selectedTable.id).then(({ data, error }) => {
       if (error) return;
       setTableMigrations(data?.result ?? null);
     });
   }, [organizationId, selectedTable?.id]);
+
+  useEffect(() => {
+    setTableMigrations(null);
+    fetchTableMigrations();
+  }, [fetchTableMigrations]);
 
   if (environments.length <= 1 || !selectedEnvironment) return null;
 
@@ -78,8 +87,7 @@ const EnvironmentSwitcher = () => {
 
   const selectedStatus = statusFor(selectedEnvironment);
 
-  // TODO(Task 12): open the migration-history drawer for selectedTable. No-op until that drawer exists.
-  const openMigrationHistory = () => {};
+  const openMigrationHistory = () => setIsHistoryDrawerOpen(true);
 
   return (
     <div className="tjdb-environment-switcher d-flex align-items-center gap-2">
@@ -105,7 +113,6 @@ const EnvironmentSwitcher = () => {
         title="Migration history"
         data-cy="tjdb-migration-history-button"
       >
-        {/* ponytail: IconHistory (tabler) not rendering here, cause unknown - placeholder icon till root-caused */}
         <History width="16" height="16" className="tw-text-icon-strong" />
       </button>
 
@@ -170,6 +177,17 @@ const EnvironmentSwitcher = () => {
           </Popover>
         )}
       </Overlay>
+
+      <MigrationHistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        migrations={migrations}
+        environments={tableMigrations?.environments ?? []}
+        allEnvironments={environments}
+        organizationId={organizationId}
+        selectedTable={selectedTable}
+        refetchMigrations={fetchTableMigrations}
+      />
     </div>
   );
 };
