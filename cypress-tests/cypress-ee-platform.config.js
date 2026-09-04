@@ -20,20 +20,21 @@ module.exports = defineConfig({
     },
 
     baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
+    // Specs are grouped by product area since the 2026-09-04 restructure; edition is
+    // carried by the filename suffix (.ee / .ce / plain = both). This config runs the
+    // full platform surface, so it globs every area rather than listing them.
     specPattern: [
-      "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/licensing/paidPlanTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/sso/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/settings/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/multi-env/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/externalApi/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/userMetadata/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/superAdmin/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/eeTestcases/modules/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/ceTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+      // Must run first — provisions the instance's first user. Kept explicit for ordering.
+      "cypress/e2e/happyPath/platform/onboarding/firstUserOnboarding.cy.js",
+      "cypress/e2e/happyPath/platform/**/*.cy.js",
+    ],
+    // gitSync runs from cypress-gitsync.config.js under its own CI label
+    // (run-cypress-git-sync-ee); licensing/ai is covered by the BYOK/AI suite. Neither
+    // was matched by this config before the restructure, so the resolved set is
+    // unchanged at 77 specs.
+    excludeSpecPattern: [
+      "cypress/e2e/happyPath/platform/gitSync/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/licensing/ai/**/*.cy.js",
     ],
 
     testIsolation: true,
