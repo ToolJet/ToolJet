@@ -14,9 +14,15 @@ import {
   locateAlignmentToggle,
 } from "Support/utils/appBuilder/components/fileButton";
 
-// The fx / dynamic-binding half of the styles facet; the direct-control half lives in
-// styles.cy.js. Every test binds the style to a COMPANION widget's exposed value then
-// drives the companion, which is what proves the binding stays live.
+// StylesFx facet — fx/dynamic-binding half; the direct half is in styles.cy.js.
+// Covers all 9 fx-capable config.styles items — source: fileButton.js:155-285
+//   labelSize:155 · labelWeight:164 · labelColor:175 · icon:181 · iconColor:190
+//   loaderColor:208 · backgroundColor:237 · borderRadius:253 · boxShadow:262
+// Negative: the 4 isFxNotRequired items — iconDirection:196 · contentAlignment:214 ·
+//   buttonType:226 · padding:275 — each asserted to expose NO fx button.
+//
+// Every test binds the style to a COMPANION widget's exposed value then drives the
+// companion, which is what proves the binding stays live.
 
 describe(
   "File Button styles fx",

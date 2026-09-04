@@ -6,6 +6,10 @@ import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBui
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { waitForDropSettle } from "Support/utils/appBuilder/components/fileButton";
 
+// Events facet — both config.events, each asserted in the editor AND in preview.
+//   onFileSelected:151 — fires on an accepted file AND on a rejected one
+//   onFileLoaded:152   — fires on an accepted file only
+// source: fileButton.js
 describe(
   "File Button events",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
