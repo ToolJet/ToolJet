@@ -162,7 +162,7 @@ export const createBranchSlice = (set, get) => ({
       const state = get();
 
       // Get Development environment - branches ALWAYS work in Development
-      const developmentEnv = state.environments?.find((env) => env.priority === 1);
+      const developmentEnv = state.environments?.find((env) => env.name === 'Development' || env.priority === 1);
       if (!developmentEnv) {
         throw new Error('Development environment not found');
       }
@@ -359,7 +359,7 @@ export const createBranchSlice = (set, get) => ({
       }
 
       // Get Development environment
-      const developmentEnv = state.environments?.find((env) => env.priority === 1);
+      const developmentEnv = state.environments?.find((env) => env.name === 'Development' || env.priority === 1);
       if (!developmentEnv) {
         throw new Error('Development environment not found');
       }
