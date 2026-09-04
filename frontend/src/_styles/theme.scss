@@ -16471,6 +16471,12 @@ section.ai-message-prompt-input-wrapper {
     background-color: #ededee !important;
   }
 
+  .react-datepicker__day--today {
+    border: 1px solid var(--cc-primary-brand);
+    border-radius: 8px;
+    background-color: var(--surfaces-surface-01);
+  }
+
   .react-datepicker__day--selecting-range-start,
   .react-datepicker__day--selected,
   .react-datepicker__day--range-end {
