@@ -13,7 +13,7 @@ This is especially useful when you run more than one ToolJet instance against th
 ## Prerequisites
 
 - Git Sync configured for the workspace, using GitHub or GitLab.
-- A **Team** plan or higher. Auto-sync does not require Enterprise, so it is available in single-branch mode as well. It is unavailable while a licence is expired.
+- A **Team** plan or higher. Auto-sync does not require Enterprise, so it is available in single-branch mode as well. It is unavailable while a license is expired.
 - The **Admin** or **Super admin** role. Builders and end users cannot configure auto-sync.
 - Permission to add a webhook to the Git repository.
 - `TOOLJET_HOST` set to a URL your Git provider can reach. The webhook URL is derived from it, so an unreachable or incorrect value means events never arrive.
@@ -35,7 +35,7 @@ Ordinary commits to a branch do not trigger a sync. Only version tags and merged
 In single-branch mode, only **Push** is offered, because pull requests and branch deletions are branch operations that do not apply.
 
 :::warning
-GitLab has no branch-deletion event that ToolJet recognises, so a branch deleted in a GitLab repository is not removed from connected instances automatically. Delete it in each instance instead.
+GitLab has no branch-deletion event that ToolJet recognizes, so a branch deleted in a GitLab repository is not removed from connected instances automatically. Delete it in each instance instead.
 :::
 
 ## Set Up Auto-Sync
@@ -43,14 +43,14 @@ GitLab has no branch-deletion event that ToolJet recognises, so a branch deleted
 1. Go to the **Workspace settings** page and open the **Configure git sync** tab.
 2. Turn on **Auto-sync from repository**. The webhook setup panel opens.
 
-   <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/auto-sync/auto-sync-webhook-drawer.png" alt="Webhook setup panel showing the payload URL, masked secret, the three subscribable events, and a reminder to set the content type to application/json in GitHub" />
+   <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/auto-sync/auto-sync-webhook-drawer.png" alt="Webhook setup panel showing the payload URL, masked secret, the three subscribable events, and a reminder to set the content type to application/json in GitHub" />
 
 3. Copy the **Payload URL**.
 4. Copy the **Secret**. It is shown only once during first-time setup, so save it before closing the panel.
 5. Select the events to subscribe to.
 6. In your Git repository, create a webhook using the copied URL and secret, and set the content type to `application/json`. Choose the option to select individual events and tick the ones listed in the table above. The default of delivering only push events will not send merges or branch deletions.
 
-   <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/auto-sync/github-webhook-config.png" alt="GitHub Add webhook form with the payload URL, application/json content type, secret, and individual event selection" />
+   <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/auto-sync/github-webhook-config.png" alt="GitHub Add webhook form with the payload URL, application/json content type, secret, and individual event selection" />
 
 7. Save the configuration in ToolJet.
 
@@ -82,8 +82,7 @@ An event is reported as skipped when it is not actionable, for example a pull re
 
 If nothing appears in the list at all, the event never reached ToolJet. Check the delivery log in your Git provider to confirm it was sent and what response it received.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/auto-sync/github-recent-deliveries.png" alt="Recent Deliveries tab of a GitHub webhook, listing delivered push, pull request and delete events" />
-
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/auto-sync/github-recent-deliveries.png" alt="Recent Deliveries tab of a GitHub webhook, listing delivered push, pull request and delete events" />
 
 :::info
 ToolJet ignores events caused by its own actions, so committing from one instance does not cause that same instance to sync the change back onto itself.

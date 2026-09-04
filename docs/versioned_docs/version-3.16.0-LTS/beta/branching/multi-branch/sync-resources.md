@@ -1,10 +1,10 @@
 ---
-id: push-unsynced-resources
+id: sync-resources
 title: Push Unsynced Resources to Git
 sidebar_label: Push Unsynced Resources
 ---
 
-<PlanBadge type="team" />
+<PlanBadge type="enterprise" />
 
 An unsynced resource is an application, module, or datasource that exists in ToolJet but has never been committed to your Git repository. You will usually meet them right after turning on Git Sync or branching in a workspace that already had resources in it: everything built beforehand is still local, and Git has never seen it.
 
@@ -25,7 +25,7 @@ Indicators appear only while you are on the default branch. Each entry point pus
 | **Data sources** page | A red refresh icon on the row | That one datasource |
 | **Data sources** page | A **Sync** button in the header | Every unsynced datasource at once |
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/push-unsynced-resources/unsynced-app-card.png" alt="Applications page on the default branch with red refresh icons on two unsynced apps, one showing the tooltip App not synced in remote git" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/unsynced-app-card.png" alt="Applications page on the default branch with red refresh icons on two unsynced apps, one showing the tooltip App not synced in remote git" />
 
 The header **Sync** button on the **Data sources** page covers datasources only. An unsynced application is always pushed from its card or from the App Builder, never from there.
 
@@ -37,13 +37,9 @@ Workflows never appear as unsynced, because they are not branch-scoped.
 2. Confirm which resource to push. On the **Applications** and **Modules** pages the dialog also lists your other unsynced resources, so you can switch to a different one without closing it.
 3. Choose a target branch. Select an existing feature branch, or type a new name to create one. New branches always come from the default branch, whichever branch you are viewing.
 4. Push. ToolJet commits the resource to that branch, pulls it back, and switches you to the branch.
-5. Open a pull request for the branch and merge it into the default branch. Refer to [Pull Requests](/docs/beta/branching/pull-requests).
+5. Open a pull request for the branch and merge it into the default branch. Refer to [Pull Requests](/docs/beta/branching/multi-branch/pull-requests).
 
 The resource is only on a feature branch until step 5 completes. It reaches the default branch when the pull request is merged.
-
-:::info
-In single-branch mode the target is always the default branch and the branch field is disabled, because there is nowhere else to push.
-:::
 
 ## Version Requirements Before Pushing
 
@@ -60,7 +56,7 @@ Datasources have no versions, so this check does not apply to them.
 
 ## Naming Conflicts
 
-If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](/docs/beta/branching/resolving-conflicts).
+If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts).
 
 <br/>
 ---

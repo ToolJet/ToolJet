@@ -30,7 +30,7 @@ flowchart TD
 
 ## Create a Pull Request
 
-1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Push and Pull Commit](/docs/beta/branching/commit-and-pull).
+1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Push and Pull Commit](/docs/beta/branching/multi-branch/push-and-pull).
 2. Open the branch dropdown and click **Create pull request**. ToolJet opens your Git provider in a new tab with the source and target branches pre-filled.
 3. **Add reviewers and a description**, then submit the pull request.
 4. **Resolve any review feedback or merge conflicts** in Git.

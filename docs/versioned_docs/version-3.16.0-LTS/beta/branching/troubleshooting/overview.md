@@ -1,7 +1,7 @@
 ---
-id: troubleshooting
+id: overview
 title: Troubleshooting
-sidebar_label: Troubleshooting
+sidebar_label: Overview
 ---
 
 <PlanBadge type="team" />
@@ -10,8 +10,8 @@ Two situations interrupt a push or a pull and ask you to act before ToolJet writ
 
 | Situation | What it means | Where to go |
 |:----------|:--------------|:------------|
-| A commit or pull stops and opens a conflict dialog | Two resources are competing for the same name or slug, usually after two branches were merged | [Resolving Conflicts](/docs/beta/branching/resolving-conflicts) |
-| A resource has never reached Git | It was built before Git Sync or branching was turned on, so Git has never seen it | [Push Unsynced Resources](/docs/beta/branching/push-unsynced-resources) |
+| A commit or pull stops and opens a conflict dialog | Two resources are competing for the same name or slug, usually after two branches were merged | [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts) |
+| A resource has never reached Git | It was built before Git Sync or branching was turned on, so Git has never seen it | [Single-branch mode](/docs/beta/branching/single-branch/sync-resources) or [multi-branch mode](/docs/beta/branching/multi-branch/sync-resources) |
 
 <br/>
 ---

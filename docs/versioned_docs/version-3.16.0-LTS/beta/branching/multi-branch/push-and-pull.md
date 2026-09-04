@@ -1,16 +1,16 @@
 ---
-id: commit-and-pull
+id: push-and-pull
 title: Push and Pull Commit
 sidebar_label: Push and Pull Commit
 ---
 
-<PlanBadge type="team" />
+<PlanBadge type="enterprise" />
 
 Committing sends your changes to the branch in Git. Pulling brings changes from Git back into ToolJet.
 
 ## Commit Changes
 
-In single-branch mode you commit directly on the default branch. With multiple branches enabled the default branch is read-only, so you commit from a feature branch and the changes reach the default branch through a merged pull request.
+The default branch is read-only, so you commit from a feature branch and the changes reach the default branch through a merged pull request.
 
 To commit datasource changes:
 
@@ -19,11 +19,24 @@ To commit datasource changes:
 3. Enter a commit message.
 4. Click to commit and push.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/commit-and-pull/workspace-commit-modal.png" alt="Push commit modal with a commit message field limited to 50 characters" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/shared/workspace-commit-modal.png" alt="Push commit modal with a commit message field limited to 50 characters" />
 
-To commit application or module changes, open the application in the App Builder or the module in the Module Builder, and use the Git Sync button in the header. See [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync).
+To commit application or module changes, open the application in the App Builder or the module in the Module Builder and use the Git Sync button in the header.
 
-**Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](/docs/beta/branching/push-unsynced-resources).
+That button changes with the branch you are on and whether the resource has reached Git yet:
+
+| Button | What it does | When it appears |
+|:-------|:-------------|:----------------|
+| **Commit** | Commits the resource to the current branch | On a feature branch |
+| **Pull commit** | Pulls changes from Git into the resource | On the default branch |
+| **Sync** | Opens the first-time push flow | On the default branch, for a resource never pushed to Git |
+| **Configure Git** | Opens the Git Sync configuration | When Git Sync is in your plan but not yet configured |
+
+It is shown in the Development environment while a draft version is selected. Saved and released versions are read-only and offer no Git action. **Sync** is the exception: it stays visible in every environment and on any version until the resource is pushed for the first time.
+
+Before committing, ToolJet checks that your branch still exists in Git. If it was deleted remotely, the commit is blocked and you need to create a new branch to continue.
+
+**Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](/docs/beta/branching/multi-branch/sync-resources).
 
 ### Scope of a Push
 
@@ -75,7 +88,7 @@ What you can choose also depends on the branch:
 - On the **default branch**, you choose between the latest commit and a specific saved version.
 - On a **feature branch**, there is nothing to choose. The latest commit on that branch is pulled.
 
-Refer to [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync) for the full set of builder-level actions.
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/pull-modal-feature-branch.png" alt="Git Sync dialog inside an application on a feature branch, showing Push and Pull tabs with the latest commit and no version to choose" />
 
 ### Pull From the Dashboard
 
@@ -83,8 +96,7 @@ Refer to [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync
 2. Confirm the branch to pull into.
 3. Confirm the pull.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/workspace-pull-modal.png" alt="Pull commit modal on the default branch, noting that the latest commit across all resources in the branch will be pulled" />
-
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/workspace-pull-modal.png" alt="Pull commit modal on the default branch, noting that the latest commit across all resources in the branch will be pulled" />
 
 Pulling a whole branch runs as a background job and notifies you when it finishes. Applications, folders, and datasources update automatically once the job completes.
 
@@ -112,7 +124,7 @@ Use this to see which versions exist in Git but not yet in this workspace, and b
 3. Any version that exists in Git but not in this workspace is added to the list.
 4. Hover that version and click **Pull**.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/version-dropdown-pull.png" alt="Version dropdown with a Refresh control, showing a version that exists in Git but not in the workspace with a Pull button beside it" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/version-dropdown-pull.png" alt="Version dropdown with a Refresh control, showing a version that exists in Git but not in the workspace with a Pull button beside it" />
 
 Versions are listed per environment, so switch the **Development**, **Staging**, and **Production** tabs to see the versions available in each.
 
@@ -127,8 +139,7 @@ Use this when you want to choose between the latest commit and a saved version i
 
 A version that already exists in the workspace is not pulled again.
 
-
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/pull-modal-default-branch.png" alt="Pull commit modal inside an application on the default branch, with a version selected and a note that only this app and its dependencies will be pulled" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/pull-modal-default-branch.png" alt="Pull commit modal inside an application on the default branch, with a version selected and a note that only this app and its dependencies will be pulled" />
 
 :::info
 Pulling a saved version does not affect the current draft, which continues to track the latest commit on the branch.
@@ -138,7 +149,7 @@ Pulling a saved version does not affect the current draft, which continues to tr
 
 If ToolJet detects duplicate names or slugs between your workspace and the incoming changes, the operation stops before making any changes and opens a conflict dialog. Nothing is written until the conflicts are resolved.
 
-See [Resolving Conflicts](/docs/beta/branching/resolving-conflicts) for the categories and how to fix each one.
+See [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts) for the categories and how to fix each one.
 
 <br/>
 ---

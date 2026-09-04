@@ -175,31 +175,31 @@
       "items": [
         "build-with-ai/overview",
         {
-              "type": "category",
-              "label": "Building Application",
-              "items": [
-                "build-with-ai/generate-applications",
-                "build-with-ai/integrating-data"
-              ]
+          "type": "category",
+          "label": "Building Application",
+          "items": [
+            "build-with-ai/generate-applications",
+            "build-with-ai/integrating-data"
+          ]
         },
         {
-              "type": "category",
-              "label": "AI Assitance",
-              "items": [
-                "build-with-ai/referencing-app-resources",
-                "build-with-ai/debug-components",
-                "build-with-ai/ai-docs-assistant"
-              ]
+          "type": "category",
+          "label": "AI Assitance",
+          "items": [
+            "build-with-ai/referencing-app-resources",
+            "build-with-ai/debug-components",
+            "build-with-ai/ai-docs-assistant"
+          ]
         },
         {
-              "type": "category",
-              "label": "Concepts & References",
-              "items": [
-                "build-with-ai/ai-credits",
-                "build-with-ai/model-selection",
-                "build-with-ai/prompting101",
-                "build-with-ai/ai-best-practices"
-              ]
+          "type": "category",
+          "label": "Concepts & References",
+          "items": [
+            "build-with-ai/ai-credits",
+            "build-with-ai/model-selection",
+            "build-with-ai/prompting101",
+            "build-with-ai/ai-best-practices"
+          ]
         },
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
@@ -521,7 +521,7 @@
                 "widgets/toggle-switch-v2",
                 "widgets/tree-select",
                 "widgets/vertical-divider",
-                 {
+                {
                   "type": "category",
                   "label": "Legacy Components",
                   "items": [
@@ -1136,34 +1136,58 @@
             },
             "development-lifecycle/gitsync/delete-gitsync",
             "development-lifecycle/gitsync/push",
-            "development-lifecycle/gitsync/pull"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Branching and Pull Requests",
-          "link": {
-            "type": "doc",
-            "id": "beta/branching/overview"
-          },
-          "items": [
-            "beta/branching/overview",
-            "beta/branching/enable-branching",
-            "beta/branching/versioning",
-            "beta/branching/commit-and-pull",
-            "beta/branching/app-builder-git-sync",
-            "beta/branching/pull-requests",
-            "beta/branching/auto-sync",
+            "development-lifecycle/gitsync/pull",
             {
               "type": "category",
-              "label": "Troubleshooting",
+              "label": "Branching",
               "link": {
                 "type": "doc",
-                "id": "beta/branching/troubleshooting"
+                "id": "beta/branching/overview"
               },
               "items": [
-                "beta/branching/resolving-conflicts",
-                "beta/branching/push-unsynced-resources"
+                "beta/branching/overview",
+                {
+                  "type": "category",
+                  "label": "Single-Branch Mode",
+                  "link": {
+                    "type": "doc",
+                    "id": "beta/branching/single-branch/overview"
+                  },
+                  "items": [
+                    "beta/branching/single-branch/overview",
+                    "beta/branching/single-branch/push-and-pull",
+                    "beta/branching/single-branch/sync-resources"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Multi-Branch Mode",
+                  "link": {
+                    "type": "doc",
+                    "id": "beta/branching/multi-branch/overview"
+                  },
+                  "items": [
+                    "beta/branching/multi-branch/overview",
+                    "beta/branching/multi-branch/enable-and-manage-branches",
+                    "beta/branching/multi-branch/push-and-pull",
+                    "beta/branching/multi-branch/sync-resources",
+                    "beta/branching/multi-branch/pull-requests"
+                  ]
+                },
+                "beta/branching/versioning",
+                "beta/branching/auto-sync",
+                {
+                  "type": "category",
+                  "label": "Troubleshooting",
+                  "link": {
+                    "type": "doc",
+                    "id": "beta/branching/troubleshooting/overview"
+                  },
+                  "items": [
+                    "beta/branching/troubleshooting/overview",
+                    "beta/branching/troubleshooting/resolving-conflicts"
+                  ]
+                }
               ]
             }
           ]
@@ -1225,7 +1249,9 @@
             "type": "doc",
             "id": "development-lifecycle/backup/gitsync-backup"
           },
-          "items": ["development-lifecycle/backup/gitsync-backup"]
+          "items": [
+            "development-lifecycle/backup/gitsync-backup"
+          ]
         },
         {
           "type": "category",

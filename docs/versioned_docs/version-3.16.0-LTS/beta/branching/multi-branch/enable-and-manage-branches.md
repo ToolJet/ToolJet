@@ -1,5 +1,5 @@
 ---
-id: enable-branching
+id: enable-and-manage-branches
 title: Enable and Manage Branches
 sidebar_label: Enable and Manage Branches
 ---
@@ -21,7 +21,7 @@ Git Sync starts in single-branch mode. Branching is enabled per workspace, and o
 2. Confirm a repository connection is configured and finalized. The toggle stays disabled until one exists.
 3. Turn on the **Branching** toggle. The change saves immediately.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/enable-branching/branching-toggle-settings.png" alt="Branching toggle enabled on the Configure git sync page in Workspace settings" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/branching-toggle-settings.png" alt="Branching toggle enabled on the Configure git sync page in Workspace settings" />
 
 You can also open the branch dropdown in the header and select **Enable branching**, which takes you to the same page.
 
@@ -36,7 +36,7 @@ Branches can only be created from the default branch.
 3. Enter a branch name.
 4. Click **Create branch**.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/managing-branches/create-branch-modal.png" alt="Create branch modal with the branch name field and a note that branches can only be created from the default branch" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/multi-branch/create-branch-modal.png" alt="Create branch modal with the branch name field and a note that branches can only be created from the default branch" />
 
 Branch creation runs in the background. ToolJet notifies you when the branch is ready and adds it to the branch list automatically.
 
@@ -65,7 +65,7 @@ Importing is the only way to bring in a branch created outside ToolJet. It will 
 1. Open the branch dropdown and select **Switch branch**.
 2. Search for or select the branch you want.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/managing-branches/switch-branch-modal.png" alt="Switch branch modal listing the default branch and a feature branch, with options to view the git repo or create a new branch" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/multi-branch/switch-branch-modal.png" alt="Switch branch modal listing the default branch and a feature branch, with options to view the git repo or create a new branch" />
 
 The list shows branches ToolJet already tracks. A branch created directly in Git after your workspace was connected does not appear here until you import it, so use the import step above to bring it in.
 
@@ -77,7 +77,7 @@ ToolJet verifies that the branch still exists in Git before switching. If it has
 2. Find the branch and select the delete option.
 3. Confirm the deletion.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/managing-branches/delete-branch-confirm.png" alt="Confirmation dialog warning that the branch will be deleted in ToolJet and in the git repository" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/multi-branch/delete-branch-confirm.png" alt="Confirmation dialog warning that the branch will be deleted in ToolJet and in the git repository" />
 
 Deleting a branch in ToolJet also deletes the branch in your Git repository. The default branch cannot be deleted.
 

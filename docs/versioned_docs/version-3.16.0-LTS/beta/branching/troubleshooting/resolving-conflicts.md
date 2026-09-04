@@ -22,7 +22,7 @@ ToolJet runs a conflict check before it writes anything, when you:
 
 If a conflict is found, the operation stops and a dialog opens describing what is wrong and which action was blocked.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/resolving-conflicts/conflict-dialog-overview.png" alt="Conflict dialog for a blocked pull, showing a duplicate data section requiring manual resolution and a second section of resources that can be synced from git" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/resolving-conflicts/conflict-dialog-overview.png" alt="Conflict dialog for a blocked pull, showing a duplicate data section requiring manual resolution and a second section of resources that can be synced from git" />
 
 Nothing is written to your workspace or to Git until the conflicts are resolved.
 
@@ -125,9 +125,9 @@ Pulling the default branch will keep failing, so bring in just the affected appl
 
 **Solution:** Open each application listed in the dialog and delete the extra draft versions, keeping the one you want. Then retry the pull.
 
-## Reading The Conflict Dialog
+## Reading the Conflict Dialog
 
-Each resource in the conflict dialog is labelled with the side it came from, so you can tell which copy is already in ToolJet and which is arriving from Git. Resources are identified by name, and by a short identifier when several share a name. Use this to locate the correct branch or application to fix.
+Each resource in the conflict dialog is labeled with the side it came from, so you can tell which copy is already in ToolJet and which is arriving from Git. Resources are identified by name, and by a short identifier when several share a name. Use this to locate the correct branch or application to fix.
 
 <br/>
 ---

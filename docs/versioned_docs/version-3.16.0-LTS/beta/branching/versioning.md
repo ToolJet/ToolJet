@@ -8,7 +8,7 @@ sidebar_label: Version Control with Git
 
 Branching separates two jobs that a [version](/docs/development-lifecycle/release/version-control) does on its own. Branches carry work in progress, and versions mark the stable points you promote and release.
 
-## The Draft Is the Head of the Default Branch
+## The Draft Version
 
 Every application carries exactly one draft version on each branch, and that draft is never absent. The draft is your editable working copy: it holds every change you make in the App Builder until you save that work as a version, and it is what the branch's next commit pushes to Git. Because there is exactly one per branch, switching branches switches which draft you are editing, so the same application can hold separate work in progress on several branches at once.
 
@@ -19,9 +19,9 @@ Every application carries exactly one draft version on each branch, and that dra
 
 The draft on the default branch represents the current state of that branch, which is why only one can exist.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/versioning/version-dropdown-default-branch.png" alt="Version dropdown on the default branch showing the draft above three saved versions, with Create draft version unavailable" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/versioning/version-dropdown-default-branch.png" alt="Version dropdown on the default branch showing the draft above three saved versions, with Create draft version unavailable" />
 
-## Versions Live on the Default Branch
+## Where Saved Versions Live
 
 Feature branches hold a working draft and nothing else. Saved versions appear on the default branch, because a version is something you promote through environments and release, and environments are not branch-scoped.
 
@@ -31,7 +31,7 @@ This is why the pull dialog offers a version to choose from on the default branc
 
 Saving locks the version and creates a tag in your Git repository, named after the application and the version. Once saved, a version cannot be edited or renamed, and it becomes available to promote to staging and production, and then to release.
 
-<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/versioning/save-version-modal.png" alt="Save version modal with version name and description fields, warning that neither can be edited after saving" />
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/versioning/save-version-modal.png" alt="Save version modal with version name and description fields, warning that neither can be edited after saving" />
 
 What happens next depends on where you save from.
 
