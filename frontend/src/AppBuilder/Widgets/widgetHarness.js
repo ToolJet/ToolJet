@@ -23,6 +23,7 @@
  *      (eventsSlice.js:104).
  */
 import React from 'react';
+import { waitFor } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
 import {
@@ -40,13 +41,56 @@ export const store = () => useStore.getState();
 export const drain = () => new Promise((resolve) => setTimeout(resolve, 0));
 export { binding };
 
+/**
+ * An option in the shape the inspector persists: `label`/`value`/`caption` plain,
+ * and `visible`/`disable`/`default` as resolver-bound `{ value }` wrappers.
+ */
+export function option(label, value, { visible = true, disable = false, isDefault = false, caption = null } = {}) {
+  return {
+    label,
+    value,
+    caption,
+    visible: { value: `{{${visible}}}` },
+    disable: { value: `{{${disable}}}` },
+    default: { value: `{{${isDefault}}}` },
+  };
+}
+
+export const radioButtonV2Defaults = {
+  defaultProperties: {
+    label: binding('Pick one'),
+    visibility: binding('{{true}}'),
+    loadingState: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    optionsLoadingState: binding('{{false}}'),
+    advanced: binding('{{false}}'),
+    layout: binding('row'),
+    dynamicHeight: binding('{{false}}'),
+  },
+  defaultStyles: {
+    auto: binding('{{true}}'),
+    labelWidth: binding('33'),
+    widthType: binding('ofComponent'),
+    alignment: binding('side'),
+    direction: binding('left'),
+    labelFontSize: binding('{{12}}'),
+  },
+};
+
 /** The props AppCanvas/Container passes down, minus its editor-only extras. */
-export function widgetProps(id, componentType, { darkMode = false, widgetHeight = 40, widgetWidth = 200 } = {}) {
+export function widgetProps(
+  id,
+  componentType,
+  // `currentMode` is overridable because several widgets gate view-only
+  // behaviour on it (RadioButtonV2's dynamic height, for one), and the editor
+  // path must stay the default.
+  { darkMode = false, widgetHeight = 40, widgetWidth = 200, currentMode = 'edit' } = {}
+) {
   return {
     id,
     componentType,
     moduleId: MODULE_ID,
-    currentMode: 'edit',
+    currentMode,
     currentLayout: 'desktop',
     widgetHeight,
     widgetWidth,
@@ -81,6 +125,7 @@ export function createWidgetHarness({
   capabilities = {},
   widgetHeight = 40,
   widgetWidth = 200,
+  offsetHeight,
 }) {
   const scenario = defineAppBuilderScenario({
     id: `${componentType.toLowerCase()}-widget`,
@@ -97,6 +142,7 @@ export function createWidgetHarness({
   });
 
   let session;
+  let restoreOffsetHeight;
 
   /**
    * Seeds the widget (`properties`/`styles`/`validation` merged over the
@@ -111,6 +157,7 @@ export function createWidgetHarness({
     extraComponents = {},
     componentId = id,
     darkMode = false,
+    currentMode = 'edit',
     afterSeed,
     also = defaultAlso,
   } = {}) {
@@ -127,7 +174,7 @@ export function createWidgetHarness({
     // argument — see componentDefinition() in test/app-builder/seed.js.
     afterSeed?.();
     store().setEditorLoading(false, MODULE_ID);
-    store().setCurrentMode('edit', MODULE_ID);
+    store().setCurrentMode(currentMode, MODULE_ID);
     if (events.length) store().eventsSlice.setEvents(events, MODULE_ID);
 
     // AppBuilderTestSession.render() re-renders its single root rather than
@@ -136,7 +183,9 @@ export function createWidgetHarness({
     // must go up in ONE render() call as a fragment.
     return session.render(
       <>
-        <RenderWidget {...widgetProps(componentId, componentType, { darkMode, widgetHeight, widgetWidth })} />
+        <RenderWidget
+          {...widgetProps(componentId, componentType, { darkMode, widgetHeight, widgetWidth, currentMode })}
+        />
         {also.map(({ id: siblingId, componentType: siblingType, ...rest }) => (
           <RenderWidget key={siblingId} {...widgetProps(siblingId, siblingType, rest)} />
         ))}
@@ -144,20 +193,70 @@ export function createWidgetHarness({
     );
   }
 
+  const exposed = (componentId = id) => store().getExposedValueOfComponent(componentId, MODULE_ID);
+
   return {
     scenario,
     get session() {
       return session;
     },
     setup() {
+      if (offsetHeight != null) {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+        Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, get: () => offsetHeight });
+        restoreOffsetHeight = () => Object.defineProperty(HTMLElement.prototype, 'offsetHeight', descriptor);
+      }
       session = new AppBuilderTestSession({ scenario });
     },
     // A failed assertion skips a test's own inline cleanup, and a leaked
     // exposed-value bracket silently buffers the NEXT test's writes (see
     // test/app-builder/seed.js) — draining it is not optional per spec file,
     // so every harness does it rather than relying on each file to remember.
-    teardown: () => drainExposedValueBatch(),
+    teardown() {
+      restoreOffsetHeight?.();
+      drainExposedValueBatch();
+    },
     render,
+    async act(actionName, ...args) {
+      await waitFor(() => expect(exposed()[actionName]).toBeInstanceOf(Function));
+      let result;
+      await session.store.act(async () => {
+        result = await exposed()[actionName](...args);
+      });
+      return result;
+    },
+    renderInsideForm({ validation, properties = {}, formId = 'form1' } = {}) {
+      session = new AppBuilderTestSession({
+        scenario: defineAppBuilderScenario({
+          id: `${componentType.toLowerCase()}-inside-form`,
+          name: `${componentType} inside a Form`,
+          primarySeam: 'rtl',
+          surface: 'app-editor',
+          edition: 'ce',
+          environment: 'development',
+          layout: 'desktop',
+          version: 'draft',
+          transferPath: 'not-applicable',
+          access: 'authenticated',
+          capabilities: { observers: true, media: { matches: false }, dnd: true },
+        }),
+      });
+      const form = componentDefinition(formId, formId, 'Form', {
+        advanced: binding('{{false}}'),
+        visibility: binding('{{true}}'),
+        loadingState: binding('{{false}}'),
+        disabledState: binding('{{false}}'),
+      });
+      const child = componentDefinition(id, handle, componentType, { ...defaultProperties, ...properties });
+      child.component.parent = formId;
+      child.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+      child.component.definition.styles = { ...defaultStyles };
+      child.component.definition.validation = { ...defaultValidation, ...validation };
+      seedApp({ [formId]: form, [id]: child }, { moduleId: MODULE_ID });
+      store().setEditorLoading(false, MODULE_ID);
+      store().setCurrentMode('edit', MODULE_ID);
+      return session.render(<RenderWidget {...widgetProps(formId, 'Form')} />);
+    },
     setEvents: (events) => store().eventsSlice.setEvents(events, MODULE_ID),
     setExposedValue: (componentId, key, value) => store().setExposedValue(componentId, key, value, MODULE_ID),
     // Named, not a `(...args)` forwarder: componentsSlice's real signature is
@@ -167,7 +266,7 @@ export function createWidgetHarness({
     setComponentProperty: (componentId, property, value, paramType, attr = 'value', skipResolve = false) =>
       store().setComponentProperty(componentId, property, value, paramType, attr, skipResolve, MODULE_ID),
     variables: () => store().resolvedStore.modules[MODULE_ID].exposedValues.variables,
-    exposed: (componentId = id) => store().getExposedValueOfComponent(componentId, MODULE_ID),
+    exposed,
   };
 }
 

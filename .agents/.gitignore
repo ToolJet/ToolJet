@@ -1,0 +1,10 @@
+*
+!.gitignore
+!skills/
+skills/*
+!skills/widget-tdd/
+!skills/widget-tdd/**
+!skills/grill-me/
+!skills/grill-me/**
+!skills/test-driven-development/
+!skills/test-driven-development/**
