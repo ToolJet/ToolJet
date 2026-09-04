@@ -41,7 +41,7 @@ export interface IDataSourcesService {
     branchId?: string
   ): Promise<DataSource>;
 
-  testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string, dataSourceId?: string): Promise<object>;
+  testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 
   testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User): Promise<object>;
 
