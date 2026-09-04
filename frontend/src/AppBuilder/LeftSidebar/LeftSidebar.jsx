@@ -11,6 +11,7 @@ import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import DependencyViewer from './Dependencies/DependencyViewer';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
@@ -26,6 +27,17 @@ import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+
+// Human names for the error-boundary label/location of each sidebar panel.
+const LEFT_SIDEBAR_PANEL_LABELS = {
+  page: 'Inspector',
+  inspect: 'Inspector',
+  tooljetai: 'AI chat',
+  apphistory: 'App history',
+  libraries: 'Libraries',
+  debugger: 'Debugger',
+  settings: 'Global settings',
+};
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -103,6 +115,21 @@ export const BaseLeftSidebar = ({
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
+    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
+    return (
+      // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
+      <FallbackBoundary
+        label={panelLabel}
+        location={`LeftSideBar ${panelLabel}`}
+        darkMode={darkMode}
+        resetKeys={[selectedSidebarItem]}
+      >
+        {renderSelectedPanel()}
+      </FallbackBoundary>
+    );
+  };
+
+  const renderSelectedPanel = () => {
     switch (selectedSidebarItem) {
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
@@ -117,7 +144,7 @@ export const BaseLeftSidebar = ({
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
+        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
@@ -186,7 +213,25 @@ export const BaseLeftSidebar = ({
     );
   };
 
-  const renderLeftSidebarItems = () => {
+  const renderSettingsItem = (isModuleEditor) => (
+    <SidebarItem
+      icon="settings"
+      selectedSidebarItem={selectedSidebarItem}
+      darkMode={darkMode}
+      // eslint-disable-next-line no-unused-vars
+      onClick={(e) => handleSelectedSidebarItem('settings')}
+      className={`left-sidebar-item  left-sidebar-layout`}
+      badge={true}
+      tip="Settings"
+      ref={setSideBarBtnRefs('settings')}
+      isModuleEditor={isModuleEditor}
+      data-cy="left-sidebar-settings-button"
+    >
+      <Bolt width="16" height="16" className="tw-text-icon-strong" />
+    </SidebarItem>
+  );
+
+  const renderLeftSidebarItems = (isModuleEditor) => {
     if (isModuleEditor) {
       return (
         <>
@@ -197,6 +242,7 @@ export const BaseLeftSidebar = ({
             handleSelectedSidebarItem,
           })}
           {renderCommonItems()}
+          {renderSettingsItem(isModuleEditor)}
         </>
       );
     }
@@ -226,21 +272,7 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-          data-cy="left-sidebar-settings-button"
-        >
-          <Bolt width="16" height="16" className="tw-text-icon-strong" />
-        </SidebarItem>
+        {renderSettingsItem(isModuleEditor)}
       </>
     );
   };
@@ -251,7 +283,7 @@ export const BaseLeftSidebar = ({
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999, maxWidth: '304px' }}
     >
-      {renderLeftSidebarItems()}
+      {renderLeftSidebarItems(isModuleEditor)}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close

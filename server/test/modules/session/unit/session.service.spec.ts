@@ -29,12 +29,10 @@ jest.mock('src/helpers/database.helper', () => ({
   dbTransactionWrap: jest.fn((cb: (manager: any) => Promise<any>) => cb(mockManager)),
 }));
 
-// Mock OpenTelemetry metrics (they reference global tracer state)
+// Mock @otel/tracing — importing it for real runs the SDK auto-start block
 jest.mock('@otel/tracing', () => ({
-  decrementActiveSessions: jest.fn(),
-  decrementConcurrentUsers: jest.fn(),
-  incrementActiveSessions: jest.fn(),
-  incrementConcurrentUsers: jest.fn(),
+  trackUserActivity: jest.fn(),
+  extractAppIdFromPath: jest.fn(),
 }));
 
 // Mock RequestContext (CLS-based, not available outside HTTP context)

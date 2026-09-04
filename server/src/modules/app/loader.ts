@@ -14,6 +14,7 @@ import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
+import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
@@ -79,60 +80,55 @@ export class AppModuleLoader {
         load: [() => getEnvVars()],
       }),
       LoggerModule.forRoot({
-        pinoHttp: {
-          level: (() => {
-            // Allow explicit OTEL_LOG_LEVEL override only when OTEL is enabled
-            if (process.env.OTEL_LOG_LEVEL && process.env.ENABLE_OTEL === 'true') {
-              return process.env.OTEL_LOG_LEVEL;
-            }
-            const logLevel = {
-              production: 'info',
-              development: 'debug',
-              test: 'silent',
-            };
-            return logLevel[process.env.NODE_ENV] || 'info';
-          })(),
-          autoLogging:
+        pinoHttp: (() => {
+          const autoLogging =
             process.env.NODE_ENV === 'test'
               ? false
               : {
-                  ignore: (req) => {
-                    if (req.url === '/api/health' || req.url === '/api/metrics') {
-                      return true;
-                    }
-                    return false;
-                  },
-                },
-          transport:
-            process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
-              ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    levelFirst: true,
-                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                  },
-                }
-              : undefined,
-          redact: {
-            paths: [
-              'req.headers.authorization',
-              'req.headers.cookie',
-              'res.headers.authorization',
-              'res.headers["set-cookie"]',
-              'req.headers["proxy-authorization"]',
-              'req.headers["www-authenticate"]',
-              'req.headers["authentication-info"]',
-              'req.headers["x-forwarded-for"]',
-              ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
-            ],
-            censor: '[REDACTED]',
-          },
-          customProps: (req, res) => {
-            const id = res?.['locals']?.tj_transactionId;
-            return id ? { transactionId: id } : {};
-          },
-        },
+                  ignore: (req) => req.url === '/api/health' || req.url === '/api/metrics',
+                };
+
+          return {
+            // Shared with TransactionLogger (service.ts) — buildBaseLogger() is memoized,
+            // so both resolve to the same pino instance and both reach the OTLP stream.
+            logger: buildBaseLogger(),
+            autoLogging,
+            redact: {
+              paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'res.headers.authorization',
+                'res.headers["set-cookie"]',
+                'req.headers["proxy-authorization"]',
+                'req.headers["www-authenticate"]',
+                'req.headers["authentication-info"]',
+                'req.headers["x-forwarded-for"]',
+                'req.body.password',
+                'req.body.current_password',
+                'req.body.new_password',
+                'req.body.token',
+                'req.body.invitation_token',
+                'req.body.access_token',
+                'req.body.refresh_token',
+                'req.body.secret',
+                'req.body.api_key',
+                'req.headers["x-api-key"]',
+                'req.headers["x-auth-token"]',
+                ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
+              ],
+              censor: '[REDACTED]',
+            },
+            customProps: (req, res) => {
+              const id = res?.['locals']?.tj_transactionId;
+              return id ? { transactionId: id } : {};
+            },
+            customLogLevel: (_req, res, err) => {
+              if (err || res.statusCode >= 500) return 'error';
+              if (res.statusCode >= 400) return 'warn';
+              return 'info';
+            },
+          };
+        })(),
       }),
       getMainDBConnectionModule(),
       TypeOrmModule.forRoot({

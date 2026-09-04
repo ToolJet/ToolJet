@@ -138,6 +138,31 @@ export const workflowDefaultSources = {
 // Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
 export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
 
+// Datasource kinds the AI can write queries and transformations for. Kinds outside this list (e.g.
+// restapi, tooljetdb) are rejected by the agent, so every AI entry point must be gated on it —
+// otherwise the button is a guaranteed failure.
+// Kinds with no transformation layer at all — their query editor hides the Transformation tab, so
+// nothing (the "✨", the "@query.transformation" mention) may offer to write one for them.
+export const TRANSFORMATION_DISABLED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+export const AI_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'gmail',
+  'googlecalendar',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'openai',
+  'runjs',
+  'databricks',
+  'servicenow',
+  'quickbooks',
+  'hubspot',
+];
+
 // ToolJet-synthesized query error kinds (errorData.data.type); mirrors server TJ_QUERY_ERROR_TYPE
 export const TJ_QUERY_ERROR_TYPE = {
   UNAUTHORIZED: 'tj-401', // app-level Query Access denied

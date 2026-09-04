@@ -16,6 +16,8 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
+import { recordQueryMetric } from '@otel/audit-metrics';
+import { getOrganizationNameCached, getEnvironmentNameCached } from '@otel/org-name-cache';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
@@ -83,6 +85,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     let appToUse: App;
     let effectiveAppName: string | undefined;
     let effectiveIsPublic: boolean | undefined;
+    let resolvedEnvironmentId: string | undefined;
 
     try {
       dataSource = dataQuery?.dataSource;
@@ -123,6 +126,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         branchId
       );
       const environmentId = dataSourceOptions.environmentId;
+      resolvedEnvironmentId = environmentId;
 
       dataSource.options = dataSourceOptions.options;
 
@@ -135,6 +139,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         user,
         opts
       );
+
+      const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+      if (!isTooljetManagedApp) {
+        sourceOptions['tj_redirect_host'] = await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+      }
 
       // Determine whether query timeout is set, to initiate abort controller
       const queryTimeoutMs =
@@ -239,6 +248,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                   provider: dataSource.kind,
                   source_options: sourceOptions,
                   plugin_id: dataSource.pluginId,
+                  organization_id: organizationId,
+                  environment_id: environmentId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -292,6 +303,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user,
               opts
             ));
+            if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+              sourceOptions['tj_redirect_host'] =
+                await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+            }
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
 
@@ -328,6 +343,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               provider: dataSource.kind,
               source_options: sourceOptions,
               plugin_id: dataSource.pluginId,
+              organization_id: organizationId,
+              environment_id: environmentId,
             });
             return {
               status: 'needs_oauth',
@@ -370,7 +387,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       return result;
     } catch (queryError) {
-      abortCtrl.cleanup();
+      // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
+      abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -379,7 +397,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
-      abortCtrl.cleanup();
+      abortCtrl?.cleanup();
       if (user) {
         // Get metadata from queryStatus
         const queryMetadata = queryStatus.getMetaData();
@@ -404,7 +422,64 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           },
         };
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
+
+        await this.emitQueryMetric(user, dataQuery, queryStatus, {
+          appId: appToUse?.id,
+          appName: appToUse?.name,
+          dataSourceType: dataSource?.kind,
+          appMode: mode,
+          environmentId: resolvedEnvironmentId,
+        });
       }
+    }
+  }
+
+  // Direct OTEL emission — metrics flow regardless of audit log licensing.
+  // Protected: the EE override of runQuery has its own finally block and calls this too.
+  protected async emitQueryMetric(
+    user: User,
+    dataQuery: any,
+    queryStatus: DataQueryStatus,
+    context: {
+      appId?: string;
+      appName?: string;
+      dataSourceType?: string;
+      appMode?: string;
+      environmentId?: string;
+    }
+  ): Promise<void> {
+    // Runs inside every query's finally block. Bail before the two cached name lookups so
+    // installs with OTel off pay nothing in the query path.
+    if (process.env.ENABLE_OTEL !== 'true') return;
+
+    try {
+      const { status, queryError, duration, parsedQueryOptions } = queryStatus.getMetaData();
+      const [organizationName, environment] = await Promise.all([
+        getOrganizationNameCached(user.organizationId),
+        context.environmentId ? getEnvironmentNameCached(context.environmentId) : Promise.resolve('unknown'),
+      ]);
+
+      recordQueryMetric({
+        userId: user.id,
+        organizationId: user.organizationId,
+        organizationName,
+        appId: context.appId || 'unknown',
+        appName: context.appName,
+        queryId: dataQuery?.id || 'unknown',
+        queryName: dataQuery?.name,
+        dataSourceType: context.dataSourceType || 'unknown',
+        appMode: context.appMode || 'unknown',
+        environment,
+        status,
+        duration,
+        error: (queryError as { message?: string })?.message,
+        queryText: parsedQueryOptions?.['query'] || '',
+        queryType: parsedQueryOptions?.['mode'] || 'unknown',
+        versionName: dataQuery?.appVersion?.name,
+      });
+    } catch (error) {
+      // Observability must never break query execution
+      console.error('[OTEL] Failed to emit query metric:', error);
     }
   }
 

@@ -29,11 +29,12 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
-  TOP_ALIGNMENT_HEIGHT_INCREMENT,
-  ROW_SCOPED_WIDGET_TYPES,
-  NESTING_LEVEL_LIMITS,
-} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+  calculateInputCanvasHeight,
+  resolveInputCanvasAlignment,
+  resolveInputCanvasLabelLength,
+} from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -2161,7 +2162,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+  persistComponentDefinition: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const currentMode = getCurrentMode(moduleId);
@@ -2178,8 +2179,21 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+  },
+
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    get().persistComponentDefinition(componentId, moduleId);
 
     get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+  },
+
+  // One save and one broadcast for properties that must be applied together
+  saveComponentPropertyChangesBatch: (componentId, updates, moduleId = 'canvas') => {
+    if (!updates?.length) return;
+
+    get().persistComponentDefinition(componentId, moduleId);
+
+    get().multiplayer.broadcastUpdates({ componentId, updates }, 'components', 'update');
   },
 
   setComponentProperty: (
@@ -3174,7 +3188,15 @@ export const createComponentsSlice = (set, get) => ({
       return match; // Return the original match if no mapping is found
     });
   },
-  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
+  calculateMoveableBoxHeightWithId: (
+    componentId,
+    currentLayout,
+    stylesDefinition,
+    moduleId = 'canvas',
+    resolvedStyleAlignment,
+    resolvedStyleLegacyInputSize,
+    resolvedPropertyLabel
+  ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
@@ -3186,27 +3208,41 @@ export const createComponentsSlice = (set, get) => ({
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
     const width = stylesDefinition?.width ?? stylesDefinition?.labelWidth ?? { value: null };
-    let resolvedLabel = label?.value?.length ?? 0;
+    const resolvedLabelLength = resolveInputCanvasLabelLength(label?.value, (value) =>
+      resolvedPropertyLabel !== undefined
+        ? resolvedPropertyLabel
+        : resolveDynamicValues(value + '', getAllExposedValues(moduleId))
+    );
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
-    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
-    if (resolvedLabelType === 'auto') {
-      resolvedLabel = 1;
-    }
+    const resolvedLabelType = labelType
+      ? (resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto')
+      : undefined;
+    const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
+    const resolvedLegacyInputSize =
+      resolvedStyleLegacyInputSize ??
+      (legacyInputSizeProperty
+        ? (resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false)
+        : false);
 
-    const resolvedAlignment =
-      alignment.value === 'top' || alignment.value === 'side'
-        ? alignment.value
-        : resolveDynamicValues(alignment.value + '');
-    let newHeight = layoutData?.height;
+    const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
+      alignment: alignment.value,
+      hasLegacyInputSizeProperty: Boolean(legacyInputSizeProperty),
+      legacyInputSize: resolvedLegacyInputSize,
+      resolveValue: (value) => resolvedStyleAlignment ?? get().getResolvedValue(value, {}, moduleId),
+    });
 
-    if (alignment.value && resolvedAlignment === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
-      }
-    }
-    return newHeight;
+    return calculateInputCanvasHeight({
+      height: layoutData?.height,
+      alignment: alignment.value && resolvedAlignment,
+      labelLength: resolvedLabelLength,
+      width: resolvedWidth,
+      auto: resolvedAuto,
+      labelType: resolvedLabelType,
+      legacyInputSize: resolvedLegacyInputSize,
+      isDynamicAlignment,
+    });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {
     const { getCurrentPage } = get();

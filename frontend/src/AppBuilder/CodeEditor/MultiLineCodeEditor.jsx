@@ -29,6 +29,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { completionLabelTooltip } from './completionLabelTooltip';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -261,6 +262,7 @@ const MultiLineCodeEditor = (props) => {
           return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
         },
       }),
+      completionLabelTooltip,
       customTabKeymap,
       keymap.of([...staticCustomKeyMaps]),
     ],
