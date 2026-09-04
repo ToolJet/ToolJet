@@ -117,7 +117,7 @@ const selectListboxOption = (triggerSelector, label) => {
 // EXACT match (an inexact click can select a longer superset option).
 // The ComboboxInput nests more than one <input>, so typing is scoped to the first
 // visible one — `.find("input").type()` would throw "single element" here.
-const selectSearchableOption = (fieldSelector, label) => {
+export const selectSearchableOption = (fieldSelector, label) => {
   cy.get(fieldSelector).scrollIntoView().click();
   cy.get(`${fieldSelector} input`)
     .filter(":visible")
