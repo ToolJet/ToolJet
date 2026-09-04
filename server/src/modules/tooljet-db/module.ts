@@ -97,6 +97,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbImportExportService,
         TooljetDbRelationResolverService,
         TooljetDbMigrationRecorderService,
+        TooljetDbMigrationSqlCompilerService,
         TooljetDbEnvironmentAssignmentService,
       ],
     });

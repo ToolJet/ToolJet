@@ -497,6 +497,9 @@ describe('TooljetDb promote', () => {
         expect(res.body.result.target_relation_exists).toBe(false);
         expect(res.body.result.missing_migrations).toHaveLength(2);
         expect(res.body.result.missing_migrations.map((m) => m.action)).toEqual(['create_table', 'add_column']);
+        expect(res.body.result.missing_migrations[1].sql).toBe(
+          'ALTER TABLE preview_me\n  ADD COLUMN title character varying;'
+        );
 
         // Preview mutates nothing: no target relation, no DDL, source's applied set unchanged.
         expect(await relationFor(tableId, stagingEnvId)).toBeNull();

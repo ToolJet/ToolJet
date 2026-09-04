@@ -21,6 +21,7 @@ export type PreviewResult = {
     name: string | null;
     created_at: Date;
     created_by: string | null;
+    sql: string | null;
   }>;
 };
 
