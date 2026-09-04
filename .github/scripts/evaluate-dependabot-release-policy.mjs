@@ -8,6 +8,9 @@ const enforcement = {
   anyOverdue: new Date('2026-12-31T00:00:00Z'),
 };
 
+// Remediation windows measured from an alert's creation date. Severities without
+// an entry here have no policy-defined deadline and never block on the overdue
+// rules below.
 const defaultDeadlineDays = {
   'runtime:critical': 2,
   'runtime:high': 7,
@@ -25,29 +28,8 @@ function parseDate(value, label) {
   return date;
 }
 
-function activeException(record, now) {
-  const exception = record?.exception;
-  if (!exception) return false;
-
-  return Boolean(exception.justification && exception.approvedBy)
-    && parseDate(exception.expiresAt, 'exception expiry') >= now;
-}
-
 function normalizeSeverity(value) {
   return value === 'medium' ? 'moderate' : value;
-}
-
-function deadlineFor(alert, record) {
-  const publicKey = trackingKey(alert);
-  if (record?.deadline) return parseDate(record.deadline, `deadline for ${publicKey}`);
-
-  const key = `${alert.dependency?.scope}:${normalizeSeverity(alert.security_advisory?.severity)}`;
-  const days = defaultDeadlineDays[key];
-  if (days === undefined) return null;
-
-  const deadline = parseDate(alert.created_at, `creation date for ${publicKey}`);
-  deadline.setUTCDate(deadline.getUTCDate() + days);
-  return deadline;
 }
 
 function trackingKey(alert) {
@@ -58,6 +40,16 @@ function trackingKey(alert) {
     throw new Error('An alert is missing its GHSA, manifest path, or package name');
   }
   return `${ghsa}|${manifest}|${packageName}`;
+}
+
+function deadlineFor(alert) {
+  const key = `${alert.dependency?.scope}:${normalizeSeverity(alert.security_advisory?.severity)}`;
+  const days = defaultDeadlineDays[key];
+  if (days === undefined) return null;
+
+  const deadline = parseDate(alert.created_at, `creation date for ${trackingKey(alert)}`);
+  deadline.setUTCDate(deadline.getUTCDate() + days);
+  return deadline;
 }
 
 function describe(alert, reason) {
@@ -74,32 +66,22 @@ function describe(alert, reason) {
   };
 }
 
-if (process.argv.length < 4 || process.argv.length > 5) {
-  console.error(
-    'Usage: evaluate-dependabot-release-policy.mjs '
-      + '<open-alerts.json> <tracking.json> [now]'
-  );
+if (process.argv.length < 3 || process.argv.length > 4) {
+  console.error('Usage: evaluate-dependabot-release-policy.mjs <open-alerts.json> [now]');
   process.exit(2);
 }
 
 try {
   const alerts = parseJson(process.argv[2]);
-  const tracking = parseJson(process.argv[3]);
-  const now = process.argv[4] ? parseDate(process.argv[4], 'evaluation time') : new Date();
+  const now = process.argv[3] ? parseDate(process.argv[3], 'evaluation time') : new Date();
 
-  if (
-    !Array.isArray(alerts)
-    || !tracking.alerts
-    || typeof tracking.alerts !== 'object'
-    || Array.isArray(tracking.alerts)
-  ) {
-    throw new Error('Unexpected alerts or tracking file structure');
+  if (!Array.isArray(alerts)) {
+    throw new Error('Unexpected alerts file structure');
   }
 
   const blockers = [];
 
   for (const alert of alerts) {
-    const record = tracking.alerts[trackingKey(alert)];
     const severity = normalizeSeverity(alert.security_advisory?.severity);
     const scope = alert.dependency?.scope;
 
@@ -108,9 +90,7 @@ try {
       continue;
     }
 
-    if (activeException(record, now)) continue;
-
-    const deadline = deadlineFor(alert, record);
+    const deadline = deadlineFor(alert);
 
     if (
       now >= enforcement.overdueRuntimeHigh
@@ -123,12 +103,8 @@ try {
       continue;
     }
 
-    if (now >= enforcement.anyOverdue) {
-      if (!deadline) {
-        blockers.push(describe(alert, 'missing the required recorded remediation deadline'));
-      } else if (deadline < now) {
-        blockers.push(describe(alert, `overdue since ${deadline.toISOString()}`));
-      }
+    if (now >= enforcement.anyOverdue && deadline && deadline < now) {
+      blockers.push(describe(alert, `overdue since ${deadline.toISOString()}`));
     }
   }
 
