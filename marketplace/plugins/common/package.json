@@ -12,6 +12,6 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "rimraf": "^3.0.2"
+    "rimraf": "^6.1.3"
   }
 }
