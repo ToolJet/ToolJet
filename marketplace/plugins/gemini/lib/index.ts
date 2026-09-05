@@ -1,6 +1,6 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { generateText, chat } from './query_operations';
 
 export default class GeminiService implements QueryService {
@@ -60,14 +60,14 @@ export default class GeminiService implements QueryService {
 
     const options: QueryOptions = {
       operation: Operation.TextGeneration,
-      model: 'gemini-2.0-flash',
+      model: 'models/gemini-2.0-flash-exp',
       system_prompt: 'Test system prompt',
       prompt: 'This is a test prompt to generate some text.',
       max_tokens: 100,
       temperature: 0.7,
     };
 
-    const geminiClient = new GoogleGenerativeAI(apiKey);
+    const geminiClient = new GoogleGenAI({ apiKey });
 
     try {
       await generateText(geminiClient, options);
@@ -83,13 +83,13 @@ export default class GeminiService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<GoogleGenerativeAI> {
+  async getConnection(sourceOptions: SourceOptions): Promise<GoogleGenAI> {
     const { apiKey } = sourceOptions;
 
     if (!apiKey) {
       throw new QueryError('Connection could not be established', 'API key is missing', {});
     }
 
-    return new GoogleGenerativeAI(apiKey);
+    return new GoogleGenAI({ apiKey });
   }
 }
