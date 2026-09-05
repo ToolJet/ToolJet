@@ -14,7 +14,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray, flattenSelectOptions } from './utils';
 import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
@@ -158,8 +158,11 @@ export const DropdownV2 = ({
     }
   }, [advanced, schema, options, sort]);
 
+  // Leaves only: group children carry the values selection matches against.
+  const flatSelectOptions = useMemo(() => flattenSelectOptions(selectOptions), [selectOptions]);
+
   function selectOption(value) {
-    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
+    const val = flatSelectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
       setInputValue(value);
       fireEvent('onSelect');
@@ -176,7 +179,7 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
+    const _selectedOption = flatSelectOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
       selectedOption: _selectedOption
@@ -554,7 +557,7 @@ export const DropdownV2 = ({
             ref={selectRef}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
-            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+            value={flatSelectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
