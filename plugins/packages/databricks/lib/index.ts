@@ -614,6 +614,7 @@ export default class Databricks implements QueryService {
     if (methodName === 'listColumns') {
       const table = args?.values?.table || '';
       if (!table) return [];
+        if (table.includes('{{') && table.includes('}}')) return [];
       if (authType === 'oauth_u2m') {
         const httpPath = sourceOptions.http_path || '';
         if (!httpPath)
