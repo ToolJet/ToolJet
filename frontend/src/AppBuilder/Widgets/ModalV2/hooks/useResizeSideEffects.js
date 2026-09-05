@@ -4,6 +4,7 @@ export function useModalEventSideEffects({
   showModal,
   size,
   id,
+  customModalWidth,
   onShowSideEffects,
   closeOnClickingOutside,
   onHideModal,
@@ -55,7 +56,7 @@ export function useModalEventSideEffects({
         setModalWidth(parentRef.current.offsetWidth);
       }
     }
-  }, [showModal, size, id]);
+  }, [showModal, size, id, customModalWidth]);
 
   useEffect(() => {
     if (closeOnClickingOutside) {

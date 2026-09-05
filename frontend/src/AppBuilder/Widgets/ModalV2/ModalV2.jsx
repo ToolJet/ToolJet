@@ -10,6 +10,9 @@ import {
   getModalBodyHeight,
   getModalHeaderHeight,
   getModalFooterHeight,
+  isCustomModalWidth,
+  getCustomModalWidth,
+  getBootstrapModalSize,
 } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFactory';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
@@ -96,6 +99,9 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
+  const isCustomWidth = isCustomModalWidth(size);
+  const customModalWidth = isCustomWidth ? getCustomModalWidth(size) : undefined;
+  const bootstrapModalSize = getBootstrapModalSize(size);
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
@@ -243,13 +249,14 @@ export const ModalV2 = function Modal({
     triggerButtonContentAlignment,
   });
 
-  const { modalWidth, parentRef } = useModalEventSideEffects({
+  const { modalWidth: renderedModalWidth, parentRef } = useModalEventSideEffects({
     showModal,
     size,
     id,
     onShowSideEffects,
     closeOnClickingOutside,
     onHideModal,
+    customModalWidth,
   });
 
   return (
@@ -312,7 +319,7 @@ export const ModalV2 = function Modal({
         container={
           document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
         }
-        size={size}
+        size={bootstrapModalSize}
         keyboard={true}
         enforceFocus={false}
         animation={false}
@@ -349,7 +356,9 @@ export const ModalV2 = function Modal({
           headerHeight: headerHeightPx,
           footerHeight: footerHeightPx,
           modalBodyHeight: computedCanvasHeight,
-          modalWidth,
+          modalWidth: renderedModalWidth,
+          isCustomWidth,
+          customModalWidth,
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
