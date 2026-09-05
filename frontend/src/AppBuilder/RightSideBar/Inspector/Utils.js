@@ -258,6 +258,32 @@ export function renderElement(
   );
 }
 
+// Validate a candidate static id (Tabs' tab id, Nav item id, etc). Ids are compared with
+// plain equality everywhere at runtime (never resolved), so a `{{ }}` binding can never work
+// as an id and must be rejected outright rather than accepted and silently broken.
+export const validateStaticId = (value, existingIds = [], currentId = null, messages = {}) => {
+  const {
+    emptyMessage = 'ID cannot be empty',
+    bindingMessage = 'ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+    duplicateMessage = 'ID must be unique. This ID is already used by another item.',
+  } = messages;
+
+  if (value === null || value === undefined || String(value).trim() === '') {
+    return [false, emptyMessage];
+  }
+  const trimmedValue = String(value).trim();
+
+  if (trimmedValue.includes('{{') || trimmedValue.includes('}}')) {
+    return [false, bindingMessage];
+  }
+
+  if (existingIds.some((id) => id === trimmedValue && id !== currentId)) {
+    return [false, duplicateMessage];
+  }
+
+  return [true, null];
+};
+
 export const goToModule = (moduleAppId) => {
   const subpath = getSubpath();
   const slug =

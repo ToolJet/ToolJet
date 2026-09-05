@@ -6,7 +6,15 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
 
-export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemChange, getResolvedValue }) => {
+export const GroupMenuItem = ({
+  darkMode,
+  item,
+  highlight,
+  onDeleteItem,
+  onItemChange,
+  validateItemId,
+  getResolvedValue,
+}) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);
   const [showEditPopover, setShowEditPopover] = useState(false);
   const optionsBtnRef = useRef(null);
@@ -107,6 +115,7 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
                 darkMode={darkMode}
                 onItemChange={onItemChange}
                 onDeleteItem={onDeleteItem}
+                validateItemId={validateItemId}
                 getResolvedValue={getResolvedValue}
               />
             </Overlay>

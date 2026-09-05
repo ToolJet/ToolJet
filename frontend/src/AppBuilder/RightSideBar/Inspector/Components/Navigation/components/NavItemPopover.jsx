@@ -14,6 +14,7 @@ const NavItemPopover = forwardRef(
       onItemChange,
       onDeleteItem,
       onDuplicateItem,
+      validateItemId,
       getResolvedValue,
       parentId = null,
       ...restProps
@@ -108,6 +109,24 @@ const NavItemPopover = forwardRef(
                   data-cy="inspector-nav-item-details-label-input"
                   initialValue={item?.label}
                   onChange={(value) => handleChange('label', value)}
+                />
+              </div>
+
+              {/* Id field */}
+              <div data-cy="inspector-nav-item-details-id-field" className="nav-item-popover-field">
+                <label data-cy="inspector-nav-item-details-id-label" className="nav-item-popover-field-label">
+                  Id
+                </label>
+                <CodeHinter
+                  {...basicCodeHinterProps}
+                  data-cy="inspector-nav-item-details-id-input"
+                  initialValue={item?.id}
+                  placeholder={'Item ID'}
+                  onChange={(value) => handleChange('id', value)}
+                  validationFn={(value) => validateItemId(value, item?.id)}
+                  componentId={componentId}
+                  paramName="id"
+                  fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'itemId' } }}
                 />
               </div>
 

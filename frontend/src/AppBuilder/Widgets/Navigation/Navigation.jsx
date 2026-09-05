@@ -7,7 +7,15 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ToolTip } from '@/_components';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
-import { findItemById, findParentGroup, isItemVisible, isItemDisabled } from './utils';
+import {
+  findItemById,
+  findParentGroup,
+  isItemVisible,
+  isItemDisabled,
+  isGroupVisible,
+  isMenuItemVisible,
+  updateItemById,
+} from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -86,10 +94,10 @@ const RenderNavGroup = ({
   orientation,
   darkMode,
   childAlignment,
+  isExpanded,
+  onToggleExpand,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  if (!isItemVisible(group)) return null;
+  if (!isGroupVisible(group)) return null;
 
   const isDisabled = isItemDisabled(group);
 
@@ -195,7 +203,7 @@ const RenderNavGroup = ({
         })}
         onClick={(e) => {
           e.stopPropagation();
-          if (!isDisabled) setIsExpanded(!isExpanded);
+          if (!isDisabled) onToggleExpand(group.id);
         }}
         disabled={isDisabled}
         data-state={isExpanded ? 'open' : 'closed'}
@@ -268,8 +276,17 @@ export const Navigation = function Navigation(props) {
   const verticalAlignment = verticalAlignmentStyle ?? properties?.verticalAlignment ?? 'top';
   const childAlignment = subMenuAlignment;
 
-  // Get menu items from component definition
-  const menuItems = properties.menuItems || [];
+  // Menu items — kept as local state so setItemVisibility/setItemDisable actions can mutate
+  // individual items by id, while still resyncing when the definition changes (e.g. inspector edits)
+  const [menuItems, setMenuItems] = useState(properties.menuItems || []);
+  const menuItemsRef = useRef(menuItems);
+
+  useEffect(() => {
+    if (JSON.stringify(menuItemsRef.current) !== JSON.stringify(properties.menuItems)) {
+      setMenuItems(properties.menuItems || []);
+      menuItemsRef.current = properties.menuItems || [];
+    }
+  }, [properties.menuItems]);
 
   // Refs for overflow calculation
   const containerRef = useRef(null);
@@ -279,6 +296,14 @@ export const Navigation = function Navigation(props) {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const selectedItemRef = useRef(null);
   const selectItemRef = useRef(null);
+
+  // Which groups are expanded (vertical/accordion mode). Manual header clicks toggle a
+  // group independently; selecting an item collapses every group except the selected
+  // item's parent (or all of them, if the selection is a top-level item) — see applySelection.
+  const [expandedGroups, setExpandedGroups] = useState({});
+  const toggleGroupExpanded = (groupId) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
 
   // Local state bridge for exposed variables — allows both prop changes (sidebar)
   // and action calls (setVisibility/setLoading) to drive rendering
@@ -307,8 +332,8 @@ export const Navigation = function Navigation(props) {
       }
     }
 
-    // Then filter by visibility
-    return deduplicatedItems.filter(isItemVisible);
+    // Then filter by visibility (a group also needs at least one visible, enabled child)
+    return deduplicatedItems.filter(isMenuItemVisible);
   }, [menuItems]);
 
   // Overflow calculation for horizontal orientation
@@ -338,6 +363,16 @@ export const Navigation = function Navigation(props) {
     setSelectedItemId(item.id);
     setExposedVariable('selectedItem', clickData);
     setExposedVariable('previousSelectedItem', previousSelected);
+
+    // Collapse every other group; keep the selected item's own group (if any) open.
+    // Selecting a top-level item collapses all groups.
+    setExpandedGroups(() => {
+      const next = {};
+      menuItems.forEach((menuItem) => {
+        if (menuItem.isGroup) next[menuItem.id] = menuItem.id === parentGroup?.id;
+      });
+      return next;
+    });
   };
 
   // Handle item click
@@ -404,6 +439,12 @@ export const Navigation = function Navigation(props) {
       },
       selectItem: async function (itemId) {
         selectItemRef.current(itemId);
+      },
+      setItemVisibility: async function (itemId, value) {
+        setMenuItems((prev) => updateItemById(prev, itemId, (item) => ({ ...item, visible: !value })));
+      },
+      setItemDisable: async function (itemId, value) {
+        setMenuItems((prev) => updateItemById(prev, itemId, (item) => ({ ...item, disable: !!value })));
       },
     };
 
@@ -600,6 +641,8 @@ export const Navigation = function Navigation(props) {
                             darkMode={darkMode}
                             isInOverflow={true}
                             childAlignment={childAlignment}
+                            isExpanded={!!expandedGroups[item.id]}
+                            onToggleExpand={toggleGroupExpanded}
                           />
                         );
                       }
@@ -652,6 +695,8 @@ export const Navigation = function Navigation(props) {
                 orientation={orientation}
                 darkMode={darkMode}
                 childAlignment={childAlignment}
+                isExpanded={!!expandedGroups[item.id]}
+                onToggleExpand={toggleGroupExpanded}
               />
             );
           }
