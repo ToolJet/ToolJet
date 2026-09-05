@@ -165,6 +165,7 @@ const TJDBCodeEditor = (props) => {
           isOpen={isOpen}
           callback={setIsOpen}
           componentName={componentName}
+          portalTitle={paramLabel || componentName}
           key={componentName}
           forceUpdate={forceUpdate}
           optionalProps={{ styles: { height: 300 }, cls: 'tjdb-hinter-portal' }}
