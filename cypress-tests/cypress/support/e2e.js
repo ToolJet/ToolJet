@@ -17,6 +17,8 @@
 import "cypress-real-events/support";
 import "@cypress/code-coverage/support";
 import "cypress-real-events";
+import { register as registerCypressGrep } from "@cypress/grep";
+registerCypressGrep();
 
 import "../commands/commands";
 import "../commands/apiCommands";
