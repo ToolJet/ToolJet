@@ -139,9 +139,21 @@ export const kanbanConfig = {
       placeholder: 'Enter tooltip text',
       showLabel: false,
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
@@ -155,11 +167,28 @@ export const kanbanConfig = {
     onCardSelected: { displayName: 'Card selected' },
   },
   styles: {
-    disabledState: { type: 'toggle', displayName: 'Disable' },
-    visibility: { type: 'toggle', displayName: 'Visibility' },
-    accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
+    accentColor: { type: 'colorSwatches', displayName: 'Accent color', accordian: 'General' },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'General',
+    },
   },
   actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
     {
       handle: 'addCard',
       displayName: 'Add Card',
@@ -242,13 +271,14 @@ export const kanbanConfig = {
       modalHeight: { value: 400 },
       tooltipFormat: { value: 'plainText' },
       tooltip: { value: '' },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

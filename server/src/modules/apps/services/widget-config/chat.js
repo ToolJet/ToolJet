@@ -130,6 +130,28 @@ export const chatConfig = {
                 defaultValue: 'Ask me anything!',
             },
         },
+        tooltipFormat: {
+            type: 'switch',
+            displayName: 'Tooltip',
+            options: [
+                { displayName: 'Plain text', value: 'plainText' },
+                { displayName: 'Markdown', value: 'markdown' },
+                { displayName: 'HTML', value: 'html' },
+            ],
+            isFxNotRequired: true,
+            defaultValue: { value: 'plainText' },
+            fullWidth: true,
+            newLine: true,
+            section: 'additionalActions',
+        },
+        tooltip: {
+            type: 'code',
+            displayName: 'Tooltip',
+            validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+            section: 'additionalActions',
+            placeholder: 'Enter tooltip text',
+            showLabel: false,
+        },
     },
 
     events: {
@@ -357,6 +379,8 @@ export const chatConfig = {
             enableClearHistoryButton: { value: '{{true}}' },
             enableDownloadHistoryButton: { value: '{{true}}' },
             placeholder: { value: 'Ask me anything!' },
+            tooltipFormat: { value: 'plainText' },
+            tooltip: { value: '' },
         },
         events: [],
         styles: {

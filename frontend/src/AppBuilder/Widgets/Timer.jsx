@@ -1,6 +1,47 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
+export const Timer = function Timer({
+  height,
+  properties = {},
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  fireEvent,
+  dataCy,
+}) {
+  const [isVisible, setVisibility] = useState(properties?.visibility ?? true);
+  const [isDisabled, setIsDisabled] = useState(properties?.disabledState ?? false);
+
+  useEffect(() => {
+    if (isVisible !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    if (isDisabled !== properties?.disabledState) setIsDisabled(properties?.disabledState ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility, properties?.disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', isDisabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const getTimeObj = ({ HH, MM, SS, MS }) => {
     return {
       hour: isNaN(HH) ? 0 : parseInt(HH, 10),
@@ -153,7 +194,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       className="card"
       style={{
         height,
-        display: styles.visibility ? '' : 'none',
+        display: isVisible ? '' : 'none',
         boxShadow: styles.boxShadow,
         backgroundColor: 'var(--cc-surface1-surface)',
       }}
@@ -169,30 +210,27 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
             <a
-              className={`btn btn-primary timer-btn${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
+              className={`btn btn-primary timer-btn${isDisabled || isStartDisabled() ? ' disabled' : ''}`}
               onClick={() => onStart()}
             >
               Start
             </a>
           )}
           {state === 'running' && (
-            <a
-              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
-              onClick={onPause}
-            >
+            <a className={`btn btn-outline-primary timer-btn-hover ${isDisabled ? ' disabled' : ''}`} onClick={onPause}>
               Pause
             </a>
           )}
           {state === 'paused' && (
             <a
-              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
+              className={`btn btn-outline-primary timer-btn-hover ${isDisabled ? ' disabled' : ''}`}
               onClick={onResume}
             >
               Resume
             </a>
           )}
           <a
-            className={`btn${styles.disabledState ? ' disabled' : ''}`}
+            className={`btn${isDisabled ? ' disabled' : ''}`}
             style={{ color: 'var(--cc-primary-text)' }}
             onClick={onReset}
           >

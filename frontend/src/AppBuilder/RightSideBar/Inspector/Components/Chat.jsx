@@ -206,6 +206,29 @@ export const Chat = ({
           components,
           darkMode
         )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'tooltipFormat',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'tooltip',
+          'properties',
+          currentState,
+          components,
+          darkMode,
+          componentMeta.properties?.tooltip?.placeholder
+        )}
       </>
     ),
   });

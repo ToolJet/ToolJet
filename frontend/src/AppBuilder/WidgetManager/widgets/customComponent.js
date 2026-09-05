@@ -6,6 +6,34 @@ export const customComponentConfig = {
   properties: {
     data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' }, defaultValue: '{}' } },
     code: { type: 'code', displayName: 'Code' },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultSize: {
     width: 20,
@@ -17,12 +45,6 @@ export const customComponentConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      accordian: 'container',
-    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
@@ -48,13 +70,22 @@ export const customComponentConfig = {
   exposedVariables: {
     data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
       data: {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
@@ -81,7 +112,6 @@ export const customComponentConfig = {
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

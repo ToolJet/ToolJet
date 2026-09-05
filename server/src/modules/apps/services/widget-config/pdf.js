@@ -33,6 +33,34 @@ export const pdfConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultSize: {
     width: 20,
@@ -44,11 +72,6 @@ export const pdfConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
@@ -56,6 +79,7 @@ export const pdfConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
@@ -64,8 +88,25 @@ export const pdfConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
     },
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+  ],
   exposedVariables: {},
   definition: {
     others: {
@@ -87,12 +128,15 @@ export const pdfConfig = {
         value: `{{true}}`,
       },
       collapseWhenHidden: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: 6 },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

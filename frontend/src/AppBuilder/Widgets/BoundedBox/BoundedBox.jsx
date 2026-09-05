@@ -9,13 +9,54 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export const BoundedBox = ({
+  properties,
+  fireEvent,
+  darkMode,
+  setExposedVariable,
+  setExposedVariables,
+  height,
+  styles,
+  id,
+}) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
 
   const [typeState, setType] = useState(properties.selector);
+  const [isVisible, setVisibility] = useState(properties?.visibility ?? true);
+  const [isDisabled, setIsDisabled] = useState(properties?.disabledState ?? false);
+
+  useEffect(() => {
+    if (isVisible !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    if (isDisabled !== properties?.disabledState) setIsDisabled(properties?.disabledState ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility, properties?.disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', isDisabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const labels = _.isArray(properties.labels)
     ? [
         ...properties.labels.map((label) => {
@@ -183,7 +224,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{ display: isVisible ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
     >
       <Annotation
@@ -224,7 +265,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
           />
         )}
         renderContent={() => null}
-        disableAnnotation={styles.disabledState}
+        disableAnnotation={isDisabled}
       />
     </div>
   );

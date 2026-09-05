@@ -68,6 +68,22 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ModalV2',
   'Container',
   'Timeline',
+  'Map',
+  'Chart',
+  'BoundedBox',
+  'Calendar',
+  'PDF',
+  'QrScanner',
+  'RichTextEditor',
+  'SvgImage',
+  'Spinner',
+  'Timer',
+  'CodeEditor',
+  'CustomComponent',
+  'Chat',
+  'Html',
+  'Navigation',
+  'Steps',
 ];
 
 const RenderWidget = ({

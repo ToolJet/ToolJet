@@ -4,6 +4,9 @@ import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { EventManager } from '../EventManager';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -80,6 +83,12 @@ class Chart extends React.Component {
     const chartType = this.props.component.component.definition.properties.type.value;
 
     let items = [];
+    let additionalActions = [];
+    for (const [key] of Object.entries(componentMeta?.properties ?? {})) {
+      if (componentMeta?.properties[key]?.section === 'additionalActions') {
+        additionalActions.push(key);
+      }
+    }
 
     items.push({
       title: 'Title',
@@ -210,6 +219,26 @@ class Chart extends React.Component {
             )}
         </>
       ),
+    });
+
+    items.push({
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+      children: additionalActions?.map((property) => {
+        const paramType = property === 'Tooltip' ? 'general' : 'properties';
+        return renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          paramType,
+          currentState,
+          components,
+          darkMode,
+          componentMeta.properties?.[property]?.placeholder
+        );
+      }),
     });
 
     items.push({

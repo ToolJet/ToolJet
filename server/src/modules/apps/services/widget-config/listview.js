@@ -217,6 +217,7 @@ export const listviewConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'Container',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -225,6 +226,7 @@ export const listviewConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'number',
@@ -233,11 +235,13 @@ export const listviewConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+      accordian: 'Container',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -264,7 +268,6 @@ export const listviewConfig = {
       },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
-      visible: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },
