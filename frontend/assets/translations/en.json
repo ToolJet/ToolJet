@@ -440,7 +440,8 @@
         "header": {
             "createNewApplication": "Create an app",
             "import": "Import from device",
-            "chooseFromTemplate": "Choose from template"
+            "chooseFromTemplate": "Choose from template",
+            "generateWithAi": "Generate with AI"
         },
         "pagination": {
             "showing": "Showing",

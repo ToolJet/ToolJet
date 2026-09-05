@@ -1,4 +1,4 @@
-import { instanceSettingsSelector } from "Constants/selectors/eeCommon";
+import { instanceSettingsSelector } from "Constants/selectors/platform/eeCommon";
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { cleanAllUsers } from "Support/utils/manageUsers";

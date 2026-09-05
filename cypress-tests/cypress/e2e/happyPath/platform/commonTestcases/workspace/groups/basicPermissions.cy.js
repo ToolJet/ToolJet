@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import {
     navigateToManageGroups,
     sanitize,
@@ -26,11 +26,11 @@ import {
     verifySettingsAccess,
 } from "Support/utils/userPermissions";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import { groupsText } from "Texts/manageGroups";
+import { dashboardText } from "Texts/platform/dashboard";
+import { groupsText } from "Texts/platform/manageGroups";
 import { appPromote } from "Support/utils/platform/multiEnv";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { versionSwitcherSelectors } from "Selectors/version";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
+import { versionSwitcherSelectors } from "Selectors/platform/version";
 
 describe("Basic Permissions", () => {
     let data = {};

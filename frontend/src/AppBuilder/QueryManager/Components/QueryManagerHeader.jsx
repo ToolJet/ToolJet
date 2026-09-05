@@ -3,7 +3,7 @@ import RenameIcon from '../Icons/RenameIcon';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { DATA_SOURCE_TYPE, INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import {
   ABORT_UNSUPPORTED_KINDS,
   AI_QUERY_SUPPORTED_KINDS,
@@ -156,7 +156,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       <div className="query-header-buttons">
         {!(selectedQuery === null || showCreateQuery) && (
           <>
-            <GenerateQueryButton iconOnly={iconOnly} />
+            {INLINE_AI_FEATURES_ENABLED && <GenerateQueryButton iconOnly={iconOnly} />}
             <AbortButton />
             <RunButton buttonLoadingState={buttonLoadingState} iconOnly={iconOnly} />
             <PreviewButton

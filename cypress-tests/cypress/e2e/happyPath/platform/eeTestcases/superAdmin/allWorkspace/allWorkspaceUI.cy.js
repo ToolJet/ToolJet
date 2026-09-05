@@ -12,7 +12,7 @@ import {
   verifyWorkspaceTableControls,
   verifyWorkspaceTabs,
 } from "Support/utils/platform/allWorkspace";
-import { commonEeSelectors } from "Selectors/eeCommon";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
 
 const userName = () => fake.firstName.toLowerCase().replace(/[^a-z]/g, "");
 const defaultWorkspaceName = "My workspace";
