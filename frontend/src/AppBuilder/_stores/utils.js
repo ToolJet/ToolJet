@@ -679,6 +679,7 @@ export const parsePropertyPath = (property) => {
 };
 
 export const baseTheme = {
+  name: 'ToolJet',
   definition: {
     brand: {
       colors: {
@@ -763,6 +764,23 @@ export const baseTheme = {
       },
     },
   },
+};
+
+// Walks a theme `definition` tree and resolves every { light, dark } leaf to the value for `mode`,
+// leaving mode-independent leaves (e.g. text.font, border.radius.*) untouched.
+export const resolveThemeForMode = (definition = {}, mode) => {
+  const resolveNode = (node) => {
+    if (node == null || typeof node !== 'object') return node;
+    if (Object.prototype.hasOwnProperty.call(node, 'light') || Object.prototype.hasOwnProperty.call(node, 'dark')) {
+      return node[mode];
+    }
+    return Object.keys(node).reduce((resolved, key) => {
+      resolved[_.camelCase(key)] = resolveNode(node[key]);
+      return resolved;
+    }, {});
+  };
+
+  return resolveNode(definition);
 };
 
 export const blobToDataURL = (blob) => {
