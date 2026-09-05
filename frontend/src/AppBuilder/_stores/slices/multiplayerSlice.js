@@ -80,7 +80,9 @@ export const createMultiplayerSlice = (set, get) => ({
 
               case 'update': {
                 const { componentId, property, value, paramType, attr } = diff;
-                get().setComponentProperty(componentId, property, value, paramType, attr, 'canvas', {
+                // The diff carries the raw (unresolved) value: it must be resolved against
+                // this peer's state, and 'canvas' is the moduleId, not skipResolve.
+                get().setComponentProperty(componentId, property, value, paramType, attr, false, 'canvas', {
                   saveAfterAction: false,
                   skipUndoRedo: true,
                 });
