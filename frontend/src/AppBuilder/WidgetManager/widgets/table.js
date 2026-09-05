@@ -678,6 +678,10 @@ export const tableConfig = {
         },
       ],
     },
+    {
+      handle: 'refreshTable',
+      displayName: 'Refresh table',
+    },
   ],
   definition: {
     others: {
