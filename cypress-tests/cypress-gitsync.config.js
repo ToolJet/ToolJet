@@ -19,7 +19,7 @@ module.exports = defineConfig({
       return require("./cypress/plugins/index.js")(on, config);
     },
 
-    baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
+    baseUrl: "http://localhost:3000", // Frontend SPA; API calls use server_host (localhost:3000)
     specPattern: [
       "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
@@ -32,7 +32,7 @@ module.exports = defineConfig({
     numTestsKeptInMemory: 0,
     experimentalMemoryManagement: true,
 
-    experimentalRunAllSpecs: true,
+    experimentalRunAllSpecs: false,
     experimentalModifyObstructiveThirdPartyCode: true,
     experimentalOriginDependencies: true,
 

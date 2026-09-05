@@ -261,7 +261,7 @@ describe(
               // ── Rename app ────────────────────────────────────────────────
               // Rename updates gitAppName in DB only — no auto-commit.
               // The next editor push handles directory rename + appMeta.json update.
-              cy.apiRenameApp(appId_b2, renamedAppName, versionId_b2);
+              cy.apiRenameApp(appId_b2, renamedAppName, versionId_b2, branchId2);
 
               // ── Layout update + editor push ───────────────────────────────
               cy.apiUpdateComponentLayout(
@@ -405,8 +405,8 @@ describe(
                     cy.gitHubAssertAppFolderExists(folderBranch, origAppName);
 
                     cy.apiCreateFolder(folderName).then((folder) => {
-                      cy.apiAddAppToFolder(folder.id, fAppId);
-                      cy.apiRenameApp(fAppId, renamedInFolder, fVersionId);
+                      cy.apiAddAppToFolder(folder.id, fAppId, folderBranchId);
+                      cy.apiRenameApp(fAppId, renamedInFolder, fVersionId, folderBranchId);
 
                       const pushMsg = `feat: move to folder and rename ${renamedInFolder}`;
                       cy.apiEditorPush(fAppId, fVersionId, pushMsg, folderBranch, renamedInFolder);
