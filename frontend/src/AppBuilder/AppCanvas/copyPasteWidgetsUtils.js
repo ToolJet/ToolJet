@@ -91,7 +91,7 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
       pageId: currentPageId,
     };
   }
-  useStore.getState().setLastCanvasClickPosition(null);
+  useStore.getState().setLastCanvasClick(null);
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.component?.parent ?? undefined;
     debouncedPasteComponents(parentId, newComponentObj);
@@ -134,15 +134,23 @@ function calculateComponentPosition(component, existingComponents, layout, targe
 
   const parentId = component.component?.parent ? component.component.parent : 'canvas';
   const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
+  const { position: clickPosition, consumed: isClickConsumed } = useStore.getState().lastCanvasClick;
 
   // Initialize position either from click or component layout
   let newLeft = component.layouts[layout].left;
   let newTop = component.layouts[layout].top;
 
-  if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
-    newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
-    newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
+  /* A canvas click is an explicit position request.
+   * - The first paste after it lands there as-is, ignoring overlap.
+   * - Later pastes keep the click as their starting point but fall through to the availability search below, otherwise every paste would stack on the same spot.
+   * - With no click at all (copy followed straight by paste, since copy clears the position) the search starts from the component's own layout.
+   */
+  const hasClickPosition =
+    !!clickPosition && (!component.component?.parent || component.component?.parent === targetParentId);
+
+  if (hasClickPosition) {
+    newLeft = Math.round(clickPosition.x / gridWidth);
+    newTop = Math.round(clickPosition.y / 10) * 10;
   }
   // Ensure component stays within bounds
   if (newLeft + component.layouts[layout].width > NO_OF_GRIDS) {
@@ -150,6 +158,10 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   }
   newLeft = Math.max(0, newLeft);
   newTop = Math.max(0, newTop);
+
+  if (hasClickPosition && !isClickConsumed) {
+    return { newTop, newLeft };
+  }
 
   // Sort components once for efficient overlap checking
   const sortedComponents = existingComponents.sort((a, b) => {
@@ -285,6 +297,20 @@ export function resolvePastedComponentName({ isCut, isCloning, originalName, com
   return computeComponentName(componentType, mergedComponents);
 }
 
+/**
+ * Where a paste with no preceding canvas click should land: the parent the components were copied from,
+ * so a container child stays in its container instead of being flattened onto the root canvas.
+ * Returns undefined (root canvas) when that parent is gone: another page, another app, or deleted.
+ */
+function resolveOriginalParentId(pastedComponents, components) {
+  const [topLevelComponent] = findHighestLevelofSelection(pastedComponents);
+  const originalParentId = topLevelComponent?.component?.parent;
+  if (!originalParentId) return undefined;
+  // Strips slot ids (`formId-header`, `tabsId-tabId`) down to the component that owns them.
+  const baseParentId = useStore.getState().getBaseParentId(originalParentId) || originalParentId;
+  return components[baseParentId] ? originalParentId : undefined;
+}
+
 export async function pasteComponents(targetParentId, copiedComponentObj) {
   const finalComponents = [];
   const componentMap = {};
@@ -294,23 +320,40 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   const { isCut = false, pageId, isCloning = false, newComponents: pastedComponents = [] } = copiedComponentObj;
   const isGroup = findHighestLevelofSelection(pastedComponents).length > 1;
 
+  // Copy clears the click, so a position exists only when the user clicked a canvas after copying.
+  const { parentId: clickedParentId, position: clickPosition } = useStore.getState().lastCanvasClick;
+  const hasExplicitClick = !!clickPosition;
+
+  // Three sources for the paste target, in order of authority:
+  //  - cloning: the caller passes the source component's own parent (Ctrl+D has no click to honour)
+  //  - an explicit click: the canvas that was clicked, recorded with the coordinates so the two can't disagree
+  //  - no click: the parent the components were copied from, read back off the clipboard
+  let effectiveTargetParentId;
+  if (isCloning) {
+    effectiveTargetParentId = targetParentId;
+  } else if (hasExplicitClick) {
+    effectiveTargetParentId = clickedParentId === 'canvas' ? undefined : clickedParentId;
+  } else {
+    effectiveTargetParentId = resolveOriginalParentId(pastedComponents, components);
+  }
+
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
-    targetParentId &&
-    // Check if targetParentId is deleted from the components
+    effectiveTargetParentId &&
+    // Check if effectiveTargetParentId is deleted from the components
     !Object.keys(components).find(
       (key) =>
-        targetParentId === key ||
+        effectiveTargetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
-          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
+          effectiveTargetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
         (['Container', 'Form', 'ModalV2', 'Accordion'].includes(components?.[key]?.component.component) &&
-          ['header', 'footer'].some((section) => targetParentId.includes(section)))
+          ['header', 'footer'].some((section) => effectiveTargetParentId.includes(section)))
     )
   ) {
     return;
   }
-  if (targetParentId) {
-    const id = Object.keys(components).filter((key) => targetParentId.startsWith(key));
+  if (effectiveTargetParentId) {
+    const id = Object.keys(components).filter((key) => effectiveTargetParentId.startsWith(key));
     parentComponent = components[id];
   }
 
@@ -340,7 +383,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     const isParentAlsoCopied = parentRef && componentMap[parentRef];
 
     componentMap[component.id] = newComponentId;
-    let isChild = isParentAlsoCopied ? component.component.parent : targetParentId;
+    let isChild = isParentAlsoCopied ? component.component.parent : effectiveTargetParentId;
 
     const componentMeta = componentTypes.find((comp) => comp.component === component?.component?.component);
     const componentData = _.merge({}, componentMeta, component.component);
@@ -350,7 +393,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     if (componentData?.component === 'Table' && pastedColumns) {
       componentData.definition.properties.columns = deepClone(pastedColumns);
     }
-    if (targetParentId && !componentData.parent) {
+    if (effectiveTargetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
 
@@ -359,7 +402,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
       componentData.parent = null;
     }
     if (parentComponent && !component.isParentTabORCalendar) {
-      componentData.parent = isParentAlsoCopied ?? targetParentId;
+      componentData.parent = isParentAlsoCopied ?? effectiveTargetParentId;
     } else if (isChild && component.isParentTabORCalendar) {
       const parentId = component.component.parent.split('-').slice(0, -1).join('-');
       const childTabId = component.component.parent.split('-').at(-1);
@@ -367,8 +410,8 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     } else if (isChild) {
       const isParentInMap = componentMap[isChild] !== null;
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
-    } else if (targetParentId === 'canvas-header' || targetParentId === 'canvas-footer') {
-      componentData.parent = targetParentId;
+    } else if (effectiveTargetParentId === 'canvas-header' || effectiveTargetParentId === 'canvas-footer') {
+      componentData.parent = effectiveTargetParentId;
     }
 
     const currentLayout = useStore.getState().currentLayout;
@@ -431,7 +474,9 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   let pasteSucceeded = false;
   if (filteredComponentsCount < 0) return;
 
-  if (currentPageId === pageId) {
+  // Pasting onto a different page keeps the copied coordinates verbatim, unless the user clicked a spot
+  // on that page — an explicit click is honoured wherever it was made.
+  if (currentPageId === pageId || hasExplicitClick) {
     const components = useStore.getState().getCurrentPageComponents();
     const finalComponentWithUpdatedLayout = filteredFinalComponents.map((component) => {
       const layout = useStore.getState().currentLayout;
@@ -444,16 +489,13 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         existingComponents = Object.values(components);
       }
 
-      // Add already processed components to existingComponents
-      const processedComponents = finalComponentWithUpdatedLayout || [];
-      existingComponents = [...existingComponents, ...processedComponents];
       if (isGroup) {
         // Handle group positioning
         const groupPositions = calculateGroupPosition(
           filteredFinalComponents,
           existingComponents,
           layout,
-          targetParentId
+          effectiveTargetParentId
         );
         const position = groupPositions.find((pos) => pos.id === component.id);
 
@@ -470,7 +512,12 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         };
       } else {
         // Handle single component positioning
-        const { newTop, newLeft } = calculateComponentPosition(component, existingComponents, layout, targetParentId);
+        const { newTop, newLeft } = calculateComponentPosition(
+          component,
+          existingComponents,
+          layout,
+          effectiveTargetParentId
+        );
         return {
           ...component,
           layouts: {
@@ -488,6 +535,12 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     pasteSucceeded = await useStore.getState().pasteComponents(finalComponentWithUpdatedLayout);
   } else {
     pasteSucceeded = await useStore.getState().pasteComponents(filteredFinalComponents);
+  }
+
+  // Spend the clicked position only after every component in this paste has been placed — a group re-runs
+  // the position calculation per member, so consuming it mid-way would tear the group apart.
+  if (pasteSucceeded && hasExplicitClick) {
+    useStore.getState().markLastCanvasClickConsumed();
   }
 
   if (pasteSucceeded && isCut && !isCloning) {

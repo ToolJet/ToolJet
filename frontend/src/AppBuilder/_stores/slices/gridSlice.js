@@ -33,8 +33,8 @@ import {
 
 const initialState = {
   triggerCanvasUpdater: 0,
-  lastCanvasIdClick: '',
-  lastCanvasClickPosition: null,
+  // The user's last canvas click: which canvas was hit, where in it, and whether a paste has used it yet.
+  lastCanvasClick: { parentId: null, position: null, consumed: false },
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
@@ -149,9 +149,13 @@ export const createGridSlice = (set, get) => {
       setComponentLayout(layouts);
       debouncedIncrementCanvasUpdater();
     },
-    setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
-    setLastCanvasClickPosition: (position) => {
-      set({ lastCanvasClickPosition: position });
+    setLastCanvasClick: (click) =>
+      set({
+        lastCanvasClick: { parentId: click?.parentId ?? null, position: click?.position ?? null, consumed: false },
+      }),
+    markLastCanvasClickConsumed: () => {
+      const { lastCanvasClick } = get();
+      set({ lastCanvasClick: { ...lastCanvasClick, consumed: true } });
     },
     setTemporaryLayouts: (layouts) => set((state) => ({ temporaryLayouts: { ...state.temporaryLayouts, ...layouts } })),
     getTemporaryLayouts: () => get().temporaryLayouts,
