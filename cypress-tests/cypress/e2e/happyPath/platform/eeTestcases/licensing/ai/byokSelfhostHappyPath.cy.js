@@ -6,6 +6,7 @@ import {
   ensureEnvToggleOff,
   enterAndSaveApiKey,
   navigateToLlmKeyPage,
+  selectProvider,
   verifyAiChatWorksWithoutCredits,
   verifyApiKeyRequiredInApp,
   verifyCopilotInQueryPanel,
@@ -38,6 +39,7 @@ licenseTypes.forEach(({ type, label }) => {
       cy.apiUpdateLicense(type);
       cy.apiUpdateLLMKey("", type, true);
       navigateToLlmKeyPage();
+      selectProvider("anthropic");
       cy.wait(2000);
     });
 
