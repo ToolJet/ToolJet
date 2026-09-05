@@ -55,7 +55,7 @@ export class TooljetDbController {
       process.env?.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB &&
       !isNaN(Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB))
         ? 1024 * 1024 * Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB)
-        : 1024 * 1024 * 5; // 5MB
+        : 1024 * 1024 * 500; // 500MB
   }
 
   @InitFeature(FEATURE_KEY.PROXY_POSTGREST)
