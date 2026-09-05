@@ -259,6 +259,7 @@ export const FileInput = (props) => {
           _width={_width}
           widthType={widthType}
           inputId={`component-${id}`}
+          id={`${id}-label`}
           fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
         />
@@ -270,7 +271,14 @@ export const FileInput = (props) => {
           }}
         >
           <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
-            <input {...inputProps} className="tw-hidden" />
+            <input
+              {...inputProps}
+              aria-required={isMandatory}
+              aria-disabled={disabledState || disablePicker}
+              aria-busy={isLoading}
+              aria-labelledby={`${id}-label`}
+              className="tw-hidden"
+            />
 
             <div
               className="tw-flex tw-items-center tw-gap-2 tw-border-l-0 tw-border-t-0 tw-border-b-0 tw-border-r tw-border-solid tw-border-border-default tw-px-0"
@@ -292,7 +300,9 @@ export const FileInput = (props) => {
                   variant="ghost"
                   size="default"
                   className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background focus:tw-bg-button-outline"
-                  style={{ height: '100%' }}
+                  // cursor set directly: the ancestor's `.tj-file-input-disabled` cursor relies on
+                  // Button's own disabled:pointer-events-none, which doesn't apply to this element.
+                  style={{ height: '100%', cursor: disabledState || disablePicker ? 'not-allowed' : 'pointer' }}
                   disabled={disabledState || disablePicker}
                 >
                   {iconVisibility && (
