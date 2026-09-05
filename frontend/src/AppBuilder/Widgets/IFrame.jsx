@@ -13,7 +13,7 @@ export const IFrame = function IFrame({
 }) {
   // ===== PROPS DESTRUCTURING =====
   const { source, loadingState, disabledState, visibility } = properties;
-  const { boxShadow } = styles;
+  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -113,7 +113,14 @@ export const IFrame = function IFrame({
     <div
       className="tw-h-full"
       data-disabled={exposedVariablesTemporaryState.isDisabled}
-      style={{ display: exposedVariablesTemporaryState.isVisible ? '' : 'none', boxShadow }}
+      style={{
+        display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
+        backgroundColor,
+        border: '1px solid',
+        borderColor,
+        borderRadius: `${borderRadius}px`,
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
       {exposedVariablesTemporaryState.isLoading ? (
@@ -124,8 +131,9 @@ export const IFrame = function IFrame({
         <iframe
           ref={iframeRef}
           key={exposedVariablesTemporaryState.url}
-          width={width - 4}
-          height={height}
+          width={'100%'}
+          height={'100%'}
+          style={{ borderRadius: `${borderRadius}px` }}
           src={exposedVariablesTemporaryState.url}
           title="IFrame Widget"
           frameBorder="0"

@@ -1,12 +1,13 @@
 import React, { useRef } from 'react';
 
+import Spinner from '@/_ui/Spinner';
 import { KanbanBoard } from './KanbanBoard';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 
 export const Kanban = (props) => {
   const { height, width, properties, styles, id, dataCy, componentName } = props;
-  const { showDeleteButton } = properties;
-  const { visibility, disabledState, boxShadow } = styles;
+  const { showDeleteButton, visibility, disabledState, loadingState } = properties;
+  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   const parentRef = useRef(null);
   const widgetHeight = showDeleteButton ? height - 100 : height - 20;
@@ -22,6 +23,10 @@ export const Kanban = (props) => {
         overflowX: 'auto',
         height: widgetHeight,
         display: visibility ? '' : 'none',
+        backgroundColor,
+        border: '1px solid',
+        borderColor,
+        borderRadius: `${borderRadius}px`,
         boxShadow,
       }}
       id={id}
@@ -29,15 +34,22 @@ export const Kanban = (props) => {
       data-disabled={disabledState}
       data-cy={dataCy}
       className="scrollbar-container"
+      aria-busy={loadingState}
     >
-      <KanbanBoard
-        handle
-        kanbanProps={props}
-        parentRef={parentRef}
-        widgetHeight={widgetHeight}
-        id={id}
-        dataCy={dataCy}
-      />
+      {loadingState ? (
+        <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
+          <Spinner />
+        </div>
+      ) : (
+        <KanbanBoard
+          handle
+          kanbanProps={props}
+          parentRef={parentRef}
+          widgetHeight={widgetHeight}
+          id={id}
+          dataCy={dataCy}
+        />
+      )}
     </div>
   );
 };

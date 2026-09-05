@@ -2,6 +2,8 @@ import React from 'react';
 import { renderElement } from '../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import i18next from 'i18next';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 
 export const CustomComponent = function CustomComponent({
   dataQueries,
@@ -11,6 +13,7 @@ export const CustomComponent = function CustomComponent({
   components,
   darkMode,
   layoutPropertyChanged,
+  currentState,
 }) {
   const code = component.component.definition.properties.code;
   const args = component.component.definition.properties.data;
@@ -47,6 +50,32 @@ export const CustomComponent = function CustomComponent({
       />
     ),
   });
+
+  const additionalActions = Object.keys(componentMeta?.properties ?? {}).filter(
+    (key) => componentMeta.properties[key]?.section === 'additionalActions'
+  );
+
+  if (additionalActions.length > 0) {
+    items.push({
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+      isOpen: true,
+      children: additionalActions.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          components,
+          darkMode,
+          componentMeta.properties?.[property]?.placeholder
+        )
+      ),
+    });
+  }
 
   items.push({
     title: 'Devices',
