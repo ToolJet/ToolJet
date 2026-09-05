@@ -149,7 +149,7 @@ export const filepickerConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
