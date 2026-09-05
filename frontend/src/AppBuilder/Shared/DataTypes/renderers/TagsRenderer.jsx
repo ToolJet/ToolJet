@@ -426,7 +426,7 @@ export const TagsRenderer = ({
     >
       <>
         <div
-          className="w-100 h-100 d-flex align-items-center"
+          className="w-100 h-100 d-flex align-items-safe-center"
           ref={containerRef}
           onClick={() => {
             if (isNewRow && isEditable) {
