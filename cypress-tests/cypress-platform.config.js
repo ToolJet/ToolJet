@@ -73,9 +73,9 @@ module.exports = defineConfig({
         experimentalModfyObstructiveThirdPartyCode: true,
         baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
         specPattern: [
-            "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
-            "cypress/e2e/happyPath/platform/commonTestcases/userManagment/Login.cy.js",
-            "cypress/e2e/happyPath/platform/commonTestcases/workspace/workspaceUiTestcases/profile.cy.js"
+            "cypress/e2e/happyPath/platform/onboarding/firstUserOnboarding.cy.js",
+            "cypress/e2e/happyPath/platform/onboarding/login.cy.js",
+            "cypress/e2e/happyPath/platform/workspace/profile.cy.js"
         ],
         numTestsKeptInMemory: 1,
         redirectionLimit: 15,
