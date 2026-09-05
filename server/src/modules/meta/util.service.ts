@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager, In } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import got from 'got';
 import { User } from 'src/entities/user.entity';
@@ -22,7 +23,8 @@ export class MetadataUtilService implements IMetaUtilService {
   constructor(
     protected configService: ConfigService,
     protected licenseTermsService: LicenseTermsService,
-    protected licenseCountsService: LicenseCountsService
+    protected licenseCountsService: LicenseCountsService,
+    @InjectEntityManager() protected readonly entityManager: EntityManager
   ) {}
 
   async getMetaData() {
@@ -164,6 +166,36 @@ export class MetadataUtilService implements IMetaUtilService {
       }
     });
   }
+  async sendLicensingData(metadata: Metadata) {
+    const builderUserIds = await this.licenseCountsService.getUserIdWithEditPermission(
+      'INSTANCE',
+      this.entityManager
+    );
+    const builderUsers = builderUserIds?.length
+      ? await this.entityManager.find(User, { where: { id: In(builderUserIds) }, select: ['email'] })
+      : [];
+    const builderEmails = builderUsers.map((user) => user.email).filter(Boolean);
+
+    const customerId = (License.Instance()?.metaData as { customerId?: string } | undefined)?.customerId ?? null;
+    const host = this.configService.get<string>('TOOLJET_HOST') ?? null;
+
+    const licensingUrl = this.configService.get<string>('LICENSING_HUB_URL') || 'https://licensing.tooljet.io/';
+    try {
+      return await got(licensingUrl, {
+        method: 'post',
+        json: {
+          id: metadata.id,
+          customer_id: customerId,
+          host,
+          builder_emails: builderEmails,
+          tooljet_version: globalThis.TOOLJET_VERSION,
+        },
+      });
+    } catch (error) {
+      console.error(`Error while connecting to URL ${licensingUrl}`, error);
+    }
+  }
+
   async fetchDatasourcesByKindCount(manager: EntityManager) {
     const dsGroupedByKind = await manager
       .createQueryBuilder(DataSource, 'data_sources')
