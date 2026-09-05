@@ -72,24 +72,31 @@ export const useDropVirtualMoveableGhost = () => {
     return ghost;
   };
 
-  const updateMoveableGhostPosition = (mousePosition, canvasRef) => {
-    if (!ghostElementRef.current || !canvasRef?.current || !mousePosition) return;
+  const updateMoveableGhostPosition = (mousePosition) => {
+    if (!ghostElementRef.current || !mousePosition) return;
 
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    const relativeX = mousePosition.x - canvasRect.left;
-    const relativeY = mousePosition.y - canvasRect.top;
+    // The ghost is always appended to #real-canvas, so its translate must be
+    // relative to that element - not to whichever container's hover activated
+    // the ghost (a modal/subcontainer hover can fire first, and its rect also
+    // drifts from the main canvas rect by the horizontal scroll amount).
+    const container = ghostElementRef.current.parentElement;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const relativeX = mousePosition.x - containerRect.left;
+    const relativeY = mousePosition.y - containerRect.top;
 
     ghostElementRef.current.style.transform = `translate(${relativeX}px, ${relativeY}px)`;
   };
 
-  const activateMoveableGhost = (componentSize, mousePosition, canvasRef) => {
+  const activateMoveableGhost = (componentSize, mousePosition) => {
     if (isActiveRef.current) return;
     const ghost = createGhostMoveElement(componentSize);
     if (!ghost) return;
 
     isActiveRef.current = true;
     if (ghost && mousePosition) {
-      updateMoveableGhostPosition(mousePosition, canvasRef);
+      updateMoveableGhostPosition(mousePosition);
 
       // Trigger moveable drag on the ghost element to show guidelines
       const moveableInstance = getMoveableRef;
