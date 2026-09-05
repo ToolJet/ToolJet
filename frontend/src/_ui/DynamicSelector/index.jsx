@@ -344,7 +344,7 @@ const DynamicSelector = ({
         if (cachedData) {
           setFetchedData(cachedData);
           validateSelectedValue(cachedData);
-        } else {
+        } else if (cachedData !== undefined) {
           validateSelectedValue([]);
         }
       }
