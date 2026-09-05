@@ -194,34 +194,34 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       const height = layout.height ? layout.height : componentMeta.defaultSize.height;
       const top = layout.top ? layout.top : 0;
       const left = layout.left ? layout.left : 0;
-      const newComponentDefinition = {
+      // Properties and styles must be seeded from their own default blocks and kept as
+      // separate objects. Sharing one object made `definition.styles` get overwritten by
+      // the properties object, wiping every preset style the child widget's meta declares.
+      const newComponentProperties = {
         ...componentData.definition.properties,
       };
+      const newComponentStyles = {
+        ...componentData.definition.styles,
+      };
+      const getAccessor = (prop) =>
+        customResolverVariable ? `{{${customResolverVariable}.${accessorKey}}}` : defaultValue?.[prop] ?? '';
 
       if (_.isArray(properties) && properties.length > 0) {
         properties.forEach((prop) => {
-          const accessor = customResolverVariable
-            ? `{{${customResolverVariable}.${accessorKey}}}`
-            : defaultValue[prop] || '';
-
-          _.set(newComponentDefinition, prop, {
-            value: accessor,
+          _.set(newComponentProperties, prop, {
+            value: getAccessor(prop),
           });
         });
-        _.set(componentData, 'definition.properties', newComponentDefinition);
+        _.set(componentData, 'definition.properties', newComponentProperties);
       }
 
       if (_.isArray(styles) && styles.length > 0) {
         styles.forEach((prop) => {
-          const accessor = customResolverVariable
-            ? `{{${customResolverVariable}.${accessorKey}}}`
-            : defaultValue[prop] || '';
-
-          _.set(newComponentDefinition, prop, {
-            value: accessor,
+          _.set(newComponentStyles, prop, {
+            value: getAccessor(prop),
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {
