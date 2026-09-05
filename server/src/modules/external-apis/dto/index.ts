@@ -554,3 +554,40 @@ export class UnbanWorkspaceDto {
   slug?: string;
 }
 
+export class CreateAppV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  slug?: string;
+
+  // accepts either the folder's id or its name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameAppV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  slug?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
