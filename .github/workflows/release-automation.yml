@@ -13,7 +13,19 @@ permissions:
   issues: read
 
 jobs:
+  release-vulnerability-gate:
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      contains(github.event.pull_request.title, '|') &&
+      contains(github.event.pull_request.title, '[') &&
+      contains(github.event.pull_request.title, ']')
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
   release-automation:
+    needs: release-vulnerability-gate
     if: |
       github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'release/') &&

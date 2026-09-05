@@ -19,8 +19,17 @@ on:
         description: "Docker tag suffix (e.g., pre-release-14)"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
+  release-vulnerability-gate:
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
   build-and-push:
+    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
 
     steps:
