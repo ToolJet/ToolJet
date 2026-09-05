@@ -20,6 +20,7 @@ import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
+import { validateUrlForSSRF, validateHostForSSRF } from '@helpers/ssrf-protection.helper';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -694,6 +695,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
       }
 
+      // SSRF Protection: `kind`, `plugin_id`, and every value in `sourceOptions` above
+      // come straight from the request body — not the data source `:id` in the URL,
+      // which the guard chain only checks belongs to the caller's org. Individual
+      // plugins protect their own run()/testConnection() paths for the fields they
+      // know about; this is a blanket check across every plugin kind reachable here,
+      // covering the ones that haven't had a plugin-level fix applied yet.
+      // GHSA-v64h-hqhj-2h7r.
+      await this.validateTestConnectionOptionsForSSRF(sourceOptions);
+
       const service = await this.pluginsServiceSelector.getService(plugin_id, kind);
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
@@ -859,6 +869,39 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return params;
   }
 
+  // Field names observed across data-source plugin `sourceOptions` shapes that carry
+  // a raw, user-controlled destination — kept as a flat list rather than a per-kind
+  // map since testConnection() only has `kind` as a string, no compile-time plugin
+  // type to switch on. ponytail: heuristic, not exhaustive — new plugins should also
+  // add their own validateUrlForSSRF() call at the point they build a request, same
+  // as the plugins fixed alongside this change.
+  private static readonly SSRF_SENSITIVE_OPTION_KEYS = [
+    'url',
+    'base_url',
+    'view_url',
+    'access_token_url',
+    'endpoint',
+    'node',
+    'workspaceHost',
+  ];
+
+  private async validateTestConnectionOptionsForSSRF(sourceOptions: Record<string, any>): Promise<void> {
+    for (const key of DataSourcesUtilService.SSRF_SENSITIVE_OPTION_KEYS) {
+      const value = sourceOptions?.[key];
+      if (typeof value === 'string' && value.length > 0) {
+        await validateUrlForSSRF(value);
+      }
+    }
+
+    // host/port/protocol travel as separate fields on most plugins rather than one
+    // URL string — validate the same way the fixed connectors do.
+    if (typeof sourceOptions?.host === 'string' && sourceOptions.host.length > 0) {
+      const protocol = typeof sourceOptions?.protocol === 'string' ? sourceOptions.protocol : 'https';
+      const port = sourceOptions?.port ? `:${sourceOptions.port}` : '';
+      await validateHostForSSRF(`${sourceOptions.host}${port}`, protocol);
+    }
+  }
+
   private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
     const dataSourcePrefix = {
       googlecalendar: 'GOOGLE',
@@ -898,6 +941,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!sourceOptions['client_id']) {
       throw new BadRequestException('Missing client_id');
     }
+
+    // Block SSRF before client_id/client_secret ever leave the server: without this,
+    // a malicious access_token_url both exfiltrates the OAuth credentials in the POST
+    // and lets the attacker's response be trusted back as the active access_token.
+    // GHSA-gfwc-3frw-hp8v.
+    await validateUrlForSSRF(accessTokenUrl);
+
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 

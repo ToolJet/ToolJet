@@ -448,8 +448,12 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     const ipCheckFn = config?.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
     return addresses.some(addr => ipCheckFn(addr));
   } catch (error) {
-    console.warn(`DNS resolution error for ${hostname}:`, error.message);
-    return false;
+    // Fail-closed here too: a resolver error is exactly as unverifiable as an
+    // empty answer above, and shouldn't be treated as "safe" (was previously
+    // `return false`, the opposite of the empty-address case's intentional
+    // fail-closed default — part of GHSA-9gjw-8vc2-fjcv).
+    console.warn(`DNS resolution error for ${hostname}, blocking as precaution:`, error.message);
+    return true;
   }
 }
 
@@ -692,8 +696,11 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
 
   const ssrfOptions: any = {
     ...existingOptions,
-    // Custom DNS lookup function to validate resolved IPs
-    dnsLookup: createSSRFSafeLookup(config),
+    // Custom DNS lookup function to validate resolved IPs.
+    // got's option is `lookup` (see CacheableLookup['lookup'] in its types) — NOT
+    // `dnsLookup`. That key doesn't exist on got's Options type, so got silently
+    // ignored it and this resolver was never actually invoked (GHSA-9gjw-8vc2-fjcv).
+    lookup: createSSRFSafeLookup(config),
   };
 
   // Redirect validation hook - prevents SSRF bypass via open redirects
