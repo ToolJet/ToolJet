@@ -181,11 +181,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection",
+        "description": "Enter collection name",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter path"
+        "placeholder": "Enter collection name"
       },
       "body": {
         "label": "Body",

@@ -52,11 +52,11 @@ export async function setDocument(db, path: string, body: string): Promise<objec
   return result;
 }
 
-export async function addDocument(db, path: string, body: string): Promise<object> {
-  const docRef = db.doc(path);
-  const result = await docRef.set(JSON.parse(body));
+export async function addDocument(db, collection: string, body: string): Promise<object> {
+  const collectionRef = db.collection(collection);
+  const result = await collectionRef.add(JSON.parse(body));
 
-  return result;
+  return { id: result.id };
 }
 
 export async function updateDocument(db, path: string, body: string): Promise<object> {
