@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Firecrawl datasource",
+  "description": "Web scraping, crawling, and search API for ToolJet applications",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Firecrawl",
+    "kind": "firecrawl",
+    "type": "api"
+  },
+  "properties": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "API Key from Firecrawl (optional for unauthenticated self-hosted instances)"
+    },
+    "api_url": {
+      "type": "string",
+      "title": "API Base URL",
+      "description": "Custom base URL for self-hosted instances (default: https://api.firecrawl.dev)"
+    }
+  },
+  "tj:encrypted": [
+    "api_key"
+  ],
+  "required": [],
+  "tj:ui:properties": {
+    "api_key": {
+      "$ref": "#/properties/api_key",
+      "key": "api_key",
+      "label": "API Key",
+      "description": "Firecrawl API key",
+      "widget": "password-v3-textarea",
+      "required": false
+    },
+    "api_url": {
+      "$ref": "#/properties/api_url",
+      "key": "api_url",
+      "label": "API Base URL",
+      "description": "Custom base URL (default: https://api.firecrawl.dev)",
+      "widget": "input-v3-text",
+      "placeholder": "https://api.firecrawl.dev",
+      "required": false
+    }
+  }
+}

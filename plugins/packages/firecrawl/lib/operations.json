@@ -1,0 +1,176 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Firecrawl Operations",
+  "description": "Query operations supported by Firecrawl datasource",
+  "type": "object",
+  "properties": {
+    "operation": {
+      "type": "string",
+      "enum": [
+        "scrape",
+        "search",
+        "crawl",
+        "crawl_status",
+        "map"
+      ]
+    }
+  },
+  "required": [
+    "operation"
+  ],
+  "tj:ui:properties": {
+    "operation": {
+      "$ref": "#/properties/operation",
+      "label": "Operation",
+      "widget": "dropdown-v3",
+      "options": [
+        {
+          "label": "Scrape URL",
+          "value": "scrape"
+        },
+        {
+          "label": "Search Web",
+          "value": "search"
+        },
+        {
+          "label": "Start Crawl Job",
+          "value": "crawl"
+        },
+        {
+          "label": "Get Crawl Status",
+          "value": "crawl_status"
+        },
+        {
+          "label": "Map Website URLs",
+          "value": "map"
+        }
+      ]
+    },
+    "url": {
+      "key": "url",
+      "label": "URL",
+      "description": "Target URL to scrape, crawl, or map",
+      "widget": "input-v3-text",
+      "placeholder": "https://example.com"
+    },
+    "query": {
+      "key": "query",
+      "label": "Search Query",
+      "description": "Query text to search across the web",
+      "widget": "input-v3-text",
+      "placeholder": "What is ToolJet?"
+    },
+    "job_id": {
+      "key": "job_id",
+      "label": "Crawl Job ID",
+      "description": "ID of the asynchronous crawl job",
+      "widget": "input-v3-text",
+      "placeholder": "e.g. 550e8400-e29b-41d4-a716-446655440000"
+    },
+    "limit": {
+      "key": "limit",
+      "label": "Page / Result Limit",
+      "description": "Maximum number of pages or search results to return",
+      "widget": "input-v3-text",
+      "placeholder": "10"
+    },
+    "formats": {
+      "key": "formats",
+      "label": "Output Formats",
+      "description": "Comma-separated list of formats (markdown, html, rawHtml, links, screenshot)",
+      "widget": "input-v3-text",
+      "placeholder": "markdown, html"
+    },
+    "only_main_content": {
+      "key": "only_main_content",
+      "label": "Only Main Content",
+      "description": "Exclude navigation, footers, headers, and boilerplate",
+      "widget": "toggle-v3"
+    },
+    "search_options": {
+      "key": "search_options",
+      "label": "Additional Search / Scrape Options (JSON)",
+      "description": "Optional JSON object containing advanced parameters",
+      "widget": "code-editor-v3-json"
+    }
+  },
+  "definitions": {
+    "scrape": {
+      "properties": {
+        "url": {
+          "$ref": "#/tj:ui:properties/url"
+        },
+        "formats": {
+          "$ref": "#/tj:ui:properties/formats"
+        },
+        "only_main_content": {
+          "$ref": "#/tj:ui:properties/only_main_content"
+        },
+        "search_options": {
+          "$ref": "#/tj:ui:properties/search_options"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "search": {
+      "properties": {
+        "query": {
+          "$ref": "#/tj:ui:properties/query"
+        },
+        "limit": {
+          "$ref": "#/tj:ui:properties/limit"
+        },
+        "search_options": {
+          "$ref": "#/tj:ui:properties/search_options"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "crawl": {
+      "properties": {
+        "url": {
+          "$ref": "#/tj:ui:properties/url"
+        },
+        "limit": {
+          "$ref": "#/tj:ui:properties/limit"
+        },
+        "search_options": {
+          "$ref": "#/tj:ui:properties/search_options"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "crawl_status": {
+      "properties": {
+        "job_id": {
+          "$ref": "#/tj:ui:properties/job_id"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    },
+    "map": {
+      "properties": {
+        "url": {
+          "$ref": "#/tj:ui:properties/url"
+        },
+        "limit": {
+          "$ref": "#/tj:ui:properties/limit"
+        },
+        "search_options": {
+          "$ref": "#/tj:ui:properties/search_options"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  }
+}
