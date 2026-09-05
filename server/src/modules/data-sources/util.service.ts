@@ -30,6 +30,7 @@ import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.ser
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
@@ -175,18 +176,59 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   /**
-   * IMPORTANT: Do not modify this function - it is used in data migrations.
+   * IMPORTANT: Do not modify this function - it is used in older data migrations
+   * that ran before OAuth tokens moved to datasource_user_token_data.
    *
    * Used in migrations:
    * - 1639734070615-BackfillDataSourcesAndQueriesForAppVersions.ts
+   * - 1714626631309-CreateSampleDataSourceToExistingWorkspace.ts
    *
    * This function internally calls:
    * - CredentialsService.create()
    */
+  async parseOptionsForCreateLegacy(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
+    if (!options) return {};
+    return await dbTransactionWrap(async (entityManager: EntityManager) => {
+      const optionsWithOauth = await this.parseOptionsForOauthDataSourceLegacy(options, resetSecureData);
+      const parsedOptions = {};
+
+      for (const option of optionsWithOauth) {
+        if (option['encrypted']) {
+          if (option['workspace_constant']) {
+            const credential = await this.credentialService.create(option['workspace_constant'], entityManager);
+
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              workspace_constant: option['workspace_constant'],
+              encrypted: option['encrypted'],
+            };
+          } else {
+            const credential = await this.credentialService.create(
+              resetSecureData ? '' : option['value'] || '',
+              entityManager
+            );
+
+            parsedOptions[option['key']] = {
+              credential_id: credential.id,
+              encrypted: option['encrypted'],
+            };
+          }
+        } else {
+          parsedOptions[option['key']] = {
+            value: option['value'],
+            encrypted: false,
+          };
+        }
+      }
+
+      return parsedOptions;
+    }, manager);
+  }
+
   async parseOptionsForCreate(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
     if (!options) return {};
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
-      const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, resetSecureData);
+      const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, entityManager, resetSecureData);
       const parsedOptions = {};
 
       for (const option of optionsWithOauth) {
@@ -223,6 +265,100 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async parseOptionsForOauthDataSource(
+    options: Array<object>,
+    manager: EntityManager,
+    resetSecureData = false,
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string,
+    dataSourceOptionId?: string
+  ) {
+    const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
+
+    if (findOption(options, 'oauth2') && findOption(options, 'code')) {
+      const provider = findOption(options, 'provider')['value'];
+      const authCode = findOption(options, 'code')['value'];
+      const pluginIdOption = findOption(options, 'plugin_id');
+      const plugin_id = pluginIdOption ? pluginIdOption['value'] : null;
+      const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
+
+      // const queryService = new allPlugins[provider]();
+
+      // Resolve workspace constants in options before calling accessDetailsFrom
+      let resolvedOptions = options;
+      if (organizationId && environmentId) {
+        resolvedOptions = await resolveOptionsArrayForOAuth(options, (value) =>
+          this.resolveConstants(value, organizationId, environmentId)
+        );
+      }
+
+      let accessDetailsPromise: Promise<any>;
+
+      const cacheKey = `${provider}_${authCode}`;
+
+      if (this.inMemoryCacheService.has(cacheKey)) {
+        accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
+      } else {
+        accessDetailsPromise = queryService.accessDetailsFrom(authCode, resolvedOptions, resetSecureData);
+        this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
+      }
+      const accessDetails = await accessDetailsPromise;
+
+      const isMultiAuthEnabled = findOption(options, 'multiple_auth_enabled')?.['value'];
+
+      if (dataSourceOptionId) {
+        // New path: save tokens directly to datasource_user_token_data
+        let access_token: string | null = null;
+        let refresh_token: string | null = null;
+
+        if (isMultiAuthEnabled) {
+          const tokenObj: Record<string, any> = { user_id: userId };
+          for (const [key, value] of accessDetails) {
+            tokenObj[key] = value;
+          }
+          access_token = tokenObj['access_token'] ?? null;
+          refresh_token = tokenObj['refresh_token'] ?? null;
+          await this.upsertUserTokenData(dataSourceOptionId, userId, access_token, refresh_token, manager);
+        } else {
+          // Some plugins (e.g. salesforce) return extra fields alongside access_token/refresh_token
+          // (e.g. instance_url) that the plugin's run()/testConnection() also needs. Those aren't
+          // tokens, so they don't belong in datasource_user_token_data — push them back into options
+          // as regular encrypted fields, same as any other credential, so they keep flowing through
+          // the normal parseOptionsForUpdate -> CredentialsService save path.
+          for (const [key, value] of accessDetails) {
+            if (key === 'access_token') access_token = value;
+            else if (key === 'refresh_token') refresh_token = value;
+            else options.push({ key, value, encrypted: true });
+          }
+          await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
+        }
+
+        //Propagate token to all branches since tokens are branch-invariant
+        this.propagateTokenToAllBranches(
+          dataSourceOptionId,
+          environmentId,
+          userId,
+          access_token,
+          refresh_token,
+          manager
+        );
+
+        // Strip OAuth flow keys and token keys from options (any extra non-token fields pushed
+        // above, e.g. instance_url, are intentionally kept)
+        options = options.filter(
+          (option) =>
+            !['provider', 'code', 'oauth2', 'tokenData', 'access_token', 'refresh_token'].includes(option['key'])
+        );
+        return options;
+      }
+      options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
+    }
+
+    return options;
+  }
+
+  //DO NOT USE! Used for Older migrations which has oauth data in options
+  async parseOptionsForOauthDataSourceLegacy(
     options: Array<object>,
     resetSecureData = false,
     userId?: string,
@@ -268,7 +404,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
         const existingTokenArray = findOption(options, 'token_data')?.['value'];
 
-        const updatedTokenData = this.getCurrentToken(isMultiAuthEnabled, existingTokenArray, newTokenDataObj, userId);
+        const updatedTokenData = this.getCurrentTokenLegacy(
+          isMultiAuthEnabled,
+          existingTokenArray,
+          newTokenDataObj,
+          userId
+        );
         options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
 
         options.push({
@@ -292,6 +433,33 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     return options;
+  }
+
+  //DO NOT USE ! Used for Older migrations which has oauth data in options
+  protected getCurrentTokenLegacy(isMultiAuthEnabled: boolean, tokenData: any, newToken: any, userId: string) {
+    if (isMultiAuthEnabled) {
+      let tokensArray = [];
+      if (tokenData && Array.isArray(tokenData)) {
+        let isExisted = false;
+        const newTokenData = tokenData.map((token) => {
+          if (token.user_id === userId) {
+            isExisted = true;
+            return { ...token, ...newToken };
+          }
+          return token;
+        });
+        if (isExisted) {
+          tokensArray = newTokenData;
+        } else {
+          tokensArray = [...tokenData, newToken];
+        }
+      } else {
+        tokensArray.push(newToken);
+      }
+      return tokensArray;
+    } else {
+      return newToken;
+    }
   }
 
   async update(
@@ -321,13 +489,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           organizationId
         );
         const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
-        // if datasource is restapi then reset the token data
-        if (['restapi', 'microsoft_graph'].includes(dataSource.kind))
-          options.push({
-            key: 'tokenData',
-            value: undefined,
-            encrypted: false,
-          });
+
+        // Detect auth mode toggle — clear all token data for affected environments
+        const incomingMultiAuthOption = options.find((o) => o['key'] === 'multiple_auth_enabled');
+        const incomingMultiAuthValue = incomingMultiAuthOption?.['value'];
+
+        // if datasource is restapi/microsoft_graph then clear the token data on save
+        const shouldClearTokens = ['restapi', 'microsoft_graph'].includes(dataSource.kind);
 
         // Determine if we should update the isDefault DSV.
         // isDefault = "snapshot of main" — only update it when:
@@ -345,14 +513,19 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         if (isMultiEnvEnabled) {
           const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
-          dataSource.options = (
-            await this.appEnvironmentUtilService.getOptions(
-              dataSourceId,
-              organizationId,
-              envToUpdate.id,
-              effectiveBranchId
-            )
-          ).options;
+          const dso = await this.appEnvironmentUtilService.getOptions(
+            dataSourceId,
+            organizationId,
+            envToUpdate.id,
+            effectiveBranchId
+          );
+          dataSource.options = dso.options;
+
+          const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
+          const authModeToggled = incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
+          if (shouldClearTokens || authModeToggled) {
+            await this.deleteAllUserTokenData(dso.id, manager);
+          }
 
           const newOptions = await this.parseOptionsForUpdate(
             dataSource,
@@ -360,7 +533,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             manager,
             userId,
             organizationId,
-            envToUpdate.id
+            envToUpdate.id,
+            dso.id
           );
           if (shouldUpdateDefault) {
             await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
@@ -369,7 +543,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           // Branch-aware: also update data_source_version_options
           if (effectiveBranchId) {
             let dsv = await manager.findOne(DataSourceVersion, {
-              where: { dataSourceId: dataSource.id, branchId: effectiveBranchId, isActive: true },
+              where: {
+                dataSourceId: dataSource.id,
+                branchId: effectiveBranchId,
+                isActive: true,
+              },
             });
             if (!dsv) {
               // Auto-create branch DSV (DS was likely created before git sync was enabled)
@@ -386,9 +564,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
               for (const env of allEnvs) {
                 let sourceOptions: any = {};
+                let defaultDsvo: DataSourceVersionOptions | null = null;
                 if (defaultDsv) {
-                  const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
-                    where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+                  defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                    where: {
+                      dataSourceVersionId: defaultDsv.id,
+                      environmentId: env.id,
+                    },
                   });
                   sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
                 }
@@ -398,16 +580,24 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                   if (opt?.credential_id && opt?.encrypted) {
                     const originalValue = await this.credentialService.getValue(opt.credential_id);
                     const newCredential = await this.credentialService.create(originalValue || '', manager);
-                    sourceOptions[key] = { ...opt, credential_id: newCredential.id };
+                    sourceOptions[key] = {
+                      ...opt,
+                      credential_id: newCredential.id,
+                    };
                   }
                 }
-                await manager.save(
+                const newDsvo = await manager.save(
                   manager.create(DataSourceVersionOptions, {
                     dataSourceVersionId: dsv.id,
                     environmentId: env.id,
                     options: sourceOptions,
                   })
                 );
+                // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+                // connection appears disconnected on the newly created branch.
+                if (defaultDsvo) {
+                  await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
+                }
               }
             }
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
@@ -420,7 +610,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                 manager,
                 effectiveBranchId
               );
-              await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
+              await manager.update(DataSourceVersion, dsv.id, {
+                name,
+                updatedAt: new Date(),
+              });
             }
           }
         } else {
@@ -434,7 +627,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           const nonMultiEnvBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
           let dsv = nonMultiEnvBranchId
             ? await manager.findOne(DataSourceVersion, {
-                where: { dataSourceId: dataSource.id, branchId: nonMultiEnvBranchId, isActive: true },
+                where: {
+                  dataSourceId: dataSource.id,
+                  branchId: nonMultiEnvBranchId,
+                  isActive: true,
+                },
               })
             : null;
 
@@ -451,9 +648,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
             for (const env of allEnvs) {
               let sourceOptions: any = {};
+              let defaultDsvo: DataSourceVersionOptions | null = null;
               if (defaultDsv) {
-                const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
-                  where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+                defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                  where: {
+                    dataSourceVersionId: defaultDsv.id,
+                    environmentId: env.id,
+                  },
                 });
                 sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
               }
@@ -463,30 +664,51 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                 if (opt?.credential_id && opt?.encrypted) {
                   const originalValue = await this.credentialService.getValue(opt.credential_id);
                   const newCredential = await this.credentialService.create(originalValue || '', manager);
-                  sourceOptions[key] = { ...opt, credential_id: newCredential.id };
+                  sourceOptions[key] = {
+                    ...opt,
+                    credential_id: newCredential.id,
+                  };
                 }
               }
-              await manager.save(
+              const newDsvo = await manager.save(
                 manager.create(DataSourceVersionOptions, {
                   dataSourceVersionId: dsv.id,
                   environmentId: env.id,
                   options: sourceOptions,
                 })
               );
+              // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+              // connection appears disconnected on the newly created branch.
+              if (defaultDsvo) {
+                await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
+              }
             }
           }
 
           for (const env of allEnvs) {
-            dataSource.options = (
-              await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id, nonMultiEnvBranchId)
-            ).options;
+            const dso = await this.appEnvironmentUtilService.getOptions(
+              dataSourceId,
+              organizationId,
+              env.id,
+              nonMultiEnvBranchId
+            );
+            dataSource.options = dso.options;
+
+            const existingMultiAuth = dataSource.options?.['multiple_auth_enabled']?.value;
+            const authModeToggled =
+              incomingMultiAuthValue !== undefined && incomingMultiAuthValue !== existingMultiAuth;
+            if (shouldClearTokens || authModeToggled) {
+              await this.deleteAllUserTokenData(dso.id, manager);
+            }
+
             const newOptions = await this.parseOptionsForUpdate(
               dataSource,
               options,
               manager,
               userId,
               organizationId,
-              env.id
+              env.id,
+              dso.id
             );
             if (shouldUpdateDefault) {
               await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
@@ -507,7 +729,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               manager,
               nonMultiEnvBranchId
             );
-            await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
+            await manager.update(DataSourceVersion, dsv.id, {
+              name,
+              updatedAt: new Date(),
+            });
           }
         }
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
@@ -588,12 +813,25 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     manager: EntityManager,
     userId?: string,
     organizationId?: string,
-    environmentId?: string
+    environmentId?: string,
+    dataSourceOptionId?: string
   ) {
     if (!options) return {};
 
+    // Token data keys must not be saved to data_source_options — handled by upsertUserTokenData.
+    // Exception: intercom's `access_token` is a manually-typed personal access token, not an
+    // OAuth-managed field (intercom has no OAuth flow at all) — it must go through the normal
+    // credential-save path below, or a saved value would be silently discarded on every update.
+    const TOKEN_KEYS = new Set(
+      dataSource?.kind === 'intercom'
+        ? ['tokenData', 'token_data']
+        : ['access_token', 'refresh_token', 'tokenData', 'token_data']
+    );
+
     const resolvedOptions = [];
     for (const option of options) {
+      if (TOKEN_KEYS.has(option['key'])) continue; // handled by upsertUserTokenData
+
       if (option['encrypted'] && !option['value'] && dataSource?.options?.[option['key']]?.credential_id) {
         try {
           const value = await this.credentialService.getValue(dataSource.options[option['key']].credential_id);
@@ -609,10 +847,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(
       resolvedOptions,
+      manager,
       false,
       userId,
       organizationId,
-      environmentId
+      environmentId,
+      dataSourceOptionId
     );
     const parsedOptions = {};
 
@@ -631,6 +871,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
       for (const option of optionsWithOauth) {
         const key = option['key'];
+
+        // Token keys are managed in datasource_user_token_data
+        if (TOKEN_KEYS.has(key)) continue;
+
         const credentialValue = option['value'];
 
         if (option['encrypted']) {
@@ -897,8 +1141,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId?: string
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
-    let tokenOptions: any;
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
+
+    let accessToken: string | null = null;
+    let refreshToken: string | null = null;
+
     if (
       [
         'googlesheets',
@@ -922,51 +1169,55 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         isMultiAuthEnabled,
         userId
       );
+      // Extra fields alongside access_token/refresh_token (e.g. salesforce's instance_url) aren't
+      // tokens, so they don't belong in datasource_user_token_data — save them as regular encrypted
+      // options instead, same as any other credential, so run()/testConnection() can still see them.
+      const extraOptions: Array<{
+        key: string;
+        value: any;
+        encrypted: boolean;
+      }> = [];
+
       if (isMultiAuthEnabled) {
-        const updatedTokenData = this.getCurrentToken(
-          isMultiAuthEnabled,
-          dataSource.options['tokenData']?.value,
-          newTokenData,
-          userId
-        );
-        tokenOptions = [
-          {
-            key: 'tokenData',
-            value: updatedTokenData,
-            encrypted: false,
-          },
-        ];
+        // newTokenData is a plain object with user_id, access_token, refresh_token
+        const tokenObj = newTokenData as Record<string, any>;
+        accessToken = tokenObj['access_token'] ?? null;
+        refreshToken = tokenObj['refresh_token'] ?? null;
       } else {
-        tokenOptions = newTokenData;
+        // newTokenData is an array of [{key, value, encrypted}]
+        const tokenArr = newTokenData as Array<Record<string, any>>;
+        for (const opt of tokenArr) {
+          if (opt['key'] === 'access_token') accessToken = opt['value'];
+          else if (opt['key'] === 'refresh_token') refreshToken = opt['value'];
+          else extraOptions.push(opt as { key: string; value: any; encrypted: boolean });
+        }
+      }
+
+      if (extraOptions.length) {
+        await this.updateOptions(dataSource.id, extraOptions, organizationId, environmentId);
       }
     } else {
       const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
-      const tokenData = this.getCurrentToken(
-        isMultiAuthEnabled,
-        dataSource.options['tokenData']?.value,
-        newToken,
-        userId
+      accessToken = newToken['access_token'] ?? null;
+      refreshToken = newToken['refresh_token'] ?? null;
+    }
+
+    // Persist tokens to datasource_user_token_data for the specific environment
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const tokenUserId = isMultiAuthEnabled ? userId : null;
+      const dso = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, environmentId);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
+
+      // Propagate token to all branches since tokens are branch-invariant
+      await this.propagateTokenToAllBranches(
+        dataSource.id,
+        environmentId,
+        tokenUserId,
+        accessToken,
+        refreshToken,
+        manager
       );
-
-      tokenOptions = [
-        {
-          key: 'tokenData',
-          value: tokenData,
-          encrypted: false,
-        },
-      ];
-    }
-    await this.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
-
-    // Propagate OAuth token to all branch/version DSVs
-    const updatedTokenData =
-      tokenOptions.find((opt: any) => opt.key === 'tokenData')?.value ??
-      tokenOptions.find((opt: any) => opt.key === 'access_token')?.value;
-    if (updatedTokenData !== undefined) {
-      await this.propagateTokenToAllBranches(dataSource.id, environmentId, updatedTokenData);
-    }
-
-    return;
+    });
   }
 
   protected async updateOptions(
@@ -991,7 +1242,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const effectiveUpdateBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
       const dsv = effectiveUpdateBranchId
         ? await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId, branchId: effectiveUpdateBranchId, isActive: true },
+            where: {
+              dataSourceId,
+              branchId: effectiveUpdateBranchId,
+              isActive: true,
+            },
           })
         : null;
 
@@ -1026,32 +1281,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         );
       }
     });
-  }
-
-  protected getCurrentToken(isMultiAuthEnabled: boolean, tokenData: any, newToken: any, userId: string) {
-    if (isMultiAuthEnabled) {
-      let tokensArray = [];
-      if (tokenData && Array.isArray(tokenData)) {
-        let isExisted = false;
-        const newTokenData = tokenData.map((token) => {
-          if (token.user_id === userId) {
-            isExisted = true;
-            return { ...token, ...newToken };
-          }
-          return token;
-        });
-        if (isExisted) {
-          tokensArray = newTokenData;
-        } else {
-          tokensArray = [...tokenData, newToken];
-        }
-      } else {
-        tokensArray.push(newToken);
-      }
-      return tokensArray;
-    } else {
-      return newToken;
-    }
   }
 
   protected checkIfContentTypeIsURLenc(headers: [] = []) {
@@ -1193,7 +1422,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async parseSourceOptions(options: any, organizationId: string, environmentId: string, user?: User): Promise<object> {
+  async parseSourceOptions(
+    options: any,
+    organizationId: string,
+    environmentId: string,
+    user?: User,
+    dataSourceOptionId?: string
+  ): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
     const constantMatcher = /\{\{(constants|secrets|globals.server)\..*?\}\}/g;
@@ -1238,7 +1473,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    const parsedOptions = {};
+    const parsedOptions: Record<string, any> = {};
 
     for (const key of Object.keys(options)) {
       const option = options[key];
@@ -1259,20 +1494,36 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    return parsedOptions;
-  }
-
-  protected changeCurrentToken(tokenData: any, userId: string, accessTokenDetails: any, isMultiAuthEnabled: boolean) {
-    if (isMultiAuthEnabled) {
-      return tokenData?.value.map((token: any) => {
-        if (token.user_id === userId) {
-          return { ...token, ...accessTokenDetails };
+    // Append OAuth tokens from datasource_user_token_data when dataSourceOptionId is provided.
+    // Not gated on guessing an "auth type" from options — plugin-native OAuth sources
+    // (googlesheetsv2, slack, salesforce, ...) don't use the auth_type/grant_type keys at all
+    // (those are REST-API-specific; plugin-native sources use authentication_type, or nothing
+    // for single-auth), so that heuristic silently skipped the lookup for them. A lookup for a
+    // non-OAuth datasource just finds no row via the indexed FK — harmless.
+    if (dataSourceOptionId) {
+      const isMultiAuth = parsedOptions['multiple_auth_enabled'] === true;
+      if (isMultiAuth) {
+        const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id ?? null);
+        parsedOptions['tokenData'] = tokenRow ? [{ user_id: user?.id, ...tokenRow }] : [];
+      } else {
+        const tokenRow = await this.getUserTokenData(dataSourceOptionId, null);
+        if (tokenRow) {
+          parsedOptions['access_token'] = tokenRow.access_token;
+          parsedOptions['refresh_token'] = tokenRow.refresh_token;
+          // Some plugins (restapi, graphql, openapi, servicenow) don't read access_token/refresh_token
+          // directly — they go through the shared OAuth helper (plugins/*/common/lib/oauth.ts ->
+          // validateAndMaybeSetOAuthHeaders), which always reads `tokenData` regardless of multi-auth.
+          // For single-auth it expects tokenData to just BE the token object (see getCurrentToken in
+          // utils.helper.ts, single-auth branch: `return tokenData`). Populate both shapes.
+          parsedOptions['tokenData'] = {
+            access_token: tokenRow.access_token,
+            refresh_token: tokenRow.refresh_token,
+          };
         }
-        return token;
-      });
-    } else {
-      return accessTokenDetails;
+      }
     }
+
+    return parsedOptions;
   }
 
   async updateOAuthAccessToken(
@@ -1283,46 +1534,40 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId: string,
     environmentId?: string
   ) {
-    const existingAccessTokenCredentialId =
-      dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
-    const existingRefreshTokenCredentialId =
-      dataSourceOptions['refresh_token'] && dataSourceOptions['refresh_token']['credential_id'];
-    if (existingAccessTokenCredentialId) {
-      await this.credentialService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
+    if (!dataSourceId) return;
 
-      if (existingRefreshTokenCredentialId && accessTokenDetails['refresh_token']) {
-        await this.credentialService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']);
-      }
-    } else if (dataSourceId) {
-      const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
-      const updatedTokenData = this.changeCurrentToken(
-        dataSourceOptions['tokenData'],
-        userId,
-        accessTokenDetails,
-        isMultiAuthEnabled
-      );
-      const tokenOptions = [
-        {
-          key: 'tokenData',
-          value: updatedTokenData,
-          encrypted: false,
-        },
-      ];
-      await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
+    const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
+    const tokenUserId = isMultiAuthEnabled ? userId : null;
+    const accessToken = accessTokenDetails['access_token'] ?? null;
+    const refreshToken = accessTokenDetails['refresh_token'] ?? null;
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
 
       // Propagate OAuth token to ALL branches (tokens are branch-invariant)
-      await this.propagateTokenToAllBranches(dataSourceId, environmentId, updatedTokenData);
-    }
+      await this.propagateTokenToAllBranches(
+        dataSourceId,
+        environmentId,
+        tokenUserId,
+        accessToken,
+        refreshToken,
+        manager
+      );
+    });
   }
 
   /**
-   * When an OAuth token refreshes, propagate the tokenData to all branch versions
+   * When an OAuth token refreshes, propagate the token to all branch versions
    * of this data source so tokens stay in sync across branches.
    */
   protected async propagateTokenToAllBranches(
     dataSourceId: string,
     environmentId: string,
-    updatedTokenData: any
+    userId: string | null,
+    accessToken: string | null,
+    refreshToken: string | null,
+    manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Find all branch versions for this DS
@@ -1335,12 +1580,128 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           where: { dataSourceVersionId: dsv.id, environmentId },
         });
         if (dsvo) {
-          const opts = dsvo.options || {};
-          opts['tokenData'] = { value: updatedTokenData, encrypted: false };
-          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options: opts, updatedAt: new Date() });
+          await this.upsertUserTokenData(dsvo.id, userId, accessToken, refreshToken, manager);
         }
       }
+    }, manager);
+  }
+
+  protected async getUserTokenData(
+    dataSourceVersionOptionId: string,
+    userId: string | null,
+    manager?: EntityManager
+  ): Promise<{
+    access_token: string | null;
+    refresh_token: string | null;
+  } | null> {
+    return await dbTransactionWrap(async (mgr: EntityManager) => {
+      const qb = mgr
+        .createQueryBuilder(DatasourceUserTokenData, 'dst')
+        .select(['dst.authToken', 'dst.refreshToken'])
+        .where('dst.data_source_version_option_id = :dataSourceVersionOptionId', { dataSourceVersionOptionId });
+
+      if (userId !== null) {
+        qb.andWhere('dst.user_id = :userId', { userId }); //Multi auth
+      } else {
+        qb.andWhere('dst.user_id IS NULL'); //Single auth
+      }
+
+      const row = await qb.getOne();
+      if (!row) return null;
+
+      const access_token = row.authToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.authToken)
+        : null;
+      const refresh_token = row.refreshToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
+        : null;
+
+      return { access_token, refresh_token };
+    }, manager);
+  }
+
+  protected async deleteAllUserTokenData(dataSourceOptionId: string, manager: EntityManager): Promise<void> {
+    await manager.delete(DatasourceUserTokenData, {
+      dataSourceVersionOptionId: dataSourceOptionId,
     });
+  }
+
+  async upsertUserTokenData(
+    dataSourceVersionOptionId: string,
+    userId: string | null,
+    accessToken: string | null,
+    refreshToken: string | null,
+    manager: EntityManager
+  ): Promise<void> {
+    const encryptedAccessToken = accessToken
+      ? await this.encryptionService.encryptColumnValue('credentials', 'value', accessToken)
+      : null;
+    const encryptedRefreshToken = refreshToken
+      ? await this.encryptionService.encryptColumnValue('credentials', 'value', refreshToken)
+      : null;
+
+    // Build the SET clause dynamically, skipping null tokens for refresh-token-only flows
+    const setClauses = ['updated_at = now()'];
+    if (accessToken !== null) {
+      setClauses.push('auth_token = EXCLUDED.auth_token');
+    }
+    if (refreshToken !== null) {
+      setClauses.push('refresh_token = EXCLUDED.refresh_token');
+    }
+    const setClause = setClauses.join(', ');
+
+    if (userId !== null) {
+      // Multi-auth: conflict target is the partial unique index on (option_id, user_id) WHERE user_id IS NOT NULL
+      await manager.query(
+        `
+        INSERT INTO datasource_user_token_data
+          (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+        VALUES
+          (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
+        ON CONFLICT (data_source_version_option_id, user_id) WHERE user_id IS NOT NULL
+        DO UPDATE SET
+          ${setClause}
+        `,
+        [userId, dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+      );
+    } else {
+      // Single-auth: conflict target is the partial unique index on (option_id) WHERE user_id IS NULL
+      await manager.query(
+        `
+        INSERT INTO datasource_user_token_data
+          (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+        VALUES
+          (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
+        ON CONFLICT (data_source_version_option_id) WHERE user_id IS NULL
+        DO UPDATE SET
+          ${setClause}
+        `,
+        [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+      );
+    }
+  }
+
+  /**
+   * Copies all OAuth token rows from one DataSourceVersionOptions to another (decrypt + re-encrypt).
+   * Used whenever a new DSVO is cloned from an existing, already-connected one — e.g. auto-creating
+   * a git-sync branch DSV for a datasource that already existed — so the OAuth connection isn't
+   * silently lost on the new DSVO.
+   */
+  async duplicateTokenData(sourceDsvoId: string, targetDsvoId: string, manager: EntityManager): Promise<void> {
+    const tokenRows = await manager.find(DatasourceUserTokenData, {
+      where: { dataSourceVersionOptionId: sourceDsvoId },
+    });
+
+    for (const row of tokenRows) {
+      const accessToken = row.authToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.authToken)
+        : null;
+      const refreshToken = row.refreshToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
+        : null;
+
+      await this.upsertUserTokenData(targetDsvoId, row.userId ?? null, accessToken, refreshToken, manager);
+    }
   }
 
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
@@ -1372,7 +1733,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const allEnvs = await this.appEnvironmentUtilService.getAllEnvironments(organizationId, manager);
 
       // Create default DataSourceVersion + DataSourceVersionOptions
-      const dataSource = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      const dataSource = await manager.findOne(DataSource, {
+        where: { id: dataSourceId },
+        select: ['id', 'name'],
+      });
       const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
       const dsv = manager.create(DataSourceVersion, {
         dataSourceId,
@@ -1504,7 +1868,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       // renaming to a name that differs only in casing from another DS is allowed.
       .where('dsv.name = :name', { name })
       .andWhere('dsv.isActive = true')
-      .andWhere('dsv.dataSourceId != :currentDataSourceId', { currentDataSourceId })
+      .andWhere('dsv.dataSourceId != :currentDataSourceId', {
+        currentDataSourceId,
+      })
       .andWhere('ds.organizationId = :organizationId', { organizationId });
 
     if (branchId) {

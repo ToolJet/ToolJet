@@ -133,7 +133,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organizationId,
         environmentId,
         user,
-        opts
+        opts,
+        dataSourceOptions.id
       );
 
       // Determine whether query timeout is set, to initiate abort controller
@@ -290,7 +291,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               organizationId,
               environmentId,
               user,
-              opts
+              opts,
+              dataSourceOptions.id
             ));
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
@@ -435,7 +437,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       {},
       organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      undefined,
+      dataSourceOptions.id
     );
 
     return await service.listTables(
@@ -459,13 +463,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id,
     environmentId = undefined,
     user = undefined,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    dataSourceOptionId = undefined
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
       environmentId,
-      user
+      user,
+      dataSourceOptionId
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
