@@ -65,8 +65,8 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
 
    Examples:
    `TOOLJET_HOST=http://12.34.56.78` or
-   `TOOLJET_HOST=https://yourdomain.com` or
-   `TOOLJET_HOST=https://tooljet.yourdomain.com`
+   `TOOLJET_HOST=https://example.com` or
+   `TOOLJET_HOST=https://tooljet.example.com`
 
    :::info
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
