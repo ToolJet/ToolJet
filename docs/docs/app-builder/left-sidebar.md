@@ -8,7 +8,7 @@ Left-sidebar has the following options:
 - **[Pages](#pages)**
 - **[Inspector](#inspector)**
 - **[Debugger](#debugger)**
-- **[Global Settings](#global-settings)**
+- **[App settings](#app-settings)**
 - **[Comments](#comments)**
 - **[Theme switch](#theme-switch)**
 
@@ -56,9 +56,9 @@ Debugger consists of two main sections:
 
 2. **Errors:** This section specifically focuses on displaying the error messages that occurred during the program's execution. These error messages indicate issues or problems that need attention, as they may lead to unexpected behaviors of the application. 
 
-## Global Settings
+## App settings
 
-To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
+To configure the app's settings, click on the kebab menu(three vertical dots) on the left of the app name. App settings include:
 
 - **Unique app slug**: The unique slug of the application. This slug is used in the URL of the application. By default, the slug is the `app id` of the application. You can change the slug to a custom value. For example, if the slug is `7b56293b-be5a-401f-8806-b71625f8ee0d` you can change it to `<unique-name>` then the new URL of the application will be `https://app.tooljet.ai/<workspace-name>/apps/<unique-name>/`
 - **App link**: The link to the application. This link can be used to share the application with other users of the workspace. If you want to share the application with users outside the workspace, you can make the application public from the **[Share](/docs/app-builder/share)** modal.

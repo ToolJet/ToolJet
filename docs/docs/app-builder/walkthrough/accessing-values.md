@@ -28,7 +28,7 @@ You can check all the accessible values using the left sidebar's **[Inspector](/
 
 ## More on the Left Sidebar
 
-The left sidebar in ToolJet is a hub for navigation and application configuration, featuring several options including Pages, Inspector, Debugger, and Global Settings.
+The left sidebar in ToolJet is a hub for navigation and application configuration, featuring several options including Pages, Inspector, Debugger, and App settings.
 
 ### Key Features
 
@@ -38,11 +38,10 @@ The left sidebar in ToolJet is a hub for navigation and application configuratio
 
 - **Debugger**: Track and display errors during query execution, providing insights into application issues.
 
-- **Global Settings**: Configure application-wide settings such as app slug, header visibility, and maintenance mode.
+- **App settings**: Configure application-wide settings such as app slug, header visibility, and maintenance mode.
 
 ## Practical Tips
 
 - Use the Inspector to ensure correct data bindings and troubleshoot data flow issues.
 - Leverage the Debugger to maintain smooth operation and quick error resolution.
-- Adjust Global Settings to tailor app behavior to specific user or organizational needs.
-
+- Adjust App settings to tailor app behavior to specific user or organizational needs.

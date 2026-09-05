@@ -1037,7 +1037,7 @@
         },
         "Settings": {
             "text": "Triggers",
-            "tip": "Global Settings",
+            "tip": "App settings",
             "hideHeader": "Hide header for launched apps",
             "maintenanceMode": "Maintenance mode",
             "maxWidthOfCanvas": "Max width of canvas",

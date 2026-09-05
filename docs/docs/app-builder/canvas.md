@@ -13,7 +13,7 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 <br/>
 
 :::info
-- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/left-sidebar#global-settings).
+- The Canvas height and width can be adjusted from the [App settings](/docs/app-builder/left-sidebar#app-settings).
 - When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
 
 <div style={{textAlign: 'center'}}>
@@ -64,4 +64,3 @@ For example: We want to disable a button when a checkbox is checked so we can si
 ### Clone Components
 
 You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)**.
-

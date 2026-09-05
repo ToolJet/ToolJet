@@ -913,7 +913,7 @@
         },
         "Settings": {
             "text": "Einstellungen",
-            "tip": "Globale Einstellungen",
+            "tip": "App-Einstellungen",
             "hideHeader": "Den Header für gestartete Apps ausblenden",
             "maintenanceMode": "Wartungsmodus",
             "maxWidthOfCanvas": "Maximale Breite der Arbeitsfläche",
