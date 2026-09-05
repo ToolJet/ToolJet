@@ -3,7 +3,7 @@ export const iconConfig = {
   displayName: 'Icon',
   description: 'Icon',
   defaultSize: {
-    width: 5,
+    width: 1,
     height: 48,
   },
   component: 'Icon',

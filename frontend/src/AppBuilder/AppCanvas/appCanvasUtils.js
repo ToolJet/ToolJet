@@ -20,7 +20,7 @@ import {
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function snapToGrid(canvasWidth, x, y) {
-  const gridX = canvasWidth / 43;
+  const gridX = canvasWidth / NO_OF_GRIDS;
 
   const snappedX = Math.round(x / gridX) * gridX;
   const snappedY = Math.round(y / 10) * 10;

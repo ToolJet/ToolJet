@@ -3,7 +3,7 @@ export const tabsConfig = {
   displayName: 'Tabs',
   description: 'Organize content in tabs',
   defaultSize: {
-    width: 15,
+    width: 4,
     height: 450,
   },
   component: 'Tabs',
