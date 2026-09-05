@@ -198,7 +198,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
-      await this.dataQueryRepository.deleteOne(dataQueryId);
+      await this.dataQueryRepository.deleteOne(dataQueryId, manager);
     });
 
     const operationTimestamp = Date.now();
