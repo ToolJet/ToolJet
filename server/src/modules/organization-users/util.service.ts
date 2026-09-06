@@ -10,6 +10,7 @@ import {
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
+import { SAFE_USER_SELECT_FIELDS } from '@modules/users/constants';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Organization } from '@entities/organization.entity';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
@@ -188,6 +189,14 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         where: { email },
         relations: {
           organization: true,
+        },
+        select: {
+          ...SAFE_USER_SELECT_FIELDS,
+          organization: {
+            id: true,
+            name: true,
+            status: true,
+          },
         },
       });
     }, manager);

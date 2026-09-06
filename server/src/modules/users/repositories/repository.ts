@@ -20,6 +20,7 @@ import { isSuperAdmin } from '@helpers/utils.helper';
 import * as uuid from 'uuid';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
+import { SAFE_USER_SELECT_FIELDS } from '@modules/users/constants';
 
 type UserFilterOptions = { searchText?: string; status?: string; page?: number };
 
@@ -100,10 +101,11 @@ export class UserRepository extends Repository<User> {
 
       if (existingUser) {
         await manager.update(User, { id: existingUser.id }, user);
-        return manager.findOne(User, { where: { id: existingUser.id } });
+        return manager.findOne(User, { where: { id: existingUser.id }, select: SAFE_USER_SELECT_FIELDS });
       } else {
         const newUser = manager.create(User, user);
-        return manager.save(User, newUser);
+        const saved = await manager.save(User, newUser);
+        return manager.findOne(User, { where: { id: saved.id }, select: SAFE_USER_SELECT_FIELDS });
       }
     }, manager || this.manager);
   }

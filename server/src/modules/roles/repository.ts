@@ -3,6 +3,7 @@ import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { SAFE_USER_SELECT_FIELDS } from '@modules/users/constants';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 
@@ -32,6 +33,7 @@ export class RolesRepository extends Repository<GroupPermissions> {
   ): Promise<User[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       return manager.find(User, {
+        select: SAFE_USER_SELECT_FIELDS,
         relations: {
           userGroups: {
             group: true,

@@ -22,6 +22,7 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
+import { SAFE_USER_SELECT_FIELDS, SAFE_USER_QB_COLUMNS } from '@modules/users/constants';
 @Injectable()
 export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {
@@ -253,6 +254,26 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               organizationUsers: true,
             },
           },
+          select: {
+            id: true,
+            groupId: true,
+            userId: true,
+            createdAt: true,
+            updatedAt: true,
+            group: {
+              id: true,
+              name: true,
+              type: true,
+            },
+            user: {
+              ...SAFE_USER_SELECT_FIELDS,
+              organizationUsers: {
+                id: true,
+                organizationId: true,
+                status: true,
+              },
+            },
+          },
         });
       }
 
@@ -263,6 +284,26 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           group: true,
           user: {
             organizationUsers: true,
+          },
+        },
+        select: {
+          id: true,
+          groupId: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
+          group: {
+            id: true,
+            name: true,
+            type: true,
+          },
+          user: {
+            ...SAFE_USER_SELECT_FIELDS,
+            organizationUsers: {
+              id: true,
+              organizationId: true,
+              status: true,
+            },
           },
         },
       });
@@ -277,6 +318,20 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         },
         relations: {
           group: true,
+          user: true,
+        },
+        select: {
+          id: true,
+          groupId: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
+          group: {
+            id: true,
+            name: true,
+            type: true,
+          },
+          user: SAFE_USER_SELECT_FIELDS,
         },
       });
     }, manager || this.manager);
@@ -405,6 +460,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         .createQueryBuilder(User, 'user')
         .innerJoin('user.userGroups', 'groupUser')
         .innerJoin('groupUser.group', 'group')
+        .select(SAFE_USER_QB_COLUMNS)
         .where('group.name = :name', { name: 'admin' })
         .andWhere('group.organizationId = :organizationId', { organizationId })
         .andWhere('user.status != :archived', { archived: USER_STATUS.ARCHIVED })
