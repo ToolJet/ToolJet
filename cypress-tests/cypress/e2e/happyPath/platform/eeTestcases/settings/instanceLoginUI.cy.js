@@ -9,7 +9,7 @@ import {
     updateAutoSSOToggle,
 } from "Support/utils/platform/eeCommon";
 
-import * as SSO from "Support/utils/manageSSO";
+import * as SSO from "Support/utils/platform/manageSSO";
 
 describe("Instance login", () => {
     beforeEach(() => {

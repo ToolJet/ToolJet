@@ -1,3 +1,22 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// allUsers.js
+//   openAllUsersPage                 instanceUser.list    → superAdmin
+//   verifyAllUsersHeaderUI           instanceUser.verifyHeader → superAdmin
+//   verifyTableControls              instanceUser.verifyControls → superAdmin
+//   verifyUsersFilterOptions         instanceUser.verifyFilters → superAdmin
+//   verifyUserRow                    instanceUser.verifyRow → superAdmin
+//   openResetPasswordModal           instanceUser.openResetPassword → superAdmin
+//   verifyResetPasswordModalUI       instanceUser.verifyResetPasswordModal → superAdmin
+//   verifyUserActionMenu             instanceUser.verifyRowMenu → superAdmin
+//   openArchiveUserModal             instanceUser.openArchiveModal → superAdmin
+//   verifyArchiveUserModalUI         instanceUser.verifyArchiveModal → superAdmin
+//   openEditUserModal                instanceUser.openEditModal → superAdmin
+//   updateUserNameAndVerifyChanges   instanceUser.updateName → superAdmin
+//   verifyUnarchiveUserModal         instanceUser.unarchive → superAdmin
+//   loginAsUser                      session.loginAs      → onboarding
+//   loginAndExpectToast              session.loginExpectToast → onboarding
+//   visitAllUsersPage                instanceUser.visitAs → superAdmin
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import {
   commonEeSelectors,
@@ -22,10 +41,22 @@ import { onboardingSelectors } from "Selectors/platform/onboarding";
 
 import { usersText } from "Texts/platform/manageUsers";
 
+/**
+ * @tjType   instanceUser.list
+ * @tjBlock  superAdmin
+ * @tjUsage  openAllUsersPage()
+ * @tjDom    instance settings -> All users
+ */
 export const openAllUsersPage = () => {
   openInstanceSettings();
 };
 
+/**
+ * @tjType   instanceUser.verifyHeader
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyAllUsersHeaderUI()
+ * @tjDom    page title + breadcrumb
+ */
 export const verifyAllUsersHeaderUI = () => {
   cy.get(commonEeSelectors.pageTitle).verifyVisibleElement(
     "have.text",
@@ -49,6 +80,12 @@ export const verifyAllUsersHeaderUI = () => {
   );
 };
 
+/**
+ * @tjType   instanceUser.verifyControls
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyTableControls()
+ * @tjDom    search, filter, column headers
+ */
 export const verifyTableControls = () => {
   for (const element in usersTableElementsInInstance) {
     cy.get(usersTableElementsInInstance[element]).verifyVisibleElement(
@@ -67,6 +104,12 @@ export const verifyTableControls = () => {
   );
 };
 
+/**
+ * @tjType   instanceUser.verifyFilters
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyUsersFilterOptions()
+ * @tjDom    status filter dropdown options
+ */
 export const verifyUsersFilterOptions = () => {
   cy.get(usersSelector.userFilterInput).click();
   ["All", "Active", "Invited", "Archived"].forEach((opt) => {
@@ -75,6 +118,12 @@ export const verifyUsersFilterOptions = () => {
   cy.get("body").click(0, 0);
 };
 
+/**
+ * @tjType   instanceUser.verifyRow
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyUserRow(email, name, status)
+ * @tjDom    user row by email
+ */
 export const verifyUserRow = (
   userName,
   userEmail,
@@ -99,10 +148,22 @@ export const verifyUserRow = (
   );
 };
 
+/**
+ * @tjType   instanceUser.openResetPassword
+ * @tjBlock  superAdmin
+ * @tjUsage  openResetPasswordModal()
+ * @tjDom    row action menu -> reset password
+ */
 export const openResetPasswordModal = () => {
   cy.get(instanceAllUsersSelectors.resetPasswordButton).click();
 };
 
+/**
+ * @tjType   instanceUser.verifyResetPasswordModal
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyResetPasswordModalUI(userEmail)
+ * @tjDom    modal copy + buttons
+ */
 export const verifyResetPasswordModalUI = (userEmail) => {
   openResetPasswordModal();
   cy.get('[data-cy="reset-password-title"]').should(
@@ -125,6 +186,12 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
+/**
+ * @tjType   instanceUser.verifyRowMenu
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyUserActionMenu(userEmail)
+ * @tjDom    row kebab menu options
+ */
 export const verifyUserActionMenu = (userEmail) => {
   openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).verifyVisibleElement(
@@ -138,11 +205,23 @@ export const verifyUserActionMenu = (userEmail) => {
   );
 };
 
+/**
+ * @tjType   instanceUser.openArchiveModal
+ * @tjBlock  superAdmin
+ * @tjUsage  openArchiveUserModal('QA User')
+ * @tjDom    row menu -> archive
+ */
 export const openArchiveUserModal = (userName) => {
   openUserActionMenu(userName);
   cy.get(instanceAllUsersSelectors.archiveUserButton).click();
 };
 
+/**
+ * @tjType   instanceUser.verifyArchiveModal
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyArchiveUserModalUI('QA User', userEmail)
+ * @tjDom    archive modal copy + buttons
+ */
 export const verifyArchiveUserModalUI = (userName, userEmail) => {
   openArchiveUserModal(userEmail);
   cy.get(commonEeSelectors.modalTitle).contains(
@@ -170,11 +249,23 @@ export const verifyArchiveUserModalUI = (userName, userEmail) => {
 
 };
 
+/**
+ * @tjType   instanceUser.openEditModal
+ * @tjBlock  superAdmin
+ * @tjUsage  openEditUserModal(userEmail)
+ * @tjDom    row menu -> edit
+ */
 export const openEditUserModal = (userEmail) => {
   openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).click();
 };
 
+/**
+ * @tjType   instanceUser.updateName
+ * @tjBlock  superAdmin
+ * @tjUsage  updateUserNameAndVerifyChanges({ email, firstName, lastName })
+ * @tjDom    edit modal -> name fields -> save -> assert row
+ */
 export const updateUserNameAndVerifyChanges = ({
   currentName,
   userEmail,
@@ -200,6 +291,12 @@ export const updateUserNameAndVerifyChanges = ({
   cy.contains(newName).should("be.visible");
 };
 
+/**
+ * @tjType   instanceUser.unarchive
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyUnarchiveUserModal('QA User', userEmail)
+ * @tjDom    archived tab -> unarchive -> assert
+ */
 export const verifyUnarchiveUserModal = (userName, userEmail) => {
   openArchiveUserModal(userEmail);
 
@@ -225,6 +322,12 @@ export const verifyUnarchiveUserModal = (userName, userEmail) => {
   );
 };
 
+/**
+ * @tjType   session.loginAs
+ * @tjBlock  onboarding
+ * @tjUsage  loginAsUser(userEmail)
+ * @tjDom    UI login as the given user
+ */
 export const loginAsUser = (email, password = usersText.password) => {
   cy.visit("/my-workspace");
   cy.waitForElement(onboardingSelectors.signupEmailInput);
@@ -234,11 +337,23 @@ export const loginAsUser = (email, password = usersText.password) => {
   cy.get(onboardingSelectors.signInButton).click();
 };
 
+/**
+ * @tjType   session.loginExpectToast
+ * @tjBlock  onboarding
+ * @tjUsage  loginAndExpectToast(userEmail, 'Invalid credentials')
+ * @tjDom    UI login asserting a failure toast
+ */
 export const loginAndExpectToast = (email, message, password = usersText.password) => {
   loginAsUser(email, password);
   cy.verifyToastMessage(commonSelectors.toastMessage, message);
 };
 
+/**
+ * @tjType   instanceUser.visitAs
+ * @tjBlock  superAdmin
+ * @tjUsage  visitAllUsersPage(adminEmail)
+ * @tjDom    logs in then opens All users
+ */
 export const visitAllUsersPage = (loginEmail) => {
   if (loginEmail) {
     cy.apiLogin(loginEmail);

@@ -2,12 +2,12 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { logout } from "Support/utils/common";
-import { enableInstanceSignup } from "Support/utils/manageSSO";
+import { enableInstanceSignup } from "Support/utils/platform/manageSSO";
 import {
   SignUpPageElements,
   verifyConfirmEmailPage,
   verifyInvalidInvitationLink,
-} from "Support/utils/onboarding";
+} from "Support/utils/platform/onboarding";
 import { commonText } from "Texts/common";
 
 describe("User signup", () => {

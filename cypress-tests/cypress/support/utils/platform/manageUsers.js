@@ -1,3 +1,25 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// manageUsers.js
+//   verifyManageUsersPageElements    user.verifyPage      → access
+//   inviteUserToWorkspace            user.invite          → access
+//   confirmInviteElements            workspaceInvite.verifyConfirmPage → onboarding
+//   userStatus                       user.readStatus      → access
+//   bulkUserUpload                   user.bulkUpload      → access
+//   copyInvitationLink               user.copyInviteLink  → access
+//   fillUserInviteForm               user.fillInviteForm  → access
+//   selectUserGroup                  user.selectGroup     → access
+//   selectGroup                      user.selectGroupByName → access
+//   updateUserGroup                  user.updateGroup     → access
+//   inviteUserWithUserGroups         user.inviteWithGroups → access
+//   fetchAndVisitInviteLink          workspaceInvite.fetchAndVisit → onboarding
+//   fetchAndVisitInviteLinkViaMH     workspaceInvite.fetchViaMailhog → onboarding
+//   inviteUserWithUserRole           user.inviteWithRole  → access
+//   verifyUserStatusAndMetadata      user.verifyStatusAndMetadata → access
+//   openEditUserDetails              user.openEditModal   → access
+//   navigateToEditUser               user.navigateToEdit  → access
+//   cleanAllUsers                    user.cleanAll        → access
+//   apiArchiveUnarchiveUser          user.archiveApi      → access
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/platform/manageSSO";
 import { usersSelector } from "Selectors/platform/manageUsers";
@@ -10,6 +32,12 @@ import { usersText } from "Texts/platform/manageUsers";
 
 const envVar = Cypress.env("environment");
 
+/**
+ * @tjType   user.verifyPage
+ * @tjBlock  access
+ * @tjUsage  verifyManageUsersPageElements()
+ * @tjDom    manage users page: table, filters, buttons
+ */
 export const verifyManageUsersPageElements = () => {
   cy.get(
     `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
@@ -161,6 +189,12 @@ export const verifyManageUsersPageElements = () => {
   );
 };
 
+/**
+ * @tjType   user.invite
+ * @tjBlock  access
+ * @tjUsage  inviteUserToWorkspace('QA', userEmail)
+ * @tjDom    invite modal -> submit
+ */
 export const inviteUserToWorkspace = (firstName, email) => {
   cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
@@ -169,6 +203,12 @@ export const inviteUserToWorkspace = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
+/**
+ * @tjType   workspaceInvite.verifyConfirmPage
+ * @tjBlock  onboarding
+ * @tjUsage  confirmInviteElements(...)
+ * @tjDom    invite confirmation page
+ */
 export const confirmInviteElements = (
   email,
   workspaceName = "My workspace"
@@ -218,6 +258,12 @@ export const confirmInviteElements = (
   });
 };
 
+/**
+ * @tjType   user.readStatus
+ * @tjBlock  access
+ * @tjUsage  userStatus(userEmail)
+ * @tjDom    reads the status cell for a user
+ */
 export const userStatus = (email) => {
   common.navigateToManageUsers();
   common.searchUser(email);
@@ -228,6 +274,12 @@ export const userStatus = (email) => {
     });
 };
 
+/**
+ * @tjType   user.bulkUpload
+ * @tjBlock  access
+ * @tjUsage  bulkUserUpload(...)
+ * @tjDom    manage users -> bulk upload CSV
+ */
 export const bulkUserUpload = (
   file,
   fileName,
@@ -251,6 +303,12 @@ export const bulkUserUpload = (
   cy.wait(1500);
 };
 
+/**
+ * @tjType   user.copyInviteLink
+ * @tjBlock  access
+ * @tjUsage  copyInvitationLink('QA', userEmail)
+ * @tjDom    invite row -> copy link
+ */
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
@@ -271,11 +329,23 @@ export const copyInvitationLink = (firstName, email) => {
   });
 };
 
+/**
+ * @tjType   user.fillInviteForm
+ * @tjBlock  access
+ * @tjUsage  fillUserInviteForm('QA', userEmail)
+ * @tjDom    invite modal fields
+ */
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
   fillInputField({ Name: firstName, "Email address": email });
 };
 
+/**
+ * @tjType   user.selectGroup
+ * @tjBlock  access
+ * @tjUsage  selectUserGroup('QA Team')
+ * @tjDom    invite modal -> group multiselect
+ */
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
@@ -290,18 +360,36 @@ export const selectUserGroup = (groupName) => {
   });
 };
 
+/**
+ * @tjType   user.selectGroupByName
+ * @tjBlock  access
+ * @tjUsage  selectGroup('QA Team', 1000)
+ * @tjDom    group dropdown option
+ */
 export const selectGroup = (groupName, timeout = 1000) => {
   cy.get(usersSelector.groupSelector).eq(0).type(groupName);
   cy.wait(timeout);
   cy.get(usersSelector.groupSelectInput).eq(0).check();
 };
 
+/**
+ * @tjType   user.updateGroup
+ * @tjBlock  access
+ * @tjUsage  updateUserGroup('QA Team')
+ * @tjDom    edit user -> change groups
+ */
 export const updateUserGroup = (groupName) => {
   cy.get(usersSelector.userActionButton).click();
   cy.get(usersSelector.editUserDetailsButton).click();
   selectGroup(groupName);
 };
 
+/**
+ * @tjType   user.inviteWithGroups
+ * @tjBlock  access
+ * @tjUsage  inviteUserWithUserGroups('QA', userEmail, 'QA Team')
+ * @tjDom    invite with one or more groups
+ */
 export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   fillUserInviteForm(firstName, email);
 
@@ -338,6 +426,12 @@ export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
+/**
+ * @tjType   workspaceInvite.fetchAndVisit
+ * @tjBlock  onboarding
+ * @tjUsage  fetchAndVisitInviteLink(...)
+ * @tjDom    reads the invite link and opens it
+ */
 export const fetchAndVisitInviteLink = (
   email,
   workspaceName = "My workspace"
@@ -372,6 +466,12 @@ export const fetchAndVisitInviteLink = (
     });
 };
 
+/**
+ * @tjType   workspaceInvite.fetchViaMailhog
+ * @tjBlock  onboarding
+ * @tjUsage  fetchAndVisitInviteLinkViaMH(userEmail)
+ * @tjDom    reads the invite link from Mailhog
+ */
 export const fetchAndVisitInviteLinkViaMH = (email) => {
   cy.mhGetMailsByRecipient(email).then((mails) => {
     expect(mails).to.have.length.greaterThan(0);
@@ -411,6 +511,12 @@ export const fetchAndVisitInviteLinkViaMH = (email) => {
   });
 };
 
+/**
+ * @tjType   user.inviteWithRole
+ * @tjBlock  access
+ * @tjUsage  inviteUserWithUserRole('QA', userEmail, 'builder')
+ * @tjDom    invite with a role preset
+ */
 export const inviteUserWithUserRole = (firstName, email, role) => {
   fillUserInviteForm(firstName, email);
 
@@ -442,6 +548,12 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
 };
+/**
+ * @tjType   user.verifyStatusAndMetadata
+ * @tjBlock  access
+ * @tjUsage  verifyUserStatusAndMetadata(...)
+ * @tjDom    status cell + metadata columns
+ */
 export const verifyUserStatusAndMetadata = (
   email,
   expectedStatus = usersText.activeStatus,
@@ -458,6 +570,12 @@ export const verifyUserStatusAndMetadata = (
     });
 };
 
+/**
+ * @tjType   user.openEditModal
+ * @tjBlock  access
+ * @tjUsage  openEditUserDetails(...)
+ * @tjDom    user row -> edit
+ */
 export const openEditUserDetails = (
   email,
   activeStatusText = usersText.activeStatus,
@@ -470,6 +588,12 @@ export const openEditUserDetails = (
   navigateToEditUser(email);
 };
 
+/**
+ * @tjType   user.navigateToEdit
+ * @tjBlock  access
+ * @tjUsage  navigateToEditUser(userEmail)
+ * @tjDom    searches then opens the edit modal
+ */
 export const navigateToEditUser = (email) => {
   cy.contains("td", email)
     .parent()
@@ -481,6 +605,12 @@ export const navigateToEditUser = (email) => {
     .click();
 };
 
+/**
+ * @tjType   user.cleanAll
+ * @tjBlock  access
+ * @tjUsage  cleanAllUsers()
+ * @tjDom    none - teardown: removes every non-admin user
+ */
 export const cleanAllUsers = () => {
   let authHeaders;
   const emailsToDelete = new Set();
@@ -558,6 +688,12 @@ export const cleanAllUsers = () => {
     });
 };
 
+/**
+ * @tjType   user.archiveApi
+ * @tjBlock  access
+ * @tjUsage  apiArchiveUnarchiveUser(...)
+ * @tjDom    none - POST archive/unarchive
+ */
 export const apiArchiveUnarchiveUser = (
   email,
   action,

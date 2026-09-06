@@ -5,7 +5,7 @@ import {
   verifySlugValidations,
   verifySuccessfulSlugUpdate,
   verifyURLs,
-} from "Support/utils/apps";
+} from "Support/utils/platform/apps";
 import { releaseApp } from "Support/utils/common";
 
 describe("App Slug", () => {

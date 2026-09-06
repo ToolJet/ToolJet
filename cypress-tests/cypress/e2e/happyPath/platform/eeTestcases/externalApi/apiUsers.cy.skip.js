@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import {
     createUser, getAllUsers, getUser, updateUser, createGroup, verifyUserInGroups, updateUserRole,
     getAllWorkspaces, replaceUserWorkspace, replaceUserWorkspacesRelations
-} from 'Support/utils/externalApi';
+} from 'Support/utils/platform/externalApi';
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { commonSelectors } from 'Selectors/common';
 import { searchUser, navigateToManageUsers, logout, navigateToManageGroups } from 'Support/utils/common';

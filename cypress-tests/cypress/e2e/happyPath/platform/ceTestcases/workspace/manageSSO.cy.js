@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/platform/manageSSO";
 import * as common from "Support/utils/common";
-import * as SSO from "Support/utils/manageSSO";
+import * as SSO from "Support/utils/platform/manageSSO";
 import { instanceSSOConfig, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 

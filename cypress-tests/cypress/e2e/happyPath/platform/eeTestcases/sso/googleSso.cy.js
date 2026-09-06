@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
-import { toggleSsoViaUI, updateSsoId, cleanupTestUser } from "Support/utils/manageSSO";
+import { toggleSsoViaUI, updateSsoId, cleanupTestUser } from "Support/utils/platform/manageSSO";
 import { fillInputField } from "Support/utils/common";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
 
 describe('Google SSO Tests', () => {
     const TEST_USER_EMAIL = 'qatooljet@gmail.com';

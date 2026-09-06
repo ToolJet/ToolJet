@@ -11,14 +11,14 @@ import {
     pinInspector,
     searchUser,
 } from "Support/utils/common";
-import { setupAndUpdateRole } from "Support/utils/manageGroups";
+import { setupAndUpdateRole } from "Support/utils/platform/manageGroups";
 import { disableToggle, enableToggle } from "Support/utils/platform/eeCommon";
 import { ssoText } from "Texts/common";
 import { ssoEeText } from "Texts/platform/eeCommon";
 import { usersText } from "Texts/platform/manageUsers";
 import { sanitize } from "Support/utils/common";
-import { setSignupStatus } from "Support/utils/manageSSO";
-import { apiRequest as baseApiRequest } from "Support/utils/externalApi";
+import { setSignupStatus } from "Support/utils/platform/manageSSO";
+import { apiRequest as baseApiRequest } from "Support/utils/platform/externalApi";
 import { navigateAndVerifyInspector } from "Support/utils/appBuilder/inspector";
 
 const apiBaseUrl = Cypress.env("API_URL");

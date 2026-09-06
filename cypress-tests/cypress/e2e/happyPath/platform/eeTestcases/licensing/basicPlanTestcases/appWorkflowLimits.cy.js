@@ -4,7 +4,7 @@ import { workflowSelector } from "Selectors/platform/workflows";
 import {
   getCurrentCountFromBanner,
   verifyResourceLimit,
-} from "Support/utils/license";
+} from "Support/utils/platform/license";
 
 describe("License - App & Workflow Limits", () => {
   const data = {};

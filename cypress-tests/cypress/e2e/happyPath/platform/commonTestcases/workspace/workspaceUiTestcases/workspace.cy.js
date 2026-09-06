@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dashboardSelector } from "Selectors/platform/dashboard";
-import { inviteUser } from "Support/utils/manageUsers";
-import { resolveHost } from "Support/utils/apps";
+import { inviteUser } from "Support/utils/platform/manageUsers";
+import { resolveHost } from "Support/utils/platform/apps";
 
 const data = {};
 const host = resolveHost();

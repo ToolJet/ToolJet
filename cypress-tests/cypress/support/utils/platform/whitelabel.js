@@ -1,3 +1,19 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// whitelabel.js
+//   openWhiteLabelingSettings        whiteLabel.open      → superAdmin
+//   verifyWhiteLabelingUI            whiteLabel.verifyPage → superAdmin
+//   fillWhiteLabelingForm            whiteLabel.fillForm  → superAdmin
+//   saveWhiteLabelingChanges         whiteLabel.save      → superAdmin
+//   verifyCustomLogo                 whiteLabel.verifyLogo → superAdmin
+//   verifyPageTitleAndFavicon        whiteLabel.verifyTitleFavicon → superAdmin
+//   verifyLogoOnLoginPage            whiteLabel.verifyLogoLogin → superAdmin
+//   verifyLogoOnWorkspaceLoginPage   whiteLabel.verifyLogoWorkspaceLogin → superAdmin
+//   verifyLogoOnDashboard            whiteLabel.verifyLogoDashboard → superAdmin
+//   cleanEmailBody                   -                    → superAdmin
+//   verifyWhiteLabelInEmail          whiteLabel.verifyInEmail → superAdmin
+//   verifyInvitationEmail            whiteLabel.verifyInviteEmail → superAdmin
+//   verifyWhiteLabelInputs           whiteLabel.verifyInputs → superAdmin
+// └──────────────────────────────────────────────────────────────────┘
 import { whiteLabelSelectors, commonSelectors } from "Selectors/common";
 import { commonEeSelectors } from "Selectors/platform/eeCommon";
 import { whitelabelText } from "Texts/common";
@@ -5,12 +21,24 @@ import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
 import { whitelabelTestData } from "Constants/constants/whitelabel";
 
+/**
+ * @tjType   whiteLabel.open
+ * @tjBlock  superAdmin
+ * @tjUsage  openWhiteLabelingSettings()
+ * @tjDom    instance settings -> white labelling
+ */
 export const openWhiteLabelingSettings = () => {
   cy.intercept("PUT", "**/api/white-labelling").as("saveWhitelabel");
   openInstanceSettings();
   cy.get(whiteLabelSelectors.navWhiteLabellingListItem).click();
 };
 
+/**
+ * @tjType   whiteLabel.verifyPage
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWhiteLabelingUI()
+ * @tjDom    white-label form fields + buttons
+ */
 export const verifyWhiteLabelingUI = () => {
   cy.get(commonEeSelectors.pageTitle).verifyVisibleElement(
     "have.text",
@@ -56,6 +84,12 @@ export const verifyWhiteLabelingUI = () => {
   );
 };
 
+/**
+ * @tjType   whiteLabel.fillForm
+ * @tjBlock  superAdmin
+ * @tjUsage  fillWhiteLabelingForm(...)
+ * @tjDom    logo / favicon / page-title fields
+ */
 export const fillWhiteLabelingForm = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,
@@ -66,11 +100,23 @@ export const fillWhiteLabelingForm = (
   cy.clearAndType(whiteLabelSelectors.favIconInput, favicon);
 };
 
+/**
+ * @tjType   whiteLabel.save
+ * @tjBlock  superAdmin
+ * @tjUsage  saveWhiteLabelingChanges()
+ * @tjDom    save button + toast
+ */
 export const saveWhiteLabelingChanges = () => {
   cy.get(whiteLabelSelectors.saveButton).click();
   cy.wait("@saveWhitelabel");
 };
 
+/**
+ * @tjType   whiteLabel.verifyLogo
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyCustomLogo(...)
+ * @tjDom    custom logo rendered
+ */
 export const verifyCustomLogo = (
   selector,
   logoIdentifier = whitelabelTestData.logoIdentifier
@@ -81,6 +127,12 @@ export const verifyCustomLogo = (
     .and("include", logoIdentifier);
 };
 
+/**
+ * @tjType   whiteLabel.verifyTitleFavicon
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyPageTitleAndFavicon(...)
+ * @tjDom    document title + favicon href
+ */
 export const verifyPageTitleAndFavicon = (
   pageTitle = whitelabelTestData.pageTitle,
   logoIdentifier = whitelabelTestData.logoIdentifier
@@ -91,6 +143,12 @@ export const verifyPageTitleAndFavicon = (
     .and("include", logoIdentifier);
 };
 
+/**
+ * @tjType   whiteLabel.verifyLogoLogin
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyLogoOnLoginPage()
+ * @tjDom    login page logo
+ */
 export const verifyLogoOnLoginPage = () => {
   cy.apiLogout();
   cy.visit("/");
@@ -98,12 +156,24 @@ export const verifyLogoOnLoginPage = () => {
   verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg);
 };
 
+/**
+ * @tjType   whiteLabel.verifyLogoWorkspaceLogin
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyLogoOnWorkspaceLoginPage('My workspace')
+ * @tjDom    workspace login page logo
+ */
 export const verifyLogoOnWorkspaceLoginPage = (workspaceName) => {
   cy.visit(`/${workspaceName}`);
   verifyCustomLogo(whiteLabelSelectors.tooljetHeaderImg);
   verifyPageTitleAndFavicon();
 };
 
+/**
+ * @tjType   whiteLabel.verifyLogoDashboard
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyLogoOnDashboard()
+ * @tjDom    dashboard header logo. [UNREFERENCED 2026-09-06]
+ */
 export const verifyLogoOnDashboard = () => {
   cy.get(whiteLabelSelectors.homePageLogoImg)
     .should("be.visible")
@@ -114,6 +184,12 @@ export const verifyLogoOnDashboard = () => {
   verifyPageTitleAndFavicon();
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  superAdmin
+ * @tjUsage  cleanEmailBody(mailBody)
+ * @tjDom    none - strips markup from an email body
+ */
 export const cleanEmailBody = (mailBody) => {
   return mailBody
     .replace(/=\r?\n/g, "")
@@ -126,6 +202,12 @@ export const cleanEmailBody = (mailBody) => {
     .trim();
 };
 
+/**
+ * @tjType   whiteLabel.verifyInEmail
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWhiteLabelInEmail(...)
+ * @tjDom    none - asserts branding in an email
+ */
 export const verifyWhiteLabelInEmail = (
   cleanedBody,
   headers,
@@ -154,6 +236,12 @@ export const verifyWhiteLabelInEmail = (
   }
 };
 
+/**
+ * @tjType   whiteLabel.verifyInviteEmail
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyInvitationEmail(...)
+ * @tjDom    none - asserts the invite email body
+ */
 export const verifyInvitationEmail = (
   email,
   whiteLabelConfig = {},
@@ -209,6 +297,12 @@ export const verifyInvitationEmail = (
   checkForEmail();
 };
 
+/**
+ * @tjType   whiteLabel.verifyInputs
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWhiteLabelInputs(...)
+ * @tjDom    form input values. [UNREFERENCED 2026-09-06]
+ */
 export const verifyWhiteLabelInputs = (
   logo = whitelabelTestData.logo,
   pageTitle = whitelabelTestData.pageTitle,

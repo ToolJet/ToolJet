@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import { commonText } from "Texts/common";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import { dashboardText } from "Texts/platform/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {

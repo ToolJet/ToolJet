@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { aiSelectors } from "Selectors/platform/ai";
-import { switchTabs } from "Support/utils/license";
+import { switchTabs } from "Support/utils/platform/license";
 import {
   ensureEnvToggleOff,
   enterAndSaveApiKey,

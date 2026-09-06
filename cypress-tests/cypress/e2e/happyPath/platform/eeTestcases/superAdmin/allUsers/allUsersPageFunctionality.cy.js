@@ -1,7 +1,7 @@
 import { instanceSettingsSelector } from "Constants/selectors/platform/eeCommon";
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import {
   loginAndExpectToast,
   verifyArchiveUserModalUI,

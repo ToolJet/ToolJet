@@ -5,7 +5,7 @@ import { versionSwitcherSelectors } from "Selectors/platform/version";
 import {createDraftVersion,
   openVersionSwitcher,
   openCreateDraftVersionModal
-} from "Support/utils/version";
+} from "Support/utils/platform/version";
 
 describe("New Version Creation Flow", () => {
   const generateTestData = () => ({

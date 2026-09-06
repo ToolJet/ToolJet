@@ -1,6 +1,18 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// profile.js
+//   profilePageElements              profile.verifyPage   → workspace
+//   extApiUpdateUser                 profile.updateExtApi → workspace
+//   removeAvatar                     profile.removeAvatar → workspace
+// └──────────────────────────────────────────────────────────────────┘
 import { profileSelector } from "Selectors/platform/profile";
 import { profileText } from "Texts/platform/profile";
 
+/**
+ * @tjType   profile.verifyPage
+ * @tjBlock  workspace
+ * @tjUsage  profilePageElements()
+ * @tjDom    profile page fields + buttons
+ */
 export const profilePageElements = () => {
   for (const elements in profileSelector.profileElements) {
     cy.get(profileSelector.profileElements[elements]).verifyVisibleElement(
@@ -34,6 +46,12 @@ export const profilePageElements = () => {
 };
 
 
+/**
+ * @tjType   profile.updateExtApi
+ * @tjBlock  workspace
+ * @tjUsage  extApiUpdateUser(userEmail, userId)
+ * @tjDom    none - PATCH via the external API. [UNREFERENCED 2026-09-06]
+ */
 export const extApiUpdateUser = (userEmail = '', userIdCached = Cypress.env('userIdDev')) => {
   cy.request({
     method: 'PATCH',
@@ -51,6 +69,12 @@ export const extApiUpdateUser = (userEmail = '', userIdCached = Cypress.env('use
   });
 }
 
+/**
+ * @tjType   profile.removeAvatar
+ * @tjBlock  workspace
+ * @tjUsage  removeAvatar(userEmail)
+ * @tjDom    profile -> avatar -> remove
+ */
 export const removeAvatar = (userEmail = "dev@tooljet.io") => {
   cy.getUserIdByEmail(userEmail, "user").then((userId) => {
     return cy.task("dbConnection", {

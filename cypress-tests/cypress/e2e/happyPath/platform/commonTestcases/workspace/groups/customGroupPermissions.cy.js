@@ -7,13 +7,13 @@ import {
   createGroupsAndAddUserInGroup,
   setupWorkspaceAndInviteUser,
   updateRole
-} from "Support/utils/manageGroups";
+} from "Support/utils/platform/manageGroups";
 import {
   getGroupPermissionInput,
   verifyBuilderPermissions,
-} from "Support/utils/userPermissions";
+} from "Support/utils/platform/userPermissions";
 import { groupsText } from "Texts/platform/manageGroups";
-import { verifyUserInGroups } from 'Support/utils/externalApi';
+import { verifyUserInGroups } from 'Support/utils/platform/externalApi';
 
 describe("Custom Group Permissions", () => {
   let data = {};

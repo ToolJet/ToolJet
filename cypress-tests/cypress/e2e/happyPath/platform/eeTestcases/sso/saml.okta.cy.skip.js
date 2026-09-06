@@ -6,16 +6,16 @@ import {
   apiCreateGroup,
   apiDeleteGroup,
   verifyUserRole,
-} from "Support/utils/manageGroups";
-import { deleteOrganisationSSO } from "Support/utils/manageSSO";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageGroups";
+import { deleteOrganisationSSO } from "Support/utils/platform/manageSSO";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 
 import {
   setSignupStatus,
   uiOktaLogin,
   updateSsoId,
-} from "Support/utils/manageSSO";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageSSO";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
 
 const loginViaSamlSSO = (email, password) => {
   cy.intercept("GET", "/api/authorize").as("samlResponse");

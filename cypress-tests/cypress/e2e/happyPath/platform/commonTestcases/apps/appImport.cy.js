@@ -8,8 +8,8 @@ import {
   importAndVerifyApp,
   setupDataSourceWithConstants,
   verifyImportModalElements,
-} from "Support/utils/exportImport";
-import { switchVersionAndVerify } from "Support/utils/version";
+} from "Support/utils/platform/exportImport";
+import { switchVersionAndVerify } from "Support/utils/platform/version";
 import { importText } from "Texts/platform/exportImport";
 
 describe("App Import", () => {

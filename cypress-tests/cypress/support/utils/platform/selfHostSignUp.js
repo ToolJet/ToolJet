@@ -1,6 +1,19 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// selfHostSignUp.js
+//   selfHostCommonElements           selfHostSignup.verifyCommon → onboarding
+//   commonElementsWorkspaceSetup     selfHostSignup.verifyWorkspaceSetup → onboarding
+//   verifyandModifyUserRole          selfHostSignup.setUserRole → onboarding
+//   verifyandModifySizeOftheCompany  selfHostSignup.setCompanySize → onboarding
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
+/**
+ * @tjType   selfHostSignup.verifyCommon
+ * @tjBlock  onboarding
+ * @tjUsage  selfHostCommonElements()
+ * @tjDom    self-host signup shared elements. [UNREFERENCED 2026-09-06]
+ */
 export const selfHostCommonElements = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
 
@@ -15,6 +28,12 @@ export const selfHostCommonElements = () => {
   );
 };
 
+/**
+ * @tjType   selfHostSignup.verifyWorkspaceSetup
+ * @tjBlock  onboarding
+ * @tjUsage  commonElementsWorkspaceSetup()
+ * @tjDom    workspace-setup step. [UNREFERENCED 2026-09-06]
+ */
 export const commonElementsWorkspaceSetup = () => {
   cy.get(commonSelectors.userAccountNameAvatar).should("be.visible");
   cy.get(commonSelectors.onboardingPorgressBubble).should("be.visible");
@@ -30,6 +49,12 @@ export const commonElementsWorkspaceSetup = () => {
   );
 };
 
+/**
+ * @tjType   selfHostSignup.setUserRole
+ * @tjBlock  onboarding
+ * @tjUsage  verifyandModifyUserRole()
+ * @tjDom    onboarding role question. [UNREFERENCED 2026-09-06]
+ */
 export const verifyandModifyUserRole = () => {
   var random = function (obj) {
     var keys = Object.keys(obj);
@@ -53,6 +78,12 @@ export const verifyandModifyUserRole = () => {
   cy.get(commonSelectors.continueButton).click();
 };
 
+/**
+ * @tjType   selfHostSignup.setCompanySize
+ * @tjBlock  onboarding
+ * @tjUsage  verifyandModifySizeOftheCompany()
+ * @tjDom    onboarding company-size question. [UNREFERENCED 2026-09-06]
+ */
 export const verifyandModifySizeOftheCompany = () => {
   var random = function (obj) {
     var keys = Object.keys(obj);

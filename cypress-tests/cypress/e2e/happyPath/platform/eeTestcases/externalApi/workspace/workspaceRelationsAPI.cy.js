@@ -6,8 +6,8 @@ import {
   getUser,
   replaceUserWorkspace,
   replaceUserWorkspacesRelations,
-} from "Support/utils/externalApi";
-import { apiCreateGroup } from "Support/utils/manageGroups";
+} from "Support/utils/platform/externalApi";
+import { apiCreateGroup } from "Support/utils/platform/manageGroups";
 
 describe("ToolJet: Workspaces & Relations API", () => {
   const data = {};

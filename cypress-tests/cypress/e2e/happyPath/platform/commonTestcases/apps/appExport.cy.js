@@ -13,7 +13,7 @@ import {
   exportAllVersionsAndVerify,
   verifyElementsOfExportModal,
   validateExportedAppStructure,
-} from "Support/utils/exportImport";
+} from "Support/utils/platform/exportImport";
 import {
   selectAppCardOption,
   closeModal,
