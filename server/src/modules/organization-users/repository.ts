@@ -6,6 +6,7 @@ import {
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
+import { SAFE_USER_SELECT_FIELDS } from '@modules/users/constants';
 import { Injectable } from '@nestjs/common';
 import { UserFilterOptions } from './types';
 import { Organization } from '@entities/organization.entity';
@@ -119,6 +120,24 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         invitationToken,
       },
       relations: ['organization', 'user'],
+      select: {
+        id: true,
+        userId: true,
+        organizationId: true,
+        role: true,
+        status: true,
+        source: true,
+        invitationToken: true,
+        createdAt: true,
+        updatedAt: true,
+        organization: {
+          id: true,
+          name: true,
+          status: true,
+          slug: true,
+        },
+        user: SAFE_USER_SELECT_FIELDS,
+      },
     });
   }
 
