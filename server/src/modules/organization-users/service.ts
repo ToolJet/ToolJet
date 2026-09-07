@@ -81,17 +81,23 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       // Step 4 - validate license
       await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
 
+      const updatedUser: Record<string, unknown> = {
+        id: organizationUser.userId,
+        email: organizationUser.user.email,
+      };
+      if (firstName !== undefined) updatedUser.first_name = firstName;
+      if (lastName !== undefined) updatedUser.last_name = lastName;
+      if (role !== undefined) updatedUser.role = role;
+      if (addGroups !== undefined) updatedUser.groups = addGroups;
+      if (userMetadata !== undefined) updatedUser.metadata = userMetadata;
+
       const auditLogEntry = {
         userId: user.id,
         organizationId: organizationUser.organizationId,
         resourceId: organizationUser.userId,
         resourceName: organizationUser.user.email,
         resourceData: {
-          updated_user: {
-            id: organizationUser.userId,
-            email: organizationUser.user.email,
-            metadata: userMetadata,
-          },
+          updated_user: updatedUser,
         },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);

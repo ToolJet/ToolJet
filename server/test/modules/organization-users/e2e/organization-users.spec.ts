@@ -597,6 +597,49 @@ describe('OrganizationUsersController', () => {
         });
       });
 
+      it('should record the new role in the audit log entry when only role is changed', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin-role@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target-role@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ role: 'builder' })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              role: 'builder',
+            },
+          },
+        });
+        // Metadata wasn't part of this request — shouldn't be fabricated in the audit entry.
+        expect(payload.resourceData.updated_user).not.toHaveProperty('metadata');
+      });
+
       it('should return 403 for non-admin users', async () => {
         const adminUserData = await createUser(app, {
           email: 'update-admin2@tooljet.io',
