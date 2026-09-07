@@ -12,7 +12,7 @@ export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(100, { message: 'Maximum length has been reached.' })
-  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsOptional()
@@ -56,9 +56,9 @@ export class AppUpdateDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty({ message: 'App name should not be empty' })
   @MaxLength(100, { message: 'Maximum length has been reached.' })
-  // '/' is used as a filesystem path separator when this app (or module) is
-  // serialized to git; see server/ee/git-sync AGENTS.md.
-  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
+  // '/' and '\' are path separators when this app (or module) is serialized to
+  // git; disallow both in names. See server/ee/git-sync AGENTS.md.
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsString()
