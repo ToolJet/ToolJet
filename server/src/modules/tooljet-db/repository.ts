@@ -2,7 +2,8 @@ import { App } from '@entities/app.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
 
 // Shared between findTables and findDependents - a join_tables query references a table through
 // the joined table itself and through either side of each join condition, three depths plus
@@ -30,6 +31,11 @@ export interface TableDependent {
   name: string;
   type: string;
   queries: { id: string; name: string }[];
+}
+
+export interface ForeignKeyDependent {
+  id: string;
+  name: string;
 }
 
 @Injectable()
@@ -113,5 +119,72 @@ export class InternalTableRepository extends Repository<InternalTable> {
 
     const dependents = [...byApp.values()];
     return { count: dependents.length, dependents: dependents.slice(0, MAX_DEPENDENTS) };
+  }
+
+  /**
+   * The relation `perform()`'s DDL ops always resolve against (environment: undefined ->
+   * development, per `TooljetDbRelationResolverService.getRelation`'s license-independent default).
+   * Duplicated here rather than depending on the resolver service so this repository - and every
+   * caller of `getDependents` - stays free of a constructor dependency on it; the predicate (priority
+   * 1 environment, default branch) is the same one `resolveEnvironmentId`/`resolveBranch` apply.
+   * Returns null if the table has no relation yet.
+   */
+  async findDevelopmentRelationId(organizationId: string, internalTableId: string): Promise<string | null> {
+    const rows = await this.dataSource.query(
+      `SELECT rel.id
+       FROM internal_table_relations rel
+       INNER JOIN app_environments env ON env.id = rel.environment_id AND env.priority = 1
+       INNER JOIN organization_git_sync_branches wb ON wb.id = rel.branch_id AND wb.is_default = true
+       WHERE rel.internal_table_id = $1 AND env.organization_id = $2 AND wb.organization_id = $2`,
+      [internalTableId, organizationId]
+    );
+    return rows[0]?.id ?? null;
+  }
+
+  /**
+   * TJDB tables holding a live Postgres foreign key into `relationId` (this table's physical,
+   * current-environment relation) - the case neither this repository's own `findDependents` nor the
+   * removed `findQueriesLinkedToTable` could see, since it lives in `pg_constraint`, not
+   * `data_queries`. A physical table is named by relation uuid, never the logical table name, so
+   * each `pg_constraint` hit is mapped back through `internal_table_relations` -> `internal_tables`
+   * to a human-readable `{ id, name }`. Self-references (`conrelid = confrelid`) are excluded - a
+   * table's own foreign key onto itself must never block its own drop.
+   *
+   * `tooljetDbManager` is required: the physical tables and `pg_constraint` this introspects live in
+   * the tooljetDb Postgres connection, a different database entirely from the one this repository's
+   * own `dataSource` (App-side entities) talks to. Both callers already hold this manager (`this.
+   * tooljetDbManager`, injected via `@InjectEntityManager('tooljetDb')`); it is not repeated here.
+   */
+  async findForeignKeyDependents(
+    organizationId: string,
+    relationId: string,
+    tooljetDbManager: EntityManager
+  ): Promise<ForeignKeyDependent[]> {
+    const schema = findTenantSchema(organizationId);
+    const referencing: { relname: string }[] = await tooljetDbManager.query(
+      `SELECT DISTINCT t.relname
+       FROM pg_constraint c
+       INNER JOIN pg_class rt ON rt.oid = c.confrelid
+       INNER JOIN pg_namespace n ON n.oid = rt.relnamespace
+       INNER JOIN pg_class t ON t.oid = c.conrelid
+       WHERE c.contype = 'f' AND n.nspname = $1 AND rt.relname = $2 AND c.conrelid <> c.confrelid`,
+      [schema, relationId]
+    );
+    if (!referencing.length) return [];
+
+    const referencingRelationIds = referencing.map((row) => row.relname);
+    const rows = await this.dataSource
+      .createQueryBuilder()
+      .select(['it.id AS id', 'it.table_name AS name'])
+      .from('internal_table_relations', 'relation')
+      .innerJoin('internal_tables', 'it', 'it.id = relation.internal_table_id')
+      .where('relation.id::text IN (:...referencingRelationIds)', { referencingRelationIds })
+      .andWhere('it.organization_id = :organizationId', { organizationId })
+      .andWhere('it.deleted_at IS NULL')
+      .getRawMany();
+
+    const byId = new Map<string, ForeignKeyDependent>();
+    for (const row of rows) byId.set(row.id, { id: row.id, name: row.name });
+    return [...byId.values()];
   }
 }

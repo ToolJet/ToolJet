@@ -15,7 +15,7 @@ import { TooljetDbMigrationSqlCompilerService } from './tooljet-db-migration-sql
 import { computeMissingMigrations } from './tooljet-db-promote.service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { InternalTableRepository, TableDependent } from '../repository';
+import { ForeignKeyDependent, InternalTableRepository, TableDependent } from '../repository';
 
 type AssignmentResult = { productionRelationId: string; developmentRelationId: string };
 
@@ -265,20 +265,33 @@ export class TooljetDbEnvironmentAssignmentService {
   }
 
   /**
-   * Thin wrapper over `InternalTableRepository.findDependents` - only reason to exist here rather
-   * than the controller calling the repository directly is the same `internalTableId` →
+   * Wraps `InternalTableRepository.findDependents` (app queries) and `.findForeignKeyDependents`
+   * (inbound Postgres FKs from other TJDB tables) behind the same `internalTableId` →
    * `organizationId` NotFoundException guard every other table-scoped read in this service uses.
+   * This is the one dependents check - `TooljetDbTableOperationsService.dropTable`'s blocker and
+   * this route's soft warning both key off exactly this response, so they can never disagree.
+   * `count` keeps its pre-existing meaning (number of dependent apps); `foreignKeyTables` is empty
+   * when the table has no relation yet.
    */
   async getDependents(
     internalTableId: string,
     organizationId: string
-  ): Promise<{ count: number; dependents: TableDependent[] }> {
+  ): Promise<{ count: number; dependents: TableDependent[]; foreignKeyTables: ForeignKeyDependent[] }> {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { id: internalTableId, organizationId },
     });
     if (!internalTable) throw new NotFoundException('Table not found');
 
-    return this.internalTableRepository.findDependents(internalTableId, organizationId);
+    const [{ count, dependents }, relationId] = await Promise.all([
+      this.internalTableRepository.findDependents(internalTableId, organizationId),
+      this.internalTableRepository.findDevelopmentRelationId(organizationId, internalTableId),
+    ]);
+
+    const foreignKeyTables = relationId
+      ? await this.internalTableRepository.findForeignKeyDependents(organizationId, relationId, this.tooljetDbManager)
+      : [];
+
+    return { count, dependents, foreignKeyTables };
   }
 
   /**

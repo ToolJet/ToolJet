@@ -61,6 +61,7 @@ import { buildTableSchemaSnapshot, fetchForeignKeys, TableSchemaSnapshot } from 
 import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
 import { reconcileColumns } from './tooljet-db-raw-sql-migration.service';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
+import { InternalTableRepository } from '../repository';
 
 enum AggregateFunctions {
   sum = 'SUM',
@@ -731,10 +732,30 @@ export class TooljetDbTableOperationsService {
     const { table_name: tableName } = params;
     const { internalTable, relation } = await this.normalizeDropTable(organizationId, tableName);
 
-    const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
+    // Same check the /dependents route reports as a soft warning - constructed directly rather
+    // than injected, since `InternalTableRepository` needs only the DataSource this.manager already
+    // carries (TypeORM 0.3's own pattern for a custom repository outside the DI graph). `relation`
+    // here is already the development relation (resolveTable resolved it with environmentId:
+    // undefined), so no second resolve is needed for the foreign-key lookup.
+    const internalTableRepository = new InternalTableRepository(this.manager.connection);
+    const [{ count: appQueryCount }, foreignKeyTables] = await Promise.all([
+      internalTableRepository.findDependents(internalTable.id, organizationId),
+      internalTableRepository.findForeignKeyDependents(organizationId, relation.id, this.tooljetDbManager),
+    ]);
 
-    if (isTableInUse) {
-      throw new BadRequestException("Table can't be deleted, it is being used in app queries");
+    if (appQueryCount) {
+      throw new BadRequestException(
+        `Table can't be deleted, it is referenced by ${appQueryCount} app quer${
+          appQueryCount === 1 ? 'y' : 'ies'
+        }. Remove those references first.`
+      );
+    }
+    if (foreignKeyTables.length) {
+      throw new BadRequestException(
+        `Table can't be deleted, it has a foreign key referencing it from: ${foreignKeyTables
+          .map((table) => table.name)
+          .join(', ')}. Remove those foreign keys first.`
+      );
     }
 
     await this.migrationRecorderService.adjudicatePending(internalTable, relation);
@@ -782,26 +803,6 @@ export class TooljetDbTableOperationsService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
     }
-  }
-
-  private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
-    const result = await this.manager.query(
-      `
-        SELECT EXISTS (SELECT 1
-                       FROM data_queries dq
-                              INNER JOIN data_sources ds
-                                         ON dq.data_source_id = ds.id
-                              INNER JOIN (SELECT DISTINCT ON (app_id) id
-                                          FROM app_versions
-                                          ORDER BY app_id, created_at DESC) latest_versions
-                                         ON latest_versions.id = dq.app_version_id
-                       WHERE ds.kind = 'tooljetdb'
-                         AND dq.options::text LIKE $1) AS exists
-      `,
-      [`%${tableId}%`]
-    );
-
-    return result[0]?.exists ?? false;
   }
 
   /**
