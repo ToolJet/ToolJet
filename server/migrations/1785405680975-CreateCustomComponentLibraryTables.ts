@@ -37,6 +37,17 @@ export class CreateCustomComponentLibraryTables1785405680975 implements Migratio
       })
     );
 
+    // One row per (workspace, correlationId) — enforced here, not just by findOrCreateLibrary's
+    // read-then-insert, which two concurrent calls for the same correlationId can both pass
+    await queryRunner.createIndex(
+      'custom_component_libraries',
+      new TableIndex({
+        name: 'IDX_ccl_organization_id_correlation_id',
+        columnNames: ['organization_id', 'correlation_id'],
+        isUnique: true,
+      })
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'custom_component_library_revisions',
@@ -120,6 +131,7 @@ export class CreateCustomComponentLibraryTables1785405680975 implements Migratio
     await queryRunner.dropTable('custom_component_dev_bundles');
     await queryRunner.dropIndex('custom_component_library_revisions', 'IDX_cclr_library_id_version');
     await queryRunner.dropTable('custom_component_library_revisions');
+    await queryRunner.dropIndex('custom_component_libraries', 'IDX_ccl_organization_id_correlation_id');
     await queryRunner.dropIndex('custom_component_libraries', 'IDX_ccl_organization_id_name');
     await queryRunner.dropTable('custom_component_libraries');
   }
