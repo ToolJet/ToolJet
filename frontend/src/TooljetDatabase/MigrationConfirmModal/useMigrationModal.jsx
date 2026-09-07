@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import MigrationConfirmModal from './index';
 
 const emptyState = {
@@ -38,6 +39,7 @@ const emptyState = {
  */
 export default function useMigrationModal() {
   const { organizationId } = useContext(TooljetDatabaseContext);
+  const { bumpMigrations } = useTjdbActions();
   const [state, setState] = useState(emptyState);
   const optionsRef = useRef(null);
   const resolvedTableIdRef = useRef(null);
@@ -112,12 +114,13 @@ export default function useMigrationModal() {
       }
 
       toast.success('Migration applied successfully');
+      bumpMigrations();
       options.onSuccess?.(lastRunDataRef.current);
       close();
     } catch (err) {
       setState((prev) => ({ ...prev, submitting: false, error: err?.message ?? 'Failed to run migration' }));
     }
-  }, [state.title, state.sql, state.structuredApplied, organizationId, close]);
+  }, [state.title, state.sql, state.structuredApplied, organizationId, close, bumpMigrations]);
 
   const modal = (
     <MigrationConfirmModal

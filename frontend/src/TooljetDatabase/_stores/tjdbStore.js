@@ -18,6 +18,7 @@ const initialState = {
   // Set by Table/index.jsx, which is the only component holding every derived cache an environment
   // switch has to clear. Never select this into a component - it is a callback slot, not state.
   onEnvironmentSwitch: null,
+  migrationsVersion: 0,
 };
 
 // Mirrors the useState setter contract these actions replace: a value or an updater function.
@@ -88,6 +89,14 @@ export const useTjdbStore = create(
         registerEnvironmentSwitchHandler: (handler) =>
           set((state) => {
             state.onEnvironmentSwitch = handler;
+          }),
+
+        // Bumped whenever a migration is recorded. EnvironmentSwitcher owns the migration-chain fetch
+        // in local state; this is the one signal that tells it to re-read. Every DDL path funnels
+        // through useMigrationModal, so raising it there covers all of them.
+        bumpMigrations: () =>
+          set((state) => {
+            state.migrationsVersion += 1;
           }),
 
         // The one ordered environment switch. Two independent useEffects used to do this - one for

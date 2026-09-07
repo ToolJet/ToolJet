@@ -49,11 +49,15 @@ const EnvironmentSwitcher = () => {
   const { organizationId, tables, setTables, selectedTable } = useContext(TooljetDatabaseContext);
   const environments = useTjdbStore((state) => state.environments);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const migrationsVersion = useTjdbStore((state) => state.migrationsVersion);
   const { switchEnvironment } = useTjdbActions();
   const [isOpen, setIsOpen] = useState(false);
   const [tableMigrations, setTableMigrations] = useState(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const buttonRef = useRef(null);
+  // Tracks the org/table pair the last fetch was for, so a migrationsVersion bump (which shares the
+  // same effect) can refetch without blanking tableMigrations - only an actual table/org change does.
+  const tableKeyRef = useRef(null);
 
   // Re-fetches the org's tables (with their per-environment has_relation) - a promote creates a
   // relation in a new environment, and that has to actually be re-read, not inferred client-side.
@@ -77,9 +81,15 @@ const EnvironmentSwitcher = () => {
   }, [organizationId, selectedTable?.id]);
 
   useEffect(() => {
-    setTableMigrations(null);
+    const tableKey = `${organizationId ?? ''}:${selectedTable?.id ?? ''}`;
+    if (tableKeyRef.current !== tableKey) {
+      setTableMigrations(null);
+      tableKeyRef.current = tableKey;
+    }
     fetchTableMigrations();
-  }, [fetchTableMigrations]);
+    // migrationsVersion is intentionally not a fetchTableMigrations dep - it only drives this effect,
+    // it must not recreate the callback identity.
+  }, [fetchTableMigrations, migrationsVersion]);
 
   if (environments.length <= 1 || !selectedEnvironment) return null;
 
