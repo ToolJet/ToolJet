@@ -105,7 +105,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     config: {
       propertyName: 'columns',
       typeProp: 'columnType',
-      nonEditableTypes: ['link', 'image'],
+      nonEditableTypes: ['link', 'image', 'button'],
       namePrefix: 'new_column',
       defaultItemProps: {
         includeKey: true,
