@@ -365,6 +365,22 @@ export const renderDatatypeIcon = (type) => {
   }
 };
 
+// The last of `appliedMigrationIds` (an environment's applied set) that is still present in the
+// full ordered `migrations` chain - i.e. the environment's head migration. Shared by
+// MigrationHistoryDrawer (the "<env> is here" badge, matched by id) and ExportCsvModal (the row
+// label, derived from the id's index) so this lookup exists in exactly one place.
+export const findHeadMigrationId = (migrations = [], appliedMigrationIds = []) =>
+  [...appliedMigrationIds].reverse().find((id) => migrations.some((m) => m.id === id)) ?? null;
+
+// `m<index+1>` label for the environment's head migration, or null when nothing has been applied
+// yet / the head migration has since been dropped from the chain.
+export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) => {
+  const headId = findHeadMigrationId(migrations, appliedMigrationIds);
+  if (headId == null) return null;
+  const index = migrations.findIndex((m) => m.id === headId);
+  return index >= 0 ? `m${index + 1}` : null;
+};
+
 export const listAllPrimaryKeyColumns = (columns) => {
   const primarykeyColumns = [];
   columns.forEach((column) => {

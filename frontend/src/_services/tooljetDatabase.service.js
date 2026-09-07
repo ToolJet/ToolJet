@@ -1,3 +1,4 @@
+import config from 'config';
 import HttpClient from '@/_helpers/http-client';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { authHeader } from '@/_helpers';
@@ -6,14 +7,16 @@ import { currentEnvironmentId } from '@/TooljetDatabase/_stores/tjdbStore';
 
 const tooljetAdapter = new HttpClient();
 
-// The ONLY way to address /tooljet-db/proxy/*. environment_id is injected here, never passed in -
-// the same ambient-scope treatment HttpClient.request already gives tj-workspace-id
-// (frontend/src/_helpers/http-client.js: `options.headers['tj-workspace-id'] = session?...`).
-// When nothing is selected the param is omitted rather than thrown on: the App Builder's TJDB
-// query editor (SelectBox.jsx, ToolJetDbOperations.jsx) calls these functions with the TJDB store
-// never mounted, and the backend already defaults a missing environment_id to development.
-function proxyUrl(tableId, query = '') {
-  const environmentId = currentEnvironmentId();
+// The ONLY way to address /tooljet-db/proxy/*. environment_id defaults to the ambient store
+// selection - the same ambient-scope treatment HttpClient.request already gives tj-workspace-id
+// (frontend/src/_helpers/http-client.js: `options.headers['tj-workspace-id'] = session?...`) - but
+// callers that need a specific, non-selected environment (the CSV export modal's per-environment
+// row counts and downloads) can override it explicitly via `environmentIdOverride`.
+// When nothing is selected/overridden the param is omitted rather than thrown on: the App Builder's
+// TJDB query editor (SelectBox.jsx, ToolJetDbOperations.jsx) calls these functions with the TJDB
+// store never mounted, and the backend already defaults a missing environment_id to development.
+function proxyUrl(tableId, query = '', environmentIdOverride) {
+  const environmentId = environmentIdOverride ?? currentEnvironmentId();
   const envQuery = environmentId ? `environment_id=${environmentId}` : '';
   return `/tooljet-db/proxy/${tableId}?${[query, envQuery].filter(Boolean).join('&')}`;
 }
@@ -206,12 +209,48 @@ function getTableDependents(organizationId, tableId) {
   return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableId}/dependents`);
 }
 
+// Row count for one specific environment (not necessarily the selected one) - the proxy sets
+// `Prefer: count=exact` server-side, so `limit=1` is enough to get an exact Content-Range without
+// paying for the actual row payload.
+async function getTableRowCount(tableId, environmentId) {
+  const { headers, error } = await tooljetAdapter.get(proxyUrl(tableId, 'limit=1', environmentId));
+  if (error) return { count: null, error };
+  const total = headers?.['content-range']?.split('/')?.[1];
+  return { count: total ? Number(total) : null, error: null };
+}
+
+// CSV export bypasses tooljetAdapter: HttpClient.request always JSON.parses the response body,
+// which throws on a CSV payload. Built the same way app.service.js's raw fetches are
+// (config.apiUrl + authHeader(), credentials: 'include') - a plain <a download> can't carry the
+// tj-workspace-id header, so it has to go through an authenticated request either way. Accept:
+// text/csv is allowlisted on the proxy (Task 5) and makes PostgREST render CSV instead of JSON.
+async function exportTableCsv(tableId, environmentId) {
+  const response = await fetch(`${config.apiUrl}${proxyUrl(tableId, '', environmentId)}`, {
+    method: 'GET',
+    headers: { ...authHeader(), Accept: 'text/csv' },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    let message = response.statusText || 'Failed to export table';
+    try {
+      const body = await response.json();
+      message = body?.message ?? message;
+    } catch {
+      // Non-JSON error body - keep statusText.
+    }
+    throw new Error(message);
+  }
+  return response.blob();
+}
+
 export const tooljetDatabaseService = {
   findOne,
   findAll,
   viewTable,
   getTableMigrations,
   getTableDependents,
+  getTableRowCount,
+  exportTableCsv,
   previewPromoteTable,
   promoteTable,
   createRow,

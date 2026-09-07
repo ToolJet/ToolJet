@@ -9,6 +9,7 @@ import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
 import SqlEditor from '../../_components/SqlEditor';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { findHeadMigrationId } from '../../constants';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -65,7 +66,7 @@ const MigrationHistoryDrawer = ({
   const activeEnvState = envStateByPriorityIndex[activeTab];
   const appliedIds = activeEnvState?.applied_migration_ids ?? [];
   const appliedCount = appliedIds.length;
-  const headMigrationId = [...appliedIds].reverse().find((id) => migrations.some((m) => m.id === id)) ?? null;
+  const headMigrationId = findHeadMigrationId(migrations, appliedIds);
 
   const nextEnv = allEnvironments[activeTab + 1];
   const nextEnvState = nextEnv ? envStateByPriorityIndex[activeTab + 1] : null;

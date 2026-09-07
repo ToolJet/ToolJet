@@ -14,6 +14,7 @@ export const ListItemPopover = ({
   onDelete,
   darkMode,
   handleExportTable,
+  onExportCsv,
   onMenuToggle,
   onAddNewColumnBtnClick,
   canEditTjdb,
@@ -91,6 +92,21 @@ export const ListItemPopover = ({
             }}
           >
             Export schema
+          </div>
+        </div>
+        <div className="row mt-3 cursor-pointer">
+          <div className="col-auto" data-cy="export-csv-option-icon">
+            <SolidIcon name="filedownload" width="14" viewBox="0 0 25 25" />
+          </div>
+          <div
+            className="col text-truncate"
+            data-cy="export-csv-option"
+            onClick={() => {
+              closeMenu();
+              onExportCsv();
+            }}
+          >
+            Export data as CSV
           </div>
         </div>
         {/* <div className="row mt-3">

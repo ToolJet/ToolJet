@@ -11,6 +11,7 @@ import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import { dataTypes } from '../constants';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import DeleteTableModal from '../DeleteTableModal';
+import ExportCsvModal from '../ExportCsvModal';
 
 export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -26,8 +27,10 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
     setConfigurations,
     canEditTjdb,
     canEditSchema,
+    tables,
   } = useContext(TooljetDatabaseContext);
   const pageSize = useTjdbStore((state) => state.pageSize);
+  const environments = useTjdbStore((state) => state.environments);
   const { fetchTableMetadata, setPageCount } = useTjdbActions();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -42,6 +45,7 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
     dependents: null,
     error: null,
   });
+  const [isExportCsvModalOpen, setIsExportCsvModalOpen] = useState(false);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -196,6 +200,10 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
             onDelete={handleDeleteTable}
             darkMode={darkMode}
             handleExportTable={handleExportTable}
+            onExportCsv={() => {
+              setShowDropDownMenu(false);
+              setIsExportCsvModalOpen(true);
+            }}
             onMenuToggle={onMenuToggle}
             onAddNewColumnBtnClick={() => {
               setShowDropDownMenu(false);
@@ -243,6 +251,16 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
         submitting={deleteModalState.submitting}
         onConfirm={confirmDeleteTable}
         onCancel={closeDeleteModal}
+      />
+      <ExportCsvModal
+        show={isExportCsvModalOpen}
+        darkMode={darkMode}
+        tableName={text}
+        tableId={tableId}
+        organizationId={organizationId}
+        environments={environments}
+        relationsByEnvironment={tables?.find((table) => table.id === tableId)?.environments ?? []}
+        onCancel={() => setIsExportCsvModalOpen(false)}
       />
     </div>
   );
