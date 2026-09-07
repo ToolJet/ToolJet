@@ -84,6 +84,12 @@ export const ProgramaticallyHandleProperties = ({
     if (property === 'buttonBorderRadius') {
       return definitionObj?.value ?? '6';
     }
+    if (property === 'selectedBgColorHearts') {
+      return definitionObj?.value ?? '#EE5B67';
+    }
+    if (property === 'selectedBgColorStars') {
+      return definitionObj?.value ?? '#EFB82D';
+    }
     return definitionObj?.value ?? `{{false}}`;
   };
 
