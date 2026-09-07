@@ -46,7 +46,13 @@ export const GlobalDataSourcesPage = (props) => {
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
-    if (prevBranchIdRef.current !== activeBranchId && activeBranchId && environments?.length) {
+    if (!activeBranchId || !environments?.length) return;
+    if (!prevBranchIdRef.current) {
+      prevBranchIdRef.current = activeBranchId;
+      selectedDataSource ? fetchDataSources(false, selectedDataSource) : fetchDataSources(true);
+      return;
+    }
+    if (prevBranchIdRef.current !== activeBranchId) {
       prevBranchIdRef.current = activeBranchId;
       setSelectedDataSource(null);
       toggleDataSourceManagerModal(false);

@@ -22,6 +22,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
@@ -62,8 +63,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const ElementToRender = isDummyDataSource
     ? null
     : selectedQuery?.plugin_id
-      ? source
-      : allSources[sourcecomponentName];
+    ? source
+    : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
@@ -457,7 +458,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   };
 
   const handleEditDatasource = () => {
-    const url = `${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`;
+    const url = appendBranchName(`${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -479,8 +480,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
