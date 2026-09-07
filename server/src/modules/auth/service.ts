@@ -126,7 +126,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       } else {
@@ -153,7 +155,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       }
@@ -259,9 +263,8 @@ export class AuthService implements IAuthService {
     }
 
     const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-    const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
-      ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-      : null;
+    const passwordExpiry =
+      !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000) : null;
 
     await this.userRepository.updateOne(user.id, {
       password,

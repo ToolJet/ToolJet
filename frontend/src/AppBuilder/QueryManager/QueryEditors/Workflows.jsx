@@ -22,6 +22,21 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
   const [versionOptions, setVersionOptions] = useState([]);
 
+  /*
+   * The stored ids belong to the workspace that authored the app -- after a git pull or an
+   * import they resolve to nothing here. Fall back to the names stamped in at export time.
+   * Display-only: never written back, since resolving on read would dirty the app version
+   * and autosave a revision the user never asked for.
+   */
+  const resolvedWorkflowId =
+    workflowOptions.find((o) => o.value === options.workflowId)?.value ??
+    workflowOptions.find((o) => o.name === options.workflowName)?.value ??
+    null;
+  const resolvedWorkflowVersionId =
+    versionOptions.find((o) => o.value === options.workflowVersionId)?.value ??
+    versionOptions.find((o) => o.name === options.workflowVersionName)?.value ??
+    null;
+
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const appId = workflowIdFromStore || appIdFromStore;
@@ -36,28 +51,33 @@ export function Workflows({ options, optionsChanged, currentState }) {
   );
 
   useEffect(() => {
-    appsService.getWorkflows(appId).then(({ workflows }) => {
-      setWorkflowOptions(
-        workflows.map((workflow) => ({
-          value: workflow.id,
-          name: workflow.name,
-        }))
-      );
-    });
+    appsService
+      .getWorkflows(appId)
+      .then(({ workflows }) => {
+        setWorkflowOptions(
+          workflows.map((workflow) => ({
+            value: workflow.id,
+            name: workflow.name,
+          }))
+        );
+      })
+      // Without this the list stays empty on failure and name resolution silently stops,
+      // which is indistinguishable from the workflow genuinely being missing.
+      .catch(() => setWorkflowOptions([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (options.workflowId) {
+    if (resolvedWorkflowId) {
       appVersionService
-        .getAll(options.workflowId)
+        .getAll(resolvedWorkflowId)
         .then((data) => {
-          const versions = (data?.versions || [])
-            .filter((v) => v.status === 'PUBLISHED')
-            .map((v) => ({
-              value: v.id,
-              name: v.name,
-            }));
+          // `name` is matched against options.workflowVersionName above. Any display
+          // formatting added here must carry the raw name in a separate field instead.
+          const versions = (data?.versions || []).map((v) => ({
+            value: v.id,
+            name: v.name,
+          }));
           setVersionOptions(versions);
         })
         .catch(() => {
@@ -67,7 +87,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       setVersionOptions([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.workflowId]);
+  }, [resolvedWorkflowId]);
 
   useEffect(() => {
     optionsChanged({
@@ -95,7 +115,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
-        value={options.workflowId ?? {}}
+        value={resolvedWorkflowId ?? {}}
         onChange={(workflowId) => {
           setSelectedWorkflowId(workflowId);
           optionsChanged({ workflowId });
@@ -111,13 +131,13 @@ export function Workflows({ options, optionsChanged, currentState }) {
         onMenuOpen={() => setIsMenuOpen(true)}
         onMenuClose={() => setIsMenuOpen(false)}
       />
-      {options.workflowId && (
+      {resolvedWorkflowId && (
         <>
           <label className="mb-1 mt-2">Version</label>
           <div data-cy="workflow-version-dropdown"></div>
           <Select
             options={versionOptions}
-            value={options.workflowVersionId ?? {}}
+            value={resolvedWorkflowVersionId ?? {}}
             onChange={(workflowVersionId) => {
               optionsChanged({ ...options, workflowVersionId: workflowVersionId || null });
             }}

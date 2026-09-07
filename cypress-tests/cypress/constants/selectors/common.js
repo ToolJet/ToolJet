@@ -7,7 +7,7 @@ export const commonSelectors = {
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
   createWorkFlowsButton: '[data-cy="+-create-workflow"]',
   workFlowNameInputField: '[data-cy="app-name-input"]',
-  toastMessage: ".go3958317564",
+  toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
@@ -116,7 +116,7 @@ export const commonSelectors = {
   emptyNotificationIcon: '[data-cy="empty-notification-icon"]',
   emptyNotificationTitle: '[data-cy="empty-notification-title"]',
   emptyNotificationSubtitle: '[data-cy="empty-notification-subtitle"]',
-  notificationsCardFooter: '[data-cy="notifications-card-footer"]',
+  loadMoreNotifications: '[data-cy="load-more-notifications"]',
   allApplicationLink: '[data-cy="all-applications-link"]',
   logoutLink: "[data-cy=logout-link]",
   exportAllButton: '[data-cy="export-all-button"]',

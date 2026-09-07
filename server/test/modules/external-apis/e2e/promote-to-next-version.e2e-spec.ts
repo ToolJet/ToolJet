@@ -10,6 +10,7 @@ import {
   createApplicationVersion,
   saveEntity,
   getDefaultDataSource,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -103,8 +104,9 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
     return { user, organization };
   }
 
-  async function seedDefaultBranch(organizationId: string, name = 'main') {
-    return saveEntity(WorkspaceBranch, { organizationId, name, isDefault: true });
+  async function seedDefaultBranch(organizationId: string, _name = 'main') {
+    // reuse the seeded default — (organization_id, branch_name) is unique
+    return resolveOrSeedDefaultBranch(organizationId);
   }
 
   async function seedApp(user: any) {
@@ -124,6 +126,8 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       branchId,
       appName: app.name,
       slug: `${app.name}-${version.id}`,
+      // the publish hook only seeds a continuity draft for git-synced apps
+      isSynced: true,
     });
     return versionRepo.findOne({ where: { id: version.id } });
   }
@@ -133,7 +137,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   // ---------------------------------------------------------------------------
 
   describe('fires via save', () => {
-    it('seeds a new DRAFT on the default branch and detaches branchId from the published row', async () => {
+    it('seeds a new DRAFT on the default branch; the published row keeps its branch id', async () => {
       const { user, organization } = await seedOrgWithGit();
       const branch = await seedDefaultBranch(organization.id);
       const app = await seedApp(user);
@@ -152,10 +156,11 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
 
       const published = await versionRepo.findOne({ where: { id: draft.id } });
       expect(published.status).toBe(AppVersionStatus.PUBLISHED);
-      expect(published.branchId).toBeNull();
+      // branch_id is NOT NULL — published row stays on its default branch
+      expect(published.branchId).toBe(branch.id);
 
       const newDraft = await versionRepo.findOne({
-        where: { appId: app.id, branchId: branch.id },
+        where: { appId: app.id, branchId: branch.id, status: AppVersionStatus.DRAFT },
       });
       expect(newDraft).toBeDefined();
       expect(newDraft.id).not.toBe(draft.id);
@@ -177,7 +182,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   // ---------------------------------------------------------------------------
 
   describe('no-op guards', () => {
-    it('publishes the version and detaches branchId, but does not seed a new draft, when the version is on a non-default branch', async () => {
+    it('publishes the version in place, but does not seed a new draft, when the version is on a non-default branch', async () => {
       const { user, organization } = await seedOrgWithGit();
       await seedDefaultBranch(organization.id, 'main');
       const featureBranch = await saveEntity(WorkspaceBranch, {
@@ -198,30 +203,8 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       expect(versions).toHaveLength(1);
       expect(versions[0].id).toBe(draft.id);
       expect(versions[0].status).toBe(AppVersionStatus.PUBLISHED);
-      expect(versions[0].branchId).toBeNull();
-    });
-
-    it('publishes the version and detaches branchId, but does not seed a new draft, when the org has no default branch', async () => {
-      const { user, organization } = await seedOrgWithGit();
-      const nonDefaultBranch = await saveEntity(WorkspaceBranch, {
-        organizationId: organization.id,
-        name: 'main',
-        isDefault: false,
-      });
-      const app = await seedApp(user);
-      const draft = await seedDefaultBranchDraft(app as any, nonDefaultBranch.id, 'v1');
-
-      await request(nestApp.getHttpServer())
-        .post(`/api/ext/apps/${app.id}/versions/save`)
-        .set('Authorization', AUTH_HEADER)
-        .send({})
-        .expect(201);
-
-      const versions = await versionRepo.find({ where: { appId: app.id } });
-      expect(versions).toHaveLength(1);
-      expect(versions[0].id).toBe(draft.id);
-      expect(versions[0].status).toBe(AppVersionStatus.PUBLISHED);
-      expect(versions[0].branchId).toBeNull();
+      // branch_id is NOT NULL — row keeps its non-default branch
+      expect(versions[0].branchId).toBe(featureBranch.id);
     });
 
     it('does not seed a new draft when the version has no branchId', async () => {
@@ -286,7 +269,9 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       expect(saveRes.body.status).toBe(AppVersionStatus.PUBLISHED);
       expect(saveRes.body.currentEnvironmentId).toBe(devEnv.id);
 
-      const newDraft = await versionRepo.findOne({ where: { appId: app.id, branchId: branch.id } });
+      const newDraft = await versionRepo.findOne({
+        where: { appId: app.id, branchId: branch.id, status: AppVersionStatus.DRAFT },
+      });
       expect(newDraft).toBeDefined();
       expect(newDraft.status).toBe(AppVersionStatus.DRAFT);
 
@@ -300,9 +285,8 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       expect(releaseRes.body.currentVersionId).toBe(draft.id);
       const releasedVersion = await versionRepo.findOne({ where: { id: draft.id } });
       expect(releasedVersion.currentEnvironmentId).toBe(prodEnv.id);
-      // Still detached from the save step — release does not re-fire the hook
-      // (the version was already PUBLISHED going into the release call).
-      expect(releasedVersion.branchId).toBeNull();
+      // release does not re-fire the hook — version was already PUBLISHED
+      expect(releasedVersion.branchId).toBe(branch.id);
 
       // Step 3: push the released version's commit
       await request(nestApp.getHttpServer())
@@ -318,7 +302,8 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
           lastCommitMessage: 'release v1',
           versionId: draft.id,
           gitAppName: app.name,
-          gitVersionName: releasedVersion.name,
+          // branch-oriented push — commit tagged with the branch name
+          gitVersionName: 'main',
         }),
         expect.objectContaining({ id: draft.id })
       );

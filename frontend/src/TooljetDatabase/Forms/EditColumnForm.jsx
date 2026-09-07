@@ -804,8 +804,8 @@ const ColumnForm = ({
                         selectedColumn?.dataType === 'serial'
                           ? 'Auto-generated'
                           : foreignKeyDefaultValue?.value === null || defaultValue === null
-                          ? 'Null'
-                          : 'Enter a value'
+                            ? 'Null'
+                            : 'Enter a value'
                       }
                       onChange={(value) => {
                         setForeignKeyDefaultValue(value);
@@ -847,12 +847,12 @@ const ColumnForm = ({
                 dataType === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
                   : dataType === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType === 'timestamp with time zone'
-                  ? 'Foreign key relation cannot be created for this data type'
-                  : dataType === 'jsonb'
-                  ? 'Foreign key relation cannot be created for JSON data type'
-                  : 'Fill in column details to create a foreign key relation'
+                    ? 'Foreign key relation cannot be created for boolean type column'
+                    : dataType === 'timestamp with time zone'
+                      ? 'Foreign key relation cannot be created for this data type'
+                      : dataType === 'jsonb'
+                        ? 'Foreign key relation cannot be created for JSON data type'
+                        : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
@@ -966,10 +966,10 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values cannot be null'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type cannot have null value'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type cannot have null value'
+                  : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"
@@ -1013,16 +1013,16 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values must be unique'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type value must be unique'
-                : selectedColumn.dataType === 'boolean'
-                ? 'Unique constraint cannot be added for boolean type column'
-                : selectedColumn.dataType === 'timestamp with time zone'
-                ? 'Unique constraint cannot be added for this type column'
-                : selectedColumn.dataType === 'jsonb'
-                ? 'Unique constraint cannot be added for JSON type column'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type value must be unique'
+                  : selectedColumn.dataType === 'boolean'
+                    ? 'Unique constraint cannot be added for boolean type column'
+                    : selectedColumn.dataType === 'timestamp with time zone'
+                      ? 'Unique constraint cannot be added for this type column'
+                      : selectedColumn.dataType === 'jsonb'
+                        ? 'Unique constraint cannot be added for JSON type column'
+                        : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"

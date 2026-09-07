@@ -12,18 +12,21 @@ export function defineDataQueryAppAbility(
   app: App
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission, isBuilder, isEndUser } = UserAllPermissions;
-  const resourcePermissions = userPermission?.[MODULES.APP];
+  const { superAdmin, isAdmin, userPermission, isEndUser } = UserAllPermissions;
+  const isModule = app?.type === APP_TYPES.MODULE;
+  // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
+  // not the front-end app bucket — same mapping the guard used to fetch it.
+  const resourcePermissions = userPermission?.[isModule ? MODULES.MODULES : MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
-  const isCanCreate = userPermission.appCreate;
-  const isCanDelete = userPermission.appDelete;
+  const isCanCreate = isModule ? userPermission.moduleCreate : userPermission.appCreate;
+  const isCanDelete = isModule ? userPermission.moduleDelete : userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
 
-  if (isAdmin || superAdmin || (app?.type === APP_TYPES.MODULE && isBuilder)) {
+  if (isAdmin || superAdmin) {
     can(
       [
         FEATURE_KEY.CREATE,

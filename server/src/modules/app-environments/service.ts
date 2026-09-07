@@ -20,7 +20,17 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'description', 'status', 'versionType', 'currentEnvironmentId', 'appId', 'branchId'],
+        select: [
+          'id',
+          'name',
+          'description',
+          'status',
+          'versionType',
+          'currentEnvironmentId',
+          'appId',
+          'isSynced',
+          'branchId',
+        ],
         relations: ['branch'],
         where: { id: editingVersionId },
       });
@@ -56,7 +66,13 @@ export class AppEnvironmentService implements IAppEnvironmentService {
             if (isUserDeletedTheCurrentVersion) {
               const newVersionQuery = manager
                 .createQueryBuilder(AppVersion, 'appVersion')
-                .select(['appVersion.name', 'appVersion.id', 'appVersion.currentEnvironmentId'])
+                .select([
+                  'appVersion.name',
+                  'appVersion.id',
+                  'appVersion.currentEnvironmentId',
+                  'appVersion.status',
+                  'appVersion.isSynced',
+                ])
                 .where('appVersion.appId = :appId', { appId: 'your_app_id' })
                 .orderBy('appVersion.updatedAt', 'DESC')
                 .limit(1)
@@ -215,7 +231,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
         }
       }
 
-      const versions = await manager.find(AppVersion, {
+      const appVersions = await manager.find(AppVersion, {
         where: { ...conditions },
         relations: ['branch'],
         order: {
@@ -236,17 +252,18 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'updatedAt',
           'publishedAt',
           'releasedAt',
+          'isSynced',
         ],
       });
 
       // For branch-type versions, replace the UUID name with the human-readable branch name
-      for (const version of versions) {
+      for (const version of appVersions) {
         if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
           version.displayName = version.branch.name;
         }
       }
 
-      return versions;
+      return appVersions;
     });
   }
 

@@ -103,7 +103,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
                   HH--;
 
                   if (HH < 0) {
-                    (MS = 0), (SS = 0), (MM = 0), (HH = 0);
+                    ((MS = 0), (SS = 0), (MM = 0), (HH = 0));
                   }
                 }
               }

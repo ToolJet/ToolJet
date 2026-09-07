@@ -6,7 +6,7 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 const initialState = {
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
+  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
   previewPanelHeight: 0,
   selectedQuery: null,
   selectedDataSource: null,

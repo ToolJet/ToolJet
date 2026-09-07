@@ -23,6 +23,7 @@ import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import QueryCardMenuBase from './QueryCardMenu';
+import QueryDeleteConfirmation from './QueryDeleteConfirmation';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
@@ -204,6 +205,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
+              <QueryDeleteConfirmation darkMode={darkMode} />
               {licenseValid && (
                 <AppPermissionsModal
                   modalType="query"

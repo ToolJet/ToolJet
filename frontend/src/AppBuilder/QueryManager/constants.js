@@ -137,3 +137,9 @@ export const workflowDefaultSources = {
 // cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
 // Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
 export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+// ToolJet-synthesized query error kinds (errorData.data.type); mirrors server TJ_QUERY_ERROR_TYPE
+export const TJ_QUERY_ERROR_TYPE = {
+  UNAUTHORIZED: 'tj-401', // app-level Query Access denied
+  FORBIDDEN: 'tj-403', // data-source query-run restricted
+};

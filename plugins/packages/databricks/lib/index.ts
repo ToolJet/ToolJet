@@ -540,7 +540,7 @@ export default class Databricks implements QueryService {
   }
 
   private extractWarehouseId(httpPath: string): string {
-    const match = httpPath.match(/\/warehouses\/([^\/]+)$/);
+    const match = httpPath.match(/\/warehouses\/([^/]+)$/);
     if (!match) {
       throw new QueryError(
         'Invalid http_path',
@@ -664,7 +664,9 @@ export default class Databricks implements QueryService {
   ): Promise<QueryResult> {
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
     try {
-      let result: { items: Array<{ table_name: string; table_schema: string }>; totalCount: number } | Array<{ table_name: string; table_schema: string }>;
+      let result:
+        | { items: Array<{ table_name: string; table_schema: string }>; totalCount: number }
+        | Array<{ table_name: string; table_schema: string }>;
 
       if (authType === 'oauth_u2m') {
         const httpPath = sourceOptions.http_path || '';
@@ -687,15 +689,20 @@ export default class Databricks implements QueryService {
       }
 
       if (queryOptions?.limit) {
-        const { items, totalCount } = result as { items: Array<{ table_name: string; table_schema: string }>; totalCount: number };
+        const { items, totalCount } = result as {
+          items: Array<{ table_name: string; table_schema: string }>;
+          totalCount: number;
+        };
         const rows = items.map(({ table_name, table_schema }) => ({ table_name, table_schema }));
         return { status: 'ok', data: { rows, totalCount } };
       }
 
-      const rows = (result as Array<{ table_name: string; table_schema: string }>).map(({ table_name, table_schema }) => ({
-        table_name,
-        table_schema,
-      }));
+      const rows = (result as Array<{ table_name: string; table_schema: string }>).map(
+        ({ table_name, table_schema }) => ({
+          table_name,
+          table_schema,
+        })
+      );
       return { status: 'ok', data: rows };
     } catch (err) {
       if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
@@ -1264,7 +1271,9 @@ export default class Databricks implements QueryService {
             queryTimeout: new Int64(10000),
           });
           await rollbackOp.fetchAll();
-        } catch (_) {}
+        } catch (_) {
+          // best-effort rollback — session may already be gone
+        }
       }
       if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
       const errorMessage = err.message || 'An unknown error occurred';

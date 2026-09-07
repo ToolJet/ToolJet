@@ -1,12 +1,12 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation, IEngagespotClientOptions } from './types';
-import { EngagespotClient } from "@engagespot/node";
+import { EngagespotClient } from '@engagespot/node';
 
 export default class Engagespot implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions);
-    
+
     let result = {};
     try {
       switch (operation) {
@@ -24,7 +24,6 @@ export default class Engagespot implements QueryService {
         status: 'ok',
         data: result,
       };
-      
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
@@ -32,7 +31,7 @@ export default class Engagespot implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
-      const connection = await this.getConnection(sourceOptions);
+      await this.getConnection(sourceOptions);
       return {
         status: 'ok',
       };
@@ -44,11 +43,11 @@ export default class Engagespot implements QueryService {
     }
   }
 
-  async createOrUpdateUser(client : any, queryOptions: QueryOptions): Promise<any> {
-    return await client.createOrUpdateUser(queryOptions.identifier, queryOptions.profile)
+  async createOrUpdateUser(client: any, queryOptions: QueryOptions): Promise<any> {
+    return await client.createOrUpdateUser(queryOptions.identifier, queryOptions.profile);
   }
-  
- async sendNotification(client: any, queryOptions: QueryOptions): Promise<any> {
+
+  async sendNotification(client: any, queryOptions: QueryOptions): Promise<any> {
     return await client.send({
       notification: {
         title: queryOptions.notification_title,
@@ -57,24 +56,23 @@ export default class Engagespot implements QueryService {
         icon: queryOptions.icon,
       },
       recipients: [queryOptions.reciepient],
-      category : queryOptions.category,
+      category: queryOptions.category,
       override: queryOptions.override,
-      data: queryOptions.data
-    })
+      data: queryOptions.data,
+    });
   }
 
-  async generateUserToken(client: any, queryOptions: QueryOptions): Promise <any> {
-    return await client.generateUserToken(queryOptions.identifier)
-
+  async generateUserToken(client: any, queryOptions: QueryOptions): Promise<any> {
+    return await client.generateUserToken(queryOptions.identifier);
   }
 
-  async getConnection(sourceOptions: SourceOptions){
+  async getConnection(sourceOptions: SourceOptions) {
     const options: IEngagespotClientOptions = {
       apiKey: sourceOptions.apiKey,
       apiSecret: sourceOptions.apiSecret,
       ...(sourceOptions.endpoint && { baseUrl: sourceOptions.endpoint }),
-      ...(sourceOptions.signingKey && { signingKey: sourceOptions.signingKey })
+      ...(sourceOptions.signingKey && { signingKey: sourceOptions.signingKey }),
     };
-   return EngagespotClient(options);
+    return EngagespotClient(options);
   }
 }

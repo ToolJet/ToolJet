@@ -22,18 +22,18 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   ): void {
     const { superAdmin, isAdmin } = UserAllPermissions;
     if (isAdmin || superAdmin) {
-      // Admin or Super Admin gets full access to all features
-      can(FEATURE_KEY.GET_ORGANIZATION_GIT, OrganizationGitSync);
-      can(FEATURE_KEY.GET_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
-      can(FEATURE_KEY.CREATE_ORGANIZATION_GIT, OrganizationGitSync);
+      // Strategy-only surface (DB-only abilities moved to git-sync-configs module's
+      // FeatureAbilityFactory).
       can(FEATURE_KEY.SAVE_PROVIDER_CONFIGS, OrganizationGitSync);
       can(FEATURE_KEY.FINALIZE_CONFIGS, OrganizationGitSync);
-      can(FEATURE_KEY.UPDATE_PROVIDER_CONFIGS, OrganizationGitSync);
-      can(FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
-      can(FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS, OrganizationGitSync);
       can(FEATURE_KEY.SAVE_ENV_PROVIDER_CONFIGS, OrganizationGitSync);
+      can(FEATURE_KEY.ENABLE_AUTO_SYNC, OrganizationGitSync);
+      can(FEATURE_KEY.DISABLE_AUTO_SYNC, OrganizationGitSync);
+      can(FEATURE_KEY.ROTATE_AUTO_SYNC_SECRET, OrganizationGitSync);
+      can(FEATURE_KEY.GET_AUTO_SYNC_STATUS, OrganizationGitSync);
+      can(FEATURE_KEY.GET_AUTO_SYNC_EVENTS, OrganizationGitSync);
       return;
     }
-    can(FEATURE_KEY.GET_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
+    can(FEATURE_KEY.GET_AUTO_SYNC_STATUS, OrganizationGitSync);
   }
 }

@@ -7,8 +7,11 @@
     "npm": "10.9.2"
   },
   "lint-staged": {
-    "./frontend/src/**/*.{js,jsx}": [
-      "eslint --fix"
+    "frontend/src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config frontend/eslint.config.mjs"
+    ],
+    "server/**/*.ts": [
+      "eslint --fix --config server/eslint.config.js"
     ]
   },
   "devDependencies": {
@@ -18,6 +21,7 @@
     "lint-staged": "^16.1.0"
   },
   "scripts": {
+    "ci:changed": "bash scripts/test-changed.sh",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",

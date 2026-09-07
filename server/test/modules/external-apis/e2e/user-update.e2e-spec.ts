@@ -152,9 +152,9 @@ describe('External API — user update endpoints', () => {
         email: uniqueEmail('patch-unarchive'),
         status: 'invited',
       });
-      expect((await orgUserRepo.findOneOrFail({ where: { userId: user.id, organizationId: organization.id } })).status).toBe(
-        'invited'
-      );
+      expect(
+        (await orgUserRepo.findOneOrFail({ where: { userId: user.id, organizationId: organization.id } })).status
+      ).toBe('invited');
 
       await request(app.getHttpServer())
         .patch(`/api/ext/user/${user.id}`)
@@ -219,7 +219,10 @@ describe('External API — user update endpoints', () => {
 
     it('replaces all workspace + group relations, removing prior memberships not in the new list', async () => {
       const { user, organization: orgA } = await createUser(app, { email: uniqueEmail('replace-all') });
-      const customGroupA = await createGroupPermission(app, { name: `custom-a-${Date.now()}`, organizationId: orgA.id });
+      const customGroupA = await createGroupPermission(app, {
+        name: `custom-a-${Date.now()}`,
+        organizationId: orgA.id,
+      });
       await groupUsersRepo.save(groupUsersRepo.create({ userId: user.id, groupId: customGroupA.id }));
 
       const { organization: orgB } = await createUser(app, { email: uniqueEmail('replace-all-org-b') });
@@ -440,7 +443,9 @@ describe('External API — user update endpoints', () => {
         .send({ newRole: 'builder', userId: user.id })
         .expect(200);
 
-      const builderGroup = await groupRepo.findOneOrFail({ where: { organizationId: organization.id, name: 'builder' } });
+      const builderGroup = await groupRepo.findOneOrFail({
+        where: { organizationId: organization.id, name: 'builder' },
+      });
       const link = await groupUsersRepo.findOne({ where: { userId: user.id, groupId: builderGroup.id } });
       expect(link).toBeDefined();
     });
@@ -455,7 +460,9 @@ describe('External API — user update endpoints', () => {
         .send({ newRole: 'builder', email })
         .expect(200);
 
-      const builderGroup = await groupRepo.findOneOrFail({ where: { organizationId: organization.id, name: 'builder' } });
+      const builderGroup = await groupRepo.findOneOrFail({
+        where: { organizationId: organization.id, name: 'builder' },
+      });
       const link = await groupUsersRepo.findOne({ where: { userId: user.id, groupId: builderGroup.id } });
       expect(link).toBeDefined();
     });

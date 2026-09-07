@@ -8,9 +8,11 @@ import { BreadCrumbContext } from '@/App/App';
 import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -39,6 +41,7 @@ export const GlobalDataSourcesPage = (props) => {
   const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
 
   // Refetch datasources when the active branch changes (without hard reload)
@@ -52,6 +55,21 @@ export const GlobalDataSourcesPage = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBranchId, environments]);
+
+  // Refetch datasources once a workspace pull actually completes. `pullWorkspace()` only
+  // enqueues a background job and returns immediately — the pulled data isn't in the DB yet at
+  // that point, so we wait for the job-completion notification (same signal HomePage listens to
+  // for apps/folders) instead of refetching right after the request resolves.
+  useEffect(() => {
+    const unsubscribe = subscribeLiveNotifications((n) => {
+      const meta = n?.metadata;
+      if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
+      if (meta.action !== 'git-pull-branch') return;
+      fetchDataSources(true);
+    });
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
@@ -69,7 +87,7 @@ export const GlobalDataSourcesPage = (props) => {
       setCurrentEnvironment(returnDevelopmentEnv(environments));
       // Update URL when datasource is deselected (but not on initial load)
       if (initialUrlSelectionHandled.current) {
-        navigate(`/${getWorkspaceId()}/data-sources`, { replace: true });
+        navigate(appendBranchName(`/${getWorkspaceId()}/data-sources`), { replace: true });
       }
     }
 
@@ -197,6 +215,7 @@ export const GlobalDataSourcesPage = (props) => {
             }
           });
         setDataSources([...(orderedDataSources ?? [])]);
+        setHasUnsyncedDatasources(orderedDataSources.some((ds) => ds?.is_synced === false || ds?.isSynced === false));
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {
           setEditing(true);
@@ -204,7 +223,7 @@ export const GlobalDataSourcesPage = (props) => {
           setActiveDatasourceList('');
           toggleDataSourceManagerModal(true);
           fetchDataSourceByEnvironment(ds?.id, currentEnvironment?.id);
-          navigate(`/${getWorkspaceId()}/data-sources/${ds.id}`, { replace: true });
+          navigate(appendBranchName(`/${getWorkspaceId()}/data-sources/${ds.id}`), { replace: true });
         }
         if (orderedDataSources.length && resetSelection) {
           if (!canCreateDataSource()) {
@@ -214,7 +233,9 @@ export const GlobalDataSourcesPage = (props) => {
             setSelectedDataSource(orderedDataSources[0]);
             toggleDataSourceManagerModal(true);
             setActiveDatasourceList('');
-            navigate(`/${getWorkspaceId()}/data-sources/${orderedDataSources[0].id}`, { replace: true });
+            navigate(appendBranchName(`/${getWorkspaceId()}/data-sources/${orderedDataSources[0].id}`), {
+              replace: true,
+            });
           } else {
             setActiveDatasourceList('#databases');
             setSelectedDataSource(null);
@@ -262,7 +283,13 @@ export const GlobalDataSourcesPage = (props) => {
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
     setEnvironmentLoading(true);
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      setSelectedDataSource({ ...data });
+      // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
+      // to correctly gate credential editing on the default branch (synced DSes must stay locked).
+      setSelectedDataSource((prev) => ({
+        ...data,
+        isSynced: prev?.isSynced,
+        is_synced: prev?.is_synced,
+      }));
       setEnvironmentLoading(false);
     });
   };

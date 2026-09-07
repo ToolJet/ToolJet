@@ -116,7 +116,7 @@ const DropdownComponent = ({
                     {options[key].label ?? key}
                   </OverflowTooltip>
                 ) : (
-                  options[key].label ?? key
+                  (options[key].label ?? key)
                 )}
               </SelectItem>
             ))}

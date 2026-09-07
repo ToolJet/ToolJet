@@ -3,8 +3,9 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
-import { hasBuilderRole } from '@/_helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { getFolderGroupPermissions } from './helper';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 
 export const AppMenu = function AppMenu({
   appId,
@@ -22,6 +23,7 @@ export const AppMenu = function AppMenu({
   setMenuOpen,
   appType,
   ownedFolders,
+  isUnsynced,
 }) {
   const { t } = useTranslation();
 
@@ -34,52 +36,52 @@ export const AppMenu = function AppMenu({
       ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
       : false;
   const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
-  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch);
+  // Unsynced apps are always mutable, even on master
+  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch) && !isUnsynced;
 
   // ─── Ownership ────────────────────────────────────────────────────────────────
   const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
 
   // ─── App-level edit access ────────────────────────────────────────────────────
-  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
-  // already covers apps in folders owned by or explicitly shared with the user.
+  // Backend resolves folder-derived permissions into editable_apps_id/editable_workflows_id,
+  // so canEditApp already covers apps/workflows in folders owned by or explicitly shared
+  // with the user. Workflows and modules each have their own permission surface, separate
+  // from apps — modules delegate to canEditModule so this stays in sync with HomePage's
+  // canUserPerform and the module editor's own read-only gate.
   const canEditApp =
-    currentSession?.app_group_permissions?.is_all_editable ||
-    currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+    appType === 'workflow'
+      ? currentSession?.workflow_group_permissions?.is_all_editable ||
+        currentSession?.workflow_group_permissions?.editable_workflows_id?.includes(appId)
+      : appType === 'module'
+        ? canEditModule(currentSession, appId, appUserId)
+        : currentSession?.app_group_permissions?.is_all_editable ||
+          currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
   const canModifyApp = canEditApp || isAppOwner;
 
-  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  const folderGroupPermissions = getFolderGroupPermissions(currentSession, appType);
 
   const canEditAnyFolderViaGroup =
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
-
-  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
-  // Builders have implicit admin-level access to module folders.
-  const isModuleBuilder = appType === 'module' && isBuilder;
 
   // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
   const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
 
   const canAddAppToFolder =
     !isWorkspaceBranchLocked &&
-    (canModifyApp || isModuleBuilder) &&
-    (currentSession?.admin ||
-      currentSession?.super_admin ||
-      canEditAnyFolderViaGroup ||
-      hasOwnedFolders ||
-      isModuleBuilder);
+    canModifyApp &&
+    (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders);
 
   // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
   const canRemoveFromFolder =
     !isWorkspaceBranchLocked &&
     !!currentFolder?.id &&
-    (canModifyApp || isModuleBuilder) &&
+    canModifyApp &&
     (currentSession?.admin ||
       currentSession?.super_admin ||
       folderGroupPermissions?.is_all_editable ||
       folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
-      currentFolder?.created_by === currentUserId ||
-      isModuleBuilder);
+      currentFolder?.created_by === currentUserId);
 
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
@@ -164,8 +166,8 @@ export const AppMenu = function AppMenu({
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
-                        ? t('homePage.appCard.deleteApp', 'Delete app')
-                        : 'Delete module'
+                          ? t('homePage.appCard.deleteApp', 'Delete app')
+                          : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}

@@ -15,8 +15,8 @@ const ResetPasswordInfoScreen = ({ organizationSlug, redirectTo }) => {
   const loginPath = organizationSlug
     ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
     : redirectTo
-    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
-    : '/login';
+      ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+      : '/login';
 
   return (
     <div className="forgot-password-info-wrapper info-screen">

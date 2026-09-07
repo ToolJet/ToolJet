@@ -17,8 +17,8 @@ const EmptyState = ({ activeTab, canCreateVariable, setIsManageVarDrawerOpen, is
                     ? 'No global constants yet'
                     : 'No workspace secrets yet'
                   : activeTab === 'Global'
-                  ? 'No global constants found'
-                  : 'No workspace secrets found'}
+                    ? 'No global constants found'
+                    : 'No workspace secrets found'}
               </h3>
               <p className="info mt-2" data-cy="empty-state-text">
                 {activeTab === 'Global'

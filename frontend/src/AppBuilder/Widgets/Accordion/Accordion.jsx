@@ -153,8 +153,8 @@ export const Accordion = ({
     height: !exposedVariablesTemporaryState.isExpanded
       ? headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 2 // 3 for bottom padding and 2 for top-bottom border
       : isDynamicHeightEnabled
-      ? '100%'
-      : height,
+        ? '100%'
+        : height,
     display:
       exposedVariablesTemporaryState.isVisible && (showHeader || exposedVariablesTemporaryState.isExpanded)
         ? 'flex'

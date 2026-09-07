@@ -116,7 +116,11 @@ describe('defineAppVersionAbility', () => {
     });
 
     it('denies edit actions when resourceId is not in editableAppsId (Builder role, wrong module)', () => {
-      const perms = buildPermissions({ isBuilder: true, editableAppsId: ['other-uuid'], resourceType: MODULES.MODULES });
+      const perms = buildPermissions({
+        isBuilder: true,
+        editableAppsId: ['other-uuid'],
+        resourceType: MODULES.MODULES,
+      });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms, 'module-uuid-1');
       const ability = build();
@@ -454,7 +458,6 @@ describe('defineAppVersionAbility', () => {
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
     });
-
   });
 
   describe('builder role edge cases', () => {

@@ -32,14 +32,22 @@ export class WorkspaceBranch extends BaseEntity {
   @Column({ name: 'created_by', nullable: true, default: null })
   createdBy: string;
 
-  @Column({ name: 'app_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
-  appMetaHash: string;
+  // Git-sync change tokens (git-native). last_synced_commit is the branch HEAD we
+  // last pulled — equal to the remote HEAD ⇒ skip the whole pull without cloning.
+  // The *_git_tree_sha columns are the tree SHAs of apps/, modules/, data-sources/
+  // — equal ⇒ skip that whole category. Written only after the matching level
+  // imports with zero errors, so a failure leaves the old value and forces a retry.
+  @Column({ name: 'last_synced_commit', type: 'varchar', length: 64, nullable: true, default: null })
+  lastSyncedCommit: string;
 
-  @Column({ name: 'data_source_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
-  dataSourceMetaHash: string;
+  @Column({ name: 'apps_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  appsGitTreeSha: string;
 
-  @Column({ name: 'module_meta_hash', type: 'varchar', length: 64, nullable: true, default: null })
-  moduleMetaHash: string;
+  @Column({ name: 'modules_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  modulesGitTreeSha: string;
+
+  @Column({ name: 'data_sources_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  dataSourcesGitTreeSha: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

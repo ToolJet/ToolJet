@@ -88,4 +88,18 @@ export class PageUsersRepository extends Repository<PageUser> {
       return pagePermission;
     }, manager || this.manager);
   }
+
+  // Returns the set of pagePermissionsIds where the given user has GROUP-level access
+  async checkGroupPermissionsForPages(permissionIds: string[], userId: string): Promise<Set<string>> {
+    if (!permissionIds.length) return new Set();
+    const rows = await this.manager
+      .createQueryBuilder(PageUser, 'page_users')
+      .select('page_users.pagePermissionsId', 'permId')
+      .innerJoin('page_users.permissionGroup', 'group')
+      .innerJoin('group.groupUsers', 'groupUser')
+      .where('page_users.pagePermissionsId IN (:...permissionIds)', { permissionIds })
+      .andWhere('groupUser.userId = :userId', { userId })
+      .getRawMany();
+    return new Set<string>(rows.map((r) => r.permId));
+  }
 }

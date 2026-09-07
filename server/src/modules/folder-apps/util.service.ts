@@ -1,7 +1,7 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, In, IsNull, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Equal, In, IsNull, Or, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
@@ -11,6 +11,19 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppVersionType } from '@entities/app_version.entity';
+
+// Permission resource that gates each app type's visibility. Mirrors
+// getResourceTypefromAppType in folder-apps/service.ts — keep both in sync.
+export function getPermissionResourceForAppType(type: APP_TYPES): MODULES {
+  switch (type) {
+    case APP_TYPES.WORKFLOW:
+      return MODULES.WORKFLOWS;
+    case APP_TYPES.MODULE:
+      return MODULES.MODULES;
+    default:
+      return MODULES.APP;
+  }
+}
 
 export function applyAppPermissionFilter(
   query: SelectQueryBuilder<FolderApp>,
@@ -112,20 +125,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (searchKey) {
       if (branchId) {
-        query.andWhere(
-          '(LOWER(av_search.app_name) LIKE :searchKey OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))',
-          {
-            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
-        );
+        query.andWhere('LOWER(av_search.app_name) LIKE :searchKey', {
+          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+        });
       } else {
         query.andWhere(
-          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app_search.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))`,
-          {
-            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
+          `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app_search.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+          { searchKey: `%${searchKey && searchKey.toLowerCase()}%` }
         );
       }
     }
@@ -149,26 +155,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (searchKey) {
       if (branchId) {
-        // Non-workflow apps match against the branched app_versions.app_name,
-        // falling back to apps.name when the version row's app_name is NULL
-        // (un-backfilled stubs, pull-created rows, etc.). Workflows keep their
-        // name on apps.* and match against apps.name explicitly.
-        query.andWhere(
-          '(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
-          {
-            searchKey: `%${searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
-        );
+        // Match against the branched app_versions.app_name (this branch's row,
+        // enforced by the INNER JOIN above).
+        query.andWhere('LOWER(appVersions.app_name) LIKE :searchKey', {
+          searchKey: `%${searchKey.toLowerCase()}%`,
+        });
       } else {
-        // gitsync off: non-workflows match against any app_version's app_name;
-        // workflows match against apps.name.
+        // gitsync off: match against any app_version's app_name — every type,
+        // including workflows, carries identical metadata across its version rows.
         query.andWhere(
-          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
-          {
-            searchKey: `%${searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
+          `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+          { searchKey: `%${searchKey.toLowerCase()}%` }
         );
       }
     }
@@ -220,29 +217,28 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     if (hasSearch) {
       folderAppsQuery.where(
         branchId
-          ? // Non-workflows match against the branched app_versions.app_name,
-            // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
-            '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
-          : // gitsync off: non-workflows match any app_version's name;
-            // workflows match app.name.
-            `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
-        { name: `%${searchKey.toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
+          ? // Match against the branched app_versions.app_name (un-backfilled or
+            // pull-created rows fall back to nothing — same as before).
+            'LOWER(av_folder.app_name) LIKE :name'
+          : // gitsync off: match any app_version's name — every type, including
+            // workflows, carries identical metadata across its version rows.
+            `EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name)`,
+        { name: `%${searchKey.toLowerCase()}%` }
       );
     }
 
     const folderApps = await folderAppsQuery.getMany();
 
+    // Modules resolve via their own MODULES.MODULES bucket (folder-level module grants
+    // live there, not under MODULES.APP) — same mapping as getResourceTypefromAppType
+    // in folder-apps/service.ts. Requesting MODULES.APP unconditionally left module
+    // folder-only permissions unresolved, hiding modules the "all modules" list showed.
+    const resourceType = getPermissionResourceForAppType(type);
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.APP }],
+      resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
-    const userAppPermissions = userPermission?.[MODULES.APP];
-
-    // Builders have admin-level access to modules — skip app-level permission filtering.
-    const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
-    const effectiveAppPermissions = isModuleBuilderAccess
-      ? { ...userAppPermissions, isAllEditable: true }
-      : userAppPermissions;
+    const userAppPermissions = userPermission?.[resourceType];
 
     const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
     if (folderAppIds.length == 0) {
@@ -253,7 +249,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }
 
     const viewableAppsInFolder = this.getBaseAppsQuery(manager, searchKey, branchId);
-    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
+    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
 
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
     // (appVersions.branchId = :branchId). No secondary filter needed.
@@ -288,9 +284,22 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     };
   }
 
-  async bulkCreate(folderId: string, appIds: string[], branchId?: string): Promise<FolderApp[]> {
+  // matchNullAsDefaultBranch: branchId was resolved from the org's default branch rather than
+  // passed explicitly, so also match legacy branch_id=NULL rows for this app — they predate
+  // branch_id being mandatory and would otherwise look like a different row.
+  private buildBranchFilter(branchId?: string, matchNullAsDefaultBranch = false) {
+    if (!branchId) return { branchId: IsNull() };
+    return { branchId: matchNullAsDefaultBranch ? Or(Equal(branchId), IsNull()) : branchId };
+  }
+
+  async bulkCreate(
+    folderId: string,
+    appIds: string[],
+    branchId?: string,
+    matchNullAsDefaultBranch = false
+  ): Promise<FolderApp[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
+      const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existing = await manager.find(FolderApp, { where: { appId: In(appIds), ...branchFilter } });
       const alreadyInFolder = new Set(existing.filter((fa) => fa.folderId === folderId).map((fa) => fa.appId));
       const toRemove = existing.filter((fa) => fa.folderId !== folderId);
@@ -309,9 +318,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     });
   }
 
-  async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
+  async create(
+    folderId: string,
+    appId: string,
+    branchId?: string,
+    matchNullAsDefaultBranch = false
+  ): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
+      const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existingFolderApp = await manager.findOne(FolderApp, {
         where: { appId, ...branchFilter },
       });

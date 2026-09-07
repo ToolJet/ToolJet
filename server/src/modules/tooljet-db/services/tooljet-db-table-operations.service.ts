@@ -430,9 +430,7 @@ export class TooljetDbTableOperationsService {
     const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
 
     if (isTableInUse) {
-      throw new BadRequestException(
-        "Table can't be deleted, it is being used in app queries"
-      );
+      throw new BadRequestException("Table can't be deleted, it is being used in app queries");
     }
 
     const tenantSchema = findTenantSchema(organizationId);

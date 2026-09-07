@@ -7,11 +7,11 @@ import * as net from 'net';
 const CLOUD_METADATA_ENDPOINTS = [
   // AWS EC2, IBM Cloud, and OpenStack metadata endpoint (most common SSRF target)
   /^169\.254\.169\.254$/,
-  /^169\.254\.169\.253$/,        // Alternate AWS endpoint
+  /^169\.254\.169\.253$/, // Alternate AWS endpoint
 
   // Google Cloud metadata
   /^metadata\.google\.internal$/i,
-  /^169\.254\.169\.254$/,        // GCP also uses this IP
+  /^169\.254\.169\.254$/, // GCP also uses this IP
 
   // Azure metadata (uses specific headers, but block the endpoint too)
   /^169\.254\.169\.254$/,
@@ -33,11 +33,7 @@ const DEFAULT_BLOCKED_SCHEMES = ['file', 'gopher', 'dict', 'ftp', 'jar', 'data',
 
 // Well-known hostnames that always resolve to loopback/private addresses.
 // Checked statically before DNS resolution as defense-in-depth.
-const BLOCKED_HOSTNAMES = new Set([
-  'ip6-localhost',
-  'ip6-loopback',
-  '0.0.0.0',
-]);
+const BLOCKED_HOSTNAMES = new Set(['ip6-localhost', 'ip6-loopback', '0.0.0.0']);
 
 // DNS-rebinding-as-a-service domains — their sole purpose is embedding an IP
 // in a hostname, so they have no legitimate use in outbound requests.
@@ -80,7 +76,10 @@ export function getSSRFConfig(): SSRFProtectionOptions {
 
   const blockedSchemesEnv = process.env.SSRF_BLOCKED_SCHEMES;
   const blockedSchemes = blockedSchemesEnv
-    ? blockedSchemesEnv.split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0)
+    ? blockedSchemesEnv
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
     : DEFAULT_BLOCKED_SCHEMES;
 
   // Cloud: block all private ranges — multi-tenant shared infra, full SSRF enforcement.
@@ -91,9 +90,7 @@ export function getSSRFConfig(): SSRFProtectionOptions {
 
   // Self-hosted: localhost and loopback explicitly allowed.
   // Cloud: nothing bypasses SSRF checks.
-  const allowedHostnames = isCloud
-    ? new Set<string>()
-    : new Set(['localhost', 'ip6-localhost', 'ip6-loopback', '::1']);
+  const allowedHostnames = isCloud ? new Set<string>() : new Set(['localhost', 'ip6-localhost', 'ip6-loopback', '::1']);
 
   return { enabled, dnsResolutionCheck, blockedSchemes, allowPrivateNetworks, allowedHostnames };
 }
@@ -118,7 +115,7 @@ export function isSchemeBlocked(scheme: string, blockedSchemes: string[]): boole
 function isBlockedHostname(hostname: string): boolean {
   const normalized = hostname.toLowerCase().trim();
   if (BLOCKED_HOSTNAMES.has(normalized)) return true;
-  return BLOCKED_HOSTNAME_PATTERNS.some(pattern => pattern.test(normalized));
+  return BLOCKED_HOSTNAME_PATTERNS.some((pattern) => pattern.test(normalized));
 }
 
 export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
@@ -127,7 +124,7 @@ export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
   // Normalize
   const normalized = ipOrHostname.toLowerCase().trim();
 
-  return CLOUD_METADATA_ENDPOINTS.some(pattern => pattern.test(normalized));
+  return CLOUD_METADATA_ENDPOINTS.some((pattern) => pattern.test(normalized));
 }
 
 /**
@@ -148,18 +145,13 @@ function normalizeIPFormat(ip: string): string {
       // Handle single hex value (0xA9FEA9FE)
       if (!ip.includes('.')) {
         const num = parseInt(ip, 16);
-        if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
-          return [
-            (num >>> 24) & 0xFF,
-            (num >>> 16) & 0xFF,
-            (num >>> 8) & 0xFF,
-            num & 0xFF
-          ].join('.');
+        if (!isNaN(num) && num >= 0 && num <= 0xffffffff) {
+          return [(num >>> 24) & 0xff, (num >>> 16) & 0xff, (num >>> 8) & 0xff, num & 0xff].join('.');
         }
       }
       // Handle dotted hex (0xA9.0xFE.0xA9.0xFE)
-      const parts = ip.split('.').map(p => parseInt(p, 16));
-      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+      const parts = ip.split('.').map((p) => parseInt(p, 16));
+      if (parts.length === 4 && parts.every((p) => !isNaN(p) && p >= 0 && p <= 255)) {
         return parts.join('.');
       }
     } catch (e) {
@@ -170,21 +162,16 @@ function normalizeIPFormat(ip: string): string {
   // Decimal: 2852039166
   if (/^\d+$/.test(ip) && !ip.includes('.')) {
     const num = parseInt(ip, 10);
-    if (!isNaN(num) && num >= 0 && num <= 0xFFFFFFFF) {
-      return [
-        (num >>> 24) & 0xFF,
-        (num >>> 16) & 0xFF,
-        (num >>> 8) & 0xFF,
-        num & 0xFF
-      ].join('.');
+    if (!isNaN(num) && num >= 0 && num <= 0xffffffff) {
+      return [(num >>> 24) & 0xff, (num >>> 16) & 0xff, (num >>> 8) & 0xff, num & 0xff].join('.');
     }
   }
 
   // Octal: 0251.0376.0251.0376
-  if (ip.split('.').some(part => part.startsWith('0') && part.length > 1 && /^[0-7]+$/.test(part))) {
+  if (ip.split('.').some((part) => part.startsWith('0') && part.length > 1 && /^[0-7]+$/.test(part))) {
     try {
-      const parts = ip.split('.').map(p => parseInt(p, 8));
-      if (parts.length === 4 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+      const parts = ip.split('.').map((p) => parseInt(p, 8));
+      if (parts.length === 4 && parts.every((p) => !isNaN(p) && p >= 0 && p <= 255)) {
         return parts.join('.');
       }
     } catch (e) {
@@ -225,7 +212,7 @@ export function isPrivateIP(ip: string): boolean {
   const octets = match.slice(1, 5).map(Number);
 
   // Validate octets are in valid range
-  if (octets.some(octet => octet < 0 || octet > 255)) {
+  if (octets.some((octet) => octet < 0 || octet > 255)) {
     return false;
   }
 
@@ -320,7 +307,7 @@ function isPrivateIPv6(ip: string): boolean {
           const high = parseInt(hexParts[0], 16);
           const low = parseInt(hexParts[1], 16);
           if (!isNaN(high) && !isNaN(low)) {
-            const dotted = `${(high >> 8) & 0xFF}.${high & 0xFF}.${(low >> 8) & 0xFF}.${low & 0xFF}`;
+            const dotted = `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
             return isPrivateIP(dotted);
           }
         }
@@ -358,17 +345,17 @@ export function isDangerousPrivateIP(ip: string): boolean {
   }
 
   const octets = match.slice(1, 5).map(Number);
-  if (octets.some(octet => octet < 0 || octet > 255)) return false;
+  if (octets.some((octet) => octet < 0 || octet > 255)) return false;
 
   const [a, b, c, d] = octets;
 
-  if (a === 127) return true;                                    // Loopback 127.0.0.0/8
-  if (a === 169 && b === 254) return true;                       // Link-local / cloud metadata
-  if (a === 100 && b >= 64 && b <= 127) return true;            // CGNAT 100.64.0.0/10
-  if (a === 0) return true;                                      // Unspecified 0.0.0.0/8
+  if (a === 127) return true; // Loopback 127.0.0.0/8
+  if (a === 169 && b === 254) return true; // Link-local / cloud metadata
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64.0.0/10
+  if (a === 0) return true; // Unspecified 0.0.0.0/8
   if (a === 255 && b === 255 && c === 255 && d === 255) return true; // Broadcast
-  if (a >= 224 && a <= 239) return true;                         // Multicast 224.0.0.0/4
-  if (a >= 240) return true;                                     // Reserved 240.0.0.0/4
+  if (a >= 224 && a <= 239) return true; // Multicast 224.0.0.0/4
+  if (a >= 240) return true; // Reserved 240.0.0.0/4
 
   // RFC1918 (10.x, 172.16.x, 192.168.x) intentionally NOT blocked here —
   // those are legitimate on self-hosted private networks.
@@ -379,7 +366,7 @@ function isDangerousPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase().trim();
 
   if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') return true; // Loopback
-  if (normalized.startsWith('fe80:')) return true;                            // Link-local fe80::/10
+  if (normalized.startsWith('fe80:')) return true; // Link-local fe80::/10
 
   // fc/fd (ULA) ranges are NOT blocked — legitimate private IPv6 on self-hosted networks.
 
@@ -394,7 +381,7 @@ function isDangerousPrivateIPv6(ip: string): boolean {
           const high = parseInt(hexParts[0], 16);
           const low = parseInt(hexParts[1], 16);
           if (!isNaN(high) && !isNaN(low)) {
-            const dotted = `${(high >> 8) & 0xFF}.${high & 0xFF}.${(low >> 8) & 0xFF}.${low & 0xFF}`;
+            const dotted = `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
             return isDangerousPrivateIP(dotted);
           }
         }
@@ -446,14 +433,12 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
     // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
     // (metadata, loopback) — not RFC1918, which are legitimate internal services.
     const ipCheckFn = config?.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
-    return addresses.some(addr => ipCheckFn(addr));
+    return addresses.some((addr) => ipCheckFn(addr));
   } catch (error) {
     console.warn(`DNS resolution error for ${hostname}:`, error.message);
     return false;
   }
 }
-
-
 
 /**
  * Main SSRF validation function
@@ -473,10 +458,7 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
  * @param options - Optional SSRF protection configuration
  * @throws QueryError if URL fails validation
  */
-export async function validateUrlForSSRF(
-  urlString: string,
-  options?: SSRFProtectionOptions
-): Promise<void> {
+export async function validateUrlForSSRF(urlString: string, options?: SSRFProtectionOptions): Promise<void> {
   const config = options || getSSRFConfig();
 
   // If SSRF protection is disabled, skip validation
@@ -490,11 +472,7 @@ export async function validateUrlForSSRF(
   try {
     url = new URL(urlString);
   } catch (error) {
-    throw new QueryError(
-      'Invalid URL format',
-      'The provided URL is malformed and cannot be processed',
-      {}
-    );
+    throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
   const hostname = url.hostname.toLowerCase();
@@ -522,11 +500,7 @@ export async function validateUrlForSSRF(
 
   // 1. Static hostname blocklist — defense-in-depth before any DNS resolution
   if (isBlockedHostname(hostname)) {
-    throw new QueryError(
-      'Hostname blocked',
-      'This hostname is not allowed for security reasons',
-      { hostname }
-    );
+    throw new QueryError('Hostname blocked', 'This hostname is not allowed for security reasons', { hostname });
   }
 
   // 2. Check for blocked schemes
@@ -588,12 +562,16 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
   const CACHE_TTL = 60000; // 60 seconds
 
   // Return custom lookup function
-  return (hostname: string, options: any, callback: Function) => {
+  return (
+    hostname: string,
+    options: any,
+    callback: (err: NodeJS.ErrnoException | null, address?: string, family?: number) => void
+  ) => {
     // Check cache first to prevent DNS rebinding between validation and connection
     const cached = dnsCache.get(hostname);
     const now = Date.now();
 
-    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+    if (cached && now - cached.timestamp < CACHE_TTL) {
       // Use cached resolution to prevent TOCTOU
       return callback(null, cached.address, cached.family);
     }
@@ -629,7 +607,7 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
       // Clean up old cache entries to prevent memory leak
       if (dnsCache.size > 1000) {
         dnsCache.forEach((value, key) => {
-          if ((now - value.timestamp) > CACHE_TTL) {
+          if (now - value.timestamp > CACHE_TTL) {
             dnsCache.delete(key);
           }
         });
@@ -720,14 +698,11 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
   if (existingOptions?.hooks) {
     ssrfOptions.hooks = {
       ...existingOptions.hooks,
-      beforeRedirect: [
-        ...(existingOptions.hooks.beforeRedirect || []),
-        beforeRedirectHook
-      ]
+      beforeRedirect: [...(existingOptions.hooks.beforeRedirect || []), beforeRedirectHook],
     };
   } else {
     ssrfOptions.hooks = {
-      beforeRedirect: [beforeRedirectHook]
+      beforeRedirect: [beforeRedirectHook],
     };
   }
 
@@ -765,11 +740,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   try {
     url = new URL(urlString);
   } catch (error) {
-    throw new QueryError(
-      'Invalid URL format',
-      'The provided URL is malformed and cannot be processed',
-      {}
-    );
+    throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
   const hostname = url.hostname.toLowerCase();
@@ -780,11 +751,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   }
 
   if (isBlockedHostname(hostname)) {
-    throw new QueryError(
-      'Hostname blocked',
-      'This hostname is not allowed for security reasons',
-      { hostname }
-    );
+    throw new QueryError('Hostname blocked', 'This hostname is not allowed for security reasons', { hostname });
   }
 
   // Check for blocked schemes

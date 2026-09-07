@@ -38,6 +38,7 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
@@ -62,11 +63,12 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
-
-import { appTypeToDisplayNameMapping } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -120,6 +122,7 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      gitImportConflictGroups: null,
       latestCommitData: null,
       selectedImportBranch: null,
       remoteBranches: [],
@@ -148,7 +151,6 @@ class HomePageComponent extends React.Component {
       dependentPlugins: [],
       dependentPluginsDetail: {},
       importedAppName: {},
-      isAppImportEditable: false,
       showMissingGroupsModal: false,
       missingGroups: [],
       missingGroupsExpanded: false,
@@ -231,10 +233,14 @@ class HomePageComponent extends React.Component {
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     // ?folder= deep-link: fetchFolders will chain to fetchApps after slug resolves.
     const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
-    if (!urlFolderSlug) {
-      this.fetchApps(1, this.state.currentFolder.id);
-    }
-    this.fetchFolders();
+    // Gate the first apps/folders fetch on branch resolution so they carry the right branch_id
+    // after a hard reload on a feature branch (no-op when the URL has no `branch` param).
+    whenBranchResolved().then(() => {
+      if (!urlFolderSlug) {
+        this.fetchApps(1, this.state.currentFolder.id);
+      }
+      this.fetchFolders();
+    });
     this.fetchFeatureAccesss();
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();
@@ -496,7 +502,7 @@ class HomePageComponent extends React.Component {
   };
 
   deleteApp = (app) => {
-    if (this.isWorkspaceBranchLocked()) {
+    if (this.isWorkspaceBranchLocked(app)) {
       this.setState({ appToBeDeleted: app, showSwitchBranchForDelete: true });
       return;
     }
@@ -920,28 +926,28 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'delete');
   };
 
   canUpdateFolder = () => {
     // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
-    // For now, we use folderCreate as the master permission for folder update
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    // For now, we use folderCreate (or its per-app-type equivalent) as the master permission for folder update
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
-  isGitEnabled = () => {
+  isWorkspaceBranchLocked = (app) => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    return this.props.appType === 'front-end' || this.props.appType === 'module';
-  };
 
-  isWorkspaceBranchLocked = () => {
-    const state = useWorkspaceBranchesStore.getState();
-    if (!state.isInitialized || !state.orgGitConfig) return false;
+    // Unsynced apps (pre-git or not yet pushed) are always mutable, even on master
+    if (app?.app_versions?.[0]?.is_synced === false) return false;
 
     // Branching affects folder mutations for front-end apps and modules.
     // Workflows are not branch-scoped, so folder operations there remain unrestricted.
@@ -953,6 +959,16 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && isDefault);
   };
 
+  // Git sync is configured but the workspace's license no longer covers it (expired/invalid, or the
+  // current plan simply doesn't include git sync). This is the exact case the dashboard
+  // WorkspaceLockedBanner surfaces ("...disable git sync to continue"): the workspace is read-locked
+  // until git sync is disabled, so creating apps/modules must be blocked too.
+  isGitSyncLicenseLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.isGitSyncConfigured && isGitSyncLicenseInvalid(this.state.featureAccess));
+  };
+
   isOnFeatureBranch = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -962,6 +978,21 @@ class HomePageComponent extends React.Component {
         : false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && !isDefault);
+  };
+
+  // Git sync ON but in single-branch mode (branching disabled / unlicensed for multi-branch):
+  // the delete lands on the default branch and is auto-committed + pushed to git — so it needs
+  // the same "committed to git, cannot be retrieved" warning as a feature-branch delete, just
+  // without the merge step. Only front-end apps and modules are branch-scoped and auto-commit
+  // deletions to git (workflows are not). Multi-branch feature-branch deletes are handled by
+  // isOnFeatureBranch(); multi-branch default-branch deletes are blocked upstream (switch-branch
+  // modal), so the only case reaching here with git on is single-branch mode.
+  isGitSyncSingleBranchDelete = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    if (this.props.appType !== 'front-end' && this.props.appType !== 'module') return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    return !isBranchingEnabled;
   };
 
   cancelDeleteAppDialog = () => {
@@ -1118,7 +1149,8 @@ class HomePageComponent extends React.Component {
       gitVersionId: git_version_id,
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
-      allowEditing: this.state.isAppImportEditable,
+      // Imported apps are non-editable by default; editability is driven by git branch/sync state.
+      allowEditing: false,
       ...(selectedImportBranch && { gitBranchName: selectedImportBranch }),
       ...(currentWorkspaceBranchId && { workspaceBranchId: currentWorkspaceBranchId }),
       ...(commitHash && { commitHash, appCoRelationId: app_co_relation_id }),
@@ -1136,11 +1168,44 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${workspaceId}/apps/${data.app.id}`);
       })
       .catch((error) => {
+        if (error?.statusCode === 409) {
+          try {
+            const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+            if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+              this.setState({
+                gitImportConflictGroups: parsed.conflictGroups || [],
+                gitImportMultiDraftResources: parsed.multiDraftResources || [],
+                importingApp: false,
+                showGitRepositoryImportModal: false,
+              });
+              return;
+            }
+          } catch {
+            /* fall through to inline error */
+          }
+        }
         this.setState({ importingGitAppOperations: { message: error?.error } });
       })
       .finally(() => {
         this.setState({ importingApp: false });
       });
+  };
+
+  handleResolveImportConflicts = async (resolutions) => {
+    try {
+      const { actions } = useWorkspaceBranchesStore.getState();
+      await actions.resolveConflicts(resolutions);
+      this.setState({ gitImportConflictGroups: null });
+      // resolveConflicts hydrates the affected apps server-side (isSynced, content),
+      // but this component's in-memory state doesn't know that happened — reload so
+      // the UI (app list, sync badges) reflects it immediately.
+      // A toast fired now would be destroyed by the reload before it's visible, so
+      // persist it and let App.jsx's componentDidMount show it once the fresh page mounts.
+      sessionStorage.setItem('sync_success_toast', 'Resource(s) synced successfully!');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
+    }
   };
 
   addAppToFolder = () => {
@@ -1232,7 +1297,7 @@ class HomePageComponent extends React.Component {
         this.fetchAddToFolderApps();
         break;
       case 'change-icon':
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           this.setState({
             appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
             showSwitchBranchForChangeIcon: true,
@@ -1251,7 +1316,7 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'clone-app':
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           this.setState({
             appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
             showSwitchBranchForClone: true,
@@ -1264,7 +1329,7 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'rename-app': {
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           toast.error("Renaming isn't allowed on master. Switch branch to update name.");
           break;
         }
@@ -1376,6 +1441,26 @@ class HomePageComponent extends React.Component {
           /* allow on network error */
         }
       }
+
+      // OLD: fetch remote branches for branch picker
+      // this.setState({
+      //   showGitRepositoryImportModal: true,
+      //   fetchingRemoteBranches: true,
+      //   selectedImportBranch: null,
+      //   appsFromRepos: {},
+      //   selectedAppRepo: null,
+      //   importingGitAppOperations: {},
+      //   latestCommitData: null,
+      //   selectedVersionOption: null,
+      // });
+      // useWorkspaceBranchesStore
+      //   .getState()
+      //   .actions.fetchRemoteBranches()
+      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
+      //   .catch(() => {
+      //     toast.error('Failed to fetch remote branches');
+      //     this.setState({ fetchingRemoteBranches: false });
+      //   });
 
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;
@@ -1506,11 +1591,6 @@ class HomePageComponent extends React.Component {
       validationMessage = { message: 'App name cannot be empty' };
     } else if (newAppName.length > 100) {
       validationMessage = { message: 'App name cannot exceed 100 characters' };
-    } else {
-      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
-      if (matchingApp?.app_name_exist === 'EXIST') {
-        validationMessage = { message: 'App name already exists' };
-      }
     }
     if (newAppName.length > MAX_LENGTH) {
       this.setState({
@@ -1531,20 +1611,20 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: newVal,
       importedAppName: selectedApp?.git_app_name,
     });
-    if (selectedApp?.app_name_exist === 'EXIST') {
-      this.setState({
-        importingGitAppOperations: { message: 'App name already exists' },
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-      });
-    } else {
-      this.setState({
-        importingGitAppOperations: {},
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-        selectedVersionOption: null,
-      });
-    }
+    // if (selectedApp?.app_name_exist === 'EXIST') {
+    //   this.setState({
+    //     importingGitAppOperations: { message: 'App name already exists' },
+    //     fetchingLatestCommitData: true,
+    //     latestCommitData: null,
+    //   });
+    // } else {
+    this.setState({
+      importingGitAppOperations: {},
+      fetchingLatestCommitData: true,
+      latestCommitData: null,
+      selectedVersionOption: null,
+    });
+    // }
 
     try {
       const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedImportBranch);
@@ -1748,9 +1828,9 @@ class HomePageComponent extends React.Component {
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return !moduleEnabled;
+        return !moduleEnabled || this.isGitSyncLicenseLocked();
       } else if (this.props.appType === 'front-end') {
-        return appsLimit?.percentage >= 100;
+        return appsLimit?.percentage >= 100 || this.isGitSyncLicenseLocked();
       } else {
         return this.hasWorkflowLimitReached();
       }
@@ -1859,6 +1939,14 @@ class HomePageComponent extends React.Component {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForChangeIcon: false, showChangeIconModal: true });
             }}
+          />
+          <PullConflictModal
+            show={!!(this.state.gitImportConflictGroups?.length || this.state.gitImportMultiDraftResources?.length)}
+            conflictGroups={this.state.gitImportConflictGroups || []}
+            multiDraftResources={this.state.gitImportMultiDraftResources || []}
+            onClose={() => this.setState({ gitImportConflictGroups: null, gitImportMultiDraftResources: [] })}
+            onResolve={this.handleResolveImportConflicts}
+            context="import"
           />
           <AppActionModal
             modalStates={{
@@ -2004,18 +2092,34 @@ class HomePageComponent extends React.Component {
                   <br />
                   {'Are you sure you want to continue?'}
                 </span>
+              ) : this.isGitSyncSingleBranchDelete() ? (
+                <span>
+                  {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
+                    appToBeDeleted?.name
+                  } and the associated data will be deleted and `}
+                  <strong>
+                    {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
+                    versions
+                  </strong>
+                  {' will be deleted from git and cannot be retrieved.'}
+                  <br />
+                  <br />
+                  {'Are you sure you want to continue?'}
+                </span>
               ) : (
                 this.props.t(
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                    ? 'homePage.deleteAppAndData'
-                    : deleteModuleText,
+                      ? 'homePage.deleteAppAndData'
+                      : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
             }
-            confirmButtonText={this.isOnFeatureBranch() ? 'Delete and commit' : undefined}
+            confirmButtonText={
+              this.isOnFeatureBranch() || this.isGitSyncSingleBranchDelete() ? 'Delete and commit' : undefined
+            }
             confirmButtonLoading={isDeletingApp}
             cancelButtonDisabled={isDeletingApp}
             staticBackdrop={true}
@@ -2191,24 +2295,6 @@ class HomePageComponent extends React.Component {
                           This app with its <strong>dependent modules &amp; data sources</strong> will be pulled
                         </span>
                       </div>
-
-                      {/* EDITABLE CHECKBOX */}
-                      <div className="application-editable-checkbox-container">
-                        <input
-                          className="form-check-input"
-                          checked={this.state.isAppImportEditable}
-                          type="checkbox"
-                          onChange={() =>
-                            this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                          }
-                        />
-                        Make application editable
-                        <div className="helper-text">
-                          <div className="tj-text-xxsm">
-                            Enabling this allows editing and git sync push/pull access in development.
-                          </div>
-                        </div>
-                      </div>
                     </>
                   )}
                 </>
@@ -2250,11 +2336,9 @@ class HomePageComponent extends React.Component {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
 
-                        // Builders have admin-level access to module folders
-                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
-
-                        // Check if user has edit permissions for the folder
-                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        // Check if user has edit permissions for the folder — resolved per
+                        // appType (front-end/module/workflow each have their own granular bucket).
+                        const folderPermissions = getFolderGroupPermissions(currentSession, this.props.appType);
                         if (folderPermissions?.is_all_editable) return true;
                         if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
 
@@ -2360,8 +2444,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2382,8 +2466,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -2447,7 +2531,7 @@ class HomePageComponent extends React.Component {
                 canCreateFolder={this.canCreateFolder()}
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
-                isGitSyncEnabled={this.isGitEnabled()}
+                isWorkspaceBranchLocked={this.isWorkspaceBranchLocked()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
@@ -2584,6 +2668,7 @@ class HomePageComponent extends React.Component {
                       viewTemplateLibraryModal={this.showTemplateLibraryModal}
                       hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                       appType={this.props.appType}
+                      gitSyncLicenseLocked={this.isGitSyncLicenseLocked()}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
                         100 > workflowInstanceLevelLimit.percentage >= 90 ||
@@ -2611,7 +2696,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled || !this.canCreateApp()}
+                        disabled={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2626,11 +2711,13 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled || !this.canCreateApp()}
+                          show={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                           message={
                             !moduleEnabled
                               ? 'Modules are not available on your current plan.'
-                              : "You don't have permission to create a module."
+                              : this.isGitSyncLicenseLocked()
+                                ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
+                                : "You don't have permission to create a module."
                           }
                           placement="bottom"
                         >
@@ -2647,8 +2734,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}
@@ -2668,6 +2755,7 @@ class HomePageComponent extends React.Component {
                     darkMode={this.props.darkMode}
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
+                    refreshApps={() => this.fetchApps(this.state.currentPage, this.state.currentFolder.id)}
                     appType={this.props.appType}
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}

@@ -64,10 +64,10 @@ const LinkExpiredCard = ({ variant = 'reset', organizationSlug, appSlug, redirec
   const resolvedLoginPath = appSlug
     ? `/applications/${appSlug}/login${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
     : organizationSlug
-    ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
-    : redirectTo
-    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
-    : '/login';
+      ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
+      : redirectTo
+        ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+        : '/login';
 
   const resolvedCtaPath = config.ctaPath === '/login' ? resolvedLoginPath : config.ctaPath;
   const resolvedSignInPath = config.signInPath ? resolvedLoginPath : undefined;

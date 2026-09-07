@@ -62,7 +62,7 @@ export const KeyValuePair = (props) => {
   // Derived state
   const useDynamicField = useMemo(() => {
     const value = component.component.definition.properties.useDynamicField?.value;
-    return value ? resolveReferences(value) ?? false : false;
+    return value ? (resolveReferences(value) ?? false) : false;
   }, [component.component.definition.properties.useDynamicField?.value]);
 
   // Event handlers

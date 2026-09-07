@@ -59,6 +59,13 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       folderCreate: flag,
       folderDelete: flag,
       orgConstantCRUD: flag,
+      workflowFolderCreate: flag,
+      workflowFolderDelete: flag,
+      tjdbCRUD: flag,
+      moduleFolderCreate: flag,
+      moduleFolderDelete: flag,
+      moduleCreate: flag,
+      moduleDelete: flag,
     }
     : {
       appCreate: flag,

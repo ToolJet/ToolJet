@@ -30,7 +30,6 @@ import {
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
-  isValidDomain,
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,
@@ -80,12 +79,10 @@ export class OnboardingService implements IOnboardingService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly metadataUtilService: MetadataUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-  ) { }
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+  ) {}
 
-  private async getDefaultOrOldestWorkspaceOfInstance(
-    manager: EntityManager
-  ): Promise<Organization | null> {
+  private async getDefaultOrOldestWorkspaceOfInstance(manager: EntityManager): Promise<Organization | null> {
     const defaultWorkspace = await manager.findOne(Organization, {
       where: { isDefault: true },
     });
@@ -125,16 +122,23 @@ export class OnboardingService implements IOnboardingService {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
         if (
-          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+          !(await validatePasswordDomain(
+            email,
+            passwordAllowedDomains,
+            passwordRestrictedDomains,
+            this.instanceSettingsUtilService
+          ))
         ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       } else {
         // No organization provided - validate against instance-level settings
-        if (
-          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
-        ) {
-          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        if (!(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))) {
+          throw new ForbiddenException(
+            'This login method is not available for your domain. Please contact admin or try another method.'
+          );
         }
       }
 
@@ -286,7 +290,7 @@ export class OnboardingService implements IOnboardingService {
       const allowPersonalWorkspace =
         (await this.userRepository.count()) === 0 ||
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
-        'true';
+          'true';
 
       const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
       if (!(defaultWorkspace || allowPersonalWorkspace || organizationToken)) {
@@ -645,9 +649,10 @@ export class OnboardingService implements IOnboardingService {
       }
 
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiry = (password && !isNaN(rawExpiryDays) && rawExpiryDays > 0)
-        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-        : null;
+      const passwordExpiry =
+        password && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
 
       await this.userRepository.updateOne(
         signupUser.id,

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, Repository, UpdateResult } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { DataSource, Repository } from 'typeorm';
 import { Artifact } from '@entities/artifact.entity';
 
 @Injectable()

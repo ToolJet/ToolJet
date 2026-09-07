@@ -46,7 +46,7 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode, 
             top: mobLayout.top,
             width: mobLayout.width,
           }
-        : currentPageComponents[id]?.layouts?.desktop ?? {};
+        : (currentPageComponents[id]?.layouts?.desktop ?? {});
     });
     return updatedBoxes;
   };

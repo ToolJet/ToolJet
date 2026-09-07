@@ -404,7 +404,9 @@ export default class Servicenow implements QueryService {
         case 'get_field_choices': {
           const url = `${baseUrl}/sys_choice`;
           const language =
-            queryOptions.language !== undefined && `${queryOptions.language}` !== '' ? `${queryOptions.language}` : 'en';
+            queryOptions.language !== undefined && `${queryOptions.language}` !== ''
+              ? `${queryOptions.language}`
+              : 'en';
           const searchParams = {
             sysparm_query: `name=${table}^element=${queryOptions.field}^inactive=false^language=${language}^ORDERBYsequence`,
             sysparm_fields: 'label,value,sequence',
@@ -488,14 +490,17 @@ export default class Servicenow implements QueryService {
             { url: new URL(flowUrl) }
           );
           if (validated && (validated as any).status === 'needs_oauth') return this.patchNeedsOauth(validated);
-          const finalOptions = getSSRFProtectionOptions(undefined, (validated as any).data || _requestOptions) as OptionsOfJSONResponseBody;
+          const finalOptions = getSSRFProtectionOptions(
+            undefined,
+            (validated as any).data || _requestOptions
+          ) as OptionsOfJSONResponseBody;
           const flowRes = await got.post(flowUrl, finalOptions);
           // Scripted REST wraps a returned value in { result: ... }; unwrap for consistency
           // (so bindings are queries.X.data.outputs, not data.result.outputs).
           const flowBody = flowRes.body as { result?: object | object[] };
-          const flowData = (flowBody && typeof flowBody === 'object' && 'result' in flowBody
-            ? flowBody.result
-            : flowBody) as object | object[];
+          const flowData = (
+            flowBody && typeof flowBody === 'object' && 'result' in flowBody ? flowBody.result : flowBody
+          ) as object | object[];
           return { status: 'ok', data: flowData };
         }
 
@@ -538,7 +543,11 @@ export default class Servicenow implements QueryService {
       };
     } catch (error) {
       if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode === 401) {
-        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, error.response?.body || {});
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from API server',
+          error.message,
+          error.response?.body || {}
+        );
       }
       throw new QueryError('Query could not be completed', error.message, error.response?.body || {});
     }
@@ -559,7 +568,6 @@ export default class Servicenow implements QueryService {
       return { status: 'failed', message: error.message };
     }
   }
-
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     return getRefreshedToken(sourceOptions, error, userId, isAppPublic);

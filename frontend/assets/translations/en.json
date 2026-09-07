@@ -313,7 +313,7 @@
                         "email": "email",
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
-                        "folder": "Folder",
+                        "folder": "App folder",
                         "dataSource": "Data sources",
                         "tooljetDatabase": "ToolJet Database"
                     },

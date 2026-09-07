@@ -188,8 +188,8 @@ export const createDebuggerSlice = (set, get) => ({
       const defaultValue = validationSchema?.defaultValue
         ? validationSchema?.defaultValue
         : validationSchema
-        ? findDefault(validationSchema, value)
-        : undefined;
+          ? findDefault(validationSchema, value)
+          : undefined;
 
       const schema = _.isUndefined(validationSchema) ? any() : generateSchemaFromValidationDefinition(validationSchema);
 

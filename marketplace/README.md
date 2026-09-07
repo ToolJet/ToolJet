@@ -18,3 +18,5 @@ npm run build --workspaces
 ```bash
 AWS_ACCESS_KEY_ID=<key> SECRET_ACCESS_KEY=<secret> AWS_BUCKET=<bucket> node scripts/upload-to-s3.js
 ```
+
+<!-- no-op: touched to force build-marketplace to run (not path-skip) for PR #17301's full-flow CI verification; safe to drop before merge -->

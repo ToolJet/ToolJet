@@ -2,18 +2,22 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SeedFolderPermissions1766500000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Step 1: Create granular_permissions entries for folders for each existing permission_group
-    // This ensures existing organizations get folder permissions based on their role
+    // Step 1: Create granular_permissions entries for folders — ONLY for DEFAULT groups
+    // (admin / builder / end_user). Custom groups must NOT get any permission added
+    // automatically on migration; a folder (App folders) permission is granted to a custom
+    // group only when an admin explicitly configures it. Scoping to pg.type = 'default' here
+    // (and dropping the custom-groups seeding below) keeps custom groups untouched.
     await queryRunner.query(`
       INSERT INTO granular_permissions (group_id, name, type, is_all)
-      SELECT 
+      SELECT
         pg.id as group_id,
         'Folders' as name,
         'folder'::resource_type as type,
         true as is_all
       FROM permission_groups pg
-      WHERE NOT EXISTS (
-        SELECT 1 FROM granular_permissions gp 
+      WHERE pg.type = 'default'
+      AND NOT EXISTS (
+        SELECT 1 FROM granular_permissions gp
         WHERE gp.group_id = pg.id AND gp.type = 'folder'
       );
     `);
@@ -82,23 +86,10 @@ export class SeedFolderPermissions1766500000001 implements MigrationInterface {
         );
     `);
 
-    // Custom groups: default to view only (conservative approach)
-    await queryRunner.query(`
-      INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
-      SELECT 
-        gp.id as granular_permission_id,
-        false as can_edit_folder,
-        false as can_edit_apps,
-        true as can_view_apps
-      FROM granular_permissions gp
-      JOIN permission_groups pg ON gp.group_id = pg.id
-      WHERE gp.type = 'folder'
-        AND pg.type = 'custom'
-        AND NOT EXISTS (
-          SELECT 1 FROM folders_group_permissions fgp 
-          WHERE fgp.granular_permission_id = gp.id
-        );
-    `);
+    // Custom groups: intentionally NOT seeded. No folder/App-folders permission is added to a
+    // custom group on migration — Step 1 no longer creates a granular_permissions row for them,
+    // so there is nothing to grant here. Admins add App-folders permission to a custom group
+    // manually when they want it.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

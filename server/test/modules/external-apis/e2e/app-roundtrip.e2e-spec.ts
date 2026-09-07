@@ -46,7 +46,9 @@ describe('External API — app export/import/list round trip', () => {
     const exportedVersions = exportRes.body.app[0].definition.appV2.appVersions;
     expect(exportedVersions).toHaveLength(3);
 
-    const { organization: targetOrg } = await createUser(app, { email: `app-roundtrip-target-${Date.now()}@tooljet.io` });
+    const { organization: targetOrg } = await createUser(app, {
+      email: `app-roundtrip-target-${Date.now()}@tooljet.io`,
+    });
 
     await request(app.getHttpServer())
       .post(`/api/ext/import/workspace/${targetOrg.id}/apps`)

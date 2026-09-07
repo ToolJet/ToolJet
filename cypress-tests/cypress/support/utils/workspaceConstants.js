@@ -45,9 +45,6 @@ export const existingNameValidation = (
 ) => {
   cy.clearAndType(commonSelectors.workspaceConstantNameInput, constName);
   cy.get(workspaceConstantsSelectors.constantsType(type)).check();
-  if (type != 'Global') {
-    cy.get('[data-cy="edit-secret-value-button"]').click()
-  }
   cy.get(commonSelectors.workspaceConstantValueInput).click();
   cy.clearAndType(commonSelectors.workspaceConstantValueInput, constValue);
   cy.get(workspaceConstantsSelectors.addConstantButton).click();
@@ -274,32 +271,42 @@ export const constantsCRUDAndValidations = (data) => {
   );
   cy.get('input[type="radio"]').should("be.disabled");
 
-  //update same value and add const should be disabled
-  if (type != 'Global') {
-    cy.get('[data-cy="edit-secret-value-button"]').click()
-  }
-  cy.get(commonSelectors.workspaceConstantValueInput)
-    .click()
-    .clear()
-    .type(data.constName);
-  if (type != 'Global') {
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-  }
-  else {
+  if (data.constantType === "Secrets") {
+    // Secret values are never sent back in plaintext; editing starts locked and
+    // empty behind an explicit "Edit" gate (mirrors encrypted data source fields).
+    cy.get(commonSelectors.workspaceConstantValueInput).should("be.disabled");
+    cy.get('[data-cy="edit-secret-value-button"]').click();
+    cy.get(commonSelectors.workspaceConstantValueInput)
+      .click()
+      .type(data.newConstvalue);
+    cy.get(workspaceConstantsSelectors.addConstantButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Constant updated successfully"
+    );
+    // Secret values can never be revealed inline in the table (the backend never
+    // returns plaintext), so the value stays masked after the update.
+    cy.get(workspaceConstantsSelectors.constantValue(data.constName))
+      .should("be.visible")
+      .and("have.text", "*".repeat(data.newConstvalue.length));
+  } else {
+    //update same value and add const should be disabled
+    cy.get(commonSelectors.workspaceConstantValueInput)
+      .click()
+      .clear()
+      .type(data.constName);
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-  }
-  //update different value
 
-  cy.clearAndType(
-    commonSelectors.workspaceConstantValueInput,
-    data.newConstvalue
-  );
-  cy.get(workspaceConstantsSelectors.addConstantButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "Constant updated successfully"
-  );
-  if (type === 'Global') {
+    //update different value
+    cy.clearAndType(
+      commonSelectors.workspaceConstantValueInput,
+      data.newConstvalue
+    );
+    cy.get(workspaceConstantsSelectors.addConstantButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Constant updated successfully"
+    );
     cy.get(
       `[data-cy="${data.constName.toLowerCase()}-constant-visibility"]`
     ).click();

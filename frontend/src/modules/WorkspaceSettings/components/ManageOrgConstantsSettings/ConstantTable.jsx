@@ -159,8 +159,8 @@ const ConstantTable = ({
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : String(constant.value)?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
+                                          ? '#384151'
+                                          : '#D1D5DB'
                                     }
                                   />
                                 ) : (
@@ -171,8 +171,8 @@ const ConstantTable = ({
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : String(constant.value)?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
+                                          ? '#384151'
+                                          : '#D1D5DB'
                                     }
                                   />
                                 )}

@@ -277,8 +277,8 @@ export const RadioButtonV2 = ({
                         optionsTextColor !== '#1B1F24'
                           ? optionsTextColor
                           : isDisabled || isLoading
-                          ? 'var(--text-disabled)'
-                          : 'var(--text-primary)',
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
                     }}
                   >
                     {String(option.label)}

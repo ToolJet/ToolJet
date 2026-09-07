@@ -1,3 +1,4 @@
+/** @jest-config-loader ts-node */
 import type { Config } from '@jest/types';
 import { coverageConfig } from './test/jest-coverage.config';
 
@@ -45,9 +46,7 @@ const config: Config.InitialOptions = {
   runner: 'groups',
   testTimeout: 30000,
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
-  transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)'],
 };
 
 export default config;
