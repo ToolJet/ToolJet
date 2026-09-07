@@ -98,6 +98,7 @@ export const JSONRenderer = ({
         position: 'relative',
         height: '100%',
         alignItems: 'safe center',
+        whiteSpace: 'pre-wrap',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
