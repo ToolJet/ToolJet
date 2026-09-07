@@ -13,7 +13,7 @@ import {
 } from "Support/utils/common";
 import { setupAndUpdateRole } from "Support/utils/platform/manageGroups";
 import { disableToggle, enableToggle } from "Support/utils/platform/eeCommon";
-import { ssoText } from "Texts/common";
+import { ssoText } from "Texts/platform/manageSSO";
 import { ssoEeText } from "Texts/platform/eeCommon";
 import { usersText } from "Texts/platform/manageUsers";
 import { sanitize } from "Support/utils/common";

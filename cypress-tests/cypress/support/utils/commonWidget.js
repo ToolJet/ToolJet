@@ -1,3 +1,9 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// commonWidget.js
+//   randomNumber                     -                    → common
+//   pushIntoArrayOfObject            -                    → common
+//   addDefaultEventHandler           -                    → events
+// └──────────────────────────────────────────────────────────────────┘
 import { faker } from "@faker-js/faker";
 import { commonWidgetSelector } from "Selectors/common";
 

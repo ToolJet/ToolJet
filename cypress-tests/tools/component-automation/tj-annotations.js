@@ -6,7 +6,11 @@ const TAG_RE = { type: /@tjType\s+(.+)/, block: /@tjBlock\s+(\S+)/, usage: /@tjU
 //   app-builder: a UI region every widget shares (properties / styles / events / …).
 //   platform:    a product area, mirroring cypress/e2e/happyPath/platform/<area>/.
 // `common` is shared by both — cross-domain helpers with no single owner.
-const APPBUILDER_BLOCKS = ["properties","styles","events","csa","inspector","canvas","contexts"];
+// `editor`, `pages` and `querymanager` are used by 21 app-builder helpers but were
+// missing from the original list, so helper-lint had been failing on
+// editorHeader.js / pages.js / queryPanel.js since they were annotated.
+const APPBUILDER_BLOCKS = ["properties","styles","events","csa","inspector","canvas","contexts",
+                           "editor","pages","querymanager"];
 const PLATFORM_BLOCKS = ["onboarding","access","apps","licensing","workspace","superAdmin","externalApi","gitSync","modules"];
 const VALID_BLOCKS = [...APPBUILDER_BLOCKS, ...PLATFORM_BLOCKS, "common"];
 

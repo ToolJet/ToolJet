@@ -197,6 +197,8 @@
 | app.verifyImportModal | `verifyImportModalElements` | platform/exportImport.js | apps | `verifyImportModalElements('MyApp')` |
 | datasource.setupWithConstants | `setupDataSourceWithConstants` | platform/exportImport.js | workspace | `setupDataSourceWithConstants(...)` |
 | app.validateExportStructure | `validateExportedAppStructure` | platform/exportImport.js | apps | `validateExportedAppStructure(...)` |
+| - | `invalidAuthHeader` | platform/externalApi.js | externalApi | `invalidAuthHeader()` |
+| - | `emptyAuthHeader` | platform/externalApi.js | externalApi | `emptyAuthHeader()` |
 | - | `apiRequest` | platform/externalApi.js | externalApi | `apiRequest('GET', '/api/ext/users')` |
 | extUser.create | `createUser` | platform/externalApi.js | externalApi | `createUser(userData)` |
 | extUser.get | `getUser` | platform/externalApi.js | externalApi | `getUser(userId)` |
@@ -208,10 +210,22 @@
 | extWorkspace.list | `getAllWorkspaces` | platform/externalApi.js | externalApi | `getAllWorkspaces()` |
 | extApp.import | `importApp` | platform/externalApi.js | externalApi | `importApp(workspaceId, appData, headers)` |
 | extApp.export | `exportApp` | platform/externalApi.js | externalApi | `exportApp(workspaceId, appId, endpoint, headers)` |
-| extApp.listAll | `allAppsDetails` | platform/externalApi.js | externalApi | `allAppsDetails(workspaceIds)` |
 | extApp.listByWorkspace | `fetchWorkspaceApps` | platform/externalApi.js | externalApi | `fetchWorkspaceApps(workspaceId, authToken)` |
+| extApp.listAll | `allAppsDetails` | platform/externalApi.js | externalApi | `allAppsDetails(workspaceIds)` |
+| extModule.list | `listWorkspaceModules` | platform/externalApi.js | externalApi | `listWorkspaceModules(workspaceId)` |
+| extModule.export | `exportModule` | platform/externalApi.js | externalApi | `exportModule(workspaceId, moduleId)` |
+| extModule.import | `importModule` | platform/externalApi.js | externalApi | `importModule(workspaceId, moduleData)` |
+| extUserMetadata.get | `getUserMetadata` | platform/externalApi.js | externalApi | `getUserMetadata(userId)` |
+| extUserMetadata.update | `updateUserMetadata` | platform/externalApi.js | externalApi | `updateUserMetadata(userId, metadata)` |
+| extGitSync.configure | `configureOrganizationGit` | platform/externalApi.js | gitSync | `configureOrganizationGit(workspaceId, config)` |
+| extGitSync.push | `pushAppVersionToGit` | platform/externalApi.js | gitSync | `pushAppVersionToGit(workspaceId, appId, versionId)` |
+| extGitSync.createApp | `createAppFromGit` | platform/externalApi.js | gitSync | `createAppFromGit(workspaceId, gitAppName)` |
+| extGitSync.pull | `pullAppChangesFromGit` | platform/externalApi.js | gitSync | `pullAppChangesFromGit(workspaceId, appId)` |
+| extGitSync.release | `releaseAppFromGit` | platform/externalApi.js | gitSync | `releaseAppFromGit(workspaceId, appId)` |
+| extApp.saveVersion | `saveAppVersion` | platform/externalApi.js | externalApi | `saveAppVersion(workspaceId, appId, versionId)` |
 | extGroup.create | `createGroup` | platform/externalApi.js | externalApi | `createGroup('QA Team')` |
 | extUser.verifyGroups | `verifyUserInGroups` | platform/externalApi.js | externalApi | `verifyUserInGroups(userEmail, ['QA Team'], true)` |
+| extWorkspace.usersByGroups | `getWorkspaceUsersByGroups` | platform/externalApi.js | externalApi | `getWorkspaceUsersByGroups(workspaceId, payload, headers)` |
 | license.getExpiry | `getLicenseExpiryDate` | platform/license.js | licensing | `getLicenseExpiryDate()` |
 | license.switchTab | `switchTabs` | platform/license.js | licensing | `switchTabs('Access')` |
 | license.verifyTab | `verifyLicenseTab` | platform/license.js | licensing | `verifyLicenseTab()` |

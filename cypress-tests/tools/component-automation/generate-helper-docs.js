@@ -141,6 +141,10 @@ const DOMAINS = {
     "appBuilder/components/inputField.js",
     "appBuilder/components/properties/common.js",
     "appBuilder/components/properties/imageComponent.js",
+    // The barrel also defines three helpers of its own (randomNumber,
+    // pushIntoArrayOfObject, addDefaultEventHandler). They are annotated, so they
+    // belong in the index — specs import them directly from here.
+    "commonWidget.js",
     ],
   },
   platform: {

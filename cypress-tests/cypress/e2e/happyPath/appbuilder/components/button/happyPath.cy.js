@@ -3,7 +3,7 @@ import { buttonText } from "Texts/appBuilder/components/button";
 import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
-import { verifyControlComponentAction } from "Support/utils/appBuilder/components/button";
+import { verifyControlComponentAction } from "Support/utils/appBuilder/csa";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 import {
