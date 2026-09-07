@@ -2,9 +2,6 @@
 !.gitignore
 !skills/
 skills/*
-!skills/widget-tdd/
-!skills/widget-tdd/**
-!skills/grill-me/
-!skills/grill-me/**
-!skills/test-driven-development/
-!skills/test-driven-development/**
+!skills/app-builder-widget-tdd
+!skills/app-builder-test-review-development
+!skills/app-builder-grill-me

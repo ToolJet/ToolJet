@@ -37,7 +37,8 @@
 
 .idea/*
 ti-*
-.claude/
+.claude/*
+!.claude/skills
 .worktrees/
 .serena/
 

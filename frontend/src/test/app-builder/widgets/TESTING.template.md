@@ -13,7 +13,7 @@ sibling_contracts:
 
 # ReplaceWithRegisteredComponentType testing contract
 
-Use the repository `widget-tdd` skill and `frontend/src/test/app-builder/README.md`. For an existing
+Use `frontend/ee/.agents/skills/app-builder-widget-tdd/SKILL.md` and `frontend/src/test/app-builder/README.md`. For an existing
 widget, Context7 and the two-year Git-history review are hard prerequisites. For a new widget,
 use an approved GitHub PRD, ClickUp PRD, or Notion PRD instead. This document records the evidence
 along with product behavior and approved test seams; it must not restate the implementation.

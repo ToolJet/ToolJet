@@ -238,6 +238,9 @@ export function createWidgetHarness({
           version: 'draft',
           transferPath: 'not-applicable',
           access: 'authenticated',
+          // dnd: Form children mapping. view: WidgetWrapper skips ConfigHandle,
+          // whose lazy MentionComponentInChat pulls onboardingStoreHelper's
+          // top-level await and throws `Configuration error` in Jest.
           capabilities: { observers: true, media: { matches: false }, dnd: true },
         }),
       });
@@ -254,8 +257,8 @@ export function createWidgetHarness({
       child.component.definition.validation = { ...defaultValidation, ...validation };
       seedApp({ [formId]: form, [id]: child }, { moduleId: MODULE_ID });
       store().setEditorLoading(false, MODULE_ID);
-      store().setCurrentMode('edit', MODULE_ID);
-      return session.render(<RenderWidget {...widgetProps(formId, 'Form')} />);
+      store().setCurrentMode('view', MODULE_ID);
+      return session.render(<RenderWidget {...widgetProps(formId, 'Form', { currentMode: 'view' })} />);
     },
     setEvents: (events) => store().eventsSlice.setEvents(events, MODULE_ID),
     setExposedValue: (componentId, key, value) => store().setExposedValue(componentId, key, value, MODULE_ID),

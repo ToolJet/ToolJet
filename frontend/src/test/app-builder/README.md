@@ -5,16 +5,17 @@ meaningful regression protection, not test volume or line coverage by itself.
 
 ## Widget contract gate
 
-Before adding or changing a registered widget test, use the repository `widget-tdd` skill and check
+Before adding or changing a registered widget test, use
+`frontend/ee/.agents/skills/app-builder-widget-tdd/SKILL.md` and check
 `frontend/widget-testing-manifest.json`. Research creates the canonical contract at
-`frontend/src/test/app-builder/widgets/<ComponentType>/TESTING.md`; do not bulk-create empty files.
+`frontend/ee/test/app-builder/widgets/<ComponentType>/TESTING.md`; do not bulk-create empty files.
 
 TDD cannot begin until product behavior and test design have recorded human approval. Every maintained
 widget test starts its title with an approved scenario ID. New widget definitions and modified widget
 tests fail validation without an approved contract; untouched widgets remain a report-only backfill.
 Run `npm --prefix frontend run validate:widget-testing-contracts`.
 
-For unresolved product behavior, use the repository [`grill-me`](../../../../.agents/skills/grill-me/SKILL.md)
+For unresolved product behavior, use [`app-builder-grill-me`](../../../../ee/.agents/skills/app-builder-grill-me/SKILL.md)
 skill: research facts first, then ask one decision at a time with a recommendation and wait for
 explicit confirmation. If skill discovery is unavailable, follow the same one-question protocol
 inline; do not guess.
