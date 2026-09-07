@@ -43,6 +43,7 @@ export class PostgrestProxyService {
 
     const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
 
+    const requestedAccept = req.headers['accept'];
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
     req.headers = {};
     req.headers['Authorization'] = authToken;
@@ -50,6 +51,9 @@ export class PostgrestProxyService {
     req.headers['Prefer'] = `count=exact, return=representation`;
     if (['GET', 'HEAD'].includes(req.method)) req.headers['Accept-Profile'] = dbSchema;
     if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) req.headers['Content-Profile'] = dbSchema;
+    // PostgREST renders text/csv natively; everything else stays JSON. Allowlisted rather than
+    // passed through, so an arbitrary client Accept can't reshape the proxy's responses.
+    if (requestedAccept === 'text/csv') req.headers['Accept'] = 'text/csv';
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
