@@ -68,7 +68,8 @@ module.exports = defineConfig({
         },
       });
 
-      return require("./cypress/plugins/index.js")(on, config);
+      config = require("./cypress/plugins/index.js")(on, config);
+      return require("./tools/cypress-live-reporter/plugin").livePlugin(on, config);
     },
     downloadsFolder: "cypress/downloads",
     experimentalRunAllSpecs: true,

@@ -8,3 +8,4 @@
 /.nyc_output
 /cypress/.webpack_cache
 /.claude
+.env

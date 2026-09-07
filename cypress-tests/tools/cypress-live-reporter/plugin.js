@@ -23,11 +23,31 @@ const { createSink, createLogger } = require('./sinks');
 
 const TAG = '[cypress-live-reporter]';
 
-// .env support is optional — never a hard dependency
+// .env support is optional — never a hard dependency.
+// Parsed here when dotenv is absent: it is BSD-2-Clause, and only MIT / Apache-2.0 are
+// permitted in this repo.
 try {
-  require('dotenv').config();
+  require('dotenv').config({ quiet: true });
 } catch (err) {
-  /* dotenv not installed — fine */
+  try {
+    const envPath = path.resolve(__dirname, '..', '..', '.env');
+    if (fs.existsSync(envPath)) {
+      for (const rawLine of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+        const line = rawLine.trim();
+        if (!line || line.startsWith('#')) continue;
+        const eq = line.indexOf('=');
+        if (eq < 1) continue;
+        const key = line.slice(0, eq).trim();
+        if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue;
+        if (process.env[key] !== undefined) continue;
+        const raw = line.slice(eq + 1).trim();
+        const quoted = /^(['"])([\s\S]*)\1$/.exec(raw);
+        process.env[key] = quoted ? quoted[2] : raw.replace(/\s+#.*$/, '');
+      }
+    }
+  } catch (fallbackErr) {
+    /* never let config loading break a run */
+  }
 }
 
 const DEFAULTS = {
@@ -147,6 +167,7 @@ function setup(on, config, opts) {
 
   // env override lets parallel CI machines report into one shared run
   const runId = process.env.CLR_RUN_ID || randomUUID();
+  const projectId = process.env.CLR_PROJECT || null;
   let seq = 0;
   // the test currently executing, learned from the browser's test:start
   // stream — Cypress runs one test at a time per process, so this reliably
@@ -218,6 +239,7 @@ function setup(on, config, opts) {
         emit('run:start', {
           specs,
           totalSpecs: specs.length,
+          ...(projectId ? { project: projectId } : {}),
           browser:
             details && details.browser
               ? { name: details.browser.name, version: details.browser.version }

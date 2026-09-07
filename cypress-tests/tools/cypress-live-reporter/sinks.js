@@ -130,6 +130,7 @@ function createSink(opts) {
 
   let inFlight = 0;
   const queue = [];
+  let warnedSendFailure = false;
 
   function pump() {
     while (inFlight < maxParallel && queue.length > 0) {
@@ -137,7 +138,13 @@ function createSink(opts) {
       inFlight++;
       Promise.resolve()
         .then(job)
-        .catch((err) => log('send failed:', err && err.message))
+        .catch((err) => {
+          if (!warnedSendFailure) {
+            warnedSendFailure = true;
+            console.warn(`${TAG} send failed — events are being dropped: ${err && err.message}`);
+          }
+          log('send failed:', err && err.message);
+        })
         .then(() => {
           inFlight--;
           pump();
