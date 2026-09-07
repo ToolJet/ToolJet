@@ -36,7 +36,7 @@ export default function DeleteTableModal({
       <Modal.Header closeButton={false}>
         <Modal.Title>{blocked ? 'Dependent queries found' : 'Delete table'}</Modal.Title>
         <span className="cursor-pointer" onClick={onCancel} data-cy="delete-table-modal-close">
-          <SolidIcon name="remove" width="16" fill="#889096" />
+          <SolidIcon name="remove" width="16" fill="var(--slate11)" />
         </span>
       </Modal.Header>
       <Modal.Body className="migration-confirm-modal-body">

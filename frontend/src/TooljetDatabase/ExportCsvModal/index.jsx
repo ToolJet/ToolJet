@@ -53,9 +53,16 @@ export default function ExportCsvModal({
           setRowCounts((prev) => ({ ...prev, [env.id]: error ? null : count }));
         });
       });
-    // Deliberately keyed on show/tableId only - re-fetching on every environments/relations
-    // reference change would refire three requests for no reason; those only change alongside a
-    // table switch anyway, which already remounts this modal closed.
+    // Deliberately keyed on show/tableId only, not on environments/relationsByEnvironment -
+    // relationsByEnvironment only changes via a promote (EnvironmentSwitcher.refetchTables, called
+    // from PromotePreviewView after promoteTable succeeds), and a promote is only reachable from
+    // inside MigrationHistoryDrawer. That drawer and this modal cannot both be open: both are
+    // full-viewport, focus-trapped overlays (react-bootstrap Modal backdrop z-index ~1040+;
+    // Drawer's own backdrop, frontend/src/_styles/drawer.scss, z-index 999, pointer-events: auto)
+    // that swallow every click/keystroke meant for whatever triggers the other. If that stacking
+    // ever changes (e.g. this modal or the drawer stops blocking the rest of the page), this effect
+    // needs relationsByEnvironment back in its deps - a stale row would otherwise sit on its
+    // skeleton (or a stale head-migration label) until the next open.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, tableId, organizationId]);
 
@@ -97,7 +104,7 @@ export default function ExportCsvModal({
       <Modal.Header closeButton={false}>
         <Modal.Title>Select an environment to export data</Modal.Title>
         <span className="cursor-pointer" onClick={onCancel} data-cy="export-csv-modal-close">
-          <SolidIcon name="remove" width="16" fill="#889096" />
+          <SolidIcon name="remove" width="16" fill="var(--slate11)" />
         </span>
       </Modal.Header>
       <Modal.Body className="migration-confirm-modal-body">
