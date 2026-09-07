@@ -1,0 +1,274 @@
+import { fake } from "Fixtures/fake";
+import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+import { commonWidgetSelector } from "Selectors/common";
+import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
+import { fileInputText, fileInputAccordion, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
+import {
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
+  waitForDropSettle,
+  openStyleAccordion,
+  selectThemeColour,
+  expectThemeColour,
+  selectColourFromColourPicker,
+  fillBoxShadowParams,
+  verifyBoxShadowCss,
+} from "Support/utils/commonWidget";
+import {
+  commitChange,
+  attachFile,
+  unlockLabelWidth,
+  toggleIconVisibility,
+  getWidgetHeight,
+} from "Support/utils/appBuilder/components/fileInput";
+
+// Styles facet — organised by the accordion each entry declares in its `accordian` key.
+// Covers all 17 config.styles plus the orphan iconVisibility, 18 items in total:
+//   label (7)      labelColor:234 · labelFontSize:240 · alignment:246 · direction:256 ·
+//                  auto:269 · labelWidth:280 · widthType:296
+//   field (10)     icon:320 · iconVisibility:513 (orphan, see below) · iconColor:327 ·
+//                  backgroundColor:337 · borderColor:346 · accentColor:355 · textColor:364 ·
+//                  errTextColor:373 · borderRadius:382 · boxShadow:394
+//   container (1)  padding:406
+// source: fileinput.js
+//
+// iconVisibility has NO schema entry — only a stored default in definition.styles
+// (fileinput.js:513) — but it IS a user-reachable eye toggle and it gates whether the
+// icon renders at all, so it is covered here rather than treated as config noise.
+//
+// Colour fields use the THEME path (selectThemeColour/expectThemeColour). That is
+// deliberate: the widget guards every colour against a sentinel literal — backgroundColor
+// against '#fff' (FileInput.jsx:176), borderColor against '#CCD1D5' (:168), textColor
+// against '#1B1F24'/'#000'/'#000000ff' (:183), labelColor against a similar list
+// (Label.jsx:52) — and silently substitutes a theme fallback when it matches. A test
+// picking one of those hexes would assert the fallback and pass for the wrong reason.
+// Theme tokens are never equal to those literals, so they route through cleanly.
+describe(
+  "File Input styles",
+  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  () => {
+    const widget = fileInputText.defaultWidgetName;
+    const { csvFile } = fileInputFixtures;
+
+    beforeEach(() => {
+      cy.apiLogin();
+      cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Fileinput-App`);
+      cy.openApp();
+      cy.dragAndDropWidget(fileInputText.defaultWidgetText, 500, 100);
+      waitForDropSettle(widget);
+      closeQueryPanel();
+    });
+
+    afterEach(function () {
+      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    });
+
+    /* ---------------------------------------------------------------- label ---- */
+
+    it("should verify Color: theme swatch on the label text", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      selectThemeColour("Color", "SystemStatus/Error"); // source: fileinput.js:234
+      // The colour lands on the inner <p>, not the <label> wrapper (Label.jsx:52).
+      expectThemeColour(fileInputSelector.labelText(widget), "color", "var(--cc-error-systemStatus)");
+    });
+
+    it("should verify Size: direct change", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      cy.get('[data-cy="size-input"]').clear().type("20"); // source: fileinput.js:240
+      commitChange();
+      cy.get(fileInputSelector.label(widget)).should("have.css", "font-size", "20px");
+    });
+
+    it("should verify Alignment: direct toggle between top and side", () => {
+      // Ships `top` (fileinput.js:510), which renders as tw-flex-col on the widget root.
+      // Asserting the layout CLASS rather than mere visibility is what proves the label
+      // actually moved — a be.visible check passes in both alignments.
+      cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-col");
+
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      cy.get('[data-cy="togglr-button-side"]').click(); // source: fileinput.js:246
+      cy.waitForAutoSave();
+
+      cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-row");
+      cy.get(fileInputSelector.widget(widget)).should("not.have.class", "tw-flex-col");
+    });
+
+    it("should verify Direction: direct toggle only", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      cy.get('[data-cy="togglr-button-right"]').click(); // source: fileinput.js:256
+      cy.waitForAutoSave();
+
+      // With the shipped `top` alignment, direction right adds tw-text-right
+      // (FileInput.jsx:246) and pushes the label content to the end (Label.jsx:39).
+      cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-text-right");
+      cy.get(fileInputSelector.label(widget)).should("have.css", "justify-content", "flex-end");
+    });
+
+    it("should verify Width: unchecking auto reveals the width controls", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      // auto ships ON and is itself gated on alignment=side (fileinput.js:274-277), so
+      // the checkbox does not even render until alignment flips.
+      cy.get('[data-cy="auto-width-checkbox"]').should("not.exist");
+
+      unlockLabelWidth(); // alignment=side, then uncheck auto — the two-level gate
+      // source: fileinput.js:269 (auto) · :280 (labelWidth) · :296 (widthType)
+      cy.get('[data-cy="width-input-field"]').should("be.visible");
+      cy.get('[data-cy="dropdown-common"]').should("be.visible");
+
+      // auto off swaps the label's width from `auto` to the stored percentage.
+      cy.get(fileInputSelector.label(widget)).should("not.have.css", "width", "auto");
+    });
+
+    it("should verify Width type: Of the Field caps the label width", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleLabel);
+      unlockLabelWidth();
+
+      // widthType is a react-select with no per-option data-cy, picked by visible text.
+      // source: fileinput.js:296-302
+      cy.get('[data-cy="dropdown-common"]').click();
+      cy.get(".react-select__option").filter((_i, el) => el.innerText.trim() === "Of the Field").click();
+      cy.waitForAutoSave();
+
+      // ofField + side is the only combination that caps maxWidth at 70% (Label.jsx:36).
+      cy.get(fileInputSelector.label(widget)).should("have.css", "max-width").and("not.equal", "100%");
+    });
+
+    /* ----------------------------------------------------------------- field ---- */
+
+    it("should verify Icon: renders only once icon visibility is on", () => {
+      // The configured IconFileSearch (fileinput.js:512) is inert while iconVisibility is
+      // false (fileinput.js:513), so absence-then-presence is the real assertion here.
+      cy.get(fileInputSelector.icon(widget)).should("not.exist");
+
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      toggleIconVisibility();
+      cy.get(fileInputSelector.icon(widget)).should("be.visible");
+    });
+
+    it("should verify Icon color: theme swatch", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      toggleIconVisibility();
+      // displayName is an empty string, so the control's data-cy falls back to the config
+      // key: iconColor → `iconcolor-picker`. source: fileinput.js:327-333
+      selectThemeColour("iconColor", "SystemStatus/Error");
+      // TablerIcon forwards `color` to the SVG's STROKE, not to its `color` property —
+      // asserting `color` reads an inherited value that never changes, which passes or
+      // fails for reasons unrelated to this control.
+      expectThemeColour(fileInputSelector.icon(widget), "stroke", "var(--cc-error-systemStatus)");
+    });
+
+    it("should verify Background: theme swatch", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      selectThemeColour("Background", "SystemStatus/Error"); // source: fileinput.js:337
+      expectThemeColour(fileInputSelector.field(widget), "backgroundColor", "var(--cc-error-systemStatus)");
+    });
+
+    it("should verify Border: theme swatch", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      selectThemeColour("Border", "SystemStatus/Error"); // source: fileinput.js:346
+      expectThemeColour(fileInputSelector.field(widget), "borderColor", "var(--cc-error-systemStatus)");
+    });
+
+    it("should verify Text: theme swatch", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      selectThemeColour("Text", "SystemStatus/Error"); // source: fileinput.js:364
+      expectThemeColour(fileInputSelector.field(widget), "color", "var(--cc-error-systemStatus)");
+    });
+
+    // FAILS — open bug, left red on purpose. accentColor is declared as a colorSwatches
+    // style (fileinput.js:355) with its own fx button, and the component destructures it
+    // (FileInput.jsx:55) — then never references it again. It is absent from
+    // computedStyles, from the JSX and from useFilePicker, so the Inspector ships a
+    // colour control that cannot change anything on screen.
+    // The assertion below is what SHOULD hold; it goes green the day the wiring lands.
+    it("should verify Accent: theme swatch changes the rendered widget", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      cy.get(commonWidgetSelector.stylePicker("Accent")).last().should("be.visible");
+
+      cy.get(fileInputSelector.field(widget))
+        .invoke("attr", "style")
+        .then((before) => {
+          selectThemeColour("Accent", "SystemStatus/Error");
+          // Any observable difference would satisfy this — the bug is that there is none.
+          cy.get(fileInputSelector.field(widget)).invoke("attr", "style").should("not.equal", before);
+        });
+    });
+
+    it("should verify Error text: theme swatch on the validation message", () => {
+      openEditorSidebar(widget);
+      openAccordion("Validation");
+      verifyAndModifyParameter("Min files", "{{2}}");
+      commitChange();
+
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      selectThemeColour("Error text", "SystemStatus/Error"); // source: fileinput.js:373
+
+      // errTextColor only has a target once an error is actually showing
+      // (FileInput.jsx:350-362), so the error state has to be provoked first.
+      attachFile(csvFile);
+      expectThemeColour(fileInputSelector.errorMessage(widget), "color", "var(--cc-error-systemStatus)");
+    });
+
+    it("should verify Border radius: direct change", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      cy.get('[data-cy="border-radius-input"]').clear().type("20"); // source: fileinput.js:382
+      commitChange();
+      cy.get(fileInputSelector.field(widget)).should("have.css", "border-radius", "20px");
+    });
+
+    it("should verify Box shadow: direct change", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+
+      // Default is '0px 0px 0px 0px #00000040' (fileinput.js:402). The alpha byte 0x40
+      // serialises as 0.25 or 0.251 depending on the browser, so match the shape rather
+      // than pinning one rounding.
+      cy.get(fileInputSelector.field(widget))
+        .should("have.css", "box-shadow")
+        .and("match", /^rgba\(0, 0, 0, 0\.25\d*\) 0px 0px 0px 0px$/);
+
+      // Fill x/y/blur/spread in the popover, then pick a colour.
+      const directParam = fake.boxShadowParam;
+      const directColor = fake.randomRgba;
+      cy.get(commonWidgetSelector.stylePicker("Box shadow")).click();
+      fillBoxShadowParams(commonWidgetSelector.boxShadowDefaultParam, directParam); // source: fileinput.js:394
+      selectColourFromColourPicker("Box shadow Color", directColor);
+      // verifyBoxShadowCss defaults to the outer draggable-widget wrapper, but File Input
+      // puts boxShadow on its inner field box — pass that selector, and note the colour
+      // argument is an [r,g,b,a] ARRAY, not a css string.
+      verifyBoxShadowCss(fileInputSelector.field(widget), directColor, directParam, "css");
+    });
+
+    /* ------------------------------------------------------------- container ---- */
+
+    // padding is applied by the shared CANVAS WRAPPER, not by the widget itself:
+    // RenderWidget.jsx:320 sets `padding: none ? '0px' : BOX_PADDING`, and the field's
+    // height:100% follows it. Worth stating, because FileInput.jsx computes two of its
+    // own padding-derived memos — `_height` (:79) and `inputElementHeight` (:85) —
+    // NEITHER of which is referenced in the returned JSX. Those two are dead code, but
+    // the FEATURE works; reading the component alone would wrongly suggest otherwise.
+    it("should verify Padding: None changes the field height", () => {
+      openStyleAccordion(widget, fileInputAccordion.styleContainer);
+      cy.get('[data-cy="togglr-button-default"]')
+        .closest('[role="radio"]')
+        .should("have.attr", "aria-checked", "true");
+
+      getWidgetHeight(widget).then((before) => {
+        cy.get('[data-cy="togglr-button-none"]').click();
+        cy.waitForAutoSave();
+        // The control registered the change...
+        cy.get('[data-cy="togglr-button-none"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
+        // ...but the widget never resizes.
+        getWidgetHeight(widget).should("not.equal", before);
+      });
+    });
+
+    // NOT COVERED, deliberately: the Styles tab also carries an "Advanced" group holding
+    // `cssClass`. It is excluded for two reasons — it is not part of config.styles (the
+    // Inspector injects it universally, Inspector.jsx:828-834), and it renders only when
+    // the licensed `customStyling` feature is on (Inspector.jsx:170), so a test for it
+    // would pass on a licensed dev instance and fail on an unlicensed CI runner. No other
+    // component suite in the repo covers it either. Flagged for the shared-suite owner
+    // rather than silently skipped here.
+  }
+);
