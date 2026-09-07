@@ -18,6 +18,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const { moduleId } = useModuleContext();
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
+  const addNewRowColumns = useTableStore((state) => state.getTableProperties(id)?.addNewRowColumns, shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
@@ -71,14 +72,25 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const addRowTableRef = useRef();
   const rowToFocusRef = useRef(null);
 
+  // Builders choose which columns appear in the add-new-row form via the Toolbar "Add new row" config.
+  // `addNewRowColumns` (tokens = `key || name`) lists the columns to SHOW.
+  // `null` (non-array) is the default and means "show all columns"; an empty array means the builder deselected everything.
+  const selectedColumns = useMemo(
+    () => new Set(Array.isArray(addNewRowColumns) ? addNewRowColumns : []),
+    [addNewRowColumns]
+  );
+  const showAllColumns = !Array.isArray(addNewRowColumns);
+
   const columns = useMemo(
     () =>
       [
         ...generateColumnsData({
-          columnProperties: columnProperties.map((column) => ({
-            ...column,
-            isEditable: true,
-          })),
+          columnProperties: columnProperties
+            .filter((column) => showAllColumns || selectedColumns.has(column.key || column.name))
+            .map((column) => ({
+              ...column,
+              isEditable: true,
+            })),
           columnSizes: columnSizes ?? {},
           defaultColumn: { width: 150 },
           tableData: addNewRowDetailsLength > 0 ? [...addNewRowDetails.values()] : [newEmptyRow],
@@ -102,6 +114,8 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
       addNewRowDetails,
       addNewRowDetailsLength,
       moduleId,
+      selectedColumns,
+      showAllColumns,
     ]
   );
 

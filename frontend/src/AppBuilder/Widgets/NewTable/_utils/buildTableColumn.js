@@ -88,7 +88,6 @@ export const buildTableColumn = (
             indeterminate: row.getIsSomeSelected(),
             onChange: row.getToggleSelectedHandler(),
           }}
-          isCell={true}
         />
       ),
     },

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { renderElement } from '../../Utils';
+import { getExistingDefinitionProperties } from '../shared';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -15,6 +16,7 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import ToolbarSection from './Toolbar/ToolbarSection';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 import { ToolTip } from '@/_components/ToolTip';
@@ -55,6 +57,9 @@ const getColumnTypeDisplayText = (columnType) => {
   };
   return displayMap[columnType] ?? capitalize(columnType ?? '');
 };
+
+// Property keys that are deprecated — only pre-existing tables carry them (backfilled via migration).
+const DEPRECATED_PROPERTIES = ['useHideColumnSelectorButton'];
 
 // Draggable item style
 const getDraggableStyle = (isDragging, draggableStyle) => ({
@@ -392,6 +397,12 @@ export const Table = (props) => {
     [component.component.definition.properties.useDynamicColumn?.value]
   );
 
+  // When enabled (deprecated section), the Toolbar shows the old inverted "Hide column selector" tile instead of the new "Manage columns" tile.
+  const useHideColumnSelectorButton = useMemo(
+    () => resolveReferences(component.component.definition.properties.useHideColumnSelectorButton?.value) ?? false,
+    [component.component.definition.properties.useHideColumnSelectorButton?.value]
+  );
+
   const autogenerateColumns = useMemo(
     () => resolveReferences(component.component.definition.properties.autogenerateColumns?.value) ?? true,
     [component.component.definition.properties.autogenerateColumns?.value]
@@ -409,6 +420,11 @@ export const Table = (props) => {
     );
   }, [component.component.definition.properties]);
 
+  const highlightSelectedRow = useMemo(
+    () => resolveReferences(component.component.definition.properties.highlightSelectedRow?.value) ?? false,
+    [component.component.definition.properties.highlightSelectedRow?.value]
+  );
+
   // Ensure displaySearchBox is set
   if (!component.component.definition.properties.displaySearchBox) {
     paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
@@ -422,6 +438,7 @@ export const Table = (props) => {
         ? [
             'highlightSelectedRow',
             'disableRowDeselection',
+            ...(!highlightSelectedRow ? ['enableRowClickOnCheckbox'] : []),
             'showBulkSelector',
             'defaultSelectedRow',
             'selectRowOnCellEdit',
@@ -430,7 +447,7 @@ export const Table = (props) => {
       'enableExpandableRows',
       'expansionHeight',
     ],
-    [allowSelection]
+    [allowSelection, highlightSelectedRow]
   );
 
   const searchSortFilterOptions = useMemo(
@@ -458,18 +475,15 @@ export const Table = (props) => {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const additionalActions = [
-    'showAddNewRowButton',
-    'showDownloadButton',
-    'showRefreshButton',
-    'hideColumnSelectorButton',
-    'loadingState',
-    'showBulkUpdateActions',
-    'visibility',
-    'collapseWhenHidden',
-    'disabledState',
-    'dynamicHeight',
-  ];
+  const additionalActions = ['loadingState', 'visibility', 'collapseWhenHidden', 'disabledState', 'dynamicHeight'];
+
+  // Only pre-existing tables carry these keys (backfilled via migration);
+  // new tables never seed them, so the deprecated section is shown only
+  // when at least one deprecated key is present in the saved definition.
+  const presentDeprecatedProperties = useMemo(
+    () => getExistingDefinitionProperties(component, DEPRECATED_PROPERTIES),
+    [component]
+  );
 
   // Accordion items
   const accordionItems = useMemo(
@@ -736,6 +750,22 @@ export const Table = (props) => {
         title: 'Pagination',
         children: paginationOptions.map((option) => renderCustomElement(option)),
       },
+      // Toolbar section
+      {
+        id: 'toolbar',
+        title: 'Toolbar',
+        children: (
+          <ToolbarSection
+            component={component}
+            paramUpdated={paramUpdated}
+            renderCustomElement={renderCustomElement}
+            darkMode={darkMode}
+            columns={columns}
+            useDynamicColumn={useDynamicColumn}
+            useHideColumnSelectorButton={useHideColumnSelectorButton}
+          />
+        ),
+      },
       // Additional actions section
       {
         id: ADDITIONAL_ACTIONS_ACCORDION_ID,
@@ -771,6 +801,34 @@ export const Table = (props) => {
           </>
         ),
       },
+      // Deprecated properties section — shown only for pre-existing tables (those that carry a deprecated key).
+      ...(presentDeprecatedProperties.length > 0
+        ? [
+            {
+              id: 'deprecated-properties',
+              isOpen: false,
+              title: (
+                <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+                  <span>Enable deprecated properties</span>
+                  <ToolTip
+                    message={
+                      <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                        These properties are deprecated and will be removed in a future update.
+                      </div>
+                    }
+                    show={true}
+                    placement="top"
+                  >
+                    <span>
+                      <Icon name={'warning'} height={14} width={14} fill="var(--icon-danger)" />
+                    </span>
+                  </ToolTip>
+                </div>
+              ),
+              children: presentDeprecatedProperties.map((option) => renderCustomElement(option)),
+            },
+          ]
+        : []),
     ],
     [
       component,
@@ -807,6 +865,8 @@ export const Table = (props) => {
       paginationOptions,
       layoutPropertyChanged,
       additionalActions,
+      useHideColumnSelectorButton,
+      presentDeprecatedProperties,
     ]
   );
 
