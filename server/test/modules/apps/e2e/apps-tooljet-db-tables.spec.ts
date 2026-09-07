@@ -3,11 +3,14 @@
  * an app whose saved query still references a dropped table would otherwise block that
  * app's promotion permanently (Task 8 gates promotion on every queried table existing).
  *
- * drop_table's own in-use guard (findQueriesLinkedToTable) only looks at each app's LATEST
- * version, so a table can still be dropped while an OLDER version's query keeps referencing
- * it — that's the exact case this test seeds: the reference lives on a stale version, so the
- * guard lets the drop through, and findTooljetDbTables (which joins across every version of
- * the app, not just the latest) must filter the now-dead reference out itself.
+ * drop_table's own in-use guard (InternalTableRepository.findDependents) only looks at each
+ * app's current draft version (apps.current_version_id) or any version that was ever released
+ * (released_at IS NOT NULL) — not every version that ever existed. So a table can still be
+ * dropped while an OLDER, never-released, no-longer-current version's query keeps referencing
+ * it — that's the exact case this test seeds: the reference lives on a stale, unreleased,
+ * non-current version, so the guard lets the drop through, and findTooljetDbTables (which
+ * joins across every version of the app, not just draft-or-released) must filter the now-dead
+ * reference out itself.
  *
  * NOTE: requires a separate tooljetDb connection + per-workspace schema, same as
  * tooljetdb-operations.spec.ts. Skipped gracefully if unavailable.

@@ -143,9 +143,9 @@ export class InternalTableRepository extends Repository<InternalTable> {
 
   /**
    * TJDB tables holding a live Postgres foreign key into `relationId` (this table's physical,
-   * current-environment relation) - the case neither this repository's own `findDependents` nor the
-   * removed `findQueriesLinkedToTable` could see, since it lives in `pg_constraint`, not
-   * `data_queries`. A physical table is named by relation uuid, never the logical table name, so
+   * current-environment relation) - the case this repository's own `findDependents` cannot see,
+   * since it lives in `pg_constraint`, not `data_queries`. A physical table is named by relation
+   * uuid, never the logical table name, so
    * each `pg_constraint` hit is mapped back through `internal_table_relations` -> `internal_tables`
    * to a human-readable `{ id, name }`. Self-references (`conrelid = confrelid`) are excluded - a
    * table's own foreign key onto itself must never block its own drop.
