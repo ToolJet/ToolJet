@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { addSupportCSAData, selectEvent } from "Support/utils/appBuilder/events";
-import { createNewVersion } from "Support/utils/platform/exportImport";
+import { createNewVersion } from "Support/utils/exportImport";
 import {
   deleteComponentFromInspector,
   openNode,
@@ -10,7 +10,7 @@ import {
   openSubNode,
   backFromDetail,
 } from "Support/utils/appBuilder/inspector";
-import { navigateToCreateNewVersionModal } from "Support/utils/platform/version";
+import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
 
 // testIsolation:false — multiple tests share one logged-in session/app context here

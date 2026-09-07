@@ -26,7 +26,7 @@ import { groupsText } from "Texts/platform/manageGroups";
 import {
   openVersionSwitcher,
   createDraftVersion,
-} from "Support/utils/platform/version";
+} from "Support/utils/version";
 
 const createAndReleaseApp = (
     appName,

@@ -1,7 +1,7 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
-import { verifyAppDelete } from "Support/utils/platform/dashboard";
+import { verifyAppDelete } from "Support/utils/dashboard";
 import { postgreSqlText } from "Texts/marketplace/postgreSql";
 
 // Datasource CONNECTION helpers only. Query-panel / query-manager operations

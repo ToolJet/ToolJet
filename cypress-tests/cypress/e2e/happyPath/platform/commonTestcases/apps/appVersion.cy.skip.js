@@ -11,11 +11,11 @@ import {
   navigateToEditVersionModal,
   switchVersionAndVerify,
   openPreviewSettings,
-} from "Support/utils/platform/version";
+} from "Support/utils/version";
 import { appVersionSelectors } from "Selectors/platform/exportImport";
 import { editVersionSelectors } from "Selectors/platform/version";
 import { editVersionText } from "Texts/platform/version";
-import { createNewVersion } from "Support/utils/platform/exportImport";
+import { createNewVersion } from "Support/utils/exportImport";
 import { verifyModal, closeModal } from "Support/utils/common";
 import {
   verifyComponentinrightpannel,

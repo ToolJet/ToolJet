@@ -30,8 +30,6 @@
 //   toggleRowCheckbox                -                    → canvas
 //   verifySelectedRowCount           -                    → canvas
 //   sortByColumn                     -                    → canvas
-//   wireTableCSA                     csa                  → csa
-//   triggerTableCSA                  csa                  → csa
 // └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
 import { tableSelector } from "Selectors/appBuilder/components/table";
@@ -705,12 +703,6 @@ export const sortByColumn = (column) => {
 //
 // `params` is a [{ label, type?, value }] list — see setCSAParam in Support/utils/events.js
 // for the per-type rules (string values MUST be quoted expressions: {{"id"}}).
-/**
- * @tjType   csa
- * @tjBlock  csa
- * @tjUsage  wireTableCSA('Set page', [{ label: 'page', value: '2' }], 'table1')
- * @tjDom    table CSA: wires a control-component action
- */
 export const wireTableCSA = (action, params = [], name = "table1") => {
   // Trigger choice only — the CSA mechanics live in Support/utils/events.js
   // (configureCSA/setCSAParam) so any widget's spec can reuse them.
@@ -722,12 +714,6 @@ export const wireTableCSA = (action, params = [], name = "table1") => {
 };
 
 // Fire whatever CSA `wireTableCSA` armed, by hovering a data row.
-/**
- * @tjType   csa
- * @tjBlock  csa
- * @tjUsage  triggerTableCSA(0, 'table1')
- * @tjDom    table CSA: fires the wired action from a row
- */
 export const triggerTableCSA = (rowIndex = 0, name = "table1") => {
   cy.forceClickOnCanvas();
   // Synthetic mouseover, NOT realHover: the row can be covered (add-new-row panel, the

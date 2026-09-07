@@ -155,48 +155,6 @@
 | app.verifyRestrictedAccess | `verifyRestrictedAccess` | platform/apps.js | apps | `verifyRestrictedAccess()` |
 | user.onboardFromAppLink | `onboardUserFromAppLink` | platform/apps.js | onboarding | `onboardUserFromAppLink(...)` |
 | - | `resolveHost` | platform/apps.js | common | `resolveHost()` |
-| nav.profile | `navigateToProfile` | common.js | common | `navigateToProfile()` |
-| session.logout | `logout` | common.js | common | `logout()` |
-| nav.manageUsers | `navigateToManageUsers` | common.js | common | `navigateToManageUsers()` |
-| nav.manageGroups | `navigateToManageGroups` | common.js | common | `navigateToManageGroups()` |
-| nav.workspaceVariable | `navigateToWorkspaceVariable` | common.js | common | `navigateToWorkspaceVariable()` |
-| nav.manageSSO | `navigateToManageSSO` | common.js | common | `navigateToManageSSO()` |
-| - | `randomDateOrTime` | common.js | common | `randomDateOrTime('DD/MM/YYYY')` |
-| folder.create | `createFolder` | common.js | apps | `createFolder('QA folder')` |
-| folder.delete | `deleteFolder` | common.js | apps | `deleteFolder('QA folder')` |
-| - | `deleteDownloadsFolder` | common.js | common | `deleteDownloadsFolder()` |
-| app.openEditor | `navigateToAppEditor` | common.js | apps | `navigateToAppEditor('MyApp')` |
-| app.openCardMenu | `viewAppCardOptions` | common.js | apps | `viewAppCardOptions('MyApp')` |
-| folder.openCardMenu | `viewFolderCardOptions` | common.js | apps | `viewFolderCardOptions('QA folder')` |
-| modal.verify | `verifyModal` | common.js | common | `verifyModal('Create app', 'Create', inputSelector)` |
-| modal.verifyConfirmation | `verifyConfirmationModal` | common.js | common | `verifyConfirmationModal('Are you sure?')` |
-| modal.close | `closeModal` | common.js | common | `closeModal('Cancel')` |
-| modal.cancel | `cancelModal` | common.js | common | `cancelModal('Cancel')` |
-| nav.auditLogs | `navigateToAuditLogsPage` | common.js | common | `navigateToAuditLogsPage()` |
-| user.paginate | `manageUsersPagination` | common.js | access | `manageUsersPagination(userEmail)` |
-| user.search | `searchUser` | common.js | access | `searchUser(userEmail)` |
-| app.selectCardOption | `selectAppCardOption` | common.js | apps | `selectAppCardOption('MyApp', 'Rename')` |
-| nav.database | `navigateToDatabase` | common.js | common | `navigateToDatabase()` |
-| - | `randomValue` | common.js | common | `randomValue()` |
-| - | `verifyTooltip` | common.js | common | `verifyTooltip(selector, 'Copy')` |
-| inspector.pin | `pinInspector` | common.js | apps | `pinInspector()` |
-| nav.workspaceConstants | `navigateToworkspaceConstants` | common.js | workspace | `navigateToworkspaceConstants()` |
-| app.release | `releaseApp` | common.js | apps | `releaseApp()` |
-| - | `verifyTooltipDisabled` | common.js | common | `verifyTooltipDisabled(selector, 'No permission')` |
-| - | `fillInputField` | common.js | common | `fillInputField(data)` |
-| nav.settings | `navigateToSettingPage` | common.js | common | `navigateToSettingPage()` |
-| instanceSetting.updateApi | `apiUpdateInstanceSettings` | common.js | superAdmin | `apiUpdateInstanceSettings(variables)` |
-| - | `sanitize` | common.js | common | `sanitize(str)` |
-| app.changeIcon | `modifyAndVerifyAppCardIcon` | platform/dashboard.js | apps | `modifyAndVerifyAppCardIcon('MyApp')` |
-| app.verifyDeleted | `verifyAppDelete` | platform/dashboard.js | apps | `verifyAppDelete('MyApp')` |
-| app.verifyExportModal | `verifyElementsOfExportModal` | platform/exportImport.js | apps | `verifyElementsOfExportModal(...)` |
-| appVersion.create | `createNewVersion` | platform/exportImport.js | apps | `createNewVersion([], 'v1')` |
-| app.export | `clickOnExportButtonAndVerify` | platform/exportImport.js | apps | `clickOnExportButtonAndVerify('Export selected version', 'MyApp')` |
-| app.exportAllVersions | `exportAllVersionsAndVerify` | platform/exportImport.js | apps | `exportAllVersionsAndVerify(...)` |
-| app.import | `importAndVerifyApp` | platform/exportImport.js | apps | `importAndVerifyApp('cypress/fixtures/app.json', 'App imported successfully')` |
-| app.verifyImportModal | `verifyImportModalElements` | platform/exportImport.js | apps | `verifyImportModalElements('MyApp')` |
-| datasource.setupWithConstants | `setupDataSourceWithConstants` | platform/exportImport.js | workspace | `setupDataSourceWithConstants(...)` |
-| app.validateExportStructure | `validateExportedAppStructure` | platform/exportImport.js | apps | `validateExportedAppStructure(...)` |
 | - | `invalidAuthHeader` | platform/externalApi.js | externalApi | `invalidAuthHeader()` |
 | - | `emptyAuthHeader` | platform/externalApi.js | externalApi | `emptyAuthHeader()` |
 | - | `apiRequest` | platform/externalApi.js | externalApi | `apiRequest('GET', '/api/ext/users')` |
@@ -390,19 +348,6 @@
 | role.verifyPreviewAccess | `verifyPreviewAccess` | platform/userPermissions.js | access | `verifyPreviewAccess(...)` |
 | role.verifyPreviewUrlAccess | `verifyPreviewURLAccess` | platform/userPermissions.js | access | `verifyPreviewURLAccess(envNames, opts)` |
 | signup.viaPermissions | `signup` | platform/userPermissions.js | onboarding | `signup('QA User', userEmail)` |
-| appVersion.openCreateModal | `navigateToCreateNewVersionModal` | platform/version.js | apps | `navigateToCreateNewVersionModal('v1')` |
-| appVersion.openEditModal | `navigateToEditVersionModal` | platform/version.js | apps | `navigateToEditVersionModal('v1')` |
-| appVersion.verifyCreateModal | `verifyElementsOfCreateNewVersionModal` | platform/version.js | apps | `verifyElementsOfCreateNewVersionModal([])` |
-| appVersion.edit | `editVersionAndVerify` | platform/version.js | apps | `editVersionAndVerify(...)` |
-| appVersion.delete | `deleteVersionAndVerify` | platform/version.js | apps | `deleteVersionAndVerify('v2')` |
-| appVersion.verifyDuplicate | `verifyDuplicateVersion` | platform/version.js | apps | `verifyDuplicateVersion([], 'v1')` |
-| appVersion.release | `releasedVersionAndVerify` | platform/version.js | apps | `releasedVersionAndVerify('v1')` |
-| appVersion.verifyAfterPreview | `verifyVersionAfterPreview` | platform/version.js | apps | `verifyVersionAfterPreview('v1')` |
-| appVersion.switch | `switchVersionAndVerify` | platform/version.js | apps | `switchVersionAndVerify('v1', 'v2')` |
-| app.openPreviewSettings | `openPreviewSettings` | platform/version.js | apps | `openPreviewSettings()` |
-| appVersion.createDraft | `createDraftVersion` | platform/version.js | apps | `createDraftVersion('v2-draft', 'v1')` |
-| appVersion.openSwitcher | `openVersionSwitcher` | platform/version.js | apps | `openVersionSwitcher()` |
-| appVersion.openCreateDraftModal | `openCreateDraftVersionModal` | platform/version.js | apps | `openCreateDraftVersionModal()` |
 | whiteLabel.open | `openWhiteLabelingSettings` | platform/whitelabel.js | superAdmin | `openWhiteLabelingSettings()` |
 | whiteLabel.verifyPage | `verifyWhiteLabelingUI` | platform/whitelabel.js | superAdmin | `verifyWhiteLabelingUI()` |
 | whiteLabel.fillForm | `fillWhiteLabelingForm` | platform/whitelabel.js | superAdmin | `fillWhiteLabelingForm(...)` |
@@ -438,3 +383,58 @@
 | workspaceConstant.verifyInPreview | `previewAppAndVerify` | platform/workspaceConstants.js | workspace | `previewAppAndVerify(start, end, 'abc')` |
 | environment.promoteAndVerify | `promoteEnvAndVerify` | platform/workspaceConstants.js | workspace | `promoteEnvAndVerify(...)` |
 | - | `assertTooltipText` | platform/workspaceConstants.js | common | `assertTooltipText(selector, expected)` |
+| nav.profile | `navigateToProfile` | common.js | common | `navigateToProfile()` |
+| session.logout | `logout` | common.js | common | `logout()` |
+| nav.manageUsers | `navigateToManageUsers` | common.js | common | `navigateToManageUsers()` |
+| nav.manageGroups | `navigateToManageGroups` | common.js | common | `navigateToManageGroups()` |
+| nav.workspaceVariable | `navigateToWorkspaceVariable` | common.js | common | `navigateToWorkspaceVariable()` |
+| nav.manageSSO | `navigateToManageSSO` | common.js | common | `navigateToManageSSO()` |
+| - | `randomDateOrTime` | common.js | common | `randomDateOrTime('DD/MM/YYYY')` |
+| folder.create | `createFolder` | common.js | apps | `createFolder('QA folder')` |
+| folder.delete | `deleteFolder` | common.js | apps | `deleteFolder('QA folder')` |
+| - | `deleteDownloadsFolder` | common.js | common | `deleteDownloadsFolder()` |
+| app.openEditor | `navigateToAppEditor` | common.js | apps | `navigateToAppEditor('MyApp')` |
+| app.openCardMenu | `viewAppCardOptions` | common.js | apps | `viewAppCardOptions('MyApp')` |
+| folder.openCardMenu | `viewFolderCardOptions` | common.js | apps | `viewFolderCardOptions('QA folder')` |
+| modal.verify | `verifyModal` | common.js | common | `verifyModal('Create app', 'Create', inputSelector)` |
+| modal.verifyConfirmation | `verifyConfirmationModal` | common.js | common | `verifyConfirmationModal('Are you sure?')` |
+| modal.close | `closeModal` | common.js | common | `closeModal('Cancel')` |
+| modal.cancel | `cancelModal` | common.js | common | `cancelModal('Cancel')` |
+| nav.auditLogs | `navigateToAuditLogsPage` | common.js | common | `navigateToAuditLogsPage()` |
+| user.paginate | `manageUsersPagination` | common.js | access | `manageUsersPagination(userEmail)` |
+| user.search | `searchUser` | common.js | access | `searchUser(userEmail)` |
+| app.selectCardOption | `selectAppCardOption` | common.js | apps | `selectAppCardOption('MyApp', 'Rename')` |
+| nav.database | `navigateToDatabase` | common.js | common | `navigateToDatabase()` |
+| - | `randomValue` | common.js | common | `randomValue()` |
+| - | `verifyTooltip` | common.js | common | `verifyTooltip(selector, 'Copy')` |
+| inspector.pin | `pinInspector` | common.js | apps | `pinInspector()` |
+| nav.workspaceConstants | `navigateToworkspaceConstants` | common.js | workspace | `navigateToworkspaceConstants()` |
+| app.release | `releaseApp` | common.js | apps | `releaseApp()` |
+| - | `verifyTooltipDisabled` | common.js | common | `verifyTooltipDisabled(selector, 'No permission')` |
+| - | `fillInputField` | common.js | common | `fillInputField(data)` |
+| nav.settings | `navigateToSettingPage` | common.js | common | `navigateToSettingPage()` |
+| instanceSetting.updateApi | `apiUpdateInstanceSettings` | common.js | superAdmin | `apiUpdateInstanceSettings(variables)` |
+| - | `sanitize` | common.js | common | `sanitize(str)` |
+| app.changeIcon | `modifyAndVerifyAppCardIcon` | dashboard.js | apps | `modifyAndVerifyAppCardIcon('MyApp')` |
+| app.verifyDeleted | `verifyAppDelete` | dashboard.js | apps | `verifyAppDelete('MyApp')` |
+| app.verifyExportModal | `verifyElementsOfExportModal` | exportImport.js | apps | `verifyElementsOfExportModal(...)` |
+| appVersion.create | `createNewVersion` | exportImport.js | apps | `createNewVersion([], 'v1')` |
+| app.export | `clickOnExportButtonAndVerify` | exportImport.js | apps | `clickOnExportButtonAndVerify('Export selected version', 'MyApp')` |
+| app.exportAllVersions | `exportAllVersionsAndVerify` | exportImport.js | apps | `exportAllVersionsAndVerify(...)` |
+| app.import | `importAndVerifyApp` | exportImport.js | apps | `importAndVerifyApp('cypress/fixtures/app.json', 'App imported successfully')` |
+| app.verifyImportModal | `verifyImportModalElements` | exportImport.js | apps | `verifyImportModalElements('MyApp')` |
+| datasource.setupWithConstants | `setupDataSourceWithConstants` | exportImport.js | workspace | `setupDataSourceWithConstants(...)` |
+| app.validateExportStructure | `validateExportedAppStructure` | exportImport.js | apps | `validateExportedAppStructure(...)` |
+| appVersion.openCreateModal | `navigateToCreateNewVersionModal` | version.js | apps | `navigateToCreateNewVersionModal('v1')` |
+| appVersion.openEditModal | `navigateToEditVersionModal` | version.js | apps | `navigateToEditVersionModal('v1')` |
+| appVersion.verifyCreateModal | `verifyElementsOfCreateNewVersionModal` | version.js | apps | `verifyElementsOfCreateNewVersionModal([])` |
+| appVersion.edit | `editVersionAndVerify` | version.js | apps | `editVersionAndVerify(...)` |
+| appVersion.delete | `deleteVersionAndVerify` | version.js | apps | `deleteVersionAndVerify('v2')` |
+| appVersion.verifyDuplicate | `verifyDuplicateVersion` | version.js | apps | `verifyDuplicateVersion([], 'v1')` |
+| appVersion.release | `releasedVersionAndVerify` | version.js | apps | `releasedVersionAndVerify('v1')` |
+| appVersion.verifyAfterPreview | `verifyVersionAfterPreview` | version.js | apps | `verifyVersionAfterPreview('v1')` |
+| appVersion.switch | `switchVersionAndVerify` | version.js | apps | `switchVersionAndVerify('v1', 'v2')` |
+| app.openPreviewSettings | `openPreviewSettings` | version.js | apps | `openPreviewSettings()` |
+| appVersion.createDraft | `createDraftVersion` | version.js | apps | `createDraftVersion('v2-draft', 'v1')` |
+| appVersion.openSwitcher | `openVersionSwitcher` | version.js | apps | `openVersionSwitcher()` |
+| appVersion.openCreateDraftModal | `openCreateDraftVersionModal` | version.js | apps | `openCreateDraftVersionModal()` |

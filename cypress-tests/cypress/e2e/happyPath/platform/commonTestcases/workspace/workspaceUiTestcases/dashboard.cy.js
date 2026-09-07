@@ -15,7 +15,7 @@ import {
 import {
   modifyAndVerifyAppCardIcon,
   verifyAppDelete,
-} from "Support/utils/platform/dashboard";
+} from "Support/utils/dashboard";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import { commonText } from "Texts/common";

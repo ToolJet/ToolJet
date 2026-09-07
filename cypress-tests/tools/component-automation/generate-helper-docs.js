@@ -141,10 +141,6 @@ const DOMAINS = {
     "appBuilder/components/inputField.js",
     "appBuilder/components/properties/common.js",
     "appBuilder/components/properties/imageComponent.js",
-    // The barrel also defines three helpers of its own (randomNumber,
-    // pushIntoArrayOfObject, addDefaultEventHandler). They are annotated, so they
-    // belong in the index — specs import them directly from here.
-    "commonWidget.js",
     ],
   },
   platform: {
@@ -163,13 +159,10 @@ const DOMAINS = {
       "platform/apiUtils/commonApi.js",
       "platform/apiUtils/apiWSConstants.js",
       "platform/apiUtils/gitSyncApi.js",
-      // Relocated from the root of utils/ on 2026-09-06, completing the subtree split
-      // PR #17763 started for appBuilder/ and marketplace/. common.js deliberately
-      // stayed at the root: 21 of its consumers are outside platform.
+      // Relocated into platform/ on 2026-09-07: every importer of these is a
+      // platform spec, platform command or platform util, so the move stays
+      // inside the platform tree.
       "platform/apps.js",
-      "common.js",
-      "platform/dashboard.js",
-      "platform/exportImport.js",
       "platform/externalApi.js",
       "platform/license.js",
       "platform/manageGroups.js",
@@ -180,9 +173,18 @@ const DOMAINS = {
       "platform/selfHostSignUp.js",
       "platform/uiPermissions.js",
       "platform/userPermissions.js",
-      "platform/version.js",
       "platform/whitelabel.js",
       "platform/workspaceConstants.js",
+      // Deliberately still at the root of utils/ — each has a consumer OUTSIDE
+      // platform, so relocating them would force edits to other domains:
+      //   common.js       -> 11 app-builder / marketplace / workflows importers
+      //   dashboard.js    -> marketplace/datasources/dataSource.js
+      //   exportImport.js -> appbuilder/globals/inspector.cy.js
+      //   version.js      -> appbuilder/globals/inspector.cy.js
+      "common.js",
+      "dashboard.js",
+      "exportImport.js",
+      "version.js",
     ],
   },
 };

@@ -147,8 +147,6 @@
 | - | `toggleRowCheckbox` | appBuilder/components/table.js | canvas | `toggleRowCheckbox(0, 'table1')` |
 | - | `verifySelectedRowCount` | appBuilder/components/table.js | canvas | `verifySelectedRowCount(2, 'table1')` |
 | - | `sortByColumn` | appBuilder/components/table.js | canvas | `sortByColumn('name')` |
-| csa | `wireTableCSA` | appBuilder/components/table.js | csa | `wireTableCSA('Set page', [{ label: 'page', value: '2' }], 'table1')` |
-| csa | `triggerTableCSA` | appBuilder/components/table.js | csa | `triggerTableCSA(0, 'table1')` |
 | - | `selectFromDropDown` | appBuilder/components/dropdown.js | canvas | `selectFromDropDown('dropdown1', 'Option A')` |
 | - | `clearSelection` | appBuilder/components/dropdown.js | canvas | `clearSelection('dropdown1')` |
 | - | `verifySelectedOptionOnDropdown` | appBuilder/components/dropdown.js | canvas | `verifySelectedOptionOnDropdown('dropdown1', 'Option A')` |
@@ -206,6 +204,3 @@
 | - | `verifyImageBackgroundColor` | appBuilder/components/properties/imageComponent.js | properties | `verifyImageBackgroundColor(compSel, pickerSel, [{ hex: '#FF0000', expectedBg: 'rgb(255, 0, 0)' }])` |
 | - | `verifyImageFit` | appBuilder/components/properties/imageComponent.js | properties | `verifyImageFit(compSel, dropdownSel, [{ label: 'Cover', value: 'cover' }])` |
 | - | `verifyImageFitAndBorderType` | appBuilder/components/properties/imageComponent.js | properties | `verifyImageFitAndBorderType(compSel, fitSel, borderSel, fitOptions, borderOptions)` |
-| - | `randomNumber` | commonWidget.js | common | `randomNumber(1, 100)` |
-| - | `pushIntoArrayOfObject` | commonWidget.js | common | `pushIntoArrayOfObject(['Alice','Bob'], [90, 85])` |
-| - | `addDefaultEventHandler` | commonWidget.js | events | `addDefaultEventHandler('Button clicked!')` |
