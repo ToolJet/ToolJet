@@ -1,0 +1,102 @@
+{
+  "source": {
+    "name": "Tavily",
+    "kind": "tavily",
+    "type": "api",
+    "description": "AI-native search and web extraction engine optimized for LLMs",
+    "customStyles": {
+      "backgroundColor": "#1A1B26"
+    },
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "password",
+        "description": "Tavily API Key",
+        "helpText": "Enter your Tavily API Key from https://app.tavily.com"
+      },
+      "base_url": {
+        "type": "text",
+        "description": "Base URL (Optional)",
+        "helpText": "Defaults to https://api.tavily.com"
+      }
+    }
+  },
+  "defaults": {
+    "operation": {
+      "value": "search"
+    },
+    "search_depth": {
+      "value": "basic"
+    },
+    "max_results": {
+      "value": 5
+    }
+  },
+  "operations": {
+    "search": {
+      "label": "Search Web",
+      "options": {
+        "query": {
+          "type": "code",
+          "description": "Search Query",
+          "placeholder": "e.g. latest open source AI models 2026"
+        },
+        "search_depth": {
+          "type": "dropdown",
+          "description": "Search Depth",
+          "options": [
+            { "label": "Basic", "value": "basic" },
+            { "label": "Advanced", "value": "advanced" }
+          ]
+        },
+        "max_results": {
+          "type": "number",
+          "description": "Max Results",
+          "placeholder": "5"
+        },
+        "include_answer": {
+          "type": "toggle",
+          "description": "Include AI Summary Answer"
+        },
+        "include_raw_content": {
+          "type": "toggle",
+          "description": "Include Full Page Text"
+        },
+        "include_domains": {
+          "type": "code",
+          "description": "Include Domains (comma-separated)",
+          "placeholder": "github.com, techcrunch.com"
+        },
+        "exclude_domains": {
+          "type": "code",
+          "description": "Exclude Domains (comma-separated)",
+          "placeholder": "pinterest.com"
+        }
+      }
+    },
+    "qna_search": {
+      "label": "Q&A Direct Answer",
+      "options": {
+        "query": {
+          "type": "code",
+          "description": "Question",
+          "placeholder": "What is the funding amount of Medusa e-commerce?"
+        }
+      }
+    },
+    "extract": {
+      "label": "Extract URLs Content",
+      "options": {
+        "urls": {
+          "type": "code",
+          "description": "Target URLs (array or comma-separated)",
+          "placeholder": "https://example.com/blog/article1, https://example.com/blog/article2"
+        }
+      }
+    }
+  }
+}
