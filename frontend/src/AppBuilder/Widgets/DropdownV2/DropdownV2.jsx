@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import Select, { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
 
@@ -334,7 +334,19 @@ export const DropdownV2 = ({
 
   useFormClear(() => setInputValue(null));
 
-  const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
+  const [measuredTriggerWidth, setMeasuredTriggerWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      setMeasuredTriggerWidth(entry.contentRect.width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const triggerWidth = measuredTriggerWidth || ref?.current?.getBoundingClientRect?.()?.width;
 
   const menuContentWidth = useMemo(() => {
     if (menuWidthMode !== 'matchContent') return null;
@@ -426,9 +438,9 @@ export const DropdownV2 = ({
           : isDropdownDisabled || isDropdownLoading
           ? 'var(--text-disabled)'
           : 'var(--text-primary)',
-      maxWidth:
-        ref?.current?.offsetWidth -
-        (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
+      maxWidth: triggerWidth
+        ? triggerWidth - (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH)
+        : undefined,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
