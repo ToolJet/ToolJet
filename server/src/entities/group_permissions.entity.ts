@@ -67,6 +67,12 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'module_folder_delete', default: false })
   moduleFolderDelete: boolean;
 
+  @Column({ name: 'data_source_folder_create', default: false })
+  dataSourceFolderCreate: boolean;
+
+  @Column({ name: 'data_source_folder_delete', default: false })
+  dataSourceFolderDelete: boolean;
+
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 

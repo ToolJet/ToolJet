@@ -32,6 +32,8 @@ export interface UserPermissions {
   workflowFolderDelete: boolean;
   moduleFolderCreate?: boolean;
   moduleFolderDelete?: boolean;
+  dataSourceFolderCreate?: boolean;
+  dataSourceFolderDelete?: boolean;
   orgConstantCRUD: boolean;
   tjdbCRUD: boolean;
   orgVariableCRUD: boolean;

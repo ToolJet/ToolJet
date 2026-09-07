@@ -19,6 +19,7 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
+import { FolderDataSourcesUtilService } from '@modules/folder-data-sources/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
@@ -36,7 +37,8 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly dataQueriesUtilService: DataQueriesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly folderDataSourcesUtilService: FolderDataSourcesUtilService
   ) {}
 
   async getForApp(
@@ -261,8 +263,17 @@ export class DataSourcesService implements IDataSourcesService {
           );
           await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
         }
+
+        // Drop this data source's folder mapping on the branch it was removed from. Both arms above
+        // leave the data_sources row and the branch intact, so neither folder_data_sources FK
+        // cascade fires — the mapping would otherwise linger and (on the default branch, where the
+        // DSV is hard-deleted) survive a re-add. Scoped to effectiveBranchId; other branches keep
+        // their mapping. Runs in the same transaction so the removal is atomic with the DSV change.
+        await this.folderDataSourcesUtilService.removeDataSourceFromFolders(dataSourceId, effectiveBranchId, manager);
       });
     } else {
+      // Whole data source deleted (no branch context) — the data_sources row goes, so every
+      // branch's folder_data_sources row is removed by the FK cascade. No manual cleanup needed.
       await this.dataSourcesRepository.delete(dataSourceId);
     }
 

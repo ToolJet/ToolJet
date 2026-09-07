@@ -12,12 +12,17 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
+import { DATA_SOURCE_FOLDER_TYPE } from './constants';
 
-// App type → the delete-permission key and MODULES bucket that gate its folders.
-// Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
-const FOLDER_PERMISSION_BY_APP_TYPE: Partial<Record<APP_TYPES, { deleteKey: string; resourceType: MODULES }>> = {
+// folder.type → the delete-permission key and MODULES bucket that gate its folders. Keyed by the
+// raw folder `type` string (app folders use APP_TYPES values; data-source folders use
+// DATA_SOURCE_FOLDER_TYPE, which is not an app type). Add an entry here (not another ternary arm)
+// when a new folder-owning resource type is introduced. Front-end folders fall through to
+// folderDelete / MODULES.FOLDER.
+const FOLDER_PERMISSION_BY_TYPE: Partial<Record<string, { deleteKey: string; resourceType: MODULES }>> = {
   [APP_TYPES.WORKFLOW]: { deleteKey: 'workflowFolderDelete', resourceType: MODULES.WORKFLOW_FOLDER },
   [APP_TYPES.MODULE]: { deleteKey: 'moduleFolderDelete', resourceType: MODULES.MODULE_FOLDER },
+  [DATA_SOURCE_FOLDER_TYPE]: { deleteKey: 'dataSourceFolderDelete', resourceType: MODULES.DATA_SOURCE_FOLDER },
 };
 
 @Injectable()
@@ -98,6 +103,7 @@ export class FoldersService implements IFoldersService {
           { resource: MODULES.FOLDER },
           { resource: MODULES.WORKFLOW_FOLDER },
           { resource: MODULES.MODULE_FOLDER },
+          { resource: MODULES.DATA_SOURCE_FOLDER },
         ],
         organizationId: user.organizationId,
       },
@@ -112,7 +118,7 @@ export class FoldersService implements IFoldersService {
       return;
     }
 
-    const folderPermission = FOLDER_PERMISSION_BY_APP_TYPE[folder.type as APP_TYPES];
+    const folderPermission = FOLDER_PERMISSION_BY_TYPE[folder.type];
     const canDeleteFolder = folderPermission
       ? userPermissions[folderPermission.deleteKey]
       : userPermissions.folderDelete;
@@ -146,18 +152,24 @@ export class FoldersService implements IFoldersService {
       const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
         user.organizationId
       );
-      // Multi-branch: block deletion of any folder that has apps on any branch.
+      // Multi-branch: block deletion of any folder that still has content on any branch.
       // Single-branch: allow deletion only if the folder is empty (same check, same guard).
+      // Data-source folders track their content in folder_data_sources; every other folder type in
+      // folder_apps — pick the matching source of truth.
       if (isGitSyncEnabled && isMultiBranchingEnabled) {
-        const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
+        const isDataSourceFolder = folder.type === DATA_SOURCE_FOLDER_TYPE;
+        const branchNames = isDataSourceFolder
+          ? await this.foldersUtilService.findBranchNamesWithDataSources(folder.id, manager)
+          : await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
         if (branchNames.length > 0) {
           // AllExceptionsFilter collapses every error response down to { message, ... } and
           // drops any other fields on the exception body — so the branch list is JSON-encoded
           // into the message itself and parsed back out on the frontend (same pattern already
           // used for the SSO organizationId payload in handle-response.js).
-          throw new BadRequestException(
-            JSON.stringify({ message: 'Folder with apps cannot be deleted', branches: branchNames })
-          );
+          const message = isDataSourceFolder
+            ? 'Folder with data sources cannot be deleted'
+            : 'Folder with apps cannot be deleted';
+          throw new BadRequestException(JSON.stringify({ message, branches: branchNames }));
         }
       }
 
