@@ -120,6 +120,12 @@ export const createResolvedSlice = (set, get) => {
       _exposedValueBatch.flush('flushExposedValueBatch');
     },
 
+    // Discards only moduleId's own buffered entries instead of applying everything —
+    // see cancelBatch() in batchManager.ts.
+    cancelExposedValueBatch: (moduleId = 'canvas') => {
+      _exposedValueBatch.cancelBatch(moduleId);
+    },
+
     // Resolves every pending implicit dep-path recompute early — any component, any path. Never
     // touches _exposedValueBatch (the explicit bracket), so it can't affect an open ListView/Form/
     // page-switch coalescing window. Safe to call unconditionally; no-ops if nothing is pending.
@@ -129,12 +135,12 @@ export const createResolvedSlice = (set, get) => {
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
 
-    bufferExposedValueMutation: (mutation, depPaths) => {
-      _exposedValueBatch.bufferMutation(mutation, depPaths);
+    bufferExposedValueMutation: (mutation, moduleId, depPaths) => {
+      _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
     },
 
-    bufferExposedValuePostFlush: (cb, dedupeKey) => {
-      _exposedValueBatch.bufferPostFlushCallback(cb, dedupeKey);
+    bufferExposedValuePostFlush: (cb, moduleId, dedupeKey) => {
+      _exposedValueBatch.bufferPostFlushCallback(cb, moduleId, dedupeKey);
     },
 
     setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
@@ -489,7 +495,7 @@ export const createResolvedSlice = (set, get) => {
       const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
 
       if (_exposedValueBatch.isBatching()) {
-        _exposedValueBatch.bufferMutation(mutation, depPaths);
+        _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
         return;
       }
 
@@ -505,13 +511,17 @@ export const createResolvedSlice = (set, get) => {
             depPaths.push({ path: `components.${id}.${key}`, moduleId });
           }
         });
-        _exposedValueBatch.bufferMutation((state) => {
-          Object.entries(values).forEach(([key, value]) => {
-            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
-              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
-            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
-          });
-        }, depPaths);
+        _exposedValueBatch.bufferMutation(
+          (state) => {
+            Object.entries(values).forEach(([key, value]) => {
+              if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+                state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+              else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+            });
+          },
+          moduleId,
+          depPaths
+        );
         return;
       }
 

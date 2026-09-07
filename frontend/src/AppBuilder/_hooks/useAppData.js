@@ -97,7 +97,6 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
@@ -224,10 +223,11 @@ const useAppData = (
     }
   };
 
+  // Only observes pageSwitchInProgress — must not reset it. Ownership of that flag's
+  // lifecycle belongs solely to appSlice.js's switchPage/doSwitch.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
-      setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
 
@@ -271,6 +271,11 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    // Guards against a Module unmounted mid-load by rapid page switching: its stale promise
+    // would otherwise still call startExposedValueBatch() below, opening a batch nothing
+    // will ever flush (its own layout-ready cycle belongs to a fresh mount that already
+    // ran its own load-and-flush) — an orphaned +1 that leaves the shared batch stuck open.
+    let isCancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -641,6 +646,10 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        // This instance was torn down (e.g. its Module got unmounted by a rapid page
+        // switch) before its own load finished — skip opening a batch nobody will flush.
+        if (isCancelled) return;
+
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
@@ -655,6 +664,10 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
@@ -707,10 +720,10 @@ const useAppData = (
           // Apps that need data refresh on navigation should trigger queries from the
           // onPageLoad event instead of relying on runOnPageLoad.
           isPageSwitchRef.current = false;
-          handleEvent('onPageLoad', currentPageEvents, {});
+          handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
         } else {
           runOnLoadQueries(moduleId).then(() => {
-            handleEvent('onPageLoad', currentPageEvents, {});
+            handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
           });
         }
       };
@@ -784,7 +797,7 @@ const useAppData = (
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
