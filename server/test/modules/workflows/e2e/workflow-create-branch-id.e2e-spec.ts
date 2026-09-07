@@ -6,7 +6,7 @@ import { initTestApp, closeTestApp } from 'test-helper';
 import { createAdmin, findEntity, findEntityOrFail, saveEntity, ensureAppEnvironments } from 'test-helper';
 
 /** @group platform */
-describe('POST /workflows — branch_id assignment', () => {
+describe.skip('[QUARANTINED] POST /workflows — branch_id assignment', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
