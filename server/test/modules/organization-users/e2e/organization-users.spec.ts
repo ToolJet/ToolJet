@@ -669,5 +669,77 @@ describe('OrganizationUsersController', () => {
           .expect(403);
       });
     });
+
+    describe('POST /api/organization-users/upload-csv | Bulk upload users', () => {
+      it('should emit an audit log entry for a bulk-uploaded user', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent = 'first name,last name,email,user role,group\nBulk,User,bulk-csv-user@tooljet.io,End User,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceName: 'bulk-csv-user@tooljet.io',
+        });
+      });
+
+      it('should emit one audit log entry per user when uploading multiple rows', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin-multi@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent =
+          'first name,last name,email,user role,group\n' +
+          'Amara,Chen,amara-bulk@tooljet.io,End User,\n' +
+          'Diego,Silva,diego-bulk@tooljet.io,Builder,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+        expect(auditEmits).toHaveLength(2);
+
+        const resourceNames = auditEmits.map((entry) => entry.resourceName).sort();
+        expect(resourceNames).toEqual(['amara-bulk@tooljet.io', 'diego-bulk@tooljet.io']);
+
+        for (const entry of auditEmits) {
+          expect(entry).toMatchObject({
+            userId: adminUserData.user.id,
+            actionType: 'USER_INVITE',
+            resourceType: 'OrganizationUser',
+          });
+        }
+      });
+    });
   });
 });
