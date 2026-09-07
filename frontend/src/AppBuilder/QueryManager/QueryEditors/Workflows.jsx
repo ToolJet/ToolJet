@@ -17,6 +17,7 @@ import {
   DEFAULT_BRANCH_DRAFT_SENTINEL,
   WORKFLOW_CURRENT_BRANCH_SENTINEL,
   VERSION_BADGES,
+  badgeStyle,
   getIsWorkflowSynced,
   hasDefaultBranchDraft,
   isCurrentBranchRow,
@@ -66,7 +67,9 @@ export function Workflows({ options, optionsChanged, currentState }) {
         setWorkflowOptions(
           workflows.map((workflow) => ({
             value: workflow.co_relation_id,
-            name: workflow.name,
+            // Explicit `label`: _ui/Select renames any non-`value` key to `label`, last one wins,
+            // so `id` below would clobber the name and the dropdown would show the app UUID.
+            label: workflow.name,
             id: workflow.id, // real app PK — appVersionService.getAll needs this, not the co_relation_id
           }))
         );
@@ -94,7 +97,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           // sentinel, and that row is new.
           const rowEntries = scopeVersionsForPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
             value: isCurrentBranchRow(v, activeBranchId) ? WORKFLOW_CURRENT_BRANCH_SENTINEL : v.name,
-            name: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName }),
+            label: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName }),
             badge: versionBadge(v),
           }));
 
@@ -102,7 +105,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           // several default-branch drafts. Hidden on main, where Current branch already is main.
           const mainDraftEntry =
             isSynced && hasDefaultBranchDraft(all) && !isOnMain
-              ? [{ value: DEFAULT_BRANCH_DRAFT_SENTINEL, name: defaultBranchName, badge: VERSION_BADGES.DRAFT }]
+              ? [{ value: DEFAULT_BRANCH_DRAFT_SENTINEL, label: defaultBranchName, badge: VERSION_BADGES.DRAFT }]
               : [];
 
           setVersionOptions([...mainDraftEntry, ...rowEntries]);
@@ -175,6 +178,17 @@ export function Workflows({ options, optionsChanged, currentState }) {
             width="300px"
             menuPlacement="bottom"
             customClassPrefix="workflow-version-select"
+            // _ui/Select renders `option.label` alone, so the badge needs its own renderer.
+            customOption={(option) => (
+              <span className="tw-flex tw-items-center tw-gap-2">
+                {option.label}
+                {option.badge && (
+                  <span className="tj-text-xsm" style={badgeStyle(option.badge.bg, option.badge.color)}>
+                    {option.badge.text}
+                  </span>
+                )}
+              </span>
+            )}
           />
         </>
       )}

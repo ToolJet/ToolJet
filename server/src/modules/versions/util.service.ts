@@ -283,6 +283,12 @@ export class VersionUtilService implements IVersionUtilService {
         ...(parentApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
+        // A workflow's flow graph lives in `definition`, not in child entities, so
+        // setupNewVersion's clone never carries it and the continuity draft would open on a
+        // lone start node. Mirrors buildVersionFromParent.
+        ...(parentApp.type === APP_TYPES.WORKFLOW && {
+          definition: sourceVersion?.definition ?? (appVersion as any)?.definition ?? null,
+        }),
         currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
         // Inherit sync state — the just-published row was synced, so the continuity
         // draft seeded from it should stay marked synced too.

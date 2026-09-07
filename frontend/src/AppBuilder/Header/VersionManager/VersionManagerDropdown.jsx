@@ -81,7 +81,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   );
   const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
 
-  const appCoRelationId = useStore((state) => state.appStore.modules[moduleId]?.app?.co_relation_id, shallow);
+  // Same shape as appId above — the workflow editor renders outside ModuleProvider, so the
+  // module read is undefined there.
+  const appCoRelationId = useStore(
+    (state) => state.appCoRelationId ?? state.appStore.modules[moduleId]?.app?.co_relation_id,
+    shallow
+  );
 
   const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
@@ -638,6 +643,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       </Popover.Body>
     </Popover>
   );
+
+  // Feature branches have no version lifecycle. Guarded here rather than in EditorHeader so
+  // the workflow header is covered too.
+  const isOnFeatureBranch =
+    selectedVersion?.versionType === 'branch' ||
+    selectedVersion?.version_type === 'branch' ||
+    !!(currentBranch && !currentBranch.is_default && !currentBranch.isDefault);
+  if (isOnFeatureBranch) return null;
 
   return (
     <>

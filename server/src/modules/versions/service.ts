@@ -140,6 +140,21 @@ export class VersionService implements IVersionService {
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
+    // The fetch above is already branch-scoped, so skipping the filter below is not enough to
+    // surface default-branch rows — fetch them explicitly. Appended, so `result[0]` stays the
+    // current editing version. Modules already span branches via listModuleVersions.
+    if (
+      includeDefaultBranchVersions &&
+      app.type !== APP_TYPES.MODULE &&
+      effectiveBranchId &&
+      defaultBranchId &&
+      effectiveBranchId !== defaultBranchId
+    ) {
+      const defaultBranchRows = await this.versionRepository.getVersionsInApp(app.id, defaultBranchId);
+      const seen = new Set(result.map((v) => v.id));
+      result = [...result, ...defaultBranchRows.filter((v) => !seen.has(v.id))];
+    }
+
     // On non-default branches, only show the branch's own version(s).
     // Saved versions (VERSION-type) are only relevant on the default branch — but
     // NOT for modules: listModuleVersions intentionally returns saved versions on
