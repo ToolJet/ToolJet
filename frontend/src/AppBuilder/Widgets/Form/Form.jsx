@@ -3,7 +3,7 @@ import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { generateUIComponents, getBodyHeight } from './FormUtils';
+import { generateUIComponents, getBodyHeight, resolveFormDataExposedVarValue } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -202,6 +202,7 @@ const FormComponent = (props) => {
         ...(exposed || {}),
         name: componentDef?.name,
         formKey: componentDef?.formKey,
+        type: componentDef?.component,
       };
     });
     return result;
@@ -344,21 +345,12 @@ const FormComponent = (props) => {
         const childData = effectiveChildrenData[childId];
         const componentName = childData?.name;
         if (componentName) {
-          const componentValue = (() => {
-            if (!childData) return null;
-
-            if (childData.hasOwnProperty('value')) return childData.value;
-            if (childData.hasOwnProperty('values')) return childData.values;
-            if (childData.hasOwnProperty('file')) return childData.file;
-            if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
-
-            return null;
-          })();
+          const componentValue = resolveFormDataExposedVarValue(childData);
 
           if (componentValue !== null) {
             formData[componentName] = componentValue;
           }
-          formattedChildData[componentName] = { ...omit(childData, 'name'), id: childId };
+          formattedChildData[componentName] = { ...omit(childData, ['name', 'type']), id: childId };
           childValidation = childValidation && (childData?.isValid ?? true);
         }
       });
