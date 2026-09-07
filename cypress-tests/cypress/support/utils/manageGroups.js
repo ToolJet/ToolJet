@@ -1,3 +1,22 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// manageGroups.js
+//   apiCreateGroup                   group.createApi      → access
+//   apiDeleteGroup                   group.deleteApi      → access
+//   deleteGroup                      group.delete         → access
+//   OpenGroupCardOption              group.openCardMenu   → access
+//   duplicateMultipleGroups          group.duplicateMany  → access
+//   verifyGroupCardOptions           group.verifyCardMenu → access
+//   groupPermission                  groupPermission.set  → access
+//   updateRole                       userRole.update      → access
+//   createGroupsAndAddUserInGroup    group.createWithUser → access
+//   addUserInGroup                   groupUser.add        → access
+//   inviteUserBasedOnRole            user.inviteWithRole  → access
+//   setupWorkspaceAndInviteUser      workspace.setupWithUser → access
+//   verifyUserPrivileges             userRole.verifyPrivileges → access
+//   setupAndUpdateRole               userRole.setupAndUpdate → access
+//   verifyUserRole                   userRole.verify      → access
+//   apiAddUserToGroup                groupUser.addApi     → access
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { usersSelector } from "Selectors/platform/manageUsers";
@@ -11,6 +30,12 @@ import {
 import { groupsText } from "Texts/platform/manageGroups";
 import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
+/**
+* @tjType   group.createApi
+* @tjBlock  access
+* @tjUsage  apiCreateGroup('QA Team')
+* @tjDom    none - POST group
+*/
 export const apiCreateGroup = (groupName, cachedHeaders = false) => {
   return cy.getAuthHeaders(cachedHeaders).then((headers) => {
     return cy
@@ -29,6 +54,12 @@ export const apiCreateGroup = (groupName, cachedHeaders = false) => {
   });
 };
 
+/**
+* @tjType   group.deleteApi
+* @tjBlock  access
+* @tjUsage  apiDeleteGroup('QA Team')
+* @tjDom    none - DELETE group
+*/
 export const apiDeleteGroup = (groupName, cachedHeaders = false) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
     cy.getAuthHeaders(cachedHeaders).then((headers) => {
@@ -43,6 +74,12 @@ export const apiDeleteGroup = (groupName, cachedHeaders = false) => {
   });
 };
 
+/**
+* @tjType   group.delete
+* @tjBlock  access
+* @tjUsage  deleteGroup('QA Team', workspaceId)
+* @tjDom    groups page -> delete
+*/
 export const deleteGroup = (groupName, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -50,6 +87,12 @@ export const deleteGroup = (groupName, workspaceId) => {
   });
 };
 
+/**
+* @tjType   group.openCardMenu
+* @tjBlock  access
+* @tjUsage  OpenGroupCardOption('QA Team')
+* @tjDom    group card -> kebab menu
+*/
 export const OpenGroupCardOption = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName))
     .trigger("mouseenter")
@@ -65,6 +108,12 @@ export const OpenGroupCardOption = (groupName) => {
     });
 };
 
+/**
+* @tjType   group.duplicateMany
+* @tjBlock  access
+* @tjUsage  duplicateMultipleGroups(['QA Team'])
+* @tjDom    duplicates several groups in sequence. [UNREFERENCED 2026-09-06]
+*/
 export const duplicateMultipleGroups = (groupNames) => {
   groupNames.forEach((groupName) => {
     OpenGroupCardOption(groupName);
@@ -74,6 +123,12 @@ export const duplicateMultipleGroups = (groupNames) => {
   });
 };
 
+/**
+* @tjType   group.verifyCardMenu
+* @tjBlock  access
+* @tjUsage  verifyGroupCardOptions('QA Team')
+* @tjDom    group card menu options. [UNREFERENCED 2026-09-06]
+*/
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   OpenGroupCardOption(groupName);
@@ -87,6 +142,12 @@ export const verifyGroupCardOptions = (groupName) => {
   );
 };
 
+/**
+* @tjType   groupPermission.set
+* @tjBlock  access
+* @tjUsage  groupPermission(...)
+* @tjDom    group -> permissions tab -> checkboxes
+*/
 export const groupPermission = (
   fieldsToCheckOrUncheck,
   groupName = "Admin",
@@ -110,6 +171,12 @@ export const groupPermission = (
   });
 };
 
+/**
+* @tjType   userRole.update
+* @tjBlock  access
+* @tjUsage  updateRole(user, 'builder', userEmail)
+* @tjDom    manage users -> change role -> confirm
+*/
 export const updateRole = (user, role, email, message = null) => {
   cy.get(groupsSelector.groupLink(user)).click();
   cy.get(groupsSelector.usersLink).click();
@@ -135,6 +202,12 @@ export const updateRole = (user, role, email, message = null) => {
   cy.get(`[data-cy="${email}-user-row"]`).should("exist");
 };
 
+/**
+* @tjType   group.createWithUser
+* @tjBlock  access
+* @tjUsage  createGroupsAndAddUserInGroup('QA Team', userEmail)
+* @tjDom    creates a group then adds a user
+*/
 export const createGroupsAndAddUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.createNewGroupButton).click();
   cy.clearAndType(groupsSelector.groupNameInput, groupName);
@@ -146,6 +219,12 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
   addUserInGroup(groupName, email);
 };
 
+/**
+* @tjType   groupUser.add
+* @tjBlock  access
+* @tjUsage  addUserInGroup('QA Team', userEmail)
+* @tjDom    group -> users tab -> add
+*/
 export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
@@ -158,6 +237,12 @@ export const addUserInGroup = (groupName, email) => {
   );
 };
 
+/**
+* @tjType   user.inviteWithRole
+* @tjBlock  access
+* @tjUsage  inviteUserBasedOnRole('QA', userEmail, 'end-user')
+* @tjDom    invite modal with a role preset
+*/
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
 
@@ -173,6 +258,12 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   cy.get(commonSelectors.dashboardIcon).click();
 };
 
+/**
+* @tjType   workspace.setupWithUser
+* @tjBlock  access
+* @tjUsage  setupWorkspaceAndInviteUser(...)
+* @tjDom    creates a workspace then invites a user
+*/
 export const setupWorkspaceAndInviteUser = (
   workspaceName,
   workspaceSlug,
@@ -192,6 +283,12 @@ export const setupWorkspaceAndInviteUser = (
   cy.wait(2000);
 };
 
+/**
+* @tjType   userRole.verifyPrivileges
+* @tjBlock  access
+* @tjUsage  verifyUserPrivileges(...)
+* @tjDom    asserts what a role can and cannot do
+*/
 export const verifyUserPrivileges = (
   expectedButtonState,
   userRole = "End-user",
@@ -210,6 +307,12 @@ export const verifyUserPrivileges = (
   }
 };
 
+/**
+* @tjType   userRole.setupAndUpdate
+* @tjBlock  access
+* @tjUsage  setupAndUpdateRole('end-user', 'builder', userEmail)
+* @tjDom    creates a user at one role then promotes
+*/
 export const setupAndUpdateRole = (currentRole, endRole, email) => {
   navigateToManageGroups();
   updateRole(currentRole, endRole, email);
@@ -217,6 +320,12 @@ export const setupAndUpdateRole = (currentRole, endRole, email) => {
   cy.apiLogout();
 };
 
+/**
+* @tjType   userRole.verify
+* @tjBlock  access
+* @tjUsage  verifyUserRole(userIdAlias, 'builder', ['QA Team'])
+* @tjDom    asserts role + group membership
+*/
 export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
   cy.get(userIdAlias).then((userId) => {
     getUser(userId).then((response) => {
@@ -230,6 +339,12 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
   });
 };
 
+/**
+* @tjType   groupUser.addApi
+* @tjBlock  access
+* @tjUsage  apiAddUserToGroup(groupId, userEmail)
+* @tjDom    none - POST group membership
+*/
 export const apiAddUserToGroup = (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.apiGetUserDetails(email).then((response) => {

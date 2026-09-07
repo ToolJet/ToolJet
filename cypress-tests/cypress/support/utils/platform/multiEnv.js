@@ -1,3 +1,27 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// multiEnv.js
+//   promoteApp                       appVersion.promote   → workspace
+//   releaseApp                       appVersion.release   → workspace
+//   launchApp                        app.launch           → apps
+//   createVersionFromDraft           appVersion.createFromDraft → workspace
+//   promoteEnv                       environment.promote  → workspace
+//   appPromote                       appVersion.promoteTo → workspace
+//   createNewVersion                 appVersion.create    → workspace
+//   selectVersion                    appVersion.select    → workspace
+//   selectEnv                        environment.select   → workspace
+//   setupPostgreSQLDataSource        datasource.setupPostgres → workspace
+//   createAppWithComponents          app.createWithComponents → apps
+//   verifyEnvironmentData            environment.verifyData → workspace
+//   selectEnvironment                environment.selectByName → workspace
+//   releaseAndVisitApp               app.releaseAndVisit  → apps
+//   verifyQueryEditorDisabled        environment.verifyQueryEditorDisabled → workspace
+//   verifyGlobalSettingsDisabled     environment.verifyGlobalSettingsDisabled → workspace
+//   verifyInspectorMenuHasNoDeleteOption environment.verifyInspectorNoDelete → workspace
+//   verifyComponentsManagerDisabled  environment.verifyComponentsManagerDisabled → workspace
+//   verifyPageSettingsDisabled       environment.verifyPageSettingsDisabled → workspace
+//   verifyComponentInspectorDisabled environment.verifyComponentInspectorDisabled → workspace
+//   setupWorkspaceConstant           workspaceConstant.setup → workspace
+// └──────────────────────────────────────────────────────────────────┘
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
@@ -5,6 +29,12 @@ import { appVersionSelectors } from "Selectors/platform/exportImport";
 import { appEditorSelector } from "Selectors/platform/multiEnv";
 import { appVersionText } from "Texts/platform/exportImport";
 
+/**
+* @tjType   appVersion.promote
+* @tjBlock  workspace
+* @tjUsage  promoteApp()
+* @tjDom    editor header -> promote
+*/
 export const promoteApp = () => {
   cy.get(commonEeSelectors.promoteButton).click();
   cy.get(commonEeSelectors.promoteButton).eq(1).click();
@@ -12,6 +42,12 @@ export const promoteApp = () => {
   cy.wait(3000);
 };
 
+/**
+* @tjType   appVersion.release
+* @tjBlock  workspace
+* @tjUsage  releaseApp()
+* @tjDom    editor header -> release
+*/
 export const releaseApp = () => {
   cy.get(multiEnvSelector.environmentsTag("production")).click();
 
@@ -21,6 +57,12 @@ export const releaseApp = () => {
   cy.wait(500);
 };
 
+/**
+* @tjType   app.launch
+* @tjBlock  apps
+* @tjUsage  launchApp()
+* @tjDom    editor header -> launch
+*/
 export const launchApp = () => {
   cy.url().then((url) => {
     const parts = url.split("/");
@@ -30,6 +72,12 @@ export const launchApp = () => {
   });
 };
 
+/**
+* @tjType   appVersion.createFromDraft
+* @tjBlock  workspace
+* @tjUsage  createVersionFromDraft('v2')
+* @tjDom    version switcher -> create from draft
+*/
 export const createVersionFromDraft = (version) => {
   cy.get(multiEnvSelector.environmentsTag("development")).click();
   cy.get(versionModalSelector.saveVersionButton(version)).click();
@@ -40,6 +88,12 @@ export const createVersionFromDraft = (version) => {
   );
 
 };
+/**
+* @tjType   environment.promote
+* @tjBlock  workspace
+* @tjUsage  promoteEnv('development')
+* @tjDom    promote modal -> confirm
+*/
 export const promoteEnv = (fromEnv) => {
   cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
   cy.waitForElement(commonEeSelectors.promoteVersionButton);
@@ -48,6 +102,12 @@ export const promoteEnv = (fromEnv) => {
   cy.reload();
 };
 
+/**
+* @tjType   appVersion.promoteTo
+* @tjBlock  workspace
+* @tjUsage  appPromote('development', 'staging')
+* @tjDom    promotes an app between two environments
+*/
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
     cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
@@ -90,6 +150,12 @@ export const appPromote = (fromEnv, toEnv) => {
   transition();
 };
 
+/**
+* @tjType   appVersion.create
+* @tjBlock  workspace
+* @tjUsage  createNewVersion('v2', [], 'v1')
+* @tjDom    version switcher -> create version
+*/
 export const createNewVersion = (value, newVersion = [], version) => {
   cy.get('[data-cy="list-current-env-name"]').click();
   cy.get(appEditorSelector.editor.pages.envNameList).eq(0).click();
@@ -109,6 +175,12 @@ export const createNewVersion = (value, newVersion = [], version) => {
   );
 };
 
+/**
+* @tjType   appVersion.select
+* @tjBlock  workspace
+* @tjUsage  selectVersion('v2')
+* @tjDom    version switcher -> pick a version
+*/
 export const selectVersion = (value, newVersion = []) => {
   cy.get(appVersionSelectors.currentVersionField(value)).click();
   cy.get(".react-select__menu-list .app-version-name")
@@ -117,6 +189,12 @@ export const selectVersion = (value, newVersion = []) => {
   cy.waitForAppLoad();
 };
 
+/**
+* @tjType   environment.select
+* @tjBlock  workspace
+* @tjUsage  selectEnv('production')
+* @tjDom    environment dropdown
+*/
 export const selectEnv = (envName) => {
   const envIndex = {
     development: 0,
@@ -140,6 +218,12 @@ export const selectEnv = (envName) => {
   }
 };
 
+/**
+* @tjType   datasource.setupPostgres
+* @tjBlock  workspace
+* @tjUsage  setupPostgreSQLDataSource(...)
+* @tjDom    datasource form -> save (per environment)
+*/
 export const setupPostgreSQLDataSource = (
   dsName,
   secretConstantName,
@@ -175,6 +259,12 @@ export const setupPostgreSQLDataSource = (
   );
 };
 
+/**
+* @tjType   app.createWithComponents
+* @tjBlock  apps
+* @tjUsage  createAppWithComponents(...)
+* @tjDom    creates an app and drops components onto the canvas
+*/
 export const createAppWithComponents = (
   appName,
   dsName,
@@ -213,6 +303,12 @@ export const createAppWithComponents = (
   });
 };
 
+/**
+* @tjType   environment.verifyData
+* @tjBlock  workspace
+* @tjUsage  verifyEnvironmentData(dbValue, queryValue)
+* @tjDom    asserts env-scoped values resolve correctly
+*/
 export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
   cy.get(commonWidgetSelector.draggableWidget("constant_data"))
     .should("be.visible")
@@ -223,6 +319,12 @@ export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
   );
 };
 
+/**
+* @tjType   environment.selectByName
+* @tjBlock  workspace
+* @tjUsage  selectEnvironment('staging')
+* @tjDom    environment picker
+*/
 export const selectEnvironment = (envName) => {
   cy.get(multiEnvSelector.previewSettings).click({ timeout: 10000 });
   cy.forceClickOnCanvas();
@@ -235,6 +337,12 @@ export const selectEnvironment = (envName) => {
     .click({ timeout: 10000 });
 };
 
+/**
+* @tjType   app.releaseAndVisit
+* @tjBlock  apps
+* @tjUsage  releaseAndVisitApp('my-app')
+* @tjDom    releases then opens the public slug
+*/
 export const releaseAndVisitApp = (appSlug) => {
   cy.get(multiEnvSelector.environmentsTag("production")).click();
   cy.get(commonSelectors.releaseButton).click();
@@ -255,6 +363,12 @@ export const releaseAndVisitApp = (appSlug) => {
   });
 };
 
+/**
+* @tjType   environment.verifyQueryEditorDisabled
+* @tjBlock  workspace
+* @tjUsage  verifyQueryEditorDisabled()
+* @tjDom    query editor read-only in a promoted env
+*/
 export const verifyQueryEditorDisabled = () => {
   cy.get(appEditorSelector.editor.queryDetailsContainer).should(
     "have.class",
@@ -262,6 +376,12 @@ export const verifyQueryEditorDisabled = () => {
   );
 };
 
+/**
+* @tjType   environment.verifyGlobalSettingsDisabled
+* @tjBlock  workspace
+* @tjUsage  verifyGlobalSettingsDisabled()
+* @tjDom    global settings read-only
+*/
 export const verifyGlobalSettingsDisabled = () => {
   cy.get(versionModalSelector.versionLockInfoText, { timeout: 10000 }).verifyVisibleElement(
     "have.text",
@@ -277,6 +397,12 @@ export const verifyGlobalSettingsDisabled = () => {
   cy.get(appEditorSelector.settings.appSlugInput).should("not.be.disabled");
 };
 
+/**
+* @tjType   environment.verifyInspectorNoDelete
+* @tjBlock  workspace
+* @tjUsage  verifyInspectorMenuHasNoDeleteOption()
+* @tjDom    inspector menu lacks delete
+*/
 export const verifyInspectorMenuHasNoDeleteOption = () => {
   cy.get(appEditorSelector.editor.inspector.buttonAria).click({
     timeout: 1000,
@@ -298,11 +424,23 @@ export const verifyInspectorMenuHasNoDeleteOption = () => {
   cy.forceClickOnCanvas();
 };
 
+/**
+* @tjType   environment.verifyComponentsManagerDisabled
+* @tjBlock  workspace
+* @tjUsage  verifyComponentsManagerDisabled()
+* @tjDom    component manager read-only
+*/
 export const verifyComponentsManagerDisabled = () => {
   //cy.get(".widgets-list").should("have.css", "pointer-events", "none");
   cy.get(appEditorSelector.editor.components.componentsPlusButton).click();
 };
 
+/**
+* @tjType   environment.verifyPageSettingsDisabled
+* @tjBlock  workspace
+* @tjUsage  verifyPageSettingsDisabled()
+* @tjDom    page settings read-only
+*/
 export const verifyPageSettingsDisabled = () => {
   cy.get(appEditorSelector.editor.pages.pagesTabButton).click();
   cy.get(versionModalSelector.versionLockInfoText).verifyVisibleElement(
@@ -315,6 +453,12 @@ export const verifyPageSettingsDisabled = () => {
   cy.forceClickOnCanvas();
 };
 
+/**
+* @tjType   environment.verifyComponentInspectorDisabled
+* @tjBlock  workspace
+* @tjUsage  verifyComponentInspectorDisabled()
+* @tjDom    component inspector read-only
+*/
 export const verifyComponentInspectorDisabled = () => {
   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
   cy.wait(500);
@@ -327,6 +471,12 @@ export const verifyComponentInspectorDisabled = () => {
   cy.forceClickOnCanvas();
 };
 
+/**
+* @tjType   workspaceConstant.setup
+* @tjBlock  workspace
+* @tjUsage  setupWorkspaceConstant(...)
+* @tjDom    creates a constant scoped to an environment
+*/
 export const setupWorkspaceConstant = (
   constantName,
   values,

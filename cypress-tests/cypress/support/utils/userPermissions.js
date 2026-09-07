@@ -1,3 +1,18 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// userPermissions.js
+//   constantsOperations              -                    → access
+//   verifyPermissions                role.verifyPermissions → access
+//   getGroupPermissionInput          groupPermission.getInput → access
+//   verifyBuilderPermissions         role.verifyBuilderPermissions → access
+//   verifyBasicPermissions           role.verifyBasicPermissions → access
+//   verifySettingsAccess             role.verifySettingsAccess → access
+//   verifyEnvironmentTagsInGranularUI granularPermission.verifyEnvTagsUi → access
+//   verifyEnvironmentAccess          granularPermission.verifyEnvAccess → access
+//   verifyAppBuilderAccess           role.verifyAppBuilderAccess → access
+//   verifyPreviewAccess              role.verifyPreviewAccess → access
+//   verifyPreviewURLAccess           role.verifyPreviewUrlAccess → access
+//   signup                           signup.viaPermissions → onboarding
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
@@ -8,6 +23,12 @@ import { multiEnvSelector } from "Constants/selectors/platform/eeCommon";
 import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
 
+/**
+* @tjType   -
+* @tjBlock  access
+* @tjUsage  constantsOperations   // permission fixture data
+* @tjDom    none - data table. [UNREFERENCED 2026-09-06]
+*/
 export const constantsOperations = {
   createConstant: (name, value) => {
     cy.get(commonSelectors.workspaceConstantsIcon).click();
@@ -21,6 +42,12 @@ export const constantsOperations = {
 };
 
 // Permission verification helpers
+/**
+* @tjType   role.verifyPermissions
+* @tjBlock  access
+* @tjUsage  verifyPermissions   // permission fixture data
+* @tjDom    none - data table. [UNREFERENCED 2026-09-06]
+*/
 export const verifyPermissions = {
   checkAppPermissions: (shouldExist = true) => {
     const assertion = shouldExist ? "exist" : "not.exist";
@@ -45,6 +72,12 @@ export const verifyPermissions = {
   },
 };
 
+/**
+* @tjType   groupPermission.getInput
+* @tjBlock  access
+* @tjUsage  getGroupPermissionInput(true, flag)
+* @tjDom    none - builds a permission payload
+*/
 export const getGroupPermissionInput = (isEnterprise, flag) => {
   return isEnterprise
     ? {
@@ -67,6 +100,12 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
     };
 };
 
+/**
+* @tjType   role.verifyBuilderPermissions
+* @tjBlock  access
+* @tjUsage  verifyBuilderPermissions(...)
+* @tjDom    builder capability assertions
+*/
 export const verifyBuilderPermissions = (
   appName,
   folderName,
@@ -108,6 +147,12 @@ export const verifyBuilderPermissions = (
   cy.get(commonSelectors.manageSSOOption).should("not.exist");
 };
 
+/**
+* @tjType   role.verifyBasicPermissions
+* @tjBlock  access
+* @tjUsage  verifyBasicPermissions(true)
+* @tjDom    baseline capability assertions
+*/
 export const verifyBasicPermissions = (canCreate = true) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(
     canCreate ? "be.enabled" : "be.disabled"
@@ -127,6 +172,12 @@ export const verifyBasicPermissions = (canCreate = true) => {
   });
 };
 
+/**
+* @tjType   role.verifySettingsAccess
+* @tjBlock  access
+* @tjUsage  verifySettingsAccess(true)
+* @tjDom    workspace settings visibility per role
+*/
 export const verifySettingsAccess = (shouldExist = true) => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).should(
@@ -134,6 +185,12 @@ export const verifySettingsAccess = (shouldExist = true) => {
   );
 };
 
+/**
+* @tjType   granularPermission.verifyEnvTagsUi
+* @tjBlock  access
+* @tjUsage  verifyEnvironmentTagsInGranularUI('QA Team', tags)
+* @tjDom    env tags on a granular permission row
+*/
 export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) => {
   navigateToManageGroups();
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -150,6 +207,12 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
 };
 
 
+/**
+* @tjType   granularPermission.verifyEnvAccess
+* @tjBlock  access
+* @tjUsage  verifyEnvironmentAccess(environments, options)
+* @tjDom    per-environment access for a role
+*/
 export const verifyEnvironmentAccess = (environments, options = {}) => {
   const defaults = {
     workspaceName: "my-workspace",
@@ -188,6 +251,12 @@ const assertRestrictedTooltip = (selector, env) => {
 };
 
 
+/**
+* @tjType   role.verifyAppBuilderAccess
+* @tjBlock  access
+* @tjUsage  verifyAppBuilderAccess(envNames, opts)
+* @tjDom    editor reachable/blocked per environment
+*/
 export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId }) => {
 
   if (!canEdit) {
@@ -217,6 +286,12 @@ const assertEnvRestrictedTooltip = (envButton, env) => {
   cy.get("div.tooltip-inner").should("not.exist");
 };
 
+/**
+* @tjType   role.verifyPreviewAccess
+* @tjBlock  access
+* @tjUsage  verifyPreviewAccess(...)
+* @tjDom    preview reachable/blocked per environment
+*/
 export const verifyPreviewAccess = (
   envNames,
   { appId, componentName, canEdit, appName, version, canAllView, allowedEnvironment }
@@ -265,6 +340,12 @@ export const verifyPreviewAccess = (
   });
 };
 
+/**
+* @tjType   role.verifyPreviewUrlAccess
+* @tjBlock  access
+* @tjUsage  verifyPreviewURLAccess(envNames, opts)
+* @tjDom    direct preview URL per environment
+*/
 export const verifyPreviewURLAccess = (envNames, { appId, componentName, version }) => {
   envNames.forEach((envName) => {
     const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId}/home?env=${envName.name}&version=${version}`;
@@ -287,6 +368,12 @@ export const verifyPreviewURLAccess = (envNames, { appId, componentName, version
 
 };
 
+/**
+* @tjType   signup.viaPermissions
+* @tjBlock  onboarding
+* @tjUsage  signup('QA User', userEmail)
+* @tjDom    signup used as permission-test setup
+*/
 export const signup = (name, email) => {
   cy.get(commonSelectors.createAnAccountLink, { timout: 10000 }).click();
   cy.wait(2000);

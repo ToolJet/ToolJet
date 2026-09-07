@@ -1,3 +1,14 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// apps.js
+//   verifySlugValidations            appSlug.verifyValidations → apps
+//   verifySuccessfulSlugUpdate       appSlug.verifyUpdate → apps
+//   verifyURLs                       appSlug.verifyUrls   → apps
+//   setUpSlug                        appSlug.set          → apps
+//   setupAppWithSlug                 app.createWithSlug   → apps
+//   verifyRestrictedAccess           app.verifyRestrictedAccess → apps
+//   onboardUserFromAppLink           user.onboardFromAppLink → onboarding
+//   resolveHost                      -                    → common
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
@@ -8,6 +19,12 @@ const slugValidations = [
   { input: "T", error: "Only lowercase letters are accepted." },
 ];
 
+/**
+* @tjType   appSlug.verifyValidations
+* @tjBlock  apps
+* @tjUsage  verifySlugValidations(inputSelector)
+* @tjDom    slug field inline validation messages
+*/
 export const verifySlugValidations = (inputSelector) => {
   slugValidations.forEach(({ input, error }) => {
     cy.get(inputSelector).clear();
@@ -20,6 +37,12 @@ export const verifySlugValidations = (inputSelector) => {
   });
 };
 
+/**
+* @tjType   appSlug.verifyUpdate
+* @tjBlock  apps
+* @tjUsage  verifySuccessfulSlugUpdate(workspaceId, 'my-app')
+* @tjDom    success toast + resolved URL
+*/
 export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
   const host = resolveHost();
   cy.get('[data-cy="app-slug-accepted-label"]').verifyVisibleElement(
@@ -39,6 +62,12 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
   );
 };
 
+/**
+* @tjType   appSlug.verifyUrls
+* @tjBlock  apps
+* @tjUsage  verifyURLs(workspaceId, 'my-app', 'home')
+* @tjDom    editor / preview / released URL forms
+*/
 export const verifyURLs = (workspaceId, slug, page) => {
   const baseUrl = Cypress.config("baseUrl");
 
@@ -67,6 +96,12 @@ export const verifyURLs = (workspaceId, slug, page) => {
   cy.url().should("eq", `${baseUrl}/applications/${slug}`);
 };
 
+/**
+* @tjType   appSlug.set
+* @tjBlock  apps
+* @tjUsage  setUpSlug('my-app')
+* @tjDom    app settings -> slug field -> save
+*/
 export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.shareAppButton).click();
   cy.clearAndType(commonWidgetSelector.appNameSlugInput, slug);
@@ -76,6 +111,12 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
+/**
+* @tjType   app.createWithSlug
+* @tjBlock  apps
+* @tjUsage  setupAppWithSlug(appName, slug)
+* @tjDom    creates an app then assigns a slug
+*/
 export const setupAppWithSlug = (
   appName,
   slug,
@@ -109,6 +150,12 @@ export const setupAppWithSlug = (
   cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
+/**
+* @tjType   app.verifyRestrictedAccess
+* @tjBlock  apps
+* @tjUsage  verifyRestrictedAccess()
+* @tjDom    restricted / no-permission page
+*/
 export const verifyRestrictedAccess = () => {
   cy.get('[data-cy="modal-header"]').should("have.text", "Restricted access");
   cy.get('[data-cy="modal-description"]')
@@ -125,6 +172,12 @@ export const verifyRestrictedAccess = () => {
   );
 };
 
+/**
+* @tjType   user.onboardFromAppLink
+* @tjBlock  onboarding
+* @tjUsage  onboardUserFromAppLink(...)
+* @tjDom    signup reached from a shared app link. [UNREFERENCED 2026-09-06]
+*/
 export const onboardUserFromAppLink = (
   email,
   slug,
@@ -166,6 +219,12 @@ export const onboardUserFromAppLink = (
   });
 };
 
+/**
+* @tjType   -
+* @tjBlock  common
+* @tjUsage  resolveHost()
+* @tjDom    none - returns the configured host URL
+*/
 export const resolveHost = () => {
   // When running behind a proxy (nginx), use the actual server host
   // Otherwise, use the baseUrl directly

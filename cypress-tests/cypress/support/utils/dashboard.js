@@ -1,3 +1,8 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// dashboard.js
+//   modifyAndVerifyAppCardIcon       app.changeIcon       → apps
+//   verifyAppDelete                  app.verifyDeleted    → apps
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import {
@@ -9,6 +14,12 @@ import {
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/platform/dashboard";
 
+/**
+* @tjType   app.changeIcon
+* @tjBlock  apps
+* @tjUsage  modifyAndVerifyAppCardIcon('MyApp')
+* @tjDom    app card menu -> change icon -> assert
+*/
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {
     var keys = Object.keys(obj);
@@ -52,6 +63,12 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
   cy.get(dashboardText.modalComponent).should("not.exist");
 };
 
+/**
+* @tjType   app.verifyDeleted
+* @tjBlock  apps
+* @tjUsage  verifyAppDelete('MyApp')
+* @tjDom    asserts the app card is gone
+*/
 export const verifyAppDelete = (appName) => {
   cy.get("body").should("exist").and("be.visible");
   cy.get('[data-cy="dashboard-section-header"]').should("be.visible");
