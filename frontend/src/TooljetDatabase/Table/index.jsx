@@ -1263,32 +1263,45 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
-                        <TablePopover
-                          onEdit={() => {
-                            setSelectedColumn(column);
-                            setIsEditColumnDrawerOpen(true);
-                            closeMenu();
-                          }}
-                          onDelete={() => handleDelete(column.Header)}
-                          disabled={!canEditSchema}
-                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                          className="column-popover-parent"
-                          darkMode={darkMode}
-                          showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
-                        >
-                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                            <Menu
-                              width="20"
-                              height="20"
-                              className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(index, e)}
-                            />
-                          </div>
-                        </TablePopover>
+                        {(() => {
+                          const columnPopover = (
+                            <TablePopover
+                              onEdit={() => {
+                                setSelectedColumn(column);
+                                setIsEditColumnDrawerOpen(true);
+                                closeMenu();
+                              }}
+                              onDelete={() => handleDelete(column.Header)}
+                              disabled={!canEditSchema}
+                              show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                              className="column-popover-parent"
+                              darkMode={darkMode}
+                              showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
+                            >
+                              <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                                <Menu
+                                  width="20"
+                                  height="20"
+                                  className="tjdb-menu-icon"
+                                  onClick={(e) => onMenuClick(index, e)}
+                                />
+                              </div>
+                            </TablePopover>
+                          );
+                          if (canEditSchema) return columnPopover;
+                          return (
+                            <ToolTip
+                              message="Schema changes can only be made in the Development environment"
+                              placement="top"
+                            >
+                              <div>{columnPopover}</div>
+                            </ToolTip>
+                          );
+                        })()}
                       </div>
                     </th>
                   ))}
-                  {canEditSchema && (
+                  {canEditSchema ? (
                     <th
                       onClick={() => {
                         resetCellAndRowSelection();
@@ -1298,6 +1311,15 @@ const Table = ({ collapseSidebar }) => {
                     >
                       <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                     </th>
+                  ) : (
+                    <ToolTip message="Schema changes can only be made in the Development environment" placement="top">
+                      <th
+                        className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                        style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                      >
+                        <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
+                      </th>
+                    </ToolTip>
                   )}
                 </tr>
               ))}
