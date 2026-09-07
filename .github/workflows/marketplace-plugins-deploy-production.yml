@@ -22,8 +22,23 @@ env:
     PR_NUMBER: ${{ github.event.number }}
     BRANCH_NAME: ${{ (github.event_name == 'release' && 'lts-3.16') || github.event.inputs.branch || github.head_ref || github.ref_name }}
 
+permissions:
+    contents: read
+    issues: write
+    pull-requests: write
+
 jobs:
+    release-vulnerability-gate:
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'release' && contains(github.event.release.tag_name, '-lts')) ||
+            (github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin-prod')
+        uses: ./.github/workflows/release-vulnerability-gate.yml
+        secrets:
+            DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
     deploy-marketplace-plugin-production:
+        needs: release-vulnerability-gate
         if: |
             github.event_name == 'workflow_dispatch' ||
             (github.event_name == 'release' && contains(github.event.release.tag_name, '-lts')) ||
