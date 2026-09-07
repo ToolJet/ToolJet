@@ -56,7 +56,7 @@ because an existing test is difficult to assess.
 
 Contract tables carry disposition tokens, never prose: `covered:<ID>`, `shared:<test path>#<ID>`,
 `qa:<ID>`, `decision:<D-nn>`, or `none:<closed reason code>`. See
-`widgets/TESTING.template.md` and run `npm run validate:widget-testing-contracts`.
+`frontend/ee/test/app-builder/widgets/TESTING.template.md` and run `npm run validate:widget-testing-contracts`.
 
 ## Supported seams
 
