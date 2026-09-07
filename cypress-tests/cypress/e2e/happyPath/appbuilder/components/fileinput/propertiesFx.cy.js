@@ -14,7 +14,6 @@ import {
 import {
   commitChange,
   attachFile,
-  clearSelectedFile,
   expectPickerBlocked,
   validationFileTypeWrapper,
   expectRejectionToast,
@@ -43,7 +42,7 @@ describe(
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
   () => {
     const widget = fileInputText.defaultWidgetName;
-    const { validFile, validFileName, csvFile, csvFileName, secondCsvFile, tinyAudioFile } = fileInputFixtures;
+    const { validFile, validFileName, csvFile, csvFileName, secondCsvFile } = fileInputFixtures;
 
     beforeEach(() => {
       cy.apiLogin();

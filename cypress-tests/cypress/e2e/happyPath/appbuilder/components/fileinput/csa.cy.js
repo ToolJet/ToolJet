@@ -14,9 +14,11 @@ import { verifyExposedValue, attachFile } from "Support/utils/appBuilder/compone
 //   setVisibility:449 · setDisable:461 · setLoading:473  (each takes a `Value` toggle)
 //
 // NOTE setVisibility's param handle is `disable` (fileinput.js:453), copy-pasted from
-// setDisable — File Button correctly uses `value`. The param's DISPLAY name is still
-// "Value", so configureCSA addresses it the same way; the divergence is recorded in
-// Findings rather than worked around here.
+// setDisable — File Button correctly uses `value`. This is a NAMING inconsistency only,
+// NOT a functional bug: eventsSlice.js:958 invokes a CSA with its params POSITIONALLY
+// (`action(...args.map(a => a.value))`), so the handle string is never read at call time,
+// and the param's display name is "Value" either way. Verified, not assumed — it looked
+// like a live defect until the runtime path was checked. Do not re-raise it as one.
 describe(
   "File Input CSA",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
