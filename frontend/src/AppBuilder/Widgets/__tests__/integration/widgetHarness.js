@@ -68,6 +68,7 @@ export function widgetProps(id, componentType, { darkMode = false, widgetHeight 
  * @param defaultProperties  properties every test gets unless overridden
  * @param capabilities   extra AppBuilderTestSession capabilities beyond the
  *                        observers/media baseline every widget spec needs
+ * @param wrapper        optional React provider wrapper for widget-specific context
  */
 export function createWidgetHarness({
   componentType,
@@ -81,6 +82,7 @@ export function createWidgetHarness({
   capabilities = {},
   widgetHeight = 40,
   widgetWidth = 200,
+  wrapper: Wrapper,
 }) {
   const scenario = defineAppBuilderScenario({
     id: `${componentType.toLowerCase()}-widget`,
@@ -134,7 +136,7 @@ export function createWidgetHarness({
     // mounting alongside what's already there, so every widget sharing a
     // page for this test — the one under test plus any `also` siblings —
     // must go up in ONE render() call as a fragment.
-    return session.render(
+    const tree = (
       <>
         <RenderWidget {...widgetProps(componentId, componentType, { darkMode, widgetHeight, widgetWidth })} />
         {also.map(({ id: siblingId, componentType: siblingType, ...rest }) => (
@@ -142,6 +144,8 @@ export function createWidgetHarness({
         ))}
       </>
     );
+
+    return session.render(Wrapper ? <Wrapper>{tree}</Wrapper> : tree);
   }
 
   return {
