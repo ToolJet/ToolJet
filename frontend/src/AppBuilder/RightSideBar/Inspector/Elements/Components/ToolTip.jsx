@@ -5,6 +5,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 const tooltipStyle = {
   textDecorationLine: 'underline',
   textDecorationStyle: 'dashed',
+  cursor: 'pointer',
 };
 
 export const ToolTip = ({ label, meta, labelClass, bold = false }) => {
