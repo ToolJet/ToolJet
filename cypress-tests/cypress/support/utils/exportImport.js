@@ -1,3 +1,14 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// exportImport.js
+//   verifyElementsOfExportModal      app.verifyExportModal → apps
+//   createNewVersion                 appVersion.create    → apps
+//   clickOnExportButtonAndVerify     app.export           → apps
+//   exportAllVersionsAndVerify       app.exportAllVersions → apps
+//   importAndVerifyApp               app.import           → apps
+//   verifyImportModalElements        app.verifyImportModal → apps
+//   setupDataSourceWithConstants     datasource.setupWithConstants → workspace
+//   validateExportedAppStructure     app.validateExportStructure → apps
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import {
   appVersionSelectors,
@@ -11,6 +22,12 @@ import {
   importText,
 } from "Texts/platform/exportImport";
 
+/**
+* @tjType   app.verifyExportModal
+* @tjBlock  apps
+* @tjUsage  verifyElementsOfExportModal(...)
+* @tjDom    export modal: version list, buttons
+*/
 export const verifyElementsOfExportModal = (
   currentVersionName,
   otherVersionName = []
@@ -62,6 +79,12 @@ export const verifyElementsOfExportModal = (
     .should("be.visible");
 };
 
+/**
+* @tjType   appVersion.create
+* @tjBlock  apps
+* @tjUsage  createNewVersion([], 'v1')
+* @tjDom    version switcher -> create version
+*/
 export const createNewVersion = (newVersion = [], version) => {
   cy.contains(appVersionText.createNewVersion).should("be.visible").click();
   verifyModal(
@@ -88,6 +111,12 @@ export const createNewVersion = (newVersion = [], version) => {
   );
 };
 
+/**
+* @tjType   app.export
+* @tjBlock  apps
+* @tjUsage  clickOnExportButtonAndVerify('Export selected version', 'MyApp')
+* @tjDom    export modal -> export -> file downloaded
+*/
 export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.wait(1000);
@@ -99,6 +128,12 @@ export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   });
 };
 
+/**
+* @tjType   app.exportAllVersions
+* @tjBlock  apps
+* @tjUsage  exportAllVersionsAndVerify(...)
+* @tjDom    export modal -> all versions
+*/
 export const exportAllVersionsAndVerify = (
   appName,
   currentVersionName,
@@ -129,6 +164,12 @@ export const exportAllVersionsAndVerify = (
   });
 };
 
+/**
+* @tjType   app.import
+* @tjBlock  apps
+* @tjUsage  importAndVerifyApp('cypress/fixtures/app.json', 'App imported successfully')
+* @tjDom    dashboard -> import -> toast
+*/
 export const importAndVerifyApp = (filePath, expectedToast) => {
   cy.get(importSelectors.importOptionInput)
     .eq(0)
@@ -145,6 +186,12 @@ export const importAndVerifyApp = (filePath, expectedToast) => {
   }
 };
 
+/**
+* @tjType   app.verifyImportModal
+* @tjBlock  apps
+* @tjUsage  verifyImportModalElements('MyApp')
+* @tjDom    import modal contents
+*/
 export const verifyImportModalElements = (expectedAppName) => {
   cy.get(importSelectors.importAppTitle).verifyVisibleElement(
     "have.text",
@@ -170,6 +217,12 @@ export const verifyImportModalElements = (expectedAppName) => {
   );
 };
 
+/**
+* @tjType   datasource.setupWithConstants
+* @tjBlock  workspace
+* @tjUsage  setupDataSourceWithConstants(...)
+* @tjDom    datasource form using workspace constants
+*/
 export const setupDataSourceWithConstants = (
   dsEnv,
   name = "postgresql",
@@ -191,6 +244,12 @@ export const setupDataSourceWithConstants = (
   });
 };
 
+/**
+* @tjType   app.validateExportStructure
+* @tjBlock  apps
+* @tjUsage  validateExportedAppStructure(...)
+* @tjDom    none - asserts the exported JSON shape
+*/
 export const validateExportedAppStructure = (
   appData,
   expectedAppName,

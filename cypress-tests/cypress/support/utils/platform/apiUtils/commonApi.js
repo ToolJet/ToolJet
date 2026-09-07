@@ -1,3 +1,13 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// commonApi.js
+//   apiUpdateProfile                 profile.update       → workspace
+// └──────────────────────────────────────────────────────────────────┘
+/**
+* @tjType   profile.update
+* @tjBlock  workspace
+* @tjUsage  apiUpdateProfile('The', 'Developer')
+* @tjDom    none - PATCH /api/profile
+*/
 export const apiUpdateProfile = (firstName, lastName) => {
     return cy.getAuthHeaders().then((headers) => {
         return cy.request({

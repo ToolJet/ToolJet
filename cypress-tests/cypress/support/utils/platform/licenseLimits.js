@@ -1,3 +1,6 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// licenseLimits.js
+// └──────────────────────────────────────────────────────────────────┘
 import { instanceSettingsSelector } from "Constants/selectors/platform/eeCommon";
 import { licenseSelectors } from "Constants/selectors/platform/license";
 import { commonSelectors } from "Selectors/common";

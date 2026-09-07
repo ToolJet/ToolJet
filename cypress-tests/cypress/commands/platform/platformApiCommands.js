@@ -5,6 +5,10 @@ const licenseKeys = {
   expired: Cypress.env("expiredLicenseKey"),
 };
 
+/**
+* @tjCmd   auth · log in via the API and store the session cookie
+* @tjUsage cy.apiLogin(email, password, workspaceId)
+*/
 Cypress.Commands.add(
   "apiLogin",
   (
@@ -35,6 +39,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   auth · end the current API session
+* @tjUsage cy.apiLogout()
+*/
 Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
   cy.getAuthHeaders(cachedHeader).then((headers) => {
     cy.request(
@@ -50,6 +58,10 @@ Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
   });
 });
 
+/**
+* @tjCmd   api · fetch the environments configured for a workspace
+* @tjUsage cy.apiGetEnvironments(workspaceId)
+*/
 Cypress.Commands.add("apiGetEnvironments", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -63,6 +75,10 @@ Cypress.Commands.add("apiGetEnvironments", () => {
   });
 });
 
+/**
+* @tjCmd   workspace · create a workspace via the API and store its id
+* @tjUsage cy.apiCreateWorkspace('QA workspace', 'qa-workspace')
+*/
 Cypress.Commands.add(
   "apiCreateWorkspace",
   (workspaceName, workspaceSlug, cacheHeaders = false) => {
@@ -91,6 +107,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   user · invite a user to the current workspace via the API
+* @tjUsage cy.apiUserInvite('QA', userEmail)
+*/
 Cypress.Commands.add(
   "apiUserInvite",
   (userName, userEmail, userRole = "end-user", metaData = {}, groups = []) => {
@@ -124,6 +144,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   workspace · create a workspace constant in one environment
+* @tjUsage cy.apiCreateWorkspaceConstant('API_KEY', 'abc', 'production')
+*/
 Cypress.Commands.add(
   "apiCreateWorkspaceConstant",
   (constantName, value, types = [], environmentNames = []) => {
@@ -154,6 +178,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   workspace · update an existing workspace constant
+* @tjUsage cy.apiUpdateWsConstant(constantId, 'newValue')
+*/
 Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
   cy.apiGetEnvironments().then((environments) => {
     const environment = environments.find((env) => env.name === envName);
@@ -176,6 +204,10 @@ Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
   });
 });
 
+/**
+* @tjCmd   group · resolve a group id from its name
+* @tjUsage cy.apiGetGroupId('QA Team')
+*/
 Cypress.Commands.add("apiGetGroupId", (groupName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -196,6 +228,10 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
   });
 });
 
+/**
+* @tjCmd   api · list datasource ids for the current workspace
+* @tjUsage cy.apiGetDatasourceIds()
+*/
 Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   const namesArray = Array.isArray(datasourceNames)
     ? datasourceNames
@@ -227,6 +263,10 @@ Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   });
 });
 
+/**
+* @tjCmd   api · resolve an app id from its display name
+* @tjUsage cy.apiGetAppIdByName('MyApp')
+*/
 Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -245,6 +285,10 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   });
 });
 
+/**
+* @tjCmd   user · fetch a user record by email
+* @tjUsage cy.apiGetUserDetails(userEmail)
+*/
 Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   const { page = 1 } = options;
 
@@ -264,6 +308,10 @@ Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   });
 });
 
+/**
+* @tjCmd   user · change a user's workspace role
+* @tjUsage cy.apiUpdateUserRole(userEmail, 'builder')
+*/
 Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
   return cy.apiGetUserDetails().then((response) => {
     const userId = response.body.users.find((u) => u.email === email).user_id;
@@ -285,6 +333,10 @@ Cypress.Commands.add("apiUpdateUserRole", (email, role) => {
   });
 });
 
+/**
+* @tjCmd   user · grant or revoke instance super-admin
+* @tjUsage cy.apiUpdateSuperAdmin(userEmail, true)
+*/
 Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
   if (!userId) {
     throw new Error("userId is required to update user type");
@@ -312,6 +364,10 @@ Cypress.Commands.add("apiUpdateSuperAdmin", (userId, userType = "instance") => {
   });
 });
 
+/**
+* @tjCmd   group · create a granular permission on a group
+* @tjUsage cy.apiCreateGranularPermission(groupId, payload)
+*/
 Cypress.Commands.add(
   "apiCreateGranularPermission",
   (
@@ -452,6 +508,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   group · delete a granular permission from a group
+* @tjUsage cy.apiDeleteGranularPermission(permissionId)
+*/
 Cypress.Commands.add(
   "apiDeleteGranularPermission",
   (groupName, typesToDelete = []) => {
@@ -498,6 +558,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   app-crud · delete every app in the workspace - teardown
+* @tjUsage cy.apiDeleteAllApps()
+*/
 Cypress.Commands.add("apiDeleteAllApps", () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -518,6 +582,10 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
   });
 });
 
+/**
+* @tjCmd   sso · update a workspace or instance SSO configuration
+* @tjUsage cy.apiUpdateSSOConfig(orgId, 'google', config)
+*/
 Cypress.Commands.add(
   "apiUpdateSSOConfig",
   (ssoConfig, level = "workspace", cachedHeaders = false) => {
@@ -542,6 +610,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   sso · resolve the config id for an SSO provider
+* @tjUsage cy.getSsoConfigId('google')
+*/
 Cypress.Commands.add(
   "getSsoConfigId",
   (ssoType, workspaceSlug = "my-workspace") => {
@@ -559,6 +631,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+* @tjCmd   sso · obtain an Okta authorization code for OIDC login
+* @tjUsage cy.getOktaAuthorizationCode()
+*/
 Cypress.Commands.add(
   "getOktaAuthorizationCode",
   ({ username, password, clientId, redirectUri, oktaDomain }) => {
@@ -612,6 +688,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+* @tjCmd   sso · exchange an OIDC authorization code for tokens
+* @tjUsage cy.exchangeCodeForTokens(code)
+*/
 Cypress.Commands.add(
   "exchangeCodeForTokens",
   ({ code, clientId, clientSecret, redirectUri, oktaDomain }) => {
@@ -637,6 +717,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+* @tjCmd   auth · complete an OIDC login without driving the IdP UI
+* @tjUsage cy.oidcLogin()
+*/
 Cypress.Commands.add(
   "oidcLogin",
   ({
@@ -715,6 +799,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   user · update the signed-in user's first and last name
+* @tjUsage cy.apiUpdateProfile('The', 'Developer')
+*/
 Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request({
@@ -740,6 +828,10 @@ Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
   });
 });
 
+/**
+* @tjCmd   sso · toggle open signup for a workspace or the instance
+* @tjUsage cy.apiUpdateAllowSignUp(true)
+*/
 Cypress.Commands.add(
   "apiUpdateAllowSignUp",
   (state, scope = "instance", returnCached = false) => {
@@ -753,6 +845,10 @@ Cypress.Commands.add(
     });
   }
 );
+/**
+* @tjCmd   sso · toggle automatic SSO redirect
+* @tjUsage cy.apiUpdateAutoSSO(false)
+*/
 Cypress.Commands.add(
   "apiUpdateAutoSSO",
   (state, scope = "instance", returnCached = false) => {
@@ -767,6 +863,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   user · create a user and complete onboarding in one call - the standard test-user setup
+* @tjUsage cy.apiFullUserOnboarding('QA', userEmail, 'QA workspace')
+*/
 Cypress.Commands.add(
   "apiFullUserOnboarding",
   (
@@ -857,6 +957,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   auth · log in through the Google SSO path via the API
+* @tjUsage cy.apiLoginByGoogle(userEmail)
+*/
 Cypress.Commands.add(
   "apiLoginByGoogle",
   (defaultid = "/688f4b68-8c3b-41b2-aecb-1c1e9a112de1", state = "") => {
@@ -892,6 +996,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   app-crud · create a dashboard folder
+* @tjUsage cy.apiCreateFolder('QA folder')
+*/
 Cypress.Commands.add(
   "apiCreateFolder",
   (
@@ -918,6 +1026,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   app-crud · delete a dashboard folder
+* @tjUsage cy.apiDeleteFolder(folderId)
+*/
 Cypress.Commands.add(
   "apiDeleteFolder",
   (folderId = Cypress.env("createdFolderId")) => {
@@ -933,6 +1045,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   group · set the permission flags on a group
+* @tjUsage cy.apiUpdateGroupPermission(groupId, { appCreate: true })
+*/
 Cypress.Commands.add(
   "apiUpdateGroupPermission",
   (groupName, permissionPayload) => {
@@ -970,6 +1086,10 @@ const defaultEnvPermissionBody = {
   resourcesToDelete: [],
 };
 
+/**
+* @tjCmd   group · set per-environment access for a group
+* @tjUsage cy.apiUpdateEnvironmentPermission(groupId, envIds)
+*/
 Cypress.Commands.add(
   "apiUpdateEnvironmentPermission",
   (groupName, bodyOverrides = {}, permissionName = "Apps") => {
@@ -1020,6 +1140,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+* @tjCmd   api · yield the auth headers for a raw cy.request call
+* @tjUsage cy.getAuthHeaders().then((headers) => { ... })
+*/
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   let headers = {};
   if (returnCached) {
@@ -1036,6 +1160,10 @@ Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   }
 });
 
+/**
+* @tjCmd   user · resolve a user id from an email address
+* @tjUsage cy.getUserIdByEmail(userEmail)
+*/
 Cypress.Commands.add("getUserIdByEmail", (email, idType = "organization") => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1057,6 +1185,10 @@ Cypress.Commands.add("getUserIdByEmail", (email, idType = "organization") => {
   });
 });
 
+/**
+* @tjCmd   user · upload a users CSV via the API
+* @tjUsage cy.apiBulkUploadUsers(csvPath)
+*/
 Cypress.Commands.add(
   "apiBulkUploadUsers",
   (csvContent, fileName = "users_upload.csv") => {
@@ -1080,6 +1212,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   license · apply a licence key to the instance
+* @tjUsage cy.apiUpdateLicense(licenseKey)
+*/
 Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
   const licenseKey = Cypress.env("license_keys")[keyType];
 
@@ -1102,6 +1238,10 @@ Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
   });
 });
 
+/**
+* @tjCmd   workspace · archive a workspace - teardown
+* @tjUsage cy.apiArchiveWorkspace(workspaceId)
+*/
 Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
   if (!workspaceId) {
     throw new Error("Workspace ID is required to archive workspace");
@@ -1125,6 +1265,10 @@ Cypress.Commands.add("apiArchiveWorkspace", (workspaceId) => {
       });
   });
 });
+/**
+* @tjCmd   api · configure instance SMTP settings
+* @tjUsage cy.apiConfigureSmtp(config)
+*/
 Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   return cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -1155,6 +1299,10 @@ Cypress.Commands.add("apiConfigureSmtp", (smtpBody) => {
   });
 });
 
+/**
+* @tjCmd   workspace · list every workspace id on the instance
+* @tjUsage cy.apiGetWorkspaceIDs()
+*/
 Cypress.Commands.add(
   "apiGetWorkspaceIDs",
   (parameters = "?status=active", cacheHeaders = false) => {
@@ -1180,6 +1328,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+* @tjCmd   api · set instance white-label values
+* @tjUsage cy.apiUpdateWhiteLabeling({ logo, favicon })
+*/
 Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1201,6 +1353,10 @@ Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
   });
 });
 
+/**
+* @tjCmd   workspace · archive every non-default workspace - teardown
+* @tjUsage cy.apiDeleteAllWorkspaces()
+*/
 Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
   cy.apiGetWorkspaceIDs().then((ids) => {
     ids.forEach((org) => {
@@ -1214,6 +1370,10 @@ Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
   });
 });
 
+/**
+* @tjCmd   workspace · resolve the instance default workspace
+* @tjUsage cy.apiGetDefaultWorkspace()
+*/
 Cypress.Commands.add("apiGetDefaultWorkspace", () => {
   return cy.apiGetWorkspaceIDs().then(workspaces => {
     const defaultWorkspace = workspaces.find(ws => ws.is_default);
@@ -1224,6 +1384,10 @@ Cypress.Commands.add("apiGetDefaultWorkspace", () => {
   });
 });
 
+/**
+* @tjCmd   license · set the LLM API key used by AI features
+* @tjUsage cy.apiUpdateLLMKey(key)
+*/
 Cypress.Commands.add(
   "apiUpdateLLMKey",
   (apikey = "", licenseType = "selfhostai", useEnvironmentConfig = false) => {

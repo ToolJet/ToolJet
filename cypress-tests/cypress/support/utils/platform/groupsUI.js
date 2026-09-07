@@ -1,7 +1,38 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// groupsUI.js
+//   verifyAdminHelperText            groupRole.verifyAdminHelper → access
+//   verifyEditUserRoleModal          userRole.verifyEditModal → access
+//   toggleAllPermissions             groupPermission.toggleAll → access
+//   verifyDeleteConfirmationModal    group.verifyDeleteModal → access
+//   verifyEnvironmentSelectionStateInModal granularPermission.verifyEnvState → access
+//   selectEnvironments               granularPermission.selectEnvs → access
+//   verifyGranularEditModal          granularPermission.verifyEditModal → access
+//   verifyGranularAddModal           granularPermission.verifyAddModal → access
+//   verifyEnduserHelperText          groupRole.verifyEnduserHelper → access
+//   verifyGranularPermissionModalUI  granularPermission.verifyModalUI → access
+//   verifyGranularPermissionModalStates granularPermission.verifyModalStates → access
+//   verifyEmptyStates                group.verifyEmptyStates → access
+//   verifyGroupLinks                 group.verifyLinks    → access
+//   commonGroupVerification          group.verifyCommon   → access
+//   permissions                      -                    → access
+//   verifyCheckPermissionStates      groupPermission.verifyStates → access
+//   verifyPermissionCheckBoxLabelsAndHelperTexts groupPermission.verifyLabels → access
+//   verifyEnvironmentsTags           granularPermission.verifyEnvTags → access
+//   verifyGranularAccessByRole       granularPermission.verifyByRole → access
+//   permissionModal                  -                    → access
+//   verifyUserRow                    groupUser.verifyRow  → access
+//   granularPermissionEmptyState     granularPermission.verifyEmptyState → access
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { groupsText } from "Texts/platform/manageGroups";
 
+/**
+* @tjType   groupRole.verifyAdminHelper
+* @tjBlock  access
+* @tjUsage  verifyAdminHelperText(0)
+* @tjDom    admin role helper text under the permission list
+*/
 export const verifyAdminHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
         .eq(index)
@@ -17,6 +48,12 @@ export const verifyAdminHelperText = (index = 0) => {
         .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
+/**
+* @tjType   userRole.verifyEditModal
+* @tjBlock  access
+* @tjUsage  verifyEditUserRoleModal(userEmail)
+* @tjDom    edit-user-role modal contents
+*/
 export const verifyEditUserRoleModal = (userEmail) => {
     cy.get('[data-cy="modal-title"]')
         .last()
@@ -52,6 +89,12 @@ export const verifyEditUserRoleModal = (userEmail) => {
     cy.get('[data-cy="modal-close-button"]').should("be.visible");
 };
 
+/**
+* @tjType   groupPermission.toggleAll
+* @tjBlock  access
+* @tjUsage  toggleAllPermissions(['uncheck','check'])
+* @tjDom    checks/unchecks every permission box
+*/
 export const toggleAllPermissions = (status = ["uncheck", "check"]) => {
     permissions.forEach((permissionSelector) => {
         cy.get(permissionSelector).should("be.visible")[status[0]]();
@@ -67,6 +110,12 @@ export const toggleAllPermissions = (status = ["uncheck", "check"]) => {
     });
 };
 
+/**
+* @tjType   group.verifyDeleteModal
+* @tjBlock  access
+* @tjUsage  verifyDeleteConfirmationModal()
+* @tjDom    delete-group confirmation modal
+*/
 export const verifyDeleteConfirmationModal = () => {
     cy.get(".confirm-dialogue-modal").should("be.visible");
     cy.verifyElement(groupsSelector.deleteMessage, groupsText.deleteMessage);
@@ -75,6 +124,12 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 
+/**
+* @tjType   granularPermission.verifyEnvState
+* @tjBlock  access
+* @tjUsage  verifyEnvironmentSelectionStateInModal(role, userType, envs)
+* @tjDom    env checkboxes inside the granular modal
+*/
 export const verifyEnvironmentSelectionStateInModal = (role,userType, envOptionList) => {
     const builderEnvOptions = [
         { label: "All environments", checked: false },
@@ -115,6 +170,12 @@ export const verifyEnvironmentSelectionStateInModal = (role,userType, envOptionL
 
 };
 
+/**
+* @tjType   granularPermission.selectEnvs
+* @tjBlock  access
+* @tjUsage  selectEnvironments(['development','production'])
+* @tjDom    env multi-select in the granular modal
+*/
 export const selectEnvironments = (envs) => {
     cy.get(groupsSelector.envContainerArrowIcon).click();
     envs.forEach((env) => {
@@ -126,6 +187,12 @@ export const selectEnvironments = (envs) => {
     });
 };
 
+/**
+* @tjType   granularPermission.verifyEditModal
+* @tjBlock  access
+* @tjUsage  verifyGranularEditModal(role, userType)
+* @tjDom    granular permission edit modal
+*/
 export const verifyGranularEditModal = (role, userType) => {
 
     cy.get(groupsSelector.permissionsLink).should("be.visible").click();
@@ -175,6 +242,12 @@ export const verifyGranularEditModal = (role, userType) => {
 
 };
 
+/**
+* @tjType   granularPermission.verifyAddModal
+* @tjBlock  access
+* @tjUsage  verifyGranularAddModal(role)
+* @tjDom    granular permission add modal
+*/
 export const verifyGranularAddModal = (role) => {
     cy.ifEnv("Community", () => {
         cy.get(groupsSelector.addAppsButton)
@@ -219,6 +292,12 @@ export const verifyGranularAddModal = (role) => {
 };
 
 
+/**
+* @tjType   groupRole.verifyEnduserHelper
+* @tjBlock  access
+* @tjUsage  verifyEnduserHelperText(0)
+* @tjDom    end-user role helper text
+*/
 export const verifyEnduserHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
         .eq(index)
@@ -234,6 +313,12 @@ export const verifyEnduserHelperText = (index = 0) => {
         .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
+/**
+* @tjType   granularPermission.verifyModalUI
+* @tjBlock  access
+* @tjUsage  verifyGranularPermissionModalUI(...)
+* @tjDom    full granular modal layout
+*/
 export const verifyGranularPermissionModalUI = (
     resourceType,
     isEdit = false,
@@ -359,6 +444,12 @@ export const verifyGranularPermissionModalUI = (
     }
 };
 
+/**
+* @tjType   granularPermission.verifyModalStates
+* @tjBlock  access
+* @tjUsage  verifyGranularPermissionModalStates(...)
+* @tjDom    granular modal state matrix
+*/
 export const verifyGranularPermissionModalStates = (
     resourceType,
     role,
@@ -483,6 +574,12 @@ export const verifyGranularPermissionModalStates = (
         .and(config.customRadio.enabled ? "be.enabled" : "be.disabled");
 };
 
+/**
+* @tjType   group.verifyEmptyStates
+* @tjBlock  access
+* @tjUsage  verifyEmptyStates()
+* @tjDom    empty states across group tabs
+*/
 export const verifyEmptyStates = () => {
     // Users empty state
     cy.get(groupsSelector.usersLink).click();
@@ -507,6 +604,12 @@ export const verifyEmptyStates = () => {
     );
 };
 
+/**
+* @tjType   group.verifyLinks
+* @tjBlock  access
+* @tjUsage  verifyGroupLinks()
+* @tjDom    group detail tab links
+*/
 export const verifyGroupLinks = () => {
     const links = [
         { selector: groupsSelector.usersLink, text: groupsText.usersLink },
@@ -522,6 +625,12 @@ export const verifyGroupLinks = () => {
     });
 };
 
+/**
+* @tjType   group.verifyCommon
+* @tjBlock  access
+* @tjUsage  commonGroupVerification()
+* @tjDom    shared assertions for any group page
+*/
 export const commonGroupVerification = () => {
     cy.verifyElement(
         groupsSelector.textDefaultGroup,
@@ -542,6 +651,12 @@ export const commonGroupVerification = () => {
     );
 };
 
+/**
+* @tjType   -
+* @tjBlock  access
+* @tjUsage  permissions   // permission-matrix fixture data
+* @tjDom    none - data table, not an action
+*/
 export const permissions =
     Cypress.env("environment") === "Community"
         ? [
@@ -563,6 +678,12 @@ export const permissions =
             groupsSelector.workspaceVarCheckbox,
         ];
 
+/**
+* @tjType   groupPermission.verifyStates
+* @tjBlock  access
+* @tjUsage  verifyCheckPermissionStates('admin', 'check')
+* @tjDom    permission checkbox states per role
+*/
 export const verifyCheckPermissionStates = (roleType, action = null) => {
     const roleConfig = {
         admin: { checked: true, enabled: false },
@@ -581,6 +702,12 @@ export const verifyCheckPermissionStates = (roleType, action = null) => {
     });
 };
 
+/**
+* @tjType   groupPermission.verifyLabels
+* @tjBlock  access
+* @tjUsage  verifyPermissionCheckBoxLabelsAndHelperTexts()
+* @tjDom    every checkbox label + helper text
+*/
 export const verifyPermissionCheckBoxLabelsAndHelperTexts = () => {
     const commonPermissions = [
         { selector: groupsSelector.resourcesApps, text: groupsText.resourcesApps },
@@ -678,6 +805,12 @@ const envTagsByRole = {
     enduser: enduserEnvTags,
 };
 
+/**
+* @tjType   granularPermission.verifyEnvTags
+* @tjBlock  access
+* @tjUsage  verifyEnvironmentsTags(selector, role, userType, expectedEnvs)
+* @tjDom    env tags rendered on a granular row
+*/
 export const verifyEnvironmentsTags = (selector, role, userType, expectedEnvs) => {
     const tags = expectedEnvs ?? envTagsByRole[role==="custom" ? userType : role];
 
@@ -687,6 +820,12 @@ export const verifyEnvironmentsTags = (selector, role, userType, expectedEnvs) =
         });
 };
 
+/**
+* @tjType   granularPermission.verifyByRole
+* @tjBlock  access
+* @tjUsage  verifyGranularAccessByRole('builder')
+* @tjDom    granular access matrix for one role
+*/
 export const verifyGranularAccessByRole = (role) => {
     const roleConfig = {
         admin: {
@@ -883,6 +1022,12 @@ export const verifyGranularAccessByRole = (role) => {
     });
 };
 
+/**
+* @tjType   -
+* @tjBlock  access
+* @tjUsage  permissionModal()   // selector/text bundle for the permission modal
+* @tjDom    none - data bundle
+*/
 export const permissionModal = () => {
     cy.verifyElement(
         groupsSelector.permissionNameLabel,
@@ -925,6 +1070,12 @@ export const permissionModal = () => {
     );
 };
 
+/**
+* @tjType   groupUser.verifyRow
+* @tjBlock  access
+* @tjUsage  verifyUserRow('QA User', userEmail)
+* @tjDom    user row inside a group
+*/
 export const verifyUserRow = (name, email) => {
     cy.get('[data-cy="avatar-image"]').should("be.visible");
     cy.get('[data-cy="user-name"]')
@@ -933,6 +1084,12 @@ export const verifyUserRow = (name, email) => {
     cy.get('[data-cy="user-email"]').should("be.visible").and("have.text", email);
 };
 
+/**
+* @tjType   granularPermission.verifyEmptyState
+* @tjBlock  access
+* @tjUsage  granularPermissionEmptyState()
+* @tjDom    granular tab empty state
+*/
 export const granularPermissionEmptyState = () => {
     cy.get(groupsSelector.granularLink).click();
 

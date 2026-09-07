@@ -1,3 +1,35 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// manageSSO.js
+//   verifyLoginSettings              sso.verifyLoginSettings → onboarding
+//   loginSettingPageElements         sso.verifyLoginSettingsPage → onboarding
+//   googleSSOPageElements            googleSso.verifyPage → onboarding
+//   gitSSOPageElements               githubSso.verifyPage → onboarding
+//   oidcSSOPageElements              oidcSso.verifyPage   → onboarding
+//   ldapSSOPageElements              ldapSso.verifyPage   → onboarding
+//   samlSSOPageElements              samlSso.verifyPage   → onboarding
+//   visitWorkspaceLoginPage          sso.visitWorkspaceLogin → onboarding
+//   workspaceLoginPageElements       sso.verifyWorkspaceLoginPage → onboarding
+//   signInPageElements               sso.verifySignInPage → onboarding
+//   enableSignUp                     sso.enableSignup     → onboarding
+//   disableSignUp                    sso.disableSignup    → onboarding
+//   invitePageElements               workspaceInvite.verifyPage → onboarding
+//   updateSsoId                      sso.updateIdApi      → onboarding
+//   setSSOStatus                     sso.setStatusApi     → onboarding
+//   defaultSSO                       sso.setDefault       → onboarding
+//   setSignupStatus                  sso.setSignupStatus  → onboarding
+//   deleteOrganisationSSO            sso.deleteConfig     → onboarding
+//   resetDomain                      sso.resetDomain      → onboarding
+//   enableInstanceSignup             sso.enableInstanceSignup → onboarding
+//   updateOIDCConfig                 oidcSso.updateConfig → onboarding
+//   authResponse                     -                    → onboarding
+//   addOktaOIDCConfig                oidcSso.addOkta      → onboarding
+//   uiOktaLogin                      oidcSso.loginOkta    → onboarding
+//   toggleSsoViaUI                   sso.toggle           → onboarding
+//   gitHubSignInWithAssertion        githubSso.signIn     → onboarding
+//   cleanupTestUser                  user.cleanup         → onboarding
+//   verifyLabelAndInput              -                    → common
+//   verifyElementText                -                    → common
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/platform/manageSSO";
 import * as common from "Support/utils/common";
@@ -10,6 +42,12 @@ import {
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/platform/manageSSO";
 
+/**
+* @tjType   sso.verifyLoginSettings
+* @tjBlock  onboarding
+* @tjUsage  verifyLoginSettings('workspace')
+* @tjDom    login-settings page for workspace or instance
+*/
 export const verifyLoginSettings = (pageName) => {
   //Verify Password and SSO Domain section
   cy.get(ssoSelector.passwordLoginDropdown).verifyVisibleElement("have.text", ssoText.passwordLoginDropdownLabel).click();
@@ -167,6 +205,12 @@ export const verifyLoginSettings = (pageName) => {
   );
 };
 
+/**
+* @tjType   sso.verifyLoginSettingsPage
+* @tjBlock  onboarding
+* @tjUsage  loginSettingPageElements('workspace')
+* @tjDom    login settings page fields
+*/
 export const loginSettingPageElements = (pageName) => {
   const pageKey = `${pageName}LoginPage`;
   const selectors = ssoSelector[pageKey];
@@ -181,6 +225,12 @@ export const loginSettingPageElements = (pageName) => {
   });
 };
 
+/**
+* @tjType   googleSso.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  googleSSOPageElements('workspace')
+* @tjDom    Google SSO config fields
+*/
 export const googleSSOPageElements = (pageName) => {
   cy.get(ssoSelector.google).should("be.visible").click();
   cy.get(ssoSelector.cardTitle)
@@ -248,6 +298,12 @@ export const googleSSOPageElements = (pageName) => {
   );
 };
 
+/**
+* @tjType   githubSso.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  gitSSOPageElements('workspace')
+* @tjDom    GitHub SSO config fields
+*/
 export const gitSSOPageElements = (pageName) => {
   cy.get(ssoSelector.git).should("be.visible").click();
   cy.get(ssoSelector.cardTitle)
@@ -336,6 +392,12 @@ export const gitSSOPageElements = (pageName) => {
   );
 };
 
+/**
+* @tjType   oidcSso.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  oidcSSOPageElements('workspace')
+* @tjDom    OIDC SSO config fields
+*/
 export const oidcSSOPageElements = (pageName) => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
@@ -474,6 +536,12 @@ export const oidcSSOPageElements = (pageName) => {
   );
 };
 
+/**
+* @tjType   ldapSso.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  ldapSSOPageElements()
+* @tjDom    LDAP SSO config fields
+*/
 export const ldapSSOPageElements = () => {
   cy.wait(1000);
   cy.get(ssoSelector.ldap).click();
@@ -550,6 +618,12 @@ export const ldapSSOPageElements = () => {
   );
 };
 
+/**
+* @tjType   samlSso.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  samlSSOPageElements()
+* @tjDom    SAML SSO config fields
+*/
 export const samlSSOPageElements = () => {
   cy.wait(1000);
   cy.get(ssoSelector.saml).click();
@@ -632,6 +706,12 @@ export const samlSSOPageElements = () => {
   );
 };
 
+/**
+* @tjType   sso.visitWorkspaceLogin
+* @tjBlock  onboarding
+* @tjUsage  visitWorkspaceLoginPage()
+* @tjDom    workspace-scoped login URL. [UNREFERENCED 2026-09-06]
+*/
 export const visitWorkspaceLoginPage = () => {
   cy.get(ssoSelector.workspaceLoginUrl).then(($temp) => {
     const url = $temp.text();
@@ -641,6 +721,12 @@ export const visitWorkspaceLoginPage = () => {
   });
 };
 
+/**
+* @tjType   sso.verifyWorkspaceLoginPage
+* @tjBlock  onboarding
+* @tjUsage  workspaceLoginPageElements('My workspace')
+* @tjDom    workspace login page. [UNREFERENCED 2026-09-06]
+*/
 export const workspaceLoginPageElements = (workspaceName) => {
   signInPageElements();
   cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
@@ -649,6 +735,12 @@ export const workspaceLoginPageElements = (workspaceName) => {
   );
 };
 
+/**
+* @tjType   sso.verifySignInPage
+* @tjBlock  onboarding
+* @tjUsage  signInPageElements()
+* @tjDom    instance sign-in page
+*/
 export const signInPageElements = () => {
   cy.get(ssoSelector.signInHeader).verifyVisibleElement(
     "have.text",
@@ -689,6 +781,12 @@ export const signInPageElements = () => {
   });
 };
 
+/**
+* @tjType   sso.enableSignup
+* @tjBlock  onboarding
+* @tjUsage  enableSignUp()
+* @tjDom    login settings -> enable signup
+*/
 export const enableSignUp = () => {
   common.navigateToManageSSO();
   cy.get("body").then(($el) => {
@@ -705,6 +803,12 @@ export const enableSignUp = () => {
   });
 };
 
+/**
+* @tjType   sso.disableSignup
+* @tjBlock  onboarding
+* @tjUsage  disableSignUp()
+* @tjDom    login settings -> disable signup. [UNREFERENCED 2026-09-06]
+*/
 export const disableSignUp = () => {
   common.navigateToManageSSO();
   cy.get("body").then(($el) => {
@@ -721,6 +825,12 @@ export const disableSignUp = () => {
   });
 };
 
+/**
+* @tjType   workspaceInvite.verifyPage
+* @tjBlock  onboarding
+* @tjUsage  invitePageElements()
+* @tjDom    invite acceptance page. [UNREFERENCED 2026-09-06]
+*/
 export const invitePageElements = () => {
   cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
     "have.text",
@@ -765,6 +875,12 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
+/**
+* @tjType   sso.updateIdApi
+* @tjBlock  onboarding
+* @tjUsage  updateSsoId(ssoId, sso, workspaceId)
+* @tjDom    none - PATCH SSO config id
+*/
 export const updateSsoId = (ssoId, sso, workspaceId) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -777,6 +893,12 @@ export const updateSsoId = (ssoId, sso, workspaceId) => {
   });
 };
 
+/**
+* @tjType   sso.setStatusApi
+* @tjBlock  onboarding
+* @tjUsage  setSSOStatus('My workspace', 'google', true)
+* @tjDom    none - toggle SSO via API. [UNREFERENCED 2026-09-06]
+*/
 export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   let workspaceId;
 
@@ -801,6 +923,12 @@ export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   });
 };
 
+/**
+* @tjType   sso.setDefault
+* @tjBlock  onboarding
+* @tjUsage  defaultSSO(true)
+* @tjDom    default SSO toggle
+*/
 export const defaultSSO = (enable) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request(
@@ -817,6 +945,12 @@ export const defaultSSO = (enable) => {
   });
 };
 
+/**
+* @tjType   sso.setSignupStatus
+* @tjBlock  onboarding
+* @tjUsage  setSignupStatus(true, 'My workspace')
+* @tjDom    signup toggle for a workspace
+*/
 export const setSignupStatus = (enable, workspaceName = "My workspace") => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -837,6 +971,12 @@ export const setSignupStatus = (enable, workspaceName = "My workspace") => {
   });
 };
 
+/**
+* @tjType   sso.deleteConfig
+* @tjBlock  onboarding
+* @tjUsage  deleteOrganisationSSO('My workspace', services)
+* @tjDom    none - removes workspace SSO configs
+*/
 export const deleteOrganisationSSO = (workspaceName, services) => {
   let workspaceId;
   cy.task("dbConnection", {
@@ -854,6 +994,12 @@ export const deleteOrganisationSSO = (workspaceName, services) => {
   });
 };
 
+/**
+* @tjType   sso.resetDomain
+* @tjBlock  onboarding
+* @tjUsage  resetDomain()
+* @tjDom    clears the allowed-domain field
+*/
 export const resetDomain = () => {
   cy.getAuthHeaders().then((headers) => {
     cy.request(
@@ -870,6 +1016,12 @@ export const resetDomain = () => {
   });
 };
 
+/**
+* @tjType   sso.enableInstanceSignup
+* @tjBlock  onboarding
+* @tjUsage  enableInstanceSignup(true)
+* @tjDom    instance-level signup toggle
+*/
 export const enableInstanceSignup = (enable = true) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -883,6 +1035,12 @@ export const enableInstanceSignup = (enable = true) => {
   });
 };
 
+/**
+* @tjType   oidcSso.updateConfig
+* @tjBlock  onboarding
+* @tjUsage  updateOIDCConfig(orgId)
+* @tjDom    none - PATCH OIDC config
+*/
 export const updateOIDCConfig = (orgId) => {
   const ssoConfigId = "22f22523-7bc2-4134-891d-88bdfec073cd";
   const sso = "'openid'";
@@ -950,6 +1108,12 @@ export const updateOIDCConfig = (orgId) => {
   });
 };
 
+/**
+* @tjType   -
+* @tjBlock  onboarding
+* @tjUsage  authResponse(matcher)
+* @tjDom    none - intercept helper for auth calls. [UNREFERENCED 2026-09-06]
+*/
 export const authResponse = (matcher) => {
   cy.intercept("POST", "/api/authorize", (req) => {
     req.continue((res) => {
@@ -958,6 +1122,12 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
+/**
+* @tjType   oidcSso.addOkta
+* @tjBlock  onboarding
+* @tjUsage  addOktaOIDCConfig(...)
+* @tjDom    OIDC form filled with Okta values
+*/
 export const addOktaOIDCConfig = (
   groupMapping,
   level = "workspace",
@@ -989,6 +1159,12 @@ export const addOktaOIDCConfig = (
   return cy.apiUpdateSSOConfig(config, level);
 };
 
+/**
+* @tjType   oidcSso.loginOkta
+* @tjBlock  onboarding
+* @tjUsage  uiOktaLogin(userEmail, password)
+* @tjDom    Okta hosted login form
+*/
 export const uiOktaLogin = (email, password) => {
   cy.log("Starting Okta login for:", email);
   cy.origin(
@@ -1010,6 +1186,12 @@ export const uiOktaLogin = (email, password) => {
   cy.log("Okta login completed");
 };
 
+/**
+* @tjType   sso.toggle
+* @tjBlock  onboarding
+* @tjUsage  toggleSsoViaUI(...)
+* @tjDom    SSO provider toggle in the UI
+*/
 export const toggleSsoViaUI = (
   provider,
   settingsUrl = "settings/instance-login"
@@ -1032,6 +1214,12 @@ export const toggleSsoViaUI = (
   cy.wait(1000);
 };
 
+/**
+* @tjType   githubSso.signIn
+* @tjBlock  onboarding
+* @tjUsage  gitHubSignInWithAssertion(...)
+* @tjDom    GitHub OAuth flow + assertion
+*/
 export const gitHubSignInWithAssertion = (
   assertion = null,
   githubUsername = Cypress.env("GITHUB_USERNAME"),
@@ -1071,6 +1259,12 @@ export const gitHubSignInWithAssertion = (
  * Deletes a single test user by email from the database
  * @param {string} email - The email of the user to delete
  */
+/**
+* @tjType   user.cleanup
+* @tjBlock  onboarding
+* @tjUsage  cleanupTestUser(userEmail)
+* @tjDom    none - removes a test user
+*/
 export const cleanupTestUser = (email) => {
   cy.runSqlQueryOnDB(
     `SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`
@@ -1082,6 +1276,12 @@ export const cleanupTestUser = (email) => {
   });
 };
 
+/**
+* @tjType   -
+* @tjBlock  common
+* @tjUsage  verifyLabelAndInput(selectors, texts)
+* @tjDom    asserts a label/input pair
+*/
 export const verifyLabelAndInput = (selectors, texts) => {
   Object.entries(texts).forEach(([key, expectedText]) => {
     const labelSelector = selectors[key];
@@ -1103,6 +1303,12 @@ export const verifyLabelAndInput = (selectors, texts) => {
   });
 };
 
+/**
+* @tjType   -
+* @tjBlock  common
+* @tjUsage  verifyElementText(selectors, texts)
+* @tjDom    asserts text across several elements
+*/
 export const verifyElementText = (selectors, texts) => {
   Object.entries(texts).forEach(([key, expectedText]) => {
     const selector = selectors[key];
