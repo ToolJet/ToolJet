@@ -497,6 +497,8 @@ export const tableConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
       },
       accordian: 'Data',
+      section: 'deprecated',
+      tip: 'Action buttons are deprecated and will be removed in a future update. Use the new Button column instead by adding a new column and selecting type as a button.',
     },
     containerBackgroundColor: {
       type: 'colorSwatches',
