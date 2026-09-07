@@ -25,9 +25,28 @@ export interface PatSession {
   expiresAt: Date; // session expiry, NOT the token's — re-exchange when it lapses
 }
 
+// Options for a PAT minted FOR a backend service that is acting as the signed-in user, rather than
+// for a human to copy out of the settings page. The raw token is generated and discarded at
+// creation, so this row can never be presented as a bearer credential; it exists only to anchor the
+// session (validateUserSession rejects a PAT session whose token row has gone) and to be the kill
+// switch that revokes every session minted from it.
+export interface ServicePatOptions {
+  expiresAt: Date; // outer ceiling: validateUserSession will not extend a session past this
+  sessionExpiryMinutes: number; // idle lifetime of each session minted from the token
+}
+
 export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
   listPats(userId: string): Promise<PatView[]>;
   deletePat(userId: string, id: string): Promise<void>;
   createSessionFromPat(pat: UserPersonalAccessToken, response: Response): Promise<PatSession>;
+  /* Find-or-create the single service token for (user, workspace, name). Returns the ENTITY, with
+     `user` populated, because the caller mints a session from it in-process via createSessionFromPat
+     — no raw token is produced and none is needed. */
+  getOrCreateServicePat(
+    user: User,
+    organizationId: string,
+    name: string,
+    opts: ServicePatOptions
+  ): Promise<UserPersonalAccessToken>;
 }

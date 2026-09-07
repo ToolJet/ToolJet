@@ -8,6 +8,7 @@ import {
   patCanAccess,
 } from '@modules/personal-access-tokens/constants/scopes';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
+import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -45,15 +46,25 @@ describe('PAT scope definition', () => {
       MODULES.GLOBAL_DATA_SOURCE,
       MODULES.TOOLJET_DATABASE,
       MODULES.APP_ENVIRONMENTS,
+      MODULES.ORGANIZATION_THEMES,
     ]) {
       expect(patCanAccess(module)).toBe(true);
     }
+    for (const feature of [
+      ORGANIZATION_USER_FEATURE.VIEW_ALL_USERS,
+      ORGANIZATION_USER_FEATURE.USER_INVITE,
+      ORGANIZATION_USER_FEATURE.USER_UPDATE,
+      ORGANIZATION_USER_FEATURE.USER_ARCHIVE,
+      ORGANIZATION_USER_FEATURE.USER_UNARCHIVE,
+    ]) {
+      expect(patCanAccess(MODULES.ORGANIZATION_USER, feature)).toBe(true);
+    }
+    expect(patCanAccess(MODULES.ORGANIZATION_USER, ORGANIZATION_USER_FEATURE.USER_ARCHIVE_ALL)).toBe(false);
   });
 
   it('denies workspace and instance administration', () => {
     for (const module of [
       MODULES.ORGANIZATIONS,
-      MODULES.ORGANIZATION_USER,
       MODULES.GROUP_PERMISSIONS,
       MODULES.LOGIN_CONFIGS,
       MODULES.INSTANCE_SETTINGS,

@@ -21,6 +21,7 @@ import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsM
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import QueryCardMenuBase from './QueryCardMenu';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 
@@ -115,7 +116,7 @@ export const QueryDataPane = ({ darkMode }) => {
         <div className="queries-header">
           <AddDataSourceButton darkMode={darkMode} />
           <div className="queries-header-actions">
-            <AutoSortButton darkMode={darkMode} />
+            {INLINE_AI_FEATURES_ENABLED && <AutoSortButton darkMode={darkMode} />}
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
