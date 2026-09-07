@@ -106,6 +106,10 @@
     background-color: var(--background-accent-strong);
     margin-top: 4px;
     flex-shrink: 0;
+
+    &.pending {
+      background-color: var(--background-warning-strong);
+    }
   }
 
   &__row-content {

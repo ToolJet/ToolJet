@@ -42,7 +42,7 @@ const deriveEnvironmentStatus = (isSelected, hasTableContext, hasRelation, migra
   const appliedCount = migrationState?.applied_migration_ids?.length ?? 0;
   const isBehind = chainLength > 0 && appliedCount < chainLength;
   const lastMigrationName = lastAppliedMigrationName(migrations, migrationState?.applied_migration_ids);
-  return { dot: isSelected || !isBehind ? 'synced' : 'behind', lastMigrationName };
+  return { dot: isBehind ? 'behind' : 'synced', lastMigrationName };
 };
 
 const EnvironmentSwitcher = () => {

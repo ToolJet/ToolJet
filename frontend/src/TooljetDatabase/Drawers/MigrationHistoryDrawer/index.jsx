@@ -145,14 +145,14 @@ const MigrationHistoryDrawer = ({
             const isExpanded = expandedMigrationId === migration.id;
             return (
               <div key={migration.id} className={cx('migration-history-drawer__row', { disabled: !isApplied })}>
-                <div className="migration-history-drawer__row-marker" />
+                <div className={cx('migration-history-drawer__row-marker', { pending: !isApplied })} />
                 <div className="migration-history-drawer__row-content">
                   <div className="migration-history-drawer__row-title">
                     <span>m{migrations.findIndex((m) => m.id === migration.id) + 1}</span>
                     {migration.id === latestMigrationId && (
                       <span className="migration-history-drawer__badge latest">Latest</span>
                     )}
-                    {migration.id === headMigrationId && (
+                    {migration.id === headMigrationId && activeTab !== 0 && appliedCount < chainLength && (
                       <span className="migration-history-drawer__badge here">{TAB_LABELS[activeTab]} is here</span>
                     )}
                   </div>
