@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button/Button';
 import RemoveRectangle from '@/_ui/Icon/bulkIcons/RemoveRectangle';
 
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   getLabelFontSize,
@@ -204,6 +205,9 @@ export const FileInput = (props) => {
   );
 
   const componentName = component?.component ?? 'FileInput';
+  // Matches FileButton/FilePicker: every child data-cy derives from the widget's own
+  // name, so selectors stay stable and scoped to one instance.
+  const cyBase = generateCypressDataCy(dataCy);
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const rootProps = getRootProps({
@@ -260,6 +264,7 @@ export const FileInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           id={`${id}-label`}
+          dataCy={cyBase}
           fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
         />
@@ -270,13 +275,20 @@ export const FileInput = (props) => {
             ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
           }}
         >
-          <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
+          <div
+            {...rootProps}
+            ref={combinedRootRef}
+            style={computedStyles}
+            id={`component-${id}`}
+            data-cy={`${cyBase}-field`}
+          >
             <input
               {...inputProps}
               aria-required={isMandatory}
               aria-disabled={disabledState || disablePicker}
               aria-busy={isLoading}
               aria-labelledby={`${id}-label`}
+              data-cy={`${cyBase}-input-field`}
               className="tw-hidden"
             />
 
@@ -288,6 +300,7 @@ export const FileInput = (props) => {
                 <div
                   className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-px-2 tw-rounded-none tw-justify-center"
                   style={{ height: '100%' }}
+                  data-cy={`${cyBase}-loader`}
                 >
                   <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
                 </div>
@@ -304,6 +317,7 @@ export const FileInput = (props) => {
                   // Button's own disabled:pointer-events-none, which doesn't apply to this element.
                   style={{ height: '100%', cursor: disabledState || disablePicker ? 'not-allowed' : 'pointer' }}
                   disabled={disabledState || disablePicker}
+                  data-cy={`${cyBase}-button`}
                 >
                   {iconVisibility && (
                     <TablerIcon
@@ -311,6 +325,7 @@ export const FileInput = (props) => {
                       size={16}
                       color={iconColor}
                       className="cursor-pointer clear-indicator"
+                      data-cy={`${cyBase}-icon`}
                     />
                   )}
                   <span className="tw-text-lg">Browse</span>
@@ -325,6 +340,7 @@ export const FileInput = (props) => {
                 className={clsx('tw-text-lg tw-truncate tw-inline-block tw-w-full', {
                   'tw-text-[color:var(--text-placeholder)]': selectedFiles.length === 0,
                 })}
+                data-cy={`${cyBase}-summary`}
               >
                 {selectedSummary}
               </span>
@@ -339,6 +355,7 @@ export const FileInput = (props) => {
                     clearFiles();
                   }}
                   style={{ flexShrink: 0 }}
+                  data-cy={`${cyBase}-clear-button`}
                 >
                   <IconX width={16} className="cursor-pointer" color={'var(--icon-default)'} />
                 </Button>
@@ -350,6 +367,7 @@ export const FileInput = (props) => {
       {hasError && (
         <div
           className="tw-text-sm tw-w-full"
+          data-cy={`${cyBase}-invalid-feedback`}
           style={{
             color: errTextColor,
             textAlign: direction === 'right' ? 'left' : 'right',
