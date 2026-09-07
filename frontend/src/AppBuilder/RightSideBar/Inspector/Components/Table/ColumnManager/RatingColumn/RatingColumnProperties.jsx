@@ -1,7 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ProgramaticallyHandleProperties } from '../../ProgramaticallyHandleProperties';
+import { MAX_RATING_COUNT } from '@/AppBuilder/Widgets/NewTable/_utils/helper';
 
 const RatingColumnProperties = ({
   column,
@@ -14,6 +16,26 @@ const RatingColumnProperties = ({
   component,
 }) => {
   const { t } = useTranslation();
+  const maxRatingLimitMessage = t('widget.Table.maxRatingLimit', 'Max value is {{maxRatingCount}}', {
+    maxRatingCount: MAX_RATING_COUNT,
+  });
+
+  // Bumped whenever an offending value is clamped, forcing the (uncontrolled) CodeHinter to
+  // remount and pick up the corrected value — a re-render alone won't refresh it when the
+  // clamped value is unchanged from what's already saved (e.g. two offending entries in a row).
+  const [maxRatingRemountKey, setMaxRatingRemountKey] = React.useState(0);
+
+  const handleMaxRatingChange = (value) => {
+    const isDynamicBinding = typeof value === 'string' && value.includes('{{');
+    const numericValue = Number(value);
+    const exceedsLimit = !isDynamicBinding && value !== '' && !isNaN(numericValue) && numericValue > MAX_RATING_COUNT;
+    if (exceedsLimit) {
+      toast.error(maxRatingLimitMessage);
+      setMaxRatingRemountKey((key) => key + 1);
+    }
+    onColumnItemChange(index, 'maxRating', exceedsLimit ? String(MAX_RATING_COUNT) : value);
+  };
+
   return (
     <div className="field" style={{ marginTop: '-8px' }}>
       <div className="px-3 mb-3">
@@ -22,13 +44,14 @@ const RatingColumnProperties = ({
       <div className="field mb-2 px-3">
         <label className="">{t('widget.Table.maxRating', 'Max rating')}</label>
         <CodeHinter
+          key={maxRatingRemountKey}
           currentState={currentState}
           initialValue={column?.maxRating}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
           placeholder={'5'}
-          onChange={(value) => onColumnItemChange(index, 'maxRating', value)}
+          onChange={handleMaxRatingChange}
           componentName={getPopoverFieldSource(column.columnType, 'maxRating')}
           popOverCallback={(showing) => {
             setColumnPopoverRootCloseBlocker('maxRating', showing);
