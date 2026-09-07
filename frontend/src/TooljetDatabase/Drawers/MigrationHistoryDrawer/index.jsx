@@ -5,8 +5,9 @@ import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
-import { ArrowLeft, Download, CodeXml } from 'lucide-react';
+import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
 import SqlEditor from '../../_components/SqlEditor';
+import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import './styles.scss';
 
@@ -44,6 +45,8 @@ const MigrationHistoryDrawer = ({
   const [expandedMigrationId, setExpandedMigrationId] = useState(null);
   const [promoteTarget, setPromoteTarget] = useState(null);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const { switchEnvironment } = useTjdbActions();
+  const { runMigration, modal: newMigrationModal } = useMigrationModal();
 
   // Open on whichever environment the switcher is currently viewing, not always Development.
   useEffect(() => {
@@ -171,6 +174,36 @@ const MigrationHistoryDrawer = ({
         </div>
 
         <div className="migration-history-drawer__footer">
+          <div>
+            {/* Raw SQL authoring always targets the table's own development relation
+                (recordRawSqlMigration resolves it with no environment_id) - only offer it there. */}
+            {activeTab === 0 && (
+              <ButtonSolid
+                variant="tertiary"
+                onClick={() =>
+                  runMigration({
+                    run: () => Promise.resolve({}),
+                    tableId: selectedTable?.id,
+                    showSqlEditor: true,
+                    changes: [],
+                    modalTitle: 'New migration',
+                    titlePlaceholder: 'Explain your changes briefly..',
+                    // The migration ran against development - refetchMigrations only updates this
+                    // drawer's list. switchEnvironment re-triggers Table/index.jsx's registered
+                    // handler, which reloads both the grid rows and column metadata for that env
+                    // (same mechanism PromotePreviewView.runPromote uses below).
+                    onSuccess: () => {
+                      refetchMigrations();
+                      switchEnvironment(allEnvironments[activeTab]);
+                    },
+                  })
+                }
+                data-cy="new-migration-button"
+              >
+                <Plus size={16} /> New migration
+              </ButtonSolid>
+            )}
+          </div>
           {canPromote && (
             <ButtonSolid
               onClick={() =>
@@ -185,6 +218,7 @@ const MigrationHistoryDrawer = ({
             </ButtonSolid>
           )}
         </div>
+        {newMigrationModal}
       </div>
     </Drawer>
   );

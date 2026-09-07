@@ -65,6 +65,7 @@ function DependentsWarning({ loading, dependents }) {
 export default function MigrationConfirmModal({
   show,
   darkMode,
+  modalTitle,
   titlePlaceholder,
   title,
   onTitleChange,
@@ -91,7 +92,9 @@ export default function MigrationConfirmModal({
       data-cy="migration-confirm-modal"
     >
       <Modal.Header closeButton={false}>
-        <Modal.Title>{showSqlEditor ? 'Schema changes require migration' : 'Confirm migration'}</Modal.Title>
+        <Modal.Title>
+          {modalTitle || (showSqlEditor ? 'Schema changes require migration' : 'Confirm migration')}
+        </Modal.Title>
         <span className="cursor-pointer" onClick={onCancel} data-cy="migration-confirm-modal-close">
           <SolidIcon name="remove" width="16" fill="#889096" />
         </span>
@@ -116,24 +119,35 @@ export default function MigrationConfirmModal({
         {showSqlEditor && (
           <div className="mb-3">
             <div className="form-label">Run migration on development environment</div>
+            {/* Unlike the seed-data SQL box, this step never parses the SQL - the table must be
+                addressed as "{{self}}", never by its logical name, or Postgres reports it
+                missing. It resolves to a raw uuid (hyphens included), which Postgres only accepts
+                as a bare identifier when quoted - unquoted, the hyphens read as subtraction and
+                fail with "syntax error at or near '-'". */}
+            <div className="tw-text-muted tw-mb-1" style={{ fontSize: '12px' }}>
+              Reference this table as <code>{'"{{self}}"'}</code> (double-quoted - its physical name is a uuid), not by
+              its logical name.
+            </div>
             <SqlEditor
               value={sql}
               onChange={onSqlChange}
               height="15vh"
-              placeholder="-- Optional: an accompanying data step, e.g. UPDATE your_table SET ..."
+              placeholder={'-- Optional: an accompanying data step, e.g. UPDATE "{{self}}" SET column = value;'}
               dataCy="migration-confirm-sql-editor"
             />
           </div>
         )}
 
-        <div className="mb-3">
-          <div className="form-label">Changes overview ({changes.length})</div>
-          <div className="migration-changes-list" data-cy="migration-changes-list">
-            {changes.map((change, index) => (
-              <ChangeRow key={index} type={change.type} label={change.label} />
-            ))}
+        {changes.length > 0 && (
+          <div className="mb-3">
+            <div className="form-label">Changes overview ({changes.length})</div>
+            <div className="migration-changes-list" data-cy="migration-changes-list">
+              {changes.map((change, index) => (
+                <ChangeRow key={index} type={change.type} label={change.label} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <DependentsWarning loading={depsLoading} dependents={dependents} />
 

@@ -123,6 +123,7 @@ export default function useMigrationModal() {
     <MigrationConfirmModal
       show={state.isOpen}
       darkMode={localStorage.getItem('darkMode') === 'true'}
+      modalTitle={optionsRef.current?.modalTitle}
       titlePlaceholder={optionsRef.current?.titlePlaceholder}
       title={state.title}
       onTitleChange={(title) => setState((prev) => ({ ...prev, title }))}

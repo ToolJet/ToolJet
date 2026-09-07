@@ -740,6 +740,7 @@ const Table = ({ collapseSidebar }) => {
         tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName, migrationName),
       onSuccess: async () => {
         await fetchTableMetadata();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
         toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
       },
     });
