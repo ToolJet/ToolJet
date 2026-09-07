@@ -1,4 +1,4 @@
-import { groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 
 // Shared auth-header constants for negative auth cases

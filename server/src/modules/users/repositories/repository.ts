@@ -288,6 +288,8 @@ export class UserRepository extends Repository<User> {
           invitationToken: null,
           invitationTokenExpiry: null,
           llmProvider: null,
+          llmModel: null,
+          llmModelContextWindow: null,
           createdAt: null,
           updatedAt: null,
           user,

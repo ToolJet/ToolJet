@@ -1,9 +1,9 @@
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { appEditorSelector } from "Selectors/multiEnv";
-import { appVersionText } from "Texts/exportImport";
+import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
+import { appVersionSelectors } from "Selectors/platform/exportImport";
+import { appEditorSelector } from "Selectors/platform/multiEnv";
+import { appVersionText } from "Texts/platform/exportImport";
 
 export const promoteApp = () => {
   cy.get(commonEeSelectors.promoteButton).click();

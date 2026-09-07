@@ -55,6 +55,12 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'llm_provider', nullable: true })
   llmProvider: string;
 
+  @Column({ name: 'llm_model', nullable: true })
+  llmModel: string;
+
+  @Column({ name: 'llm_model_context_window', nullable: true })
+  llmModelContextWindow: number;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
