@@ -5,6 +5,8 @@ import { createContext } from 'react';
 // without pulling in index.jsx's import chain (Layout -> Header -> ...circular back to itself).
 export const TooljetDatabaseContext = createContext({
   canEditTjdb: false,
+  canEditSchema: false,
+  isDevelopmentEnvironment: true,
   organizationId: null,
   setOrganizationId: () => {},
   selectedTable: '',

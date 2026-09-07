@@ -51,7 +51,7 @@ const Table = ({ collapseSidebar }) => {
     configurations,
     setConfigurations,
     getConfigurationProperty,
-    canEditTjdb,
+    canEditSchema,
   } = useContext(TooljetDatabaseContext);
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
@@ -1270,7 +1270,7 @@ const Table = ({ collapseSidebar }) => {
                             closeMenu();
                           }}
                           onDelete={() => handleDelete(column.Header)}
-                          disabled={!canEditTjdb}
+                          disabled={!canEditSchema}
                           show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
                           className="column-popover-parent"
                           darkMode={darkMode}
@@ -1288,7 +1288,7 @@ const Table = ({ collapseSidebar }) => {
                       </div>
                     </th>
                   ))}
-                  {canEditTjdb && (
+                  {canEditSchema && (
                     <th
                       onClick={() => {
                         resetCellAndRowSelection();

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
-import { useTjdbActions } from './_stores/tjdbStore';
+import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
 export { TooljetDatabaseContext };
@@ -38,6 +38,8 @@ export const TooljetDatabase = (props) => {
   const { admin, user_permissions } = authenticationService.currentSessionValue;
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
+  const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
+  const canEditSchema = canEditTjdb && isDevelopmentEnvironment;
 
   if (!admin && !isBuilder) {
     navigate('/');
@@ -69,6 +71,8 @@ export const TooljetDatabase = (props) => {
   const value = useMemo(
     () => ({
       canEditTjdb,
+      canEditSchema,
+      isDevelopmentEnvironment,
       searchParam,
       setSearchParam,
       organizationId,
@@ -109,6 +113,8 @@ export const TooljetDatabase = (props) => {
       totalRecords,
       foreignKeys,
       configurations,
+      canEditSchema,
+      isDevelopmentEnvironment,
     ]
   );
 

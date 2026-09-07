@@ -120,4 +120,9 @@ export const useTjdbStore = create(
 // Non-React accessor: the service layer builds URLs outside any render, so it cannot use a hook.
 export const currentEnvironmentId = () => useTjdbStore.getState().selectedEnvironment?.id ?? null;
 
+// priority 1 is development by backend convention (DEVELOPMENT_PRIORITY in relation-resolver.service.ts).
+// Fall back to true when nothing is loaded yet so CE (single environment) behaves exactly as before.
+export const useIsDevelopmentEnvironment = () =>
+  useTjdbStore((state) => (state.selectedEnvironment ? state.selectedEnvironment.priority === 1 : true));
+
 export const useTjdbActions = () => useTjdbStore((state) => state.actions);

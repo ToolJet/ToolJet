@@ -7,6 +7,7 @@ import EditIcon from '../../Icons/EditColumn.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Menu from '../../Icons/Menu.svg';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const ListItemPopover = ({
   onEdit,
@@ -16,49 +17,67 @@ export const ListItemPopover = ({
   onMenuToggle,
   onAddNewColumnBtnClick,
   canEditTjdb,
+  canEditSchema,
 }) => {
   const closeMenu = () => {
     document.body.click();
   };
 
-  const ddlItemClass = `col text-truncate${!canEditTjdb ? ' tj-text-muted' : ''}`;
-  const ddlRowClass = `row${!canEditTjdb ? ' tj-disabled-row' : ' cursor-pointer'}`;
+  // A schema affordance can be blocked either because the user lacks the TJDB permission
+  // (canEditTjdb false) or because they are not on Development (canEditTjdb true, canEditSchema
+  // false). Only the latter gets the environment tooltip - a permission block keeps its existing,
+  // tooltip-less greyed treatment.
+  const blockedByEnvironment = canEditTjdb && !canEditSchema;
+  const ddlItemClass = `col text-truncate${!canEditSchema ? ' tj-text-muted' : ''}`;
+  const ddlRowClass = `row${!canEditSchema ? ' tj-disabled-row' : ' cursor-pointer'}`;
+  const wrapIfEnvBlocked = (row) =>
+    blockedByEnvironment ? (
+      <ToolTip message="Schema changes can only be made in the Development environment" placement="top">
+        <div>{row}</div>
+      </ToolTip>
+    ) : (
+      row
+    );
 
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        <div className={ddlRowClass} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
-          <div className="col-auto" data-cy="edit-option-icon">
-            <EditIcon />
+        {wrapIfEnvBlocked(
+          <div className={ddlRowClass} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+            <div className="col-auto" data-cy="edit-option-icon">
+              <EditIcon />
+            </div>
+            <div
+              className={ddlItemClass}
+              data-cy="rename-table-option"
+              onClick={(event) => {
+                event.stopPropagation();
+                closeMenu();
+                onEdit();
+              }}
+            >
+              Edit table
+            </div>
           </div>
-          <div
-            className={ddlItemClass}
-            data-cy="rename-table-option"
-            onClick={(event) => {
-              event.stopPropagation();
-              closeMenu();
-              onEdit();
-            }}
-          >
-            Edit table
+        )}
+        {wrapIfEnvBlocked(
+          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+            <div className="col-auto" data-cy="add-new-column-icon">
+              <SolidIcon name="column" width="14" />
+            </div>
+            <div
+              className={ddlItemClass}
+              data-cy="add-new-column-option"
+              onClick={(event) => {
+                event.stopPropagation();
+                closeMenu();
+                onAddNewColumnBtnClick();
+              }}
+            >
+              Add new column
+            </div>
           </div>
-        </div>
-        <div className={`mt-3 ${ddlRowClass}`} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
-          <div className="col-auto" data-cy="add-new-column-icon">
-            <SolidIcon name="column" width="14" />
-          </div>
-          <div
-            className={ddlItemClass}
-            data-cy="add-new-column-option"
-            onClick={(event) => {
-              event.stopPropagation();
-              closeMenu();
-              onAddNewColumnBtnClick();
-            }}
-          >
-            Add new column
-          </div>
-        </div>
+        )}
         <div className="row mt-3 cursor-pointer">
           <div className="col-auto" data-cy="export-schema-option-icon">
             <SolidIcon name="filedownload" width="14" viewBox="0 0 25 25" />
@@ -80,21 +99,23 @@ export const ListItemPopover = ({
           </div>
           <div className="col text-truncate">Duplicate</div>
         </div> */}
-        <div className={`mt-3 ${ddlRowClass}`} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
-          <div className="col-auto" data-cy="delete-table-option-icon">
-            <DeleteIcon />
+        {wrapIfEnvBlocked(
+          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+            <div className="col-auto" data-cy="delete-table-option-icon">
+              <DeleteIcon />
+            </div>
+            <div
+              className={ddlItemClass}
+              data-cy="delete-table-option"
+              onClick={() => {
+                closeMenu();
+                onDelete();
+              }}
+            >
+              Delete table
+            </div>
           </div>
-          <div
-            className={ddlItemClass}
-            data-cy="delete-table-option"
-            onClick={() => {
-              closeMenu();
-              onDelete();
-            }}
-          >
-            Delete table
-          </div>
-        </div>
+        )}
       </Popover.Body>
     </Popover>
   );

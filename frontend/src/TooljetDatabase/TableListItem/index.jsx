@@ -25,6 +25,7 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
     setForeignKeys,
     setConfigurations,
     canEditTjdb,
+    canEditSchema,
   } = useContext(TooljetDatabaseContext);
   const pageSize = useTjdbStore((state) => state.pageSize);
   const { fetchTableMetadata, setPageCount } = useTjdbActions();
@@ -172,6 +173,7 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
               setIsAddNewColumnDrawerOpen(true);
             }}
             canEditTjdb={canEditTjdb}
+            canEditSchema={canEditSchema}
           />
         </div>
       )}
