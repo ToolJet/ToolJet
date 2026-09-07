@@ -130,9 +130,14 @@ const shown = uncovered.slice(0, MAX_FILES);
 const suiteRow = (label, t) =>
   `| ${label} | ${t.cov}/${t.exec} | ${bar(t.cov, t.exec)} ${fmtPct(t.cov, t.exec)} |`;
 
+// Threshold verdict mirrors ci-gate's 'Patch Coverage' commit status.
+const THRESHOLD = Number(process.env.PATCH_COV_THRESHOLD || 80);
+const totalPct = total.exec === 0 ? null : (total.cov / total.exec) * 100;
+const gate = totalPct === null ? '' : totalPct >= THRESHOLD ? ` · ✅ meets ${THRESHOLD}% gate` : ` · ❌ below ${THRESHOLD}% gate`;
+
 const lines = [
   '<details>',
-  `<summary><b>🎯 Patch coverage — ${fmtPct(total.cov, total.exec)}</b> · ${total.cov}/${total.exec} changed lines covered</summary>`,
+  `<summary><b>🎯 Patch coverage — ${fmtPct(total.cov, total.exec)}</b> · ${total.cov}/${total.exec} changed lines covered${gate}</summary>`,
   '',
   '| Suite | Lines | Covered |',
   '|---|---:|---:|',
@@ -157,7 +162,8 @@ if (shown.length) {
 lines.push(
   '<sub>Patch coverage = covered ÷ changed executable lines (added/modified vs the merge-base). ' +
     'Combined counts a line as covered if either suite hit it; server/git-sync split is by file path. ' +
-    'Informational only — never gates the merge.</sub>',
+    `Enforced by the required 'Patch Coverage' commit status (≥${THRESHOLD}%); ` +
+    'the `skip-patch-coverage` PR label exempts a PR.</sub>',
   '</details>'
 );
 
