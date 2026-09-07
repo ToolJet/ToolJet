@@ -9,6 +9,8 @@ import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
 import SqlEditor from '../../_components/SqlEditor';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
 import { findHeadMigrationId } from '../../constants';
 import './styles.scss';
 
@@ -48,10 +50,17 @@ const MigrationHistoryDrawer = ({
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const { switchEnvironment } = useTjdbActions();
   const { runMigration, modal: newMigrationModal } = useMigrationModal();
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Environment actions need a fresh license verdict: a plan that expired or was downgraded
+  // mid-session would otherwise leave promote enabled against a stale multiEnvironment flag.
+  // Only the license is re-read here - never the environments list, whose reload would reset
+  // the selection back to development (see tjdbStore.loadEnvironments).
+  const multiEnvLocked = isMultiEnvLicenseInvalid(featureAccess);
 
   // Open on whichever environment the switcher is currently viewing, not always Development.
   useEffect(() => {
     if (!isOpen) return;
+    useLicenseStore.getState().actions.fetchFeatureAccess();
     const index = allEnvironments.findIndex((env) => env.id === selectedEnvironment?.id);
     setActiveTab(index >= 0 ? index : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +80,10 @@ const MigrationHistoryDrawer = ({
   const nextEnv = allEnvironments[activeTab + 1];
   const nextEnvState = nextEnv ? envStateByPriorityIndex[activeTab + 1] : null;
   const nextEnvBehind = nextEnv && (nextEnvState?.applied_migration_ids?.length ?? 0) < appliedCount;
-  const canPromote = activeTab < allEnvironments.length - 1 && nextEnv && nextEnvBehind;
+  // Promote replays migrations through the sibling relation in the target environment;
+  // without a multi-environment license the backend rejects it (403), so pre-gate here
+  // instead of surfacing an error toast after the click.
+  const canPromote = activeTab < allEnvironments.length - 1 && nextEnv && nextEnvBehind && !multiEnvLocked;
 
   const handleClose = () => {
     setExpandedMigrationId(null);
@@ -107,7 +119,10 @@ const MigrationHistoryDrawer = ({
 
         <div className="migration-history-drawer__tabs">
           {TAB_LABELS.map((label, index) => {
-            const licensed = index < allEnvironments.length;
+            // licensed folds the environment list (license-filtered server-side when fresh)
+            // with the live license verdict, so a stale list after expiry/downgrade still
+            // renders the plan tooltip instead of a misleading "table does not exist".
+            const licensed = index < allEnvironments.length && !multiEnvLocked;
             const hasRelation =
               licensed &&
               (relationsByEnvironment.find((r) => r.environment_id === allEnvironments[index].id)?.has_relation ??
