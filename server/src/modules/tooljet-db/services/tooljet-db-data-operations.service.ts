@@ -336,7 +336,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       environmentId
     );
 
-    return { status: 'ok', data: { result } };
+    return { status: 'ok', data: result };
   }
 
   async sqlExecution(queryOptions, context): Promise<QueryResult> {
@@ -414,7 +414,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       this.parseTableNameInAST(ast, internalTableNameToRelationIdMap);
       const validSql = await sqlParser.sqlify(ast);
       const results = await tooljetDbTenantConnection.query(validSql);
-      return { status: 'ok', data: { results } };
+      return { status: 'ok', data: results };
     } catch (error) {
       const modifiedErrorObj = modifyTjdbErrorObject(error);
       const errorObj = new QueryFailedError(error, [], new PostgrestError(modifiedErrorObj));
