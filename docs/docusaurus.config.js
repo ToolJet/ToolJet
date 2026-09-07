@@ -34,7 +34,7 @@ module.exports = {
       theme: { light: 'neutral', dark: 'dark' },
       options: { securityLevel: 'loose' },
     },
-    image: 'img/tooljet-ai-og-image.png',
+    image: 'img/tooljet-mcp-og-image.png',
     // announcementBar: {
     //   id: 'support_us',
     //   content:
