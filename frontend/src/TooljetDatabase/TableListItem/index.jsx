@@ -12,6 +12,7 @@ import { dataTypes } from '../constants';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import DeleteTableModal from '../DeleteTableModal';
 import ExportCsvModal from '../ExportCsvModal';
+import generateFile from '@/_lib/generate-file';
 
 export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -31,7 +32,7 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
   } = useContext(TooljetDatabaseContext);
   const pageSize = useTjdbStore((state) => state.pageSize);
   const environments = useTjdbStore((state) => state.environments);
-  const { fetchTableMetadata, setPageCount } = useTjdbActions();
+  const { fetchTableMetadata, setPageCount, bumpMigrations } = useTjdbActions();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
@@ -60,16 +61,8 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
       .then((data) => {
         const tableName = selectedTable.table_name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${tableName}-export-${new Date().getTime()}`;
-        // simulate link click download
         const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = fileName + '.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        generateFile(fileName + '.json', json, 'json');
       })
       .catch(() => {
         toast.error('Could not export table.', {
@@ -84,7 +77,12 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
       setDeleteModalState((prev) => {
         // Modal was cancelled before this resolved - nothing to update.
         if (!prev.isOpen) return prev;
-        return { ...prev, loading: false, dependents: error ? null : data?.result };
+        return {
+          ...prev,
+          loading: false,
+          dependents: error ? null : data?.result,
+          error: error ? 'Failed to check if table is in use. Proceed with caution.' : null,
+        };
       });
     });
   };
@@ -104,6 +102,7 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
         return;
       }
       toast.success(`Table "${text}" deleted successfully`);
+      bumpMigrations();
       closeDeleteModal();
       onDeleteCallback && onDeleteCallback();
     });

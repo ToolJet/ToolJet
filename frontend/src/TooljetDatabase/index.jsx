@@ -72,7 +72,6 @@ export const TooljetDatabase = (props) => {
     () => ({
       canEditTjdb,
       canEditSchema,
-      isDevelopmentEnvironment,
       searchParam,
       setSearchParam,
       organizationId,
@@ -114,7 +113,6 @@ export const TooljetDatabase = (props) => {
       foreignKeys,
       configurations,
       canEditSchema,
-      isDevelopmentEnvironment,
     ]
   );
 

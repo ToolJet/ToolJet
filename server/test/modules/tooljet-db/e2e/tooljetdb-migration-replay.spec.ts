@@ -5,6 +5,7 @@
  *
  * @group database
  */
+import { ensureWorkspaceSchema, ensureTenantRole } from '../../../../test/tooljet-db-test.helper';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { In, IsNull } from 'typeorm';
@@ -46,31 +47,7 @@ describe('TooljetDb migration replay', () => {
     let branchId: string;
     let tableOperationsService: TooljetDbTableOperationsService;
 
-    async function ensureWorkspaceSchema(orgId: string): Promise<boolean> {
-      const tjds = getTooljetDbDataSource();
-      if (!tjds) return false;
-      try {
-        await tjds.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path that
-    // calls createTooljetDbTenantSchemaAndRole), so Task B0's ownership transfer needs the tenant
-    // role provisioned here instead.
-    async function ensureTenantRole(orgId: string): Promise<boolean> {
-      const tjds = getTooljetDbDataSource();
-      if (!tjds) return false;
-      try {
-        const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
-        if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    // Use imported ensureWorkspaceSchema and ensureTenantRole
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));

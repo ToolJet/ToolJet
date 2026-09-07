@@ -8,7 +8,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
-import { headMigrationLabel } from '../constants';
+import { envHasRelation, headMigrationLabel, TABLE_ABSENT_TOOLTIP } from '../constants';
+import generateFile from '@/_lib/generate-file';
+import '../MigrationConfirmModal/styles.scss';
 
 /**
  * Environment picker for a data export. Row counts and the head-migration label are read once per
@@ -31,15 +33,12 @@ export default function ExportCsvModal({
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(null);
   const [exporting, setExporting] = useState(false);
 
-  const hasRelation = (environmentId) =>
-    relationsByEnvironment.find((r) => r.environment_id === environmentId)?.has_relation ?? false;
-
   useEffect(() => {
     if (!show) return;
     setMigrationsData(null);
     setRowCounts({});
     setExporting(false);
-    setSelectedEnvironmentId(environments.find((env) => hasRelation(env.id))?.id ?? null);
+    setSelectedEnvironmentId(environments.find((env) => envHasRelation(relationsByEnvironment, env.id))?.id ?? null);
 
     tooljetDatabaseService.getTableMigrations(organizationId, tableId).then(({ data, error }) => {
       if (error) return;
@@ -47,7 +46,7 @@ export default function ExportCsvModal({
     });
 
     environments
-      .filter((env) => hasRelation(env.id))
+      .filter((env) => envHasRelation(relationsByEnvironment, env.id))
       .forEach((env) => {
         tooljetDatabaseService.getTableRowCount(tableId, env.id).then(({ count, error }) => {
           setRowCounts((prev) => ({ ...prev, [env.id]: error ? null : count }));
@@ -74,14 +73,7 @@ export default function ExportCsvModal({
     tooljetDatabaseService
       .exportTableCsv(tableId, selectedEnvironmentId)
       .then((blob) => {
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = `${tableName}-${environment?.name ?? 'export'}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
+        generateFile(`${tableName}-${environment?.name ?? 'export'}.csv`, blob, 'csv');
         toast.success('Table exported successfully', { id: 'tjdb-csv-export' });
         onCancel();
       })
@@ -110,7 +102,7 @@ export default function ExportCsvModal({
       <Modal.Body className="migration-confirm-modal-body">
         <div className="tw-flex tw-flex-col tw-gap-2">
           {environments.map((environment) => {
-            const disabled = !hasRelation(environment.id);
+            const disabled = !envHasRelation(relationsByEnvironment, environment.id);
             const count = rowCounts[environment.id];
             const label = migrationsData
               ? headMigrationLabel(
@@ -152,12 +144,21 @@ export default function ExportCsvModal({
             );
             if (!disabled) return row;
             return (
-              <ToolTip key={environment.id} message="Table does not exist in this environment" placement="top">
+              <ToolTip key={environment.id} message={TABLE_ABSENT_TOOLTIP} placement="top" show>
                 <div>{row}</div>
               </ToolTip>
             );
           })}
         </div>
+        {selectedEnvironmentId && rowCounts[selectedEnvironmentId] > 50000 && (
+          <div
+            className="migration-deps-warning mt-3 mb-0 tw-text-orange-500 tw-bg-orange-50 tw-border-orange-200"
+            data-cy="export-csv-warning"
+          >
+            This table contains a large number of rows ({rowCounts[selectedEnvironmentId]}). Exporting may take some
+            time and consume significant memory.
+          </div>
+        )}
       </Modal.Body>
       <Modal.Footer>
         <ButtonSolid variant="tertiary" onClick={onCancel} disabled={exporting} data-cy="export-csv-modal-cancel">

@@ -8,7 +8,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 // defaults off: `dependents.foreignKeyTables` is tied to the table itself, not to the action being
 // confirmed, so a rename/add-column migration on a table other tables reference would otherwise show
 // a "Referencing tables" line for a block that only actually applies to dropping the table.
-export default function DependentsWarning({ loading, dependents, showForeignKeyTables = false }) {
+export default function DependentsWarning({ loading, dependents, foreignKeyTables = [] }) {
   const [expanded, setExpanded] = useState(false);
   if (loading) {
     return (
@@ -18,7 +18,6 @@ export default function DependentsWarning({ loading, dependents, showForeignKeyT
     );
   }
 
-  const foreignKeyTables = (showForeignKeyTables && dependents?.foreignKeyTables) || [];
   const hasDependents = !!dependents && dependents.count > 0;
   if (!hasDependents && foreignKeyTables.length === 0) return null;
 

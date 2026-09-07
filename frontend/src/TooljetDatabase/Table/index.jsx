@@ -13,7 +13,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns, isSqlModeDisabled } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, isSqlModeDisabled, SCHEMA_ENV_TOOLTIP } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
@@ -1263,64 +1263,47 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
-                        {(() => {
-                          const columnPopover = (
-                            <TablePopover
-                              onEdit={() => {
-                                setSelectedColumn(column);
-                                setIsEditColumnDrawerOpen(true);
-                                closeMenu();
-                              }}
-                              onDelete={() => handleDelete(column.Header)}
-                              disabled={!canEditSchema}
-                              show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                              className="column-popover-parent"
-                              darkMode={darkMode}
-                              showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
-                            >
-                              <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                                <Menu
-                                  width="20"
-                                  height="20"
-                                  className="tjdb-menu-icon"
-                                  onClick={(e) => onMenuClick(index, e)}
-                                />
-                              </div>
-                            </TablePopover>
-                          );
-                          if (canEditSchema) return columnPopover;
-                          return (
-                            <ToolTip
-                              message="Schema changes can only be made in the Development environment"
-                              placement="top"
-                            >
-                              <div>{columnPopover}</div>
-                            </ToolTip>
-                          );
-                        })()}
+                        <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
+                          <TablePopover
+                            onEdit={() => {
+                              setSelectedColumn(column);
+                              setIsEditColumnDrawerOpen(true);
+                              closeMenu();
+                            }}
+                            onDelete={() => handleDelete(column.Header)}
+                            disabled={!canEditSchema}
+                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                            className="column-popover-parent"
+                            darkMode={darkMode}
+                            showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
+                          >
+                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                              <Menu
+                                width="20"
+                                height="20"
+                                className="tjdb-menu-icon"
+                                onClick={(e) => onMenuClick(index, e)}
+                              />
+                            </div>
+                          </TablePopover>
+                        </ToolTip>
                       </div>
                     </th>
                   ))}
-                  {canEditSchema ? (
+                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
                     <th
                       onClick={() => {
-                        resetCellAndRowSelection();
-                        setIsCreateColumnDrawerOpen(true);
+                        if (canEditSchema) {
+                          resetCellAndRowSelection();
+                          setIsCreateColumnDrawerOpen(true);
+                        }
                       }}
                       className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                      style={!canEditSchema ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                     >
                       <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                     </th>
-                  ) : (
-                    <ToolTip message="Schema changes can only be made in the Development environment" placement="top">
-                      <th
-                        className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
-                        style={{ opacity: 0.5, cursor: 'not-allowed' }}
-                      >
-                        <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
-                      </th>
-                    </ToolTip>
-                  )}
+                  </ToolTip>
                 </tr>
               ))}
             </thead>

@@ -10,6 +10,7 @@
  * @group database
  */
 import { INestApplication } from '@nestjs/common';
+import { ensureWorkspaceSchema, ensureTenantRole } from '../../../../test/tooljet-db-test.helper';
 import * as request from 'supertest';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
@@ -49,28 +50,7 @@ describe('PostgrestProxyService', () => {
       },
     });
 
-    async function ensureWorkspaceSchema(orgId: string): Promise<boolean> {
-      const tjds = getTooljetDbDataSource();
-      if (!tjds) return false;
-      try {
-        await tjds.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    async function ensureTenantRole(orgId: string): Promise<boolean> {
-      const tjds = getTooljetDbDataSource();
-      if (!tjds) return false;
-      try {
-        const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
-        if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    // Use imported ensureWorkspaceSchema and ensureTenantRole
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));

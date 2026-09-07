@@ -8,6 +8,7 @@ import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Menu from '../../Icons/Menu.svg';
 import { ToolTip } from '@/_components/ToolTip';
+import { SCHEMA_ENV_TOOLTIP } from '../../constants';
 
 export const ListItemPopover = ({
   onEdit,
@@ -31,14 +32,11 @@ export const ListItemPopover = ({
   const blockedByEnvironment = canEditTjdb && !canEditSchema;
   const ddlItemClass = `col text-truncate${!canEditSchema ? ' tj-text-muted' : ''}`;
   const ddlRowClass = `row${!canEditSchema ? ' tj-disabled-row' : ' cursor-pointer'}`;
-  const wrapIfEnvBlocked = (row) =>
-    blockedByEnvironment ? (
-      <ToolTip message="Schema changes can only be made in the Development environment" placement="top">
-        <div>{row}</div>
-      </ToolTip>
-    ) : (
-      row
-    );
+  const wrapIfEnvBlocked = (row) => (
+    <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={blockedByEnvironment}>
+      <div>{row}</div>
+    </ToolTip>
+  );
 
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>

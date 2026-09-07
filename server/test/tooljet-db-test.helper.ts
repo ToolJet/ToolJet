@@ -1,5 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from 'src/modules/tooljet-db/types';
+import { getTooljetDbDataSource } from 'test-helper';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
   {
@@ -149,4 +150,27 @@ async function createTable(
   params: { table_name: string; columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] }
 ) {
   await tooljetDbService.perform(organizationId, 'create_table', params, undefined, { appManager, tjdbManager });
+}
+
+export async function ensureWorkspaceSchema(orgId: string): Promise<boolean> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return false;
+  try {
+    await tjds.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function ensureTenantRole(orgId: string): Promise<boolean> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return false;
+  try {
+    const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
+    if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
+    return true;
+  } catch {
+    return false;
+  }
 }

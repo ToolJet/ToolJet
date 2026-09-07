@@ -231,14 +231,8 @@ async function exportTableCsv(tableId, environmentId) {
     credentials: 'include',
   });
   if (!response.ok) {
-    let message = response.statusText || 'Failed to export table';
-    try {
-      const body = await response.json();
-      message = body?.message ?? message;
-    } catch {
-      // Non-JSON error body - keep statusText.
-    }
-    throw new Error(message);
+    const body = await response.json().catch(() => null);
+    throw new Error((body?.message ?? response.statusText) || 'Failed to export table');
   }
   return response.blob();
 }

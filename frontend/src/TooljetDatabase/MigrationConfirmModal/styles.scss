@@ -74,4 +74,15 @@
       color: var(--text-placeholder);
     }
   }
+
+  .migration-deps-fk-tables {
+    color: var(--status-warning-strong);
+    font-weight: 500;
+
+    &:not(:first-child) {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--status-warning-strong);
+    }
+  }
 }

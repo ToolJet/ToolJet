@@ -136,6 +136,15 @@ describe('TooljetDb drop_table dependents', () => {
       } as Partial<DataQuery>);
       await updateEntity(App, queryApp.id, { currentVersionId: version.id });
 
+      const depsRes = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/dependents`)
+        .set(headers());
+      expect(depsRes.statusCode).toBe(200);
+      expect(depsRes.body.result.count).toBe(1);
+      expect(depsRes.body.result.dependents[0].name).toBe('Query-Dep-App');
+      expect(depsRes.body.result.foreignKeyTables).toEqual([]);
+
       const res = await dropTable('query_dep_tbl');
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toMatch(/app quer/i);
@@ -167,6 +176,15 @@ describe('TooljetDb drop_table dependents', () => {
         on_update: 'NO ACTION',
       });
 
+      const tableId = await internalTableId('fk_parent_dep_tbl');
+      const depsRes = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/dependents`)
+        .set(headers());
+      expect(depsRes.statusCode).toBe(200);
+      expect(depsRes.body.result.count).toBe(0);
+      expect(depsRes.body.result.foreignKeyTables).toEqual([expect.objectContaining({ name: 'fk_child_dep_tbl' })]);
+
       const res = await dropTable('fk_parent_dep_tbl');
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toMatch(/foreign key/i);
@@ -197,6 +215,15 @@ describe('TooljetDb drop_table dependents', () => {
         on_update: 'NO ACTION',
       });
 
+      const tableId = await internalTableId('fk_self_ref_tbl');
+      const depsRes = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/dependents`)
+        .set(headers());
+      expect(depsRes.statusCode).toBe(200);
+      expect(depsRes.body.result.count).toBe(0);
+      expect(depsRes.body.result.foreignKeyTables).toEqual([]);
+
       const res = await dropTable('fk_self_ref_tbl');
       expect(res.statusCode).toBe(200);
 
@@ -211,6 +238,15 @@ describe('TooljetDb drop_table dependents', () => {
 
       await createTable('no_deps_tbl');
 
+      const tableId = await internalTableId('no_deps_tbl');
+      const depsRes = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/dependents`)
+        .set(headers());
+      expect(depsRes.statusCode).toBe(200);
+      expect(depsRes.body.result.count).toBe(0);
+      expect(depsRes.body.result.foreignKeyTables).toEqual([]);
+
       const res = await dropTable('no_deps_tbl');
       expect(res.statusCode).toBe(200);
 
@@ -218,10 +254,6 @@ describe('TooljetDb drop_table dependents', () => {
         where: { organizationId: orgId, tableName: 'no_deps_tbl' },
       });
       expect(gone).toBeNull();
-    });
-
-    afterEach(async () => {
-      jest.restoreAllMocks();
     });
   });
 });

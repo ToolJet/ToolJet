@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import DependentsWarning from '../_components/DependentsWarning';
+import '../MigrationConfirmModal/styles.scss';
 
 /**
  * Two states, driven entirely by props - TableListItem owns the dependents fetch and the delete
@@ -23,6 +24,9 @@ export default function DeleteTableModal({
   onConfirm,
   onCancel,
 }) {
+  const hasAppQueries = dependents?.count > 0;
+  const hasFKs = (dependents?.foreignKeyTables?.length ?? 0) > 0;
+
   return (
     <Modal
       show={show}
@@ -34,7 +38,15 @@ export default function DeleteTableModal({
       data-cy="delete-table-modal"
     >
       <Modal.Header closeButton={false}>
-        <Modal.Title>{blocked ? 'Dependent queries found' : 'Delete table'}</Modal.Title>
+        <Modal.Title>
+          {blocked
+            ? hasAppQueries && hasFKs
+              ? 'Dependent queries and tables found'
+              : hasAppQueries
+              ? 'Dependent queries found'
+              : 'Referencing tables found'
+            : 'Delete table'}
+        </Modal.Title>
         <span className="cursor-pointer" onClick={onCancel} data-cy="delete-table-modal-close">
           <SolidIcon name="remove" width="16" fill="var(--slate11)" />
         </span>
@@ -45,9 +57,16 @@ export default function DeleteTableModal({
         ) : blocked ? (
           <>
             <div className="mb-3">
-              Table <b>{tableName}</b> cannot be deleted because it is being used in an app, module, or a workflow.
+              Table <b>{tableName}</b> cannot be deleted because it is being used{' '}
+              {hasAppQueries && hasFKs
+                ? 'in an app, module, or a workflow, and has tables referencing it.'
+                : hasAppQueries
+                ? 'in an app, module, or a workflow.'
+                : `by ${dependents.foreignKeyTables
+                    .map((t) => t.name)
+                    .join(', ')} via foreign keys. Drop or repoint their foreign keys first.`}
             </div>
-            <DependentsWarning dependents={dependents} showForeignKeyTables />
+            <DependentsWarning dependents={dependents} foreignKeyTables={dependents?.foreignKeyTables} />
           </>
         ) : (
           <div>

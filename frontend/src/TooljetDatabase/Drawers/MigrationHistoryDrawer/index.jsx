@@ -11,7 +11,7 @@ import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
-import { findHeadMigrationId } from '../../constants';
+import { envHasRelation, findHeadMigrationId, TABLE_ABSENT_TOOLTIP } from '../../constants';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -102,6 +102,7 @@ const MigrationHistoryDrawer = ({
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
           refetchTables={refetchTables}
+          migrations={migrations}
         />
       </Drawer>
     );
@@ -123,10 +124,7 @@ const MigrationHistoryDrawer = ({
             // with the live license verdict, so a stale list after expiry/downgrade still
             // renders the plan tooltip instead of a misleading "table does not exist".
             const licensed = index < allEnvironments.length && !multiEnvLocked;
-            const hasRelation =
-              licensed &&
-              (relationsByEnvironment.find((r) => r.environment_id === allEnvironments[index].id)?.has_relation ??
-                false);
+            const hasRelation = licensed && envHasRelation(relationsByEnvironment, allEnvironments[index].id);
             const available = licensed && hasRelation;
             const tab = (
               <button
@@ -139,9 +137,7 @@ const MigrationHistoryDrawer = ({
               </button>
             );
             if (available) return tab;
-            const tooltipMessage = licensed
-              ? 'Table does not exist in this environment'
-              : "Your plan doesn't support multiple environments";
+            const tooltipMessage = licensed ? TABLE_ABSENT_TOOLTIP : "Your plan doesn't support multiple environments";
             return (
               <ToolTip key={label} message={tooltipMessage} placement="top">
                 <div>{tab}</div>
@@ -248,6 +244,7 @@ const PromotePreviewView = ({
   onClose,
   refetchMigrations,
   refetchTables,
+  migrations,
 }) => {
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
@@ -313,7 +310,7 @@ const PromotePreviewView = ({
             {pendingMigrations.map((migration) => (
               <div key={migration.id} className="migration-history-drawer__preview-item">
                 <div className="migration-history-drawer__row-title">
-                  <span>{migration.name || migration.id}</span>
+                  <span>{migration.name || `m${migrations.findIndex((m) => m.id === migration.id) + 1}`}</span>
                 </div>
                 <div className="migration-history-drawer__row-timestamp">{formatTimestamp(migration.created_at)}</div>
                 <ReadOnlySqlView sql={migration.sql} />

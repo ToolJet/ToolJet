@@ -133,9 +133,10 @@ export class InternalTableRepository extends Repository<InternalTable> {
     const rows = await this.dataSource.query(
       `SELECT rel.id
        FROM internal_table_relations rel
-       INNER JOIN app_environments env ON env.id = rel.environment_id AND env.priority = 1
+       INNER JOIN app_environments env ON env.id = rel.environment_id
        INNER JOIN organization_git_sync_branches wb ON wb.id = rel.branch_id AND wb.is_default = true
-       WHERE rel.internal_table_id = $1 AND env.organization_id = $2 AND wb.organization_id = $2`,
+       WHERE rel.internal_table_id = $1 AND env.organization_id = $2 AND wb.organization_id = $2
+       ORDER BY env.priority ASC LIMIT 1`,
       [internalTableId, organizationId]
     );
     return rows[0]?.id ?? null;

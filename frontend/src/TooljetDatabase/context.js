@@ -6,7 +6,6 @@ import { createContext } from 'react';
 export const TooljetDatabaseContext = createContext({
   canEditTjdb: false,
   canEditSchema: false,
-  isDevelopmentEnvironment: true,
   organizationId: null,
   setOrganizationId: () => {},
   selectedTable: '',

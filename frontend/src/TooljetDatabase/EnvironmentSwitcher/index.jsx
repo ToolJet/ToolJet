@@ -11,6 +11,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import { History } from 'lucide-react';
 import MigrationHistoryDrawer from '../Drawers/MigrationHistoryDrawer';
+import { envHasRelation, TABLE_ABSENT_TOOLTIP } from '../constants';
 
 /**
  * Per-environment status for the currently open table, derived from two backend shapes:
@@ -31,7 +32,9 @@ const lastAppliedMigrationName = (migrations, appliedMigrationIds) => {
   // `migrations` is sequence-ASC (server: `order: { sequence: 'ASC', id: 'ASC' }`), so the last
   // entry whose id is in the applied set is the most recently applied one.
   for (let i = migrations.length - 1; i >= 0; i--) {
-    if (appliedMigrationIds.includes(migrations[i].id)) return migrations[i].name;
+    if (appliedMigrationIds.includes(migrations[i].id)) {
+      return migrations[i].name || `m${i + 1}`;
+    }
   }
   return null;
 };
@@ -100,7 +103,7 @@ const EnvironmentSwitcher = () => {
 
   const statusFor = (environment) => {
     const isSelected = environment.id === selectedEnvironment.id;
-    const hasRelation = relationsByEnvironment.find((r) => r.environment_id === environment.id)?.has_relation ?? false;
+    const hasRelation = envHasRelation(relationsByEnvironment, environment.id);
     const migrationState = tableMigrations?.environments?.find((e) => e.environment_id === environment.id);
     return {
       ...deriveEnvironmentStatus(isSelected, hasTableContext, hasRelation, migrationState, chainLength, migrations),
@@ -187,7 +190,7 @@ const EnvironmentSwitcher = () => {
                 );
                 if (!disabled) return row;
                 return (
-                  <ToolTip key={environment.id} message="Table does not exist in this environment" placement="left">
+                  <ToolTip key={environment.id} message={TABLE_ABSENT_TOOLTIP} placement="left" show>
                     <div>{row}</div>
                   </ToolTip>
                 );
