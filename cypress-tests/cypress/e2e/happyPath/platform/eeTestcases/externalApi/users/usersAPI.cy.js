@@ -7,8 +7,8 @@ import {
   invalidAuthHeader,
   replaceUserWorkspacesRelations,
   updateUser,
-} from "Support/utils/externalApi";
-import { apiCreateGroup } from "Support/utils/manageGroups";
+} from "Support/utils/platform/externalApi";
+import { apiCreateGroup } from "Support/utils/platform/manageGroups";
 
 describe("ToolJet: Users API", () => {
   const data = {};

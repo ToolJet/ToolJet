@@ -20,7 +20,7 @@ import {
   verifyResourceLimit,
   verifySubTabsAndStoreCurrentLimits,
   verifyTotalLimitsWithPlan,
-} from "Support/utils/license";
+} from "Support/utils/platform/license";
 import { settingsText, workspaceSettingsText } from "Texts/common";
 import { licenseText } from "Texts/platform/license";
 import { dashboardSelector } from "Selectors/platform/dashboard";

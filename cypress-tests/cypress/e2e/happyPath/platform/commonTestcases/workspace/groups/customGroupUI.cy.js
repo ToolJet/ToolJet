@@ -7,7 +7,7 @@ import {
   apiAddUserToGroup,
   apiCreateGroup,
   apiDeleteGroup,
-} from "Support/utils/manageGroups";
+} from "Support/utils/platform/manageGroups";
 import {
   addGranularPermissionViaUI,
   createGroupViaUI,
@@ -32,7 +32,7 @@ import {
   verifyUserRow,
 } from "Support/utils/platform/groupsUI";
 
-import { getGroupPermissionInput } from "Support/utils/userPermissions";
+import { getGroupPermissionInput } from "Support/utils/platform/userPermissions";
 
 describe("Custom groups UI and Functionality verification", () => {
   const isEnterprise = Cypress.env("environment") === "Enterprise";

@@ -1,4 +1,8 @@
 
+/**
+ * @tjCmd   gitsync · open a git-synced app in the builder on a given branch
+ * @tjUsage cy.gitSyncOpenAppInBuilder('MyApp', 'main')
+ */
 Cypress.Commands.add("gitSyncOpenAppInBuilder", (appName) => {
   cy.contains('[data-cy$="-card"]', appName, { timeout: 30000 }).should("be.visible");
   cy.wait(2000);
@@ -20,6 +24,10 @@ Cypress.Commands.add("gitSyncOpenAppInBuilder", (appName) => {
   cy.waitForAppLoad();
 });
 
+/**
+ * @tjCmd   gitsync · reset the test repo: branches, tags and tree - teardown
+ * @tjUsage cy.gitHubResetRepo()
+ */
 Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -102,6 +110,10 @@ Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
   });
 });
 
+/**
+ * @tjCmd   app-crud · rename an app via the API
+ * @tjUsage cy.apiRenameApp(appId, 'new-name')
+ */
 Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const doRename = (vid) => {
@@ -158,6 +170,10 @@ Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null) =
   });
 });
 
+/**
+ * @tjCmd   gitsync · list the apps present on a branch
+ * @tjUsage cy.apiListAppsOnBranch('feature-x')
+ */
 Cypress.Commands.add("apiListAppsOnBranch", (branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -176,6 +192,10 @@ Cypress.Commands.add("apiListAppsOnBranch", (branchId) => {
 });
 
 
+/**
+ * @tjCmd   gitsync · read and parse a JSON file from the GitHub repo
+ * @tjUsage cy.gitHubGetFileJson(path)
+ */
 Cypress.Commands.add("gitHubGetFileJson", (branch, filePath) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -203,6 +223,10 @@ Cypress.Commands.add("gitHubGetFileJson", (branch, filePath) => {
     });
 });
 
+/**
+ * @tjCmd   gitsync · list the repo paths belonging to an app
+ * @tjUsage cy.gitHubListAppPaths('MyApp')
+ */
 Cypress.Commands.add("gitHubListAppPaths", (branch) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -249,6 +273,10 @@ function readFilesFromPaths(branch, paths) {
   );
 }
 
+/**
+ * @tjCmd   gitsync · fetch an app's committed definition from GitHub
+ * @tjUsage cy.gitHubFetchAppData('MyApp')
+ */
 Cypress.Commands.add("gitHubFetchAppData", (branch, appName) => {
   const prefix = `apps/${appName}`;
 
@@ -306,6 +334,10 @@ Cypress.Commands.add("gitHubFetchAppData", (branch, appName) => {
   });
 });
 
+/**
+ * @tjCmd   assertion · assert an app's metadata file in the repo
+ * @tjUsage cy.gitHubAssertAppMeta('MyApp', expected)
+ */
 Cypress.Commands.add("gitHubAssertAppMeta", (branch, appName) => {
   return cy
     .gitHubGetFileJson(branch, ".meta/appMeta.json")
@@ -325,6 +357,10 @@ Cypress.Commands.add("gitHubAssertAppMeta", (branch, appName) => {
 });
 
 
+/**
+ * @tjCmd   assertion · assert the app folder exists in the repo
+ * @tjUsage cy.gitHubAssertAppFolderExists('MyApp')
+ */
 Cypress.Commands.add("gitHubAssertAppFolderExists", (branch, appName) => {
   return cy.gitHubListAppPaths(branch).then((paths) => {
     expect(
@@ -335,6 +371,10 @@ Cypress.Commands.add("gitHubAssertAppFolderExists", (branch, appName) => {
   });
 });
 
+/**
+ * @tjCmd   assertion · assert the app folder is absent from the repo
+ * @tjUsage cy.gitHubAssertAppFolderGone('MyApp')
+ */
 Cypress.Commands.add("gitHubAssertAppFolderGone", (branch, appName) => {
   return cy.gitHubListAppPaths(branch).then((paths) => {
     const appPaths = paths.filter((p) => p.startsWith(`apps/${appName}/`));
@@ -347,6 +387,10 @@ Cypress.Commands.add("gitHubAssertAppFolderGone", (branch, appName) => {
 });
 
 
+/**
+ * @tjCmd   wait · wait for a commit with the given message to appear
+ * @tjUsage cy.gitHubWaitForCommitMessage('feat: x')
+ */
 Cypress.Commands.add(
   "gitHubWaitForCommitMessage",
   (branch, fragment, retries = 12) => {
@@ -408,6 +452,10 @@ function stripDynamic(obj) {
 }
 
 
+/**
+ * @tjCmd   api · fetch an app's full definition
+ * @tjUsage cy.apiGetAppDefinition(appId)
+ */
 Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const orgId = Cypress.env("workspaceId");
@@ -494,6 +542,10 @@ Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
 });
 
 
+/**
+ * @tjCmd   assertion · validate the contents of the latest commit
+ * @tjUsage cy.gitHubValidateCommit(expected)
+ */
 Cypress.Commands.add("gitHubValidateCommit", (branch, appName, appV2) => {
   return cy.gitHubFetchAppData(branch, appName).then((gitData) => {
     const { appJson, components, pages, queries, schema } = gitData;
@@ -571,6 +623,10 @@ Cypress.Commands.add("gitHubValidateCommit", (branch, appName, appV2) => {
   });
 });
 
+/**
+ * @tjCmd   assertion · assert a component's layout as committed to the repo
+ * @tjUsage cy.gitHubAssertComponentLayout('MyApp', 'button1', layout)
+ */
 Cypress.Commands.add(
   "gitHubAssertComponentLayout",
   (branch, appName, componentName, expectedLayout) => {
@@ -611,6 +667,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+ * @tjCmd   gitsync · push the current app version to the branch
+ * @tjUsage cy.apiGitSyncPush(appId, 'commit message')
+ */
 Cypress.Commands.add("apiGitSyncPush", (commitMessage, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const body = { commitMessage };
@@ -632,6 +692,10 @@ Cypress.Commands.add("apiGitSyncPush", (commitMessage, branchId = null) => {
   });
 });
 
+/**
+ * @tjCmd   api · move or resize a component via the API
+ * @tjUsage cy.apiUpdateComponentLayout(versionId, componentId, layout)
+ */
 Cypress.Commands.add(
   "apiUpdateComponentLayout",
   (appId, versionId, pageId, componentId, newLayout) => {
@@ -666,6 +730,10 @@ Cypress.Commands.add(
 );
 
 
+/**
+ * @tjCmd   api · change a datasource URL via the API
+ * @tjUsage cy.apiUpdateDataSourceUrl(dsId, url)
+ */
 Cypress.Commands.add(
   "apiUpdateDataSourceUrl",
   (dataSourceId, environmentId, newUrl, branchId = null) => {
@@ -721,6 +789,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjCmd   api · resolve the app's current editing version id
+ * @tjUsage cy.apiGetEditingVersionId(appId)
+ */
 Cypress.Commands.add("apiGetEditingVersionId", (appId, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
@@ -742,6 +814,10 @@ Cypress.Commands.add("apiGetEditingVersionId", (appId, branchId = null) => {
   });
 });
 
+/**
+ * @tjCmd   gitsync · push from the app editor context
+ * @tjUsage cy.apiEditorPush(appId, 'commit message')
+ */
 Cypress.Commands.add(
   "apiEditorPush",
   (appId, versionId, commitMessage, branchName, appName) => {
@@ -794,6 +870,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjCmd   app-crud · create a new app version via the API
+ * @tjUsage cy.apiCreateAppVersion(appId, 'v2')
+ */
 Cypress.Commands.add("apiCreateAppVersion", (appId, versionName, versionFromId, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
@@ -814,6 +894,10 @@ Cypress.Commands.add("apiCreateAppVersion", (appId, versionName, versionFromId, 
   });
 });
 
+/**
+ * @tjCmd   gitsync · create a git tag for an app version
+ * @tjUsage cy.apiCreateGitTag(appId, 'v1.0.0')
+ */
 Cypress.Commands.add("apiCreateGitTag", (appId, versionId, message = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const body = message ? { message } : {};
@@ -848,6 +932,10 @@ Cypress.Commands.add("apiCreateGitTag", (appId, versionId, message = null) => {
       });
   });
 });
+/**
+ * @tjCmd   gitsync · attempt a git tag expecting a failure - negative cases
+ * @tjUsage cy.apiCreateGitTagExpectError(appId, 'bad tag', 400)
+ */
 Cypress.Commands.add("apiCreateGitTagExpectError", (appId, versionId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy.request({
@@ -860,6 +948,10 @@ Cypress.Commands.add("apiCreateGitTagExpectError", (appId, versionId) => {
   );
 });
 
+/**
+ * @tjCmd   assertion · assert whether a git tag exists
+ * @tjUsage cy.apiCheckTagExists('v1.0.0')
+ */
 Cypress.Commands.add("apiCheckTagExists", (appId, versionName) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -878,6 +970,10 @@ Cypress.Commands.add("apiCheckTagExists", (appId, versionName) => {
   );
 });
 
+/**
+ * @tjCmd   app-crud · rename an app version via the API
+ * @tjUsage cy.apiRenameAppVersion(versionId, 'v2')
+ */
 Cypress.Commands.add("apiRenameAppVersion", (appId, versionId, newName) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -894,6 +990,10 @@ Cypress.Commands.add("apiRenameAppVersion", (appId, versionId, newName) => {
   );
 });
 
+/**
+ * @tjCmd   gitsync · read tag metadata from GitHub
+ * @tjUsage cy.gitHubGetTagInfo('v1.0.0')
+ */
 Cypress.Commands.add("gitHubGetTagInfo", (tagName) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -942,6 +1042,10 @@ Cypress.Commands.add("gitHubGetTagInfo", (tagName) => {
     });
 });
 
+/**
+ * @tjCmd   wait · wait until a tag disappears from GitHub
+ * @tjUsage cy.gitHubWaitForTagGone('v1.0.0')
+ */
 Cypress.Commands.add("gitHubWaitForTagGone", (tagName, retries = 10) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -974,6 +1078,10 @@ Cypress.Commands.add("gitHubWaitForTagGone", (tagName, retries = 10) => {
   return check(retries);
 });
 
+/**
+ * @tjCmd   gitsync · pull the branch state into the workspace
+ * @tjUsage cy.apiGitSyncPull('main')
+ */
 Cypress.Commands.add("apiGitSyncPull", (branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const body = branchId ? { branchId } : {};
@@ -994,6 +1102,10 @@ Cypress.Commands.add("apiGitSyncPull", (branchId = null) => {
   });
 });
 
+/**
+ * @tjCmd   gitsync · switch the active branch via the API
+ * @tjUsage cy.apiSwitchBranch('feature-x')
+ */
 Cypress.Commands.add("apiSwitchBranch", (branchId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1010,6 +1122,10 @@ Cypress.Commands.add("apiSwitchBranch", (branchId) => {
   });
 });
 
+/**
+ * @tjCmd   api · create a query folder in an app version
+ * @tjUsage cy.apiCreateQueryFolder(versionId, 'folder')
+ */
 Cypress.Commands.add("apiCreateQueryFolder", (versionId, name) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1027,6 +1143,10 @@ Cypress.Commands.add("apiCreateQueryFolder", (versionId, name) => {
   });
 });
 
+/**
+ * @tjCmd   api · reorder an item inside a folder
+ * @tjUsage cy.apiReorderFolderItem(folderId, itemId, 1)
+ */
 Cypress.Commands.add("apiReorderFolderItem", (childId, childType, newIndex, parentId = null) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1043,6 +1163,10 @@ Cypress.Commands.add("apiReorderFolderItem", (childId, childType, newIndex, pare
   });
 });
 
+/**
+ * @tjCmd   api · delete a query folder
+ * @tjUsage cy.apiDeleteQueryFolder(folderId)
+ */
 Cypress.Commands.add("apiDeleteQueryFolder", (folderId, mode = "folder_only") => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1059,6 +1183,10 @@ Cypress.Commands.add("apiDeleteQueryFolder", (folderId, mode = "folder_only") =>
   });
 });
 
+/**
+ * @tjCmd   api · add a page to an app version
+ * @tjUsage cy.apiCreatePage(versionId, 'Reports')
+ */
 Cypress.Commands.add("apiCreatePage", (appId, versionId, pageName, pageId, index = 1) => {
   return cy.getAuthHeaders().then((headers) => {
     const handle = pageName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -1076,6 +1204,10 @@ Cypress.Commands.add("apiCreatePage", (appId, versionId, pageName, pageId, index
   });
 });
 
+/**
+ * @tjCmd   api · delete a page from an app version
+ * @tjUsage cy.apiDeletePage(pageId)
+ */
 Cypress.Commands.add("apiDeletePage", (appId, versionId, pageId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1092,6 +1224,10 @@ Cypress.Commands.add("apiDeletePage", (appId, versionId, pageId) => {
   });
 });
 
+/**
+ * @tjCmd   api · add a data query to an app version
+ * @tjUsage cy.apiCreateQuery(versionId, payload)
+ */
 Cypress.Commands.add("apiCreateQuery", (dataSourceId, versionId, queryName, kind = "restapi", options = {}) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1109,6 +1245,10 @@ Cypress.Commands.add("apiCreateQuery", (dataSourceId, versionId, queryName, kind
   });
 });
 
+/**
+ * @tjCmd   api · delete a data query
+ * @tjUsage cy.apiDeleteQuery(queryId)
+ */
 Cypress.Commands.add("apiDeleteQuery", (queryId, versionId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1124,6 +1264,10 @@ Cypress.Commands.add("apiDeleteQuery", (queryId, versionId) => {
   });
 });
 
+/**
+ * @tjCmd   api · delete a component from the canvas via the API
+ * @tjUsage cy.apiDeleteComponent(versionId, componentId)
+ */
 Cypress.Commands.add("apiDeleteComponent", (appId, versionId, componentId, pageId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -1144,6 +1288,10 @@ Cypress.Commands.add("apiDeleteComponent", (appId, versionId, componentId, pageI
   });
 });
 
+/**
+ * @tjCmd   gitsync · merge an open pull request on GitHub
+ * @tjUsage cy.gitHubMergePR(prNumber)
+ */
 Cypress.Commands.overwrite("gitHubMergePR", (originalFn, prNumber = Cypress.env("prNumber")) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -1184,6 +1332,10 @@ Cypress.Commands.overwrite("gitHubMergePR", (originalFn, prNumber = Cypress.env(
 });
 
 
+/**
+ * @tjCmd   app-crud · move an app into a dashboard folder
+ * @tjUsage cy.apiAddAppToFolder(appId, folderId)
+ */
 Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -1200,6 +1352,10 @@ Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
   );
 });
 
+/**
+ * @tjCmd   assertion · assert the repo reflects an app's folder placement
+ * @tjUsage cy.gitHubAssertAppInFolder('MyApp', 'QA folder')
+ */
 Cypress.Commands.add("gitHubAssertAppInFolder", (branch, folderName, appName) => {
   return cy.gitHubListAppPaths(branch).then((paths) => {
     expect(
@@ -1210,6 +1366,10 @@ Cypress.Commands.add("gitHubAssertAppInFolder", (branch, folderName, appName) =>
   });
 });
 
+/**
+ * @tjCmd   assertion · assert the metadata path for an app in the repo
+ * @tjUsage cy.gitHubAssertAppMetaPath('MyApp', path)
+ */
 Cypress.Commands.add("gitHubAssertAppMetaPath", (branch, expectedPath) => {
   return cy
     .gitHubGetFileJson(branch, ".meta/appMeta.json")
@@ -1232,6 +1392,10 @@ Cypress.Commands.add("gitHubAssertAppMetaPath", (branch, expectedPath) => {
  *
  * Returns a minimal version-like object { id: versionId, name: versionName } so callers can
  * chain .then((v1) => { v1VersionId = v1.id; ... }).
+ */
+/**
+ * @tjCmd   app-crud · persist changes to an app version
+ * @tjUsage cy.apiSaveAppVersion(versionId, definition)
  */
 Cypress.Commands.add("apiSaveAppVersion", (appId, versionId, versionName, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
@@ -1259,6 +1423,10 @@ Cypress.Commands.add("apiSaveAppVersion", (appId, versionId, versionName, branch
  * then returns the tag object { sha, message, tagger, type }.
  *
  * Mirrors gitHubWaitForTagGone but waits for presence instead of absence.
+ */
+/**
+ * @tjCmd   wait · wait until a tag appears on GitHub
+ * @tjUsage cy.gitHubWaitForTag('v1.0.0')
  */
 Cypress.Commands.add("gitHubWaitForTag", (tagName, retries = 15) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
@@ -1330,6 +1498,10 @@ Cypress.Commands.add("gitHubWaitForTag", (tagName, retries = 15) => {
  * clones the app content from git and creates a proper DRAFT version.
  *
  * Returns { draftVersionId } — the hydrated draft's version ID.
+ */
+/**
+ * @tjCmd   app-crud · ensure the app has an editable draft version
+ * @tjUsage cy.apiEnsureAppDraft(appId)
  */
 Cypress.Commands.add("apiEnsureAppDraft", (appId, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {

@@ -16,8 +16,8 @@ import {
     setupWorkspaceAndInviteUser,
     updateRole,
     verifyUserPrivileges,
-} from "Support/utils/manageGroups";
-import { getGroupPermissionInput } from "Support/utils/userPermissions";
+} from "Support/utils/platform/manageGroups";
+import { getGroupPermissionInput } from "Support/utils/platform/userPermissions";
 import { importText } from "Texts/platform/exportImport";
 import { groupsText } from "Texts/platform/manageGroups";
 

@@ -4,9 +4,9 @@ import {
   updateSsoId,
   gitHubSignInWithAssertion,
   cleanupTestUser,
-} from "Support/utils/manageSSO";
+} from "Support/utils/platform/manageSSO";
 import { fillInputField } from "Support/utils/common";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
 
 describe("GitHub SSO Tests", () => {
   const TEST_USER_EMAIL = "qatooljet@gmail.com";

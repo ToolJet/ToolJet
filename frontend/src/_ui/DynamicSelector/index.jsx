@@ -668,10 +668,10 @@ const DynamicSelector = ({
             ? '#1f2936'
             : '#f4f6fa'
           : darkMode
-            ? '#2b3547'
-            : state.menuIsOpen
-              ? '#F1F3F5'
-              : '#fff',
+          ? '#2b3547'
+          : state.menuIsOpen
+          ? '#F1F3F5'
+          : '#fff',
         cursor: 'pointer',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
@@ -770,10 +770,10 @@ const DynamicSelector = ({
                       ? 'Discovering...'
                       : `Search or Select ${label ?? ''}`
                     : isMulti
-                      ? isLoading
-                        ? 'Discovering...'
-                        : `Select ${label ?? ''}`
+                    ? isLoading
+                      ? 'Discovering...'
                       : `Select ${label ?? ''}`
+                    : `Select ${label ?? ''}`
                 }
                 isDisabled={disabled || (isDependentField && !depsReady)}
                 isLoading={isMulti ? isLoading && getCurrentValue().length === 0 : isLoading}

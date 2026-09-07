@@ -8,20 +8,20 @@ import {
     releaseApp,
 } from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/platform/manageGroups";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
     apiAddUserToGroup,
     apiCreateGroup,
-} from "Support/utils/manageGroups";
+} from "Support/utils/platform/manageGroups";
 import {
     getGroupPermissionInput,
     verifyEnvironmentTagsInGranularUI,
     verifyEnvironmentAccess,
     signup,
-} from "Support/utils/userPermissions";
+} from "Support/utils/platform/userPermissions";
 import { groupsText } from "Texts/platform/manageGroups";
 import {
   openVersionSwitcher,

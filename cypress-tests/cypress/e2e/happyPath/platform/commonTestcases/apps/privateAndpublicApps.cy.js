@@ -4,12 +4,12 @@ import { logout, releaseApp } from "Support/utils/common";
 import {
   inviteUserToWorkspace,
   fetchAndVisitInviteLinkViaMH,
-} from "Support/utils/manageUsers";
-import { setSignupStatus } from "Support/utils/manageSSO";
+} from "Support/utils/platform/manageUsers";
+import { setSignupStatus } from "Support/utils/platform/manageSSO";
 import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
-import { userSignUp } from "Support/utils/onboarding";
-import { setupAppWithSlug, verifyRestrictedAccess } from "Support/utils/apps";
+import { userSignUp } from "Support/utils/platform/onboarding";
+import { setupAppWithSlug, verifyRestrictedAccess } from "Support/utils/platform/apps";
 import { InstanceSSO, verifyPreviewIsDisabled } from "Support/utils/platform/eeCommon";
 import { smtpConfig } from "Constants/constants/whitelabel";
 

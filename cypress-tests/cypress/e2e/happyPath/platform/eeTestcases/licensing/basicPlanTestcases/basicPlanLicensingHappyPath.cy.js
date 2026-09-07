@@ -20,8 +20,8 @@ import {
   verifySubTabsAndStoreCurrentLimits,
   verifyTooltip,
   verifyTotalLimitsWithPlan,
-} from "Support/utils/license";
-import { navigateToEditUser } from "Support/utils/manageUsers";
+} from "Support/utils/platform/license";
+import { navigateToEditUser } from "Support/utils/platform/manageUsers";
 import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
 import { licenseText } from "Texts/platform/license";
 import { dashboardSelector } from "Selectors/platform/dashboard";

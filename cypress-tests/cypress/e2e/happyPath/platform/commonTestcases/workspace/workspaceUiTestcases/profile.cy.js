@@ -1,5 +1,5 @@
 import { profileSelector } from "Selectors/platform/profile";
-import * as profile from "Support/utils/profile";
+import * as profile from "Support/utils/platform/profile";
 import * as common from "Support/utils/common";
 import { profileText } from "Texts/platform/profile";
 import { commonSelectors } from "Selectors/common";

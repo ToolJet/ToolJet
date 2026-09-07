@@ -1,3 +1,8 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// gitSyncApi.js
+//   apiConfigureGitSync              gitSyncConfig.createApi → gitSync
+//   apiDeleteGitSync                 gitSyncConfig.deleteApi → gitSync
+// └──────────────────────────────────────────────────────────────────┘
 /**
  * Git Sync API Utilities
  * Endpoints derived from network captures:
@@ -14,6 +19,12 @@
  * @param {string} config.appId          - GitHub App ID
  * @param {string} config.installationId - GitHub App Installation ID
  * @param {string} config.privateKey     - RSA private key (PEM string)
+ */
+/**
+ * @tjType   gitSyncConfig.createApi
+ * @tjBlock  gitSync
+ * @tjUsage  apiConfigureGitSync({ orgId, gitUrl, branch })
+ * @tjDom    none - POST git-sync config
  */
 export const apiConfigureGitSync = (config) => {
   return cy.getAuthHeaders().then((headers) => {
@@ -50,6 +61,12 @@ export const apiConfigureGitSync = (config) => {
  * Delete git sync config for the current workspace via API.
  *
  * @param {string} orgId - workspace / organization ID
+ */
+/**
+ * @tjType   gitSyncConfig.deleteApi
+ * @tjBlock  gitSync
+ * @tjUsage  apiDeleteGitSync(orgId)
+ * @tjDom    none - DELETE git-sync config
  */
 export const apiDeleteGitSync = (orgId) => {
   return cy.getAuthHeaders().then((headers) => {

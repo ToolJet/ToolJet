@@ -5,16 +5,16 @@ import {
   apiCreateGroup,
   apiDeleteGroup,
   verifyUserRole,
-} from "Support/utils/manageGroups";
+} from "Support/utils/platform/manageGroups";
 import {
   addOktaOIDCConfig,
   deleteOrganisationSSO,
   enableInstanceSignup,
   setSignupStatus,
   updateOIDCConfig,
-} from "Support/utils/manageSSO";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageSSO";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 
 describe("Okta OIDC", () => {
   let data;

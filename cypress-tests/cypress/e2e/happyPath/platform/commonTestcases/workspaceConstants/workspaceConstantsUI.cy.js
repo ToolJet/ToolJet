@@ -6,7 +6,7 @@ import {
   verifyConstantFormUI,
   VerifyConstantsFormInputValidation,
   verifySearch,
-} from "Support/utils/workspaceConstants";
+} from "Support/utils/platform/workspaceConstants";
 
 const data = {};
 

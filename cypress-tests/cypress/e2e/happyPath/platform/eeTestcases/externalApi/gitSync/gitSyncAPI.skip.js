@@ -8,7 +8,7 @@ import {
   pushAppVersionToGit,
   releaseAppFromGit,
   saveAppVersion,
-} from "Support/utils/externalApi";
+} from "Support/utils/platform/externalApi";
 
 describe("ToolJet: GitSync API Validation", () => {
   const data = {};

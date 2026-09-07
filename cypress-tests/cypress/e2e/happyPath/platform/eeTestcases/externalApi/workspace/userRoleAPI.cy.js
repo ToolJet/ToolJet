@@ -5,7 +5,7 @@ import {
   getUser,
   replaceUserWorkspacesRelations,
   updateUserRole,
-} from "Support/utils/externalApi";
+} from "Support/utils/platform/externalApi";
 
 describe("ToolJet: User Role API", () => {
   const data = {};

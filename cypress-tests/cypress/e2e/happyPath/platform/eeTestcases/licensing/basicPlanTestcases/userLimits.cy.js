@@ -12,8 +12,8 @@ import {
   verifyLimitBanner,
   verifyResourceLimit,
   verifyUpgradeModal,
-} from "Support/utils/license";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+} from "Support/utils/platform/license";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 
 describe("License - User Limits", () => {
   const builderEmail = `builder-${Date.now()}@example.com`;

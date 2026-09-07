@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { aiSelectors } from "Selectors/platform/ai";
 import * as common from "Support/utils/common";
-import { switchTabs } from "Support/utils/license";
+import { switchTabs } from "Support/utils/platform/license";
 import {
   verifyAiChatWorksWithCredits,
   verifyCopilotInQueryPanel,

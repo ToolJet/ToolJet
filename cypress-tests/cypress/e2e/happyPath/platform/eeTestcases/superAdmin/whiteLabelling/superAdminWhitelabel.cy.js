@@ -6,7 +6,7 @@ import {
 import { fake } from "Fixtures/fake";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/platform/onboarding";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
 import { whitelabelTestData, smtpConfig } from "Constants/constants/whitelabel";
 import {
   openWhiteLabelingSettings,
@@ -18,8 +18,8 @@ import {
   verifyLogoOnLoginPage,
   verifyLogoOnWorkspaceLoginPage,
   verifyInvitationEmail,
-} from "Support/utils/whitelabel";
-import { enableInstanceSignup } from "Support/utils/manageSSO";
+} from "Support/utils/platform/whitelabel";
+import { enableInstanceSignup } from "Support/utils/platform/manageSSO";
 
 describe("Instance settings - White labelling", () => {
   const whiteLabelConfig = {

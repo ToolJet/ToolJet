@@ -6,7 +6,7 @@ import {
   fetchWorkspaceApps,
   importApp,
   invalidAuthHeader,
-} from "Support/utils/externalApi";
+} from "Support/utils/platform/externalApi";
 
 describe("ToolJet: Apps Import Export API", () => {
   const data = {};

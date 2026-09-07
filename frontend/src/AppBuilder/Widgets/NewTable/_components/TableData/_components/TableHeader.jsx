@@ -73,7 +73,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
     whiteSpace: 'nowrap',
     width: header.column.getSize(),
     flex: '0 0 auto',
-    zIndex: isDragging ? 15 : (pinnedStyles.zIndex ?? 0),
+    zIndex: isDragging ? 15 : pinnedStyles.zIndex ?? 0,
     backgroundColor: columnBackgroundColor,
     color: columnTitleColor,
     '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),

@@ -6,7 +6,7 @@ import {
   onboardingStepOne,
   onboardingStepThree,
   onboardingStepTwo,
-} from "Support/utils/onboarding";
+} from "Support/utils/platform/onboarding";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/platform/onboarding";
 import { multiEnvSelector } from "Selectors/platform/eeCommon";

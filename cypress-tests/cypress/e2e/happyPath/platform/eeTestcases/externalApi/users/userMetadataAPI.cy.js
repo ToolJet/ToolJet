@@ -6,7 +6,7 @@ import {
   invalidAuthHeader,
   replaceUserWorkspacesRelations,
   updateUserMetadata,
-} from "Support/utils/externalApi";
+} from "Support/utils/platform/externalApi";
 
 describe("ToolJet: User Metadata API", () => {
   const data = {};

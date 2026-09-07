@@ -6,8 +6,8 @@ import {
   getWorkspaceUsersByGroups,
   invalidAuthHeader,
   replaceUserWorkspacesRelations,
-} from "Support/utils/externalApi";
-import { apiCreateGroup } from "Support/utils/manageGroups";
+} from "Support/utils/platform/externalApi";
+import { apiCreateGroup } from "Support/utils/platform/manageGroups";
 
 describe("ToolJet: Workspace Users By Groups API", () => {
   const createdUserIds = [];

@@ -8,13 +8,13 @@ import {
   fetchAndVisitInviteLink,
   verifyUserStatusAndMetadata,
   openEditUserDetails,
-} from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageUsers";
 import {
   addUserMetadata,
   userMetadataOnboarding,
   verifyUserMetadataElements,
   selectUserGroup,
-} from "Support/utils/onboarding";
+} from "Support/utils/platform/onboarding";
 import {
   navigateAndVerifyInspector,
   navigateToInspectorNodes,

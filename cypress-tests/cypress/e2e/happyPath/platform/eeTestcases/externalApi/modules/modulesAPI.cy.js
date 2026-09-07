@@ -8,7 +8,7 @@ import {
   importModule,
   invalidAuthHeader,
   listWorkspaceModules,
-} from "Support/utils/externalApi";
+} from "Support/utils/platform/externalApi";
 
 describe("ToolJet: Modules API", () => {
   const data = {};

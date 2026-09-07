@@ -1,3 +1,38 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// eeCommon.js
+//   oidcSSOPageElements              oidcSso.verifyPage   → onboarding
+//   resetDsPermissions               datasourcePermission.reset → access
+//   deleteAssignedDatasources        datasourcePermission.deleteAssigned → access
+//   userSignUp                       user.signUp          → onboarding
+//   allowPersonalWorkspace           instanceSetting.allowPersonalWorkspace → superAdmin
+//   addNewUserEE                     user.createEE        → onboarding
+//   inviteUser                       user.invite          → onboarding
+//   defaultWorkspace                 workspace.goToDefault → workspace
+//   trunOffAllowPersonalWorkspace    instanceSetting.disablePersonalWorkspace → superAdmin
+//   verifySSOSignUpPageElements      sso.verifySignUpPage → onboarding
+//   VerifyWorkspaceInvitePageElements workspaceInvite.verifyPage → onboarding
+//   WorkspaceInvitationLink          workspaceInvite.openLink → onboarding
+//   enableDefaultSSO                 sso.enableDefault    → onboarding
+//   disableSSO                       sso.disable          → onboarding
+//   AddDataSourceToGroup             datasourcePermission.assign → access
+//   enableToggle                     -                    → common
+//   disableToggle                    -                    → common
+//   verifyPromoteModalUI             appVersion.verifyPromoteModal → workspace
+//   resetPassword                    user.resetPassword   → onboarding
+//   verifyTooltipDisabled            -                    → common
+//   createAnAppWithSlug              app.createWithSlug   → apps
+//   openInstanceSettings             instanceSetting.open → superAdmin
+//   openUserActionMenu               user.openRowMenu     → access
+//   archiveWorkspace                 workspace.archive    → workspace
+//   passwordToggle                   instanceSetting.passwordToggle → superAdmin
+//   InstanceSSO                      instanceSetting.ssoConfig → superAdmin
+//   resetInstanceDomain              instanceSetting.resetDomain → superAdmin
+//   defaultInstanceSSO               instanceSetting.defaultSso → superAdmin
+//   instanceSSOConfig                instanceSetting.ssoAllow → superAdmin
+//   updateInstanceSettings           instanceSetting.update → superAdmin
+//   updateAutoSSOToggle              instanceSetting.autoSso → superAdmin
+//   verifyPreviewIsDisabled          app.verifyPreviewDisabled → apps
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonEeSelectors,
@@ -16,12 +51,18 @@ import {
   // verifyOnboardingQuestions,
   // verifyCloudOnboardingQuestions,
   fetchAndVisitInviteLink,
-} from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageUsers";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/platform/manageSSO";
 import { usersText } from "Texts/platform/manageUsers";
 // import { appPromote } from "Support/utils/multiEnv";
 
+/**
+ * @tjType   oidcSso.verifyPage
+ * @tjBlock  onboarding
+ * @tjUsage  oidcSSOPageElements()
+ * @tjDom    OIDC SSO config page fields
+ */
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).click();
   cy.get(ssoSelector.saveButton).eq(1).click();
@@ -111,6 +152,12 @@ export const oidcSSOPageElements = () => {
   );
 };
 
+/**
+ * @tjType   datasourcePermission.reset
+ * @tjBlock  access
+ * @tjUsage  resetDsPermissions()
+ * @tjDom    group datasource permissions -> reset
+ */
 export const resetDsPermissions = () => {
   common.navigateToManageGroups();
   cy.wait(200);
@@ -133,6 +180,12 @@ export const resetDsPermissions = () => {
   });
 };
 
+/**
+ * @tjType   datasourcePermission.deleteAssigned
+ * @tjBlock  access
+ * @tjUsage  deleteAssignedDatasources()
+ * @tjDom    removes every assigned datasource from a group
+ */
 export const deleteAssignedDatasources = () => {
   common.navigateToManageGroups();
   cy.get('[data-cy="datasource-link"]').click();
@@ -144,6 +197,12 @@ export const deleteAssignedDatasources = () => {
   });
 };
 
+/**
+ * @tjType   user.signUp
+ * @tjBlock  onboarding
+ * @tjUsage  userSignUp('QA User', userEmail, 'QA workspace')
+ * @tjDom    signup form -> submit
+ */
 export const userSignUp = (fullName, email, workspaceName) => {
   const verificationFunction =
     Cypress.env("environment") === "Enterprise"
@@ -173,6 +232,12 @@ export const userSignUp = (fullName, email, workspaceName) => {
   });
 };
 
+/**
+ * @tjType   instanceSetting.allowPersonalWorkspace
+ * @tjBlock  superAdmin
+ * @tjUsage  allowPersonalWorkspace(true)
+ * @tjDom    instance settings toggle
+ */
 export const allowPersonalWorkspace = (allow = true) => {
   const value = allow ? "true" : "false";
   cy.task("dbConnection", {
@@ -181,6 +246,12 @@ export const allowPersonalWorkspace = (allow = true) => {
   });
 };
 
+/**
+ * @tjType   user.createEE
+ * @tjBlock  onboarding
+ * @tjUsage  addNewUserEE('QA', userEmail)
+ * @tjDom    manage users -> add user (EE form)
+ */
 export const addNewUserEE = (firstName, email) => {
   common.navigateToManageUsers();
   cy.get(usersSelector.buttonAddUsers).click();
@@ -203,6 +274,12 @@ export const addNewUserEE = (firstName, email) => {
   );
 };
 
+/**
+ * @tjType   user.invite
+ * @tjBlock  onboarding
+ * @tjUsage  inviteUser('QA', userEmail)
+ * @tjDom    manage users -> invite -> accept link
+ */
 export const inviteUser = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
   cy.get(commonSelectors.inputFieldFullName).type(firstName);
@@ -216,6 +293,12 @@ export const inviteUser = (firstName, email) => {
   fetchAndVisitInviteLink(email);
 };
 
+/**
+ * @tjType   workspace.goToDefault
+ * @tjBlock  workspace
+ * @tjUsage  defaultWorkspace()
+ * @tjDom    navigates to the default workspace
+ */
 export const defaultWorkspace = () => {
   cy.get(".org-select-container").then(($title) => {
     if (!$title.text().includes("My workspace")) {
@@ -227,6 +310,12 @@ export const defaultWorkspace = () => {
   });
 };
 
+/**
+ * @tjType   instanceSetting.disablePersonalWorkspace
+ * @tjBlock  superAdmin
+ * @tjUsage  trunOffAllowPersonalWorkspace()
+ * @tjDom    instance settings toggle off
+ */
 export const trunOffAllowPersonalWorkspace = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -245,6 +334,12 @@ export const trunOffAllowPersonalWorkspace = () => {
     });
 };
 
+/**
+ * @tjType   sso.verifySignUpPage
+ * @tjBlock  onboarding
+ * @tjUsage  verifySSOSignUpPageElements()
+ * @tjDom    SSO signup page fields + buttons
+ */
 export const verifySSOSignUpPageElements = () => {
   cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
     "have.text",
@@ -284,6 +379,12 @@ export const verifySSOSignUpPageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
+/**
+ * @tjType   workspaceInvite.verifyPage
+ * @tjBlock  onboarding
+ * @tjUsage  VerifyWorkspaceInvitePageElements()
+ * @tjDom    workspace invite acceptance page
+ */
 export const VerifyWorkspaceInvitePageElements = () => {
   cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
     "have.text",
@@ -331,6 +432,12 @@ export const VerifyWorkspaceInvitePageElements = () => {
   });
 };
 
+/**
+ * @tjType   workspaceInvite.openLink
+ * @tjBlock  onboarding
+ * @tjUsage  WorkspaceInvitationLink(userEmail)
+ * @tjDom    reads the invite link and visits it
+ */
 export const WorkspaceInvitationLink = (email) => {
   let invitationToken,
     organizationToken,
@@ -370,6 +477,12 @@ export const WorkspaceInvitationLink = (email) => {
   });
 };
 
+/**
+ * @tjType   sso.enableDefault
+ * @tjBlock  onboarding
+ * @tjUsage  enableDefaultSSO()
+ * @tjDom    workspace SSO -> enable default provider
+ */
 export const enableDefaultSSO = () => {
   common.navigateToManageSSO();
   cy.get("body").then(($el) => {
@@ -386,6 +499,12 @@ export const enableDefaultSSO = () => {
   });
 };
 
+/**
+ * @tjType   sso.disable
+ * @tjBlock  onboarding
+ * @tjUsage  disableSSO(ssoSelector, toggleSelector)
+ * @tjDom    SSO provider toggle off
+ */
 export const disableSSO = (ssoSelector, toggleSelector) => {
   cy.wait(1000);
   cy.get(ssoSelector).click();
@@ -396,6 +515,12 @@ export const disableSSO = (ssoSelector, toggleSelector) => {
   });
 };
 
+/**
+ * @tjType   datasourcePermission.assign
+ * @tjBlock  access
+ * @tjUsage  AddDataSourceToGroup('QA Team', 'Postgres')
+ * @tjDom    group -> datasource permission -> add
+ */
 export const AddDataSourceToGroup = (groupName, dsName) => {
   common.navigateToManageGroups();
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -413,6 +538,12 @@ export const AddDataSourceToGroup = (groupName, dsName) => {
   );
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  enableToggle(toggleSelector)
+ * @tjDom    clicks a toggle only if it is off
+ */
 export const enableToggle = (toggleSelector) => {
   cy.get(toggleSelector).then(($el) => {
     if (!$el.is(":checked")) {
@@ -421,6 +552,12 @@ export const enableToggle = (toggleSelector) => {
   });
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  disableToggle(toggleSelector)
+ * @tjDom    clicks a toggle only if it is on
+ */
 export const disableToggle = (toggleSelector) => {
   cy.get(toggleSelector).then(($el) => {
     if ($el.is(":checked")) {
@@ -429,6 +566,12 @@ export const disableToggle = (toggleSelector) => {
   });
 };
 
+/**
+ * @tjType   appVersion.verifyPromoteModal
+ * @tjBlock  workspace
+ * @tjUsage  verifyPromoteModalUI('v1', 'development', 'staging')
+ * @tjDom    promote modal copy + env names
+ */
 export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
   cy.get(commonEeSelectors.promoteButton)
     .verifyVisibleElement("have.text", " Promote ")
@@ -457,6 +600,12 @@ export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
     .verifyVisibleElement("have.text", "Promote ");
 };
 
+/**
+ * @tjType   user.resetPassword
+ * @tjBlock  onboarding
+ * @tjUsage  resetPassword(userEmail)
+ * @tjDom    forgot-password flow end to end
+ */
 export const resetPassword = (email) => {
   cy.visit("/");
   cy.get(commonSelectors.forgotPasswordLink).click();
@@ -479,6 +628,12 @@ export const resetPassword = (email) => {
   cy.get(commonSelectors.backToLoginButton).click();
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  verifyTooltipDisabled(selector, 'You do not have permission')
+ * @tjDom    hovers a disabled control and asserts its tooltip
+ */
 export const verifyTooltipDisabled = (selector, message) => {
   cy.get(selector)
     .trigger("mouseover", { force: true })
@@ -487,6 +642,12 @@ export const verifyTooltipDisabled = (selector, message) => {
     });
 };
 
+/**
+ * @tjType   app.createWithSlug
+ * @tjBlock  apps
+ * @tjUsage  createAnAppWithSlug('MyApp', 'my-app')
+ * @tjDom    creates an app then sets its slug
+ */
 export const createAnAppWithSlug = (appName, slug) => {
   cy.apiCreateApp(appName);
   cy.openApp();
@@ -498,11 +659,23 @@ export const createAnAppWithSlug = (appName, slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
+/**
+ * @tjType   instanceSetting.open
+ * @tjBlock  superAdmin
+ * @tjUsage  openInstanceSettings()
+ * @tjDom    avatar menu -> instance settings
+ */
 export const openInstanceSettings = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonEeSelectors.instanceSettingIcon).click();
 };
 
+/**
+ * @tjType   user.openRowMenu
+ * @tjBlock  access
+ * @tjUsage  openUserActionMenu(userEmail)
+ * @tjDom    manage users row -> kebab menu
+ */
 export const openUserActionMenu = (email) => {
   cy.get(commonSelectors.inputUserSearch).should("be.visible");
   cy.wait(1000);
@@ -512,6 +685,12 @@ export const openUserActionMenu = (email) => {
   cy.wait(2000);
 };
 
+/**
+ * @tjType   workspace.archive
+ * @tjBlock  workspace
+ * @tjUsage  archiveWorkspace('QA workspace')
+ * @tjDom    workspace settings -> archive
+ */
 export const archiveWorkspace = (workspaceName) => {
   cy.get(instanceSettingsSelector.allWorkspaceTab).click();
   cy.clearAndType(commonEeSelectors.searchBar, workspaceName);
@@ -519,6 +698,12 @@ export const archiveWorkspace = (workspaceName) => {
   cy.get(commonEeSelectors.confirmButton).click();
 };
 
+/**
+ * @tjType   instanceSetting.passwordToggle
+ * @tjBlock  superAdmin
+ * @tjUsage  passwordToggle(true, 'instance')
+ * @tjDom    password-login toggle, instance or workspace form
+ */
 export const passwordToggle = (enable, formName = "instance") => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -538,6 +723,12 @@ export const passwordToggle = (enable, formName = "instance") => {
   });
 };
 
+/**
+ * @tjType   instanceSetting.ssoConfig
+ * @tjBlock  superAdmin
+ * @tjUsage  InstanceSSO(true, true, true)
+ * @tjDom    instance SSO: personal workspace / signup / workspace SSO
+ */
 export const InstanceSSO = (personalWorkspace, enableSignup, workspaceSSO) => {
   allowPersonalWorkspace(personalWorkspace);
 
@@ -547,6 +738,12 @@ export const InstanceSSO = (personalWorkspace, enableSignup, workspaceSSO) => {
   });
 };
 
+/**
+ * @tjType   instanceSetting.resetDomain
+ * @tjBlock  superAdmin
+ * @tjUsage  resetInstanceDomain()
+ * @tjDom    clears the allowed-domain field
+ */
 export const resetInstanceDomain = () => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -565,6 +762,12 @@ export const resetInstanceDomain = () => {
     });
   });
 };
+/**
+ * @tjType   instanceSetting.defaultSso
+ * @tjBlock  superAdmin
+ * @tjUsage  defaultInstanceSSO(true)
+ * @tjDom    instance default SSO toggle
+ */
 export const defaultInstanceSSO = (enable = true) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
@@ -583,6 +786,12 @@ export const defaultInstanceSSO = (enable = true) => {
     });
   });
 };
+/**
+ * @tjType   instanceSetting.ssoAllow
+ * @tjBlock  superAdmin
+ * @tjUsage  instanceSSOConfig(true)
+ * @tjDom    instance SSO allow toggle
+ */
 export const instanceSSOConfig = (allow = true) => {
   const value = allow ? "true" : "false";
 
@@ -592,12 +801,24 @@ export const instanceSSOConfig = (allow = true) => {
   });
 };
 
+/**
+ * @tjType   instanceSetting.update
+ * @tjBlock  superAdmin
+ * @tjUsage  updateInstanceSettings('ALLOWED_DOMAINS', 'tooljet.com')
+ * @tjDom    instance settings field -> save
+ */
 export const updateInstanceSettings = (key, value) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE instance_settings SET value = '${value}' WHERE key = '${key}';`,
   });
 };
+/**
+ * @tjType   instanceSetting.autoSso
+ * @tjBlock  superAdmin
+ * @tjUsage  updateAutoSSOToggle(false)
+ * @tjDom    auto-SSO toggle
+ */
 export const updateAutoSSOToggle = (allow = false) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
@@ -605,6 +826,12 @@ export const updateAutoSSOToggle = (allow = false) => {
   });
 };
 
+/**
+ * @tjType   app.verifyPreviewDisabled
+ * @tjBlock  apps
+ * @tjUsage  verifyPreviewIsDisabled()
+ * @tjDom    preview button disabled state
+ */
 export const verifyPreviewIsDisabled = () => {
   cy.get(commonSelectors.previewSettings).should("not.exist");
   cy.get(commonSelectors.previewText).should("not.exist") 

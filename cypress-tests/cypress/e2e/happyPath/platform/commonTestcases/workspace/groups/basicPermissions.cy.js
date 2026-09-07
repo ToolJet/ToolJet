@@ -11,7 +11,7 @@ import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
     updateRole,
-} from "Support/utils/manageGroups";
+} from "Support/utils/platform/manageGroups";
 import {
     uiAppCRUDWorkflow,
     uiDataSourceCRUDWorkflow,
@@ -20,11 +20,11 @@ import {
     uiVerifyBuilderPrivileges,
     uiWorkflowCRUDWorkflow,
     uiWorkspaceConstantCRUDWorkflow,
-} from "Support/utils/uiPermissions";
+} from "Support/utils/platform/uiPermissions";
 import {
     verifyBasicPermissions,
     verifySettingsAccess,
-} from "Support/utils/userPermissions";
+} from "Support/utils/platform/userPermissions";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/platform/dashboard";
 import { groupsText } from "Texts/platform/manageGroups";

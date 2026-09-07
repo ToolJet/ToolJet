@@ -1,3 +1,28 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// workspaceConstants.js
+//   contantsNameValidation           workspaceConstant.verifyNameValidation → workspace
+//   addAndVerifyConstants            workspaceConstant.create → workspace
+//   deleteConstant                   workspaceConstant.delete → workspace
+//   existingNameValidation           workspaceConstant.verifyDuplicateName → workspace
+//   verifyConstantFormUI             workspaceConstant.verifyForm → workspace
+//   switchToConstantTab              workspaceConstant.switchTab → workspace
+//   verifyConstantValueVisibility    workspaceConstant.verifyValueVisibility → workspace
+//   verifySearch                     workspaceConstant.verifySearch → workspace
+//   VerifyConstantsFormInputValidation workspaceConstant.verifyFormValidation → workspace
+//   constantsCRUDAndValidations      workspaceConstant.crudFlow → workspace
+//   VerifyEmptyScreenUI              workspaceConstant.verifyEmptyState → workspace
+//   selectEnv                        environment.selectForConstants → workspace
+//   createAndUpdateConstant          workspaceConstant.createAndUpdate → workspace
+//   verifyInputValues                workspaceConstant.verifyInputs → workspace
+//   importConstantsApp               workspaceConstant.importApp → workspace
+//   verifySecretConstantNotResolved  workspaceConstant.verifySecretMasked → workspace
+//   verifyGlobalConstInStaticQuery   workspaceConstant.verifyInStaticQuery → workspace
+//   verifyStaticQueryPreview         workspaceConstant.verifyQueryPreview → workspace
+//   verifySecretInStaticQueryRaw     workspaceConstant.verifySecretInQueryRaw → workspace
+//   previewAppAndVerify              workspaceConstant.verifyInPreview → workspace
+//   promoteEnvAndVerify              environment.promoteAndVerify → workspace
+//   assertTooltipText                -                    → common
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { importSelectors } from "Selectors/platform/exportImport";
@@ -9,6 +34,12 @@ import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
 
 
+/**
+ * @tjType   workspaceConstant.verifyNameValidation
+ * @tjBlock  workspace
+ * @tjUsage  contantsNameValidation(...)
+ * @tjDom    constant-name inline validation
+ */
 export const contantsNameValidation = (
   selector,
   value,
@@ -21,6 +52,12 @@ export const contantsNameValidation = (
   cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 };
 
+/**
+ * @tjType   workspaceConstant.create
+ * @tjBlock  workspace
+ * @tjUsage  addAndVerifyConstants('API_KEY', 'abc', 'global')
+ * @tjDom    constants page -> add -> assert row
+ */
 export const addAndVerifyConstants = (name, value, type = "global") => {
   switchToConstantTab(type);
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
@@ -32,12 +69,24 @@ export const addAndVerifyConstants = (name, value, type = "global") => {
   cy.get(workspaceConstantsSelectors.constantName(name)).should("exist");
 };
 
+/**
+ * @tjType   workspaceConstant.delete
+ * @tjBlock  workspace
+ * @tjUsage  deleteConstant('API_KEY', 'Global')
+ * @tjDom    constant row -> delete -> confirm
+ */
 export const deleteConstant = (name, constType = "Global") => {
   switchToConstantTab(constType);
   cy.get(workspaceConstantsSelectors.constDeleteButton(name)).click();
   cy.get(commonSelectors.yesButton).click();
 };
 
+/**
+ * @tjType   workspaceConstant.verifyDuplicateName
+ * @tjBlock  workspace
+ * @tjUsage  existingNameValidation(...)
+ * @tjDom    duplicate-name validation. [UNREFERENCED 2026-09-06]
+ */
 export const existingNameValidation = (
   constName,
   constValue,
@@ -56,6 +105,12 @@ export const existingNameValidation = (
     );
 };
 
+/**
+ * @tjType   workspaceConstant.verifyForm
+ * @tjBlock  workspace
+ * @tjUsage  verifyConstantFormUI()
+ * @tjDom    add/edit constant form
+ */
 export const verifyConstantFormUI = () => {
   cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
   const verificationItems = [
@@ -99,10 +154,22 @@ export const verifyConstantFormUI = () => {
 };
 
 // Function to switch to a specific constant tab (Global or Secrets)
+/**
+ * @tjType   workspaceConstant.switchTab
+ * @tjBlock  workspace
+ * @tjUsage  switchToConstantTab('Secrets')
+ * @tjDom    Global / Secrets tab
+ */
 export const switchToConstantTab = (constantType) => {
   cy.get(`[data-cy="${constantType.toLowerCase()}-constants-button"]`).click();
 };
 
+/**
+ * @tjType   workspaceConstant.verifyValueVisibility
+ * @tjBlock  workspace
+ * @tjUsage  verifyConstantValueVisibility(selector, 'abc')
+ * @tjDom    value shown or masked
+ */
 export const verifyConstantValueVisibility = (constSelector, constValue) => {
   cy.get(constSelector).click();
   cy.get(dataSourceSelector.editorVariablePreview).should(
@@ -111,6 +178,12 @@ export const verifyConstantValueVisibility = (constSelector, constValue) => {
   );
 };
 
+/**
+ * @tjType   workspaceConstant.verifySearch
+ * @tjBlock  workspace
+ * @tjUsage  verifySearch(data)
+ * @tjDom    constants search field
+ */
 export const verifySearch = (data) => {
   addAndVerifyConstants("secretconst", "secretvalue", "Secrets");
 
@@ -164,6 +237,12 @@ export const verifySearch = (data) => {
   deleteConstant("secretconst", "Secrets");
 };
 
+/**
+ * @tjType   workspaceConstant.verifyFormValidation
+ * @tjBlock  workspace
+ * @tjUsage  VerifyConstantsFormInputValidation()
+ * @tjDom    form-level validation messages
+ */
 export const VerifyConstantsFormInputValidation = () => {
   const selectorMap = {
     name: {
@@ -215,6 +294,12 @@ export const VerifyConstantsFormInputValidation = () => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
+/**
+ * @tjType   workspaceConstant.crudFlow
+ * @tjBlock  workspace
+ * @tjUsage  constantsCRUDAndValidations(data)
+ * @tjDom    create -> edit -> delete with validations
+ */
 export const constantsCRUDAndValidations = (data) => {
   cy.get('[data-cy="home-page-icon"]').click();
   cy.wait(500);
@@ -338,6 +423,12 @@ export const constantsCRUDAndValidations = (data) => {
   cy.get(workspaceConstantsSelectors.constantName(name)).should("not.exist");
 };
 
+/**
+ * @tjType   workspaceConstant.verifyEmptyState
+ * @tjBlock  workspace
+ * @tjUsage  VerifyEmptyScreenUI('production')
+ * @tjDom    constants empty state per environment
+ */
 export const VerifyEmptyScreenUI = (envName) => {
   cy.get(workspaceConstantsSelectors.emptyStateImage).should("be.visible");
   cy.get(workspaceConstantsSelectors.emptyStateHeader).verifyVisibleElement(
@@ -358,12 +449,24 @@ export const VerifyEmptyScreenUI = (envName) => {
   );
 };
 
+/**
+ * @tjType   environment.selectForConstants
+ * @tjBlock  workspace
+ * @tjUsage  selectEnv('production')
+ * @tjDom    environment picker on the constants page
+ */
 export const selectEnv = (envName) => {
   cy.get(`[data-cy="${envName.toLowerCase()}-list-item"]`).click({
     force: true,
   });
 };
 
+/**
+ * @tjType   workspaceConstant.createAndUpdate
+ * @tjBlock  workspace
+ * @tjUsage  createAndUpdateConstant(...)
+ * @tjDom    create then edit a constant
+ */
 export const createAndUpdateConstant = (
   name,
   value,
@@ -378,6 +481,12 @@ export const createAndUpdateConstant = (
     });
   });
 
+/**
+ * @tjType   workspaceConstant.verifyInputs
+ * @tjBlock  workspace
+ * @tjUsage  verifyInputValues(...)
+ * @tjDom    form input values
+ */
 export const verifyInputValues = (
   start,
   end,
@@ -392,6 +501,12 @@ export const verifyInputValues = (
   }
 };
 
+/**
+ * @tjType   workspaceConstant.importApp
+ * @tjBlock  workspace
+ * @tjUsage  importConstantsApp('cypress/fixtures/app.json', true)
+ * @tjDom    imports an app that consumes constants
+ */
 export const importConstantsApp = (filePath, app = true) => {
   cy.get(importSelectors.dropDownMenu)
     .should("be.visible")
@@ -418,6 +533,12 @@ export const importConstantsApp = (filePath, app = true) => {
   }
 };
 
+/**
+ * @tjType   workspaceConstant.verifySecretMasked
+ * @tjBlock  workspace
+ * @tjUsage  verifySecretConstantNotResolved(inputWidget)
+ * @tjDom    secret not resolved in the widget
+ */
 export const verifySecretConstantNotResolved = (inputWidget) => {
   cy.openComponentSidebar();
   cy.get(`[data-cy="${inputWidget}-input"]`)
@@ -425,6 +546,12 @@ export const verifySecretConstantNotResolved = (inputWidget) => {
     .click();
 };
 
+/**
+ * @tjType   workspaceConstant.verifyInStaticQuery
+ * @tjBlock  workspace
+ * @tjUsage  verifyGlobalConstInStaticQuery(selector, expected)
+ * @tjDom    global constant resolved in a query
+ */
 export const verifyGlobalConstInStaticQuery = (selector, expected) => {
   cy.get(selector).click();
   cy.get(".rest-api-methods-select-element-container .codehinter-container")
@@ -434,6 +561,12 @@ export const verifyGlobalConstInStaticQuery = (selector, expected) => {
   cy.get(".text-secondary").should("have.text", expected);
 };
 
+/**
+ * @tjType   workspaceConstant.verifyQueryPreview
+ * @tjBlock  workspace
+ * @tjUsage  verifyStaticQueryPreview(selector, expected)
+ * @tjDom    query preview output
+ */
 export const verifyStaticQueryPreview = (selector, expected) => {
   cy.get(selector).click();
   cy.get(dataSourceSelector.queryPreviewButton).click();
@@ -443,6 +576,12 @@ export const verifyStaticQueryPreview = (selector, expected) => {
   );
 };
 
+/**
+ * @tjType   workspaceConstant.verifySecretInQueryRaw
+ * @tjBlock  workspace
+ * @tjUsage  verifySecretInStaticQueryRaw(selector)
+ * @tjDom    secret masked in the raw query preview
+ */
 export const verifySecretInStaticQueryRaw = (selector) => {
   cy.get(selector).click();
   cy.get(dataSourceSelector.queryPreviewButton).click();
@@ -452,6 +591,12 @@ export const verifySecretInStaticQueryRaw = (selector) => {
   );
 };
 
+/**
+ * @tjType   workspaceConstant.verifyInPreview
+ * @tjBlock  workspace
+ * @tjUsage  previewAppAndVerify(start, end, 'abc')
+ * @tjDom    constant resolved in app preview
+ */
 export const previewAppAndVerify = (start, end, expectedValue) => {
   cy.openInCurrentTab(commonWidgetSelector.previewButton);
   cy.wait(3000);
@@ -468,6 +613,12 @@ export const previewAppAndVerify = (start, end, expectedValue) => {
   cy.wait(2000);
 };
 
+/**
+ * @tjType   environment.promoteAndVerify
+ * @tjBlock  workspace
+ * @tjUsage  promoteEnvAndVerify(...)
+ * @tjDom    promote then assert env-scoped values
+ */
 export const promoteEnvAndVerify = (
   fromEnv,
   toEnv,
@@ -486,6 +637,12 @@ export const promoteEnvAndVerify = (
   previewAppAndVerify(start, end, expectedValue);
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  assertTooltipText(selector, expected)
+ * @tjDom    hovers and asserts tooltip text
+ */
 export const assertTooltipText = (selector, expected) => {
   cy.get(selector).closest("td").trigger("mouseover");
   cy.get(".tooltip-inner")

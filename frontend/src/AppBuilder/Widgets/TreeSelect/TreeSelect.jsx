@@ -139,8 +139,8 @@ const TreeSelect = ({
   const rawData = !advanced
     ? filterNodes(options)
     : isExpectedDataType(properties.data, 'array')
-      ? filterNodes(properties.data)
-      : [];
+    ? filterNodes(properties.data)
+    : [];
 
   const evaluatedCheckedData = !advanced ? derivedChecked : checkedData;
   const evaluatedExpandedData = !advanced ? derivedExpanded : expandedData;

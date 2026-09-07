@@ -1,9 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { navigateToAppEditor } from "Support/utils/common";
-import { multiEnvAppSetup } from "Support/utils/license";
+import { multiEnvAppSetup } from "Support/utils/platform/license";
 import { deleteAllUIConstants } from "Support/utils/platform/apiUtils/apiWSConstants";
-import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
+import { addAndVerifyConstants } from "Support/utils/platform/workspaceConstants";
 
 describe("License - Multi-Environment Flow", () => {
   const name = fake.firstName;

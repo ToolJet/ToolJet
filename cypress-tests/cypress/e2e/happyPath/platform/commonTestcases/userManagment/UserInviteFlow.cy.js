@@ -12,8 +12,8 @@ import {
   selectUserGroup,
   updateUserGroup,
   verifyManageUsersPageElements,
-} from "Support/utils/manageUsers";
-import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
+} from "Support/utils/platform/manageUsers";
+import { addNewUser, visitWorkspaceInvitation } from "Support/utils/platform/onboarding";
 import { commonText } from "Texts/common";
 import { usersText } from "Texts/platform/manageUsers";
 
@@ -24,9 +24,9 @@ import {
   navigateToManageUsers,
   searchUser,
 } from "Support/utils/common";
-import { verifyUserInGroups } from "Support/utils/externalApi";
-import { apiCreateGroup } from "Support/utils/manageGroups";
-import { enableInstanceSignup } from "Support/utils/manageSSO";
+import { verifyUserInGroups } from "Support/utils/platform/externalApi";
+import { apiCreateGroup } from "Support/utils/platform/manageGroups";
+import { enableInstanceSignup } from "Support/utils/platform/manageSSO";
 
 const data = {};
 

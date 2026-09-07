@@ -16,8 +16,8 @@ import {
   pinInspector,
   navigateToManageUsers,
 } from "Support/utils/common";
-import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
-import { resolveHost } from "Support/utils/apps";
+import { inviteUserBasedOnRole } from "Support/utils/platform/manageGroups";
+import { resolveHost } from "Support/utils/platform/apps";
 import { addQuery, addSuccessNotification } from "Support/utils/appBuilder/querymanager/queries";
 
 const data = {};

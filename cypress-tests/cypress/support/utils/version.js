@@ -1,3 +1,19 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// version.js
+//   navigateToCreateNewVersionModal  appVersion.openCreateModal → apps
+//   navigateToEditVersionModal       appVersion.openEditModal → apps
+//   verifyElementsOfCreateNewVersionModal appVersion.verifyCreateModal → apps
+//   editVersionAndVerify             appVersion.edit      → apps
+//   deleteVersionAndVerify           appVersion.delete    → apps
+//   verifyDuplicateVersion           appVersion.verifyDuplicate → apps
+//   releasedVersionAndVerify         appVersion.release   → apps
+//   verifyVersionAfterPreview        appVersion.verifyAfterPreview → apps
+//   switchVersionAndVerify           appVersion.switch    → apps
+//   openPreviewSettings              app.openPreviewSettings → apps
+//   createDraftVersion               appVersion.createDraft → apps
+//   openVersionSwitcher              appVersion.openSwitcher → apps
+//   openCreateDraftVersionModal      appVersion.openCreateDraftModal → apps
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { versionModalSelector } from "Selectors/platform/eeCommon";
 import { appVersionSelectors } from "Selectors/platform/exportImport";
@@ -12,12 +28,24 @@ import { commonText } from "Texts/common";
 import { appVersionText } from "Texts/platform/exportImport";
 import { deleteVersionText, releasedVersionText } from "Texts/platform/version";
 
+/**
+ * @tjType   appVersion.openCreateModal
+ * @tjBlock  apps
+ * @tjUsage  navigateToCreateNewVersionModal('v1')
+ * @tjDom    version switcher -> create version
+ */
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(versionSwitcherSelectors.versionName).click();
   cy.contains(appVersionText.createNewVersion).first().should("be.visible");
   cy.contains(appVersionText.createNewVersion).first().click();
 };
 
+/**
+ * @tjType   appVersion.openEditModal
+ * @tjBlock  apps
+ * @tjUsage  navigateToEditVersionModal('v1')
+ * @tjDom    version switcher -> edit version
+ */
 export const navigateToEditVersionModal = (value) => {
   cy.get(appVersionSelectors.currentVersionField(value))
     .should("be.visible")
@@ -29,6 +57,12 @@ export const navigateToEditVersionModal = (value) => {
     });
 };
 
+/**
+ * @tjType   appVersion.verifyCreateModal
+ * @tjBlock  apps
+ * @tjUsage  verifyElementsOfCreateNewVersionModal([])
+ * @tjDom    create-version modal contents
+ */
 export const verifyElementsOfCreateNewVersionModal = (version = []) => {
   cy.get(appVersionSelectors.createNewVersion).verifyVisibleElement(
     "have.text",
@@ -58,6 +92,12 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
     .click();
 };
 
+/**
+ * @tjType   appVersion.edit
+ * @tjBlock  apps
+ * @tjUsage  editVersionAndVerify(...)
+ * @tjDom    rename a version and assert
+ */
 export const editVersionAndVerify = (
   currentVersion,
   newVersion = [],
@@ -85,6 +125,12 @@ export const editVersionAndVerify = (
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
 };
 
+/**
+ * @tjType   appVersion.delete
+ * @tjBlock  apps
+ * @tjUsage  deleteVersionAndVerify('v2')
+ * @tjDom    delete a version and assert
+ */
 export const deleteVersionAndVerify = (value) => {
   cy.get(appVersionSelectors.currentVersionField(value))
     .should("be.visible")
@@ -111,6 +157,12 @@ export const deleteVersionAndVerify = (value) => {
   );
 };
 
+/**
+ * @tjType   appVersion.verifyDuplicate
+ * @tjBlock  apps
+ * @tjUsage  verifyDuplicateVersion([], 'v1')
+ * @tjDom    duplicate-name validation
+ */
 export const verifyDuplicateVersion = (newVersion = [], version) => {
   cy.contains(appVersionText.createNewVersion).should("be.visible").click();
   cy.get(appVersionSelectors.createVersionInputField).click();
@@ -124,6 +176,12 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
   );
 };
 
+/**
+ * @tjType   appVersion.release
+ * @tjBlock  apps
+ * @tjUsage  releasedVersionAndVerify('v1')
+ * @tjDom    release a version and assert the badge
+ */
 export const releasedVersionAndVerify = (currentVersion) => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
@@ -142,6 +200,12 @@ export const releasedVersionAndVerify = (currentVersion) => {
   );
 };
 
+/**
+ * @tjType   appVersion.verifyAfterPreview
+ * @tjBlock  apps
+ * @tjUsage  verifyVersionAfterPreview('v1')
+ * @tjDom    version persists through preview. [UNREFERENCED 2026-09-06]
+ */
 export const verifyVersionAfterPreview = (currentVersion) => {
   cy.get(appVersionSelectors.currentVersionField(currentVersion)).should(
     "be.visible"
@@ -158,6 +222,12 @@ export const verifyVersionAfterPreview = (currentVersion) => {
   cy.wait(8000);
 };
 
+/**
+ * @tjType   appVersion.switch
+ * @tjBlock  apps
+ * @tjUsage  switchVersionAndVerify('v1', 'v2')
+ * @tjDom    version switcher -> pick -> assert
+ */
 export const switchVersionAndVerify = (currentVersion, newVersion) => {
   cy.waitForElement(versionSwitcherSelectors.versionName);
   cy.get(versionSwitcherSelectors.versionName).should("be.visible").click();
@@ -167,12 +237,24 @@ export const switchVersionAndVerify = (currentVersion, newVersion) => {
   //cy.wait('@appDs')
 };
 
+/**
+ * @tjType   app.openPreviewSettings
+ * @tjBlock  apps
+ * @tjUsage  openPreviewSettings()
+ * @tjDom    preview settings panel
+ */
 export const openPreviewSettings = () => {
   cy.get(commonSelectors.previewSettings).should("be.visible").click();
   cy.wait(1000);
   // Note: add alias wait for version and env load
 };
 
+/**
+ * @tjType   appVersion.createDraft
+ * @tjBlock  apps
+ * @tjUsage  createDraftVersion('v2-draft', 'v1')
+ * @tjDom    create a draft from an existing version
+ */
 export const createDraftVersion = (versionName, fromVersion) => {
   openCreateDraftVersionModal();
   cy.wait(500);
@@ -189,6 +271,12 @@ export const createDraftVersion = (versionName, fromVersion) => {
   cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
 };
 
+/**
+ * @tjType   appVersion.openSwitcher
+ * @tjBlock  apps
+ * @tjUsage  openVersionSwitcher()
+ * @tjDom    editor header -> version switcher
+ */
 export const openVersionSwitcher = () => {
   cy.get(versionSwitcherSelectors.versionName)
     .eq(0)
@@ -196,6 +284,12 @@ export const openVersionSwitcher = () => {
     .click();
   cy.wait(300);
 };
+/**
+ * @tjType   appVersion.openCreateDraftModal
+ * @tjBlock  apps
+ * @tjUsage  openCreateDraftVersionModal()
+ * @tjDom    version switcher -> create draft
+ */
 export const openCreateDraftVersionModal = () => {
   cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
   cy.wait(300);

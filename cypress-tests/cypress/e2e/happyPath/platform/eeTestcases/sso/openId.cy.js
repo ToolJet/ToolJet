@@ -5,18 +5,18 @@ import {
     ssoEeSelector,
 } from "Selectors/platform/eeCommon";
 import * as common from "Support/utils/common";
-import { defaultSSO, setSignupStatus } from "Support/utils/manageSSO";
+import { defaultSSO, setSignupStatus } from "Support/utils/platform/manageSSO";
 import {
     apiArchiveUnarchiveUser,
     cleanAllUsers,
-} from "Support/utils/manageUsers";
+} from "Support/utils/platform/manageUsers";
 import { ssoText } from "Texts/platform/manageSSO";
 import { usersText } from "Texts/platform/manageUsers";
 
 import { fake } from "Fixtures/fake";
 import { sanitize } from "Support/utils/common";
-import { enableInstanceSignup } from "Support/utils/manageSSO";
-import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
+import { enableInstanceSignup } from "Support/utils/platform/manageSSO";
+import { fetchAndVisitInviteLink } from "Support/utils/platform/manageUsers";
 
 const config = {
     type: "openid",

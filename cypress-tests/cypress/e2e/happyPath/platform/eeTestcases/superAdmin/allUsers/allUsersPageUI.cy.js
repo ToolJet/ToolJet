@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { instanceWorkspaceSelectors } from "Selectors/platform/superAdminSelectors";
 import { sanitize } from "Support/utils/common";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import {
     openAllUsersPage,
     updateUserNameAndVerifyChanges,

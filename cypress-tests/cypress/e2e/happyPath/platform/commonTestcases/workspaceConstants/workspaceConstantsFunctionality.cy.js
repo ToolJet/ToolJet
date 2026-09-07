@@ -11,11 +11,11 @@ import {
     verifySecretConstantNotResolved,
     verifySecretInStaticQueryRaw,
     verifyStaticQueryPreview,
-} from "Support/utils/workspaceConstants";
+} from "Support/utils/platform/workspaceConstants";
 import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import { setUpSlug } from "Support/utils/apps";
+import { setUpSlug } from "Support/utils/platform/apps";
 import { sanitize } from "Support/utils/common";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
 

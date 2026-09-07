@@ -1,3 +1,10 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// smtp.js
+//   openSMTPSettings                 smtpSettings.open    → superAdmin
+//   verifyLabel                      -                    → common
+//   verifyInputPlaceholder           -                    → common
+//   verifySmtpSettingsUI             smtpSettings.verifyUI → superAdmin
+// └──────────────────────────────────────────────────────────────────┘
 import {
     smtpSelectors,
     whiteLabelSelectors
@@ -12,18 +19,42 @@ import {
     openInstanceSettings,
 } from "Support/utils/platform/eeCommon";
 
+/**
+ * @tjType   smtpSettings.open
+ * @tjBlock  superAdmin
+ * @tjUsage  openSMTPSettings()
+ * @tjDom    instance settings -> SMTP list item
+ */
 export const openSMTPSettings = () => {
     openInstanceSettings();
     cy.get(smtpSelectors.smtpListItem).click();
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  verifyLabel('Host')
+ * @tjDom    asserts a <label> with the given text is visible
+ */
 export const verifyLabel = (text) => cy.contains("label", text).should("be.visible");
 
+/**
+ * @tjType   -
+ * @tjBlock  common
+ * @tjUsage  verifyInputPlaceholder(smtpSelectors.smtpHostInput, 'smtp.example.com')
+ * @tjDom    asserts an input's placeholder contains the expected text (case-insensitive)
+ */
 export const verifyInputPlaceholder = (selector, expected) => {
     cy.get(selector).should("be.visible").and("have.attr", "placeholder")
         .and(($p) => expect(($p || "").toString().toLowerCase()).to.contain(expected));
 };
 
+/**
+ * @tjType   smtpSettings.verifyUI
+ * @tjBlock  superAdmin
+ * @tjUsage  verifySmtpSettingsUI()
+ * @tjDom    enables SMTP if disabled, then asserts every label, placeholder and button
+ */
 export const verifySmtpSettingsUI = () => {
     cy.get(smtpSelectors.smtpStatuslabel).then(($label) => {
         const currentState = $label.text().trim();

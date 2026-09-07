@@ -1,8 +1,8 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
-import { inviteUser } from "Support/utils/onboarding";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { inviteUser } from "Support/utils/platform/onboarding";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { smtpConfig } from "Constants/constants/whitelabel";

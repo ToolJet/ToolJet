@@ -1,13 +1,13 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { usersSelector } from "Selectors/platform/manageUsers";
-import { setSignupStatus } from "Support/utils/manageSSO";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
+import { setSignupStatus } from "Support/utils/platform/manageSSO";
+import { fillUserInviteForm } from "Support/utils/platform/manageUsers";
 import {
   SignUpPageElements,
   addNewUser,
   visitWorkspaceInvitation,
-} from "Support/utils/onboarding";
+} from "Support/utils/platform/onboarding";
 import { commonText } from "Texts/common";
 import { usersText } from "Texts/platform/manageUsers";
 
@@ -18,7 +18,7 @@ import {
 } from "Support/utils/common";
 
 import { onboardingSelectors } from "Selectors/platform/onboarding";
-import { enableInstanceSignup } from "Support/utils/manageSSO";
+import { enableInstanceSignup } from "Support/utils/platform/manageSSO";
 
 const data = {};
 const envVar = Cypress.env("environment");

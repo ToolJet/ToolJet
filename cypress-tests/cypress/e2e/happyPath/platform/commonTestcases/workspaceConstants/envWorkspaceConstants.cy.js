@@ -9,11 +9,11 @@ import {
     verifyConstantValueVisibility,
     verifyInputValues,
     verifySecretConstantNotResolved,
-} from "Support/utils/workspaceConstants";
+} from "Support/utils/platform/workspaceConstants";
 import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import { setUpSlug } from "Support/utils/apps";
+import { setUpSlug } from "Support/utils/platform/apps";
 import { releaseApp, sanitize } from "Support/utils/common";
 
 const data = {};

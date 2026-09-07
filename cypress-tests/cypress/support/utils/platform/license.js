@@ -1,11 +1,53 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// license.js
+//   getLicenseExpiryDate             license.getExpiry    → licensing
+//   switchTabs                       license.switchTab    → licensing
+//   verifyLicenseTab                 license.verifyTab    → licensing
+//   verifySubTabsAndStoreCurrentLimits license.verifyLimitsTab → licensing
+//   verifyAccessTab                  license.verifyAccessTab → licensing
+//   verifyDomainTab                  license.verifyDomainTab → licensing
+//   verifyTooltip                    -                    → licensing
+//   verifyFeatureBanner              license.verifyFeatureBanner → licensing
+//   isBannerType                     -                    → licensing
+//   handleFeatureBanner              license.handleBanner → licensing
+//   getResourceKey                   -                    → licensing
+//   assertLimitState                 license.assertLimitState → licensing
+//   verifyResourceLimit              license.verifyResourceLimit → licensing
+//   verifyTotalLimitsWithPlan        license.verifyTotalLimits → licensing
+//   applyLicense                     license.apply        → licensing
+//   getLicenseLimits                 license.getLimits    → licensing
+//   createUserViaAPI                 user.createApi       → licensing
+//   archiveUser                      user.archive         → licensing
+//   unarchiveUser                    user.unarchive       → licensing
+//   changeUserRole                   user.changeRole      → licensing
+//   verifyLimitPayload               license.verifyLimitPayload → licensing
+//   verifyButtonDisabledWithTooltip  -                    → licensing
+//   getCurrentCountFromBanner        license.readBannerCount → licensing
+//   waitForLicenseUpdate             -                    → licensing
+//   generateBulkUsersCSV             user.generateBulkCsv → licensing
+//   bulkUploadUsersViaCSV            user.bulkUpload      → licensing
+//   verifyLimitBanner                license.verifyLimitBanner → licensing
+//   verifyUpgradeModal               license.verifyUpgradeModal → licensing
+//   createUserAndExpectStatus        user.createExpectStatus → licensing
+//   archiveUserAndVerify             user.archiveAndVerify → licensing
+//   changeRoleAndExpectLimit         user.changeRoleExpectLimit → licensing
+//   openInviteUserModal              user.openInviteModal → licensing
+//   multiEnvAppSetup                 app.multiEnvSetup    → licensing
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors } from "Selectors/platform/eeCommon";
 import { importSelectors } from "Selectors/platform/exportImport";
 import { licenseSelectors } from "Selectors/platform/license";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
-import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
+import { fillUserInviteForm } from "Support/utils/platform/manageUsers";
+import { createAndUpdateConstant } from "Support/utils/platform/workspaceConstants";
 import { licenseText } from "Texts/platform/license";
 
+/**
+ * @tjType   license.getExpiry
+ * @tjBlock  licensing
+ * @tjUsage  getLicenseExpiryDate()
+ * @tjDom    none - reads the licence expiry
+ */
 export const getLicenseExpiryDate = () => {
   return cy
     .request("GET", `${Cypress.env("server_host")}/api/license/access`)
@@ -27,11 +69,23 @@ export const getLicenseExpiryDate = () => {
     });
 };
 
+/**
+ * @tjType   license.switchTab
+ * @tjBlock  licensing
+ * @tjUsage  switchTabs('Access')
+ * @tjDom    licence page tab strip
+ */
 export const switchTabs = (tabTitle) => {
   cy.get(licenseSelectors.listOfItems(tabTitle)).scrollIntoView().should("be.visible").click();
   cy.get(licenseSelectors.tabTitle(tabTitle)).should("have.text", tabTitle);
 };
 
+/**
+ * @tjType   license.verifyTab
+ * @tjBlock  licensing
+ * @tjUsage  verifyLicenseTab()
+ * @tjDom    licence tab contents
+ */
 export const verifyLicenseTab = () => {
   cy.get(licenseSelectors.label(licenseText.licenseKeyTab.licenseLabel)).should(
     "be.visible"
@@ -51,6 +105,12 @@ const parseLimitValue = (value) => {
   return isNaN(num) ? value.trim() : num;
 };
 
+/**
+ * @tjType   license.verifyLimitsTab
+ * @tjBlock  licensing
+ * @tjUsage  verifySubTabsAndStoreCurrentLimits(...)
+ * @tjDom    limits sub-tabs; caches current counts
+ */
 export const verifySubTabsAndStoreCurrentLimits = (
   subTabName,
   subTabDataObj,
@@ -99,6 +159,12 @@ export const verifySubTabsAndStoreCurrentLimits = (
     });
 };
 
+/**
+ * @tjType   license.verifyAccessTab
+ * @tjBlock  licensing
+ * @tjUsage  verifyAccessTab(false)
+ * @tjDom    access tab, plan-enabled or not
+ */
 export const verifyAccessTab = (isPlanEnabled = false) => {
   const accessTabLabels = Object.values(licenseText.accessTab);
 
@@ -121,6 +187,12 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
   });
 };
 
+/**
+ * @tjType   license.verifyDomainTab
+ * @tjBlock  licensing
+ * @tjUsage  verifyDomainTab()
+ * @tjDom    allowed-domain tab
+ */
 export const verifyDomainTab = () => {
   cy.get(licenseSelectors.warningIcon).should("be.visible");
   cy.get(licenseSelectors.noDomainLinkedLabel).verifyVisibleElement(
@@ -133,6 +205,12 @@ export const verifyDomainTab = () => {
   );
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  licensing
+ * @tjUsage  verifyTooltip(selector, message)
+ * @tjDom    hovers a licence control and asserts its tooltip
+ */
 export const verifyTooltip = (
   selector,
   expectedTooltip,
@@ -155,6 +233,12 @@ const normalizeText = (text) =>
     .toLowerCase()
     .replace(/[\u00A0\s]+/g, " ");
 
+/**
+ * @tjType   license.verifyFeatureBanner
+ * @tjBlock  licensing
+ * @tjUsage  verifyFeatureBanner('apps', 'Upgrade')
+ * @tjDom    feature-gate banner
+ */
 export const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
   const headingSelector = licenseSelectors.limitHeading(cyPrefix);
 
@@ -174,6 +258,12 @@ export const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
   });
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  licensing
+ * @tjUsage  isBannerType('limit')
+ * @tjDom    none - predicate. [UNREFERENCED 2026-09-06]
+ */
 export const isBannerType = (type) =>
   [
     "edit-user",
@@ -183,6 +273,12 @@ export const isBannerType = (type) =>
     "audit-logs",
   ].includes(type);
 
+/**
+ * @tjType   license.handleBanner
+ * @tjBlock  licensing
+ * @tjUsage  handleFeatureBanner('limit', 'Upgrade')
+ * @tjDom    dismisses or asserts a banner. [UNREFERENCED 2026-09-06]
+ */
 export const handleFeatureBanner = (type, expectedHeading) => {
   const licenseHeadingSelector = licenseSelectors.licenseBannerHeading;
 
@@ -198,6 +294,12 @@ export const handleFeatureBanner = (type, expectedHeading) => {
   });
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  licensing
+ * @tjUsage  getResourceKey('apps')
+ * @tjDom    none - maps a resource to its payload key
+ */
 export const getResourceKey = (type) => {
   const map = {
     builders: "Builders",
@@ -220,6 +322,12 @@ export const getResourceKey = (type) => {
   return map[key];
 };
 
+/**
+ * @tjType   license.assertLimitState
+ * @tjBlock  licensing
+ * @tjUsage  assertLimitState(...)
+ * @tjDom    asserts a resource is at/under its limit
+ */
 export const assertLimitState = (
   resourceKey,
   baseLabel,
@@ -282,6 +390,12 @@ export const assertLimitState = (
   });
 };
 
+/**
+ * @tjType   license.verifyResourceLimit
+ * @tjBlock  licensing
+ * @tjUsage  verifyResourceLimit(...)
+ * @tjDom    limit banner + disabled controls for a resource
+ */
 export const verifyResourceLimit = (
   resourceType,
   planName,
@@ -329,6 +443,12 @@ export const verifyResourceLimit = (
   // cy.get(commonSelectors.cancelButton).click();
 };
 
+/**
+ * @tjType   license.verifyTotalLimits
+ * @tjBlock  licensing
+ * @tjUsage  verifyTotalLimitsWithPlan(...)
+ * @tjDom    total limits against the active plan
+ */
 export const verifyTotalLimitsWithPlan = (
   resources,
   planName,
@@ -384,6 +504,12 @@ export const verifyTotalLimitsWithPlan = (
   });
 };
 
+/**
+ * @tjType   license.apply
+ * @tjBlock  licensing
+ * @tjUsage  applyLicense(licenseKey)
+ * @tjDom    licence page -> paste key -> save. [UNREFERENCED 2026-09-06]
+ */
 export const applyLicense = (licenseKey) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.request({
@@ -396,6 +522,12 @@ export const applyLicense = (licenseKey) => {
   });
 };
 
+/**
+ * @tjType   license.getLimits
+ * @tjBlock  licensing
+ * @tjUsage  getLicenseLimits()
+ * @tjDom    none - GET current limits. [UNREFERENCED 2026-09-06]
+ */
 export const getLicenseLimits = () => {
   return cy.request({
     method: "GET",
@@ -406,6 +538,12 @@ export const getLicenseLimits = () => {
   });
 };
 
+/**
+ * @tjType   user.createApi
+ * @tjBlock  licensing
+ * @tjUsage  createUserViaAPI(...)
+ * @tjDom    none - POST user, used to approach a limit
+ */
 export const createUserViaAPI = (
   email,
   role = "end-user",
@@ -430,6 +568,12 @@ export const createUserViaAPI = (
   });
 };
 
+/**
+ * @tjType   user.archive
+ * @tjBlock  licensing
+ * @tjUsage  archiveUser(userEmail)
+ * @tjDom    manage users -> archive
+ */
 export const archiveUser = (email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.getUserIdByEmail(email).then((userId) => {
@@ -451,6 +595,12 @@ export const archiveUser = (email) => {
   });
 };
 
+/**
+ * @tjType   user.unarchive
+ * @tjBlock  licensing
+ * @tjUsage  unarchiveUser(userEmail)
+ * @tjDom    manage users -> unarchive. [UNREFERENCED 2026-09-06]
+ */
 export const unarchiveUser = (email) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.getUserIdByEmail(email).then((userId) => {
@@ -472,6 +622,12 @@ export const unarchiveUser = (email) => {
   });
 };
 
+/**
+ * @tjType   user.changeRole
+ * @tjBlock  licensing
+ * @tjUsage  changeUserRole(userEmail, 'builder')
+ * @tjDom    manage users -> change role
+ */
 export const changeUserRole = (email, role) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.getUserIdByEmail(email, "user").then((userId) => {
@@ -493,6 +649,12 @@ export const changeUserRole = (email, role) => {
   });
 };
 
+/**
+ * @tjType   license.verifyLimitPayload
+ * @tjBlock  licensing
+ * @tjUsage  verifyLimitPayload(limitData, 'apps')
+ * @tjDom    none - asserts the limits API payload. [UNREFERENCED 2026-09-06]
+ */
 export const verifyLimitPayload = (limitData, resourceType) => {
   cy.wrap(limitData).should((data) => {
     if (data.canAddUnlimited) {
@@ -510,6 +672,12 @@ export const verifyLimitPayload = (limitData, resourceType) => {
   });
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  licensing
+ * @tjUsage  verifyButtonDisabledWithTooltip(...)
+ * @tjDom    disabled button + its tooltip. [UNREFERENCED 2026-09-06]
+ */
 export const verifyButtonDisabledWithTooltip = (
   buttonSelector,
   tooltipText
@@ -518,6 +686,12 @@ export const verifyButtonDisabledWithTooltip = (
   verifyTooltip(buttonSelector, tooltipText, true);
 };
 
+/**
+ * @tjType   license.readBannerCount
+ * @tjBlock  licensing
+ * @tjUsage  getCurrentCountFromBanner('apps')
+ * @tjDom    reads the current count out of the banner
+ */
 export const getCurrentCountFromBanner = (resourceType) => {
   const cyPrefix = resourceType.toLowerCase().trim();
   const headingSelector = licenseSelectors.limitHeading(cyPrefix);
@@ -538,10 +712,22 @@ export const getCurrentCountFromBanner = (resourceType) => {
     });
 };
 
+/**
+ * @tjType   -
+ * @tjBlock  licensing
+ * @tjUsage  waitForLicenseUpdate(2000)
+ * @tjDom    none - settle wait after a licence change. [UNREFERENCED 2026-09-06]
+ */
 export const waitForLicenseUpdate = (timeout = 2000) => {
   cy.wait(timeout);
 };
 
+/**
+ * @tjType   user.generateBulkCsv
+ * @tjBlock  licensing
+ * @tjUsage  generateBulkUsersCSV(...)
+ * @tjDom    none - builds a CSV fixture
+ */
 export const generateBulkUsersCSV = (
   count,
   role = "end-user",
@@ -568,6 +754,12 @@ export const generateBulkUsersCSV = (
   return csv;
 };
 
+/**
+ * @tjType   user.bulkUpload
+ * @tjBlock  licensing
+ * @tjUsage  bulkUploadUsersViaCSV(...)
+ * @tjDom    manage users -> bulk upload
+ */
 export const bulkUploadUsersViaCSV = (
   count,
   role = "end-user",
@@ -586,11 +778,23 @@ export const bulkUploadUsersViaCSV = (
   });
 };
 
+/**
+ * @tjType   license.verifyLimitBanner
+ * @tjBlock  licensing
+ * @tjUsage  verifyLimitBanner('Limit reached', 'Upgrade your plan')
+ * @tjDom    limit banner heading + info text
+ */
 export const verifyLimitBanner = (heading, infoText) => {
   cy.verifyElement(licenseSelectors.limitHeading("usage"), heading);
   cy.verifyElement(licenseSelectors.limitInfo("usage"), infoText);
 };
 
+/**
+ * @tjType   license.verifyUpgradeModal
+ * @tjBlock  licensing
+ * @tjUsage  verifyUpgradeModal('Upgrade to add more', false)
+ * @tjDom    upgrade modal copy
+ */
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   cy.get('[data-cy="modal-header"] .modal-title').should(
     "have.text",
@@ -617,6 +821,12 @@ export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   });
 };
 
+/**
+ * @tjType   user.createExpectStatus
+ * @tjBlock  licensing
+ * @tjUsage  createUserAndExpectStatus(userEmail, 'builder', 201)
+ * @tjDom    none - POST user asserting a status code
+ */
 export const createUserAndExpectStatus = (email, role, expectedStatus) => {
   return createUserViaAPI(email, role).then((response) => {
     expect(response.status).to.equal(expectedStatus);
@@ -627,6 +837,12 @@ export const createUserAndExpectStatus = (email, role, expectedStatus) => {
   });
 };
 
+/**
+ * @tjType   user.archiveAndVerify
+ * @tjBlock  licensing
+ * @tjUsage  archiveUserAndVerify(userEmail)
+ * @tjDom    archive then assert the row status
+ */
 export const archiveUserAndVerify = (email) => {
   return archiveUser(email).then((response) => {
     expect(response.status).to.be.oneOf([200, 201]);
@@ -634,6 +850,12 @@ export const archiveUserAndVerify = (email) => {
   });
 };
 
+/**
+ * @tjType   user.changeRoleExpectLimit
+ * @tjBlock  licensing
+ * @tjUsage  changeRoleAndExpectLimit(...)
+ * @tjDom    role change blocked by a plan limit
+ */
 export const changeRoleAndExpectLimit = (
   email,
   newRole,
@@ -646,6 +868,12 @@ export const changeRoleAndExpectLimit = (
   });
 };
 
+/**
+ * @tjType   user.openInviteModal
+ * @tjBlock  licensing
+ * @tjUsage  openInviteUserModal('QA', userEmail, 'builder')
+ * @tjDom    manage users -> invite modal
+ */
 export const openInviteUserModal = (name, email, role) => {
   cy.get(commonSelectors.cancelButton).click();
   cy.get(commonSelectors.manageGroupsOption).click();
@@ -654,6 +882,12 @@ export const openInviteUserModal = (name, email, role) => {
   cy.get(".css-1mlj61j").type(`${role}{enter}`);
 };
 
+/**
+ * @tjType   app.multiEnvSetup
+ * @tjBlock  licensing
+ * @tjUsage  multiEnvAppSetup('MyApp')
+ * @tjDom    creates an app wired for multi-environment checks
+ */
 export const multiEnvAppSetup = (appName) => {
   cy.get(importSelectors.importOptionInput)
     .eq(0)

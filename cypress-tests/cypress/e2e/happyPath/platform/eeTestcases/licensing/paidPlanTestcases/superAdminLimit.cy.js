@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { cleanAllUsers } from "Support/utils/manageUsers";
+import { cleanAllUsers } from "Support/utils/platform/manageUsers";
 import {
     ensureAllUsersTab,
     verifyLimitReachedForOtherUser,

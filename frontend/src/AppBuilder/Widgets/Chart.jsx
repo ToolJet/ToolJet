@@ -75,7 +75,7 @@ export default function Chart({
 
   const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
 
-  const chartLayout = isDescriptionJson ? (JSON.parse(jsonData).layout ?? {}) : {};
+  const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
 
   const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
@@ -85,7 +85,7 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const chartTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
+  const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;

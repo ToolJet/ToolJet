@@ -1,5 +1,9 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 
+/**
+ * @tjCmd   gitsync · ensure git-sync is configured for the workspace, configuring it if not
+ * @tjUsage cy.gitSyncCheckAndConfigure()
+ */
 Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
   return cy.getAuthHeaders().then((headers) => {
     const orgId = Cypress.env("workspaceId");
@@ -59,6 +63,10 @@ Cypress.Commands.add("gitSyncCheckAndConfigure", () => {
   });
 });
 
+/**
+ * @tjCmd   gitsync · resolve the internal id of a git-sync branch
+ * @tjUsage cy.gitSyncGetBranchId('main')
+ */
 Cypress.Commands.add("gitSyncGetBranchId", (branchName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -77,6 +85,10 @@ Cypress.Commands.add("gitSyncGetBranchId", (branchName) => {
   });
 });
 
+/**
+ * @tjCmd   gitsync · create a git-sync branch through the API
+ * @tjUsage cy.gitSyncCreateBranchViaApi('feature-x')
+ */
 Cypress.Commands.add("gitSyncCreateBranchViaApi", (branchName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -117,6 +129,10 @@ Cypress.Commands.add("gitSyncCreateBranchViaApi", (branchName) => {
   });
 });
 
+/**
+ * @tjCmd   gitsync · import an app from a fixture into the current branch
+ * @tjUsage cy.gitSyncImportAppFromFixture('app.json')
+ */
 Cypress.Commands.add(
   "gitSyncImportAppFromFixture",
   (fixturePath, appName, branchName) => {
@@ -180,6 +196,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjCmd   gitsync · create a git-sync branch through the branch picker
+ * @tjUsage cy.gitSyncCreateBranchViaUI('feature-x')
+ */
 Cypress.Commands.add("gitSyncCreateBranchViaUI", (branchName) => {
   cy.get("body").then(($body) => {
     if ($body.find(GS.wsBranchPopover).length === 0) {
@@ -197,6 +217,10 @@ Cypress.Commands.add("gitSyncCreateBranchViaUI", (branchName) => {
   cy.log(`[gitSync] Branch '${branchName}' created via UI`);
 });
 
+/**
+ * @tjCmd   gitsync · switch the active git-sync branch
+ * @tjUsage cy.gitSyncSwitchBranch('main')
+ */
 Cypress.Commands.add("gitSyncSwitchBranch", (branchName) => {
   cy.get(GS.wsBranchHeader).click();
   cy.get(GS.wsBranchPopover).should("be.visible");
@@ -210,6 +234,10 @@ Cypress.Commands.add("gitSyncSwitchBranch", (branchName) => {
   cy.log(`[gitSync] Switched to branch '${branchName}'`);
 });
 
+/**
+ * @tjCmd   gitsync · push the current workspace state from the dashboard
+ * @tjUsage cy.gitSyncDashboardPush('commit message')
+ */
 Cypress.Commands.add("gitSyncDashboardPush", (message) => {
   // The "Commit" CTA button is only rendered when the URL includes "data-sources".
   // Navigate there so the button is visible, then open the push modal.
@@ -236,6 +264,10 @@ Cypress.Commands.add("gitSyncDashboardPush", (message) => {
 });
 
 
+/**
+ * @tjCmd   wait · wait until the branch is N commits ahead on GitHub
+ * @tjUsage cy.gitHubWaitForCommitsAhead('main', 1)
+ */
 Cypress.Commands.add(
   "gitHubWaitForCommitsAhead",
   (headBranch, baseBranch = "master", retries = 10) => {
@@ -276,6 +308,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjCmd   gitsync · open a pull request on GitHub
+ * @tjUsage cy.gitHubCreatePR('feature-x', 'main')
+ */
 Cypress.Commands.add(
   "gitHubCreatePR",
   (headBranch, title, baseBranch = "master") => {
@@ -303,6 +339,10 @@ Cypress.Commands.add(
   },
 );
 
+/**
+ * @tjCmd   gitsync · merge an open pull request on GitHub
+ * @tjUsage cy.gitHubMergePR(prNumber)
+ */
 Cypress.Commands.add("gitHubMergePR", (prNumber = Cypress.env("prNumber")) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -323,6 +363,10 @@ Cypress.Commands.add("gitHubMergePR", (prNumber = Cypress.env("prNumber")) => {
     });
 });
 
+/**
+ * @tjCmd   gitsync · delete a branch on GitHub - teardown
+ * @tjUsage cy.gitHubDeleteBranch('feature-x')
+ */
 Cypress.Commands.add("gitHubDeleteBranch", (branchName) => {
   const owner = Cypress.env("GITHUB_REPO_OWNER");
   const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -345,6 +389,10 @@ Cypress.Commands.add("gitHubDeleteBranch", (branchName) => {
 });
 
 
+/**
+ * @tjCmd   gitsync · navigate to the dashboard with git-sync context intact
+ * @tjUsage cy.gitSyncGoToDashboard()
+ */
 Cypress.Commands.add("gitSyncGoToDashboard", () => {
   const workspace = Cypress.env("workspaceSlug") || "";
   const url = workspace ? `/${workspace}` : "/";
@@ -356,6 +404,10 @@ Cypress.Commands.add("gitSyncGoToDashboard", () => {
 });
 
 
+/**
+ * @tjCmd   app-crud · create a module via the API
+ * @tjUsage cy.apiCreateModule('billing-widget')
+ */
 Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -374,6 +426,10 @@ Cypress.Commands.add("apiCreateModule", (moduleName, branchId) => {
   );
 });
 
+/**
+ * @tjCmd   api · resolve a module's correlation id
+ * @tjUsage cy.apiGetModuleCorrelationId(moduleId)
+ */
 Cypress.Commands.add("apiGetModuleCorrelationId", (moduleId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -394,6 +450,10 @@ Cypress.Commands.add("apiGetModuleCorrelationId", (moduleId) => {
   );
 });
 
+/**
+ * @tjCmd   app-crud · rename a module via the API
+ * @tjUsage cy.apiRenameModule(moduleId, 'new-name')
+ */
 Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -411,6 +471,10 @@ Cypress.Commands.add("apiRenameModule", (moduleId, newName) => {
 });
 
 
+/**
+ * @tjCmd   gitsync · create an app on a specific git-sync branch
+ * @tjUsage cy.apiCreateAppOnBranch('MyApp', 'feature-x')
+ */
 Cypress.Commands.add("apiCreateAppOnBranch", (appName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy
@@ -429,6 +493,10 @@ Cypress.Commands.add("apiCreateAppOnBranch", (appName, branchId) => {
   );
 });
 
+/**
+ * @tjCmd   gitsync · resolve an app id by name within a branch
+ * @tjUsage cy.apiGetAppIdByNameOnBranch('MyApp', 'feature-x')
+ */
 Cypress.Commands.add("apiGetAppIdByNameOnBranch", (appName, branchId) => {
   return cy.getAuthHeaders().then((headers) =>
     cy

@@ -190,8 +190,8 @@ const MobileNavigationMenu = ({
           isMobilePreviewMode && !isPreviewInEditor
             ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
             : currentMode === 'view' && !isMobilePreviewMode
-              ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
-              : 'tw-h-full'
+            ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
+            : 'tw-h-full'
         }`,
         style: bgStyles,
       }}

@@ -3,7 +3,7 @@ import { usersSelector } from "Selectors/platform/manageUsers";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
-import { bulkUserUpload } from "Support/utils/manageUsers";
+import { bulkUserUpload } from "Support/utils/platform/manageUsers";
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 // Helper to resolve correct test data based on env

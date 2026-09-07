@@ -1,14 +1,47 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// ai.js
+//   navigateToLlmKeyPage             llmKey.open          → licensing
+//   verifyEnvToggleState             llmKey.verifyEnvToggle → licensing
+//   enterAndSaveApiKey               llmKey.save          → licensing
+//   verifyKeyInputDisabled           llmKey.verifyInputDisabled → licensing
+//   verifyKeyInputEnabled            llmKey.verifyInputEnabled → licensing
+//   verifySaveButtonDisabled         llmKey.verifySaveDisabled → licensing
+//   verifyKeyMasked                  llmKey.verifyMasked  → licensing
+//   verifyNoCreditUI                 aiCredits.verifyNoCreditUI → licensing
+//   verifyNoAiCreditSection          aiCredits.verifySectionAbsent → licensing
+//   openAiChat                       aiChat.open          → licensing
+//   sendAiChatMessage                aiChat.send          → licensing
+//   verifyAiChatResponse             aiChat.verifyResponse → licensing
+//   ensureEnvToggleOff               llmKey.ensureEnvToggleOff → licensing
+//   verifyAiChatWorksWithCredits     aiChat.verifyWithCredits → licensing
+//   verifyAiChatWorksWithoutCredits  aiChat.verifyWithoutCredits → licensing
+//   verifyApiKeyRequiredInApp        llmKey.verifyRequiredInApp → licensing
+//   verifyCopilotInQueryPanel        copilot.verifyInQueryPanel → licensing
+//   verifyFixWithAiInStyles          fixWithAi.verifyInStyles → licensing
+// └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors } from "Selectors/common";
 import { aiSelectors } from "Selectors/platform/ai";
 import { aiText } from "Texts/platform/ai";
 
 
+/**
+ * @tjType   llmKey.open
+ * @tjBlock  licensing
+ * @tjUsage  navigateToLlmKeyPage()
+ * @tjDom    workspace settings -> LLM key page
+ */
 export const navigateToLlmKeyPage = () => {
   cy.visit("/settings/llm-key");
   cy.get('[data-cy="card-title"]').should("be.visible").and('contain.text', aiText.llmKeyCardTitle);
 };
 
 
+/**
+ * @tjType   llmKey.verifyEnvToggle
+ * @tjBlock  licensing
+ * @tjUsage  verifyEnvToggleState(true)
+ * @tjDom    env toggle on the LLM key page
+ */
 export const verifyEnvToggleState = (expectedOn) => {
   if (expectedOn) {
     cy.get(aiSelectors.llmKeyEnvToggle)
@@ -22,6 +55,12 @@ export const verifyEnvToggleState = (expectedOn) => {
 };
 
 
+/**
+ * @tjType   llmKey.save
+ * @tjBlock  licensing
+ * @tjUsage  enterAndSaveApiKey('sk-...')
+ * @tjDom    key input -> save
+ */
 export const enterAndSaveApiKey = (apiKey) => {
   cy.get(aiSelectors.llmKeyInput).click();
   cy.clearAndType(aiSelectors.llmKeyInput, apiKey);
@@ -29,20 +68,44 @@ export const enterAndSaveApiKey = (apiKey) => {
 };
 
 
+/**
+ * @tjType   llmKey.verifyInputDisabled
+ * @tjBlock  licensing
+ * @tjUsage  verifyKeyInputDisabled()
+ * @tjDom    key input disabled state
+ */
 export const verifyKeyInputDisabled = () => {
   cy.get(aiSelectors.llmKeyInput).should("be.disabled");
 };
 
+/**
+ * @tjType   llmKey.verifyInputEnabled
+ * @tjBlock  licensing
+ * @tjUsage  verifyKeyInputEnabled()
+ * @tjDom    key input enabled state
+ */
 export const verifyKeyInputEnabled = () => {
   cy.get(aiSelectors.llmKeyInput).should("be.enabled");
 };
 
 
+/**
+ * @tjType   llmKey.verifySaveDisabled
+ * @tjBlock  licensing
+ * @tjUsage  verifySaveButtonDisabled()
+ * @tjDom    save button disabled state
+ */
 export const verifySaveButtonDisabled = () => {
   cy.get(aiSelectors.llmKeySaveButton).should("be.disabled");
 };
 
 
+/**
+ * @tjType   llmKey.verifyMasked
+ * @tjBlock  licensing
+ * @tjUsage  verifyKeyMasked()
+ * @tjDom    saved key rendered masked
+ */
 export const verifyKeyMasked = () => {
   cy.get(aiSelectors.llmKeyInput)
     .invoke("attr", "type")
@@ -50,6 +113,12 @@ export const verifyKeyMasked = () => {
 };
 
 
+/**
+ * @tjType   aiCredits.verifyNoCreditUI
+ * @tjBlock  licensing
+ * @tjUsage  verifyNoCreditUI()
+ * @tjDom    zero-credit empty state
+ */
 export const verifyNoCreditUI = () => {
   cy.get("body").then(($body) => {
     if ($body.find(".credits-button-popup").length > 0) {
@@ -62,6 +131,12 @@ export const verifyNoCreditUI = () => {
 };
 
 
+/**
+ * @tjType   aiCredits.verifySectionAbsent
+ * @tjBlock  licensing
+ * @tjUsage  verifyNoAiCreditSection()
+ * @tjDom    credits section absent for the plan
+ */
 export const verifyNoAiCreditSection = () => {
   cy.get("body").then(($body) => {
     expect($body.find(aiSelectors.aiCreditsSubTab).length).to.eq(0);
@@ -69,12 +144,24 @@ export const verifyNoAiCreditSection = () => {
 };
 
 
+/**
+ * @tjType   aiChat.open
+ * @tjBlock  licensing
+ * @tjUsage  openAiChat()
+ * @tjDom    app builder -> AI chat panel
+ */
 export const openAiChat = () => {
   cy.get(aiSelectors.aiTabIcon, { timeout: 10000 }).first().click();
   cy.wait(500);
 };
 
 
+/**
+ * @tjType   aiChat.send
+ * @tjBlock  licensing
+ * @tjUsage  sendAiChatMessage('Create a button')
+ * @tjDom    chat input -> submit
+ */
 export const sendAiChatMessage = (message) => {
   cy.get('.cm-line', { timeout: 10000 })
     .should("be.visible")
@@ -83,11 +170,23 @@ export const sendAiChatMessage = (message) => {
 };
 
 
+/**
+ * @tjType   aiChat.verifyResponse
+ * @tjBlock  licensing
+ * @tjUsage  verifyAiChatResponse()
+ * @tjDom    asserts a response renders
+ */
 export const verifyAiChatResponse = () => {
   cy.get(".message-wrapper.ai", { timeout: 30000 }).should("contain.text", "Analyzing your request...").and("be.visible");
 };
 
 
+/**
+ * @tjType   llmKey.ensureEnvToggleOff
+ * @tjBlock  licensing
+ * @tjUsage  ensureEnvToggleOff()
+ * @tjDom    reads state, flips off only if on
+ */
 export const ensureEnvToggleOff = () => {
   cy.get(aiSelectors.llmKeyEnvToggle).then(($toggle) => {
     if ($toggle.find("input").is(":checked")) {
@@ -110,6 +209,12 @@ export const ensureEnvToggleOff = () => {
 };
 
 
+/**
+ * @tjType   aiChat.verifyWithCredits
+ * @tjBlock  licensing
+ * @tjUsage  verifyAiChatWorksWithCredits('MyApp')
+ * @tjDom    end-to-end chat flow with credits available
+ */
 export const verifyAiChatWorksWithCredits = (appName) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -129,6 +234,12 @@ export const verifyAiChatWorksWithCredits = (appName) => {
 };
 
 
+/**
+ * @tjType   aiChat.verifyWithoutCredits
+ * @tjBlock  licensing
+ * @tjUsage  verifyAiChatWorksWithoutCredits('MyApp')
+ * @tjDom    end-to-end chat flow at zero credits
+ */
 export const verifyAiChatWorksWithoutCredits = (appName, message = "Create a simple hello world button", type) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -141,6 +252,12 @@ export const verifyAiChatWorksWithoutCredits = (appName, message = "Create a sim
 };
 
 
+/**
+ * @tjType   llmKey.verifyRequiredInApp
+ * @tjBlock  licensing
+ * @tjUsage  verifyApiKeyRequiredInApp('MyApp')
+ * @tjDom    asserts the key-required prompt inside the editor
+ */
 export const verifyApiKeyRequiredInApp = (appName, options = {}) => {
   const message = options.message || aiText.apiKeyRequiredMessage;
   const buttonText = options.buttonText || aiText.connectApiKeyButton;
@@ -155,6 +272,12 @@ export const verifyApiKeyRequiredInApp = (appName, options = {}) => {
 };
 
 
+/**
+ * @tjType   copilot.verifyInQueryPanel
+ * @tjBlock  licensing
+ * @tjUsage  verifyCopilotInQueryPanel('MyApp')
+ * @tjDom    query panel copilot affordance
+ */
 export const verifyCopilotInQueryPanel = (appName, errorMessage = "") => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
@@ -178,6 +301,12 @@ export const verifyCopilotInQueryPanel = (appName, errorMessage = "") => {
 };
 
 
+/**
+ * @tjType   fixWithAi.verifyInStyles
+ * @tjBlock  licensing
+ * @tjUsage  verifyFixWithAiInStyles('MyApp')
+ * @tjDom    styles panel -> Fix with AI
+ */
 export const verifyFixWithAiInStyles = (appName, options = {}) => {
   cy.apiCreateApp(appName);
   cy.openApp(appName);
