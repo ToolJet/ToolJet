@@ -387,6 +387,13 @@ export class AppImportExportService {
       // columns into the exported JSON for non-workflow apps.
       const appToExport = await this.appsRepository.findById(id, user?.organizationId, versionId, branchId);
 
+      if (!appToExport) {
+        // Guard against an opaque "Cannot read properties of null (reading 'id')" below.
+        // Callers (e.g. recursive module export) may pass an id that doesn't resolve to a
+        // local app; surface a clear error instead of a null-property crash.
+        throw new BadRequestException(`App not found for export (id: ${id})`);
+      }
+
       const queryAppVersions = manager
         .createQueryBuilder(AppVersion, 'app_versions')
         .where('app_versions.appId = :appId', {
@@ -635,6 +642,24 @@ export class AppImportExportService {
       await Promise.all(
         uniqueModuleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
+
+          // Dangling module reference: the ModuleViewer points at a module that isn't
+          // present in this workspace — e.g. an app imported from a file whose nested
+          // modules weren't imported alongside it. When co_relation_id resolution misses,
+          // resolvedId falls back to the raw moduleAppId.value (a co_relation_id, never a
+          // real app.id), so this.export() would hit a null findById() and crash the whole
+          // git push with an opaque "Cannot read properties of null (reading 'id')". Skip
+          // the unresolvable reference instead — the parent app still pushes.
+          const moduleAppExists = await manager.findOne(App, {
+            where: { id: resolvedId, organizationId: appToExport.organizationId },
+            select: ['id'],
+          });
+          if (!moduleAppExists) {
+            console.warn(
+              `Skipping git export of module reference ${moduleAppId.moduleId}: module not found in workspace ${appToExport.organizationId}`
+            );
+            return;
+          }
 
           let versionDbId: string | undefined;
           let isPinnedToVersion = false;
@@ -3795,15 +3820,12 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
-          // Imported apps and modules must be marked synced whenever git sync is enabled —
-          // regardless of single- vs multi-branch mode, and regardless of whether this version
-          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
-          // version) — so they participate in the default-branch git flow (unsynced rows are
-          // treated as new/uncommitted content and can't be pushed). Workflows are excluded —
-          // they don't sync via git. Sub-branch (feature-branch) imports are also excluded:
-          // that's genuinely new, unpushed content on that branch, so the push flow still
-          // needs to pick it up.
-          isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
+          // A device import (isGitApp=false) has never been committed to git — stays false,
+          // same as every other creation path (AppsService.create, feature-branch, datasource).
+          // Git-repo imports/pulls (isGitApp=true, ee/app-git/*) keep the original behavior:
+          // that content genuinely came from git and matches remote.
+          isSynced: isGitApp && isGitSyncConfigured && !isWorkflow && !isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {

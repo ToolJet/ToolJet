@@ -21,6 +21,16 @@ export class LicenseInitService extends ILicenseInitService {
     return { isValid: false };
   }
 
+  // CE always resolves to the instance (basic) plan; there is no per-organization license.
+  async getPlanForMigration(manager?: EntityManager): Promise<string> {
+    await this.initForMigration(manager);
+    return getLicenseFieldValue(LICENSE_FIELD.PLAN, License.Instance());
+  }
+
+  async getPlanForMigrationCloud(manager: EntityManager, _organizationId: string): Promise<string> {
+    return this.getPlanForMigration(manager);
+  }
+
   async init(): Promise<void> {
     console.log('Skip license initialization');
     License.Reload('', new Date());

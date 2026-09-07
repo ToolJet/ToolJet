@@ -41,7 +41,11 @@ export class AppHistoryModule extends SubModule {
       AppsRepository,
       AppHistoryUtilService,
     ];
-    if (isMainImport) {
+    // The stream service opens Redis pub/sub connections in onModuleInit and is only used on the
+    // HTTP/SSE path (via AppHistoryController) — skip it in migration/get-context mode so a data
+    // migration doesn't spin up (and later tear down) pub/sub while the shared transaction is open.
+    const includeStreamService = isMainImport && !_configs?.IS_GET_CONTEXT;
+    if (includeStreamService) {
       providers.push(AppHistoryStreamService);
     }
 
@@ -88,7 +92,9 @@ export class AppHistoryModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: AppHistoryModule,
       imports,
-      controllers: isMainImport ? [AppHistoryController] : [],
+      // AppHistoryController injects AppHistoryStreamService, so it can only load where the stream
+      // service does — i.e. not in migration/get-context mode. No HTTP routes are served there anyway.
+      controllers: includeStreamService ? [AppHistoryController] : [],
       providers,
       exports: [AppHistoryUtilService, EntityChangeService],
     });
