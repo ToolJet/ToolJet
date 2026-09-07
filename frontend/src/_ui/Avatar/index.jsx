@@ -9,14 +9,22 @@ const Avatar = ({ text, image, avatarId, title = '', borderShape, indexId = 0, c
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {
+    let objectUrl;
+    let cancelled = false;
+
     async function fetchAvatar() {
       const blob = await userService.getAvatar(avatarId);
-      setAvatar(URL.createObjectURL(blob));
+      if (cancelled) return;
+      objectUrl = URL.createObjectURL(blob);
+      setAvatar(objectUrl);
     }
+
     if (avatarId) fetchAvatar();
 
-    () => avatar && URL.revokeObjectURL(avatar);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [avatarId]);
 
   return (
