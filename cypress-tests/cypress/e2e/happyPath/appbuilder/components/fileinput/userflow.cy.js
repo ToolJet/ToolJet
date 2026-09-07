@@ -118,8 +118,10 @@ describe(
       verifyExposedValue("isParsing", "Boolean", "false");
       verifyExposedValue("isValid", "Boolean", "true");
 
+      // files[0] is sample-a.csv (id,name,role), so each parsed row must report 3 keys.
       openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').should("exist");
+      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
+      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
       closeParsedValue();
 
       // Re-attaching a held file leaves the selection UNCHANGED: with enableMultiple on a

@@ -1,5 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputAccordion, fileInputFixtures, fxExemptFields } from "Texts/appBuilder/components/fileInput";
 import {
@@ -18,6 +19,8 @@ import {
   expectPickerBlocked,
   validationFileTypeWrapper,
   expectRejectionToast,
+  widgetTooltip,
+  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileInput";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -191,7 +194,7 @@ describe(
       verifyExposedValue("isDisabled", "Boolean", "true");
     });
 
-    it("should verify Tooltip follows a binding", () => {
+    it("should verify Tooltip content resolves a binding", () => {
       dropWidget("Text Input", "textinput1");
       openEditorSidebar("textinput1");
       verifyAndModifyParameter("Default value", "Bound tooltip text");
@@ -199,13 +202,19 @@ describe(
 
       openEditorSidebar(widget);
       openAccordion(fileInputAccordion.additionalActions);
-      verifyAndModifyParameter("Tooltip", "{{components.textinput1.value}}"); // source: fileinput.js:138
+      // Typed straight into the code field rather than by display name: tooltipFormat:124
+      // shares the label "Tooltip" with this field (fileinput.js:138), so addressing it by
+      // name is ambiguous.
+      cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(
+        "{{components.textinput1.value}}"
+      );
       commitChange();
-      // The binding resolving into the stored value is what this asserts; the rendered
-      // Radix tooltip is covered in properties.cy.js, which owns the preview hover.
-      openEditorSidebar(widget);
-      openAccordion(fileInputAccordion.additionalActions);
-      cy.get('[data-cy="tooltip-input-field"]').should("exist");
+
+      // Only observable on the preview — the editor canvas swallows the pointer events
+      // Radix needs to open it. Unlike the rest of this file the companion is seeded rather
+      // than re-driven: resolution is what this asserts.
+      hoverInPreview(fileInputSelector.field(widget));
+      cy.get(widgetTooltip).should("contain.text", "Bound tooltip text");
     });
 
     it("should verify Mark as mandatory follows a bound boolean", () => {

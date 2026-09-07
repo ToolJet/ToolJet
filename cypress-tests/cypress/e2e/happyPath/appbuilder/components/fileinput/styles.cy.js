@@ -297,9 +297,8 @@ describe(
       getWidgetHeight(widget).then((before) => {
         cy.get('[data-cy="togglr-button-none"]').click();
         cy.waitForAutoSave();
-        // The control registered the change...
+        // Precondition, not the coverage: the height assertion below is the effect.
         cy.get('[data-cy="togglr-button-none"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
-        // ...but the widget never resizes.
         getWidgetHeight(widget).should("not.equal", before);
       });
     });

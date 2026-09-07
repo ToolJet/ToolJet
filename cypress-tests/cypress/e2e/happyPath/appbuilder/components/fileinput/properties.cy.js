@@ -34,12 +34,39 @@ import {
 // silently drops six validators.
 // Covers: 11 config.properties — label:15 · instructionText:24 · enableMultiple:33 ·
 //         enableClearSelection:42 · parseContent:53 · parseFileType:64 · loadingState:94 ·
-//         visibility:103 · disabledState:112 · tooltipFormat:124 · tooltip:138
+//         visibility:103 · disabledState:112 · tooltipFormat:124 (3 formats) · tooltip:138
 //         6 config.validation — enableValidation:150 · fileType:160 · minSize:170 ·
 //         maxSize:181 · minFileCount:192 · maxFileCount:210      — source: fileinput.js
 // Not here: config.others (showOnDesktop/showOnMobile) → contexts.cy.js, which owns the
 //           device-layout surface; covering it in both facets buys no coverage.
 //           fx binding of these same fields → propertiesFx.cy.js
+
+// One node per format, all three rendered by the shared WidgetTooltip (mounted for every
+// widget from RenderWidget.jsx:367): plainText -> span.tw-whitespace-pre-wrap,
+// markdown -> .widget-tooltip-markdown, html -> .widget-tooltip-html.
+// Raw HTML can't be typed: the CodeMirror tokenizer drops `<`, `>` and `/`, so "<b>x</b>"
+// arrives as "bxb". Pass it as {{"..."}}, which is preserved whole.
+const setTooltip = (format, content) => {
+  // data-cy comes from the option VALUE, which is camelCase (`plainText`), not the
+  // kebab-cased display name. source: fileinput.js:127-131
+  cy.get(`[data-cy="togglr-button-${format}"]`).click();
+  cy.waitForAutoSave();
+  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
+  // Confirm it landed: an empty tooltip renders no node at all, which looks
+  // the same as a hover that failed.
+  cy.get(commonWidgetSelector.tooltipInputField).should("contain.text", content.replace(/[{}"]/g, "").trim());
+  commitChange();
+};
+
+// Configure in the editor, then verify on the preview — where the tooltip can
+// actually open (see hoverInPreview).
+const showTooltipInPreview = (name, format, content) => {
+  openEditorSidebar(name);
+  openAccordion(fileInputAccordion.additionalActions);
+  setTooltip(format, content);
+  hoverInPreview(fileInputSelector.field(name));
+};
+
 describe(
   "File Input properties",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
@@ -115,9 +142,10 @@ describe(
       attachFile(csvFile);
       cy.get(fileInputSelector.summary(widget)).should("have.text", csvFileName);
 
-      // The parsed rows are the actual effect — the toggle alone proves nothing.
+      // sample-a.csv is id,name,role, so every parsed row must report 3 keys.
       openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').should("exist");
+      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
+      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
       closeParsedValue();
     });
 
@@ -289,33 +317,30 @@ describe(
       verifyExposedValue("isDisabled", "Boolean", "true");
     });
 
-    it("should verify Tooltip: content renders on hover in preview", () => {
-      openEditorSidebar(widget);
-      openAccordion(fileInputAccordion.additionalActions);
-      verifyAndModifyParameter("Tooltip", "Attach a document"); // source: fileinput.js:138
-      commitChange();
+    // Plain text and Markdown share this string, so only the format switch can
+    // explain their different output. source: fileinput.js:124 (tooltipFormat), :138 (tooltip)
+    const markup = "**Bold** tip";
+    // Radix renders the content TWICE (once visibly, once in a VisuallyHidden
+    // copy), so every match below needs .first(); unscoped `have.text` sees
+    // "BoldBold".
 
-      // A tooltip only opens in PREVIEW — on the canvas the drag overlays swallow the
-      // pointer events Radix needs, so an editor-side check would silently prove nothing.
-      hoverInPreview(fileInputSelector.field(widget));
-      cy.get(widgetTooltip).first().should("contain.text", "Attach a document");
+    it("should verify Tooltip in Plain text format: content stays literal", () => {
+      showTooltipInPreview(widget, "plainText", markup);
+      cy.get(widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
+      cy.get(".widget-tooltip-markdown").should("not.exist");
+      cy.get(".widget-tooltip-html").should("not.exist");
     });
 
-    it("should verify Tooltip format: all three options select", () => {
-      openEditorSidebar(widget);
-      openAccordion(fileInputAccordion.additionalActions);
+    it("should verify Tooltip in Markdown format: asterisks become emphasis", () => {
+      showTooltipInPreview(widget, "markdown", markup);
+      cy.get(".widget-tooltip-markdown").should("exist");
+      cy.get(".widget-tooltip-markdown").find("strong").first().should("have.text", "Bold");
+    });
 
-      // data-cy comes from the option VALUE, which is camelCase (`plainText`), not the
-      // kebab-cased display name. source: fileinput.js:127-131
-      cy.get('[data-cy="togglr-button-plainText"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
-
-      cy.get('[data-cy="togglr-button-markdown"]').click();
-      cy.waitForAutoSave();
-      cy.get('[data-cy="togglr-button-markdown"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
-
-      cy.get('[data-cy="togglr-button-html"]').click();
-      cy.waitForAutoSave();
-      cy.get('[data-cy="togglr-button-html"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
+    it("should verify Tooltip in HTML format: tags are parsed, not escaped", () => {
+      showTooltipInPreview(widget, "html", '{{"<b>HTML</b> tip"}}');
+      cy.get(".widget-tooltip-html").should("exist");
+      cy.get(".widget-tooltip-html").find("b").first().should("have.text", "HTML");
     });
   }
 );

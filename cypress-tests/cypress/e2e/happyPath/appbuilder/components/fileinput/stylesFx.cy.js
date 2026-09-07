@@ -200,7 +200,7 @@ describe(
       cy.get(fileInputSelector.field(widget)).should("have.css", "color", "rgb(0, 255, 0)");
     });
 
-    it("should verify Accent exposes an fx button and accepts a bound colour", () => {
+    it("should verify Accent exposes an fx button and persists a bound colour", () => {
       // accentColor is fx-CAPABLE per the config (no isFxNotRequired, fileinput.js:355) and
       // the fx button is genuinely present — but the resolved value is never read by the
       // component. Covered here so the fx surface is complete; the dead-wiring bug itself
@@ -209,7 +209,12 @@ describe(
       openStyleAccordion(widget, fileInputAccordion.styleField);
       enableFxAndBind("Accent", "{{components.colorpicker1.selectedColorHex}}");
       commitChange();
-      cy.get(fileInputSelector.field(widget)).should("be.visible");
+
+      // Re-reading after the save is the strongest claim available: the binding
+      // round-tripped through the stored definition.
+      openStyleAccordion(widget, fileInputAccordion.styleField);
+      cy.get(commonWidgetSelector.parameterInputField("Accent"))
+        .should("contain.text", "components.colorpicker1.selectedColorHex");
     });
 
     it("should verify Error text follows a bound colour", () => {
