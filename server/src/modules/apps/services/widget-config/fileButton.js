@@ -278,7 +278,7 @@ export const fileButtonConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
