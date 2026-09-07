@@ -12,10 +12,12 @@ import {
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
+  clearParameter,
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 import {
   commitChange,
+  verifyExposedValue,
   attachFile,
   expectPickerBlocked,
   selectParseFileType,
@@ -130,6 +132,7 @@ describe(
       // Two independent surfaces: the visible `*` and the input's aria-required.
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible").and("have.text", "*");
       cy.get(fileInputSelector.ariaRequired(widget)).should("exist");
+      verifyExposedValue("isMandatory", "Boolean", "true");
     });
 
     acceptedTypeCases.forEach(({ label, value, accept, acceptName, reject }) => {
@@ -191,6 +194,28 @@ describe(
       cy.get(fileInputSelector.summary(widget)).should("have.text", csvFileName);
     });
 
+    it("should verify Min size: clearing the field lifts the restriction", () => {
+      openEditorSidebar(widget);
+      openAccordion("Validation");
+      verifyAndModifyParameter("Min size (Bytes)", "{{5000}}");
+      commitChange();
+
+      // 1934 bytes is under the 5000 floor, so the cap is provably live first.
+      attachFile(validFile);
+      cy.get(fileInputSelector.summary(widget)).should("have.text", fileInputText.defaultPlaceholder);
+
+      openEditorSidebar(widget);
+      openAccordion("Validation");
+      clearParameter("Min size (Bytes)");
+      commitChange();
+
+      // Asserts only that the restriction LIFTS. The fallback is 0, not the declared 50
+      // (fileinput.js:527) — that is FI-4, asserted in customerIssues; pinning 50 here
+      // would fail for the bug instead of covering the property.
+      attachFile(validFile);
+      cy.get(fileInputSelector.summary(widget)).should("have.text", validFileName);
+    });
+
     it("should verify Max files: the picker is blocked once the limit is reached", () => {
       openEditorSidebar(widget);
       openAccordion("Validation");
@@ -236,6 +261,7 @@ describe(
       cy.get(fileInputSelector.loader(widget)).should("be.visible");
       cy.get(fileInputSelector.browseButton(widget)).should("not.exist");
       cy.get(fileInputSelector.ariaBusy(widget)).should("exist");
+      verifyExposedValue("isLoading", "Boolean", "true");
     });
 
     it("should verify Visibility: direct toggle unmounts the field", () => {
@@ -248,6 +274,8 @@ describe(
       // collapsed to zero size — a distinction that matters, because a size-based
       // assertion would pass either way.
       cy.get(fileInputSelector.field(widget)).should("not.exist");
+      // The Inspector tree survives the unmount, so the exposed value is still readable.
+      verifyExposedValue("isVisible", "Boolean", "false");
     });
 
     it("should verify Disable: direct toggle", () => {
@@ -258,6 +286,7 @@ describe(
 
       expectPickerBlocked(widget);
       cy.get(fileInputSelector.ariaDisabled(widget)).should("exist");
+      verifyExposedValue("isDisabled", "Boolean", "true");
     });
 
     it("should verify Tooltip: content renders on hover in preview", () => {

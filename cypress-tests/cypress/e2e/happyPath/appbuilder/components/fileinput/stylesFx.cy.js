@@ -23,11 +23,9 @@ import { commitChange, attachFile, unlockLabelWidth, toggleIconVisibility } from
 // Negative: the 5 isFxNotRequired items — direction:267 · auto:278 · labelWidth:294 ·
 //   widthType:308 · padding:416 — each asserted to expose NO fx button.
 //
-// Colour sources are TEXT INPUTS holding a hex, not Color Pickers. That is a deliberate
-// departure from the File Button spec: clearAndTypeOnCodeMirror races the CodeMirror
-// autocomplete on long identifiers, and every recorded failure of that race has been a
-// `colorpicker1.selectedColorHex` binding while short `.value` bindings pass. Using
-// `.value` sidesteps a known-flaky path rather than inheriting it.
+// Sources match the File Button spec: a Color Picker for colours (`selectedColorHex` is
+// what a real app binds), a Number Input for numerics, a Text Input for strings. Each test
+// then drives the SOURCE and re-asserts, which proves the binding stays live.
 describe(
   "File Input styles fx",
   { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
@@ -35,15 +33,30 @@ describe(
     const widget = fileInputText.defaultWidgetName;
     const { csvFile } = fileInputFixtures;
 
-    // A Text Input seeded with a value, used as the live fx source.
-    const dropSource = (value, name = "textinput1") => {
-      dropWidget("Text Input", name, 500, 300);
+    // The standard colour source: a Color Picker seeded to red.
+    const dropColorPicker = () => {
+      openEditorSidebar(widget);
+      dropWidget("Color Picker", "colorpicker1", 500, 300);
+      openEditorSidebar("colorpicker1");
+      verifyAndModifyParameter("Default value", "#ff0000");
+      commitChange();
+    };
+
+    const recolourPicker = (hex) => {
+      openEditorSidebar("colorpicker1");
+      verifyAndModifyParameter("Default value", hex);
+      commitChange();
+    };
+
+    // String source, for the styles whose value is not a colour (alignment, icon name).
+    const dropTextSource = (value, name = "textinput1") => {
+      dropWidget("Text Input", name, 500, 380);
       openEditorSidebar(name);
       verifyAndModifyParameter("Default value", value);
       commitChange();
     };
 
-    const reseedSource = (value, name = "textinput1") => {
+    const reseedTextSource = (value, name = "textinput1") => {
       openEditorSidebar(name);
       verifyAndModifyParameter("Default value", value);
       commitChange();
@@ -62,15 +75,16 @@ describe(
       if (this.currentTest.state === "passed") cy.apiDeleteApp();
     });
 
-    it("should verify Color follows and re-resolves a bound colour", () => {
-      dropSource("#ff0000");
+    it("should verify Color follows a bound colour", () => {
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleLabel);
-      enableFxAndBind("Color", "{{components.textinput1.value}}"); // source: fileinput.js:234
+      enableFxAndBind("Color", "{{components.colorpicker1.selectedColorHex}}"); // source: fileinput.js:234
       commitChange();
+      // the colour lands on the inner <p>, not the <label> wrapper (Label.jsx:52)
       cy.get(fileInputSelector.labelText(widget)).scrollIntoView().should("have.css", "color", "rgb(255, 0, 0)");
 
-      // Prove the binding is live: change the source, not the target.
-      reseedSource("#00ff00");
+      // change the SOURCE, not the target
+      recolourPicker("#00ff00");
       cy.get(fileInputSelector.labelText(widget)).scrollIntoView().should("have.css", "color", "rgb(0, 255, 0)");
     });
 
@@ -92,36 +106,34 @@ describe(
     });
 
     it("should verify Alignment follows a bound string", () => {
-      dropSource("side");
+      dropTextSource("side");
       openStyleAccordion(widget, fileInputAccordion.styleLabel);
       enableFxAndBind("Alignment", "{{components.textinput1.value}}"); // source: fileinput.js:246
       commitChange();
       cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-row");
 
-      reseedSource("top");
+      reseedTextSource("top");
       cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-col");
     });
 
     it("should verify Icon follows a bound icon name", () => {
-      dropSource("IconHome");
+      dropTextSource("IconHome");
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      toggleIconVisibility(); // the icon is inert until visibility is on
+      toggleIconVisibility(); // the configured icon is inert until visibility is on
       enableFxAndBind("Icon", "{{components.textinput1.value}}"); // source: fileinput.js:320
       commitChange();
       cy.get(fileInputSelector.icon(widget)).scrollIntoView().should("exist");
 
-      // The rendered PATH is the observable, not the class. File Input passes its own
+      // The rendered PATH is the observable, not the class: File Input passes its own
       // className to TablerIcon (FileInput.jsx:313), which REPLACES tabler's generated
-      // `tabler-icon-<name>` class — the svg ships only `cursor-pointer clear-indicator`,
-      // so the icon's identity is not in its class list. File Button passes no className,
-      // which is why the class assertion works there and cannot work here.
+      // `tabler-icon-<name>` class, so the icon's identity is not in its class list.
+      // File Button passes no className, which is why its class assertion works there.
       cy.get(fileInputSelector.icon(widget))
         .find("path")
         .first()
         .invoke("attr", "d")
         .then((boundPath) => {
-          reseedSource("IconUser");
-          // A different icon name must redraw the glyph — same element, different path.
+          reseedTextSource("IconUser");
           cy.get(fileInputSelector.icon(widget))
             .find("path")
             .first()
@@ -131,81 +143,93 @@ describe(
     });
 
     it("should verify Icon color follows a bound colour", () => {
-      dropSource("#ff0000");
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleField);
       toggleIconVisibility();
 
-      // showLabel:false means no label div renders (fileinput.js:330), so
-      // enableFxAndBind's label assertion cannot be reused. Drive the fx button and the
-      // CodeMirror field directly, keyed on the raw config key: iconColor.
+      // showLabel:false means no label div renders (fileinput.js:330), so enableFxAndBind's
+      // label assertion cannot be reused. Drive the fx button and the CodeMirror field
+      // directly, keyed on the raw config key: iconColor.
       cy.get(commonWidgetSelector.parameterFxButton("iconColor")).click();
       cy.get(commonWidgetSelector.parameterInputField("iconColor")).clearAndTypeOnCodeMirror(" ");
       cy.get(commonWidgetSelector.parameterInputField("iconColor")).clearAndTypeOnCodeMirror(
-        "{{components.textinput1.value}}"
+        "{{components.colorpicker1.selectedColorHex}}"
       ); // source: fileinput.js:327
       commitChange();
 
-      // TablerIcon forwards `color` to the SVG's STROKE, so stroke is the real effect.
+      // TablerIcon forwards `color` to the SVG's STROKE, not to its `color` property.
       cy.get(fileInputSelector.icon(widget)).scrollIntoView().should("have.css", "stroke", "rgb(255, 0, 0)");
 
-      reseedSource("#00ff00");
+      recolourPicker("#00ff00");
       cy.get(fileInputSelector.icon(widget)).scrollIntoView().should("have.css", "stroke", "rgb(0, 255, 0)");
     });
 
     it("should verify Background follows a bound colour", () => {
-      dropSource("#ff0000");
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Background", "{{components.textinput1.value}}"); // source: fileinput.js:337
+      enableFxAndBind("Background", "{{components.colorpicker1.selectedColorHex}}"); // source: fileinput.js:337
       commitChange();
-      // #ff0000 deliberately avoids the '#fff' sentinel that would route to the theme
-      // fallback instead of the configured colour (FileInput.jsx:176).
+      // #ff0000 avoids the '#fff' sentinel, which routes to a theme fallback (FileInput.jsx:176)
       cy.get(fileInputSelector.field(widget)).should("have.css", "background-color", "rgb(255, 0, 0)");
+
+      recolourPicker("#00ff00");
+      cy.get(fileInputSelector.field(widget)).should("have.css", "background-color", "rgb(0, 255, 0)");
     });
 
     it("should verify Border follows a bound colour", () => {
-      dropSource("#ff0000");
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Border", "{{components.textinput1.value}}"); // source: fileinput.js:346
+      enableFxAndBind("Border", "{{components.colorpicker1.selectedColorHex}}"); // source: fileinput.js:346
       commitChange();
       // Avoids the '#CCD1D5' sentinel (FileInput.jsx:168).
       cy.get(fileInputSelector.field(widget)).should("have.css", "border-color", "rgb(255, 0, 0)");
+
+      recolourPicker("#00ff00");
+      cy.get(fileInputSelector.field(widget)).should("have.css", "border-color", "rgb(0, 255, 0)");
     });
 
     it("should verify Text follows a bound colour", () => {
-      dropSource("#ff0000");
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Text", "{{components.textinput1.value}}"); // source: fileinput.js:364
+      enableFxAndBind("Text", "{{components.colorpicker1.selectedColorHex}}"); // source: fileinput.js:364
       commitChange();
       // Avoids the '#1B1F24'/'#000'/'#000000ff' sentinels (FileInput.jsx:183).
       cy.get(fileInputSelector.field(widget)).should("have.css", "color", "rgb(255, 0, 0)");
+
+      recolourPicker("#00ff00");
+      cy.get(fileInputSelector.field(widget)).should("have.css", "color", "rgb(0, 255, 0)");
     });
 
     it("should verify Accent exposes an fx button and accepts a bound colour", () => {
-      // accentColor is fx-CAPABLE per the config (no isFxNotRequired, fileinput.js:355)
-      // and the fx button is genuinely present — but the resolved value is never read by
-      // the component. Covered here so the fx surface is complete; the dead-wiring bug
-      // itself is recorded in styles.cy.js and the Findings report.
-      dropSource("#ff0000");
+      // accentColor is fx-CAPABLE per the config (no isFxNotRequired, fileinput.js:355) and
+      // the fx button is genuinely present — but the resolved value is never read by the
+      // component. Covered here so the fx surface is complete; the dead-wiring bug itself
+      // is asserted (and left red) in styles.cy.js.
+      dropColorPicker();
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Accent", "{{components.textinput1.value}}");
+      enableFxAndBind("Accent", "{{components.colorpicker1.selectedColorHex}}");
       commitChange();
       cy.get(fileInputSelector.field(widget)).should("be.visible");
     });
 
     it("should verify Error text follows a bound colour", () => {
-      dropSource("#ff0000");
+      dropColorPicker();
+
       openEditorSidebar(widget);
       openAccordion("Validation");
       verifyAndModifyParameter("Min files", "{{2}}");
       commitChange();
 
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Error text", "{{components.textinput1.value}}"); // source: fileinput.js:373
+      enableFxAndBind("Error text", "{{components.colorpicker1.selectedColorHex}}"); // source: fileinput.js:373
       commitChange();
 
-      // The error text has to be on screen before its colour can be asserted.
+      // errTextColor only has a target once an error is actually showing (FileInput.jsx:350).
       attachFile(csvFile);
       cy.get(fileInputSelector.errorMessage(widget)).should("have.css", "color", "rgb(255, 0, 0)");
+
+      recolourPicker("#00ff00");
+      cy.get(fileInputSelector.errorMessage(widget)).should("have.css", "color", "rgb(0, 255, 0)");
     });
 
     it("should verify Border radius resolves a numeric binding", () => {
@@ -218,14 +242,32 @@ describe(
       enableFxAndBind("Border radius", "{{components.numberinput1.value}}"); // source: fileinput.js:382
       commitChange();
       cy.get(fileInputSelector.field(widget)).should("have.css", "border-radius", "20px");
+
+      openEditorSidebar("numberinput1");
+      verifyAndModifyParameter("Default value", "4");
+      commitChange();
+      cy.get(fileInputSelector.field(widget)).should("have.css", "border-radius", "4px");
     });
 
-    it("should verify Box shadow follows a bound shadow string", () => {
-      dropSource("0px 0px 10px 2px #ff0000");
+    it("should verify Box shadow follows a bound colour in its shorthand", () => {
+      // Bind only the colour sub-part, leaving x/y/blur/spread literal — that asymmetry
+      // shows the binding resolves INSIDE the shorthand rather than replacing it.
+      const directParam = fake.boxShadowParam;
+      const shadow = (rgb) =>
+        `${rgb} ${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px`;
+
+      dropColorPicker();
+
       openStyleAccordion(widget, fileInputAccordion.styleField);
-      enableFxAndBind("Box shadow", "{{components.textinput1.value}}"); // source: fileinput.js:394
+      enableFxAndBind(
+        "Box shadow",
+        `${directParam[0]}px ${directParam[1]}px ${directParam[2]}px ${directParam[3]}px {{components.colorpicker1.selectedColorHex}}`
+      ); // source: fileinput.js:394
       commitChange();
-      cy.get(fileInputSelector.field(widget)).should("have.css", "box-shadow", "rgb(255, 0, 0) 0px 0px 10px 2px");
+      cy.get(fileInputSelector.field(widget)).scrollIntoView().should("have.css", "box-shadow", shadow("rgb(255, 0, 0)"));
+
+      recolourPicker("#00ff00");
+      cy.get(fileInputSelector.field(widget)).scrollIntoView().should("have.css", "box-shadow", shadow("rgb(0, 255, 0)"));
     });
 
     it("should verify Direction exposes no fx button", () => {
@@ -249,9 +291,9 @@ describe(
     });
 
     it("should verify Padding exposes no fx button", () => {
-      // The container accordion holds padding ALONE, and padding is exempt — so there is
-      // no fx-capable control inside it to use as the required control. The field
-      // accordion is opened alongside it to supply "Border radius" as that control.
+      // The container accordion holds padding ALONE, and padding is exempt — so there is no
+      // fx-capable control inside it to use as the required control. The field accordion is
+      // opened alongside it to supply "Border radius" as that control.
       openStyleAccordion(widget, fileInputAccordion.styleField);
       openAccordion(fileInputAccordion.styleContainer);
       expectNoFxButton(() => cy.get('[data-cy="togglr-button-none"]'), "Border radius"); // source: fileinput.js:416

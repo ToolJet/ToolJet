@@ -13,6 +13,7 @@ import {
 } from "Support/utils/commonWidget";
 import {
   commitChange,
+  verifyExposedValue,
   attachFile,
   expectPickerBlocked,
   validationFileTypeWrapper,
@@ -153,10 +154,12 @@ describe(
       enableFxAndBind("Loading", "{{components.toggleswitch1.value}}"); // source: fileinput.js:94
       commitChange();
       cy.get(fileInputSelector.loader(widget)).should("not.exist");
+      verifyExposedValue("isLoading", "Boolean", "false");
 
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.loader(widget)).should("be.visible");
       cy.get(fileInputSelector.browseButton(widget)).should("not.exist");
+      verifyExposedValue("isLoading", "Boolean", "true");
     });
 
     it("should verify Visibility follows a bound boolean", () => {
@@ -167,9 +170,11 @@ describe(
       commitChange();
       // Bound to a false source, so the field unmounts (FileInput.jsx:236).
       cy.get(fileInputSelector.field(widget)).should("not.exist");
+      verifyExposedValue("isVisible", "Boolean", "false");
 
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.field(widget)).should("be.visible");
+      verifyExposedValue("isVisible", "Boolean", "true");
     });
 
     it("should verify Disable follows a bound boolean", () => {
@@ -179,9 +184,11 @@ describe(
       enableFxAndBind("Disable", "{{components.toggleswitch1.value}}"); // source: fileinput.js:112
       commitChange();
       cy.get(fileInputSelector.browseButton(widget)).should("not.be.disabled");
+      verifyExposedValue("isDisabled", "Boolean", "false");
 
       clickWidgetInput("toggleswitch1");
       expectPickerBlocked(widget);
+      verifyExposedValue("isDisabled", "Boolean", "true");
     });
 
     it("should verify Tooltip follows a binding", () => {
@@ -212,6 +219,7 @@ describe(
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible");
       cy.get(fileInputSelector.ariaRequired(widget)).should("exist");
+      verifyExposedValue("isMandatory", "Boolean", "true");
     });
 
     it("should verify File Type follows a bound value and gates the same way", () => {

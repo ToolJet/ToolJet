@@ -74,6 +74,21 @@ describe(
       cy.get(fileInputSelector.summary(widget)).should("have.text", validFileName);
     });
 
+    it("should fire onFileSelected when the file is rejected", () => {
+      addEventWithAlert("On File Selected", selectedMsg);
+      attachFile(tinyAudioFile); // 27 bytes, under the 50-byte minSize floor
+      expectToast(selectedMsg);
+
+      // The event fires on SELECTION, before validation filters the batch
+      // (useFilePicker.js:284) — so it fires even though nothing was kept. Asserting the
+      // summary alongside it is what makes that explicit rather than ambiguous.
+      cy.get(fileInputSelector.summary(widget)).should("have.text", fileInputText.defaultPlaceholder);
+
+      cy.openPreview(fileInputSelector.field(widget));
+      attachFile(tinyAudioFile);
+      expectToast(selectedMsg);
+    });
+
     it("should not fire onFileLoaded when the file is rejected", () => {
       addEventWithAlert("On File Loaded", loadedMsg);
       attachFile(tinyAudioFile); // 27 bytes, under the 50-byte minSize floor
