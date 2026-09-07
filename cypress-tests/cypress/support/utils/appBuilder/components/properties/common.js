@@ -120,44 +120,14 @@ export const verifyLoadingState = (componentSelector, controls) => {
 /**
  * @tjBlock  properties
  * @tjUsage  verifyDisability(compSel, { csa, jsSet, jsReset })
- * @tjUsage  verifyDisability(compSel, controls, { attr: null, assertClass: 'is-disabled' })
- * @tjDom    drives each Disable control and asserts the disabled signal toggles on the component
+ * @tjDom    drives each Disable control and asserts data-disabled toggles true / false on the component
  */
-// `options` defaults to the data-disabled attribute, so every existing caller keeps its
-// behaviour. Pass `assertClass` for widgets that signal disablement with a CLASS instead —
-// File Picker's dropzone is a div carrying `is-disabled` (UploadArea.jsx:48) and has no
-// data-disabled at all, so the attribute-only version could not test it.
-export const verifyDisability = (
-  componentSelector,
-  controls,
-  options = { attr: "data-disabled" },
-) => {
-  const { csa, jsSet, jsReset } = controls;
-  const { attr, assertClass } = options;
+export const verifyDisability = (componentSelector, controls) => {
+    const { csa, jsSet, jsReset } = controls;
+    const disabled = { attr: 'data-disabled', attrValue: 'true' };
+    const enabled = { attr: 'data-disabled', attrValue: 'false' };
 
-  const disabled = {};
-  if (attr) {
-    disabled.attr = attr;
-    disabled.attrValue = "true";
-  }
-  if (assertClass) {
-    disabled.assertClass = assertClass;
-    disabled.assertClassState = "have.class";
-  }
-
-  const enabled = {};
-  if (attr) {
-    enabled.attr = attr;
-    enabled.attrValue = "false";
-  }
-  if (assertClass) {
-    enabled.assertClass = assertClass;
-    enabled.assertClassState = "not.have.class";
-  }
-
-  if (attr) cy.get(componentSelector).should("have.attr", attr, "false");
-  if (assertClass)
-    cy.get(componentSelector).should("not.have.class", assertClass);
+    cy.get(componentSelector).should('have.attr', 'data-disabled', 'false');
 
     genralProperties(componentSelector, jsSet, disabled);
     genralProperties(componentSelector, jsReset, enabled);
