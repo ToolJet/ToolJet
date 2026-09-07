@@ -237,7 +237,7 @@ export const StylesTabElements = ({
               index={index}
               darkMode={darkMode}
               callbackFunction={onColumnItemChange}
-              property={column.iconType === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
+              property={(column.iconType || 'stars') === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
               props={column}
               component={component}
               paramMeta={{ type: 'colorSwatches', displayName: 'Selected color' }}
