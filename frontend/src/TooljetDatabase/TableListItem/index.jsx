@@ -10,7 +10,7 @@ import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import { dataTypes } from '../constants';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
-import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import DeleteTableModal from '../DeleteTableModal';
 
 export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -35,7 +35,13 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
-  const { runMigration, modal: migrationModal } = useMigrationModal();
+  const [deleteModalState, setDeleteModalState] = useState({
+    isOpen: false,
+    loading: false,
+    submitting: false,
+    dependents: null,
+    error: null,
+  });
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -69,18 +75,41 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
   };
 
   const handleDeleteTable = () => {
-    runMigration({
-      titlePlaceholder: `Drop table "${text}"`,
-      changes: [{ type: '-', label: `Drop table "${text}"` }],
-      tableId,
-      showSqlEditor: false,
-      run: (migrationName) => tooljetDatabaseService.deleteTable(organizationId, text, migrationName),
-      onSuccess: () => {
-        toast.success(`Table "${text}" deleted successfully`);
-        onDeleteCallback && onDeleteCallback();
-      },
+    setDeleteModalState({ isOpen: true, loading: true, submitting: false, dependents: null, error: null });
+    tooljetDatabaseService.getTableDependents(organizationId, tableId).then(({ data, error }) => {
+      setDeleteModalState((prev) => {
+        // Modal was cancelled before this resolved - nothing to update.
+        if (!prev.isOpen) return prev;
+        return { ...prev, loading: false, dependents: error ? null : data?.result };
+      });
     });
   };
+
+  const closeDeleteModal = () => setDeleteModalState((prev) => ({ ...prev, isOpen: false }));
+
+  const confirmDeleteTable = () => {
+    setDeleteModalState((prev) => ({ ...prev, submitting: true, error: null }));
+    const migrationName = `Drop table "${text}"`;
+    tooljetDatabaseService.deleteTable(organizationId, text, migrationName).then(({ error }) => {
+      if (error) {
+        setDeleteModalState((prev) => ({
+          ...prev,
+          submitting: false,
+          error: error?.message ?? 'Failed to delete table',
+        }));
+        return;
+      }
+      toast.success(`Table "${text}" deleted successfully`);
+      closeDeleteModal();
+      onDeleteCallback && onDeleteCallback();
+    });
+  };
+
+  const deleteModalDependents = deleteModalState.dependents;
+  const deleteModalBlocked =
+    !deleteModalState.loading &&
+    !!deleteModalDependents &&
+    (deleteModalDependents.count > 0 || (deleteModalDependents.foreignKeyTables?.length ?? 0) > 0);
 
   const formColumns = columns.reduce((acc, column, currentIndex) => {
     acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
@@ -203,7 +232,18 @@ export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}
       />
-      {migrationModal}
+      <DeleteTableModal
+        show={deleteModalState.isOpen}
+        darkMode={darkMode}
+        tableName={text}
+        loading={deleteModalState.loading}
+        blocked={deleteModalBlocked}
+        dependents={deleteModalDependents}
+        error={deleteModalState.error}
+        submitting={deleteModalState.submitting}
+        onConfirm={confirmDeleteTable}
+        onCancel={closeDeleteModal}
+      />
     </div>
   );
 };

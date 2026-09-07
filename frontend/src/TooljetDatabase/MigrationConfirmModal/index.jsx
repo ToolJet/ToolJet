@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SqlEditor from '../_components/SqlEditor';
+import DependentsWarning from '../_components/DependentsWarning';
 import './styles.scss';
 
 const CHANGE_ROW_CLASS = { '+': 'add', '-': 'remove', '✎': 'edit' };
@@ -14,45 +14,6 @@ function ChangeRow({ type, label }) {
     <div className={cx('migration-change-row', CHANGE_ROW_CLASS[type] ?? 'edit')}>
       <span className="migration-change-icon">{type}</span>
       <span className="migration-change-label">{label}</span>
-    </div>
-  );
-}
-
-// "N resources reference this table" - a floor, never phrased as "will break" (the backend can
-// only see query references, not e.g. a table id hardcoded in a RunJS query).
-function DependentsWarning({ loading, dependents }) {
-  const [expanded, setExpanded] = useState(false);
-  if (loading) {
-    return (
-      <div className="migration-deps-warning" data-cy="migration-deps-loading">
-        Checking dependent resources…
-      </div>
-    );
-  }
-  if (!dependents || dependents.count === 0) return null;
-
-  return (
-    <div className="migration-deps-warning" data-cy="migration-deps-warning">
-      <div className="migration-deps-summary" onClick={() => setExpanded((prev) => !prev)}>
-        {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        <span>
-          {dependents.count} resource{dependents.count === 1 ? '' : 's'} reference this table
-        </span>
-      </div>
-      {expanded && (
-        <ul className="migration-deps-list">
-          {dependents.dependents.map((dependent) => (
-            <li key={dependent.id}>
-              <span className="migration-deps-app-name">{dependent.name}</span>
-              <span className="migration-deps-app-type">{dependent.type}</span>
-              <span className="migration-deps-queries">{dependent.queries.map((query) => query.name).join(', ')}</span>
-            </li>
-          ))}
-          {dependents.count > dependents.dependents.length && (
-            <li className="migration-deps-more">+{dependents.count - dependents.dependents.length} more</li>
-          )}
-        </ul>
-      )}
     </div>
   );
 }
