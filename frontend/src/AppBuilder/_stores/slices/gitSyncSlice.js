@@ -23,10 +23,20 @@ export const createGitSyncSlice = (set, get) => ({
     set((state) => ({ appLoading: true }), false, 'setAppLoading');
     try {
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
-      const orgGit = data?.app_git?.org_git;
-      const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
+      const rawOrgGit = data?.app_git?.org_git;
+      // The app-git config reports the stored is_branching_enabled flag, which is license-unaware.
+      // Multi-branch requires its own license — without it the workspace is single-branch, so
+      // gate the flag here (matching the server freeze logic) to keep the default branch editable
+      // and stop branch-only flows (create-branch, branch-locked banner) from appearing.
+      const multiBranchLicensed = useStore.getState()?.license?.featureAccess?.gitSyncMultiBranch !== false;
+      const isBranchingEnabled = (rawOrgGit?.is_branching_enabled ?? false) && multiBranchLicensed;
+      const orgGit = rawOrgGit ? { ...rawOrgGit, is_branching_enabled: isBranchingEnabled } : rawOrgGit;
       const appGit = data?.app_git;
-      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured;
+      // `is_git_sync_configured` from the API is license-gated (false when git sync isn't licensed),
+      // which would hide the branch selector. Derive "configured" from the raw provider flags so the
+      // git-sync UI stays visible (and frozen) when configured-but-unlicensed.
+      const providerConnected = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      const isGitSyncConfigured = providerConnected || !!data?.app_git?.is_git_sync_configured;
       get().updateBranchingEnabled?.(isBranchingEnabled);
       set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured');
       set((state) => ({ orgGit }), false, 'setOrgGit');

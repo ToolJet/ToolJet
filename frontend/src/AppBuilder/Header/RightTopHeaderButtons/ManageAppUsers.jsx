@@ -181,10 +181,14 @@ class ManageAppUsersComponent extends React.Component {
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     // Git-sync branch lock: the share config (make-public toggle, slug edit) is locked only
-    // on the default/master branch. When git sync is disabled there is no currentBranch, so
-    // the share config stays interactive — this is the non-git-sync case this PR targets.
-    const { currentBranch } = useWorkspaceBranchesStore.getState();
-    const isShareLocked = !!(currentBranch && (currentBranch.is_default || currentBranch.isDefault));
+    // on the default/master branch when multi-branching is enabled. In single-branch mode the
+    // default branch is the only working branch so the lock must not apply.
+    const { currentBranch, isMultiBranchingEnabled } = useWorkspaceBranchesStore.getState();
+    const isShareLocked = !!(
+      isMultiBranchingEnabled &&
+      currentBranch &&
+      (currentBranch.is_default || currentBranch.isDefault)
+    );
 
     return (
       <div className="manage-app-users">

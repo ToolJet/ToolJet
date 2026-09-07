@@ -1,8 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class NormalizeFolderAppsKeepFirstCreatedMappingPerApp1769151383974 implements MigrationInterface {
-
-public async up(queryRunner: QueryRunner): Promise<void> {
+  public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       DELETE FROM folder_apps
       WHERE id IN (
@@ -21,10 +20,10 @@ public async up(queryRunner: QueryRunner): Promise<void> {
       CREATE UNIQUE INDEX IF NOT EXISTS uniq_folder_apps_app_id
       ON folder_apps (app_id);
     `);
-}
-public async down(queryRunner: QueryRunner): Promise<void> {
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       DROP INDEX IF EXISTS uniq_folder_apps_app_id;
     `);
-    }
+  }
 }

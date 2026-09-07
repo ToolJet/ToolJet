@@ -17,11 +17,12 @@ describe('NotificationController', () => {
     afterEach(() => {
       jest.resetAllMocks();
     });
-    afterAll(async () => { await closeTestApp(app); }, 60000);
+    afterAll(async () => {
+      await closeTestApp(app);
+    }, 60000);
 
     // Attach auth cookie + workspace header on every request
-    const authed = (req: request.Test) =>
-      req.set('Cookie', admin.cookie).set('tj-workspace-id', admin.workspace.id);
+    const authed = (req: request.Test) => req.set('Cookie', admin.cookie).set('tj-workspace-id', admin.workspace.id);
 
     const seed = async (overrides = {}) => {
       const svc = app.get(NotificationService);

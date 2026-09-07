@@ -49,14 +49,14 @@ export const createBranchSlice = (set, get) => ({
             setActiveBranch(matchingBranch);
           } else if (versionBranchId) {
             // Branches from gitSyncService.getAllBranches don't carry the workspace branch UUID.
-            // Calling setActiveBranch with a branch that has no id stores { id: undefined }
-            // in localStorage, which breaks getActiveBranchId() for all subsequent API calls.
+            // Calling setActiveBranch with a branch that has no id caches { id: undefined },
+            // which breaks getActiveBranchId() for all subsequent API calls.
             // Instead, look up the proper workspace branch from the workspace store.
             const wsBranch = useWorkspaceBranchesStore.getState().branches?.find((b) => b.id === versionBranchId);
             if (wsBranch) {
               setActiveBranch(wsBranch);
             }
-            // If workspace store hasn't loaded yet, leave localStorage unchanged —
+            // If workspace store hasn't loaded yet, leave the active branch unchanged —
             // workspaceBranchesStore.initialize() will set it correctly when it completes.
           }
         } else if (!defaultBranch && branches.length) {
@@ -203,7 +203,7 @@ export const createBranchSlice = (set, get) => ({
       // Update current branch first + mark auto-switch as done to prevent revert
       const targetBranch = state.allBranches.find((b) => b.name === branchName) || { name: branchName };
 
-      // Save branch to localStorage (no longer writing to DB)
+      // Persist branch to the URL (no longer writing to DB)
       if (targetBranch.id) {
         setActiveBranch(targetBranch);
       }
@@ -390,7 +390,7 @@ export const createBranchSlice = (set, get) => ({
         name: defaultBranchName,
       };
 
-      // Save branch to localStorage (no longer writing to DB)
+      // Persist branch to the URL (no longer writing to DB)
       if (defaultBranch.id) {
         setActiveBranch(defaultBranch);
       }

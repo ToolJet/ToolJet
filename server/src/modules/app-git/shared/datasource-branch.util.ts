@@ -9,8 +9,5 @@ export class DataSourceBranchUtil {
     _manager: EntityManager
   ): Promise<void> {}
 
-  async snapshotDataSourcesForVersion(
-    _appVersionId: string,
-    _branchId: string
-  ): Promise<void> {}
+  async snapshotDataSourcesForVersion(_appVersionId: string, _branchId: string): Promise<void> {}
 }

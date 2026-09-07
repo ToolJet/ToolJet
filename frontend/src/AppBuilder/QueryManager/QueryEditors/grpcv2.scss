@@ -54,6 +54,11 @@
   .grpcv2-dropdown {
     position: relative;
     width: 100%;
+    isolation: isolate;
+
+    &:has(.grpcv2-dropdown__button--open) {
+      z-index: 2;
+    }
 
     &--dark {
       .grpcv2-dropdown__button {

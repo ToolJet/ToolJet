@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional, Matches } from 'class-validator';
 
 export class AppGitPushDto {
   @IsString()
@@ -91,6 +91,7 @@ export class RenameAppOrVersionDto {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
   updatedName: string;
 
   @IsBoolean()

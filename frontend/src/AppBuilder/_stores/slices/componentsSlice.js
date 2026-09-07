@@ -166,6 +166,10 @@ const initialState = {
   selectedComponents: [],
   showWidgetDeleteConfirmation: false,
   deleteTargetIsModuleEditor: false,
+  // Components the open delete confirmation targets. Null means "whatever is selected
+  // on the canvas"; the component tree sets it so it can delete a component without
+  // stealing the canvas selection.
+  widgetDeleteConfirmationTargets: null,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
@@ -1644,6 +1648,7 @@ export const createComponentsSlice = (set, get) => ({
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
+          state.widgetDeleteConfirmationTargets = null;
         });
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
@@ -2582,10 +2587,21 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
-  setWidgetDeleteConfirmation: (value, isModuleEditor = false) => {
+  setWidgetDeleteConfirmation: (value, second = null) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
-      if (value) state.deleteTargetIsModuleEditor = isModuleEditor;
+      if (!value) {
+        state.widgetDeleteConfirmationTargets = null;
+        return;
+      }
+      // Canvas/hotkey/inspector pass a boolean isModuleEditor. The component tree
+      // passes an explicit id list so it can delete without stealing canvas selection.
+      if (Array.isArray(second)) {
+        state.widgetDeleteConfirmationTargets = second;
+      } else {
+        state.deleteTargetIsModuleEditor = Boolean(second);
+        state.widgetDeleteConfirmationTargets = null;
+      }
     });
   },
 

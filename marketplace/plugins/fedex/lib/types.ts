@@ -8,14 +8,14 @@ export type SourceOptions = {
 };
 
 export enum CustomerType {
-  STANDARD = "standard_customers",
-  INTERNAL = "internal_customers",
-  PROPRIETARY_PARENT_CHILD = "proprietary_parent_child_customers",
+  STANDARD = 'standard_customers',
+  INTERNAL = 'internal_customers',
+  PROPRIETARY_PARENT_CHILD = 'proprietary_parent_child_customers',
 }
 
 export enum BaseURL {
-  PRODUCTION = "https://apis.fedex.com",
-  SANDBOX = "https://apis-sandbox.fedex.com",
+  PRODUCTION = 'https://apis.fedex.com',
+  SANDBOX = 'https://apis-sandbox.fedex.com',
 }
 
 export type QueryOptions = {

@@ -115,18 +115,9 @@ export default [
       // prettier config (disables conflicting rules)
       ...configPrettier.rules,
 
-      // Re-enable prettier/prettier as error (after configPrettier may disable it)
-      'prettier/prettier': [
-        'error',
-        {
-          semi: true,
-          trailingComma: 'es5',
-          printWidth: 120,
-          singleQuote: true,
-          arrowParens: 'always',
-          proseWrap: 'preserve',
-        },
-      ],
+      // Re-enable prettier/prettier as error (after configPrettier may disable it).
+      // Options come from the root .prettierrc — single source of truth.
+      'prettier/prettier': 'error',
 
       // Project rules (preserved from .eslintrc.js)
       'react/prop-types': 0,
@@ -148,7 +139,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
       'react/no-unknown-property': 'off',
@@ -184,12 +175,23 @@ export default [
       '@typescript-eslint': tsPlugin,
       react: pluginReact,
       'react-hooks': pluginReactHooks,
+      // same 'import' namespace remap as the js block — this block's rules
+      // reference import/no-unresolved
+      import: pluginImportX,
       prettier: pluginPrettier,
     },
 
     settings: {
       react: {
         version: 'detect',
+      },
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
       },
     },
 
@@ -207,7 +209,10 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
+      // ban-types was removed in typescript-eslint v8 — these are its successors
+      '@typescript-eslint/no-empty-object-type': 'error',
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
@@ -260,7 +265,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
 

@@ -8,9 +8,20 @@
     }
 }
 
-.create-draft-version-modal {
-  width: 380px;
+// The dialog wrapper carries the width. AlertDialog renders it as .modal-dialog.modal-sm
+// (max-width 300px); widen it so the git single-branch replace actions ("Keep current draft" /
+// "Replace with new draft") sit comfortably on one line. The extra .modal-dialog qualifier beats
+// .modal-sm's specificity so no !important is needed.
+//
+// Two selectors for robustness: (1) the forwarded dialogClassName, and (2) :has() on the content
+// class — AlertDialog applies customClassName to .modal-content, so we target the enclosing
+// .modal-dialog even if dialogClassName isn't wired through.
+.modal-dialog.create-draft-version-dialog,
+.modal-dialog:has(> .modal-content.create-draft-version-modal) {
+  max-width: 410px;
+}
 
+.create-draft-version-modal {
   .modal-body {
     padding: 24px !important;
     .create-draft-version-body{
@@ -29,10 +40,8 @@
           align-items: flex-start;
           gap: 6px;
           align-self: stretch;
-          height: 60px;
           border-radius: 6px;
           background: var(--background-accent-weak) !important;
-          width: 332px;
           margin-top: 16px;
           padding: 12px !important;
            &.git-sync-disabled {
@@ -58,6 +67,12 @@
       bottom: 20px;
       left: 24px;
       right: 24px;
+
+      // Keep the action labels on a single line — the git single-branch replace flow uses longer
+      // labels ("Keep current draft" / "Replace with new draft") that otherwise wrap to two lines.
+      button {
+        white-space: nowrap;
+      }
     }
 
     .loader-container {

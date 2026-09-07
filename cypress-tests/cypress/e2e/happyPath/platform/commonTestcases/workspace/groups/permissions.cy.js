@@ -277,7 +277,8 @@ describe("Manage Groups", () => {
                 cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
                 cy.get(dataSourceSelector.queryCardDeleteButton).click();
-                cy.get(dataSourceSelector.deleteQueryConfirmButton).click();
+                // cy.get(dataSourceSelector.deleteQueryConfirmButton).click();
+                cy.get('[data-cy="entity-delete-confirm"]').click();
 
                 cy.get(dataSourceSelector.listQuery("user2-datasource"))
                     .should("be.visible")

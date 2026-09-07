@@ -457,6 +457,8 @@ class BaseManageGroupPermissions extends React.Component {
       addWorkflows = null,
       addFolders = null,
       addModules = null,
+      addWorkflowFolders = null,
+      addModuleFolders = null,
     } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
     const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
@@ -650,7 +652,57 @@ class BaseManageGroupPermissions extends React.Component {
                     </div>
                     <div className="col-11">
                       <div className="tj-text " data-cy="folders-label">
-                        Folders
+                        App folders
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addWorkflowFolders !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addWorkflowFolders}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addWorkflowFolders: !prevState.groupDuplicateOption.addWorkflowFolders,
+                            },
+                          }));
+                        }}
+                        data-cy="workflow-folders-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="workflow-folders-label">
+                        Workflow folders
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addModuleFolders !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addModuleFolders}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addModuleFolders: !prevState.groupDuplicateOption.addModuleFolders,
+                            },
+                          }));
+                        }}
+                        data-cy="module-folders-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="module-folders-label">
+                        Module folders
                       </div>
                     </div>
                   </div>

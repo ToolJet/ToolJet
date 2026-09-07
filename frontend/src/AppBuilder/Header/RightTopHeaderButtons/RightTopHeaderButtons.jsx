@@ -11,7 +11,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import PromoteReleaseButton from '@/modules/Appbuilder/components/PromoteReleaseButton';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const RightTopHeaderButtons = ({ isModuleEditor }) => {
+const RightTopHeaderButtons = ({ isModuleEditor, isAppUnsyncedToGit = false }) => {
   const { moduleId } = useModuleContext();
   const { selectedVersion, selectedEnvironment, creationMode } = useStore((state) => ({
     selectedVersion: state.selectedVersion,
@@ -28,7 +28,10 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
         <GitSyncManager />
         <div className="tw-hidden navbar-seperator" />
         {/* <PreviewAndShareIcons /> */}
-        {(isNotPromotedOrReleased || isWorkspaceGitApp) && <LifecycleCTAButton />}
+        {/* An unsynced app's "Sync" CTA must stay reachable on every environment/version —
+            without this OR, this wrapper never even mounts LifecycleCTAButton outside dev,
+            so its own internal isUnsynced exception never gets a chance to run. */}
+        {(isNotPromotedOrReleased || isWorkspaceGitApp || isAppUnsyncedToGit) && <LifecycleCTAButton />}
         {/* need to review if we need this or not */}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>

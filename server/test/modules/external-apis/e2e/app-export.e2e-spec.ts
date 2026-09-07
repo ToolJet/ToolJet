@@ -1,6 +1,5 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   createUser,
   initTestApp,
@@ -8,6 +7,8 @@ import {
   createApplication,
   createApplicationVersion,
   getDefaultDataSource,
+  getExternalApiAuthHeader,
+  NONEXISTENT_UUID,
 } from 'test-helper';
 import { AppsUtilService } from '@ee/apps/util.service';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -26,8 +27,6 @@ import { AppVersion } from 'src/entities/app_version.entity';
  *     param arrives as the string 'false', which is truthy unless parsed)
  */
 
-const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000001';
-
 /** @group platform */
 describe('External API — POST /ext/export/workspace/:workspaceId/apps/:appId', () => {
   let app: INestApplication;
@@ -35,7 +34,7 @@ describe('External API — POST /ext/export/workspace/:workspaceId/apps/:appId',
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    AUTH_HEADER = `Basic ${app.get(ConfigService).get('EXTERNAL_API_ACCESS_TOKEN')}`;
+    AUTH_HEADER = getExternalApiAuthHeader(app);
   });
 
   afterEach(() => {
@@ -160,7 +159,9 @@ describe('External API — POST /ext/export/workspace/:workspaceId/apps/:appId',
 
   describe('exportTJDB toggle', () => {
     it('checks for TJDB tables by default when the query param is omitted', async () => {
-      const { user, organization } = await createUser(app, { email: `app-export-tjdb-default-${Date.now()}@tooljet.io` });
+      const { user, organization } = await createUser(app, {
+        email: `app-export-tjdb-default-${Date.now()}@tooljet.io`,
+      });
       const seededApp = await createApplication(app, { name: 'TJDB Default App', user });
       await createApplicationVersion(app, seededApp);
 

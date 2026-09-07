@@ -45,9 +45,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         relations: ['apps', 'appVersion'],
       });
     }
-    // Non-workflow apps and modules carry is_public on app_versions; workflows keep it on apps.
-    const isQueryPublic =
-      dataQuery?.app?.type === 'workflow' ? dataQuery?.app?.isPublic : dataQuery?.appVersion?.isPublic;
+    // Every app type carries is_public on its own app_versions row.
+    const isQueryPublic = dataQuery?.appVersion?.isPublic;
     const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && isQueryPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
 

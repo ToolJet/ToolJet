@@ -28,6 +28,7 @@ describe('AppImportExportService (EE) — assertModuleCreatePermission', () => {
       entityManager as any, // entityManager
       {} as any, // appsRepository
       {} as any, // transactionLogger
+      {} as any, // gitSyncConfigsUtilService
       abilityService as any // abilityService
     );
   });
@@ -88,6 +89,8 @@ describe('AppImportExportService (EE) — assertModuleCreatePermission', () => {
     ).rejects.toThrow(ForbiddenException);
     await expect(
       service.assertModuleCreatePermission(user, 'org-1', new Set(['mod-1', 'mod-missing']))
-    ).rejects.toThrow("This app requires creating modules, but you don't have permission to create modules. Contact admin.");
+    ).rejects.toThrow(
+      "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+    );
   });
 });

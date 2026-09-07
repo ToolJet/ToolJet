@@ -1,7 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, closeTestApp, createUser, createApplication, createApplicationVersion, getDefaultDataSource } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  createApplication,
+  createApplicationVersion,
+  getDefaultDataSource,
+} from 'test-helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -25,103 +32,6 @@ import { Repository } from 'typeorm';
 // ---------------------------------------------------------------------------
 // DB seed helpers
 // ---------------------------------------------------------------------------
-
-async function seedCustomGroup(
-  organizationId: string,
-  name: string,
-  overrides: Partial<GroupPermissions> = {}
-): Promise<GroupPermissions> {
-  const manager = getManager();
-  const group = manager.create(GroupPermissions, {
-    organizationId,
-    name,
-    type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
-    appCreate: false,
-    appDelete: false,
-    folderCreate: false,
-    folderDelete: false,
-    orgConstantCRUD: false,
-    workflowCreate: false,
-    workflowDelete: false,
-    dataSourceCreate: false,
-    dataSourceDelete: false,
-    appPromote: false,
-    appRelease: false,
-    ...overrides,
-  });
-  return manager.save(group);
-}
-
-async function seedApp(organizationId: string, name: string): Promise<App> {
-  const manager = getManager();
-  const app = manager.create(App, {
-    name,
-    organizationId,
-    slug: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
-    isPublic: false,
-  });
-  return manager.save(app);
-}
-
-async function seedDataSource(organizationId: string, name: string): Promise<DataSource> {
-  const manager = getManager();
-  const ds = manager.create(DataSource, {
-    name,
-    kind: 'restapi',
-    organizationId,
-  });
-  return manager.save(ds);
-}
-
-/**
- * Seed an app granular permission (non-applyToAll) for a group.
- */
-async function seedAppGranularPermission(
-  groupId: string,
-  appIds: string[],
-  {
-    canEdit = false,
-    canView = true,
-    hideFromDashboard = false,
-    canAccessDevelopment = true,
-    canAccessStaging = false,
-    canAccessProduction = false,
-    canAccessReleased = true,
-  } = {}
-): Promise<GranularPermissions> {
-  const manager = getManager();
-  const gp = await manager.save(
-    manager.create(GranularPermissions, {
-      groupId,
-      name: `app_gp_${Date.now()}`,
-      type: ResourceType.APP,
-      isAll: false,
-    })
-  );
-  const agp = await manager.save(
-    manager.create(AppsGroupPermissions, {
-      granularPermissionId: gp.id,
-      appType: 'front-end' as any,
-      canEdit,
-      canView,
-      hideFromDashboard,
-      canAccessDevelopment,
-      canAccessStaging,
-      canAccessProduction,
-      canAccessReleased,
-    })
-  );
-  if (appIds.length) {
-    await manager.insert(
-      GroupApps,
-      appIds.map((appId) => ({ appId, appsGroupPermissionsId: agp.id }))
-    );
-  }
-  return manager.findOne(GranularPermissions, {
-    where: { id: gp.id },
-    relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Main test suite
@@ -253,7 +163,7 @@ describe('External API — Groups endpoints', () => {
 
   describe('PATCH /ext/workspace/:workspaceId/groups/:groupId', () => {
     it('returns 403 when Authorization header is missing', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
       await request(app.getHttpServer())
         .patch(`/api/ext/workspace/${org.id}/groups/${group.id}`)
@@ -262,7 +172,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 403 when the access token is wrong', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
       await request(app.getHttpServer())
         .patch(`/api/ext/workspace/${org.id}/groups/${group.id}`)
@@ -272,7 +182,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 404 for a non-existent workspace', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
       await request(app.getHttpServer())
         .patch(`/api/ext/workspace/${NONEXISTENT_UUID}/groups/${group.id}`)
@@ -282,7 +192,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 404 for a non-existent group', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await request(app.getHttpServer())
         .patch(`/api/ext/workspace/${org.id}/groups/${NONEXISTENT_UUID}`)
         .set('Authorization', AUTH_HEADER)
@@ -291,7 +201,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 400 when trying to update a default (non-custom) group', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const defaultGroup = await groupRepo.findOneOrFail({
         where: { organizationId: org.id, type: GROUP_PERMISSIONS_TYPE.DEFAULT },
       });
@@ -303,7 +213,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('renames a group and returns 204 with no body', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Old Name');
 
       const response = await request(app.getHttpServer())
@@ -319,7 +229,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('updates only the provided workspace permission flags', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team', {
         appCreate: false,
         folderCreate: true,
@@ -540,7 +450,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('updates an existing applyToAll entry in-place', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
       const gp = await granularRepo.save(
@@ -595,7 +505,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('creates a new applyToAll entry when none exists for that type', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
       await request(app.getHttpServer())
@@ -620,7 +530,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 422 when two applyToAll=true entries for the same type are sent in one request', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
       await request(app.getHttpServer())
@@ -646,7 +556,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('merges data source resources into a matching granular permission entry', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const ds1 = await seedDataSource(org.id, 'DS One');
       const ds2 = await seedDataSource(org.id, 'DS Two');
       const group = await seedCustomGroup(org.id, 'Dev Team');
@@ -698,7 +608,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('creates a new data_source granular permission when no match exists', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const ds1 = await seedDataSource(org.id, 'DS One');
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
@@ -724,7 +634,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 400 when resources array is empty and applyToAll=false', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
       await request(app.getHttpServer())
@@ -744,7 +654,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 400 when a referenced app resource does not exist', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Dev Team');
 
       await request(app.getHttpServer())
@@ -797,7 +707,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('combines both name and permissions update in a single request', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'Old Name', { appCreate: false });
 
       await request(app.getHttpServer())
@@ -821,7 +731,7 @@ describe('External API — Groups endpoints', () => {
 
   describe('GET /ext/workspace/:workspaceId/groups', () => {
     it('returns 403 when Authorization header is missing', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await request(app.getHttpServer()).get(`/api/ext/workspace/${org.id}/groups`).expect(403);
     });
 
@@ -833,7 +743,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns only custom groups (not default role groups)', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Custom Group A');
 
       const response = await request(app.getHttpServer())
@@ -849,7 +759,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns the correct pagination shape', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Group A');
       await seedCustomGroup(org.id, 'Group B');
       await seedCustomGroup(org.id, 'Group C');
@@ -868,7 +778,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('paginates correctly across pages', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Group A');
       await seedCustomGroup(org.id, 'Group B');
       await seedCustomGroup(org.id, 'Group C');
@@ -883,7 +793,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('filters groups by name using the search param (case-insensitive)', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Frontend Devs');
       await seedCustomGroup(org.id, 'Backend Devs');
       await seedCustomGroup(org.id, 'Designers');
@@ -901,7 +811,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns an empty data array when no groups match the search', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Frontend Devs');
 
       const response = await request(app.getHttpServer())
@@ -914,7 +824,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns the correct permissions shape for each group', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'My Group', {
         appCreate: true,
         appDelete: false,
@@ -982,7 +892,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns groups with empty granularPermissions array when none exist', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await seedCustomGroup(org.id, 'Empty Group');
 
       const response = await request(app.getHttpServer())
@@ -1001,13 +911,13 @@ describe('External API — Groups endpoints', () => {
 
   describe('DELETE /ext/workspace/:workspaceId/groups/:groupId', () => {
     it('returns 403 when Authorization header is missing', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'To Delete');
       await request(app.getHttpServer()).delete(`/api/ext/workspace/${org.id}/groups/${group.id}`).expect(403);
     });
 
     it('returns 404 for a non-existent workspace', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'To Delete');
       await request(app.getHttpServer())
         .delete(`/api/ext/workspace/${NONEXISTENT_UUID}/groups/${group.id}`)
@@ -1016,7 +926,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 404 for a non-existent group', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       await request(app.getHttpServer())
         .delete(`/api/ext/workspace/${org.id}/groups/${NONEXISTENT_UUID}`)
         .set('Authorization', AUTH_HEADER)
@@ -1024,7 +934,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 400 when trying to delete a default group', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const defaultGroup = await groupRepo.findOneOrFail({
         where: { organizationId: org.id, type: GROUP_PERMISSIONS_TYPE.DEFAULT },
       });
@@ -1036,7 +946,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('deletes a custom group and returns 204 with no body', async () => {
-      const { organization: org, user } = await seedOrg();
+      const { organization: org } = await seedOrg();
       const group = await seedCustomGroup(org.id, 'To Delete');
 
       const response = await request(app.getHttpServer())

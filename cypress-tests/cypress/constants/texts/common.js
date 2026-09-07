@@ -80,7 +80,6 @@ export const commonText = {
   notificationsCardTitle: "Notifications",
   emptyNotificationTitle: "You're all caught up!",
   emptyNotificationSubtitle: "Status of background operations will appear here",
-  viewReadNotifications: "View read notifications",
   logoutLink: "Logout",
 
   backArrowText: "Back",

@@ -16,7 +16,7 @@ export async function getChatCompletion(
   options: QueryOptions
 ): Promise<string | { error: string; statusCode: number }> {
   const { operation, model, system_prompt, message, history, prompt, temperature, max_size } = options;
-  
+
   let messagesPayload: any[] = [];
 
   if (operation === 'chat') {
@@ -30,15 +30,12 @@ export async function getChatCompletion(
         parsedHistory = [];
       }
     }
-    
+
     if (!prompt) {
-      throw new Error("Prompt is required for chat operation");
+      throw new Error('Prompt is required for chat operation');
     }
 
-    messagesPayload = [
-      ...parsedHistory,
-      { role: 'user', content: prompt }
-    ];
+    messagesPayload = [...parsedHistory, { role: 'user', content: prompt }];
   }
 
   const response: any = await anthropicClient.messages.create({

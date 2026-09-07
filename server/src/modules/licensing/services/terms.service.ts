@@ -19,11 +19,9 @@ export class LicenseTermsService extends ILicenseTermsService {
 
     if (Array.isArray(type)) {
       const result: any = {};
-
-      type.forEach(async (key) => {
+      for (const key of type) {
         result[key] = this.licenseInitService.getLicenseFieldValue(key, License.Instance());
-      });
-
+      }
       return result;
     }
     return this.licenseInitService.getLicenseFieldValue(type, License.Instance());

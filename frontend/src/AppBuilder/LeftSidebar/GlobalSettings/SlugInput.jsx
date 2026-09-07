@@ -23,6 +23,7 @@ const SlugInput = () => {
     currentPage,
     app,
     setApp,
+    selectedVersion,
   } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
@@ -31,6 +32,7 @@ const SlugInput = () => {
       app: state.appStore.modules[moduleId].app,
       setApp: state.setApp,
       currentPage: state.modules[moduleId].pages[state.modules[moduleId].currentPageIndex],
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
@@ -93,7 +95,10 @@ const SlugInput = () => {
 
   const { currentBranch, orgGitConfig } = useWorkspaceBranchesStore();
   const isBranchingEnabled = !!(orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled);
-  const isDefaultBranch = isBranchingEnabled && !!(currentBranch?.is_default || currentBranch?.isDefault);
+  const isVersionUnsynced = selectedVersion?.isSynced === false;
+  // Unsynced app versions are mutable even on default branch
+  const isDefaultBranch =
+    isBranchingEnabled && !!(currentBranch?.is_default || currentBranch?.isDefault) && !isVersionUnsynced;
 
   const SlugLabel = () => {
     const isOnFeatureBranch =

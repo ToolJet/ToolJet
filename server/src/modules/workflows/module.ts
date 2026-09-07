@@ -22,6 +22,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { OrganizationConstantRepository } from '@modules/organization-constants/repository';
 import { AppsModule } from '@modules/apps/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { FoldersModule } from '@modules/folders/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
@@ -162,6 +163,7 @@ export class WorkflowsModule extends SubModule {
           adapter: BullMQAdapter,
         }),
         await AppsModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
         await DataQueriesModule.register(configs),
         await EncryptionModule.register(configs),

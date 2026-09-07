@@ -13,7 +13,7 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     const repository = manager ? manager.getRepository(this.target) : this;
     return await repository.findOne({
       where: { organizationId: organizationId },
-      relations: ['gitSsh', 'gitHttps', 'gitLab'],
+      relations: ['gitHttps', 'gitLab'],
     });
   }
 
@@ -37,7 +37,6 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     return count > 0;
   }
 
-  // Default WorkspaceBranch id for the org, or undefined for git-disabled workspaces.
   async findDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | undefined> {
     const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
     const defaultBranch = await repo.findOne({

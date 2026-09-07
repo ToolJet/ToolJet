@@ -6,7 +6,7 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { transformTjdbImportDto } from '@dto/transformers/tjdb-dto-transforms';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TooljetDbImportExportService {
@@ -25,7 +25,7 @@ export class TooljetDbImportExportService {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, id: tjDbDto.table_id },
     });
-    
+
     // Backward compatibility:
     // Older apps may contain stale ToolJet DB table references because
     // table deletion was historically allowed even when queries still referenced them.
