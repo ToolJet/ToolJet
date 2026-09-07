@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import cx from 'classnames';
 import DOMPurify from 'dompurify';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import './html.scss';
 
 export const Html = function ({
   id,
@@ -140,7 +142,10 @@ export const Html = function ({
 
   return (
     <div
-      className={`jet-container ${exposedVariablesTemporaryState.isLoading && 'jet-container-loading'}`}
+      className={cx('jet-container', 'html-widget-container', {
+        'dynamic-height': isDynamicHeightEnabled,
+        'jet-container-loading': exposedVariablesTemporaryState.isLoading,
+      })}
       data-disabled={exposedVariablesTemporaryState.isDisabled}
       style={{
         background: exposedVariablesTemporaryState.isLoading && 'var(--cc-surface1-surface)',
@@ -149,7 +154,7 @@ export const Html = function ({
         borderRadius: exposedVariablesTemporaryState.isLoading && '6px',
         width: '100%',
         height: isDynamicHeightEnabled ? 'auto' : height,
-        ...(isDynamicHeightEnabled ? { minHeight: height } : { overflowY: 'auto' }),
+        ...(isDynamicHeightEnabled && { minHeight: height }), // overflow-y is driven by the `dynamic-height` class in html.scss
         boxShadow,
         position: 'relative',
         opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
