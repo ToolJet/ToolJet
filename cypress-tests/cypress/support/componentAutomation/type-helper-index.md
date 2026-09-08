@@ -11,7 +11,7 @@
 | - | `verifyTooltip` | appBuilder/properties.js | properties | `verifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
 | - | `addAndVerifyTooltip` | appBuilder/properties.js | properties | `addAndVerifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
 | - | `commitChange` | appBuilder/properties.js | common | `commitChange()` |
-| switch | `setTooltip` | appBuilder/properties.js | properties | `setTooltip('markdown', 'bold text')` |
+| - | `setTooltip` | appBuilder/properties.js | properties | `setTooltip('markdown', 'bold text')` |
 | - | `editAndVerifyWidgetName` | appBuilder/properties.js | properties | `editAndVerifyWidgetName('myButton', ['General', 'Properties', 'Devices'])` |
 | - | `verifyPropertiesGeneralAccordion` | appBuilder/properties.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
 | - | `selectFromSidebarDropdown` | appBuilder/properties.js | properties | `selectFromSidebarDropdown('Alignment', 'center')` |
@@ -37,7 +37,7 @@
 | - | `verifyWidgetText` | appBuilder/components.js | properties | `verifyWidgetText('textinput1', 'Hello')` |
 | - | `addTextWidgetToVerifyValue` | appBuilder/components.js | canvas | `addTextWidgetToVerifyValue('components.textinput1.value')` |
 | - | `verifyContainerElements` | appBuilder/components.js | properties | `verifyContainerElements()` |
-| toggle | `switchLayout` | appBuilder/layout.js | canvas | `switchLayout('mobile')` |
+| - | `switchLayout` | appBuilder/layout.js | editor | `switchLayout('mobile')` |
 | toggle | `verifyLayout` | appBuilder/layout.js | properties | `verifyLayout('textinput1')` |
 | exposed | `openAndVerifyNode` | appBuilder/inspectorTree.js | inspector | `openAndVerifyNode('textinput1', nodes, verifyNodeData)` |
 | exposed | `verifyNodes` | appBuilder/inspectorTree.js | inspector | `verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)` |
