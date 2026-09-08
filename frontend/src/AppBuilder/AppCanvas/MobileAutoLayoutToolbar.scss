@@ -1,0 +1,7 @@
+// Lift Rocket dialogs above the editor's fixed right sidebar (z-index 1041); their default is 50.
+[data-slot='alert-dialog-overlay'],
+[data-slot='alert-dialog-content'],
+[data-slot='dialog-overlay'],
+[data-slot='dialog-content'] {
+  z-index: 1050 !important;
+}

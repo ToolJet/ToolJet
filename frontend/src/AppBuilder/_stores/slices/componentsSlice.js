@@ -27,8 +27,10 @@ import {
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
-import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+// calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
+const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
 import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   ROW_SCOPED_WIDGET_TYPES,
@@ -129,7 +131,11 @@ function buildRowScopedState({ get, listviewId, moduleId }) {
 // Mirrors the prepareRowScope/updateRowScope pattern used by setAllValueToComponent.
 function buildRowScopedResolver({ get, nearestListviewId, rowIndex, moduleId, customResolveObjects }) {
   if (nearestListviewId && rowIndex !== undefined && rowIndex !== null) {
-    const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: nearestListviewId, moduleId });
+    const { scopeCtx, scopedState } = buildRowScopedState({
+      get,
+      listviewId: nearestListviewId,
+      moduleId,
+    });
     if (scopeCtx) {
       get().updateRowScope(scopeCtx, rowIndex);
       return (value) => {
@@ -253,7 +259,9 @@ export const createComponentsSlice = (set, get) => ({
 
     set(
       (state) => {
-        state.modules[moduleId].dependencyGraph = { ...state.modules[moduleId].dependencyGraph };
+        state.modules[moduleId].dependencyGraph = {
+          ...state.modules[moduleId].dependencyGraph,
+        };
       },
       false,
       'updateComponentDependencyGraph'
@@ -496,7 +504,12 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         );
 
-      return { updatedValue: valueWithId, allRefs, unResolvedValue: valueWithBrackets, componentResolvedValues };
+      return {
+        updatedValue: valueWithId,
+        allRefs,
+        unResolvedValue: valueWithBrackets,
+        componentResolvedValues,
+      };
     } else {
       if (updatePassedValue)
         setAllValueToComponent(
@@ -509,7 +522,12 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         );
     }
-    return { updatedValue: value, allRefs: [], unResolvedValue: value, componentResolvedValues };
+    return {
+      updatedValue: value,
+      allRefs: [],
+      unResolvedValue: value,
+      componentResolvedValues,
+    };
   },
 
   setAllValueToComponent: (
@@ -601,7 +619,11 @@ export const createComponentsSlice = (set, get) => ({
       //   4. scopedState holds a reference to the overlay object, so mutating the overlay
       //      in updateRowScope is automatically visible to the resolver — no need to recreate
       //      scopedState each iteration
-      const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: nearestListviewId, moduleId });
+      const { scopeCtx, scopedState } = buildRowScopedState({
+        get,
+        listviewId: nearestListviewId,
+        moduleId,
+      });
 
       for (let i = 0; i < length; i++) {
         // Mutate the overlay in place: swap descendant entries to row i's values
@@ -629,6 +651,7 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
       getAllExposedValues,
       getCustomResolvables,
+      getCustomResolvableReference,
       findNearestSubcontainerAncestor,
       getComponentDefinition,
       getBaseParentId,
@@ -686,6 +709,19 @@ export const createComponentsSlice = (set, get) => ({
     const innermostListview = listviewAncestors[listviewAncestors.length - 1];
     const baseCustomResolvables = getCustomResolvables(innermostListview, null, moduleId, []);
 
+    // No rows announced yet, so the per-row walk below would drop the value. Write it flat instead;
+    // updateChildComponentsLength seeds the rows from it.
+    if (!baseCustomResolvables || Object.keys(baseCustomResolvables).length === 0) {
+      // Row-referencing values resolve to nothing without rows, and seeding every row from that
+      // garbage is worse than waiting: the listItem announcement rewrites them per row.
+      if (shouldResolve && getCustomResolvableReference(unResolvedValue, parentId, moduleId).length > 0) return;
+      const resolvedValue = shouldResolve
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
+        : value;
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
+    }
+
     // Helper function to recursively iterate through all index combinations
     const iterateNestedIndices = (resolvables, currentIndices, depth) => {
       if (!resolvables || typeof resolvables !== 'object') return;
@@ -713,7 +749,11 @@ export const createComponentsSlice = (set, get) => ({
           ? getLazyRowIndices(innermostListview, moduleId, true)
           : Array.from({ length: resolvables.length }, (_, i) => i);
 
-        const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: innermostListview, moduleId });
+        const { scopeCtx, scopedState } = buildRowScopedState({
+          get,
+          listviewId: innermostListview,
+          moduleId,
+        });
 
         for (const i of indicesToResolve) {
           if (i >= resolvables.length) continue;
@@ -1120,7 +1160,9 @@ export const createComponentsSlice = (set, get) => ({
   addToDependencyGraph: (moduleId = 'canvas', componentId, component) => {
     const { updateDependencyGraphAndResolvedValues, getResolvedComponent } = get();
     //TODO: Replace with object of component types
-    let resolvedComponentValues = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
+    let resolvedComponentValues = {
+      [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}),
+    };
     const componentType = componentTypes.find((comp) => component.component === comp.component);
     ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((key) => {
       updateDependencyGraphAndResolvedValues(
@@ -1282,7 +1324,9 @@ export const createComponentsSlice = (set, get) => ({
     }
     set(
       (state) => {
-        state.resolvedStore.modules[moduleId].others.pages[pageId] = { hidden: resolvedValue };
+        state.resolvedStore.modules[moduleId].others.pages[pageId] = {
+          hidden: resolvedValue,
+        };
       },
       false,
       'resolvePageHiddenValue'
@@ -1807,7 +1851,7 @@ export const createComponentsSlice = (set, get) => ({
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1824,6 +1868,8 @@ export const createComponentsSlice = (set, get) => ({
       addToDependencyGraph,
       removeNode,
     } = get();
+    // Undo/redo replays a patch captured in another layout, so the caller can name the target.
+    const layoutKey = targetLayout || currentLayout;
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
@@ -1859,8 +1905,8 @@ export const createComponentsSlice = (set, get) => ({
       Object.keys(componentLayouts).forEach((componentId) => {
         const comp = pageComponents[componentId];
         oldParentByComponentId[componentId] = comp?.component?.parent ?? null;
-        if (comp?.layouts?.[currentLayout]) {
-          oldLayoutByComponentId[componentId] = { ...comp.layouts[currentLayout] };
+        if (comp?.layouts?.[layoutKey]) {
+          oldLayoutByComponentId[componentId] = { ...comp.layouts[layoutKey] };
         }
       });
     }
@@ -1899,14 +1945,14 @@ export const createComponentsSlice = (set, get) => ({
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
                 if (widthPx !== undefined) flexLayout.widthPx = widthPx;
                 if (height !== undefined) flexLayout.height = height;
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   ...flexLayout,
                 };
                 // Strip absolute-grid position/width fields when moving into FlexContainer.
-                delete component.layouts[currentLayout].top;
-                delete component.layouts[currentLayout].left;
-                delete component.layouts[currentLayout].width;
+                delete component.layouts[layoutKey].top;
+                delete component.layouts[layoutKey].left;
+                delete component.layouts[layoutKey].width;
               } else if (
                 oldParentComponentType === 'FlexContainer' &&
                 newParentComponentType !== 'FlexContainer' &&
@@ -1914,18 +1960,18 @@ export const createComponentsSlice = (set, get) => ({
               ) {
                 // Moving OUT of FlexContainer: strip flex fields, write grid fields
                 const { top, left, width, height } = layout;
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   top,
                   left,
                   width,
                   height,
                 };
-                delete component.layouts[currentLayout].fillWidth;
-                delete component.layouts[currentLayout].widthPx;
+                delete component.layouts[layoutKey].fillWidth;
+                delete component.layouts[layoutKey].widthPx;
               } else {
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   ...layout,
                 };
               }
@@ -2067,7 +2113,7 @@ export const createComponentsSlice = (set, get) => ({
             }
           : {}),
         layouts: {
-          [currentLayout]: {
+          [layoutKey]: {
             ...layout,
           },
         },
@@ -2120,7 +2166,7 @@ export const createComponentsSlice = (set, get) => ({
                 // old parent, which renders in the wrong spot.
                 const restoredLayout = oldLayoutByComponentId[componentId];
                 if (restoredLayout && component.layouts) {
-                  component.layouts[currentLayout] = { ...restoredLayout };
+                  component.layouts[layoutKey] = { ...restoredLayout };
                 }
                 const currentParent = component.component.parent;
                 if (currentParent === restoredParent) return;
@@ -2221,7 +2267,9 @@ export const createComponentsSlice = (set, get) => ({
     const oldValue = component.definition[paramType][property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
-      const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
+      const resolvedComponent = {
+        [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}),
+      };
       const nearestListviewId = findNearestSubcontainerAncestor(parentId, moduleId);
       const index = nearestListviewId ? 0 : null;
       if (index === null) {
@@ -2456,10 +2504,15 @@ export const createComponentsSlice = (set, get) => ({
             }
           },
           false,
-          { type: 'revertParentAfterCycleReject', payload: { componentId, oldParentId } }
+          {
+            type: 'revertParentAfterCycleReject',
+            payload: { componentId, oldParentId },
+          }
         );
       };
-      saveComponentChanges(diff, 'components', 'update', moduleId, { onCycleReject: revertParent });
+      saveComponentChanges(diff, 'components', 'update', moduleId, {
+        onCycleReject: revertParent,
+      });
       get().multiplayer.broadcastUpdates({ componentId, newParentId }, 'components', 'parent');
     }
   },
@@ -2502,11 +2555,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    (set((state) => {
+    set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } });
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -2585,7 +2638,56 @@ export const createComponentsSlice = (set, get) => ({
       'turnOffAutoComputeLayout'
     );
 
-    await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
+    await savePageChanges(app.appId, currentVersionId, currentPageId, {
+      autoComputeLayout: false,
+    });
+  },
+  turnOnAutoComputeLayout: async (moduleId = 'canvas') => {
+    const { appStore, getCurrentPageId, currentVersionId, getCurrentPageComponents, withUndoRedo, setComponentLayout } =
+      get();
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
+    const updatedBoxes = computeAutoMobileLayout(getCurrentPageComponents(moduleId));
+
+    // One producer, so immer's inverse patches carry the pre-stack layouts and one undo restores both.
+    set(
+      withUndoRedo((state) => {
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = true;
+        Object.entries(updatedBoxes).forEach(([id, box]) => {
+          const component = state.modules[moduleId].pages[currentPageIndex].components[id];
+          if (component?.layouts?.mobile) {
+            component.layouts.mobile = { ...component.layouts.mobile, ...box };
+          }
+        });
+      }),
+      false,
+      'turnOnAutoComputeLayout'
+    );
+    await savePageChanges(app.appId, currentVersionId, currentPageId, {
+      autoComputeLayout: true,
+    });
+    setComponentLayout(updatedBoxes, undefined, moduleId, {
+      skipUndoRedo: true,
+    });
+  },
+  setAutoComputeLayout: async (value, moduleId = 'canvas') => {
+    const { appStore, getCurrentPageId, currentVersionId, getShouldFreeze } = get();
+    // The undo hotkey only checks isEditorReadOnly, which is narrower than the freeze check.
+    if (getShouldFreeze()) return;
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
+    set(
+      (state) => {
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = value;
+      },
+      false,
+      'setAutoComputeLayout'
+    );
+    await savePageChanges(app.appId, currentVersionId, currentPageId, {
+      autoComputeLayout: value,
+    });
   },
   setWidgetDeleteConfirmation: (value, second = null) => {
     set((state) => {
@@ -2925,7 +3027,11 @@ export const createComponentsSlice = (set, get) => ({
     // Note: currently re-resolves all rows even if only one row changed. The store update
     // below is batched, and React skips re-renders for rows where the resolved value didn't
     // change, so the DOM cost is minimal.
-    const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: resolvableParentId, moduleId });
+    const { scopeCtx, scopedState } = buildRowScopedState({
+      get,
+      listviewId: resolvableParentId,
+      moduleId,
+    });
 
     // For lazy parents (eg. Table expandable rows),
     // only resolve required rows instead of all 0..length-1.
@@ -2957,7 +3063,9 @@ export const createComponentsSlice = (set, get) => ({
           updates.forEach(({ index, value }) => {
             // Guard: if entityStore[index] is a stale nested array, unwrap to first element
             if (entityStore[index] && Array.isArray(entityStore[index])) {
-              entityStore[index] = entityStore[index][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+              entityStore[index] = entityStore[index][0] || {
+                ...DEFAULT_COMPONENT_STRUCTURE,
+              };
             }
             // Also guard entityStore[0] used as template
             const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
@@ -2997,7 +3105,9 @@ export const createComponentsSlice = (set, get) => ({
             const lastIdx = indices[indices.length - 1];
             // Guard: if current[lastIdx] is a stale nested array, unwrap to first element
             if (current[lastIdx] && Array.isArray(current[lastIdx])) {
-              current[lastIdx] = current[lastIdx][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+              current[lastIdx] = current[lastIdx][0] || {
+                ...DEFAULT_COMPONENT_STRUCTURE,
+              };
             }
             if (!current[lastIdx]) {
               // Also guard source (current[0]) if it's an array
@@ -3006,7 +3116,10 @@ export const createComponentsSlice = (set, get) => ({
                 source = source[0];
               }
               current[lastIdx] = source
-                ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
+                ? {
+                    ...source,
+                    [type]: { ...(source[type] || {}), [key]: value },
+                  }
                 : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
             } else {
               if (!current[lastIdx][type]) {
@@ -3090,17 +3203,29 @@ export const createComponentsSlice = (set, get) => ({
     // so property-level tracking (e.g., tracking listItem.name vs listItem.price separately) wouldn't help —
     // all properties change in the same event. One coarse trigger is correct and sufficient.
     if ((value.includes('listItem') && checkSubstringRegex(value, 'listItem')) || value === '{{listItem}}') {
-      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' });
+      refs.push({
+        entityType: 'components',
+        entityNameOrId: nearestAncestorId,
+        entityKey: 'listItem',
+      });
     }
 
     // cardData — coarse dependency on the Kanban (same pattern as listItem above).
     if ((value.includes('cardData') && checkSubstringRegex(value, 'cardData')) || value === '{{cardData}}') {
-      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'cardData' });
+      refs.push({
+        entityType: 'components',
+        entityNameOrId: nearestAncestorId,
+        entityKey: 'cardData',
+      });
     }
 
     // rowData — coarse dependency on the Table (same pattern as listItem above).
     if ((value.includes('rowData') && checkSubstringRegex(value, 'rowData')) || value === '{{rowData}}') {
-      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'rowData' });
+      refs.push({
+        entityType: 'components',
+        entityNameOrId: nearestAncestorId,
+        entityKey: 'rowData',
+      });
     }
 
     return refs;
@@ -3181,7 +3306,7 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
+    if (!INPUT_COMPONENTS_FOR_FORM_SET.has(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
@@ -3437,7 +3562,12 @@ export const createComponentsSlice = (set, get) => ({
                     const { id, component, layouts } = comp;
 
                     if (id) {
-                      componentMapById[id] = { id, component, layouts, name: component?.name ?? '' };
+                      componentMapById[id] = {
+                        id,
+                        component,
+                        layouts,
+                        name: component?.name ?? '',
+                      };
                     }
 
                     return componentMapById;
@@ -3493,7 +3623,9 @@ export const createComponentsSlice = (set, get) => ({
 
                   // Delete Components
                   componentIdsToDelete.length &&
-                    deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+                    deleteComponents(componentIdsToDelete, moduleId, {
+                      saveAfterAction: false,
+                    });
 
                   // Update Components
                   !isEmpty(componentsToUpdate) &&

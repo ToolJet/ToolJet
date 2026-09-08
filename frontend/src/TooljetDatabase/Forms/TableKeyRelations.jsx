@@ -198,8 +198,8 @@ function SourceKeyRelation({
           }
         })
       : (isEditColumn || isCreateColumn) && targetColumnList.length > 0
-        ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
-        : [];
+      ? targetColumnList?.filter((item) => sourceColumns[0]?.dataType === item?.dataType)
+      : [];
 
   useEffect(() => {
     if ((isEditMode && !createForeignKeyInEdit) || !createForeignKeyInEdit) {
@@ -226,11 +226,11 @@ function SourceKeyRelation({
     (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'serial')
       ? true
       : sourceColumn?.dataType === 'bigint' &&
-          (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
-        ? true
-        : sourceColumn?.dataType === targetColumn?.dataType
-          ? true
-          : false;
+        (targetColumn?.dataType === 'integer' || targetColumn?.dataType === 'bigint')
+      ? true
+      : sourceColumn?.dataType === targetColumn?.dataType
+      ? true
+      : false;
 
   useEffect(() => {
     if (!isSameDataTypeColumns) {

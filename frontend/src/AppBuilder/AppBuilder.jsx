@@ -34,6 +34,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
+  const setCurrentLayout = useStore((state) => state.setCurrentLayout, shallow);
   const navigate = useNavigate();
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -48,6 +49,11 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       navigate('/error/restricted');
     }
   }, [hasModuleAccess, isModuleEditor]);
+
+  // Store survives navigation between apps. Keyed on appId so page switches keep the current layout.
+  useEffect(() => {
+    setCurrentLayout('desktop');
+  }, [appId, setCurrentLayout]);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {

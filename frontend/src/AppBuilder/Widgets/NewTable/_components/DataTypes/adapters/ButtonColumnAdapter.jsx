@@ -54,8 +54,8 @@ export const ButtonColumn = ({
       ? 'transparent'
       : 'var(--cc-primary-brand)'
     : isOutline
-      ? 'transparent'
-      : backgroundColor;
+    ? 'transparent'
+    : backgroundColor;
 
   const computedLabelColor = isDefaultLabel
     ? isOutline

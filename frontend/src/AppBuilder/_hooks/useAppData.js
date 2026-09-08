@@ -490,8 +490,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -558,7 +558,10 @@ const useAppData = (
           if (!global_settings?.theme) {
             global_settings.theme = baseTheme;
           }
-          setGlobalSettings(global_settings);
+          // globalSettings is shared, not per-module: an embedded module would clobber the host's.
+          if (moduleId === 'canvas') {
+            setGlobalSettings(global_settings);
+          }
         }
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
@@ -964,8 +967,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
