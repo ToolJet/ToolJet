@@ -58,11 +58,7 @@ export async function buildTableSchemaSnapshot(
   columnNames: Record<string, string>
 ): Promise<TableSchemaSnapshot> {
   const [rawColumns, primaryKey, uniqueConstraints, indexes, foreignKeys] = await Promise.all([
-    queryRunner.query(
-      `SELECT column_name, data_type, is_nullable, column_default
-       FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position`,
-      [schema, relationId]
-    ),
+    fetchColumns(queryRunner, schema, relationId),
     fetchPrimaryKeyColumns(queryRunner, schema, relationId),
     fetchUniqueConstraints(queryRunner, schema, relationId),
     fetchIndexes(queryRunner, schema, relationId),
@@ -74,7 +70,7 @@ export async function buildTableSchemaSnapshot(
     name: col.column_name,
     uuid: columnNames[col.column_name],
     data_type: col.data_type,
-    is_nullable: col.is_nullable === 'YES',
+    is_nullable: col.is_nullable,
     default: col.column_default,
     is_primary_key: primaryKeySet.has(col.column_name),
   }));
@@ -86,6 +82,34 @@ export async function buildTableSchemaSnapshot(
     indexes,
     foreign_keys: foreignKeys,
   };
+}
+
+/**
+ * `information_schema.columns.data_type` collapses every array column to the bare string 'ARRAY',
+ * discarding the element type - unusable both as a DDL type name (buildCreateTableDdl below needs a
+ * real `text[]`/`integer[]`) and as a faithful resulting_schema record. `format_type(atttypid,
+ * atttypmod)` is what pg_dump itself uses to print a column's type back out as valid DDL - it
+ * renders array types correctly (`text[]`) and, as a side effect, also preserves modifiers
+ * information_schema's plain `data_type` already drops (`character varying(255)`, `numeric(10,2)`).
+ */
+async function fetchColumns(
+  queryRunner: QueryRunner,
+  schema: string,
+  tableName: string
+): Promise<Array<{ column_name: string; data_type: string; is_nullable: boolean; column_default: string | null }>> {
+  return queryRunner.query(
+    `SELECT a.attname AS column_name,
+            format_type(a.atttypid, a.atttypmod) AS data_type,
+            NOT a.attnotnull AS is_nullable,
+            pg_get_expr(d.adbin, d.adrelid) AS column_default
+     FROM pg_attribute a
+     JOIN pg_class t ON t.oid = a.attrelid
+     JOIN pg_namespace n ON n.oid = t.relnamespace
+     LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+     WHERE n.nspname = $1 AND t.relname = $2 AND a.attnum > 0 AND NOT a.attisdropped
+     ORDER BY a.attnum`,
+    [schema, tableName]
+  );
 }
 
 async function fetchPrimaryKeyColumns(queryRunner: QueryRunner, schema: string, tableName: string): Promise<string[]> {

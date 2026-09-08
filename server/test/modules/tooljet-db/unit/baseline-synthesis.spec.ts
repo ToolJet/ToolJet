@@ -12,13 +12,13 @@ const TABLE_ID = '11111111-1111-4111-8111-111111111111';
 const idColumn = {
   column_name: 'id',
   data_type: 'integer',
-  is_nullable: 'NO',
+  is_nullable: false,
   column_default: `nextval('"${SCHEMA}"."${TABLE_ID}_id_seq"'::regclass)`,
 };
 const nameColumn = {
   column_name: 'name',
   data_type: 'text',
-  is_nullable: 'YES',
+  is_nullable: true,
   column_default: null,
 };
 
@@ -28,7 +28,7 @@ function fakeTjdbQueryRunner() {
   return {
     query: jest.fn((sql: string) => {
       if (sql.includes('to_regclass')) return Promise.resolve([{ oid: `${SCHEMA}.${TABLE_ID}` }]);
-      if (sql.includes('FROM information_schema.columns')) return Promise.resolve([idColumn, nameColumn]);
+      if (sql.includes('FROM pg_attribute')) return Promise.resolve([idColumn, nameColumn]);
       if (sql.includes(`c.contype = 'p'`)) return Promise.resolve([{ column_name: 'id' }]);
       if (sql.includes(`c.contype = 'u'`)) return Promise.resolve([]);
       if (sql.includes('FROM pg_index')) return Promise.resolve([]);
@@ -151,6 +151,28 @@ describe('baseline-synthesis', () => {
       expect(ddl).toContain(`CREATE SEQUENCE "${SCHEMA}"."{{self}}_id_seq"`);
       expect(ddl).toContain(`DEFAULT nextval('"${SCHEMA}"."{{self}}_id_seq"'::regclass)`);
       expect(ddl).not.toContain(TABLE_ID);
+    });
+
+    it('should emit valid array-type DDL, not the bare word ARRAY', () => {
+      // Regression test: information_schema.columns.data_type collapses every array column to the
+      // literal string 'ARRAY' (element type discarded), which is not valid Postgres DDL on its own.
+      // fetchColumns (table-schema-snapshot.ts) now sources data_type via format_type(), which
+      // renders array columns as e.g. 'text[]' - exactly what CREATE TABLE needs.
+      const columns: TableSchemaSnapshotColumn[] = [
+        {
+          name: 'tags',
+          uuid: 'col-tags-uuid',
+          data_type: 'text[]',
+          is_nullable: true,
+          default: null,
+          is_primary_key: false,
+        },
+      ];
+
+      const ddl = buildCreateTableDdl(SCHEMA, TABLE_ID, columns, []);
+
+      expect(ddl).toContain('"tags" text[]');
+      expect(ddl).not.toContain('"tags" ARRAY');
     });
   });
 });
