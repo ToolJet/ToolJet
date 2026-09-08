@@ -22,7 +22,7 @@ module.exports = defineConfig({
     },
 
     env: {
-      CLR_PROJECT_ID: "Platform EE",
+      CLR_PROJECT_ID: "platform-ee",
     },
 
     baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)

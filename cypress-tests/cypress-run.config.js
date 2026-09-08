@@ -73,7 +73,7 @@ module.exports = defineConfig({
       return require("cypress-live-reporter/plugin").livePlugin(on, config);
     },
     env: {
-      CLR_PROJECT_ID: "Full Run",
+      CLR_PROJECT_ID: "full-run",
     },
     downloadsFolder: "cypress/downloads",
     experimentalRunAllSpecs: true,

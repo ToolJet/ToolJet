@@ -22,7 +22,7 @@ module.exports = defineConfig({
     },
 
     env: {
-      CLR_PROJECT_ID: "Happy Path",
+      CLR_PROJECT_ID: "happy-path",
     },
 
     baseUrl: "http://localhost:8082",

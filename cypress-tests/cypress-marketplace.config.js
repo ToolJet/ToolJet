@@ -21,7 +21,7 @@ module.exports = defineConfig({
     },
 
     env: {
-      CLR_PROJECT_ID: "Marketplace",
+      CLR_PROJECT_ID: "marketplace",
     },
 
     baseUrl: "http://localhost:8082/",
