@@ -281,7 +281,7 @@ export class TooljetDbMigrationRecorderService {
   private async chainTail(
     internalTableId: string,
     entityManager: EntityManager
-  ): Promise<{ sequence: number; parentMigrationId: string | null }> {
+  ): Promise<Pick<InternalTableMigration, 'sequence' | 'parentMigrationId'>> {
     const rows = await entityManager.query(
       `SELECT id, sequence FROM internal_table_migrations WHERE internal_table_id = $1 ORDER BY sequence DESC, id DESC LIMIT 1`,
       [internalTableId]
@@ -290,7 +290,7 @@ export class TooljetDbMigrationRecorderService {
     const highest = tip ? Number(tip.sequence) : 0;
     const now = Date.now();
     return {
-      sequence: now > highest ? now : highest + 1,
+      sequence: (now > highest ? now : highest + 1).toString(),
       parentMigrationId: tip ? tip.id : null,
     };
   }
@@ -298,7 +298,7 @@ export class TooljetDbMigrationRecorderService {
   /**
    * Introspects the relation and writes what it found as this migration's resulting_schema,
    * marking the application applied in the same pair of writes. Looks the owning internal table up
-   * by id rather than taking it as a parameter - drop_table's confirm runs after the registry row
+   * by id rather than taking it as a parameter - drop_table's confirmation runs after the registry row
    * is already soft-deleted, so the lookup has to tolerate that.
    */
   async confirm(
