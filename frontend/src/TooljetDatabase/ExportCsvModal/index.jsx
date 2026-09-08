@@ -87,7 +87,7 @@ export default function ExportCsvModal({
     <Modal
       show={show}
       onHide={onCancel}
-      size="lg"
+      size="sm"
       animation={false}
       centered
       contentClassName={cx('migration-confirm-modal', { 'dark-theme': darkMode })}
@@ -115,7 +115,7 @@ export default function ExportCsvModal({
               <label
                 key={environment.id}
                 className={cx(
-                  'tw-flex tw-items-center tw-gap-2 tw-rounded tw-border tw-border-solid tw-border-[var(--borders-disabled-on-white)] tw-p-2',
+                  'tw-flex tw-items-center tw-gap-2 tw-rounded tw-p-2',
                   disabled ? 'tw-opacity-50 tw-cursor-not-allowed' : 'tw-cursor-pointer'
                 )}
                 data-cy={`export-csv-${environment.name}-option`}
