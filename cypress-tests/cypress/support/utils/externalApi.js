@@ -90,3 +90,70 @@ export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, w
             });
     });
 };
+
+// ---------------------------------------------------------------------------
+// Recovered helpers (dropped by PR #17763, restored from 1ec1b8cf23^).
+// Used by externalApi/modules, users/userMetadataAPI, and
+// workspace/workspaceUsersByGroupsAPI specs. All build on apiRequest above.
+// ---------------------------------------------------------------------------
+
+// Shared auth-header constants for negative auth cases
+export const invalidAuthHeader = { Authorization: "Basic invalid-token" };
+export const emptyAuthHeader = { Authorization: "" };
+
+// ---------- Workspace modules (External API) ----------
+export const listWorkspaceModules = (workspaceId, headers = {}) => {
+    return apiRequest(
+        "GET",
+        `${Cypress.env("API_URL")}/ext/workspace/${workspaceId}/modules`,
+        {},
+        headers
+    );
+};
+
+export const exportModule = (workspaceId, moduleId, queryString = "", headers = {}) => {
+    return apiRequest(
+        "POST",
+        `${Cypress.env("API_URL")}/ext/export/workspace/${workspaceId}/modules/${moduleId}${queryString}`,
+        {},
+        headers
+    );
+};
+
+export const importModule = (workspaceId, moduleData, headers = {}) => {
+    return apiRequest(
+        "POST",
+        `${Cypress.env("API_URL")}/ext/import/workspace/${workspaceId}/modules`,
+        moduleData,
+        headers
+    );
+};
+
+// ---------- User metadata (External API) ----------
+export const getUserMetadata = (workspaceId, userId, headers = {}) => {
+    return apiRequest(
+        "GET",
+        `${Cypress.env("API_URL")}/ext/workspace/${workspaceId}/user/${userId}`,
+        {},
+        headers
+    );
+};
+
+export const updateUserMetadata = (workspaceId, userId, metadataPayload, headers = {}) => {
+    return apiRequest(
+        "PUT",
+        `${Cypress.env("API_URL")}/ext/workspace/${workspaceId}/user/${userId}`,
+        metadataPayload,
+        headers
+    );
+};
+
+// ---------- Workspace users by groups (External API) ----------
+export const getWorkspaceUsersByGroups = (workspaceId, payload, headers = {}) => {
+    return apiRequest(
+        "POST",
+        `${Cypress.env("API_URL")}/ext/workspace/${workspaceId}/users`,
+        payload,
+        headers
+    );
+};
