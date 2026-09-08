@@ -319,6 +319,7 @@ export const ModalV2 = function Modal({
         size={size}
         keyboard={true}
         enforceFocus={false}
+        restoreFocus={false}
         animation={false}
         onShow={() => {
           onShowModal();
