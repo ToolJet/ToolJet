@@ -432,5 +432,112 @@ describe('TooljetDb revert migration', () => {
         if (organizationId) await cleanupWorkspace(organizationId);
       }
     });
+
+    it('refuses to revert a type change without confirmation', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie } = workspace;
+          const manager = getDefaultDataSource().manager;
+
+          await createTable(organizationId, cookie, 'revert_types');
+          await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${organizationId}/table/revert_types/column`)
+            .set(headers(organizationId, cookie))
+            .send({ column: { column_name: 'qty', data_type: 'integer', constraints_type: {} } })
+            .expect(201);
+
+          const internalTable = await internalTableFor(organizationId, 'revert_types');
+
+          await request
+            .agent(app.getHttpServer())
+            .patch(`/api/tooljet-db/organizations/${organizationId}/table/revert_types/column`)
+            .set(headers(organizationId, cookie))
+            .send({
+              column: {
+                column_name: 'qty',
+                data_type: 'bigint',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            })
+            .expect(200);
+
+          const migrations = await manager.find(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+            order: { sequence: 'DESC' },
+          });
+          const typeChangeMigration = migrations[0];
+
+          const blocked = await revertMigration(organizationId, cookie, internalTable.id, typeChangeMigration.id, {
+            sql: `ALTER TABLE "{{self}}" ALTER COLUMN "qty" TYPE integer;`,
+          });
+          expect(blocked.status).toBe(400);
+          expect(blocked.body.message).toMatch(/"qty" back to integer/);
+
+          const allowed = await revertMigration(organizationId, cookie, internalTable.id, typeChangeMigration.id, {
+            sql: `ALTER TABLE "{{self}}" ALTER COLUMN "qty" TYPE integer;`,
+            confirmed: true,
+          });
+          expect(allowed.status).toBe(201);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    it('still reverts a rename-only edit_column with no confirmation', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const workspace = await setUpWorkspace();
+          organizationId = workspace.organizationId;
+          const { cookie } = workspace;
+          const manager = getDefaultDataSource().manager;
+
+          await createTable(organizationId, cookie, 'revert_renames');
+          await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${organizationId}/table/revert_renames/column`)
+            .set(headers(organizationId, cookie))
+            .send({ column: { column_name: 'label', data_type: 'character varying', constraints_type: {} } })
+            .expect(201);
+
+          const internalTable = await internalTableFor(organizationId, 'revert_renames');
+
+          await request
+            .agent(app.getHttpServer())
+            .patch(`/api/tooljet-db/organizations/${organizationId}/table/revert_renames/column`)
+            .set(headers(organizationId, cookie))
+            .send({
+              column: {
+                column_name: 'label',
+                data_type: 'character varying',
+                new_column_name: 'title',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            })
+            .expect(200);
+
+          const migrations = await manager.find(InternalTableMigration, {
+            where: { internalTableId: internalTable.id },
+            order: { sequence: 'DESC' },
+          });
+
+          const res = await revertMigration(organizationId, cookie, internalTable.id, migrations[0].id, {
+            sql: `ALTER TABLE "{{self}}" RENAME COLUMN "title" TO "label";`,
+          });
+          expect(res.status).toBe(201);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
   });
 });

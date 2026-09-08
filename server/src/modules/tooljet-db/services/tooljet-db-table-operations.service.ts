@@ -58,6 +58,7 @@ import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { buildTableSchemaSnapshot, fetchForeignKeys, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
+import { assertStructuredTypeChangeAllowed, normalizeRequestedType } from '../helpers/column-type-change';
 import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
 import { reconcileColumns } from './tooljet-db-raw-sql-migration.service';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
@@ -1824,18 +1825,66 @@ export class TooljetDbTableOperationsService {
   ) {
     const { appManager, tjdbManager } = connectionManagers;
     const tjdbQueryRunner = tjdbManager.queryRunner;
-    const physicalName = concatSchemaAndTableName(findTenantSchema(payload.organizationId), relation.id);
+    const tenantSchema = findTenantSchema(payload.organizationId);
+    const physicalName = concatSchemaAndTableName(tenantSchema, relation.id);
     const { column, columnName, newColumnName, columnUuid, foreignKeyIdToDelete } = payload;
 
-    if (newColumnName) {
+    // Introspected, never taken from the request: `record()` stores the handler's raw params and
+    // `replayStructuredMigration` calls this same method with them, so there is no client on the
+    // replay path to tell us what the old type was. Comparing against the live column also makes
+    // replay idempotent - a target already at this type is simply not a change.
+    const [currentColumn] = await tjdbQueryRunner.query(
+      `SELECT data_type, column_default FROM information_schema.columns
+       WHERE table_schema = $1 AND table_name = $2 AND column_name = $3`,
+      [tenantSchema, relation.id, columnName]
+    );
+    if (!currentColumn) throw new NotFoundException(`Column not found on relation: ${columnName}`);
+
+    const targetType = normalizeRequestedType(column['data_type']);
+    const typeChanged = currentColumn.data_type !== targetType;
+    if (typeChanged) {
+      assertStructuredTypeChangeAllowed(columnName, currentColumn.data_type, targetType, currentColumn.column_default);
+
+      // Changing the type of a column under a foreign key means changing both sides of the
+      // constraint in the right order. Name the constraint and let the user drive it from a SQL
+      // migration rather than half-doing it here. Only the referencing side is checked - Postgres
+      // raises its own error if this column is the target of someone else's key and the types stop
+      // matching.
+      const foreignKeys = await fetchForeignKeys(tjdbQueryRunner, tenantSchema, relation.id);
+      const involvedIn = foreignKeys.find((fk) => fk.column_names.includes(columnName));
+      if (involvedIn) {
+        throw new BadRequestException(
+          `Cannot change the type of "${columnName}": it is part of foreign key "${involvedIn.name}". ` +
+            `Drop the foreign key, change both columns, then re-add it - from a SQL migration.`
+        );
+      }
+
+      // ALTER COLUMN TYPE takes ACCESS EXCLUSIVE and rewrites the table. Fail fast on contention
+      // rather than spending the pool's 60s statement_timeout queued behind an app query.
+      await tjdbQueryRunner.query(`SET LOCAL lock_timeout = '3s'`);
+    }
+
+    if (newColumnName || typeChanged) {
       // Re-read: writeThroughColumnConfigurations may have just updated this same relation row's
-      // configurations - the rename must build on that, never on a copy taken before that write.
+      // configurations - the rename and the settings reset must build on that, never on a copy
+      // taken before that write.
       const currentRelation = await appManager.findOne(InternalTableRelation, { where: { id: relation.id } });
       const columnNames = currentRelation.configurations.columns.column_names;
-      columnNames[newColumnName] = columnUuid;
-      delete columnNames[columnName];
+      const columnConfigurations = currentRelation.configurations.columns.configurations;
+
+      if (newColumnName) {
+        columnNames[newColumnName] = columnUuid;
+        delete columnNames[columnName];
+      }
+
+      // Same rule applyEditTable:1013 already applies: a column's display settings describe its
+      // old type (a timestamp's `timezone`), so a type change invalidates them. Only this relation
+      // needs it - a sibling still holding the old type still has correct settings, and gets reset
+      // here in turn when this migration is promoted onto it.
+      if (typeChanged) columnConfigurations[columnUuid] = {};
+
       currentRelation.configurations = {
-        columns: { column_names: columnNames, configurations: currentRelation.configurations.columns.configurations },
+        columns: { column_names: columnNames, configurations: columnConfigurations },
       };
       await appManager.save(currentRelation);
     }
@@ -1915,6 +1964,11 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.release();
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
+
+      // Neither is a QueryFailedError - TooljetDatabaseError's constructor assumes one (it indexes
+      // error.driverError) and would crash on the wrap instead of surfacing the real 400/404.
+      if (error instanceof NotFoundException || error instanceof BadRequestException) throw error;
+
       // Raw Postgres error text names the physical relation, not the logical table - key on
       // relation.id so the translation actually matches what the driver reported.
       throw new TooljetDatabaseError(
@@ -2944,17 +2998,37 @@ export class TooljetDbTableOperationsService {
     const tenantSchema = findTenantSchema(organizationId);
     const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
 
-    try {
-      await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
-      await tooljetDbTenantConnection.query(sql);
+    // Same pattern as the authoring path in tooljet-db-raw-sql-migration.service.ts, and for the same
+    // reason: `SET LOCAL` only holds for the life of an explicit transaction, so search_path,
+    // lock_timeout and the migration SQL all have to run on one QueryRunner's connection inside one
+    // transaction - calling `.query()` on the DataSource instead hands each statement a different
+    // pooled connection, silently dropping both settings.
+    const tjdbQueryRunner = tooljetDbTenantConnection.createQueryRunner();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
 
-      const queryRunner = tooljetDbTenantConnection.createQueryRunner();
+    try {
+      await tjdbQueryRunner.query(`SET search_path TO "${tenantSchema}"`);
+      await tjdbQueryRunner.query(`SET LOCAL lock_timeout = '3s'`);
+      await tjdbQueryRunner.query(sql);
+
       const priorColumnNames = targetRelation.configurations?.columns?.column_names || {};
-      const snapshot = await buildTableSchemaSnapshot(queryRunner, tenantSchema, targetRelation.id, priorColumnNames);
+      const snapshot = await buildTableSchemaSnapshot(
+        tjdbQueryRunner,
+        tenantSchema,
+        targetRelation.id,
+        priorColumnNames
+      );
       const reconciled = reconcileColumns(snapshot, targetRelation.configurations);
       targetRelation.configurations = { columns: reconciled };
       await appManager.save(targetRelation);
+
+      await tjdbQueryRunner.commitTransaction();
+    } catch (err) {
+      await tjdbQueryRunner.rollbackTransaction();
+      throw err;
     } finally {
+      await tjdbQueryRunner.release();
       await tooljetDbTenantConnection.destroy();
     }
   }

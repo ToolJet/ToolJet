@@ -57,7 +57,9 @@ export default function useMigrationModal() {
       optionsRef.current = options;
       resolvedTableIdRef.current = options.tableId || null;
       lastRunDataRef.current = null;
-      setState({ ...emptyState, isOpen: true, depsLoading: !!options.tableId });
+      // `initialSql` pre-fills the SQL step - used by a column type change, where the cast has to be
+      // spelled out as `ALTER ... USING ...` and the user reviews it before it is recorded.
+      setState({ ...emptyState, isOpen: true, sql: options.initialSql || '', depsLoading: !!options.tableId });
 
       if (options.tableId) {
         tooljetDatabaseService.getTableDependents(organizationId, options.tableId).then(({ error, data }) => {

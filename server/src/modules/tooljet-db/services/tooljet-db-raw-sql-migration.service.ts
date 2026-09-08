@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, LessThan } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
@@ -73,6 +73,9 @@ export class TooljetDbRawSqlMigrationService {
       // `ALTER TABLE {{students}} ...` example) need the tenant schema on the search path to
       // resolve - the same reason sqlExecution sets it before running caller SQL.
       await tjdbQueryRunner.query(`SET search_path TO "${tenantSchema}"`);
+      // DDL in a migration takes ACCESS EXCLUSIVE. Fail fast on contention rather than spending
+      // the pool's 60s statement_timeout queued behind an app query holding a conflicting lock.
+      await tjdbQueryRunner.query(`SET LOCAL lock_timeout = '3s'`);
       await tjdbQueryRunner.query(sql);
 
       const priorColumnNames = relation.configurations?.columns?.column_names || {};
@@ -146,11 +149,60 @@ export class TooljetDbRawSqlMigrationService {
       );
     }
 
+    // The second irreversible operation. Reverting restores the column's *type*; values the
+    // original cast coerced, rounded or rewrote are already gone and no revert SQL can bring them
+    // back, so say so before the caller commits to it.
+    if (!isAddColumn && !dto.confirmed) {
+      const typeChanged = await this.findTypeChangedColumns(targetMigration);
+      if (typeChanged.length) {
+        const described = typeChanged.map(({ name, fromType }) => `"${name}" back to ${fromType}`).join(', ');
+        throw new BadRequestException(
+          `Reverting this migration changes ${described}. Values that the original type change coerced ` +
+            `cannot be recovered. Pass confirmed: true to proceed.`
+        );
+      }
+    }
+
     return this.recordRawSqlMigration(organizationId, tableId, {
       sql: dto.sql,
       refs: dto.refs,
       reverts_migration_id: migrationId,
     });
+  }
+
+  /**
+   * Columns whose `data_type` differs between this migration's `resulting_schema` and its
+   * predecessor's.
+   *
+   * A type change cannot be recognised from a payload the way `add_column` can:
+   * `request.column.data_type` records the type the column was changed *to*, never the one it
+   * replaced. Comparing the two snapshots also covers a type change made through a raw SQL
+   * migration, whose payload is arbitrary text.
+   *
+   * Matched on column uuid, never name - a rename in the same migration would otherwise read as a
+   * dropped column plus a brand-new one. The first migration in a chain has no predecessor to
+   * compare against; a baseline records a table as it already was, so there is nothing to warn on.
+   */
+  private async findTypeChangedColumns(
+    migration: InternalTableMigration
+  ): Promise<Array<{ name: string; fromType: string }>> {
+    const resultingSchema = migration.resultingSchema as TableSchemaSnapshot | null;
+    if (!resultingSchema?.columns?.length) return [];
+
+    const previous = await this.manager.findOne(InternalTableMigration, {
+      where: { internalTableId: migration.internalTableId, sequence: LessThan(migration.sequence) },
+      order: { sequence: 'DESC' },
+    });
+    const previousColumns = (previous?.resultingSchema as TableSchemaSnapshot | null)?.columns;
+    if (!previousColumns?.length) return [];
+
+    const previousTypeByUuid = new Map(previousColumns.map((column) => [column.uuid, column.data_type]));
+
+    return resultingSchema.columns
+      .filter(
+        (column) => previousTypeByUuid.has(column.uuid) && previousTypeByUuid.get(column.uuid) !== column.data_type
+      )
+      .map((column) => ({ name: column.name, fromType: previousTypeByUuid.get(column.uuid) }));
   }
 
   /**

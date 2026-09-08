@@ -28,6 +28,7 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { TooljetDbController } from '@ee/tooljet-db/controller';
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 
@@ -128,6 +129,14 @@ describe('TooljetDb raw SQL migration', () => {
         .post(`/api/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations/sql`)
         .set(headers(organizationId, cookie))
         .send({ refs: {}, ...body });
+    }
+
+    async function promote(organizationId: string, cookie: string[], tableId: string, sourceEnvironmentId: string) {
+      return request
+        .agent(app.getHttpServer())
+        .post(`/api/tooljet-db/organizations/${organizationId}/table/${tableId}/promote`)
+        .set(headers(organizationId, cookie))
+        .send({ environment_id: sourceEnvironmentId });
     }
 
     it('runs a DDL statement as the tenant role, adds no pending window, and mints a fresh uuid only for the new column', async () => {
@@ -340,6 +349,83 @@ describe('TooljetDb raw SQL migration', () => {
           } finally {
             await getTooljetDbDataSource().query(`DROP SCHEMA IF EXISTS "workspace_unreachable_probe" CASCADE`);
           }
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    it('runs migration SQL with lock_timeout set, so a blocked DDL fails fast', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const { organizationId: orgId, cookie } = await setUpWorkspace();
+          organizationId = orgId;
+
+          await createTable(organizationId, cookie, 'locks_probe');
+          const manager = getDefaultDataSource().manager;
+          const internalTable = await manager.findOne(InternalTable, {
+            where: { organizationId, tableName: 'locks_probe' },
+          });
+
+          // Asserted from inside the migration's own session - the only place the setting is
+          // observable. A wrong or missing lock_timeout fails the request.
+          const res = await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${organizationId}/table/${internalTable.id}/migrations/sql`)
+            .set(headers(organizationId, cookie))
+            .send({
+              sql: `DO $$ BEGIN
+                      IF current_setting('lock_timeout') <> '3s' THEN
+                        RAISE EXCEPTION 'lock_timeout was %', current_setting('lock_timeout');
+                      END IF;
+                    END $$;`,
+              refs: {},
+            });
+
+          expect(res.status).toBe(201);
+        });
+      } finally {
+        if (organizationId) await cleanupWorkspace(organizationId);
+      }
+    });
+
+    it('replays migration SQL with lock_timeout set, so a promote sees the same guard as authoring', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          const { organizationId: orgId, cookie } = await setUpWorkspace();
+          organizationId = orgId;
+
+          await createTable(organizationId, cookie, 'locks_probe_replay');
+          const manager = getDefaultDataSource().manager;
+          const internalTable = await manager.findOneOrFail(InternalTable, {
+            where: { organizationId, tableName: 'locks_probe_replay' },
+          });
+          const environments = await manager.find(AppEnvironment, {
+            where: { organizationId },
+            order: { priority: 'ASC' },
+          });
+          const devEnvId = environments[0].id;
+
+          // Same assertion as the authoring-path test above, but this SQL only ever runs through
+          // replayRawSqlMigration (the second promote below) - the authoring POST that records it
+          // runs against a table with no target relation yet, so nothing replays it until then.
+          const sql = `DO $$ BEGIN
+                      IF current_setting('lock_timeout') <> '3s' THEN
+                        RAISE EXCEPTION 'lock_timeout was %', current_setting('lock_timeout');
+                      END IF;
+                    END $$;`;
+
+          const recorded = await runRawSql(organizationId, cookie, internalTable.id, { sql });
+          expect(recorded.status).toBe(201);
+
+          const promoted = await promote(organizationId, cookie, internalTable.id, devEnvId);
+          expect([200, 201]).toContain(promoted.status);
         });
       } finally {
         if (organizationId) await cleanupWorkspace(organizationId);
