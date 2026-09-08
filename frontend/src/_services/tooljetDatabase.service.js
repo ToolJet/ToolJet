@@ -74,12 +74,16 @@ function promoteTable(organizationId, tableId, environmentId) {
   });
 }
 
-// Environment-blind on purpose, not by oversight: the route takes no environment parameter
-// (server/src/modules/tooljet-db/controller.ts, `bulkUpload`), so a CSV uploaded while viewing
-// staging still lands in development. Tracked as a backend ticket; do not add environment_id here
-// until the controller accepts it - a param the server ignores is a fix that only looks like one.
+// Bulk CSV upload resolves through the same environment-scoped relation as every other write:
+// the selected environment rides as ?environment_id=, same as viewTable below. Omitting it would
+// silently resolve to development while the user is viewing staging.
 function bulkUpload(organizationId, tableName, file) {
-  return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableName}/bulk-upload`, file);
+  const environmentId = currentEnvironmentId();
+  const query = environmentId ? `?environment_id=${environmentId}` : '';
+  return tooljetAdapter.post(
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/bulk-upload${query}`,
+    file
+  );
 }
 
 function sqlExecution(organizationId, tableId, body) {

@@ -34,7 +34,7 @@ export class TooljetDbBulkUploadService {
         : 1000;
   }
 
-  async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
+  async perform(organizationId: string, tableName: string, fileBuffer: Buffer, environmentId?: string) {
     const internalTable = await this.manager.findOne(InternalTable, {
       select: ['id'],
       where: { organizationId, tableName },
@@ -44,13 +44,14 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table ${tableName} not found`);
     }
 
-    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId);
+    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, environmentId);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
-    organizationId: string
+    organizationId: string,
+    environmentId?: string
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -59,14 +60,13 @@ export class TooljetDbBulkUploadService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      // CSV upload has no environment on the wire - always resolves in development.
       await this.tableOperationsService.perform(
         organizationId,
         'view_table',
         {
           id: internalTableId,
         },
-        undefined
+        environmentId
       );
 
     const tablesInvolvedList = [
@@ -83,11 +83,10 @@ export class TooljetDbBulkUploadService {
     // tables in internalTables aren't resolved eagerly - they're only needed if a raw Postgres
     // error has to be translated back to a display name, so bulkUpsertRows resolves those lazily,
     // on its error path.
-    // CSV upload has no environment on the wire - always resolves in development.
     const { relation: targetRelation } = await this.tableOperationsService.resolveTableById(
       organizationId,
       internalTableId,
-      undefined,
+      environmentId,
       this.manager
     );
 
@@ -151,7 +150,8 @@ export class TooljetDbBulkUploadService {
         targetRelation.id,
         internalTableDatabaseColumn,
         organizationId,
-        internalTables
+        internalTables,
+        environmentId
       );
     });
 
@@ -164,7 +164,8 @@ export class TooljetDbBulkUploadService {
     relationId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    environmentId?: string
   ) {
     if (isEmpty(rowsToUpsert)) return;
 
@@ -226,11 +227,10 @@ export class TooljetDbBulkUploadService {
       const relationTaggedTables = await Promise.all(
         internalTables.map(async (table) => {
           try {
-            // CSV upload has no environment on the wire - always resolves in development.
             const { relation } = await this.tableOperationsService.resolveTableById(
               organizationId,
               table.id,
-              undefined,
+              environmentId,
               this.manager
             );
             return { id: relation.id, tableName: table.tableName };

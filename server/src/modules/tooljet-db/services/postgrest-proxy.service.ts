@@ -91,7 +91,7 @@ export class PostgrestProxyService {
         organizationId,
         tableInfo[resolvedTableId],
         req.body,
-        undefined
+        environmentId
       );
       req.body = { ...req.body, ...updatedRequestBody };
     }

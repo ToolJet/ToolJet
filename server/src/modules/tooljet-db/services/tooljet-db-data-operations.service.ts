@@ -412,7 +412,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       );
 
       this.parseTableNameInAST(ast, internalTableNameToRelationIdMap);
-      const validSql = await sqlParser.sqlify(ast);
+      const validSql = sqlParser.sqlify(ast);
       const results = await tooljetDbTenantConnection.query(validSql);
       return { status: 'ok', data: results };
     } catch (error) {
