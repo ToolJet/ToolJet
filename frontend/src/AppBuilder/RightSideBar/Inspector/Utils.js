@@ -258,6 +258,24 @@ export function renderElement(
   );
 }
 
+// Radix/Base UI popovers, selects and comboboxes portal their content into `document.body`, outside
+// the DOM subtree of the react-bootstrap `Overlay` (`rootClose`) wrapping `NavItemPopover`. `rootClose`
+// only checks DOM containment, so it wrongly treats a click inside one of these portals as "outside".
+const PORTALED_OVERLAY_SELECTOR = [
+  '[data-radix-popper-content-wrapper]', // Radix Popover/Select content
+  '[data-slot="combobox-content"]', // Base UI Combobox content
+  '.cm-tooltip-autocomplete', // CodeMirror autocomplete list
+].join(', ');
+
+// Radix Select can also make a click's real target unresolvable: it briefly disables page-wide
+// pointer-events while open, and unmounts the clicked option on `pointerup` (before `click` fires)
+// when selecting a value. Either way the browser falls back to `<html>` as the target. Treat that as
+// noise from a closing Radix layer, not a genuine "click outside".
+const isUnresolvedClickTarget = (target) => typeof document !== 'undefined' && target === document.documentElement;
+
+export const isClickInsidePortaledOverlay = (target) =>
+  isUnresolvedClickTarget(target) || !!target?.closest?.(PORTALED_OVERLAY_SELECTOR);
+
 export const goToModule = (moduleAppId) => {
   const subpath = getSubpath();
   const slug =
