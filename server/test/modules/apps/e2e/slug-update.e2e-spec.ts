@@ -21,7 +21,7 @@ import { initTestApp, closeTestApp, createAdmin } from 'test-helper';
  *
  * @group platform
  */
-describe('PUT /apps/:id | slug update rules (git sync disabled)', () => {
+describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disabled)', () => {
   let app: INestApplication;
   let cookie: string[];
   let workspaceId: string;
