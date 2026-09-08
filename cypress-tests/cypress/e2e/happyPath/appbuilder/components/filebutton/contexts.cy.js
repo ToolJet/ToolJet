@@ -24,7 +24,7 @@ const switchLayout = (target) => {
 
 describe(
   "File Button contexts",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
 

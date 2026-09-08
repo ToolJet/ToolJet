@@ -32,7 +32,7 @@ import {
 
 describe(
   "File Button styles fx",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
 

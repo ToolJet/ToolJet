@@ -19,7 +19,7 @@ import {
 //   setVisibility:310 · setDisable:315 · setLoading:320  (each takes a `value` toggle)
 describe(
   "File Button CSA",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const { validFile, validFileName } = fileButtonFixtures;

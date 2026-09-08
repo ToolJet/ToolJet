@@ -39,7 +39,7 @@ const selectLabelWeight = (option) => {
 
 describe(
   "File Button styles",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
 
