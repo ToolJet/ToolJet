@@ -2,14 +2,26 @@
 
 ## Testing context
 
-Before adding or changing tests for `src/AppBuilder/**`, read
-`src/test/app-builder/README.md`, then use `ee/.agents/skills/app-builder-widget-tdd/SKILL.md`. Registered widget status
-and canonical contract paths live in `widget-testing-manifest.json`; widget-specific facts under
-`ee/test/app-builder/widgets/<ComponentType>/TESTING.md` must not be generalized to other widgets.
-Research is a hard gate. Existing widgets require Context7 official ToolJet documentation plus the
-last 2 years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead.
-Record the applicable source in the canonical contract; if Context7 is required but unavailable,
-stop and request installation/configuration before writing tests.
+Before adding or changing App Builder tests, read `src/test/app-builder/README.md` and choose:
+
+- `ee/.agents/skills/app-builder-widget-backfill/SKILL.md` for existing widget coverage (focused or whole-widget).
+- `ee/.agents/skills/app-builder-bugfix/SKILL.md` for defects anywhere in App Builder.
+- `ee/.agents/skills/app-builder-feature/SKILL.md` for new/changed capabilities anywhere in App Builder.
+
+The three entry points share quality, implementation, and product-decision references. Clear
+requirements permit implementation followed by normal PR review; ask only about unresolved behavior.
+Widget scenarios and evidence live in the manifest-linked canonical `TESTING.md` in EE. Other App
+Builder work records guarantees in tests and sources/design/execution evidence in the PR or PR handoff.
+
+Manifest and contract statuses track whole-widget progress independently of scenario verification.
+Focused scenarios may be verified while whole-widget backfill remains `not-started`. Whole-widget
+audits cover all registered keys, behavior dimensions and risky interactions; new widgets use
+accepted requirements, existing-widget audits use documentation and two-year regression history.
+
+Backfill verification is PASS → targeted fault → intended assertion FAIL → restore → PASS.
+Bug fixes/features use behavioral FAIL → implementation → PASS. Do not claim sensitivity from
+import/mount errors, invented expectations, comments, or a green suite alone. Use the existing
+App Builder harness and preserve real first-party collaborators. Report QA/browser work separately.
 
 ## Glossary
 

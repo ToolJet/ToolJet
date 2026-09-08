@@ -1,14 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+const { parseSync, traverse } = require('@babel/core');
+const { readTestDiff, affectedTests } = require('./widgetTestChanges');
 
 const CONTRACT_STATUSES = new Set(['not-started', 'researching', 'grilling', 'spec-complete', 'approved', 'verified']);
 const SPEC_GATED_STATUSES = new Set(['spec-complete', 'approved', 'verified']);
 const APPROVED_CONTRACT_STATUSES = new Set(['approved', 'verified']);
+const READY_SCENARIO_STATUSES = new Set(['ready', 'approved', 'implemented', 'verified']);
 const IMPLEMENTED_SCENARIO_STATUSES = new Set(['implemented', 'verified']);
 const UNSETTLED_SCENARIO_STATUSES = new Set(['proposed', 'decision-required']);
 const SCENARIO_STATUSES = new Set([
   'proposed',
   'decision-required',
+  'ready',
   'approved',
   'implemented',
   'verified',
@@ -33,13 +37,15 @@ const NONE_REASON_CODES = new Set([
   'platform-owned',
 ]);
 const DISPOSITION_PATTERNS = [
-  { kind: 'covered', pattern: /^covered:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/ },
+  {
+    kind: 'covered',
+    pattern: /^covered:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/,
+  },
   { kind: 'shared', pattern: /^shared:(\S+)#([A-Za-z0-9-]+)$/ },
   { kind: 'qa', pattern: /^qa:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/ },
   { kind: 'decision', pattern: /^decision:(D-\d{2,})$/ },
   { kind: 'none', pattern: /^none:([a-z-]+(?::[A-Za-z0-9-]+)?)$/ },
 ];
-const TITLE_TAG = String.raw`^\s*(?:test|it)(?:\.each\([^)]*\))?(?:\.failing|\.skip|\.only)?\(\s*[\`'"]\[`;
 
 function read(frontendRoot, relative) {
   return fs.readFileSync(path.join(frontendRoot, relative), 'utf8');
@@ -74,7 +80,10 @@ function parseRegisteredWidgets(frontendRoot, registryPath) {
     }
   }
 
-  return registeredConfigs.map((config) => ({ config, ...configDefinitions.get(config) }));
+  return registeredConfigs.map((config) => ({
+    config,
+    ...configDefinitions.get(config),
+  }));
 }
 
 function stripScalar(value) {
@@ -116,7 +125,11 @@ function parseContract(source) {
   const headings = [...source.matchAll(/^### \[([A-Za-z0-9-]+)\]\s+(.+)$/gm)];
   const scenarios = headings.map((heading, index) => {
     const start = heading.index + heading[0].length;
-    const end = headings[index + 1]?.index ?? source.length;
+    const nextSection = source.slice(start).search(/\n## /);
+    const end = Math.min(
+      headings[index + 1]?.index ?? source.length,
+      nextSection === -1 ? source.length : start + nextSection
+    );
     const fields = {};
     for (const line of source.slice(start, end).split('\n')) {
       const match = line.match(/^- ([A-Za-z][A-Za-z -]+):\s*(.+)$/);
@@ -170,37 +183,115 @@ function parseDispositionRows(source, sections) {
         kind,
         match: disposition.match(pattern),
       })).find(({ match }) => match);
-      rows.push({ heading, subject, disposition, kind: matched?.kind ?? null, match: matched?.match ?? null });
+      rows.push({
+        heading,
+        subject,
+        disposition,
+        kind: matched?.kind ?? null,
+        match: matched?.match ?? null,
+      });
     }
   }
   return rows;
 }
 
-function titleHasId(source, id) {
-  return new RegExp(`${TITLE_TAG}${id}\\]`, 'm').test(source);
+// Parse declarations instead of source text: comments are not tests, and a
+// skipped parent suite disables its children. This is static evidence only;
+// the verification record must still demonstrate actual execution.
+function parseTestSource(source) {
+  const ast = parseSync(source, {
+    babelrc: false,
+    configFile: false,
+    parserOpts: { plugins: ['jsx', 'typescript'], tokens: true },
+  });
+  function callInfo(node) {
+    const modifiers = [];
+    while (node) {
+      if (node.type === 'CallExpression') node = node.callee;
+      else if (node.type === 'TaggedTemplateExpression') node = node.tag;
+      else if (node.type === 'MemberExpression') {
+        modifiers.push(node.computed ? node.property.value : node.property.name);
+        node = node.object;
+      } else break;
+    }
+    return { name: node?.name, modifiers };
+  }
+  const tests = [];
+  traverse(ast, {
+    CallExpression(call) {
+      const { name, modifiers } = callInfo(call.node.callee);
+      if (!['test', 'it', 'xtest', 'xit', 'fit'].includes(name)) return;
+      // Skip the inner each(data) call; the outer call declares the test.
+      if (call.parentPath.isCallExpression() && call.parent.callee === call.node) return;
+      const suites = [];
+      for (let parent = call.parentPath; parent; parent = parent.parentPath) {
+        if (!parent.isCallExpression()) continue;
+        const suite = callInfo(parent.node.callee);
+        if (['describe', 'xdescribe', 'fdescribe'].includes(suite.name)) {
+          const label = parent.node.arguments[0]?.value ?? '<dynamic suite>';
+          suites.unshift({
+            label,
+            start: parent.node.loc.start.line,
+            end: parent.node.loc.end.line,
+          });
+          modifiers.push(...suite.modifiers);
+          if (suite.name === 'xdescribe') modifiers.push('skip');
+          if (suite.name === 'fdescribe') modifiers.push('only');
+        }
+      }
+      suites.forEach((suite, index) => {
+        suite.scope = JSON.stringify(suites.slice(0, index + 1).map(({ label }) => label));
+      });
+      const titleNode = call.node.arguments[0];
+      const title =
+        titleNode?.type === 'StringLiteral'
+          ? titleNode.value
+          : titleNode?.type === 'TemplateLiteral' && titleNode.expressions.length === 0
+          ? titleNode.quasis[0].value.cooked
+          : null;
+      const skipped = name.startsWith('x') || modifiers.some((m) => ['skip', 'todo', 'failing'].includes(m));
+      tests.push({
+        start: call.node.loc.start.line,
+        end: call.node.loc.end.line,
+        suites,
+        scope: suites.at(-1)?.scope ?? '[]',
+        title,
+        id: title?.match(/^\[([A-Za-z0-9-]+)\]/)?.[1],
+        runnable: !skipped && call.node.arguments.length >= 2,
+        focused: name === 'fit' || modifiers.includes('only'),
+      });
+    },
+  });
+  const codeLines = new Set();
+  for (const token of ast.tokens ?? []) {
+    if (typeof token.type !== 'object' || token.type.label === 'eof') continue;
+    for (let line = token.loc.start.line; line <= token.loc.end.line; line++) codeLines.add(line);
+  }
+  return { tests, codeLines };
 }
 
-function titledIds(source, prefix) {
-  const ids = new Set();
-  for (const match of source.matchAll(new RegExp(`${TITLE_TAG}([A-Za-z0-9-]+)\\]`, 'gm'))) {
-    if (match[1].startsWith(prefix)) ids.add(match[1]);
-  }
-  return ids;
+function parseTests(source) {
+  return parseTestSource(source).tests;
 }
 
 function walkSpecs(frontendRoot) {
   const specs = [];
   const visit = (relDir, ok) => {
     if (!exists(frontendRoot, relDir)) return;
-    for (const entry of fs.readdirSync(path.join(frontendRoot, relDir), { withFileTypes: true })) {
+    for (const entry of fs.readdirSync(path.join(frontendRoot, relDir), {
+      withFileTypes: true,
+    })) {
       const rel = `${relDir}/${entry.name}`;
       if (entry.isDirectory()) visit(rel, ok);
-      else if (ok(rel)) specs.push({ path: rel, source: read(frontendRoot, rel) });
+      else if (ok(rel)) {
+        const source = read(frontendRoot, rel);
+        specs.push({ path: rel, source, ...parseTestSource(source) });
+      }
     }
   };
-  visit('src/AppBuilder/Widgets', (rel) => /\/__tests__\/.+\.spec\.(js|jsx)$/.test(rel));
-  visit('src/AppBuilder/AppCanvas/__tests__', (rel) => /\.(js|jsx)$/.test(rel));
-  visit('src/AppBuilder/_stores/slices/__tests__', (rel) => /\.(js|jsx)$/.test(rel));
+  visit('src/AppBuilder/Widgets', (rel) => /\/__tests__\/.+\.spec\.[jt]sx?$/.test(rel));
+  visit('src/AppBuilder/AppCanvas/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
+  visit('src/AppBuilder/_stores/slices/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   return specs;
 }
 
@@ -214,6 +305,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
   const registeredByType = new Map(registered.map((widget) => [widget.componentType, widget]));
   const seenManifestTypes = new Set();
   const specs = walkSpecs(frontendRoot);
+  const changedTests = new Map();
 
   for (const widget of manifest.widgets) {
     if (seenManifestTypes.has(widget.componentType)) {
@@ -243,9 +335,8 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     const normalizedPath = changedFile.path.replace(/^frontend\//, '');
     if (changedFile.status === 'added') {
       const added = registered.find((widget) => widget.definition === normalizedPath);
-      const status = added && manifestByType.get(added.componentType)?.status;
-      if (added && !APPROVED_CONTRACT_STATUSES.has(status)) {
-        errors.push(`New widget ${added.componentType} requires an approved testing contract`);
+      if (added && !SPEC_GATED_STATUSES.has(manifestByType.get(added.componentType)?.status)) {
+        errors.push(`New widget ${added.componentType} requires a spec-complete testing contract`);
       }
     }
     if (!normalizedPath.startsWith('src/AppBuilder/Widgets/') || !/\.(spec|test)\.[jt]sx?$/.test(normalizedPath)) {
@@ -253,9 +344,33 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     }
     const widget = inferWidgetFromTestPath(normalizedPath, manifest.widgets);
     if (!widget) {
-      warnings.push(`Cannot map modified widget test ${normalizedPath} to a registered component type`);
-    } else if (!APPROVED_CONTRACT_STATUSES.has(widget.status)) {
-      errors.push(`Modified widget test ${normalizedPath} requires an approved ${widget.componentType} contract`);
+      errors.push(`Cannot map modified widget test ${normalizedPath} to a registered component type`);
+      continue;
+    }
+    if (!widget.contract) {
+      errors.push(`Modified widget test ${normalizedPath} requires a ${widget.componentType} scenario contract`);
+      continue;
+    }
+    const spec = specs.find(({ path: specPath }) => specPath === normalizedPath);
+    if (!spec) {
+      errors.push(`${normalizedPath}: changed test is outside the supported test layout`);
+      continue;
+    }
+    try {
+      if (changedFile.status === 'added') changedTests.set(normalizedPath, new Set(spec.tests));
+      else {
+        const diff = readTestDiff(spec.source, changedFile);
+        const previous = parseTestSource(diff.before);
+        const affected = affectedTests(spec.tests, previous.tests, {
+          oldLines: diff.oldLines.filter((line) => previous.codeLines.has(line)),
+          newLines: diff.newLines.filter((line) => spec.codeLines.has(line)),
+        });
+        changedTests.set(normalizedPath, new Set(affected.tests));
+        if (affected.sharedSetup)
+          warnings.push(`${normalizedPath}: shared setup changed; review and rerun the affected suite`);
+      }
+    } catch (error) {
+      errors.push(`${normalizedPath}: ${error.message}`);
     }
   }
 
@@ -268,10 +383,28 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     const decisionsById = new Map(contract.decisions.map((decision) => [decision.id, decision]));
     const specGated =
       SPEC_GATED_STATUSES.has(widget.status) || SPEC_GATED_STATUSES.has(contract.metadata.contract_status);
-    const approved =
-      APPROVED_CONTRACT_STATUSES.has(widget.status) &&
-      APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status);
-    const taggedSpecs = specs.filter(({ source }) => source.includes(`[${widget.componentType}-`));
+    const taggedSpecs = specs.filter(
+      ({ path: specPath, tests }) =>
+        inferWidgetFromTestPath(specPath, manifest.widgets)?.componentType === widget.componentType ||
+        tests.some(({ id }) => id?.startsWith(`${widget.componentType}-`))
+    );
+    const newDefinition = changedFiles.some(
+      ({ path: file, status }) =>
+        status === 'added' && file.replace(/^frontend\//, '') === registeredByType.get(widget.componentType)?.definition
+    );
+    if (newDefinition && (contract.metadata.development_type !== 'new-widget' || !contract.metadata.prd_source)) {
+      errors.push(`New widget ${widget.componentType} requires development_type: new-widget and a requirements source`);
+    }
+    const verified = widget.status === 'verified' || contract.metadata.contract_status === 'verified';
+    if (contract.metadata.contract_status !== widget.status) {
+      errors.push(`${widget.componentType}: contract_status must match manifest status ${widget.status}`);
+    }
+    if (specGated) {
+      for (const decision of contract.decisions) {
+        if (!decision.fields.answer)
+          errors.push(`${widget.componentType}: unanswered decision ${decision.id} blocks spec completion`);
+      }
+    }
 
     if (contract.metadata.component_type !== widget.componentType) {
       errors.push(`${widget.componentType}: contract component_type does not match the manifest`);
@@ -282,9 +415,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     if (!CONTRACT_STATUSES.has(contract.metadata.contract_status)) {
       errors.push(`${widget.componentType}: unknown contract_status ${contract.metadata.contract_status}`);
     }
-    const needsResearch =
-      APPROVED_CONTRACT_STATUSES.has(widget.status) ||
-      APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status);
+    const needsResearch = specGated;
     if (contract.metadata.development_type && !DEVELOPMENT_TYPES.has(contract.metadata.development_type)) {
       errors.push(`${widget.componentType}: unknown development_type ${contract.metadata.development_type}`);
     } else if (needsResearch) {
@@ -303,6 +434,9 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       }
     }
 
+    const editedIds = new Set(
+      taggedSpecs.flatMap(({ path: specPath }) => [...(changedTests.get(specPath) ?? [])].map(({ id }) => id))
+    );
     for (const scenario of contract.scenarios) {
       if (scenarioIds.has(scenario.id)) errors.push(`${widget.componentType}: duplicate scenario ${scenario.id}`);
       scenarioIds.add(scenario.id);
@@ -318,24 +452,63 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       if (scenario.fields.layer === 'Browser' && scenario.fields.owner !== 'QA') {
         errors.push(`${scenario.id}: Browser scenarios must be owned by QA`);
       }
+      if (scenario.fields.status === 'deferred' && !scenario.fields['deferred-by']) {
+        errors.push(`${scenario.id}: deferred scenario requires Deferred-by`);
+      }
+      if (verified) {
+        if (scenario.fields.owner === 'Engineering' && scenario.fields.status !== 'verified') {
+          errors.push(`${scenario.id}: verified contract requires verified engineering scenarios`);
+        }
+        if (scenario.fields.owner === 'QA' && scenario.fields.status !== 'qa-owned') {
+          errors.push(`${scenario.id}: verified contract requires qa-owned QA scenarios`);
+        }
+      }
+      if (READY_SCENARIO_STATUSES.has(scenario.fields.status)) {
+        if (
+          scenario.fields.owner === 'Engineering' &&
+          (['ready', 'verified'].includes(scenario.fields.status) || editedIds.has(scenario.id))
+        ) {
+          const required = ['Guarantee', 'Sources', 'Public seam', 'Setup', 'Action', 'Fault'];
+          if (scenario.fields.status === 'verified') required.push('Evidence');
+          for (const field of required) {
+            if (!scenario.fields[field.toLowerCase()])
+              errors.push(`${scenario.id}: ${scenario.fields.status} scenario requires ${field}`);
+          }
+        }
+        const dependencies = new Set((scenario.fields.decisions ?? '').match(/D-\d{2,}/g) ?? []);
+        for (const decision of contract.decisions) {
+          const affected = (decision.fields.unblocks ?? '').match(/[A-Za-z0-9-]+/g) ?? [];
+          if (affected.includes(scenario.id)) dependencies.add(decision.id);
+        }
+        for (const id of dependencies) {
+          const decision = decisionsById.get(id);
+          if (!decision) errors.push(`${scenario.id}: unknown decision ${id}`);
+          else if (!decision.fields.answer) errors.push(`${scenario.id}: blocked on unanswered ${id}`);
+        }
+      }
       if (specGated && UNSETTLED_SCENARIO_STATUSES.has(scenario.fields.status)) {
         errors.push(
           `${widget.componentType}: ${scenario.id} is still ${scenario.fields.status} in a ${widget.status} contract`
         );
       }
-      if (
-        IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status) &&
-        (!APPROVED_CONTRACT_STATUSES.has(widget.status) ||
-          !APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status))
-      ) {
-        errors.push(
-          `${widget.componentType}: ${scenario.id} is ${scenario.fields.status} before approval (TDD before approval)`
-        );
-      }
     }
 
     const rows = parseDispositionRows(contractSource, DISPOSITION_SECTIONS);
-    const counts = { covered: 0, shared: 0, qa: 0, decision: 0, none: 0, illegal: 0 };
+    if (specGated) {
+      for (const section of DISPOSITION_SECTIONS) {
+        const heading = section.replace(/^#+ /, '');
+        if (!rows.some((row) => row.heading === heading))
+          errors.push(`${widget.componentType}: missing or empty ${heading}`);
+      }
+    }
+    const counts = {
+      covered: 0,
+      shared: 0,
+      qa: 0,
+      decision: 0,
+      none: 0,
+      illegal: 0,
+    };
     for (const row of rows) {
       if (!row.kind) {
         counts.illegal += 1;
@@ -348,7 +521,6 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
         continue;
       }
       counts[row.kind] += 1;
-      if (!specGated) continue;
 
       if (row.kind === 'covered') {
         for (const id of row.match[1].split(',').map((value) => value.trim())) {
@@ -373,7 +545,11 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
           errors.push(
             `${widget.componentType}: "${row.heading}" row ${row.subject} points at missing shared test ${sharedPath}`
           );
-        } else if (!titleHasId(read(frontendRoot, sharedPath), sharedId)) {
+        } else if (
+          !parseTests(read(frontendRoot, sharedPath)).some(
+            (test) => test.id === sharedId && test.runnable && !test.focused
+          )
+        ) {
           errors.push(
             `${widget.componentType}: shared test ${sharedPath} does not reference ${sharedId} for row ${row.subject}`
           );
@@ -383,7 +559,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
         const decision = decisionsById.get(row.match[1]);
         if (!decision) {
           errors.push(`${widget.componentType}: "${row.heading}" row ${row.subject} cites unknown ${row.match[1]}`);
-        } else if (!decision.fields.answer) {
+        } else if (specGated && !decision.fields.answer) {
           errors.push(
             `${widget.componentType}: "${row.heading}" row ${row.subject} is blocked on unanswered ${row.match[1]}`
           );
@@ -407,22 +583,52 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       }
     }
 
-    if (approved) {
-      const foundIds = new Set();
-      for (const { source } of taggedSpecs) {
-        for (const id of titledIds(source, `${widget.componentType}-`)) foundIds.add(id);
-      }
-      for (const scenario of contract.scenarios) {
-        if (!IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status)) continue;
-        if (scenario.fields.owner === 'QA' || scenario.fields.layer === 'Browser') continue;
-        if (![...taggedSpecs].some(({ source }) => titleHasId(source, scenario.id))) {
-          errors.push(`${widget.componentType}: ${scenario.id} has no test whose title starts with [${scenario.id}]`);
+    for (const { path: specPath, tests } of taggedSpecs) {
+      const widgetSpecific =
+        inferWidgetFromTestPath(specPath, manifest.widgets)?.componentType === widget.componentType;
+      for (const test of tests) {
+        if (test.focused) errors.push(`${specPath}: focused test or suite cannot establish coverage`);
+        const changed = changedTests.get(specPath)?.has(test);
+        if (widgetSpecific && (changed || verified) && !test.id?.startsWith(`${widget.componentType}-`)) {
+          errors.push(
+            `${specPath}: ${changed ? 'changed test requires a ready' : 'verified widget requires a'} ${
+              widget.componentType
+            } scenario ID (${test.title ?? 'dynamic title'})`
+          );
+        }
+        const scenario = scenariosById.get(test.id);
+        if (
+          changed &&
+          scenario &&
+          !test.runnable &&
+          !(scenario.fields.status === 'deferred' && scenario.fields['deferred-by'])
+        ) {
+          errors.push(`${specPath}: disabled test ${test.id} requires a human deferred scenario`);
+        }
+        if (changed && scenario && !READY_SCENARIO_STATUSES.has(scenario.fields.status)) {
+          const deferred = scenario.fields.status === 'deferred' && scenario.fields['deferred-by'] && !test.runnable;
+          if (!deferred)
+            errors.push(
+              `${specPath}: changed test ${test.id} requires a ready scenario (got ${scenario.fields.status})`
+            );
+        }
+        if (test.id?.startsWith(`${widget.componentType}-`) && !scenarioIds.has(test.id)) {
+          errors.push(`${widget.componentType}: test references unknown scenario ${test.id}`);
         }
       }
-      for (const id of foundIds) {
-        if (!scenarioIds.has(id)) {
-          errors.push(`${widget.componentType}: test references unknown scenario ${id}`);
-        }
+    }
+    for (const scenario of contract.scenarios) {
+      if (!IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status)) continue;
+      if (scenario.fields.owner === 'QA' || scenario.fields.layer === 'Browser') continue;
+      const matching = taggedSpecs.flatMap(({ tests }) => tests).filter(({ id }) => id === scenario.id);
+      if (!matching.some((test) => test.runnable)) {
+        errors.push(
+          `${widget.componentType}: ${scenario.id} has no runnable test whose title starts with [${scenario.id}]`
+        );
+      } else if (matching.some((test) => !test.runnable)) {
+        errors.push(
+          `${widget.componentType}: ${scenario.id} includes a disabled test; record a separate human deferral`
+        );
       }
     }
 
@@ -432,7 +638,11 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       rows: rows.length,
       scenarios: contract.scenarios.length,
       engineeringScenarios: contract.scenarios.filter(({ fields }) => fields.owner !== 'QA').length,
-      verifiedScenarios: contract.scenarios.filter(({ fields }) => fields.status === 'verified').length,
+      verifiedScenarios: contract.scenarios.filter(
+        ({ fields }) => fields.status === 'verified' && fields.owner === 'Engineering'
+      ).length,
+      qaScenarios: contract.scenarios.filter(({ fields }) => fields.owner === 'QA').length,
+      deferredScenarios: contract.scenarios.filter(({ fields }) => fields.status === 'deferred').length,
       openDecisions: contract.decisions.filter(({ fields }) => !fields.answer).length,
       dispositions: counts,
     });
@@ -445,7 +655,8 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     registeredWidgetTypes: registered.map(({ componentType }) => componentType),
     trackedWidgets: manifest.widgets.length,
     approvedWidgets: manifest.widgets.filter(({ status }) => APPROVED_CONTRACT_STATUSES.has(status)).length,
-    pendingWidgets: manifest.widgets.filter(({ status }) => !APPROVED_CONTRACT_STATUSES.has(status)).length,
+    verifiedWidgets: manifest.widgets.filter(({ status }) => status === 'verified').length,
+    pendingWidgets: manifest.widgets.filter(({ status }) => status !== 'verified').length,
     changedFiles,
   };
 }
