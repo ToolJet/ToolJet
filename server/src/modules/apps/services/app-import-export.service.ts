@@ -3182,6 +3182,8 @@ function migrateProperties(
     if (componentType === 'Statistics') {
       properties.dataAlignment ??= { value: 'center' };
       properties.secondaryValueAlignment ??= { value: 'vertical' };
+      // Absent meant "show" before hideSecondary became a default of true.
+      properties.hideSecondary ??= { value: '{{false}}' };
 
       styles.iconVisibility ??= { value: false };
 
