@@ -22,6 +22,7 @@ import {
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
+import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
@@ -362,7 +363,9 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async tableDependents(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.getDependents(tableId, organizationId);
-    return decamelizeKeys({ result });
+    // foreignKeyTables rides through as-is - the frontend's dependents warning reads it camelCase,
+    // unlike every other key on this response.
+    return decamelizeKeysExcept({ result }, ['foreignKeyTables']);
   }
 
   // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
