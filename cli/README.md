@@ -21,19 +21,17 @@ USAGE
 
 `tooljet plugin create/delete/install` must be run from inside a clone of the [ToolJet](https://github.com/tooljet/tooljet) repository — they read and write marketplace plugin files relative to the repo root (`marketplace/`, `docs/`, `server/src/assets/marketplace/plugins.json`).
 
-`tooljet login` and `tooljet library init` don't require any particular working directory. `tooljet library build/dev/deploy` must be run from inside a component-library directory previously created with `tooljet library init` (i.e. one containing a `.tooljet/config.json`).
+`tooljet login` and `tooljet library init` don't require any particular working directory. `tooljet library build/dev/publish` must be run from inside a component-library directory previously created with `tooljet library init` (i.e. one containing a `.tooljet/config.json`).
+
+`lib` is a shorthand alias for `library` — e.g. `tooljet lib publish` works the same as `tooljet library publish`. Only the `library` form is documented below.
 
 # Commands
 <!-- commands -->
 * [`tooljet info`](#tooljet-info)
-* [`tooljet lib build`](#tooljet-lib-build)
-* [`tooljet lib deploy`](#tooljet-lib-deploy)
-* [`tooljet lib dev`](#tooljet-lib-dev)
-* [`tooljet lib init LIBRARY_DIRECTORY_NAME`](#tooljet-lib-init-library_directory_name)
 * [`tooljet library build`](#tooljet-library-build)
-* [`tooljet library deploy`](#tooljet-library-deploy)
 * [`tooljet library dev`](#tooljet-library-dev)
 * [`tooljet library init LIBRARY_DIRECTORY_NAME`](#tooljet-library-init-library_directory_name)
+* [`tooljet library publish`](#tooljet-library-publish)
 * [`tooljet login`](#tooljet-login)
 * [`tooljet plugin create PLUGIN_NAME`](#tooljet-plugin-create-plugin_name)
 * [`tooljet plugin delete PLUGIN_NAME`](#tooljet-plugin-delete-plugin_name)
@@ -52,104 +50,6 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/info.ts)_
-
-## `tooljet lib build`
-
-Build the component library locally to dist/ (no upload, no auth required)
-
-```
-USAGE
-  $ tooljet lib build
-
-DESCRIPTION
-  Build the component library locally to dist/ (no upload, no auth required)
-
-ALIASES
-  $ tooljet lib build
-
-EXAMPLES
-  $ tooljet library build
-
-  $ tooljet lib build
-```
-
-## `tooljet lib deploy`
-
-Build and publish a new immutable production revision of a component library
-
-```
-USAGE
-  $ tooljet lib deploy [--message <value>] [--force]
-
-FLAGS
-  --force            Publish even if the build reports TypeScript errors
-  --message=<value>  Optional label for the revision (shown in app builder revision picker)
-
-DESCRIPTION
-  Build and publish a new immutable production revision of a component library
-
-ALIASES
-  $ tooljet lib deploy
-
-EXAMPLES
-  $ tooljet library deploy
-
-  $ tooljet library deploy --message "Add dark mode support"
-
-  $ tooljet lib deploy
-
-  $ tooljet lib deploy --message "Add dark mode support"
-```
-
-## `tooljet lib dev`
-
-Watch src/ and upload to the dev track on every save
-
-```
-USAGE
-  $ tooljet lib dev [--debounce <value>]
-
-FLAGS
-  --debounce=<value>  [default: 300] Debounce ms between saves
-
-DESCRIPTION
-  Watch src/ and upload to the dev track on every save
-
-ALIASES
-  $ tooljet lib dev
-
-EXAMPLES
-  $ tooljet library dev
-
-  $ tooljet library dev --debounce 500
-
-  $ tooljet lib dev
-
-  $ tooljet lib dev --debounce 500
-```
-
-## `tooljet lib init LIBRARY_DIRECTORY_NAME`
-
-Initialize a new custom component library
-
-```
-USAGE
-  $ tooljet lib init LIBRARY_DIRECTORY_NAME
-
-ARGUMENTS
-  LIBRARY_DIRECTORY_NAME  Directory name for the new component library
-
-DESCRIPTION
-  Initialize a new custom component library
-
-ALIASES
-  $ tooljet lib init
-
-EXAMPLES
-  $ tooljet library init <library_directory_name>
-
-  $ tooljet lib init <library_directory_name>
-```
 
 ## `tooljet library build`
 
@@ -173,46 +73,18 @@ EXAMPLES
 
 _See code: [src/commands/library/build.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/build.ts)_
 
-## `tooljet library deploy`
-
-Build and publish a new immutable production revision of a component library
-
-```
-USAGE
-  $ tooljet library deploy [--message <value>] [--force]
-
-FLAGS
-  --force            Publish even if the build reports TypeScript errors
-  --message=<value>  Optional label for the revision (shown in app builder revision picker)
-
-DESCRIPTION
-  Build and publish a new immutable production revision of a component library
-
-ALIASES
-  $ tooljet lib deploy
-
-EXAMPLES
-  $ tooljet library deploy
-
-  $ tooljet library deploy --message "Add dark mode support"
-
-  $ tooljet lib deploy
-
-  $ tooljet lib deploy --message "Add dark mode support"
-```
-
-_See code: [src/commands/library/deploy.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/deploy.ts)_
-
 ## `tooljet library dev`
 
 Watch src/ and upload to the dev track on every save
 
 ```
 USAGE
-  $ tooljet library dev [--debounce <value>]
+  $ tooljet library dev [--debounce <value>] [--url <value>] [--token <value>]
 
 FLAGS
   --debounce=<value>  [default: 300] Debounce ms between saves
+  --token=<value>     API token to connect with, bypassing the stored login (must be used with --url)
+  --url=<value>       ToolJet origin URL to connect to, bypassing the stored login (must be used with --token)
 
 DESCRIPTION
   Watch src/ and upload to the dev track on every save
@@ -224,6 +96,8 @@ EXAMPLES
   $ tooljet library dev
 
   $ tooljet library dev --debounce 500
+
+  $ tooljet library dev --url https://app.tooljet.ai --token <token>
 
   $ tooljet lib dev
 
@@ -256,6 +130,44 @@ EXAMPLES
 ```
 
 _See code: [src/commands/library/init.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/init.ts)_
+
+## `tooljet library publish`
+
+Build and publish a new immutable production revision of a component library
+
+```
+USAGE
+  $ tooljet library publish -v <value> [-m <value>] [--skip-type-check] [--url <value>] [--token <value>]
+
+FLAGS
+  -m, --message=<value>  Optional label for the revision (shown in app builder revision picker)
+  -v, --version=<value>  (required) Version for this revision — X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0); missing parts
+                         default to 0
+      --skip-type-check  Publish even if the build reports TypeScript errors
+      --token=<value>    API token to publish with, bypassing the stored login (must be used with --url)
+      --url=<value>      ToolJet origin URL to publish to, bypassing the stored login (must be used with --token)
+
+DESCRIPTION
+  Build and publish a new immutable production revision of a component library
+
+ALIASES
+  $ tooljet lib publish
+
+EXAMPLES
+  $ tooljet library publish --version 1.0.0
+
+  $ tooljet library publish -v 1.0.0
+
+  $ tooljet library publish --version 1.0.0 --message "Add dark mode support"
+
+  $ tooljet library publish --version 1.0.0 --url https://app.tooljet.ai --token <token>
+
+  $ tooljet lib publish --version 1.0.0
+
+  $ tooljet lib publish --version 1.0.0 --message "Add dark mode support"
+```
+
+_See code: [src/commands/library/publish.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/publish.ts)_
 
 ## `tooljet login`
 

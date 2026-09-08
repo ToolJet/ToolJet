@@ -317,9 +317,7 @@ function walkComponentDeclaration(
                   if (key === 'defaultWidth' || key === 'defaultHeight') {
                     const val = evalLiteralNode(prop.initializer);
                     if (typeof val !== 'number' || !Number.isFinite(val)) {
-                      throw new Error(
-                        `Invalid "${key}" in component "${componentName}": must be a numeric literal.`
-                      );
+                      throw new Error(`Invalid "${key}" in component "${componentName}": must be a numeric literal.`);
                     }
 
                     if (key === 'defaultWidth') defaultWidth = val;
