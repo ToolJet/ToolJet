@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
 import {
+  setTooltip,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -34,23 +35,8 @@ import {
 // Not here: maxFileCount over-cap → customerIssues.cy.js (open bug) ·
 //           others.showOnDesktop/showOnMobile → contexts.cy.js
 
-// One node per format (WidgetTooltip.jsx): plainText -> plain <span>,
+// One rendered node per format (WidgetTooltip.jsx): plainText -> plain <span>,
 // markdown -> .widget-tooltip-markdown, html -> .widget-tooltip-html.
-// Raw HTML can't be typed: the tokenizer drops `<`, `>` and `/`, so "<b>x</b>"
-// arrives as "bxb". Pass it as {{"..."}}, which is preserved whole.
-const setTooltip = (format, content) => {
-  cy.get(`[data-cy="togglr-button-${format}"]`).click();
-  cy.waitForAutoSave();
-  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
-  // Confirm it landed: an empty tooltip renders no node at all, which looks
-  // the same as a hover that failed.
-  cy.get(commonWidgetSelector.tooltipInputField).should("contain.text", content.replace(/[{}"]/g, "").trim());
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-};
-
-// Configure in the editor, then verify on the preview — where the tooltip can
-// actually open (see hoverInPreview).
 const showTooltipInPreview = (name, format, content) => {
   openEditorSidebar(name);
   openAccordion("Additional Actions");

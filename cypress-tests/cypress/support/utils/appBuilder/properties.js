@@ -8,6 +8,7 @@
 //   verifyAndModifySwitch            switch               → properties
 //   verifyTooltip                    -                    → properties
 //   addAndVerifyTooltip              -                    → properties
+//   setTooltip                       switch               → properties
 //   editAndVerifyWidgetName          -                    → properties
 //   verifyPropertiesGeneralAccordion -                    → properties
 //   selectFromSidebarDropdown        -                    → properties
@@ -202,6 +203,25 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
     message
   );
   verifyTooltip(widgetSelector, message);
+};
+
+/**
+ * @tjType   switch
+ * @tjBlock  properties
+ * @tjUsage  setTooltip('markdown', 'bold text')
+ * @tjDom    togglr-button-<format> option, then the tooltip-input-field CodeMirror
+ */
+export const setTooltip = (format, content) => {
+  cy.get(commonWidgetSelector.togglrButton(format)).click();
+  cy.waitForAutoSave();
+  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
+  // An empty tooltip renders no node at all, indistinguishable from a hover that failed.
+  cy.get(commonWidgetSelector.tooltipInputField).should(
+    "contain.text",
+    content.replace(/[{}"]/g, "").trim()
+  );
+  cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
 };
 
 /**
