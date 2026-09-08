@@ -200,7 +200,7 @@ export const DatePickerRenderer = ({
     (newDate) => {
       let processedValue = newDate;
       if (parseInUnixTimestamp && unixTimestamp) {
-        processedValue = moment(newDate).unix();
+        processedValue = unixTimestamp === 'seconds' ? moment(newDate).unix() : moment(newDate).unix() * 1000;
       }
 
       const parsedDate = parseDate({
@@ -220,7 +220,7 @@ export const DatePickerRenderer = ({
 
       setDate(parsedDate);
       if (parseInUnixTimestamp && unixTimestamp) {
-        onChange?.(moment(parsedDate).unix());
+        onChange?.(unixTimestamp === 'seconds' ? moment(parsedDate).unix() : moment(parsedDate).valueOf());
       } else {
         onChange?.(computeDateString(parsedDate));
       }
