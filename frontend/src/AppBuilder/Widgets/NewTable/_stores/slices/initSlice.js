@@ -64,6 +64,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.highlightSelectedRow = properties?.highlightSelectedRow ?? false;
         state.components[id].properties.rowsPerPage = properties?.rowsPerPage ?? 10;
         state.components[id].properties.enabledSort = properties?.enabledSort ?? true;
+        state.components[id].properties.defaultSortColumn = properties?.defaultSortColumn ?? '';
+        state.components[id].properties.defaultSortDirection = properties?.defaultSortDirection ?? 'auto';
         state.components[id].properties.columnSizes = properties?.columnSizes ?? {};
         state.components[id].properties.allowSelection =
           properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow)
