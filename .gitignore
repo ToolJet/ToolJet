@@ -38,8 +38,7 @@
 
 .idea/*
 ti-*
-.claude/*
-!.claude/skills/
+.claude/
 .worktrees/
 
 
