@@ -111,45 +111,211 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   /**
-   * Mutates every Column-type leftField/rightField across joinQueryJson's join conditions
-   * (top-level filter conditions and each join's on-conditions) in place, resolving columnId to
-   * the current name. Grouped by field.table (the logical internal_table id a field addresses)
-   * so a join across N tables costs N relation loads, not one per condition.
+   * A single column-bearing slot inside join_table JSON: `get`/`set` read and write whatever key
+   * that shape actually uses for the column name (`columnName` for conditions/order_by, `name`
+   * for fields, `column` for aggregates/group_by) without the collector needing to know which.
    */
-  private async resolveJoinConditionColumns(
+  private static makeColumnRef(
+    table: string | undefined,
+    columnId: string | undefined,
+    get: () => string | undefined,
+    set: (name: string) => void
+  ): { table?: string; columnId?: string; get: () => string | undefined; set: (name: string) => void } {
+    return { table, columnId, get, set };
+  }
+
+  /**
+   * Resolves a batch of column refs that all belong to the same table: one relation load
+   * resolves every ref's columnId, same batching rationale as resolveColumnNames(). Refs with no
+   * columnId are left untouched (no id to resolve); a columnId that no longer resolves falls back
+   * to whatever the ref already held, same fail-soft contract as resolveColumnName().
+   */
+  private async resolveColumnRefs(
+    organizationId: string,
+    tableId: string,
+    refs: Array<{ columnId?: string; get: () => string | undefined; set: (name: string) => void }>,
+    environmentId: string | undefined
+  ): Promise<void> {
+    const refsWithId = refs.filter((ref) => ref.columnId);
+    if (!refsWithId.length) return;
+    const columnIds = [...new Set(refsWithId.map((ref) => ref.columnId))];
+    const resolvedMap = await this.relationResolverService.resolveColumnNames(
+      organizationId,
+      tableId,
+      columnIds,
+      environmentId
+    );
+    for (const ref of refsWithId) {
+      const resolved = resolvedMap.get(ref.columnId);
+      if (resolved) ref.set(resolved);
+    }
+  }
+
+  /**
+   * Returns a deep-cloned, columnId-resolved copy of join_table JSON - never mutates the caller's
+   * queryOptions (see finding #7: joinTables only shallow-copies join_table, so join/condition
+   * sub-objects are shared references with the original options the caller may reuse/log/re-save).
+   *
+   * Resolves columnId on every column-bearing entry, not just conditions (finding #3): the ON/WHERE
+   * conditions (top-level and each join's), the mandatory SELECT list (`fields`), `order_by`, and
+   * `group_by`/`aggregates`. Grouped by the logical table a field addresses (field.table for
+   * conditions/fields/order_by, aggregate.table_id for aggregates, the group_by map's own key for
+   * group_by - it's already keyed by table) so a join across N tables costs N relation loads, not
+   * one per column.
+   *
+   * group_by entries may be a bare column name string (legacy/no rename to resolve) or
+   * `{ column, columnId }`; either way the resolved value collapses back to a bare string, so
+   * table-operations' consumer of group_by never has to learn the object shape.
+   */
+  private async resolveJoinColumns(
     organizationId: string,
     joinQueryJson: Record<string, any>,
     environmentId: string | undefined
-  ): Promise<void> {
-    const columnFields: Array<{ table?: string; columnName?: string; columnId?: string }> = [];
-    const collect = (conditions: any) => {
+  ): Promise<Record<string, any>> {
+    const cloned = structuredClone(joinQueryJson);
+    type ColumnRef = { table?: string; columnId?: string; get: () => string | undefined; set: (name: string) => void };
+    const refs: ColumnRef[] = [];
+
+    const collectConditions = (conditions: any) => {
       conditions?.conditionsList?.forEach((condition: any) => {
-        if (condition.leftField?.type === 'Column') columnFields.push(condition.leftField);
-        if (condition.rightField?.type === 'Column') columnFields.push(condition.rightField);
+        (['leftField', 'rightField'] as const).forEach((side) => {
+          const field = condition[side];
+          if (field?.type === 'Column') {
+            refs.push(
+              TooljetDbDataOperationsService.makeColumnRef(
+                field.table,
+                field.columnId,
+                () => field.columnName,
+                (name) => {
+                  field.columnName = name;
+                }
+              )
+            );
+          }
+        });
       });
     };
-    collect(joinQueryJson.conditions);
-    (joinQueryJson.joins || []).forEach((join: any) => collect(join.conditions));
+    collectConditions(cloned.conditions);
+    (cloned.joins || []).forEach((join: any) => collectConditions(join.conditions));
 
-    const fieldsByTable = new Map<string, Array<{ table?: string; columnName?: string; columnId?: string }>>();
-    for (const field of columnFields) {
-      if (!field.columnId || !field.table) continue;
-      if (!fieldsByTable.has(field.table)) fieldsByTable.set(field.table, []);
-      fieldsByTable.get(field.table).push(field);
-    }
-
-    for (const [tableId, fields] of fieldsByTable) {
-      const columnIds = [...new Set(fields.map((field) => field.columnId))];
-      const resolvedMap = await this.relationResolverService.resolveColumnNames(
-        organizationId,
-        tableId,
-        columnIds,
-        environmentId
+    (cloned.fields || []).forEach((field: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          field.table,
+          field.columnId,
+          () => field.name,
+          (name) => {
+            field.name = name;
+          }
+        )
       );
-      for (const field of fields) {
-        field.columnName = resolvedMap.get(field.columnId) ?? field.columnName;
-      }
+    });
+
+    (cloned.order_by || []).forEach((entry: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          entry.table,
+          entry.columnId,
+          () => entry.columnName,
+          (name) => {
+            entry.columnName = name;
+          }
+        )
+      );
+    });
+
+    Object.values<any>(cloned.aggregates || {}).forEach((aggregate: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          aggregate.table_id,
+          aggregate.columnId,
+          () => aggregate.column,
+          (name) => {
+            aggregate.column = name;
+          }
+        )
+      );
+    });
+
+    Object.entries<any>(cloned.group_by || {}).forEach(([tableId, entries]) => {
+      if (!Array.isArray(entries)) return;
+      entries.forEach((entry: any, index: number) => {
+        if (typeof entry === 'string') return;
+        refs.push(
+          TooljetDbDataOperationsService.makeColumnRef(
+            tableId,
+            entry?.columnId,
+            () => entry?.column,
+            (name) => {
+              entries[index] = name;
+            }
+          )
+        );
+      });
+    });
+
+    const refsByTable = new Map<string, ColumnRef[]>();
+    for (const ref of refs) {
+      if (!ref.table) continue;
+      if (!refsByTable.has(ref.table)) refsByTable.set(ref.table, []);
+      refsByTable.get(ref.table).push(ref);
     }
+
+    for (const [tableId, tableRefs] of refsByTable) {
+      await this.resolveColumnRefs(organizationId, tableId, tableRefs, environmentId);
+    }
+
+    return cloned;
+  }
+
+  /**
+   * Returns a deep-cloned, columnId-resolved copy of list_rows' aggregates/group_by (finding #4).
+   * Single-table operation - the tableId is already known, no per-field table grouping needed like
+   * resolveJoinColumns, so this is one resolveColumnRefs() call. Same group_by entry convention as
+   * resolveJoinColumns: a bare string passes through, `{ column, columnId }` resolves and collapses
+   * back to a bare string.
+   */
+  private async resolveAggregateAndGroupByColumns(
+    organizationId: string,
+    tableId: string,
+    aggregates: Record<string, { aggFx: string; column: string; columnId?: string }>,
+    groupBy: Record<string, Array<string | { column: string; columnId?: string }>>,
+    environmentId: string | undefined
+  ): Promise<{
+    aggregates: typeof aggregates;
+    groupBy: typeof groupBy;
+  }> {
+    if (isEmpty(aggregates) && isEmpty(groupBy)) return { aggregates, groupBy };
+
+    const cloned = structuredClone({ aggregates, groupBy });
+    const refs: Array<{ columnId?: string; get: () => string | undefined; set: (name: string) => void }> = [];
+
+    Object.values<any>(cloned.aggregates).forEach((aggregate: any) => {
+      refs.push({
+        columnId: aggregate.columnId,
+        get: () => aggregate.column,
+        set: (name) => {
+          aggregate.column = name;
+        },
+      });
+    });
+
+    Object.values<any>(cloned.groupBy).forEach((entries: any) => {
+      if (!Array.isArray(entries)) return;
+      entries.forEach((entry: any, index: number) => {
+        if (typeof entry === 'string') return;
+        refs.push({
+          columnId: entry?.columnId,
+          get: () => entry?.column,
+          set: (name) => {
+            entries[index] = name;
+          },
+        });
+      });
+    });
+
+    await this.resolveColumnRefs(organizationId, tableId, refs, environmentId);
+    return cloned;
   }
 
   async run(
@@ -211,22 +377,26 @@ export class TooljetDbDataOperationsService implements QueryService {
       const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
       const {
         primary_key: primaryKeyColumn,
-        primary_key_id: primaryKeyColumnId,
+        primary_key_ids: primaryKeyColumnIds,
         rows_update: rowsToUpdate,
       } = bulkUpdateWithPrimaryKey;
       const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
-      const resolvedPrimaryKeyColumn = await this.resolveColumnName(
+      // Mirrors bulkUpsertUsingPrimaryKey: primary_key is a composite key ARRAY of column names,
+      // primary_key_ids the same-index array of columnIds. resolveColumnName (singular) would
+      // collapse the whole array to one resolved string - see finding #1.
+      const primaryKeyColumns = Array.isArray(primaryKeyColumn) ? primaryKeyColumn : [primaryKeyColumn];
+      const resolvedPrimaryKeyColumns = await this.resolveColumnNames(
         organizationId,
         tableId,
-        { column: primaryKeyColumn, columnId: primaryKeyColumnId },
+        primaryKeyColumns.map((column, index) => ({ column, columnId: primaryKeyColumnIds?.[index] })),
         environmentId
       );
 
       const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsWithPrimaryKey(
         rowsToUpdate,
         tableId,
-        resolvedPrimaryKeyColumn,
+        resolvedPrimaryKeyColumns,
         organizationId,
         environmentId
       );
@@ -304,10 +474,17 @@ export class TooljetDbDataOperationsService implements QueryService {
         const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
         const orderQuery = buildPostgrestQuery(resolvedOrderFilters);
         if (!isEmpty(aggregates) || !isEmpty(groupBy)) {
+          const resolved = await this.resolveAggregateAndGroupByColumns(
+            organizationId,
+            tableId,
+            aggregates,
+            groupBy,
+            environmentId
+          );
           const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
             internalTable.tableName,
-            aggregates,
-            groupBy
+            resolved.aggregates,
+            resolved.groupBy
           );
           if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
         }
@@ -485,13 +662,13 @@ export class TooljetDbDataOperationsService implements QueryService {
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
-    await this.resolveJoinConditionColumns(organizationId, sanitizedJoinTableJson, environmentId);
+    const resolvedJoinTableJson = await this.resolveJoinColumns(organizationId, sanitizedJoinTableJson, environmentId);
 
     const result = await this.tableOperationsService.perform(
       organizationId,
       'join_tables',
       {
-        joinQueryJson: sanitizedJoinTableJson,
+        joinQueryJson: resolvedJoinTableJson,
       },
       environmentId
     );

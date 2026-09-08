@@ -49,6 +49,7 @@ import {
   TooljetDatabaseForeignKey,
   TooljetDbActions,
   TJDB,
+  TooljetDbRelationConfigurations,
 } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { QueryError } from '@tooljet/plugins/packages/common';
@@ -397,7 +398,7 @@ export class TooljetDbTableOperationsService {
                c.ORDINAL_POSITION;
     `);
 
-    const columnUuidsByName = relation.configurations?.columns?.column_names || {};
+    const columnUuidsByName = (relation.configurations as TooljetDbRelationConfigurations)?.columns?.column_names || {};
     const transformedColumnDefaultValues = columns.map((column) => {
       return {
         ...column,

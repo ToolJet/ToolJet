@@ -490,6 +490,40 @@ describe('TooljetDbDataOperationsService', () => {
           environmentId
         );
       });
+
+      it('should resolve columnId on aggregates and group_by before building the select clause', async () => {
+        const resolvedMap = new Map([
+          ['col-uuid-agg', 'new_agg_col'],
+          ['col-uuid-group', 'new_group_col'],
+        ]);
+        const { service, postgrestProxyService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+        });
+
+        const listRowsOptions = {
+          aggregates: {
+            agg1: { aggFx: 'count', column: 'old_agg_col', columnId: 'col-uuid-agg' },
+          },
+          group_by: {
+            g1: [{ column: 'old_group_col', columnId: 'col-uuid-group' }, 'untouched_col'],
+          },
+        };
+        const originalAggregateRef = listRowsOptions.aggregates.agg1;
+
+        await service.listRows({ table_id: tableId, list_rows: listRowsOptions }, context);
+
+        const [url] = postgrestProxyService.perform.mock.calls[0];
+        expect(url).toContain('new_agg_col');
+        expect(url).toContain('new_group_col');
+        expect(url).toContain('untouched_col');
+        expect(url).not.toContain('old_agg_col');
+        expect(url).not.toContain('old_group_col');
+        // The caller's original options object was never mutated.
+        expect(originalAggregateRef.column).toBe('old_agg_col');
+      });
     });
 
     describe('.joinTables', () => {
@@ -544,17 +578,108 @@ describe('TooljetDbDataOperationsService', () => {
         // rightField has no columnId - stays untouched
         expect(performedJson.joins[0].conditions.conditionsList[0].rightField.columnName).toBe('id');
       });
+
+      it('should resolve columnId on fields (SELECT), order_by, group_by, and aggregates - not just conditions', async () => {
+        const perTableResolvedNames: Record<string, Map<string, string>> = {
+          'table-a': new Map([['col-uuid-name', 'new_name']]),
+          'table-b': new Map([
+            ['col-uuid-sort', 'new_sort_col'],
+            ['col-uuid-group', 'new_group_col'],
+            ['col-uuid-agg', 'new_agg_col'],
+          ]),
+        };
+        const resolveColumnNames = jest.fn((_orgId, tableId) =>
+          Promise.resolve(perTableResolvedNames[tableId] ?? new Map())
+        );
+        const { service, tableOperationsService } = buildService({
+          relationResolverService: { resolveColumnName: jest.fn(), resolveColumnNames },
+        });
+
+        const joinTableOptions = {
+          from: { name: 'table-a', type: 'Table' },
+          fields: [{ name: 'old_name', table: 'table-a', columnId: 'col-uuid-name' }],
+          joins: [
+            {
+              joinType: 'INNER',
+              table: 'table-b',
+              conditions: { operator: 'AND', conditionsList: [] },
+            },
+          ],
+          order_by: [{ table: 'table-b', columnName: 'old_sort_col', columnId: 'col-uuid-sort', direction: 'ASC' }],
+          group_by: {
+            'table-b': [{ column: 'old_group_col', columnId: 'col-uuid-group' }, 'untouched_col'],
+          },
+          aggregates: {
+            agg1: { aggFx: 'count', column: 'old_agg_col', columnId: 'col-uuid-agg', table_id: 'table-b' },
+          },
+        };
+        // Deep-frozen snapshot to prove joinTables never mutates the caller's queryOptions (finding #7).
+        const originalFieldsRef = joinTableOptions.fields[0];
+        const originalOrderByRef = joinTableOptions.order_by[0];
+
+        await service.joinTables({ join_table: joinTableOptions }, context);
+
+        const performedJson = tableOperationsService.perform.mock.calls[0][2].joinQueryJson;
+        expect(performedJson.fields[0].name).toBe('new_name');
+        expect(performedJson.order_by[0].columnName).toBe('new_sort_col');
+        expect(performedJson.group_by['table-b']).toEqual(['new_group_col', 'untouched_col']);
+        expect(performedJson.aggregates.agg1.column).toBe('new_agg_col');
+
+        // The caller's original objects were never touched - resolution happened on a clone.
+        expect(originalFieldsRef.name).toBe('old_name');
+        expect(originalOrderByRef.columnName).toBe('old_sort_col');
+        expect(performedJson.fields[0]).not.toBe(originalFieldsRef);
+      });
     });
 
     describe('.bulkUpdateWithPrimaryKey', () => {
-      it('should resolve primary_key via primary_key_id before calling the bulk-upload service', async () => {
+      it('should resolve each primary_key entry via primary_key_ids before calling the bulk-upload service (composite key)', async () => {
+        const resolvedMap = new Map([['col-uuid-pk-a', 'new_pk_a']]);
         const bulkUploadService = {
           bulkUpdateRowsWithPrimaryKey: jest.fn().mockResolvedValue({ status: 'ok', data: [] }),
         };
         const { service } = buildService({
           relationResolverService: {
-            resolveColumnName: jest.fn().mockResolvedValue('new_pk'),
-            resolveColumnNames: jest.fn(),
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+          tooljetDbBulkUploadService: bulkUploadService,
+        });
+
+        await service.bulkUpdateWithPrimaryKey(
+          {
+            table_id: tableId,
+            bulk_update_with_primary_key: {
+              // Composite primary key - the frontend always sends an array. `pk_b` has no
+              // columnId (legacy/unresolvable) and must fall back to its stored name, while
+              // `pk_a` resolves to its renamed current name via col-uuid-pk-a.
+              primary_key: ['pk_a', 'pk_b'],
+              primary_key_ids: ['col-uuid-pk-a', undefined],
+              rows_update: [{ pk_a: 1, pk_b: 2 }],
+            },
+          },
+          context
+        );
+
+        // Both PK columns must reach the bulk-upload service as an array (never collapsed to
+        // one column), each independently resolved by its own columnId.
+        expect(bulkUploadService.bulkUpdateRowsWithPrimaryKey).toHaveBeenCalledWith(
+          [{ pk_a: 1, pk_b: 2 }],
+          tableId,
+          ['new_pk_a', 'pk_b'],
+          organizationId,
+          environmentId
+        );
+      });
+
+      it('should treat a single (non-array) primary_key as one column, matching bulkUpdateRowsWithPrimaryKey normalization', async () => {
+        const bulkUploadService = {
+          bulkUpdateRowsWithPrimaryKey: jest.fn().mockResolvedValue({ status: 'ok', data: [] }),
+        };
+        const { service } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(new Map([['col-uuid-pk', 'new_pk']])),
           },
           tooljetDbBulkUploadService: bulkUploadService,
         });
@@ -564,7 +689,7 @@ describe('TooljetDbDataOperationsService', () => {
             table_id: tableId,
             bulk_update_with_primary_key: {
               primary_key: 'old_pk',
-              primary_key_id: 'col-uuid-pk',
+              primary_key_ids: ['col-uuid-pk'],
               rows_update: [{ old_pk: 1 }],
             },
           },
@@ -574,7 +699,7 @@ describe('TooljetDbDataOperationsService', () => {
         expect(bulkUploadService.bulkUpdateRowsWithPrimaryKey).toHaveBeenCalledWith(
           [{ old_pk: 1 }],
           tableId,
-          'new_pk',
+          ['new_pk'],
           organizationId,
           environmentId
         );

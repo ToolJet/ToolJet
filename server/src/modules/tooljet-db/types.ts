@@ -14,6 +14,12 @@ export const TJDB = {
 
 export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
 
+// Shape of InternalTableRelation.configurations (jsonb, typed `any` on the entity). Only the
+// column_names map is named here - callers reading configurations for anything else keep casting.
+export interface TooljetDbRelationConfigurations {
+  columns?: { column_names?: Record<string, string> };
+}
+
 export type TooljetDatabaseColumn = {
   column_name: string;
   data_type: TooljetDatabaseDataTypes;

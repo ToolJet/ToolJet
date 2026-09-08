@@ -6,6 +6,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { TooljetDbRelationConfigurations } from '../types';
 
 const DEVELOPMENT_PRIORITY = 1;
 
@@ -156,10 +157,11 @@ export class TooljetDbRelationResolverService {
     requestedEnvironmentId?: string,
     manager?: EntityManager
   ): Promise<string | null> {
-    const relation = await this.getRelation(organizationId, internalTableId, requestedEnvironmentId, manager);
-    const columnNames: Record<string, string> = relation.configurations?.columns?.column_names || {};
-    const entry = Object.entries(columnNames).find(([, uuid]) => uuid === columnUuid);
-    return entry ? entry[0] : null;
+    return (
+      (
+        await this.resolveColumnNames(organizationId, internalTableId, [columnUuid], requestedEnvironmentId, manager)
+      ).get(columnUuid) ?? null
+    );
   }
 
   /**
@@ -175,7 +177,8 @@ export class TooljetDbRelationResolverService {
     manager?: EntityManager
   ): Promise<Map<string, string | null>> {
     const relation = await this.getRelation(organizationId, internalTableId, requestedEnvironmentId, manager);
-    const columnNames: Record<string, string> = relation.configurations?.columns?.column_names || {};
+    const configurations = relation.configurations as TooljetDbRelationConfigurations;
+    const columnNames: Record<string, string> = configurations?.columns?.column_names || {};
     const uuidToName = new Map<string, string>();
     for (const [name, uuid] of Object.entries(columnNames)) {
       uuidToName.set(uuid, name);
