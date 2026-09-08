@@ -46,7 +46,7 @@ const dropCompanionToggle = (x, y) => dropWidget("Toggle Switch", "toggleswitch1
 
 describe(
   "File Button properties fx",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const { validFile, csvFile, secondCsvFile, semicolonCsvFile } = fileButtonFixtures;

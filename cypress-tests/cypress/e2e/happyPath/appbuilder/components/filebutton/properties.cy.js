@@ -60,7 +60,7 @@ const showTooltipInPreview = (name, format, content) => {
 
 describe(
   "File Button properties",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const { validFile, csvFile, secondCsvFile, jsonFile, semicolonCsvFile } = fileButtonFixtures;

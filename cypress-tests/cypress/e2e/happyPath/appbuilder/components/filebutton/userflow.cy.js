@@ -28,7 +28,7 @@ import {
 
 describe(
   "File Button userflow",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const { validFile, csvFile, secondCsvFile, csvFileName } = fileButtonFixtures;
