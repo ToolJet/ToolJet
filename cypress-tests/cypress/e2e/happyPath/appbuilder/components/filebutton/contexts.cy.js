@@ -5,6 +5,7 @@ import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
   openEditorSidebar,
+  switchLayout,
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 
@@ -13,14 +14,8 @@ import {
 //   showOnDesktop:11 (default true) · showOnMobile:12 (default false)
 // These gate whether the widget mounts per layout at all — a different code path from
 // the `visibility` property in properties.cy.js.
-
-// Desktop/mobile canvas switch in the editor header. A widget hidden by these toggles
-// UNMOUNTS, so anything needing its Inspector must be done from the layout where it is
-// still visible.
-const switchLayout = (target) => {
-  cy.get(`[data-cy="button-change-layout-to-${target}"]`).click();
-  cy.waitForAutoSave();
-};
+// A widget hidden by these toggles UNMOUNTS, so anything needing its Inspector must be
+// done from the layout where it is still visible.
 
 describe(
   "File Button contexts",
