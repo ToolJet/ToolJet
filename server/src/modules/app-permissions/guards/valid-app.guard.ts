@@ -10,8 +10,8 @@ export class ValidAppGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { appId } = request.params;
     const user: User = request.user;
-    // Forward x-branch-id so metadata overlay reflects the caller's active branch.
-    const branchId = (request.headers['x-branch-id'] as string) || undefined;
+    // user.branchId (resolved in the JWT strategy) so metadata overlay reflects the caller's active branch.
+    const branchId = user?.branchId || undefined;
 
     // Check if appId is provided, otherwise throw BadRequestException
     if (!appId) {

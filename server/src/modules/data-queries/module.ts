@@ -13,6 +13,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 
@@ -28,11 +29,13 @@ export class DataQueriesModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { DataQueriesController, DataQueriesService, DataQueriesUtilService } = await this.getProviders(
-      configs,
-      'data-queries',
-      ['controller', 'service', 'util.service']
-    );
+    const { DataQueriesController, DataQueriesService, DataQueriesUtilService, GitSyncQueryEditGuard } =
+      await this.getProviders(configs, 'data-queries', [
+        'controller',
+        'service',
+        'util.service',
+        'guards/git-sync-query-edit.guard',
+      ]);
 
     return this.cacheModule(cacheKey, {
       module: DataQueriesModule,
@@ -41,6 +44,7 @@ export class DataQueriesModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         // 50/s per (user, app). Single-pod counters until Redis storage added.
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
@@ -65,6 +69,7 @@ export class DataQueriesModule extends SubModule {
         DataSourceFeatureAbilityFactory,
         DataQueryFolderMappingRepository,
         AppScopedThrottlerGuard,
+        GitSyncQueryEditGuard,
       ],
       exports: [DataQueriesUtilService],
       controllers: isMainImport ? [DataQueriesController] : [],

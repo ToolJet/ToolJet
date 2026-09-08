@@ -102,7 +102,11 @@ describe('Module embedded-in-editable-app view access', () => {
     const adminData = await createUser(nestApp, { email: 'meia-admin5@tooljet.io', groups: ['all_users', 'admin'] });
     const org = adminData.organization;
 
-    const moduleApp = await createApplication(nestApp, { name: 'M-Embedded-Released', user: adminData.user, type: 'module' });
+    const moduleApp = await createApplication(nestApp, {
+      name: 'M-Embedded-Released',
+      user: adminData.user,
+      type: 'module',
+    });
     const coRelationId = uuidv4();
     await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
     await createApplicationVersion(nestApp, moduleApp as any);

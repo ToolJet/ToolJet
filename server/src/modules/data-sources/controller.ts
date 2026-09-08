@@ -24,6 +24,7 @@ import { OrganizationValidateGuard } from '@modules/app/guards/organization-vali
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { IDataSourcesController } from './interfaces/IController';
 import { ValidateDataSourceGuard } from './guards/validate-query-source.guard';
+import { GitSyncDataSourceCreateGuard, GitSyncDataSourceEditGuard } from './guards/git-sync-datasource.guard';
 import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
@@ -71,7 +72,7 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   @InitFeature(FEATURE_KEY.CREATE)
-  @UseGuards(FeatureAbilityGuard)
+  @UseGuards(FeatureAbilityGuard, GitSyncDataSourceCreateGuard)
   @Post()
   async createGlobalDataSources(
     @User() user: UserEntity,
@@ -82,7 +83,7 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
-  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, GitSyncDataSourceEditGuard)
   @Put(':id')
   async update(
     @User() user,
@@ -96,7 +97,7 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
-  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, GitSyncDataSourceEditGuard)
   @Delete(':id')
   async delete(@User() user: UserEntity, @Param('id') dataSourceId, @Query('branch_id') branchId?: string) {
     await this.dataSourcesService.delete(dataSourceId, user, branchId);

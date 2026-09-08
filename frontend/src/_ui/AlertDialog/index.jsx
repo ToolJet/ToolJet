@@ -8,6 +8,7 @@ export default function AlertDialog({
   show,
   closeModal,
   customClassName,
+  dialogClassName,
   children,
   checkForBackground = false,
 }) {
@@ -22,6 +23,7 @@ export default function AlertDialog({
         }`,
         customClassName
       )}
+      dialogClassName={dialogClassName}
       show={show}
       size={size}
       backdrop={'static'}

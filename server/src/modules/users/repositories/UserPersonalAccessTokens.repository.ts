@@ -43,8 +43,6 @@ export class UserPersonalAccessTokenRepository extends Repository<UserPersonalAc
     const sessionExpiry =
       options?.sessionExpiryMinutes ?? (parseInt(process.env?.PAT_SESSION_EXPIRY) || defaultPatSessionExpiry) * 24 * 60; // default: 10 days
 
-    const now = new Date();
-
     const token = this.create({
       user,
       app,

@@ -103,15 +103,18 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
-    cy.waitForElement('[data-cy="ai-icon"]');
+    // waitForElement's 2nd arg is a plain number, not an options object —
+    // passing { timeout } nests it and Cypress rejects `[object Object]`.
+    cy.waitForElement('[data-cy="icon-home"]', 10000);
   }
+  const cardSelector = `[data-cy="${cyParamName(appName)}-card"]`;
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
+    cy.get(cardSelector).parent().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .should("be.visible")
       .should("not.be.disabled");
     // .click({ timeout: 10000 });
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
+    cy.get(cardSelector).click().realHover();
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };

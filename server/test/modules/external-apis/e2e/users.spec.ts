@@ -534,7 +534,6 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
 
     it('filters users across multiple comma-separated group names', async () => {
       const { user: adminUser } = await createUser(app, { email: 'admin-groupfilter-multi@tooljet.io' });
-      const orgId = adminUser.defaultOrganizationId;
 
       const res = await request(app.getHttpServer())
         .get('/api/ext/users?group_names=admin,end-user')

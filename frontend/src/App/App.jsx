@@ -18,6 +18,7 @@ import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
+import { toast } from 'react-hot-toast';
 import '@/_styles/theme.scss';
 import AppLoader from '@/AppLoader';
 export const BreadCrumbContext = React.createContext({});
@@ -120,6 +121,15 @@ class AppComponent extends React.Component {
   }
 
   async componentDidMount() {
+    // Set before a window.location.reload() (e.g. after resolving git sync conflicts) —
+    // a toast fired right before a full reload gets torn down with the DOM before it's
+    // ever visible, so the message is persisted and shown here once the fresh page mounts.
+    const pendingSyncToast = sessionStorage.getItem('sync_success_toast');
+    if (pendingSyncToast) {
+      sessionStorage.removeItem('sync_success_toast');
+      setTimeout(() => toast.success(pendingSyncToast), 500);
+    }
+
     setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
@@ -199,8 +209,8 @@ class AppComponent extends React.Component {
     let toastOptions = {
       style: {
         wordBreak: 'break-word',
-        overflowWrap: 'break-word',
         maxWidth: '400px',
+        overflowWrap: 'anywhere',
       },
     };
 
@@ -212,8 +222,8 @@ class AppComponent extends React.Component {
           background: '#333',
           color: '#fff',
           wordBreak: 'break-word',
-          overflowWrap: 'break-word',
           maxWidth: '400px',
+          overflowWrap: 'anywhere',
         },
       };
     }

@@ -19,6 +19,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { EncryptionModule } from '@modules/encryption/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -49,6 +50,7 @@ export class AiModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await EncryptionModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [

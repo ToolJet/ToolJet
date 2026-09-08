@@ -520,7 +520,7 @@ Cypress.Commands.add("waitForAppLoad", () => {
 
   // const TIMEOUT = 15000;
 
-  cy.intercept("GET", "/api/data-queries/**").as("appDs");
+  cy.intercept("GET", "/api/app-environments/**").as("appDs");
   cy.wait("@appDs", { timeout: 15000 });
 });
 

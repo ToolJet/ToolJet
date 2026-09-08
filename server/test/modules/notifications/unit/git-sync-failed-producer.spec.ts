@@ -23,11 +23,14 @@ describe('GitSyncQueueProcessor.onFailed | error notification producer', () => {
   afterEach(() => jest.resetAllMocks());
 
   it('notifies once on the FINAL attempt with a safe (token-free) payload', async () => {
-    await processor.onFailed(makeJob() as any, new Error('Authentication failed for https://x-access-token:ghp_LEAKLEAKLEAKLEAKLEAK1234@github.com/o/r'));
+    await processor.onFailed(
+      makeJob() as any,
+      new Error('Authentication failed for https://x-access-token:ghp_LEAKLEAKLEAKLEAKLEAK1234@github.com/o/r')
+    );
     expect(notify).toHaveBeenCalledTimes(1);
     const arg = notify.mock.calls[0][0];
     expect(arg).toMatchObject({ type: 'error', userId: 'u1', organizationId: 'org1', title: 'Branch creation failed' });
-    expect(JSON.stringify(arg)).not.toMatch(/ghp_LEAK/);   // no raw token anywhere in payload
+    expect(JSON.stringify(arg)).not.toMatch(/ghp_LEAK/); // no raw token anywhere in payload
     expect(arg.dedupeKey).toBe('job-1:3');
   });
 
@@ -47,7 +50,10 @@ describe('GitSyncQueueProcessor.onFailed | error notification producer', () => {
   });
 
   it('does not notify when userId is absent (per-user only; e.g. delete-branch without user)', async () => {
-    await processor.onFailed(makeJob({ name: GIT_SYNC_JOBS.DELETE_BRANCH, data: { organizationId: 'org1', branchName: 'b' } }) as any, new Error('x'));
+    await processor.onFailed(
+      makeJob({ name: GIT_SYNC_JOBS.DELETE_BRANCH, data: { organizationId: 'org1', branchName: 'b' } }) as any,
+      new Error('x')
+    );
     expect(notify).not.toHaveBeenCalled();
   });
 

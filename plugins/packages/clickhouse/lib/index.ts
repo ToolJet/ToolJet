@@ -4,7 +4,6 @@ const JSON5 = require('json5');
 import { createClient } from '@clickhouse/client';
 import { Parser } from 'node-sql-parser';
 
-
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { query, operation, fields, tablename } = queryOptions;
@@ -19,18 +18,17 @@ export default class Click implements QueryService {
             const format = 'JSONEachRow';
             const resultSet = await clickhouseClient.query({
               query,
-              format: format
+              format: format,
             });
 
-            let data = await resultSet.json();
+            const data = await resultSet.json();
 
             result = data;
-
           } else {
             await clickhouseClient.command({
-              query
+              query,
             });
-            result = { r:1 }; //for backward compatibility
+            result = { r: 1 }; //for backward compatibility
           }
 
           break;
@@ -41,9 +39,9 @@ export default class Click implements QueryService {
             table: tablename,
             values: rows,
             columns: fields,
-            format: 'JSONEachRow'
+            format: 'JSONEachRow',
           });
-          result = { r:1 }; //for backward compatibility
+          result = { r: 1 }; //for backward compatibility
           break;
         }
       }
@@ -56,8 +54,6 @@ export default class Click implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-
-
     const clickhouse = await this.getConnection(sourceOptions);
     if (!clickhouse) {
       throw new Error('Invalid credentials');
@@ -70,8 +66,6 @@ export default class Click implements QueryService {
     return {
       status: 'ok',
     };
-
-
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const { port, host, protocol, database, username, password } = sourceOptions;
@@ -117,5 +111,4 @@ export default class Click implements QueryService {
       );
     }
   }
-
 }

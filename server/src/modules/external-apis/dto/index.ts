@@ -40,7 +40,12 @@ export class GetAllUsersQueryDto {
 
   @IsOptional()
   @Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',').map((v) => v.trim()).filter((v) => v !== '') : value
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v !== '')
+      : value
   )
   @IsArray()
   @IsEnum(USER_STATUS, { each: true })
@@ -584,4 +589,3 @@ export class UnbanWorkspaceDto {
   @IsString()
   slug?: string;
 }
-

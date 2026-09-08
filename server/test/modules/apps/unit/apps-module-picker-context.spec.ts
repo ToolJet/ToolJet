@@ -32,7 +32,17 @@ class TestableAppsUtilService extends AppsUtilService {
     type?: string,
     context?: string
   ): SelectQueryBuilder<AppBase> {
-    return this.viewableAppsQueryUsingPermissions(user, perms, manager, searchKey, select, type, context);
+    return this.viewableAppsQueryUsingPermissions(
+      user,
+      perms,
+      manager,
+      searchKey,
+      select,
+      type,
+      undefined,
+      false,
+      context
+    );
   }
 }
 
@@ -49,6 +59,7 @@ function makeMockQb() {
     }),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
@@ -82,6 +93,7 @@ function makePerms(overrides: Partial<UserAppsPermissions> = {}): UserAppsPermis
     isAllViewable: false,
     hiddenAppsId: [],
     hideAll: false,
+    ownedAppsId: [],
     ...overrides,
   };
 }
@@ -96,7 +108,7 @@ function buildService(): TestableAppsUtilService {
     {} as any, // VersionRepository
     {} as any, // LicenseTermsService
     {} as any, // OrganizationRepository
-    {} as any  // AbilityService
+    {} as any // AbilityService
   );
 }
 
@@ -124,14 +136,14 @@ describe('AppsUtilService — picker-context module filtering', () => {
 
     service.callViewableAppsQueryUsingPermissions(user, perms, manager, '', undefined, APP_TYPES.MODULE);
 
-    // dashboard path calls addViewableFrontEndAppsFilter which uses id IN (:...viewableApps)
-    const idFilterCall = calls.find((c) => c.sql.includes('apps.id IN (:...viewableApps)'));
+    // dashboard path calls addViewableModulesFilter which uses id IN (:...viewableModules)
+    const idFilterCall = calls.find((c) => c.sql.includes('apps.id IN (:...viewableModules)'));
     expect(idFilterCall).toBeDefined();
 
-    // viewableApps for this user = null + editableAppsId ∪ (viewableAppsId minus hiddenAppsId)
+    // viewableModules for this user = null + permitted ids minus hidden (unless owned)
     // = [null] (hidden is excluded from the union)
-    const viewableApps = idFilterCall!.params!['viewableApps'] as string[];
-    expect(viewableApps).not.toContain(hiddenModuleId);
+    const viewableModules = idFilterCall!.params!['viewableModules'] as string[];
+    expect(viewableModules).not.toContain(hiddenModuleId);
   });
 
   // TC2 — Picker path: hidden module included for view-only user

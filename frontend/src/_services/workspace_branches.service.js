@@ -8,6 +8,7 @@ export const workspaceBranchesService = {
   deleteBranch,
   pushWorkspace,
   pullWorkspace,
+  resolveConflicts,
   pullApp,
   pullModule,
   ensureAppDraft,
@@ -24,8 +25,15 @@ function list() {
   );
 }
 
-function create(name, sourceBranchId, commitSha) {
-  const body = { name, ...(sourceBranchId && { sourceBranchId }), ...(commitSha && { commitSha }) };
+function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport) {
+  const body = {
+    name,
+    ...(sourceBranchId && { sourceBranchId }),
+    ...(commitSha && { commitSha }),
+    ...(appId && { appId }),
+    ...(versionId && { versionId }),
+    ...(confirmImport && { confirmImport }),
+  };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -50,13 +58,14 @@ function deleteBranch(branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/${branchId}`, requestOptions).then(handleResponse);
 }
 
-function pushWorkspace(commitMessage, targetBranch, branchId, { deletionOnly, scope } = {}) {
+function pushWorkspace(commitMessage, targetBranch, branchId, { deletionOnly, scope, onlyUnsyncedDatasources } = {}) {
   const body = {
     commitMessage,
     ...(targetBranch && { targetBranch }),
     ...(branchId && { branchId }),
     ...(deletionOnly && { deletionOnly }),
     ...(scope && { scope }),
+    ...(onlyUnsyncedDatasources && { onlyUnsyncedDatasources }),
   };
   const requestOptions = {
     method: 'POST',
@@ -79,6 +88,20 @@ function pullWorkspace(sourceBranch, branchId) {
     ...(Object.keys(body).length > 0 && { body: JSON.stringify(body) }),
   };
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
+}
+
+function resolveConflicts(resolutions, branchId) {
+  const body = {
+    resolutions,
+    ...(branchId && { branchId }),
+  };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/resolve-conflicts`, requestOptions).then(handleResponse);
 }
 
 function pullApp(appId, branchId, tagSha, tagName, tagDescription) {

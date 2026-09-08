@@ -63,6 +63,7 @@ export const addGranularPermissionViaUI = (permissionName, options = {}) => {
     cy.get(groupsSelector.addAppsButton).click();
   });
   cy.ifEnv("Enterprise", () => {
+    cy.wait(500);
     cy.get(groupsSelector.addPermissionButton).click();
     if (resourceType === "app") {
       cy.get(groupsSelector.addAppButton).click();

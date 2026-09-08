@@ -110,7 +110,9 @@ describe('External API — GET /ext/workspace/:workspaceId/apps', () => {
   });
 
   it('scopes results to the given workspace only', async () => {
-    const { user: user1, organization: org1 } = await createUser(app, { email: `applist-scope-1-${Date.now()}@tooljet.io` });
+    const { user: user1, organization: org1 } = await createUser(app, {
+      email: `applist-scope-1-${Date.now()}@tooljet.io`,
+    });
     const { user: user2 } = await createUser(app, { email: `applist-scope-2-${Date.now()}@tooljet.io` });
 
     await createApplication(app, { name: 'Org1 App', user: user1 });

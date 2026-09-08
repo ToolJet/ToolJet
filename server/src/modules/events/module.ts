@@ -10,16 +10,21 @@ export class EventsModule extends SubModule {
 
     const providers = [];
 
-    const { EventsGateway, YjsGateway, NotificationsGateway } = await this.getProviders(configs, 'events', [
-      'events.gateway',
-      'yjs.gateway',
-      'notifications.gateway',
-    ]);
+    // WebSocket gateways are runtime endpoints — nothing injects them, and each opens Redis
+    // subscribers in onModuleInit. They serve no purpose in migration/get-context mode, so skip
+    // them there to keep the migration context free of pub/sub connections.
+    if (!configs?.IS_GET_CONTEXT) {
+      const { EventsGateway, YjsGateway, NotificationsGateway } = await this.getProviders(configs, 'events', [
+        'events.gateway',
+        'yjs.gateway',
+        'notifications.gateway',
+      ]);
 
-    providers.unshift(YjsGateway);
-    providers.unshift(NotificationsGateway);
-    if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-      providers.unshift(EventsGateway);
+      providers.unshift(YjsGateway);
+      providers.unshift(NotificationsGateway);
+      if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+        providers.unshift(EventsGateway);
+      }
     }
 
     return this.cacheModule(cacheKey, {

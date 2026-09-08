@@ -24,11 +24,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   ): void {
     const appId = request?.tj_resource_id;
     const appType = request?.tj_app?.type;
+    const isModule = appType === APP_TYPES.MODULE;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
-    const userAppGitPermissions = userPermission?.[MODULES.APP];
+    // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
+    // not the front-end app bucket.
+    const userAppGitPermissions = userPermission?.[isModule ? MODULES.MODULES : MODULES.APP];
     const isAllAppsEditable = !!userAppGitPermissions?.isAllEditable;
-    const isAllAppsCreatable = !!userPermission?.appCreate;
+    const isAllAppsCreatable = !!(isModule ? userPermission?.moduleCreate : userPermission?.appCreate);
 
     // Used for public endpoint to get the app configs
     can(FEATURE_KEY.GIT_FETCH_APP_CONFIGS, App);
@@ -37,7 +40,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     can(FEATURE_KEY.CREATE_BRANCH, App);
     can(FEATURE_KEY.FETCH_PULL_REQUESTS, App);
     // Grant feature-level access based on resource actions
-    if (isAdmin || superAdmin || (appType === APP_TYPES.MODULE && UserAllPermissions.isBuilder)) {
+    if (isAdmin || superAdmin) {
       // Admin or Super Admin gets full access to all features
       can(FEATURE_KEY.GIT_CREATE_APP, App);
       can(FEATURE_KEY.GIT_UPDATE_APP, App);

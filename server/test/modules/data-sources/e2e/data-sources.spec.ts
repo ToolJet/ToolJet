@@ -1,14 +1,9 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createUser,
   initTestApp,
   closeTestApp,
-  createDataSource,
-  createDataSourceOption,
-  createApplicationVersion,
-  createApplication,
   ensureAppEnvironments,
   getAllEnvironments,
   createAppWithDependencies,
@@ -93,9 +88,7 @@ describe('DataSourcesController', () => {
         expect(response.body.data_sources).toBeDefined();
         expect(Array.isArray(response.body.data_sources)).toBe(true);
 
-        const found = response.body.data_sources.find(
-          (ds: any) => ds.name === 'list_test_data_source'
-        );
+        const found = response.body.data_sources.find((ds: any) => ds.name === 'list_test_data_source');
         expect(found).toBeDefined();
       });
 
@@ -181,8 +174,9 @@ describe('DataSourcesController', () => {
           .set('Cookie', loggedAnotherUser.tokenCookie)
           .send({ name: 'hacked_name' });
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
-        expect(response.statusCode).not.toBe(200);
+        // Cross-org access is rejected with a clean 404 (data source not found for
+        // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
+        expect(response.statusCode).toBe(404);
       });
     });
 
@@ -238,8 +232,9 @@ describe('DataSourcesController', () => {
           .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedAnotherUser.tokenCookie);
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
-        expect(response.statusCode).not.toBe(200);
+        // Cross-org access is rejected with a clean 404 (data source not found for
+        // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
+        expect(response.statusCode).toBe(404);
       });
     });
 
@@ -273,8 +268,9 @@ describe('DataSourcesController', () => {
             code: 'oauth-auth-code',
           });
 
-        // Cross-org access is rejected — either 404 (guard) or 500 (ability resolution)
-        expect(response.statusCode).not.toBe(200);
+        // Cross-org access is rejected with a clean 404 (data source not found for
+        // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
+        expect(response.statusCode).toBe(404);
       });
     });
   });

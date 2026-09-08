@@ -24,6 +24,7 @@ export const BlankPage = function BlankPage({
   canCreateApp,
   workflowsLimit,
   onImportFromDeviceClick,
+  gitSyncLicenseLocked = false,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -45,7 +46,8 @@ export const BlankPage = function BlankPage({
     });
   }
 
-  const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
+  const appCreationDisabled =
+    !canCreateApp() || gitSyncLicenseLocked || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
   const workflowsCreationDisabled =
     !canCreateApp() || (!workflowsLimit?.canAddUnlimited && workflowsLimit?.percentage >= 100);
 

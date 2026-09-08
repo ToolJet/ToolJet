@@ -9,6 +9,8 @@ export const groupPermissionV2Service = {
   getGroups,
   fetchAddableApps,
   fetchAddableFolders,
+  fetchAddableWorkflowFolders,
+  fetchAddableModuleFolders,
   getUsersInGroup,
   getUsersNotInGroup,
   updateUserRole,
@@ -102,6 +104,30 @@ function fetchAddableFolders() {
   );
 }
 
+function fetchAddableWorkflowFolders() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/group-permissions/granular-permissions/addable-workflow-folders`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function fetchAddableModuleFolders() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/group-permissions/granular-permissions/addable-module-folders`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 function getGroups() {
   const requestOptions = {
     method: 'GET',
@@ -142,6 +168,10 @@ function createGranularPermission(id, body) {
     type = 'app';
   } else if (body.type === 'folder') {
     type = 'folder';
+  } else if (body.type === 'workflow_folder') {
+    type = 'workflow-folder';
+  } else if (body.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }
@@ -163,6 +193,10 @@ function updateGranularPermission(permission, body) {
     type = 'app';
   } else if (permission.type === 'folder') {
     type = 'folder';
+  } else if (permission.type === 'workflow_folder') {
+    type = 'workflow-folder';
+  } else if (permission.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }
@@ -183,6 +217,10 @@ function deleteGranularPermission(permission) {
     type = 'app';
   } else if (permission.type === 'folder') {
     type = 'folder';
+  } else if (permission.type === 'workflow_folder') {
+    type = 'workflow-folder';
+  } else if (permission.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }

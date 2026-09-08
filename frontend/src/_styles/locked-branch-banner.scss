@@ -25,6 +25,15 @@
     z-index: 2;
   }
 
+  // Warning variant — git-sync license expired/invalid (plan-expired state).
+  &--warning {
+    background-color: var(--surface-warning, #fdf0e6);
+
+    .locked-branch-banner-message {
+      color: var(--text-warning, #bf4f03);
+    }
+  }
+
   &-content {
     display: flex;
     align-items: center;
@@ -49,14 +58,14 @@
   }
 
   &-message {
-    margin: 0;                                                                                                                                                                                         
-    margin-left: 10px;                                                                                                                                                                                 
-    color: #000000;                                                                                                                                                                                    
-    font-family: "IBM Plex Sans", sans-serif;                                                                                                                                                          
-    font-size: 12px;                                                                                                                                                                                   
-    font-weight: 400;                                                                                                                                                                                  
-    line-height: 10px;                                                                                                                                                                                 
-    text-align: center; 
+    margin: 0;
+    margin-left: 10px;
+    color: var(--text-default);
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 10px;
+    text-align: center;
   }
 
   &-branch {
@@ -71,21 +80,28 @@
   }
 }
 
-// Dark mode support
 .dark-theme {
   .locked-branch-banner {
+    background-color: var(--background-surface-layer-03, #2c3138);
+
+    .locked-branch-banner-message {
+      color: var(--slate12, #f1f5f9);
+    }
+  }
+
+  .locked-branch-banner--warning {
     background: linear-gradient(90deg, #451a03 0%, #78350f 100%);
     border-bottom-color: #92400e;
 
-    &-icon {
+    .locked-branch-banner-icon {
       color: #fbbf24;
     }
 
-    &-message {
+    .locked-branch-banner-message {
       color: #fde68a;
     }
 
-    &-branch {
+    .locked-branch-banner-branch {
       color: #fef3c7;
 
       strong {

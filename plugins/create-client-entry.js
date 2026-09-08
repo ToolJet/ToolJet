@@ -23,11 +23,11 @@ const operationsImports = packages.map(
 
 const darkSvgsIcons = new Set(['grpc', 'grpcv2', 'influxdb', 'mariadb', 'mysql', 'zendesk']);
 const svgsImports = packages.flatMap((dirent) => {
-    const iconImport = `import ${dirent.name}Svg from './packages/${dirent.name}/lib/icon.svg'`;
-    if (darkSvgsIcons.has(dirent.name)) {
-        return [iconImport, `import ${dirent.name}DarkSvg from './packages/${dirent.name}/lib/darkIcon.svg'`];
-    }
-    return [iconImport];
+  const iconImport = `import ${dirent.name}Svg from './packages/${dirent.name}/lib/icon.svg'`;
+  if (darkSvgsIcons.has(dirent.name)) {
+    return [iconImport, `import ${dirent.name}DarkSvg from './packages/${dirent.name}/lib/darkIcon.svg'`];
+  }
+  return [iconImport];
 });
 
 const manifestOuts = `export const allManifests = {\n ${packages
@@ -39,12 +39,12 @@ const operationsOuts = `export const allOperations = {\n ${packages
 
 const svgOuts = `export const allSvgs = {\n ${packages
   .flatMap((dirent) => {
-    const icon = dirent.name + ': ' + dirent.name + 'Svg'
-    if(darkSvgsIcons.has(dirent.name)){
-      return [icon,dirent.name + 'Dark: ' + dirent.name + 'DarkSvg']
+    const icon = dirent.name + ': ' + dirent.name + 'Svg';
+    if (darkSvgsIcons.has(dirent.name)) {
+      return [icon, dirent.name + 'Dark: ' + dirent.name + 'DarkSvg'];
     }
-    return [icon]
-    })
+    return [icon];
+  })
   .join(',\n')} \n }`;
 
 const clientContent = `

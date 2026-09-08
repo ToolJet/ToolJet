@@ -13,7 +13,11 @@ import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesController {
-  fetchGlobalDataSources(user: User, userPermissions: UserPermissions, branchId?: string): Promise<{ data_sources: object[] }>;
+  fetchGlobalDataSources(
+    user: User,
+    userPermissions: UserPermissions,
+    branchId?: string
+  ): Promise<{ data_sources: object[] }>;
 
   fetchGlobalDataSourcesForVersion(
     user: User,
