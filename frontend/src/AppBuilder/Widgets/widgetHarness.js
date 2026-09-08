@@ -56,6 +56,60 @@ export function option(label, value, { visible = true, disable = false, isDefaul
   };
 }
 
+/**
+ * State every input widget reads from its OWN resolved properties, supplied by
+ * the registration as definition defaults. Omitting them is a SEEDING artifact,
+ * not a state a real app can reach: an undefined `visibility` makes BaseInput
+ * drop its validation message and marks a Button aria-hidden, so a spec that
+ * forgets them tests a widget no user can produce.
+ */
+export const childStateDefaults = {
+  visibility: binding('{{true}}'),
+  loadingState: binding('{{false}}'),
+  disabledState: binding('{{false}}'),
+};
+
+/**
+ * A child seeded INSIDE a container widget (Form, Container, ListView, Tabs,
+ * Modal). Pass the results to `render({ extraComponents })`.
+ *
+ * `parent` is the container's component id. `slot` names a header/footer
+ * sub-canvas, which the store files under `<parent>-<slot>` — a DIFFERENT
+ * `containerChildrenMapping` bucket from the container's body, and the reason
+ * a slot child is not one of the container's fields.
+ *
+ *   containerChild('c1', 'firstname', 'TextInput', { value: binding('Maria') }, { parent: 'form1' })
+ *   containerChild('b1', 'submitbtn', 'Button', { text: binding('Submit') }, { parent: 'form1', slot: 'footer' })
+ */
+export function containerChild(
+  id,
+  name,
+  componentType,
+  properties = {},
+  { parent, slot, validation = {}, styles = {} } = {}
+) {
+  if (!parent) throw new Error(`containerChild(${id}) requires a parent container id`);
+  const definition = componentDefinition(id, name, componentType, { ...childStateDefaults, ...properties });
+  definition.component.parent = slot ? `${parent}-${slot}` : parent;
+  definition.component.definition.validation = validation;
+  definition.component.definition.styles = styles;
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+/** Turns `containerChild()` results into the id-keyed map `extraComponents` wants. */
+export function componentsById(...definitions) {
+  return Object.fromEntries(
+    definitions
+      .flat()
+      .filter(Boolean)
+      .map((definition) => [definition.id, definition])
+  );
+}
+
 export const radioButtonV2Defaults = {
   defaultProperties: {
     label: binding('Pick one'),
