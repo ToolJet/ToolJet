@@ -94,13 +94,29 @@ describe('mandatory + falsy values', () => {
     });
   });
 
-  test('[DropdownV2-VAL-001] a selected empty-string option counts as filled', () => {
+  // Break this catches: a truthiness check (`if (widgetValue)`) replacing the
+  // option-widget guard — every one of these three values is a real answer the
+  // user picked, and all three are falsy.
+  test.each([
+    ['an empty string', ''],
+    ['false', false],
+    ['zero', 0],
+  ])('[DropdownV2-VAL-001] a selected option valued %s counts as filled', (_case, widgetValue) => {
     expect(
-      validate({ componentType: 'DropdownV2', widgetValue: '', validationObject: { mandatory: { value: true } } })
+      validate({ componentType: 'DropdownV2', widgetValue, validationObject: { mandatory: { value: true } } })
     ).toEqual({
       isValid: true,
       validationError: null,
     });
+  });
+
+  test.each([
+    ['null', null],
+    ['undefined', undefined],
+  ])('[DropdownV2-VAL-001] %s counts as EMPTY, because no option is selected', (_case, widgetValue) => {
+    expect(
+      validate({ componentType: 'DropdownV2', widgetValue, validationObject: { mandatory: { value: true } } })
+    ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
   test('TextInput: `false` counts as EMPTY, because a text field has no option values', () => {

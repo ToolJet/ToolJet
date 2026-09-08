@@ -109,7 +109,7 @@
     {
       "componentType": "DropdownV2",
       "status": "verified",
-      "contract": "src/test/app-builder/widgets/DropdownV2/TESTING.md"
+      "contract": "ee/test/app-builder/widgets/DropdownV2/TESTING.md"
     },
     {
       "componentType": "MultiselectV2",
