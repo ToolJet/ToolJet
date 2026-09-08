@@ -1,1 +1,2 @@
 npx lint-staged
+bash scripts/sync-skills.sh --check
