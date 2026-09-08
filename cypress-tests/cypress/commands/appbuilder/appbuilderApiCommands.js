@@ -36,11 +36,14 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
       }
 
       expect(response.status).to.equal(201);
-      Cypress.env("appId", response.allRequestResponses[0]["Response Body"].id);
-      Cypress.env(
-        "user_id",
-        response.allRequestResponses[0]["Response Body"].user_id
-      );
+      // Read the id/user_id from the final 201 response body (canonical accessor
+      // used everywhere else in the suite). The previous
+      // `response.allRequestResponses[0]["Response Body"]` reads the FIRST entry
+      // in the request chain, which in CI can be an intermediate/redirect response
+      // whose `.id` is an object — producing `/api/apps/[object Object]` (404) in
+      // every downstream request that reads Cypress.env("appId").
+      Cypress.env("appId", response.body.id);
+      Cypress.env("user_id", response.body.user_id);
       Cypress.log({
         name: "App create",
         displayName: "APP CREATED",
