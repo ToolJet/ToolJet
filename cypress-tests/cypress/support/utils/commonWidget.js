@@ -93,7 +93,7 @@ export {
   verifyContainerElements,
 } from "./appBuilder/components";
 
-export { verifyLayout } from "./appBuilder/layout";
+export { verifyLayout, switchLayout } from "./appBuilder/layout";
 
 export {
   copyWidget,
