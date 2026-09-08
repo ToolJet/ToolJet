@@ -397,10 +397,12 @@ export class TooljetDbTableOperationsService {
                c.ORDINAL_POSITION;
     `);
 
+    const columnUuidsByName = relation.configurations?.columns?.column_names || {};
     const transformedColumnDefaultValues = columns.map((column) => {
       return {
         ...column,
         column_default: column.data_type === 'jsonb' ? JSON.parse(column.column_default) : column.column_default,
+        column_id: columnUuidsByName[column.column_name] ?? null,
       };
     });
 

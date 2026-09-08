@@ -26,6 +26,7 @@ export type TooljetDatabaseColumn = {
     is_unique: boolean;
   };
   keytype: string | null;
+  column_id?: string | null;
 };
 
 export type TooljetDatabaseForeignKey = {

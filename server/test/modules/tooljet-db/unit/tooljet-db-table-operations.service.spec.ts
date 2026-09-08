@@ -507,6 +507,22 @@ describe('TooljetDbTableOperationsService', () => {
 
         expect(result.columns.map((column) => column.column_name)).not.toContain('decoy_column');
       });
+
+      it("should include each column's tracked uuid as column_id", async () => {
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const usersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const columnUuidsByName = usersRelation.configurations.columns.column_names;
+
+        const result = await service.perform(organizationId, 'view_table', { table_name: 'users' }, undefined);
+
+        const nameColumn = result.columns.find((column) => column.column_name === 'name');
+        expect(nameColumn.column_id).toBe(columnUuidsByName['name']);
+        expect(nameColumn.column_id).toEqual(expect.any(String));
+      });
     });
   });
 });
