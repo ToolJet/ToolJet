@@ -1,6 +1,6 @@
 import { Environments } from "Constants/constants/multiEnv";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { versionModalSelector } from "Selectors/eeCommon";
+import { versionModalSelector } from "Selectors/platform/eeCommon";
 import { moduleSelectors } from "Selectors/platform/modules";
 import {
   createModuleDraftVersion,

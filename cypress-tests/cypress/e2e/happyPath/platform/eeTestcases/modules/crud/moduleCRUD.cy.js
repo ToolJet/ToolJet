@@ -1,6 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
+import { dashboardSelector } from "Selectors/platform/dashboard";
+import { multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
 import { moduleSelectors } from "Selectors/platform/modules";
 import {
   createFolder,
@@ -17,7 +17,7 @@ import {
   renameModuleFromList,
 } from "Support/utils/platform/modules";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
+import { dashboardText } from "Texts/platform/dashboard";
 
 describe(
   "Modules — Empty State, Creation & Card Operations",

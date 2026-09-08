@@ -1,6 +1,6 @@
 import { commonSelectors, commonWidgetSelector, cyParamName } from 'Selectors/common';
 import { moduleSelectors } from 'Selectors/platform/modules';
-import { versionModalSelector } from 'Selectors/eeCommon';
+import { versionModalSelector } from 'Selectors/platform/eeCommon';
 
 export const openModulesList = () => {
   cy.intercept('GET', '/api/library_apps').as('libraryApps');

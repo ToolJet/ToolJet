@@ -1,5 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { versionModalSelector } from "Selectors/eeCommon";
+import { versionModalSelector } from "Selectors/platform/eeCommon";
 import { moduleSelectors } from "Selectors/platform/modules";
 import { apiCreateGroup } from "Support/utils/manageGroups";
 import {
