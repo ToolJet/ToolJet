@@ -367,6 +367,6 @@ describe(
 
     // data-cy comes from the option VALUE ('plainText'), not its displayName — camelCase,
     // not kebab.
-    expectNoFxButton(() => cy.get('[data-cy="togglr-button-plainText"]').scrollIntoView(), "Tooltip");
+    expectNoFxButton(() => cy.get(commonWidgetSelector.togglrButton("plainText")).scrollIntoView(), "Tooltip");
   });
 });

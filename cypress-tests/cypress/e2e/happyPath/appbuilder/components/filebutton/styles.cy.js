@@ -239,7 +239,7 @@ describe(
 
     // Re-select filebutton1: the picker's dismiss-click deselected it.
     openStyleAccordion(widget, "button");
-    cy.get('[data-cy="togglr-button-outline"]').click();
+    cy.get(commonWidgetSelector.togglrButton("outline")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
       expect($btn[0].style.background).to.equal("transparent");
@@ -247,7 +247,7 @@ describe(
     cy.get(commonWidgetSelector.parameterLabel("Background")).should("not.exist");
     cy.get(commonWidgetSelector.parameterLabel("Box shadow")).should("not.exist");
 
-    cy.get('[data-cy="togglr-button-solid"]').click();
+    cy.get(commonWidgetSelector.togglrButton("solid")).click();
     cy.waitForAutoSave();
     cy.get(commonWidgetSelector.parameterLabel("Background")).should("have.text", "Background");
     cy.get(commonWidgetSelector.parameterLabel("Box shadow")).should("have.text", "Box shadow");
@@ -328,11 +328,11 @@ describe(
       expect($btn.css("padding")).to.not.equal("0px");
     });
 
-    cy.get('[data-cy="togglr-button-none"]').click();
+    cy.get(commonWidgetSelector.togglrButton("none")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("have.css", "padding", "0px");
 
-    cy.get('[data-cy="togglr-button-default"]').click();
+    cy.get(commonWidgetSelector.togglrButton("default")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should(($btn) => {
       expect($btn.css("padding")).to.not.equal("0px");
