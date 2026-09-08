@@ -400,6 +400,7 @@ export const commonWidgetSelector = {
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",

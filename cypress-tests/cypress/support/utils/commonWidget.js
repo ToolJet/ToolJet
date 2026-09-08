@@ -64,6 +64,7 @@ export {
   editAndVerifyWidgetName,
   addAndVerifyTooltip,
   verifyTooltip,
+  setTooltip,
   enableFxAndBind,
   clearParameter,
   expectNoFxButton,
