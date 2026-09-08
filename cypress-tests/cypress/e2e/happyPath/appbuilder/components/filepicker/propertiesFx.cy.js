@@ -31,6 +31,10 @@ import {
   expectDropzoneOpensPicker,
   dragFilesOver,
   endDrag,
+  selectParseFileType,
+  spyPickerClick,
+  clickDropzone,
+  expectPickerClickCount,
   expectFileInList,
   validationFileTypeWrapper,
   openParsedValue,
@@ -62,6 +66,18 @@ import {
 // The File Button and File Input specs use y=300 safely because those widgets are far
 // shorter, so the coordinate does NOT port across the family.
 const COMPANION_Y = 400;
+
+// CODE-type fields ship with fx ALREADY ACTIVE — their definition entries carry no
+// `fxActive` key (filepicker.js:376-389), unlike the toggles which set `fxActive: false`
+// explicitly. The Inspector renders them as a code editor from the start and HIDES the fx
+// button (`fx-button active` inside a `d-none` container), so enableFxAndBind cannot click
+// it, and clicking it would turn fx OFF rather than on. For these, typing the binding
+// straight into the field IS the fx path.
+
+// clickWidgetInput ends with cy.waitForAutoSave(), which polls the EDITOR's save
+// indicator — absent in preview, so it times out for 20s. This is the preview-safe form.
+const flipToggleInPreview = (name = "toggleswitch1") =>
+  cy.get(`[data-cy="${name}"]`).find("input").click({ force: true });
 
 const dropCompanionToggle = (x, y = COMPANION_Y) => dropWidget("Toggle Switch", "toggleswitch1", x, y);
 
@@ -104,7 +120,7 @@ describe(
       commitChange();
 
       openEditorSidebar(widget);
-      enableFxAndBind("Label", "{{components.textinput1.value}}"); // source: filepicker.js:44
+      verifyAndModifyParameter("Label", "{{components.textinput1.value}}"); // source: filepicker.js:44
       commitChange();
       cy.get(filePickerSelector.title(widget)).should("have.text", first);
 
@@ -124,7 +140,7 @@ describe(
       commitChange();
 
       openEditorSidebar(widget);
-      enableFxAndBind("Placeholder", "{{components.textinput1.value}}"); // source: filepicker.js:53
+      verifyAndModifyParameter("Placeholder", "{{components.textinput1.value}}"); // source: filepicker.js:53
       commitChange();
       cy.get(filePickerSelector.instructionText(widget)).should("have.text", text);
     });
@@ -158,10 +174,16 @@ describe(
       // observable (the editor canvas intercepts it) and the only way to reach both states
       // without navigating back to the editor. The Toggle Switch is a runtime widget, so it
       // can be flipped right there.
+      // ONE spy, then cumulative counts — sinon cannot wrap the same method twice, so the
+      // single-shot helper cannot be called for both polarities in one test.
       cy.openPreview(filePickerSelector.widget(widget));
-      expectDropzoneOpensPicker(widget, false);
-      clickWidgetInput("toggleswitch1");
-      expectDropzoneOpensPicker(widget, true);
+      spyPickerClick(widget);
+      clickDropzone(widget);
+      expectPickerClickCount(0); // picker off: the click is not forwarded
+
+      flipToggleInPreview();
+      clickDropzone(widget);
+      expectPickerClickCount(1); // picker on: forwarded exactly once more
     });
 
     it("should verify Allow picking multiple files follows a bound boolean", () => {
@@ -237,8 +259,11 @@ describe(
       openEditorSidebar(widget);
       cy.get(commonWidgetSelector.parameterTogglebutton("Enable parsing")).click();
       cy.waitForAutoSave();
+      // Delimiter is gated on BOTH parseContent and parseFileType === 'csv'
+      // (filepicker.js:132-141), so the type has to be set or the field never renders.
+      selectParseFileType("CSV");
       openEditorSidebar(widget);
-      enableFxAndBind("Delimiter", "{{components.textinput1.value}}"); // source: filepicker.js:125
+      verifyAndModifyParameter("Delimiter", "{{components.textinput1.value}}"); // source: filepicker.js:125
       commitChange();
 
       attachFile(csvFile);
@@ -256,9 +281,14 @@ describe(
       enableFxAndBind("Dynamic height", "{{components.toggleswitch1.value}}"); // source: filepicker.js:144
       commitChange();
 
+      // Dynamic height only takes effect in PREVIEW, by design — the editor pins a widget
+      // to its layout height so it stays draggable, so the min-height style never appears
+      // on the canvas whatever the property says. The binding is therefore driven here and
+      // read in preview, with the toggle flipped there (autosave-free).
+      cy.openPreview(filePickerSelector.widget(widget));
       cy.get(filePickerSelector.dropzone(widget)).parent().should("not.have.attr", "style");
 
-      clickWidgetInput("toggleswitch1");
+      flipToggleInPreview();
       cy.get(filePickerSelector.dropzone(widget))
         .parent()
         .invoke("attr", "style")
@@ -298,26 +328,40 @@ describe(
     });
 
     it("should verify Collapse when hidden follows a bound boolean", () => {
-      // collapseWhenHidden only has an effect while the widget is hidden, so visibility is
-      // turned off first and the wrapper height is compared across the bound flip.
-      dropCompanionToggle(500, COMPANION_Y);
+      // Measured on the NEIGHBOUR, not on the widget. A hidden File Picker is display:none
+      // (FilePicker.jsx:143) and its positioned wrapper is hidden with it, so the widget's
+      // own height reads 0 whether or not the space was reclaimed — the only observable is
+      // whether what sits below it moves up. properties.cy.js owns the direct pair; this
+      // proves a BOUND value drives the same behaviour.
+      dropWidget("Text", "text1", 500, 380);
+      dropCompanionToggle(500, 520);
+
       openEditorSidebar(widget);
       openAccordion(filePickerAccordion.additionalActions);
       enableFxAndBind("Collapse when hidden", "{{components.toggleswitch1.value}}"); // source: filepicker.js:168
       commitChange();
 
+      // Hide the widget so collapsing has something to do.
       openEditorSidebar(widget);
       openAccordion(filePickerAccordion.additionalActions);
       cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
       cy.waitForAutoSave();
 
-      cy.get(filePickerSelector.draggableWidget(widget))
-        .invoke("outerHeight")
-        .then((notCollapsed) => {
-          clickWidgetInput("toggleswitch1");
-          cy.get(filePickerSelector.draggableWidget(widget))
-            .invoke("outerHeight")
-            .should("be.lessThan", notCollapsed);
+      // Wait on the NEIGHBOUR: every widget-scoped selector is display:none once hidden,
+      // including the draggable wrapper, so openPreview cannot key on any of them.
+      cy.openPreview(commonWidgetSelector.draggableWidget("text1"));
+
+      cy.get(commonWidgetSelector.draggableWidget("text1"))
+        .then(($t) => $t[0].getBoundingClientRect().top)
+        .then((topNotCollapsed) => {
+          // Toggle ships false, so collapse starts OFF and the gap is held open.
+          flipToggleInPreview();
+          cy.get(commonWidgetSelector.draggableWidget("text1")).should(($t) => {
+            expect(
+              $t[0].getBoundingClientRect().top,
+              "bound collapse reclaims the hidden widget's space"
+            ).to.be.lessThan(topNotCollapsed);
+          });
         });
     });
 
@@ -411,7 +455,7 @@ describe(
 
       openEditorSidebar(widget);
       openAccordion("Validation");
-      enableFxAndBind("Min size limit (Bytes)", "{{components.numberinput1.value}}"); // source: filepicker.js:237
+      verifyAndModifyParameter("Min size limit (Bytes)", "{{components.numberinput1.value}}"); // source: filepicker.js:237
       commitChange();
 
       // 100 bytes clears the shipped floor of 50 but not the bound 500, so a rejection here
@@ -431,7 +475,7 @@ describe(
 
       openEditorSidebar(widget);
       openAccordion("Validation");
-      enableFxAndBind("Max size limit (Bytes)", "{{components.numberinput1.value}}"); // source: filepicker.js:248
+      verifyAndModifyParameter("Max size limit (Bytes)", "{{components.numberinput1.value}}"); // source: filepicker.js:248
       commitChange();
 
       attachGeneratedFile({ sizeBytes: 2048, name: "twokb.txt" }, widget);
@@ -455,7 +499,7 @@ describe(
 
       openEditorSidebar(widget);
       openAccordion("Validation");
-      enableFxAndBind("Min file count", "{{components.numberinput1.value}}"); // source: filepicker.js:259
+      verifyAndModifyParameter("Min file count", "{{components.numberinput1.value}}"); // source: filepicker.js:259
       commitChange();
 
       attachFile(csvFile);
@@ -482,17 +526,19 @@ describe(
 
       openEditorSidebar(widget);
       openAccordion("Validation");
-      enableFxAndBind("Max file count", "{{components.numberinput1.value}}"); // source: filepicker.js:277
+      verifyAndModifyParameter("Max file count", "{{components.numberinput1.value}}"); // source: filepicker.js:277
       commitChange();
 
       attachFile(csvFile);
       expectFileInList(csvFileName);
 
+      // Refusal asserted by STATE: past the cap the picker disables itself and the refusal
+      // produces no inline error and no toast (FP-13), so the observable contract is that
+      // the selection does not grow and the held file survives.
       attachFile(secondCsvFile);
-      // The validator's own message — see FP-11 in the texts module.
-      expectInlineAndToastError(filePickerErrors.maxFilesExceeded(1), widget);
       expectFileInList(csvFileName);
       cy.get(filePickerSelector.fileName(widget, secondCsvFileName)).should("not.exist");
+      cy.get(filePickerSelector.fileListItem(widget)).should("have.length", 1);
     });
 
     /* ----------------------------------------------------------- negative ---- */

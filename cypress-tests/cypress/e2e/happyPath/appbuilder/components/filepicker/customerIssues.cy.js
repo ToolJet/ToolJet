@@ -1,9 +1,26 @@
 import { fake } from "Fixtures/fake";
 import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import { filePickerSelector } from "Selectors/appBuilder/components/filePicker";
-import { filePickerText, filePickerFixtures } from "Texts/appBuilder/components/filePicker";
-import { dropWidget } from "Support/utils/commonWidget";
-import { attachFile, expectFileInList } from "Support/utils/appBuilder/components/filePicker";
+import {
+  filePickerText,
+  filePickerFixtures,
+  filePickerErrors,
+} from "Texts/appBuilder/components/filePicker";
+import { commonWidgetSelector } from "Selectors/common";
+import {
+  dropWidget,
+  openEditorSidebar,
+  openAccordion,
+  verifyAndModifyParameter,
+} from "Support/utils/commonWidget";
+import {
+  attachFile,
+  expectFileInList,
+  deleteFileFromList,
+  selectValidationFileType,
+  acceptAnyFileType,
+  commitChange,
+} from "Support/utils/appBuilder/components/filePicker";
 
 // Customer-issues facet — regression guards for defects found while automating this
 // widget.
@@ -23,7 +40,8 @@ describe(
   { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
   () => {
     const widget = filePickerText.defaultWidgetName;
-    const { validFile, validFileName } = filePickerFixtures;
+    const { validFile, validFileName, csvFile, secondCsvFile, secondCsvFileName } =
+      filePickerFixtures;
 
     beforeEach(() => {
       cy.apiLogin();
@@ -90,5 +108,72 @@ describe(
       cy.focused().type("{enter}");
       cy.get(filePickerSelector.fileName(widget, validFileName)).should("not.exist");
     });
+    // FP-13 — a refusal past the cap tells the user nothing.
+    // Once full the picker disables itself (useFilePicker.js:656-660), so react-dropzone
+    // never runs the validator and onDropRejected never fires: selecting another file
+    // produces no inline error and no toast. Verified by hand in the browser — rows 1 -> 1,
+    // no message anywhere. Every OTHER rejection on this widget shows both.
+    // The facet specs assert the refusal by STATE, because a message assertion there would
+    // fail today; this guard is what will notice when a message starts appearing.
+    // TODO(issue links)
+    it.skip("should tell the user why a file was refused once the picker is full", () => {
+      attachFile(validFile);
+      expectFileInList(validFileName);
+
+      // Correct behaviour: the refusal is explained, as every other rejection is.
+      attachFile(csvFile);
+      cy.get(filePickerSelector.errorMessage(widget)).should("be.visible").and("not.have.text", "");
+      cy.get(filePickerSelector.fileListItem(widget)).should("have.length", 1);
+    });
+
+    // FP-14 — on a mandatory picker the rejection reason is overwritten.
+    // An effect (useFilePicker.js:532) rewrites uiErrorMessage to the generic mandatory
+    // string whenever isMandatory && no files && isTouched — all true right after a
+    // rejection that kept nothing. So the user is told the field is required rather than
+    // that the type was wrong. The real reason survives only in the toast.
+    // TODO(issue links)
+    it.skip("should keep the rejection reason on a mandatory picker instead of replacing it", () => {
+      openEditorSidebar(widget);
+      openAccordion("Validation");
+      cy.get(commonWidgetSelector.parameterTogglebutton("Make this field mandatory")).click();
+      cy.waitForAutoSave();
+      selectValidationFileType("Spreadsheet files");
+
+      attachFile(validFile); // a .png against a spreadsheet filter
+
+      // Correct behaviour: the inline message explains the TYPE, matching the toast.
+      cy.get(filePickerSelector.errorMessage(widget)).should(
+        "have.text",
+        filePickerErrors.invalidTypeFor(validFileName, ".xls,.xlsx,.csv,.ods")
+      );
+    });
+
+    // FP-9 (second route) — removing a file below the floor gives no reason at all.
+    // The shortfall string is set only from onDropAccepted (useFilePicker.js:421-425); the
+    // removal path (handleRemoveFile, :445-461) never sets it. So deleting a file leaves
+    // isValid false with nothing on screen, from the first moment — no timer involved.
+    // TODO(issue links)
+    it.skip("should explain the shortfall after a file is removed, not just after one is added", () => {
+      openEditorSidebar(widget);
+      cy.get(commonWidgetSelector.parameterTogglebutton("Allow picking multiple files")).click();
+      cy.waitForAutoSave();
+      openEditorSidebar(widget);
+      openAccordion("Validation");
+      verifyAndModifyParameter("Min file count", "{{2}}");
+      commitChange();
+
+      acceptAnyFileType(widget);
+      attachFile([csvFile, secondCsvFile]);
+      cy.get(filePickerSelector.fileListItem(widget)).should("have.length", 2);
+
+      deleteFileFromList(secondCsvFileName);
+
+      // Correct behaviour: dropping below the floor states the reason, however it happened.
+      cy.get(filePickerSelector.errorMessage(widget)).should(
+        "have.text",
+        filePickerErrors.minCountShortfall(2)
+      );
+    });
+
   }
 );

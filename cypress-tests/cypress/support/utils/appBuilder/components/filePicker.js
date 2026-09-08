@@ -162,12 +162,30 @@ export const expectDropzoneOpensPicker = (
   widgetName = filePickerText.defaultWidgetName,
   shouldOpen = true
 ) => {
-  cy.get(filePickerSelector.inputField(widgetName)).then(($input) => {
-    cy.spy($input[0], "click").as("pickerClick");
-  });
+  spyPickerClick(widgetName);
   cy.get(filePickerSelector.dropzone(widgetName)).click();
   cy.get("@pickerClick").should(shouldOpen ? "have.been.called" : "not.have.been.called");
 };
+
+/**
+ * @tjBlock  properties
+ * @tjUsage  spyPickerClick(); clickDropzone(); expectPickerClickCount(0)
+ * @tjDom    installs ONE spy on the hidden input's click, aliased @pickerClick
+ */
+// Sinon refuses to wrap the same method twice ("Attempted to wrap click which is already
+// wrapped"), so a test that checks BOTH polarities cannot call the one-shot helper above
+// twice. Spy once, then assert cumulative call COUNTS around each click.
+export const spyPickerClick = (widgetName = filePickerText.defaultWidgetName) => {
+  cy.get(filePickerSelector.inputField(widgetName)).then(($input) => {
+    if (!$input[0].click.isSinonProxy) cy.spy($input[0], "click").as("pickerClick");
+  });
+};
+
+export const clickDropzone = (widgetName = filePickerText.defaultWidgetName) =>
+  cy.get(filePickerSelector.dropzone(widgetName)).click();
+
+export const expectPickerClickCount = (n) =>
+  cy.get("@pickerClick").should("have.callCount", n);
 
 /**
  * @tjBlock  properties
