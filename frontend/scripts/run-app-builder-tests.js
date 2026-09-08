@@ -5,7 +5,11 @@ const path = require('path');
 const args = process.argv.slice(2);
 const mode = args.shift() || 'all';
 const editionArg = args.find((arg) => arg.startsWith('--edition'));
-const edition = editionArg?.includes('=') ? editionArg.split('=')[1] : editionArg ? args[args.indexOf(editionArg) + 1] : undefined;
+const edition = editionArg?.includes('=')
+  ? editionArg.split('=')[1]
+  : editionArg
+  ? args[args.indexOf(editionArg) + 1]
+  : undefined;
 const forwarded = editionArg
   ? args.filter((arg, index) => arg !== editionArg && index !== args.indexOf(editionArg) + 1)
   : args;
@@ -16,7 +20,10 @@ if (edition === 'ee' && !fs.existsSync(path.resolve(__dirname, '../ee/modules'))
 
 const patterns = {
   all: ['src/AppBuilder', 'src/test/app-builder'],
-  contracts: ['src/test/app-builder/__tests__/contracts.spec.js'],
+  contracts: [
+    'src/test/app-builder/__tests__/contracts.spec.js',
+    'src/test/app-builder/__tests__/widgetContractValidator.spec.js',
+  ],
   parity: ['src/test/app-builder/__tests__/parity.spec.js'],
 };
 const jestArgs = [...(patterns[mode] || patterns.all), ...forwarded];
