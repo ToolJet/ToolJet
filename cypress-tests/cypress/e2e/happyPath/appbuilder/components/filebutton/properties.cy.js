@@ -74,8 +74,8 @@ describe(
     closeQueryPanel();
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify Button text: direct change", () => {

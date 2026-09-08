@@ -37,8 +37,8 @@ describe(
     closeQueryPanel();
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   // The shared verifyLayout() helper walks a strict subset of this test, so it is not
