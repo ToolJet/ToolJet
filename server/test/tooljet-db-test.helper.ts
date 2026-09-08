@@ -163,6 +163,17 @@ export async function ensureWorkspaceSchema(orgId: string): Promise<boolean> {
   }
 }
 
+/**
+ * Drops a test-created tenant schema. Optional belt-and-suspenders cleanup for a spec that wants
+ * its schema gone before the process exits, not just at the end of the run — the global
+ * setup/teardown pair (reset-tooljet-db-schemas.ts) diff-cleans whatever's left regardless.
+ */
+export async function dropWorkspaceSchema(orgId: string): Promise<void> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return;
+  await tjds.query(`DROP SCHEMA IF EXISTS "workspace_${orgId}" CASCADE`);
+}
+
 export async function ensureTenantRole(orgId: string): Promise<boolean> {
   const tjds = getTooljetDbDataSource();
   if (!tjds) return false;
