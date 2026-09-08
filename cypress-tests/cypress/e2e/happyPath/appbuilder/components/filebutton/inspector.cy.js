@@ -59,8 +59,8 @@ describe(
     closeQueryPanel();
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the initial exposed values and functions on inspector", () => {
