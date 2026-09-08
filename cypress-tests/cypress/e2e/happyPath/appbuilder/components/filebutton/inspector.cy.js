@@ -19,7 +19,7 @@ import {
 // Config-derived, so a config change dropping or renaming either list fails here first.
 describe(
   "File Button inspector",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
 

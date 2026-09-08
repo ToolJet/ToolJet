@@ -17,7 +17,7 @@ import {
 // Not here: exposed values → inspector.cy.js · drop placement → canvas.cy.js
 describe(
   "File Button basics",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
 

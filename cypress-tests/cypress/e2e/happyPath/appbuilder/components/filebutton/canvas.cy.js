@@ -31,7 +31,7 @@ import {
 // Only the widget name and the drop-placement assertion are File-Button-specific.
 describe(
   "File Button canvas",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const namePrefix = "filebutton"; // duplicates land as filebutton2, filebutton3, ...
