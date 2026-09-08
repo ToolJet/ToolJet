@@ -22,6 +22,7 @@ import { ConfigService } from '@nestjs/config';
 import { PostgrestProxyService } from './postgrest-proxy.service';
 import { PostgrestError, TooljetDatabaseError } from '../types';
 import { TooljetDbBulkUploadService } from './tooljet-db-bulk-upload.service';
+import { TooljetDbRelationResolverService } from './relation-resolver.service';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -34,8 +35,122 @@ export class TooljetDbDataOperationsService implements QueryService {
     @InjectEntityManager('tooljetDb')
     protected readonly tooljetDbManager: EntityManager,
     protected readonly configService: ConfigService,
-    protected readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
+    protected readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService
   ) {}
+
+  /**
+   * Resolves colOpts.columnId (when present) to the column's current name via the relation
+   * resolver, falling back to colOpts.column when there's no id, or the id no longer resolves
+   * (column deleted/renamed away since the query was saved) - same fail-soft-to-caller contract
+   * as the resolver itself. Options with no columnId (queries saved before Task 4) are untouched.
+   */
+  private async resolveColumnName(
+    organizationId: string,
+    tableId: string,
+    colOpts: { column?: string; columnId?: string },
+    environmentId: string | undefined
+  ): Promise<string | undefined> {
+    if (!colOpts?.columnId) return colOpts?.column;
+    const resolved = await this.relationResolverService.resolveColumnName(
+      organizationId,
+      tableId,
+      colOpts.columnId,
+      environmentId
+    );
+    return resolved ?? colOpts.column;
+  }
+
+  /**
+   * Batch variant of resolveColumnName(): one relation load resolves every entry's columnId, so
+   * an operation touching several columns (create_row's payload, update_rows' columns map, a
+   * where_filters/order_filters set) doesn't pay N relation loads. Returns names in the same
+   * order as `entries`.
+   */
+  private async resolveColumnNames(
+    organizationId: string,
+    tableId: string,
+    entries: Array<{ column?: string; columnId?: string }>,
+    environmentId: string | undefined
+  ): Promise<Array<string | undefined>> {
+    const columnIds = [...new Set(entries.filter((entry) => entry?.columnId).map((entry) => entry.columnId))];
+    const resolvedMap = columnIds.length
+      ? await this.relationResolverService.resolveColumnNames(organizationId, tableId, columnIds, environmentId)
+      : new Map<string, string | null>();
+    return entries.map((entry) =>
+      entry?.columnId ? (resolvedMap.get(entry.columnId) ?? entry.column) : entry?.column
+    );
+  }
+
+  /**
+   * Resolves the `column` field inside every entry of a where_filters/order_filters map in
+   * place-equivalent fashion (returns a new map - buildPostgrestQuery only ever reads the result).
+   * Entries without a columnId pass through untouched.
+   */
+  private async resolveFilterColumns(
+    organizationId: string,
+    tableId: string,
+    filters: Record<string, { column?: string; columnId?: string; [key: string]: any }> | undefined,
+    environmentId: string | undefined
+  ): Promise<typeof filters> {
+    if (isEmpty(filters)) return filters;
+    const keys = Object.keys(filters);
+    const resolvedNames = await this.resolveColumnNames(
+      organizationId,
+      tableId,
+      keys.map((key) => filters[key]),
+      environmentId
+    );
+    return keys.reduce(
+      (acc, key, index) => {
+        acc[key] = { ...filters[key], column: resolvedNames[index] };
+        return acc;
+      },
+      {} as typeof filters
+    );
+  }
+
+  /**
+   * Mutates every Column-type leftField/rightField across joinQueryJson's join conditions
+   * (top-level filter conditions and each join's on-conditions) in place, resolving columnId to
+   * the current name. Grouped by field.table (the logical internal_table id a field addresses)
+   * so a join across N tables costs N relation loads, not one per condition.
+   */
+  private async resolveJoinConditionColumns(
+    organizationId: string,
+    joinQueryJson: Record<string, any>,
+    environmentId: string | undefined
+  ): Promise<void> {
+    const columnFields: Array<{ table?: string; columnName?: string; columnId?: string }> = [];
+    const collect = (conditions: any) => {
+      conditions?.conditionsList?.forEach((condition: any) => {
+        if (condition.leftField?.type === 'Column') columnFields.push(condition.leftField);
+        if (condition.rightField?.type === 'Column') columnFields.push(condition.rightField);
+      });
+    };
+    collect(joinQueryJson.conditions);
+    (joinQueryJson.joins || []).forEach((join: any) => collect(join.conditions));
+
+    const fieldsByTable = new Map<string, Array<{ table?: string; columnName?: string; columnId?: string }>>();
+    for (const field of columnFields) {
+      if (!field.columnId || !field.table) continue;
+      if (!fieldsByTable.has(field.table)) fieldsByTable.set(field.table, []);
+      fieldsByTable.get(field.table).push(field);
+    }
+
+    for (const [tableId, fields] of fieldsByTable) {
+      const columnIds = [...new Set(fields.map((field) => field.columnId))];
+      const resolvedMap = await this.relationResolverService.resolveColumnNames(
+        organizationId,
+        tableId,
+        columnIds,
+        environmentId
+      );
+      for (const field of fields) {
+        field.columnName = resolvedMap.get(field.columnId) ?? field.columnName;
+      }
+    }
+  }
 
   async run(
     _sourceOptions,
@@ -94,13 +209,24 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     try {
       const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
-      const { primary_key: primaryKeyColumn, rows_update: rowsToUpdate } = bulkUpdateWithPrimaryKey;
+      const {
+        primary_key: primaryKeyColumn,
+        primary_key_id: primaryKeyColumnId,
+        rows_update: rowsToUpdate,
+      } = bulkUpdateWithPrimaryKey;
       const { organization_id: organizationId, environment_id: environmentId } = context.app;
+
+      const resolvedPrimaryKeyColumn = await this.resolveColumnName(
+        organizationId,
+        tableId,
+        { column: primaryKeyColumn, columnId: primaryKeyColumnId },
+        environmentId
+      );
 
       const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsWithPrimaryKey(
         rowsToUpdate,
         tableId,
-        primaryKeyColumn,
+        resolvedPrimaryKeyColumn,
         organizationId,
         environmentId
       );
@@ -163,8 +289,20 @@ export class TooljetDbDataOperationsService implements QueryService {
 
         if (!internalTable) throw new NotFoundException('Table not found');
 
-        const whereQuery = buildPostgrestQuery(whereFilters);
-        const orderQuery = buildPostgrestQuery(orderFilters);
+        const resolvedWhereFilters = await this.resolveFilterColumns(
+          organizationId,
+          tableId,
+          whereFilters,
+          environmentId
+        );
+        const resolvedOrderFilters = await this.resolveFilterColumns(
+          organizationId,
+          tableId,
+          orderFilters,
+          environmentId
+        );
+        const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
+        const orderQuery = buildPostgrestQuery(resolvedOrderFilters);
         if (!isEmpty(aggregates) || !isEmpty(groupBy)) {
           const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
             internalTable.tableName,
@@ -192,14 +330,18 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async createRow(queryOptions, context): Promise<QueryResult> {
-    const columns = Object.values(queryOptions.create_row).reduce((acc, colOpts: { column: string; value: any }) => {
-      if (isEmpty(colOpts.column)) return acc;
-      return Object.assign(acc, { [colOpts.column]: colOpts.value });
-    }, {});
+    const { table_id: tableId, create_row: createRow } = queryOptions;
     const { organization_id: organizationId, environment_id: environmentId } = context.app;
+    const colOptsList = Object.values<{ column: string; columnId?: string; value: any }>(createRow);
+    const resolvedNames = await this.resolveColumnNames(organizationId, tableId, colOptsList, environmentId);
+    const columns = colOptsList.reduce((acc, colOpts, index) => {
+      const columnName = resolvedNames[index];
+      if (isEmpty(columnName)) return acc;
+      return Object.assign(acc, { [columnName]: colOpts.value });
+    }, {});
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
 
-    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}`);
     return await this.proxyPostgrest(url, 'POST', headers, columns, environmentId);
   }
 
@@ -216,10 +358,14 @@ export class TooljetDbDataOperationsService implements QueryService {
     const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
-    const whereQuery = buildPostgrestQuery(whereFilters);
-    const body = Object.values<{ column: string; value: any }>(columns).reduce((acc, colOpts) => {
-      if (isEmpty(colOpts.column)) return acc;
-      return Object.assign(acc, { [colOpts.column]: colOpts.value });
+    const resolvedWhereFilters = await this.resolveFilterColumns(organizationId, tableId, whereFilters, environmentId);
+    const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
+    const colOptsList = Object.values<{ column: string; columnId?: string; value: any }>(columns);
+    const resolvedColumnNames = await this.resolveColumnNames(organizationId, tableId, colOptsList, environmentId);
+    const body = colOptsList.reduce((acc, colOpts, index) => {
+      const columnName = resolvedColumnNames[index];
+      if (isEmpty(columnName)) return acc;
+      return Object.assign(acc, { [columnName]: colOpts.value });
     }, {});
 
     if (!isEmpty(whereQuery)) query.push(whereQuery);
@@ -238,11 +384,17 @@ export class TooljetDbDataOperationsService implements QueryService {
       };
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
-    const { where_filters: whereFilters, limit = 1, order_column: orderColumn } = deleteRows;
+    const {
+      where_filters: whereFilters,
+      limit = 1,
+      order_column: orderColumn,
+      order_column_id: orderColumnId,
+    } = deleteRows;
     const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
-    const whereQuery = buildPostgrestQuery(whereFilters);
+    const resolvedWhereFilters = await this.resolveFilterColumns(organizationId, tableId, whereFilters, environmentId);
+    const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
     if (isEmpty(whereQuery)) {
       return {
         status: 'failed',
@@ -259,8 +411,14 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     if (limit && limit !== '') {
       query.push(`limit=${limit}`);
-      if (orderColumn) {
-        query.push(`order=${orderColumn}`);
+      const resolvedOrderColumn = await this.resolveColumnName(
+        organizationId,
+        tableId,
+        { column: orderColumn, columnId: orderColumnId },
+        environmentId
+      );
+      if (resolvedOrderColumn) {
+        query.push(`order=${resolvedOrderColumn}`);
       }
     }
 
@@ -326,6 +484,8 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
+
+    await this.resolveJoinConditionColumns(organizationId, sanitizedJoinTableJson, environmentId);
 
     const result = await this.tableOperationsService.perform(
       organizationId,
@@ -644,7 +804,11 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     try {
       const { table_id: tableId, bulk_upsert_with_primary_key: bulkUpsertOptions } = queryOptions;
-      const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
+      const {
+        primary_key: primaryKeyColumns,
+        primary_key_ids: primaryKeyColumnIds,
+        rows: rowsToUpsert,
+      } = bulkUpsertOptions;
       const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
       // Validate input
@@ -664,11 +828,18 @@ export class TooljetDbDataOperationsService implements QueryService {
         };
       }
 
+      const resolvedPrimaryKeyColumns = await this.resolveColumnNames(
+        organizationId,
+        tableId,
+        primaryKeyColumns.map((column, index) => ({ column, columnId: primaryKeyColumnIds?.[index] })),
+        environmentId
+      );
+
       // Perform bulk upsert
       const result = await this.tooljetDbBulkUploadService.bulkUpsertRowsWithPrimaryKey(
         rowsToUpsert,
         tableId,
-        primaryKeyColumns,
+        resolvedPrimaryKeyColumns,
         organizationId,
         environmentId
       );

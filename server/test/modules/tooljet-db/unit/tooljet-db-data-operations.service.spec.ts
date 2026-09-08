@@ -94,13 +94,15 @@ describe('TooljetDbDataOperationsService', () => {
 
       // sqlExecution/resolveTableNameToRelationIdMap only touch `manager` and
       // `tableOperationsService` - the other constructor deps (postgrestProxyService,
-      // tooljetDbManager, configService, tooljetDbBulkUploadService) are unused by the method under
-      // test, so plain stand-ins are enough; there's no batching door here that would need them.
+      // tooljetDbManager, configService, tooljetDbBulkUploadService, relationResolverService) are
+      // unused by the method under test, so plain stand-ins are enough; there's no batching door
+      // here that would need them.
       dataOperationsService = new TooljetDbDataOperationsService(
         appManager,
         tableOperationsService,
         {} as any,
         tjDbManager,
+        {} as any,
         {} as any,
         {} as any
       );
@@ -242,6 +244,378 @@ describe('TooljetDbDataOperationsService', () => {
 
         // The successful resolution (users) should still be appended
         expect(internalTableInfo).toEqual([{ id: usersRelationId, tableName: 'users' }]);
+      });
+    });
+  });
+
+  // Task 2: resolve columnId -> current column name before building the PostgREST/join call.
+  // Fully mocked - no DB, no Nest module - since the resolver itself (Task 1) already has its
+  // own unit tests, and nothing sends `columnId` from the frontend yet (Task 4), so there's no
+  // integration path to exercise here.
+  describe('Column identity resolution (mocked)', () => {
+    const organizationId = 'org-1';
+    const environmentId = 'env-1';
+    const tableId = 'table-1';
+    const context = { app: { organization_id: organizationId, environment_id: environmentId } };
+
+    function buildService(overrides: {
+      relationResolverService?: any;
+      postgrestProxyService?: any;
+      tableOperationsService?: any;
+      manager?: any;
+      tooljetDbBulkUploadService?: any;
+    }) {
+      const relationResolverService = overrides.relationResolverService ?? {
+        resolveColumnName: jest.fn().mockResolvedValue(null),
+        resolveColumnNames: jest.fn().mockResolvedValue(new Map()),
+      };
+      const postgrestProxyService = overrides.postgrestProxyService ?? { perform: jest.fn().mockResolvedValue({}) };
+      const tableOperationsService = overrides.tableOperationsService ?? { perform: jest.fn().mockResolvedValue([]) };
+      const manager = overrides.manager ?? { findOne: jest.fn().mockResolvedValue({ tableName: 'users' }) };
+      const tooljetDbBulkUploadService = overrides.tooljetDbBulkUploadService ?? {};
+
+      const service = new TooljetDbDataOperationsService(
+        manager,
+        tableOperationsService,
+        postgrestProxyService,
+        {} as any,
+        {} as any,
+        tooljetDbBulkUploadService,
+        relationResolverService
+      );
+      return { service, relationResolverService, postgrestProxyService, tableOperationsService, manager };
+    }
+
+    describe('.createRow', () => {
+      it('should use the raw column string when no columnId is present (legacy queries)', async () => {
+        const { service, postgrestProxyService, relationResolverService } = buildService({});
+
+        await service.createRow({ table_id: tableId, create_row: { c1: { column: 'name', value: 'Alice' } } }, context);
+
+        expect(relationResolverService.resolveColumnNames).not.toHaveBeenCalled();
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.any(String),
+          'POST',
+          expect.any(Object),
+          { name: 'Alice' },
+          environmentId
+        );
+      });
+
+      it('should resolve columnId to the current name even when it differs from the stored column string (rename)', async () => {
+        const resolvedMap = new Map([['col-uuid-1', 'new_name']]);
+        const { service, postgrestProxyService, relationResolverService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+        });
+
+        await service.createRow(
+          {
+            table_id: tableId,
+            create_row: { c1: { column: 'old_name', columnId: 'col-uuid-1', value: 'Alice' } },
+          },
+          context
+        );
+
+        expect(relationResolverService.resolveColumnNames).toHaveBeenCalledWith(
+          organizationId,
+          tableId,
+          ['col-uuid-1'],
+          environmentId
+        );
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.any(String),
+          'POST',
+          expect.any(Object),
+          { new_name: 'Alice' },
+          environmentId
+        );
+      });
+
+      it('should fall back to the stored column string when the columnId no longer resolves (deleted column)', async () => {
+        const { service, postgrestProxyService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(new Map()),
+          },
+        });
+
+        await service.createRow(
+          {
+            table_id: tableId,
+            create_row: { c1: { column: 'old_name', columnId: 'deleted-uuid', value: 'Alice' } },
+          },
+          context
+        );
+
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.any(String),
+          'POST',
+          expect.any(Object),
+          { old_name: 'Alice' },
+          environmentId
+        );
+      });
+    });
+
+    describe('.updateRows', () => {
+      it('should resolve columnId in both the columns map and where_filters', async () => {
+        const resolvedMap = new Map([
+          ['col-uuid-1', 'new_name'],
+          ['col-uuid-2', 'new_email'],
+        ]);
+        const { service, postgrestProxyService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+        });
+
+        await service.updateRows(
+          {
+            table_id: tableId,
+            update_rows: {
+              columns: { c1: { column: 'old_name', columnId: 'col-uuid-1', value: 'Bob' } },
+              where_filters: {
+                f1: { column: 'old_email', columnId: 'col-uuid-2', operator: 'eq', value: 'x@y.com' },
+              },
+            },
+          },
+          context
+        );
+
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.stringContaining('new_email='),
+          'PATCH',
+          expect.any(Object),
+          { new_name: 'Bob' },
+          environmentId
+        );
+      });
+    });
+
+    describe('.deleteRows', () => {
+      it('should resolve order_column via order_column_id and where_filters columns', async () => {
+        const { service, postgrestProxyService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn().mockResolvedValue('new_order_col'),
+            resolveColumnNames: jest.fn().mockResolvedValue(new Map([['col-uuid-filter', 'new_filter_col']])),
+          },
+        });
+
+        await service.deleteRows(
+          {
+            table_id: tableId,
+            delete_rows: {
+              where_filters: {
+                f1: { column: 'old_filter_col', columnId: 'col-uuid-filter', operator: 'eq', value: 1 },
+              },
+              limit: 5,
+              order_column: 'old_order_col',
+              order_column_id: 'col-uuid-order',
+            },
+          },
+          context
+        );
+
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.stringMatching(/new_filter_col=.*order=new_order_col/),
+          'DELETE',
+          expect.any(Object),
+          {},
+          environmentId
+        );
+      });
+
+      it('should fall back to the raw order_column when there is no order_column_id (legacy queries)', async () => {
+        const { service, postgrestProxyService } = buildService({});
+
+        await service.deleteRows(
+          {
+            table_id: tableId,
+            delete_rows: {
+              where_filters: { f1: { column: 'id', operator: 'eq', value: 1 } },
+              limit: 5,
+              order_column: 'id',
+            },
+          },
+          context
+        );
+
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.stringContaining('order=id'),
+          'DELETE',
+          expect.any(Object),
+          {},
+          environmentId
+        );
+      });
+    });
+
+    describe('.listRows', () => {
+      it('should resolve where_filters/order_filters columnId to the current name', async () => {
+        const resolvedMap = new Map([
+          ['col-uuid-where', 'new_where_col'],
+          ['col-uuid-order', 'new_order_col'],
+        ]);
+        const { service, postgrestProxyService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+        });
+
+        await service.listRows(
+          {
+            table_id: tableId,
+            list_rows: {
+              where_filters: {
+                f1: { column: 'old_where_col', columnId: 'col-uuid-where', operator: 'eq', value: 1 },
+              },
+              order_filters: {
+                o1: { column: 'old_order_col', columnId: 'col-uuid-order', order: 'asc' },
+              },
+            },
+          },
+          context
+        );
+
+        expect(postgrestProxyService.perform).toHaveBeenCalledWith(
+          expect.stringMatching(/new_where_col=.*new_order_col/),
+          'GET',
+          expect.any(Object),
+          {},
+          environmentId
+        );
+      });
+    });
+
+    describe('.joinTables', () => {
+      it('should resolve leftField/rightField columnId on join conditions to the current name', async () => {
+        const resolvedMap = new Map([['col-uuid-left', 'new_left_col']]);
+        const { service, tableOperationsService, relationResolverService } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+        });
+
+        await service.joinTables(
+          {
+            join_table: {
+              from: { name: 'table-a', type: 'Table' },
+              fields: [{ name: 'name', table: 'table-a' }],
+              joins: [
+                {
+                  joinType: 'INNER',
+                  table: 'table-b',
+                  conditions: {
+                    operator: 'AND',
+                    conditionsList: [
+                      {
+                        operator: '=',
+                        leftField: {
+                          type: 'Column',
+                          table: 'table-a',
+                          columnName: 'old_left_col',
+                          columnId: 'col-uuid-left',
+                        },
+                        rightField: { type: 'Column', table: 'table-b', columnName: 'id' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          context
+        );
+
+        expect(relationResolverService.resolveColumnNames).toHaveBeenCalledWith(
+          organizationId,
+          'table-a',
+          ['col-uuid-left'],
+          environmentId
+        );
+        const performedJson = tableOperationsService.perform.mock.calls[0][2].joinQueryJson;
+        expect(performedJson.joins[0].conditions.conditionsList[0].leftField.columnName).toBe('new_left_col');
+        // rightField has no columnId - stays untouched
+        expect(performedJson.joins[0].conditions.conditionsList[0].rightField.columnName).toBe('id');
+      });
+    });
+
+    describe('.bulkUpdateWithPrimaryKey', () => {
+      it('should resolve primary_key via primary_key_id before calling the bulk-upload service', async () => {
+        const bulkUploadService = {
+          bulkUpdateRowsWithPrimaryKey: jest.fn().mockResolvedValue({ status: 'ok', data: [] }),
+        };
+        const { service } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn().mockResolvedValue('new_pk'),
+            resolveColumnNames: jest.fn(),
+          },
+          tooljetDbBulkUploadService: bulkUploadService,
+        });
+
+        await service.bulkUpdateWithPrimaryKey(
+          {
+            table_id: tableId,
+            bulk_update_with_primary_key: {
+              primary_key: 'old_pk',
+              primary_key_id: 'col-uuid-pk',
+              rows_update: [{ old_pk: 1 }],
+            },
+          },
+          context
+        );
+
+        expect(bulkUploadService.bulkUpdateRowsWithPrimaryKey).toHaveBeenCalledWith(
+          [{ old_pk: 1 }],
+          tableId,
+          'new_pk',
+          organizationId,
+          environmentId
+        );
+      });
+    });
+
+    describe('.bulkUpsertUsingPrimaryKey', () => {
+      it('should resolve each primary_key entry via primary_key_ids before calling the bulk-upload service', async () => {
+        const resolvedMap = new Map([['col-uuid-pk1', 'new_pk1']]);
+        const bulkUploadService = {
+          bulkUpsertRowsWithPrimaryKey: jest
+            .fn()
+            .mockResolvedValue({ status: 'ok', inserted: 1, updated: 0, rows: [] }),
+        };
+        const { service } = buildService({
+          relationResolverService: {
+            resolveColumnName: jest.fn(),
+            resolveColumnNames: jest.fn().mockResolvedValue(resolvedMap),
+          },
+          tooljetDbBulkUploadService: bulkUploadService,
+        });
+
+        await service.bulkUpsertUsingPrimaryKey(
+          {
+            table_id: tableId,
+            bulk_upsert_with_primary_key: {
+              primary_key: ['old_pk1', 'pk2'],
+              primary_key_ids: ['col-uuid-pk1'],
+              rows: [{ old_pk1: 1, pk2: 2 }],
+            },
+          },
+          context
+        );
+
+        expect(bulkUploadService.bulkUpsertRowsWithPrimaryKey).toHaveBeenCalledWith(
+          [{ old_pk1: 1, pk2: 2 }],
+          tableId,
+          ['new_pk1', 'pk2'],
+          organizationId,
+          environmentId
+        );
       });
     });
   });
