@@ -61,6 +61,10 @@ const useAppData = (
   // module read is happening in the context of an app the user can edit, even when they have
   // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
+  // Slug of the top-level host app for an embedded module. Constants are org-scoped, so an
+  // anonymous public viewer (no JWT) fetches the module's constants through the parent's
+  // public slug — the same anonymous-safe /public/:slug path the host app itself uses.
+  const parentAppSlug = useStore((state) => state.appStore?.modules?.['canvas']?.app?.slug);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
@@ -390,8 +394,17 @@ const useAppData = (
             // on the module's slug. ModuleViewer already resolved the parent's environment
             // id/name — reuse them instead of re-resolving.
             editorEnvironment = { id: environmentId, name: environmentName };
+            // An anonymous viewer of a public host app has no JWT, so the auth-gated
+            // /environment/:id endpoint 401s and the module's constants come back empty.
+            // Constants are org-scoped and the module shares the host's org, so fetch them
+            // through the host's public slug instead. Authenticated viewers keep the JWT
+            // path — the public slug would 403 for a private host app.
+            const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
             try {
-              constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId);
+              constantsResp =
+                isUnauthenticated && parentAppSlug
+                  ? await orgEnvironmentConstantService.getConstantsFromPublicApp(parentAppSlug, environmentId)
+                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId);
             } catch (error) {
               console.error('Error fetching module constants:', error);
             }
