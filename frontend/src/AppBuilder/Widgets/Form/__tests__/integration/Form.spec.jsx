@@ -992,3 +992,88 @@ describe('known defects, pinned', () => {
     expect(headerSection()).toBeNull();
   });
 });
+
+describe('CSA state across a reset (QA report)', () => {
+  const submitEvents = [onForm('onSubmit', 'submitted')];
+
+  test('[Form-STATE-010] `setVisibility(false)` survives a submit that resets the form', async () => {
+    // Break this catches: `resetComponent()` remounts the Form (RenderWidget.jsx:328
+    // keys ComponentToRender), so `useExposeState` re-seeds isVisible from the
+    // resolved property and silently discards a setVisibility() an app made.
+    form.render({
+      properties: { resetOnSubmit: binding('{{true}}'), visibility: binding('{{true}}') },
+      extraComponents: componentsById(textInput('c1', 'firstname', 'Maria')),
+      events: submitEvents,
+    });
+    await waitForFields(1);
+
+    await form.act('setVisibility', false);
+    await waitFor(() => expect(formEl()).toHaveStyle({ display: 'none' }));
+
+    await form.act('submitForm');
+    await waitFor(() => expect(form.variables().submitted).toBe('FIRED'));
+    await drain();
+
+    expect(formEl()).toHaveStyle({ display: 'none' });
+  });
+
+  test('[Form-STATE-011] `setDisable(true)` survives a submit that resets the form', async () => {
+    // Break this catches: the same remount re-seeds isDisabled, re-enabling a
+    // form an app deliberately locked while its submit query is in flight.
+    form.render({
+      properties: { resetOnSubmit: binding('{{true}}'), disabledState: binding('{{false}}') },
+      extraComponents: componentsById(textInput('c1', 'firstname', 'Maria')),
+      events: submitEvents,
+    });
+    await waitForFields(1);
+
+    await form.act('setDisable', true);
+    await waitFor(() => expect(bodySection().querySelector('fieldset')).toBeDisabled());
+
+    await form.act('submitForm');
+    await waitFor(() => expect(form.variables().submitted).toBe('FIRED'));
+    await drain();
+
+    expect(bodySection().querySelector('fieldset')).toBeDisabled();
+  });
+
+  test('[Form-STATE-012] `setLoading(true)` survives a submit that resets the form', async () => {
+    // Break this catches: the remount re-seeds isLoading, so the spinner an app
+    // raises for its submit query is killed the instant the reset lands — the
+    // most common onSubmit pattern there is.
+    form.render({
+      properties: { resetOnSubmit: binding('{{true}}'), loadingState: binding('{{false}}') },
+      extraComponents: componentsById(textInput('c1', 'firstname', 'Maria')),
+      events: submitEvents,
+    });
+    await waitForFields(1);
+
+    await form.act('setLoading', true);
+    await waitFor(() => expect(bodySection().querySelector('.spinner-border')).not.toBeNull());
+
+    await form.act('submitForm');
+    await waitFor(() => expect(form.variables().submitted).toBe('FIRED'));
+    await drain();
+
+    expect(bodySection().querySelector('.spinner-border')).not.toBeNull();
+  });
+
+  test('[Form-STATE-010] control: with `resetOnSubmit` off, the CSA state plainly survives', async () => {
+    // Break this catches: proves the loss above is the RESET, not the submit.
+    // If this ever fails too, the defect is in submit itself and the fix above
+    // is aimed at the wrong place.
+    form.render({
+      properties: { resetOnSubmit: binding('{{false}}'), visibility: binding('{{true}}') },
+      extraComponents: componentsById(textInput('c1', 'firstname', 'Maria')),
+      events: submitEvents,
+    });
+    await waitForFields(1);
+
+    await form.act('setVisibility', false);
+    await form.act('submitForm');
+    await waitFor(() => expect(form.variables().submitted).toBe('FIRED'));
+    await drain();
+
+    expect(formEl()).toHaveStyle({ display: 'none' });
+  });
+});
