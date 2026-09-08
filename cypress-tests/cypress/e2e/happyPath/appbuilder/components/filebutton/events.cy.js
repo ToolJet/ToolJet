@@ -51,8 +51,8 @@ describe(
     openEditorSidebar(widget);
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should fire onFileSelected when a file is accepted", () => {

@@ -60,8 +60,8 @@ describe(
     closeQueryPanel();
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify Button text resolves and re-resolves a binding", () => {

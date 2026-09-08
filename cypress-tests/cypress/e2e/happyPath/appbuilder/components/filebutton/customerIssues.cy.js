@@ -46,8 +46,8 @@ describe(
     closeQueryPanel();
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   // OPEN BUG — going over Max file count is silently absorbed. useFilePicker.js:347
