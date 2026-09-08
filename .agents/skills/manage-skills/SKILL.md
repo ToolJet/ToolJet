@@ -1,9 +1,9 @@
 ---
-name: add-skill
-description: Create a new agent skill in the right place (public root vs private EE submodule) and wire the symlinks so it is invokable from repo root in Claude Code, Cursor and Codex. Use when asked to add, create, or move a skill.
+name: manage-skills
+description: Add, move, or repair agent skills in this repo — decide public root vs private EE submodule placement and wire the symlinks so a skill is invokable from repo root in Claude Code, Cursor and Codex. Use when asked to add, create, move, relocate, or rename a skill, or when a skill is not showing up.
 ---
 
-# Add a skill
+# Manage skills
 
 Skill placement is decided by **sensitivity**, not by which code the skill touches.
 
@@ -22,6 +22,15 @@ Private skills always go in `frontend/ee`, even if backend-flavoured — skills 
 4. Run `scripts/sync-skills.sh` from repo root. It creates every missing link and removes stale ones.
 5. Verify: `ls -L .claude/skills/<name>/SKILL.md` resolves from repo root. The script refuses to overwrite a real directory, so a name already used by a public skill fails loudly — pick another name.
 6. Private skill → commit content in `frontend/ee` first, then links + submodule pointer in root (`commit` skill handles the order).
+
+## Moving or renaming
+
+`git mv` the directory to its new home or name, run `scripts/sync-skills.sh` (removes stale links, adds new ones), then `git add .agents/skills .claude/skills`.
+
+## Skill not showing up
+
+1. `ls -L .claude/skills/<name>/SKILL.md` — missing link → run `scripts/sync-skills.sh`.
+2. Link resolves but harness still blind → private skill on a clone without `frontend/ee` checked out, or the harness session predates the link (restart it).
 
 ## Rules
 
