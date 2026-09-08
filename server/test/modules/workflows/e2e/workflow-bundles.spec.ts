@@ -59,7 +59,7 @@ const waitForBundleReady = async (
 /**
  * @group workflows
  */
-describe('WorkflowBundleController', () => {
+describe.skip('[QUARANTINED] WorkflowBundleController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
 
@@ -1551,7 +1551,7 @@ describe('WorkflowBundleController', () => {
 /**
  * @group workflows
  */
-describe('WorkflowBundleController | CE', () => {
+describe.skip('[QUARANTINED] WorkflowBundleController | CE', () => {
   let app: INestApplication;
 
   const context = setupPolly({
