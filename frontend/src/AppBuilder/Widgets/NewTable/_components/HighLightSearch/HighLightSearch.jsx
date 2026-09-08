@@ -3,7 +3,7 @@ import React from 'react';
 export const HighLightSearch = React.memo(({ text, searchTerm }) => {
   if (text === '') return null;
 
-  if (searchTerm === '' || !text.toString()?.toLowerCase().includes(searchTerm?.toLowerCase()))
+  if (searchTerm == null || searchTerm === '' || !text.toString()?.toLowerCase().includes(searchTerm?.toLowerCase()))
     return <span>{text}</span>;
 
   const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

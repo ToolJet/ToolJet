@@ -47,6 +47,24 @@ describe('Table search highlighting', () => {
     expect(container.querySelector('mark')).toBeNull();
   });
 
+  test.each([undefined, null])('leaves text unchanged when the search term is %s', (searchTerm) => {
+    const { container } = render(<HighLightSearch text="undefined value" searchTerm={searchTerm} />);
+
+    expect(container.textContent).toBe('undefined value');
+    expect(container.querySelector('mark')).toBeNull();
+  });
+
+  test('removes highlights when the search is cleared', () => {
+    const { container, rerender } = render(<HighLightSearch text="undefined value" searchTerm="value" />);
+
+    expect(container.querySelector('mark')).toHaveTextContent('value');
+
+    rerender(<HighLightSearch text="undefined value" searchTerm={undefined} />);
+
+    expect(container.textContent).toBe('undefined value');
+    expect(container.querySelector('mark')).toBeNull();
+  });
+
   test('renders an empty cell without a highlight', () => {
     const { container } = render(<HighLightSearch text="" searchTerm="(" />);
 
