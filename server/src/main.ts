@@ -17,6 +17,7 @@ import { GuardValidator } from '@modules/app/validators/feature-guard.validator'
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
+import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -37,6 +38,10 @@ import {
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
+  // Runs before NestFactory even starts, so no early appLogger.* call can miss the OTLP
+  // stream. Idempotent — safe alongside FrontendMetricsModule's own call to this.
+  initializeOtelLogs();
+
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
 
@@ -155,14 +160,17 @@ async function bootstrap() {
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
+    let exitCode = 0;
     try {
       await app.close();
       logger.log('✅ Application closed successfully');
-      process.exit(0);
     } catch (error) {
       logger.error('❌ Error during application shutdown:', error);
-      process.exit(1);
+      exitCode = 1;
     }
+    // Flush the OTel log queue before exiting, regardless of how app.close() went.
+    await shutdownOtelLogs();
+    process.exit(exitCode);
   };
 
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));

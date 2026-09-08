@@ -40,6 +40,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
   };
 
   const isDataColumn = column.columnType !== 'selector';
+  const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
 
   const handleHeaderClick = () => {
     if (!isDataColumn) return;
@@ -70,7 +71,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
     position: 'relative',
     transform: CSS.Translate.toString(transform),
     transition: 'width transform 0.2s ease-in-out',
-    whiteSpace: 'nowrap',
+    whiteSpace: isHeaderWrapped ? 'normal' : 'nowrap',
     width: header.column.getSize(),
     flex: '0 0 auto',
     zIndex: isDragging ? 15 : pinnedStyles.zIndex ?? 0,
@@ -88,6 +89,8 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
         'resizing-column': header.column.getIsResizing(),
         'has-actions': header.column.columnDef.header === 'Actions',
         'selector-header': header.column.columnDef.type === 'selector',
+        // lets the header grow with wrapped text instead of overflowing the fixed 32px height
+        'header-wrap': isHeaderWrapped,
         'dark-theme': darkMode,
         'pinned-column': !!pinnedPosition,
         'pinned-column-left': pinnedPosition === 'left',

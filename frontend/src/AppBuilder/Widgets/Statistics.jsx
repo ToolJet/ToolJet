@@ -291,11 +291,13 @@ export const Statistics = function Statistics({
                     'tw-justify-end': dataAlignment === 'right',
                   })}
                 >
-                  <WidgetIcon
-                    name={secondarySignDisplay !== 'negative' ? 'upstatistics' : 'downstatistics'}
-                    width={trendIconSize}
-                    height={trendIconSize}
-                  />
+                  {secondarySignDisplay !== 'none' && (
+                    <WidgetIcon
+                      name={secondarySignDisplay !== 'negative' ? 'upstatistics' : 'downstatistics'}
+                      width={trendIconSize}
+                      height={trendIconSize}
+                    />
+                  )}
 
                   <p style={secondaryContainerStyle}>{derivedSecondaryValue}</p>
                 </div>

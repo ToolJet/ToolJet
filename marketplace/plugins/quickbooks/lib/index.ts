@@ -17,7 +17,7 @@ function isFileObject(value: unknown): value is { name?: string; type?: string; 
 
 export default class QuickBooks implements QueryService {
   authUrl(source_options: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
+    const host = source_options?.tj_redirect_host?.value || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
@@ -58,7 +58,8 @@ export default class QuickBooks implements QueryService {
 
     const clientId = getOption('client_id');
     const clientSecret = getOption('client_secret');
-    const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
+    const redirectHost = getOption('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const redirectUri = `${redirectHost}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
 
     const data = new URLSearchParams({

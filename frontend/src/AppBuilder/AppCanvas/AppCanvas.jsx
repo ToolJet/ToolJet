@@ -5,6 +5,7 @@ import './appCanvas.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
+import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
@@ -18,7 +19,7 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
-import { SuspenseCountProvider } from './SuspenseTracker';
+import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
 import { MobileLayout } from './MobileLayout';
 import { DesktopLayout } from './DesktopLayout';
 // Lazy load editor-only component to reduce viewer bundle size
@@ -64,6 +65,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   const isMobileLayout = currentLayout === 'mobile';
   const pageLoader = useStore((state) => state.pageLoader, shallow);
+  const isCanvasReloading = useStore((state) => state.loaderStore.modules[moduleId].isCanvasReloading, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -218,6 +220,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         id="main-editor-canvas"
         onMouseUp={handleCanvasContainerMouseUp}
       >
+        <AgentBuildingOverlay />
         <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
             ref={canvasContainerRef}
@@ -253,6 +256,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               })}
               style={{ minWidth: minCanvasWidth }}
             >
+              {/* The same overlay the viewer uses for lazy-loading. It has to sit here rather than
+                  deeper in the canvas: the wrappers below collapse to zero height while the widget
+                  tree is unmounted, and this is the nearest full-height positioned ancestor. */}
+              {isCanvasReloading && <SuspenseLoadingOverlay darkMode={isAppDarkMode} pageLoader />}
               <div
                 ref={canvasContentRef}
                 className={cx(
@@ -278,7 +285,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   currentLayout={currentLayout}
                   isModuleMode={isModuleMode}
                 >
-                  {environmentLoadingState !== 'loading' && (
+                  {environmentLoadingState !== 'loading' && !isCanvasReloading && (
                     <SuspenseCountProvider
                       key={currentPageId}
                       disabled={pageLoader}

@@ -821,9 +821,10 @@
   padding: 8px;
   color: var(--slate12) !important;
 
+  // no !important here: the th reads columnBackgroundColor/columnTitleColor inline, same as the main table header
   .th {
-    background-color: var(--slate3) !important;
-    color: var(--slate12) !important;
+    background-color: var(--cc-surface2-surface);
+    color: var(--cc-primary-text);
   }
 }
 
@@ -1023,6 +1024,13 @@
       line-height: 20px !important;
       width: 100%;
       text-transform: uppercase;
+
+      // header overflow set to wrap: grow with the content like the body rows do
+      &.header-wrap {
+        height: auto;
+        min-height: 32px;
+        white-space: normal;
+      }
 
       &:hover {
         background: var(--cc-table-header-hover) !important;
