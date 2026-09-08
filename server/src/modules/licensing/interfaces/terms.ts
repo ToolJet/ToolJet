@@ -68,6 +68,7 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      publicApp: boolean;
     };
   };
   modules?: {

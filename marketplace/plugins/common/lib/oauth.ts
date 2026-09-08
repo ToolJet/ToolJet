@@ -206,7 +206,8 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
 
 export function getAuthUrl(sourceOptions: any): string {
   const customQueryParams = sanitizeParams(sourceOptions['custom_query_params']);
-  const host = process.env.TOOLJET_HOST;
+  const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+  const host = !isTooljetManagedApp && sourceOptions['tj_redirect_host'] ? sourceOptions['tj_redirect_host'] : process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
