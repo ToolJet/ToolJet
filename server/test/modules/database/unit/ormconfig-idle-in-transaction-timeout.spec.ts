@@ -1,10 +1,8 @@
 /// <reference types="jest" />
 import { buildConnectionOptions } from 'ormconfig';
 
-// Regression for tj-ee#5209: an orphaned "idle in transaction" session held locks on the
-// `layouts` table for ~2 days and froze the app-builder. The app DB connection must set
-// Postgres' idle_in_transaction_session_timeout so abandoned transactions get rolled back
-// automatically. This guards the config that makes that happen.
+// Guards that the app DB connection sets Postgres' idle_in_transaction_session_timeout,
+// so abandoned transactions are rolled back automatically instead of holding locks.
 /** @group platform */
 describe('buildConnectionOptions — idle_in_transaction_session_timeout (app DB)', () => {
   // Minimal env for a valid connection; the function only reads these keys off `data`.
