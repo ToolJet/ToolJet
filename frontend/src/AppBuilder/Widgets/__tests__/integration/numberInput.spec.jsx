@@ -356,6 +356,20 @@ describe('NumberInput: step controls', () => {
     await waitFor(() => expect(input()).toBeInTheDocument());
     expect(stepArrows()).toHaveLength(0);
   });
+
+  test('repeated decrementing a decimal value never drifts into floating-point noise', async () => {
+    // 37.88 isn't exactly representable in IEEE-754 double precision; six raw
+    // `- 1` steps land on the exact reported repro (31.880000000000003) without
+    // re-rounding on every step — fewer steps happen not to drift for this value.
+    widget.render({ properties: { value: binding('{{37.88}}'), decimalPlaces: binding('{{2}}') } });
+    await waitFor(() => expect(stepArrows()).toHaveLength(2));
+
+    for (let i = 0; i < 6; i++) {
+      await widget.session.user.click(stepArrows()[1]);
+    }
+
+    expect(exposed()).toBe(31.88);
+  });
 });
 
 describe('NumberInput: clear button', () => {
@@ -477,6 +491,48 @@ describe('NumberInput: component-specific actions', () => {
 
     expect(exposed()).toBeNull();
     expect(input()).toHaveValue(null);
+  });
+
+  test('calling setFocus moves focus to the real input element', async () => {
+    // Regression: NumberInput used to declare its own local `inputRef` (for the
+    // scroll-wheel feature) and pass it to BaseInput AFTER `{...inputLogic}` was
+    // spread, so it won the prop collision. useInput()'s own `inputRef` — the one
+    // setFocus/setBlur actually close over — never attached to the DOM node.
+    widget.render();
+    await waitFor(() => expect(input()).toBeInTheDocument());
+
+    await widget.session.store.act(async () => {
+      await widget.exposed().setFocus();
+    });
+
+    expect(input()).toHaveFocus();
+  });
+
+  test('calling setBlur removes focus from the input element', async () => {
+    widget.render();
+    await waitFor(() => expect(input()).toBeInTheDocument());
+    input().focus();
+    expect(input()).toHaveFocus();
+
+    await widget.session.store.act(async () => {
+      await widget.exposed().setBlur();
+    });
+
+    expect(input()).not.toHaveFocus();
+  });
+
+  test('setText rounds an over-precise value to decimalPlaces, matching the typed/blurred path', async () => {
+    // setText used to store the raw value untouched. beforeSetInputValue
+    // (useInput.js's setInputValue) now rounds every value-setting path,
+    // including this one, not just handleChange/handleBlur.
+    widget.render({ properties: { decimalPlaces: binding('{{2}}') } });
+    await waitFor(() => expect(input()).toBeInTheDocument());
+
+    await widget.session.store.act(async () => {
+      await widget.exposed().setText(3.14159);
+    });
+
+    expect(exposed()).toBe(3.14);
   });
 });
 
