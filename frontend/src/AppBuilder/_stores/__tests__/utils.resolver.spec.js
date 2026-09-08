@@ -336,3 +336,39 @@ describe('resolveDynamicValues — strings with no complete binding are EVALUATE
     expect(resolveDynamicValues(42, {})).toBeUndefined();
   });
 });
+
+describe('resolveDynamicValues — a nested `{{ }}` inside a binding', () => {
+  // Brace handling is the least-protected part of this module: a mutation replacing the
+  // brace-aware `removeNestedDoubleCurlyBraces` with a naive `slice(2, -2).trim()` passed
+  // the ENTIRE 296-test frontend suite. These two tests are what that mutation now fails.
+  const S = { variables: { a: 1, b: 2, c: 3 } };
+
+  test('a nested binding alone is stripped brace-aware and evaluates to a number', () => {
+    // Break this catches: replacing removeNestedDoubleCurlyBraces with a naive
+    // `str.slice(2, -2)`. The naive strip leaves the INNER `{{`/`}}` in place, so
+    // Function() gets `variables.a + {{ variables.b }}` — a syntax error, swallowed into
+    // ''. The real function walks a brace stack and yields `variables.a + variables.b`.
+    // Nested bindings are how authors index one binding by another, e.g.
+    // `{{queries.q1.data[{{components.i.value}}]}}`.
+    expect(resolveDynamicValues('{{ variables.a + {{ variables.b }} }}', S)).toBe(3);
+  });
+
+  test.failing('a nested binding followed by a sibling must not leak a stray `}}`', () => {
+    // A real, unfixed bug. getDynamicVariables' non-greedy /\{\{(.*?)\}\}/g tokenizes
+    // `{{ variables.a + {{ variables.b }} }} {{variables.c}}` as
+    //   ['{{ variables.a + {{ variables.b }}', '{{variables.c}}']
+    // — the first entry truncated at the INNER `}}`. Two matches means the whole-string
+    // branch is skipped in favour of the per-variable replace loop, which never consumes
+    // the outer `}}`, so it survives into the output between the two resolved values.
+    //
+    // Actual today: '3 }} 3'. Both values are correct; the delimiter leaks.
+    // The fix is brace-aware tokenization in getDynamicVariables, not another replace.
+    expect(resolveDynamicValues('{{ variables.a + {{ variables.b }} }} {{variables.c}}', S)).toBe('3 3');
+  });
+
+  test('two plain sibling bindings are unaffected — this is the control', () => {
+    // Break this catches: a "fix" for the case above that breaks ordinary multi-binding
+    // interpolation, which is by far the more common shape.
+    expect(resolveDynamicValues('{{variables.a}} {{variables.c}}', S)).toBe('1 3');
+  });
+});

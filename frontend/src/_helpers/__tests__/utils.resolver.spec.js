@@ -509,3 +509,27 @@ describe('resolveReferences — the reservedKeyword blocklist', () => {
     expect(result).not.toBe(globalThis.window);
   });
 });
+
+describe('resolveReferences — a nested `{{ }}` leaks a delimiter, and diverges from the store copy', () => {
+  const S = { variables: { a: 1, b: 2, c: 3 } };
+
+  test.failing('a nested binding ALONE must not leak a stray `}}` — utils.js resolveString', () => {
+    // A real, unfixed bug, and a DIVERGENCE worth pinning: the store copy
+    // (`_stores/utils.js` resolveDynamicValues) gets this exact input right and returns
+    // the number 3. This copy returns the string '3 }}'.
+    //
+    // Same root cause as the store copy's sibling-binding case: the non-greedy
+    // /\{\{(.*?)\}\}/g tokenizer truncates the match at the INNER `}}`, so the outer
+    // one is never consumed. Here it bites even with a single binding.
+    //
+    // Actual today: '3 }}' (a string, not the number 3).
+    expect(resolveReferences('{{ variables.a + {{ variables.b }} }}', S)).toBe(3);
+  });
+
+  test.failing('a nested binding followed by a sibling must not leak a stray `}}`', () => {
+    // Actual today: '3 }} 3'. The store copy produces the same output for this shape,
+    // so a fix belongs in both files — see the matching test in
+    // `_stores/__tests__/utils.resolver.spec.js`.
+    expect(resolveReferences('{{ variables.a + {{ variables.b }} }} {{variables.c}}', S)).toBe('3 3');
+  });
+});
