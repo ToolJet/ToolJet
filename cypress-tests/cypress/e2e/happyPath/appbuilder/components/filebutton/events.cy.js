@@ -14,7 +14,7 @@ import {
 // source: fileButton.js
 describe(
   "File Button events",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
   const widget = fileButtonText.defaultWidgetName;
   // Generated rather than committed: the only way to trip the widget's default
