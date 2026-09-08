@@ -18,18 +18,26 @@ import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreview
 // manifest defaults into definition.properties — that's the correct default channel.
 const fieldMeta = (prop) => {
   const displayName = prop.label ?? prop.name; // label lands with C2; name until then
+
   switch (prop.type) {
-    case 'boolean':
-      return { displayName, name: prop.name, type: 'toggle' };
-    case 'enumeration':
+    case 'boolean': {
+      const inputType = prop.inspector ?? 'toggle';
+
+      return { displayName, name: prop.name, type: inputType, ...(inputType === 'checkbox' && { checkboxLabel: '' }) };
+    }
+    case 'enumeration': {
+      const inputType = prop.inspector ?? 'select';
+      const optionLabelKeyName = inputType === 'switch' ? 'displayName' : 'name';
+
       return {
         displayName,
         name: prop.name,
-        type: 'select',
-        options: (prop.enumValues ?? []).map((v) => ({ name: v, value: v })),
+        type: inputType,
+        options: (prop.enumValues ?? []).map((v) => ({ [optionLabelKeyName]: prop.enumLabels?.[v] ?? v, value: v })),
       };
+    }
     default: // string | number | object | array → CodeHinter
-      return { displayName, name: prop.name, type: 'code' };
+      return { displayName, name: prop.name, type: prop.inspector ?? 'code' };
   }
 };
 
@@ -74,6 +82,7 @@ export const LibraryComponent = ({
 
   const componentManifest = manifest?.components?.[componentName];
   const props = componentManifest?.props ?? [];
+  const visibleProps = props.filter((prop) => prop.inspector !== 'hidden');
   const events = componentManifest?.events ?? [];
 
   // EventManager's whole pipeline keys off eventMetaDefinition.events — synthesizing
@@ -108,13 +117,13 @@ export const LibraryComponent = ({
     ),
   });
 
-  if (props.length > 0) {
+  if (visibleProps.length > 0) {
     items.push({
       title: 'Properties',
       isOpen: true,
       children: (
         <>
-          {props.map((prop) =>
+          {visibleProps.map((prop) =>
             renderElement(
               component,
               componentMeta,
