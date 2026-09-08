@@ -232,7 +232,11 @@ const ToolJetDbOperations = ({
     if (mounted && columns.length > 0) {
       const primaryKeyColumn = columns.find((col) => col.isPrimaryKey);
       if (primaryKeyColumn?.accessor) {
-        setDeleteRowsOptions((prev) => ({ ...prev, order_column: primaryKeyColumn.accessor }));
+        setDeleteRowsOptions((prev) => ({
+          ...prev,
+          order_column: primaryKeyColumn.accessor,
+          order_column_id: primaryKeyColumn.column_id,
+        }));
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,12 +283,12 @@ const ToolJetDbOperations = ({
     setBulkUpsertPrimaryKey((prev) => ({ ...prev, rows: value }));
   };
 
-  const handlePrimaryKeyOptionChangedForBulkUpdate = (value) => {
-    setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value }));
+  const handlePrimaryKeyOptionChangedForBulkUpdate = (value, columnId) => {
+    setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value, primary_key_id: columnId }));
   };
 
-  const handlePrimaryKeyOptionChangedForBulkUpsert = (value) => {
-    setBulkUpsertPrimaryKey((prev) => ({ ...prev, primary_key: value }));
+  const handlePrimaryKeyOptionChangedForBulkUpsert = (value, columnIds) => {
+    setBulkUpsertPrimaryKey((prev) => ({ ...prev, primary_key: value, primary_key_ids: columnIds }));
   };
 
   const loadTableInformation = async (tableId, isNewTableAdded) => {

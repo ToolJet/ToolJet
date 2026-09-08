@@ -16,6 +16,7 @@ import useConfirm from './Confirm';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ToolTip } from '@/_components';
+import { resolveColumnDisplayName } from './util';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
@@ -401,21 +402,32 @@ const JoinOn = ({
 }) => {
   const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
-  const leftFieldColumn = leftField?.columnName;
-  const rightFieldColumn = rightField?.columnName;
+  const leftFieldColumn = resolveColumnDisplayName(
+    tableInfo[findTableDetails(leftFieldTable)?.table_name],
+    leftField?.columnName,
+    leftField?.columnId,
+    'Header'
+  );
+  const rightFieldColumn = resolveColumnDisplayName(
+    tableInfo[findTableDetails(rightFieldTable)?.table_name],
+    rightField?.columnName,
+    rightField?.columnId,
+    'Header'
+  );
 
   const leftFieldTableDetails = (leftFieldTable && findTableDetails(leftFieldTable)) || {};
   const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
   const leftFieldOptions = leftFieldTableDetails?.table_name
-    ? (tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
+    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
         label: col.Header,
         value: col.Header,
         icon: col.dataType,
-      })) ?? [])
+        columnId: col.column_id,
+      })) ?? []
     : [];
   const selectedLeftField = leftFieldTableDetails?.table_name
-    ? (tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? [])
+    ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
     : {};
 
   const rightFieldOptions = rightFieldTableDetails?.table_name
@@ -430,11 +442,12 @@ const JoinOn = ({
           label: col.Header,
           value: col.Header,
           icon: col.dataType,
+          columnId: col.column_id,
         })) || []
     : [];
 
   const selectedRightField = rightFieldTableDetails?.table_name
-    ? (tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? [])
+    ? tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? []
     : {};
 
   const _operators = [{ label: '=', value: '=' }];
@@ -512,6 +525,7 @@ const JoinOn = ({
                 leftField: {
                   ...condition.leftField,
                   columnName: value?.value,
+                  columnId: value?.columnId,
                   type: 'Column',
                   table: leftFieldTable,
                 },
@@ -598,6 +612,7 @@ const JoinOn = ({
                   rightField: {
                     ...condition.rightField,
                     columnName: value?.value,
+                    columnId: value?.columnId,
                     type: 'Column',
                     table: rightFieldTable,
                   },

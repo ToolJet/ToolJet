@@ -9,7 +9,7 @@ import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
-import { filterOperatorOptions, nullOperatorOptions } from './util';
+import { filterOperatorOptions, nullOperatorOptions, resolveColumnDisplayName } from './util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
 import { NoCondition } from './NoConditionUI';
@@ -281,6 +281,7 @@ const RenderFilterSection = ({ darkMode }) => {
                   ...conditionDetail,
                   leftField: {
                     columnName: valueToUpdate.columnName,
+                    columnId: valueToUpdate.columnId,
                     table: valueToUpdate.table,
                     type: 'Column',
                   },
@@ -289,6 +290,7 @@ const RenderFilterSection = ({ darkMode }) => {
                   ...conditionDetail,
                   rightField: {
                     columnName: valueToUpdate.columnName,
+                    columnId: valueToUpdate.columnId,
                     table: valueToUpdate.table,
                     type: 'Column',
                   },
@@ -381,6 +383,7 @@ const RenderFilterSection = ({ darkMode }) => {
             value: columns.Header + '-' + tableId,
             table: tableId,
             icon: columns?.dataType,
+            columnId: columns?.column_id,
             // columnDataType: columns?.dataType,
           })) || [],
       };
@@ -396,9 +399,15 @@ const RenderFilterSection = ({ darkMode }) => {
   const filterComponents = conditionsList.map((conditionDetail, index) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
     const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
+    const resolvedLeftFieldColumn = resolveColumnDisplayName(
+      tableInfo[LeftSideTableDetails?.table_name],
+      leftField?.columnName,
+      leftField?.columnId,
+      'Header'
+    );
     const isSelectedColumnJsonb =
       leftField?.table &&
-      tableInfo[LeftSideTableDetails?.table_name]?.find((col) => col.accessor === leftField?.columnName)?.dataType ===
+      tableInfo[LeftSideTableDetails?.table_name]?.find((col) => col.accessor === resolvedLeftFieldColumn)?.dataType ===
         'jsonb';
     return (
       <Row className="mb-2 mx-0" key={index}>
@@ -444,14 +453,16 @@ const RenderFilterSection = ({ darkMode }) => {
               updateFilterConditionEntry('Column', index, {
                 table: newValue.table,
                 columnName: newValue.label,
+                columnId: newValue.columnId,
                 isLeftSideCondition: true,
               })
             }
             value={{
               label: LeftSideTableDetails?.table_name
-                ? LeftSideTableDetails?.table_name + '.' + leftField?.columnName
-                : leftField?.columnName,
-              value: leftField?.columnName && leftField?.table ? leftField?.columnName + '-' + leftField?.table : '',
+                ? LeftSideTableDetails?.table_name + '.' + resolvedLeftFieldColumn
+                : resolvedLeftFieldColumn,
+              value:
+                resolvedLeftFieldColumn && leftField?.table ? resolvedLeftFieldColumn + '-' + leftField?.table : '',
               table: leftField?.table,
             }}
             options={tableList}
@@ -484,7 +495,7 @@ const RenderFilterSection = ({ darkMode }) => {
                     enablePreview={false}
                     height="30"
                     placeholder="->>'key'"
-                    componentName={leftField?.columnName ? `{}${leftField.columnName}` : ''}
+                    componentName={resolvedLeftFieldColumn ? `{}${resolvedLeftFieldColumn}` : ''}
                   />
                 </span>
               </ToolTip>

@@ -3,7 +3,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { operators } from '@/TooljetDatabase/constants';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty } from 'lodash';
-import { isOperatorOptions } from './util';
+import { isOperatorOptions, resolveColumnDisplayName } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
 import RenderColumnUI from './RenderColumnUI';
@@ -127,6 +127,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
                 <RenderColumnOptions
                   key={key}
                   column={value.column}
+                  columnId={value.columnId}
                   value={value.value}
                   id={key}
                   columns={columns}
@@ -163,6 +164,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
 
 const RenderFilterFields = ({
   column,
+  columnId,
   operator,
   value,
   id,
@@ -173,10 +175,12 @@ const RenderFilterFields = ({
   removeFilterConditionPair,
   jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor, dataType }) => ({
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
+  let displayColumns = columns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
 
   operator = operators.find((val) => val.value === operator);
@@ -184,7 +188,7 @@ const RenderFilterFields = ({
   const handleColumnChange = (selectedOption) => {
     updateFilterOptionsChanged({
       ...updateRowsOptions?.where_filters[id],
-      ...{ column: selectedOption.value },
+      ...{ column: selectedOption.value, columnId: selectedOption.columnId },
     });
   };
 
@@ -203,11 +207,11 @@ const RenderFilterFields = ({
     });
   };
 
-  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === resolvedColumn)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}
@@ -228,6 +232,7 @@ const RenderFilterFields = ({
 
 const RenderColumnOptions = ({
   column,
+  columnId,
   value,
   id,
   columns,
@@ -240,18 +245,20 @@ const RenderColumnOptions = ({
     _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
   );
 
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
   const existingColumnOptions = Object.values(updateRowsOptions?.columns).map(({ column }) => column);
-  let displayColumns = filteredColumns.map(({ accessor, dataType }) => ({
+  let displayColumns = filteredColumns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
 
-  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === column)?.dataType;
+  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === resolvedColumn)?.dataType;
 
   if (existingColumnOptions.length > 0) {
     displayColumns = displayColumns.filter(
-      ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      ({ value }) => !existingColumnOptions.map((item) => item !== resolvedColumn && item).includes(value)
     );
   }
 
@@ -260,6 +267,7 @@ const RenderColumnOptions = ({
     const updatedOption = {
       ...columnOptions[id],
       column: selectedOption.value,
+      columnId: selectedOption.columnId,
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };
@@ -280,7 +288,7 @@ const RenderColumnOptions = ({
 
   return (
     <RenderColumnUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}
