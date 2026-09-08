@@ -261,7 +261,7 @@ describe(
     openStyleAccordion(widget, "button");
 
     // Both are `switch` fields; locate each by an option button only it renders.
-    expectNoFxButton(() => cy.get('[data-cy="togglr-button-outline"]').scrollIntoView(), "Border radius"); // buttonType
-    expectNoFxButton(() => cy.get('[data-cy="togglr-button-none"]').scrollIntoView(), "Border radius"); // padding
+    expectNoFxButton(() => cy.get(commonWidgetSelector.togglrButton("outline")).scrollIntoView(), "Border radius"); // buttonType
+    expectNoFxButton(() => cy.get(commonWidgetSelector.togglrButton("none")).scrollIntoView(), "Border radius"); // padding
   });
 });
