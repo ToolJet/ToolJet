@@ -62,6 +62,7 @@ export {
   verifyPropertiesGeneralAccordion,
   addValueOnInput,
   editAndVerifyWidgetName,
+  commitChange,
   addAndVerifyTooltip,
   verifyTooltip,
   setTooltip,
