@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
+import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -25,11 +26,18 @@ function formatTimestamp(date) {
   return `${datePart} · ${timePart}`;
 }
 
-function statusLine(tabIndex, chainLength, appliedCount) {
-  const behindCount = chainLength - appliedCount;
-  if (tabIndex === 0) return `Development is ${behindCount} migration${behindCount === 1 ? '' : 's'} ahead of staging`;
-  if (tabIndex === 1) return `Staging is ${behindCount} migration${behindCount === 1 ? '' : 's'} ahead of production`;
-  return 'Production is not up to date with latest changes. Apply migration from development to staging, and then to production to see them reflected here.';
+// Always compares the active env against its own immediate downstream neighbor (never a
+// fixed chain-head or a hardcoded env name) - a previous version diffed every tab against
+// chainLength (== development's own count), which read as permanently 0 on the Development
+// tab and mislabeled the Staging tab's real "behind development" gap as "ahead of production".
+function statusLine(activeEnv, appliedCount, nextEnv, nextAppliedCount) {
+  if (!nextEnv) {
+    return 'Production is not up to date with latest changes. Apply migration from development to staging, and then to production to see them reflected here.';
+  }
+  const aheadCount = Math.max(0, appliedCount - nextAppliedCount);
+  return `${capitalize(activeEnv.name)} is ${aheadCount} migration${aheadCount === 1 ? '' : 's'} ahead of ${
+    nextEnv.name
+  }`;
 }
 
 const MigrationHistoryDrawer = ({
@@ -148,7 +156,14 @@ const MigrationHistoryDrawer = ({
 
         <div className="migration-history-drawer__status">
           <span className="migration-history-drawer__status-label">STATUS</span>
-          <p>{statusLine(activeTab, chainLength, appliedCount)}</p>
+          <p>
+            {statusLine(
+              allEnvironments[activeTab],
+              appliedCount,
+              nextEnv,
+              nextEnvState?.applied_migration_ids?.length ?? 0
+            )}
+          </p>
         </div>
 
         <div className="migration-history-drawer__list">
