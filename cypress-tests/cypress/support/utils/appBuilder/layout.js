@@ -1,6 +1,6 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // layout.js
-//   switchLayout                     toggle               → canvas
+//   switchLayout                     -                    → editor
 //   verifyLayout                     toggle               → properties
 // └──────────────────────────────────────────────────────────────────┘
 /**
@@ -23,8 +23,7 @@ const layoutButton = {
 };
 
 /**
- * @tjType   toggle
- * @tjBlock  canvas
+ * @tjBlock  editor
  * @tjUsage  switchLayout('mobile')
  * @tjDom    editor header change-layout-to-<mobile|desktop> button, then the autosave indicator
  */

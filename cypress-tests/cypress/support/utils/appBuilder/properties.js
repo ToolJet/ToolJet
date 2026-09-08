@@ -9,7 +9,7 @@
 //   verifyTooltip                    -                    → properties
 //   addAndVerifyTooltip              -                    → properties
 //   commitChange                     -                    → common
-//   setTooltip                       switch               → properties
+//   setTooltip                       -                    → properties
 //   editAndVerifyWidgetName          -                    → properties
 //   verifyPropertiesGeneralAccordion -                    → properties
 //   selectFromSidebarDropdown        -                    → properties
@@ -220,7 +220,6 @@ export const commitChange = () => {
 };
 
 /**
- * @tjType   switch
  * @tjBlock  properties
  * @tjUsage  setTooltip('markdown', 'bold text')
  * @tjDom    togglr-button-<format> option, then the tooltip-input-field CodeMirror
