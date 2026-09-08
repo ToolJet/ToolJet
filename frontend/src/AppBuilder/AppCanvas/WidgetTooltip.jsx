@@ -23,6 +23,30 @@ const THEMED_CLASSES = [
 // styles for html
 const UNSTYLED_CLASSES = ['tw-bg-transparent', 'tw-p-0', 'tw-rounded-none', 'tw-shadow-none'].join(' ');
 
+/**
+ * The box a widget tooltip must stay inside.
+ *
+ * Radix avoids collisions against the viewport by default, and the editor's
+ * left sidebar sits inside the viewport — so an unbounded tooltip on a widget
+ * near the left edge of a horizontally scrolled canvas paints over it.
+ *
+ * `.canvas-container.page-container` is the element that actually scrolls
+ * (AppCanvas.jsx:228) and is a flex sibling of the sidebar, so its rect is
+ * always the visible canvas area beside it. Deliberately NOT `#real-canvas`:
+ * that is the scrolled content, whose own left edge is already under the
+ * sidebar once the canvas is scrolled right.
+ *
+ * Both classes are required. The viewer nests two `.canvas-container` elements
+ * — Viewer.jsx:173 wraps the page-navigation sidebar, AppCanvas's sits inside
+ * `.canvas-box`, which clears that sidebar. Matching on the bare class would
+ * take the outer wrapper there and let a tooltip cover the page sidebar.
+ *
+ * Returns null outside the editor (viewer, module preview), where there is no
+ * scroll container and no sidebar to avoid — Radix then falls back to the
+ * viewport, which is correct there.
+ */
+export const getTooltipCollisionBoundary = () => document.querySelector('.canvas-container.page-container');
+
 const TooltipBody = ({ content, format }) => {
   if (format === 'html') {
     return <div className="widget-tooltip-html" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />;
@@ -68,6 +92,7 @@ const WidgetTooltip = ({
             align="start"
             sideOffset={2}
             showArrow={false}
+            collisionBoundary={getTooltipCollisionBoundary()}
             data-cy="widget-tooltip"
             className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
           >

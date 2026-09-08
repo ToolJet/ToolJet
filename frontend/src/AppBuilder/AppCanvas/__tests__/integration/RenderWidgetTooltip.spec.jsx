@@ -23,6 +23,7 @@
  * and it is a production change no approved scenario covers yet.
  */
 import { screen, waitFor } from '@testing-library/react';
+import { getTooltipCollisionBoundary } from '@/AppBuilder/AppCanvas/WidgetTooltip';
 import {
   createWidgetHarness,
   binding,
@@ -128,5 +129,76 @@ describe('RenderWidget tooltip', () => {
     await spinner.session.user.hover(document.querySelector('[data-cy="draggable-widget-spinner1"]'));
     await waitFor(() => expect(screen.getAllByText('Choose a side').length).toBeGreaterThan(0));
     spinner.teardown();
+  });
+});
+
+/**
+ * Collision boundary — reported by QA 2026-09-08.
+ *
+ * Radix avoids collisions against the VIEWPORT by default, and the editor's
+ * left sidebar is inside the viewport, so a tooltip on a widget near the left
+ * edge of a horizontally scrolled canvas paints straight over it.
+ *
+ * The boundary must be the element that actually scrolls — `.canvas-container`,
+ * a flex sibling of the sidebar, whose rect is always the visible canvas area
+ * beside it. NOT `#real-canvas`: that is the scrolled *content*, and once the
+ * canvas is scrolled right its own left edge is already under the sidebar.
+ * (ColorPicker.jsx:403 bounds to `#real-canvas` and has the same latent gap.)
+ *
+ * Jest can only pin the wiring. Whether the tooltip visually clears the sidebar
+ * is resolved by Radix from real getBoundingClientRect values, and jsdom has no
+ * layout — so that outcome is browser-owned:
+ *
+ *   [RenderWidget-TOOLTIP-BRW-001]  Layer: Browser  Owner: QA
+ *   Guarantee: with the canvas scrolled horizontally and a widget positioned so
+ *   its tooltip would extend past the left edge of the canvas viewport, the
+ *   tooltip is repositioned to stay inside the canvas and never overlaps the
+ *   left sidebar. Same for the right sidebar and the canvas header.
+ */
+describe('tooltip collision boundary', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('[RenderWidget-TOOLTIP-006] the boundary is the canvas scroll container', () => {
+    // Break this catches: returning the viewport (null) inside the editor lets
+    // Radix place a tooltip over the left sidebar — the reported bug.
+    document.body.innerHTML = '<div class="canvas-container page-container"></div>';
+
+    expect(getTooltipCollisionBoundary()).toBe(document.querySelector('.canvas-container'));
+  });
+
+  test('[RenderWidget-TOOLTIP-007] the boundary is the scroll container, not the scrolled canvas content', () => {
+    // Break this catches: bounding to `#real-canvas` instead. That element is
+    // the content INSIDE the scroll container, so a horizontally scrolled canvas
+    // already extends under the sidebar and the tooltip follows it there.
+    document.body.innerHTML = '<div class="canvas-container page-container"><div id="real-canvas"></div></div>';
+
+    expect(getTooltipCollisionBoundary()).not.toBe(document.getElementById('real-canvas'));
+    expect(getTooltipCollisionBoundary()).toBe(document.querySelector('.canvas-container'));
+  });
+
+  test('[RenderWidget-TOOLTIP-009] in the viewer it is the app canvas, not the outer viewer wrapper', () => {
+    // Break this catches: the viewer nests TWO .canvas-container elements —
+    // Viewer.jsx:173 wraps the page-navigation sidebar, AppCanvas.jsx:228 sits
+    // inside `.canvas-box`, which clears that sidebar with a 256px margin.
+    // A bare `.canvas-container` selector takes the FIRST in document order,
+    // which is the outer wrapper, so a tooltip could still cover the viewer's
+    // page sidebar.
+    document.body.innerHTML = `
+      <div class="canvas-container align-items-center">
+        <div class="canvas-box">
+          <div class="canvas-container page-container" id="app-canvas"></div>
+        </div>
+      </div>`;
+
+    expect(getTooltipCollisionBoundary()).toBe(document.getElementById('app-canvas'));
+  });
+
+  test('[RenderWidget-TOOLTIP-008] outside the editor it falls back to the viewport', () => {
+    // Break this catches: returning some other element in the viewer, where
+    // there is no canvas-container and no sidebar to avoid, would bound every
+    // tooltip to the wrong box.
+    expect(getTooltipCollisionBoundary()).toBeNull();
   });
 });
