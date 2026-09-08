@@ -60,8 +60,8 @@ describe(
     waitForDropSettle(widget);
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify Label size resolves and re-resolves a numeric binding", () => {

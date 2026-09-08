@@ -107,8 +107,8 @@ describe(
     waitForDropSettle(widget);
   });
 
-  afterEach(function () {
-    if (this.currentTest.state === "passed") cy.apiDeleteApp();
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should clear the selected file via the Clear CSA", () => {
