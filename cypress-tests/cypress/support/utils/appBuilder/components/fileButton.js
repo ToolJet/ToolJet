@@ -27,24 +27,11 @@ import {
  *   widgetTooltip / hoverInPreview — the shared verifyTooltip + addAndVerifyTooltip are
  *     wrong for Radix widget tooltips (synthetic mouseover, `.tooltip-inner`, editor
  *     surface); fix those rather than add a third.
- *   commitChange — a two-line composition of forceClickOnCanvas + waitForAutoSave; too
- *     thin to be worth shared API surface.
  *
  * The widgetName argument defaults to "filebutton1" throughout. That is safe HERE
  * because the module is component-scoped — drop the default on anything promoted, or a
  * caller who omits the argument silently asserts against filebutton1 and passes.
  *//**
- * @tjBlock  properties
- * @tjUsage  commitChange()
- * @tjDom    canvas click to blur the active field, then the autosave indicator
- */
-// Blur whatever field is focused so its value commits, then wait for the save.
-export const commitChange = () => {
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-};
-
-/**
  * @tjBlock  inspector
  * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true')
  * @tjDom    inspector sidebar tab → components node → widget subnode → node value

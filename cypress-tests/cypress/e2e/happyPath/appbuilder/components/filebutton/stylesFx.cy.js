@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -17,7 +18,6 @@ import {
   openStyleAccordion,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // StylesFx facet — fx/dynamic-binding half; the direct half is in styles.cy.js.
