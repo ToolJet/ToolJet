@@ -10,6 +10,7 @@
 | switch | `verifyAndModifySwitch` | appBuilder/properties.js | properties | `verifyAndModifySwitch('Default state', 'On')` |
 | - | `verifyTooltip` | appBuilder/properties.js | properties | `verifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
 | - | `addAndVerifyTooltip` | appBuilder/properties.js | properties | `addAndVerifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
+| - | `commitChange` | appBuilder/properties.js | common | `commitChange()` |
 | switch | `setTooltip` | appBuilder/properties.js | properties | `setTooltip('markdown', 'bold text')` |
 | - | `editAndVerifyWidgetName` | appBuilder/properties.js | properties | `editAndVerifyWidgetName('myButton', ['General', 'Properties', 'Devices'])` |
 | - | `verifyPropertiesGeneralAccordion` | appBuilder/properties.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
