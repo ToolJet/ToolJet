@@ -102,6 +102,10 @@ export const formConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'object' },
+        // Shown in the code editor's Expected box. Kept short and
+        // representative: the three top-level keys a form schema takes.
+        defaultValue:
+          "{ title: 'Form', properties: { name: { type: 'textinput' } }, submitButton: { value: 'Submit' } }",
       },
     },
     fields: {

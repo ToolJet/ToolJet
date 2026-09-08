@@ -8,6 +8,7 @@
  * composed store and lives in ./integration/Form.spec.jsx.
  */
 import { getBodyHeight, generateUIComponents } from '../FormUtils';
+import { formConfig } from '@/AppBuilder/WidgetManager/widgets/form';
 
 describe('getBodyHeight', () => {
   // Expected values are hand-derived from the documented arithmetic, never by
@@ -147,4 +148,26 @@ describe('generateUIComponents', () => {
     // real children.
     expect(generateUIComponents(schema, false)).toBeUndefined();
   });
+});
+
+describe('data-source field hints', () => {
+  // The code editor's Expected box renders `validation.defaultValue` verbatim
+  // (CodeEditor/PreviewBox.jsx:568). It is the only place that teaches an author
+  // the shape a data-source field wants, so a field without one prints the
+  // literal string "undefined" at exactly the moment the author needs the hint.
+  //
+  // Display only: both runtime substitution paths read validation.SCHEMA
+  // .defaultValue, which no widget sets, and fall back to findDefault()
+  // (component-properties-validation.js:124, debuggerSlice.js:179).
+  test.each([['JSONData'], ['newJsonSchema']])(
+    '[Form-SCHEMA-008] the %s data source documents an example value',
+    (key) => {
+      // Break this catches: shipping a data-source code field with no
+      // validation.defaultValue, which shows "undefined" under Expected.
+      const { validation } = formConfig.properties[key];
+
+      expect(typeof validation.defaultValue).toBe('string');
+      expect(validation.defaultValue.trim()).not.toBe('');
+    }
+  );
 });
