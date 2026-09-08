@@ -36,6 +36,9 @@ import '../commands/marketplace/marketplaceCommands';
 // Cypress.
 import 'cypress-real-dnd/commands';
 
+// cypress-live-reporter — browser side; inert unless the plugin injects Cypress.env('clr')
+import 'cypress-live-reporter/support';
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 Cypress.on("uncaught:exception", (err, runnable) => {

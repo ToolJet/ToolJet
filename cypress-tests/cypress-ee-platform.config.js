@@ -16,7 +16,13 @@ module.exports = defineConfig({
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
 
-      return require("./cypress/plugins/index.js")(on, config);
+      config = require("./cypress/plugins/index.js")(on, config);
+      // cypress-live-reporter — self-disables when no CLR sink is set in cypress env.
+      return require("cypress-live-reporter/plugin").livePlugin(on, config);
+    },
+
+    env: {
+      CLR_PROJECT_ID: "Platform EE",
     },
 
     baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
