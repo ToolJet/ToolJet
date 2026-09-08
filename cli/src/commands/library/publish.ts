@@ -15,18 +15,18 @@ interface ResolvedTarget {
   config: { libraryName: string; correlationId: string };
 }
 
-export default class ComponentDeploy extends Command {
+export default class ComponentPublish extends Command {
   static description = 'Build and publish a new immutable production revision of a component library';
 
-  static aliases = ['lib:deploy'];
+  static aliases = ['lib:publish'];
 
   static examples = [
-    `$ tooljet library deploy --version 1.0.0`,
-    `$ tooljet library deploy -v 1.0.0`,
-    `$ tooljet library deploy --version 1.0.0 --message "Add dark mode support"`,
-    `$ tooljet library deploy --version 1.0.0 --url https://app.tooljet.ai --token <token>`,
-    `$ tooljet lib deploy --version 1.0.0`,
-    `$ tooljet lib deploy --version 1.0.0 --message "Add dark mode support"`,
+    `$ tooljet library publish --version 1.0.0`,
+    `$ tooljet library publish -v 1.0.0`,
+    `$ tooljet library publish --version 1.0.0 --message "Add dark mode support"`,
+    `$ tooljet library publish --version 1.0.0 --url https://app.tooljet.ai --token <token>`,
+    `$ tooljet lib publish --version 1.0.0`,
+    `$ tooljet lib publish --version 1.0.0 --message "Add dark mode support"`,
   ];
 
   static flags = {
@@ -35,25 +35,31 @@ export default class ComponentDeploy extends Command {
       description: 'Version for this revision — X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0); missing parts default to 0',
       required: true,
     }),
-    message: Flags.string({ description: 'Optional label for the revision (shown in app builder revision picker)' }),
-    force: Flags.boolean({
+    message: Flags.string({
+      char: 'm',
+      description: 'Optional label for the revision (shown in app builder revision picker)',
+    }),
+    'skip-type-check': Flags.boolean({
       description: 'Publish even if the build reports TypeScript errors',
       default: false,
     }),
     url: Flags.string({
-      description: 'ToolJet origin URL to deploy to, bypassing the stored login (must be used with --token)',
+      description: 'ToolJet origin URL to publish to, bypassing the stored login (must be used with --token)',
     }),
     token: Flags.string({
-      description: 'API token to deploy with, bypassing the stored login (must be used with --url)',
+      description: 'API token to publish with, bypassing the stored login (must be used with --url)',
     }),
   };
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(ComponentDeploy);
-    const { version, message, force } = flags;
+    const { flags } = await this.parse(ComponentPublish);
+    const { version, message } = flags;
+    const skipTypeCheck = flags['skip-type-check'];
 
-    if (!/^\d+(\.\d+){0,2}$/.test(version)) {
-      this.log(formatError('--version must be in the format X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0)'));
+    if (!/^(0|[1-9]\d*)(\.(0|[1-9]\d*)){0,2}$/.test(version)) {
+      this.log(
+        formatError('--version must be in the format X, X.Y, or X.Y.Z with no leading zeros (e.g. 1, 1.1, or 1.2.0)')
+      );
       process.exit(1);
     }
 
@@ -80,12 +86,12 @@ export default class ComponentDeploy extends Command {
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       result.tsErrors === 0 && this.log(formatSuccess(tsCompiledMsg));
 
-      if (result.tsErrors > 0 && !force) {
+      if (result.tsErrors > 0 && !skipTypeCheck) {
         this.log(formatError(tsCompiledMsg));
         this.log(`\n${result.tsErrorReport}`);
         this.log(
           formatError(
-            `Aborting - build reported ${result.tsErrors} TypeScript error(s). Fix them, or re-run with --force to publish anyway.`
+            `Aborting - build reported ${result.tsErrors} TypeScript error(s). Fix them, or re-run with --skip-type-check to publish anyway.`
           )
         );
         process.exit(1);
