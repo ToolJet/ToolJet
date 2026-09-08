@@ -35,6 +35,7 @@
 | - | `verifyWidgetText` | appBuilder/components.js | properties | `verifyWidgetText('textinput1', 'Hello')` |
 | - | `addTextWidgetToVerifyValue` | appBuilder/components.js | canvas | `addTextWidgetToVerifyValue('components.textinput1.value')` |
 | - | `verifyContainerElements` | appBuilder/components.js | properties | `verifyContainerElements()` |
+| toggle | `switchLayout` | appBuilder/layout.js | canvas | `switchLayout('mobile')` |
 | toggle | `verifyLayout` | appBuilder/layout.js | properties | `verifyLayout('textinput1')` |
 | exposed | `openAndVerifyNode` | appBuilder/inspectorTree.js | inspector | `openAndVerifyNode('textinput1', nodes, verifyNodeData)` |
 | exposed | `verifyNodes` | appBuilder/inspectorTree.js | inspector | `verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)` |
