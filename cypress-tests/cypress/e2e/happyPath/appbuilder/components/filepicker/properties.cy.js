@@ -107,11 +107,8 @@ describe(
       cy.dragAndDropWidget(filePickerText.defaultWidgetText, 500, 100);
       waitForDropSettle(widget);
       closeQueryPanel();
-      // File Picker ships fileType: 'image/*' (filepicker.js:234, :405), so a fresh widget
-      // refuses every non-image — a CSV or TXT never reaches the size, count or parsing
-      // logic under test. Neutralised once per test here; the shipped default is asserted
-      // in basics.cy.js, and the tests that are ABOUT file types set their own value after
-      // this runs.
+      // Neutralises the shipped 'image/*' filter — see acceptAnyFileType. The default
+      // itself is asserted in basics.cy.js.
       acceptAnyFileType(widget);
     });
 
@@ -600,7 +597,7 @@ describe(
       // Refusal asserted by STATE, not by a message. Every cap-related string in the
       // source is unreachable in practice — see FP-11 (react-dropzone's `too-many-files`
       // is dead because maxFiles is never configured) and FP-13 (a refusal past the cap
-      // produces no inline error and no toast at all, verified by hand in the browser).
+      // produces no inline error and no toast at all).
       // Asserting a message here would be asserting something the widget never shows.
       attachFile([csvFile, secondCsvFile]);
       cy.get(filePickerSelector.fileListItem(widget)).should("have.length", 1);
@@ -613,7 +610,7 @@ describe(
     it("should verify a second file is refused while multiple files is off", () => {
       // enableMultiple ships false (filepicker.js:380), so this is the DEFAULT path. The
       // widget REFUSES the second file rather than replacing the held one
-      // (useFilePicker.js:273-276) — worth pinning, because the commit branch further down
+      // (useFilePicker.js:273-276). The commit branch further down
       // does contain a single-mode replacement (`[...successfullyProcessedFiles]`,
       // useFilePicker.js:346) that reads as though the file would be swapped. The validator
       // runs first, so it never gets there.

@@ -96,11 +96,8 @@ describe(
       cy.dragAndDropWidget(filePickerText.defaultWidgetText, 500, 100);
       waitForDropSettle(widget);
       closeQueryPanel();
-      // File Picker ships fileType: 'image/*' (filepicker.js:234, :405), so a fresh widget
-      // refuses every non-image — a CSV or TXT never reaches the size, count or parsing
-      // logic under test. Neutralised once per test here; the shipped default is asserted
-      // in basics.cy.js, and the tests that are ABOUT file types set their own value after
-      // this runs.
+      // Neutralises the shipped 'image/*' filter — see acceptAnyFileType. The default
+      // itself is asserted in basics.cy.js.
       acceptAnyFileType(widget);
     });
 
@@ -319,7 +316,7 @@ describe(
 
       // The toggle ships false, so binding it hides the widget immediately — the opposite
       // of visibility's own default of true (filepicker.js:385).
-      // CSS-hidden, not unmounted — see FilePicker.jsx:143.
+      // CSS-hidden, not unmounted (FilePicker.jsx:143).
       cy.get(filePickerSelector.widget(widget)).should("not.be.visible");
 
       clickWidgetInput("toggleswitch1");
@@ -328,7 +325,7 @@ describe(
     });
 
     it("should verify Collapse when hidden follows a bound boolean", () => {
-      // Measured on the NEIGHBOUR, not on the widget. A hidden File Picker is display:none
+      // Measured on the NEIGHBOUR, not the widget: a hidden File Picker is display:none
       // (FilePicker.jsx:143) and its positioned wrapper is hidden with it, so the widget's
       // own height reads 0 whether or not the space was reclaimed — the only observable is
       // whether what sits below it moves up. properties.cy.js owns the direct pair; this

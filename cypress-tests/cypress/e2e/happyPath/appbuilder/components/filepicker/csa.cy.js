@@ -107,11 +107,8 @@ describe(
       cy.openApp();
       cy.dragAndDropWidget(filePickerText.defaultWidgetText, 500, 100);
       waitForDropSettle(widget);
-      // File Picker ships fileType: 'image/*' (filepicker.js:234, :405), so a fresh widget
-      // refuses every non-image — a CSV or TXT never reaches the size, count or parsing
-      // logic under test. Neutralised once per test here; the shipped default is asserted
-      // in basics.cy.js, and the tests that are ABOUT file types set their own value after
-      // this runs.
+      // Neutralises the shipped 'image/*' filter — see acceptAnyFileType. The default
+      // itself is asserted in basics.cy.js.
       acceptAnyFileType(widget);
     });
 
@@ -206,9 +203,7 @@ describe(
       // button re-centres the canvas, so a freshly re-shown widget can be off-screen and
       // fail a visibility assertion for a reason unrelated to the CSA.
       const expectHidden = () =>
-        // File Picker stays in the DOM and hides via CSS (`display: none`,
-        // FilePicker.jsx:143) — it does NOT return null the way File Input does
-        // (FileInput.jsx:240), so "not.exist" is the wrong assertion for this family.
+        // CSS-hidden, not unmounted (FilePicker.jsx:143) — so "not.exist" would never hold.
         cy.get(filePickerSelector.widget(widget)).should("not.be.visible");
       const expectShown = () =>
         cy.get(filePickerSelector.widget(widget)).scrollIntoView().should("exist");

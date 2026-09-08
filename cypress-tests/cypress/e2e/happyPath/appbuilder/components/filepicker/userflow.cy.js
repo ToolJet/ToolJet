@@ -51,11 +51,8 @@ describe(
       dropWidget(filePickerText.defaultWidgetText, widget, 500, 100);
       cy.waitForElement(filePickerSelector.widget(widget));
       closeQueryPanel();
-      // File Picker ships fileType: 'image/*' (filepicker.js:234, :405), so a fresh widget
-      // refuses every non-image — a CSV or TXT never reaches the size, count or parsing
-      // logic under test. Neutralised once per test here; the shipped default is asserted
-      // in basics.cy.js, and the tests that are ABOUT file types set their own value after
-      // this runs.
+      // Neutralises the shipped 'image/*' filter — see acceptAnyFileType. The default
+      // itself is asserted in basics.cy.js.
       acceptAnyFileType(widget);
     });
 
@@ -113,7 +110,7 @@ describe(
       // at useFilePicker.js:532 rewrites uiErrorMessage to the generic mandatory string
       // whenever isMandatory && no files && isTouched — all true right after a rejection
       // that kept nothing. So a user on a mandatory picker is told the field is required
-      // rather than that the type was wrong (FP-14). Asserted as it behaves.
+      // rather than that the type was wrong (FP-14).
       attachFile(validFile);
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -161,7 +158,7 @@ describe(
       // onDropAccepted (useFilePicker.js:421-425) — the removal path
       // (handleRemoveFile, :445-461) never sets it. So the picker ends up invalid with
       // nothing on screen saying why, the same user-visible outcome as FP-9 reached by a
-      // different route. Asserted as it behaves, with the absence made explicit.
+      // different route.
       deleteFileFromList(secondCsvFileName);
       verifyExposedValue("isValid", "Boolean", "false");
       verifyExposedValue("file", "Array", "[1]");

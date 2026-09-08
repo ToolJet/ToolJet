@@ -111,7 +111,7 @@ describe(
     // FP-13 — a refusal past the cap tells the user nothing.
     // Once full the picker disables itself (useFilePicker.js:656-660), so react-dropzone
     // never runs the validator and onDropRejected never fires: selecting another file
-    // produces no inline error and no toast. Verified by hand in the browser — rows 1 -> 1,
+    // produces no inline error and no toast — the selection simply does not grow,
     // no message anywhere. Every OTHER rejection on this widget shows both.
     // The facet specs assert the refusal by STATE, because a message assertion there would
     // fail today; this guard is what will notice when a message starts appearing.

@@ -111,7 +111,7 @@ describe(
     it("should verify Box shadow follows a bound colour in its shorthand", () => {
       // Bound as a WHOLE shorthand from a Text Input rather than as a concatenation
       // expression: typing `{{'…' + components.x.y}}` into CodeMirror invites the
-      // brace/quote autoclose quirks this suite has been bitten by, and the field takes the
+      // brace/quote autoclose quirks, and the field takes the
       // full string anyway.
       dropWidget("Text Input", "textinput1", 500, 400);
       openEditorSidebar("textinput1");
