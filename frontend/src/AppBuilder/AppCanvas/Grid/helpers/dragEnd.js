@@ -49,10 +49,8 @@
  * - Prevents invalid drops (e.g., putting a button inside a Table component).
  * - Enables **modular and flexible** widget movement across different UI sections.
  */
-import { getMouseDistanceFromParentDiv } from '../gridUtils';
-
 import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
-import { isDroppingRestrictedWidget } from '../gridUtils';
+import { isDroppingRestrictedWidget, getElementOffsetFromParent } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
 const REAL_CANVAS_ID = 'real-canvas';
@@ -335,7 +333,7 @@ const extractSlotId = (element) => {
 export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gridWidth, dragged) => {
   if (isParentChangeAllowed) {
     // Compute the relative position inside the new container
-    const { left: adjustedLeft, top: adjustedTop } = getMouseDistanceFromParentDiv(
+    const { left: adjustedLeft, top: adjustedTop } = getElementOffsetFromParent(
       event,
       target.slotId,
       target.widgetType
