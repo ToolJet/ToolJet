@@ -283,9 +283,10 @@ export class TooljetDbDataOperationsService implements QueryService {
     environmentId: string | undefined
   ): Promise<{
     aggregates: typeof aggregates;
-    groupBy: typeof groupBy;
+    groupBy: Record<string, Array<string>>;
   }> {
-    if (isEmpty(aggregates) && isEmpty(groupBy)) return { aggregates, groupBy };
+    if (isEmpty(aggregates) && isEmpty(groupBy))
+      return { aggregates, groupBy: groupBy as unknown as Record<string, Array<string>> };
 
     const cloned = structuredClone({ aggregates, groupBy });
     const refs: Array<{ columnId?: string; get: () => string | undefined; set: (name: string) => void }> = [];
@@ -315,7 +316,10 @@ export class TooljetDbDataOperationsService implements QueryService {
     });
 
     await this.resolveColumnRefs(organizationId, tableId, refs, environmentId);
-    return cloned;
+    // Every group_by entry above is either an untouched string or has just been overwritten with
+    // the resolved column name string via `set` - the array is string[] at runtime even though the
+    // clone's static type still carries the pre-resolution `string | {column, columnId}` union.
+    return { aggregates: cloned.aggregates, groupBy: cloned.groupBy as unknown as Record<string, Array<string>> };
   }
 
   async run(
