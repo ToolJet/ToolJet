@@ -6,7 +6,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
-import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 
 export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChange, getResolvedValue }) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);
@@ -106,11 +105,7 @@ export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChan
               show={showEditPopover}
               placement="left-start"
               rootClose
-              rootCloseEvent="mousedown"
-              onHide={(e) => {
-                if (isClickInsidePortaledOverlay(e?.target)) return;
-                setShowEditPopover(false);
-              }}
+              onHide={() => setShowEditPopover(false)}
             >
               <NavItemPopover
                 componentId={componentId}
