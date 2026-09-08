@@ -25,7 +25,7 @@ const config: Config.InitialOptions = {
   verbose: true,
   slowTestThreshold: 0,
   transformIgnorePatterns: [
-    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)',
+    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
   transform: {
     '^.+\\.(t|j)s$': [
