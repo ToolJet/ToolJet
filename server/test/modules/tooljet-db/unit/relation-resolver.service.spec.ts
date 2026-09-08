@@ -326,6 +326,56 @@ describe('TooljetDbRelationResolverService', () => {
       });
     });
 
+    describe('.resolveColumnName / .resolveColumnNames | column identity resolution', () => {
+      it('should resolve the current name for a column uuid', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const relation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+        const columnNames: Record<string, string> = relation.configurations.columns.column_names;
+        const nameUuid = columnNames['name'];
+
+        const resolved = await service.resolveColumnName(organizationId, table.id, nameUuid);
+
+        expect(resolved).toBe('name');
+      });
+
+      it('should return null for a uuid the relation does not have', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+
+        const resolved = await service.resolveColumnName(organizationId, table.id, uuidv4());
+
+        expect(resolved).toBeNull();
+      });
+
+      it('should batch-resolve a mix of valid and invalid uuids in one call', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const relation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+        const columnNames: Record<string, string> = relation.configurations.columns.column_names;
+        const nameUuid = columnNames['name'];
+        const emailUuid = columnNames['email'];
+        const missingUuid = uuidv4();
+
+        const resolved = await service.resolveColumnNames(organizationId, table.id, [nameUuid, emailUuid, missingUuid]);
+
+        expect(resolved).toEqual(
+          new Map([
+            [nameUuid, 'name'],
+            [emailUuid, 'email'],
+            [missingUuid, null],
+          ])
+        );
+      });
+    });
+
     /**
      * PostgrestProxyService.resolveAndRewrite() disambiguates two reasons an id can be missing
      * from resolve()'s map: not owned by this workspace (tenancy - H2's fail-closed positional

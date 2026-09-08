@@ -144,6 +144,51 @@ export class TooljetDbRelationResolverService {
   }
 
   /**
+   * Inverts relation.configurations.columns.column_names (name -> uuid) to find the name a
+   * column uuid currently maps to. Read-only: does not throw for a uuid the relation no longer
+   * has (column deleted/renamed away) - callers decide how to handle that, same fail-closed-to-
+   * caller spirit as resolve()/resolveLogicalIds() above.
+   */
+  async resolveColumnName(
+    organizationId: string,
+    internalTableId: string,
+    columnUuid: string,
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<string | null> {
+    const relation = await this.getRelation(organizationId, internalTableId, requestedEnvironmentId, manager);
+    const columnNames: Record<string, string> = relation.configurations?.columns?.column_names || {};
+    const entry = Object.entries(columnNames).find(([, uuid]) => uuid === columnUuid);
+    return entry ? entry[0] : null;
+  }
+
+  /**
+   * Batch variant of resolveColumnName(): one getRelation() load, resolve every uuid against it.
+   * Use from call sites needing more than one column resolved per operation (update_rows with
+   * several columns, join_tables with both sides) to avoid N relation loads per operation.
+   */
+  async resolveColumnNames(
+    organizationId: string,
+    internalTableId: string,
+    columnUuids: string[],
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<Map<string, string | null>> {
+    const relation = await this.getRelation(organizationId, internalTableId, requestedEnvironmentId, manager);
+    const columnNames: Record<string, string> = relation.configurations?.columns?.column_names || {};
+    const uuidToName = new Map<string, string>();
+    for (const [name, uuid] of Object.entries(columnNames)) {
+      uuidToName.set(uuid, name);
+    }
+
+    const resolved = new Map<string, string | null>();
+    for (const columnUuid of columnUuids) {
+      resolved.set(columnUuid, uuidToName.get(columnUuid) ?? null);
+    }
+    return resolved;
+  }
+
+  /**
    * Unlicensed workspaces resolve to priority 1 and a request that NAMES another environment is
    * refused rather than answered from development — resolveEnvironmentId already does exactly that.
    */
