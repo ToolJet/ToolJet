@@ -129,6 +129,9 @@ Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load th
 | Merge a branch across root + submodules | `merge` |
 | Commit across root + submodules | `commit` |
 | Push and open PRs across root + submodules | `create-pr` |
+| Add a new skill in the right place | `add-skill` |
+
+Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` submodule and appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/add-skill/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
 
 ## Context file layout
 
