@@ -1108,7 +1108,9 @@ describe('TooljetDbDataController', () => {
             );
 
             expect(result.status).toBe('ok');
-            const names = (result.data as any).results.map((row: any) => row.name);
+            // sql_execution's data is the raw row array since 026740b242 (BREAKING CHANGE, for
+            // consistency with list_rows) - not { results: [...] }.
+            const names = (result.data as any).map((row: any) => row.name);
             expect(names).toContain('ProdSqlRow');
             expect(names).not.toContain('dev-ProdSqlRow');
           });
@@ -1190,7 +1192,9 @@ describe('TooljetDbDataController', () => {
             );
 
             expect(result.status).toBe('ok');
-            const rows = (result.data as any).result;
+            // join_tables' data is the raw row array since 026740b242 (BREAKING CHANGE, for
+            // consistency with list_rows) - not { result: [...] }.
+            const rows = result.data as any;
             const aliasA = `${tableAName}_name`;
             const aliasB = `${tableBName}_name`;
             expect(rows.some((row: any) => row[aliasA] === 'ProdJoinA' && row[aliasB] === 'ProdJoinB')).toBe(true);
