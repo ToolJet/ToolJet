@@ -15,6 +15,7 @@ export function SortableTree({
   onReorder,
   onDeleteItem,
   onItemChange,
+  validateItemId,
   getResolvedValue,
   collapsible = true,
   indicator = true,
@@ -30,6 +31,7 @@ export function SortableTree({
           item={item}
           onDeleteItem={onDeleteItem}
           onItemChange={onItemChange}
+          validateItemId={validateItemId}
           getResolvedValue={getResolvedValue}
         />
       );
@@ -43,6 +45,7 @@ export function SortableTree({
         onCollapse={props.onCollapse}
         onDeleteItem={onDeleteItem}
         onItemChange={onItemChange}
+        validateItemId={validateItemId}
         getResolvedValue={getResolvedValue}
       />
     );

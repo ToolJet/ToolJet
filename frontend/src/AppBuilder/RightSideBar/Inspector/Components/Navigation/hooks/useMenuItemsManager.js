@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { validateStaticId } from '../../../Utils';
 
 export const useMenuItemsManager = (component, paramUpdated) => {
   const [menuItems, setMenuItems] = useState([]);
@@ -107,6 +108,33 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     return baseItem;
   };
 
+  // Validate a candidate item id against every other id in the tree (top-level + children)
+  const validateItemId = (value, currentItemId) => {
+    const existingIds = [];
+    const collectIds = (items) => {
+      items.forEach((item) => {
+        existingIds.push(item.id);
+        if (item.children) collectIds(item.children);
+      });
+    };
+    collectIds(menuItems);
+
+    return validateStaticId(value, existingIds, currentItemId);
+  };
+
+  // Rename the `ref` on any events bound to this item so they follow the item's new id
+  const renameItemEventRefs = (oldId, newId) => {
+    const { getModuleEvents, updateAppVersionEventHandlers } = useStore.getState().eventsSlice;
+    const events = getModuleEvents('canvas').filter((e) => e.sourceId === component?.id && e.event?.ref === oldId);
+    if (events.length === 0) return;
+
+    const updatedEvents = events.map((e) => ({ ...e, event: { ...e.event, ref: newId } }));
+    updateAppVersionEventHandlers(
+      updatedEvents.map((e) => ({ event_id: e.id, diff: e })),
+      'update'
+    );
+  };
+
   // Event handlers
   const handleItemChange = (propertyPath, value, itemId, parentId = null) => {
     const newItems = menuItems.map((item) => {
@@ -126,6 +154,16 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       }
       return item;
     });
+
+    if (propertyPath === 'id') {
+      const [isValid] = validateItemId(value, itemId);
+      // Always reflect what the user is typing locally, but only persist + rename event
+      // refs once the new id is valid (non-empty, unique)
+      setMenuItems(newItems);
+      if (!isValid) return;
+      renameItemEventRefs(itemId, value);
+    }
+
     updateMenuItems(newItems);
   };
 
@@ -278,5 +316,6 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     handleAddItemToGroup,
     handleReorder,
     getResolvedValue,
+    validateItemId,
   };
 };

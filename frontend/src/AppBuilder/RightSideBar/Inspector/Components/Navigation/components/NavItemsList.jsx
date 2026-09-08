@@ -46,6 +46,7 @@ const NavItemsList = ({
   darkMode,
   onDeleteItem,
   onItemChange,
+  validateItemId,
   onAddItem,
   onAddGroup,
   onReorder,
@@ -73,6 +74,7 @@ const NavItemsList = ({
         darkMode={darkMode}
         onDeleteItem={onDeleteItem}
         onItemChange={onItemChange}
+        validateItemId={validateItemId}
         onReorder={onReorder}
         getResolvedValue={getResolvedValue}
       />
