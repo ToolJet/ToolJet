@@ -137,6 +137,9 @@
 
 // Mobile edit frame: the canvas region (.tj-mobile-canvas-scroll) scrolls with a hidden scrollbar; the page
 // canvas overflows visibly (borders show on all sides) and the hover outline is drawn inside to avoid clipping.
+// Scoped to .tj-mobile-canvas-scroll, not .tj-canvas-area: the latter is also DesktopLayout's
+// root, so an #real-canvas override there outranks .real-canvas:not(.has-no-scroll) and kills
+// desktop canvas scrolling.
 .tj-canvas-area {
     .tj-mobile-canvas-scroll {
         scrollbar-width: none;
@@ -144,14 +147,14 @@
         &::-webkit-scrollbar {
             display: none;
         }
-    }
 
-    #real-canvas {
-        overflow: visible;
-    }
+        #real-canvas {
+            overflow: visible;
+        }
 
-    .widget-target:hover {
-        outline-offset: -1px;
+        .widget-target:hover {
+            outline-offset: -1px;
+        }
     }
 }
 
