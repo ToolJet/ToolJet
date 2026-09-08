@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { inviteUser } from "Support/utils/manageUsers";
 import { resolveHost } from "Support/utils/apps";
 

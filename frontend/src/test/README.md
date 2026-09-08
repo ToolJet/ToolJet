@@ -54,7 +54,7 @@ npm run test:app-builder:cypress # requires the normal Cypress app/server setup
   boundary; only time, IDs, geometry, observers, media, storage, edition, and
   external package adapters may be controlled.
 - **Store reset**: zustand stores are reset automatically after every test
-  (`__mocks__/zustand.js` + `resetAllStores()` in `setupTests.js`). Do not
+  (`__mocks__/zustand.js`'s `__resetAllStores()`, called from `setupTests.js`). Do not
   hand-roll `setState({}, true)` cleanup in tests.
 - **ESM packages**: if a test fails with `SyntaxError: Cannot use import
   statement outside a module`, add the offending package to `esmPackages` in
@@ -145,7 +145,7 @@ untestable by construction.
 | --------------------------- | ----------------------------------------------------------- |
 | Pure functions/helpers      | plain jest, no DOM (consider `@jest-environment node`)      |
 | App Builder store behavior  | `AppBuilderTestSession.store.act/read` against the real composed store |
-| `src/_services/**`          | MSW: `import '@/test/setupMsw'`, add handlers with `server.use()`, seed auth with `seedSession()` |
+| `src/_services/**`          | MSW: `import '@/test/setupMsw'`, add handlers with `server.use()` |
 | Components                  | `render` from `@/test/test-utils` when routing is needed; add feature providers explicitly |
 
 Shared pieces:

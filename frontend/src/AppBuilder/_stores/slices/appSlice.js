@@ -284,8 +284,6 @@ export const createAppSlice = (set, get) => ({
         },
         getCurrentMode,
         setPageLoader,
-        setPageSwitchInProgress,
-        bufferExposedValuePostFlush,
       } = get();
       const isPreview = getCurrentMode(moduleId) !== 'edit';
 
@@ -298,7 +296,7 @@ export const createAppSlice = (set, get) => ({
       const previousPageId = getCurrentPageId(moduleId);
       const isSamePage = previousPageId === pageId;
 
-      cleanUpStore();
+      cleanUpStore(true);
       clearTemporaryLayouts();
       setCurrentPageId(pageId, moduleId);
       setComponentNameIdMapping(moduleId);
@@ -354,15 +352,6 @@ export const createAppSlice = (set, get) => ({
 
       startExposedValueBatch();
       setPageLoader(false);
-      // Held until the batch this switch opened is actually flushed (by the
-      // isComponentLayoutReady effect in useAppData.js once Suspense/layout
-      // settles for the new page) — not merely until doSwitch's own
-      // synchronous work is done. Releasing it earlier let a second,
-      // perfectly legitimate switchPage (no race needed, just two normal
-      // clicks before the previous page finished settling) open a second
-      // nested batch that only one flush would ever close, freezing every
-      // exposed-value write in the app until reload.
-      bufferExposedValuePostFlush(() => setPageSwitchInProgress(false), `pageSwitchGuard|${moduleId}`);
     };
 
     doSwitch().catch((error) => {
@@ -376,12 +365,15 @@ export const createAppSlice = (set, get) => ({
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
   setPageLoader: (isInProgress) => set(() => ({ pageLoader: isInProgress }), false, 'setPageLoader'),
 
-  cleanUpStore: (moduleId) => {
+  cleanUpStore: (isPageSwitch = false, moduleId) => {
     const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
     resetUndoRedoStack();
     clearSelectedComponents();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
+      if (isPageSwitch) {
+        state.pageSwitchInProgress = false;
+      }
       state.containerChildrenMapping = {
         canvas: [],
       };
