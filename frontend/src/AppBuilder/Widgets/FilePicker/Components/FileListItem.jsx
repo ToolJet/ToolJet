@@ -6,29 +6,21 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import '../style.scss';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, isUploading, isUploaded }) => {
+const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, isUploading, isUploaded, dataCy }) => {
   const itemClasses = clsx('file-list-item', {
     error: !!error,
     uploading: isUploading,
   });
+  const displayName = typeof fileName === 'string' ? fileName.replace(/\.[^/.]+$/, '') : fileName;
+  const cyBase = `${dataCy}-${generateCypressDataCy(displayName)}`;
 
   return (
     <div className={itemClasses} onClick={onClick}>
       <div className="file-details">
-        <span
-          className="file-name"
-          data-cy={`${generateCypressDataCy(fileName).replace(/\.[^/.]+$/, '')}-file-name`}
-          title={fileName}
-        >
-          {typeof fileName === 'string' ? fileName.replace(/\.[^/.]+$/, '') : fileName}
+        <span className="file-name" data-cy={`${cyBase}-file-name`} title={fileName}>
+          {displayName}
         </span>
-        <span
-          className="file-meta"
-          data-cy={`${generateCypressDataCy(fileType)}-${generateCypressDataCy(fileSize).replace(
-            /\.[^/.]+$/,
-            ''
-          )}-file-meta`}
-        >
+        <span className="file-meta" data-cy={`${cyBase}-file-meta`}>
           {fileType} {fileSize}
         </span>
       </div>
@@ -42,7 +34,7 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
             event.stopPropagation();
             onDelete();
           }}
-          data-cy={`${generateCypressDataCy(fileName)}-file-delete-button`}
+          data-cy={`${cyBase}-file-delete-button`}
         >
           <Trash width={12} fill="var(--icon-strong)" />
         </ButtonSolid>
@@ -60,12 +52,14 @@ FileListItem.propTypes = {
   error: PropTypes.string,
   isUploading: PropTypes.bool,
   isUploaded: PropTypes.bool,
+  dataCy: PropTypes.string,
 };
 
 FileListItem.defaultProps = {
   error: null,
   isUploading: false,
   isUploaded: false,
+  dataCy: 'file-picker',
 };
 
 export default FileListItem;

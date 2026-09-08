@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import FileListItem from './FileListItem';
 import { formatFileSize } from '@/_helpers/utils';
 
-const FileList = ({ files, onRemoveFile, errors = {}, uploadingStatus = {} }) => {
+const FileList = ({ files, onRemoveFile, errors = {}, uploadingStatus = {}, dataCy }) => {
   // TODO: Need to get file size formatting function, e.g., from @/_helpers/utils
   // const formatFileSize = (bytes) => { ... }; // Placeholder
 
@@ -33,6 +33,7 @@ const FileList = ({ files, onRemoveFile, errors = {}, uploadingStatus = {} }) =>
             error={fileError}
             isUploading={isUploading}
             isUploaded={isUploaded}
+            dataCy={dataCy}
             // Pass other necessary props based on FileListItem implementation
           />
         );
@@ -54,6 +55,7 @@ FileList.propTypes = {
   onRemoveFile: PropTypes.func.isRequired,
   errors: PropTypes.object, // Shape depends on how errors are structured
   uploadingStatus: PropTypes.object, // Shape depends on how status is structured
+  dataCy: PropTypes.string,
 };
 
 export default FileList;
