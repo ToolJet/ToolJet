@@ -43,11 +43,18 @@ const UsersTable = ({
   // Check if user has metadata
   const shouldShowMetadataColumn = wsSettings && Array.isArray(users) && users.some((user) => user.user_metadata);
 
+  function isMetadataValueFilled(value) {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return true;
+  }
+
   function showMetadataIcon(metadata) {
     if (!metadata) return false;
     for (const [key, value] of Object.entries(metadata)) {
       // Check if both key and value are not empty
-      if (key.trim() !== '' && value.trim() !== '') {
+      if (key.trim() !== '' && isMetadataValueFilled(value)) {
         return true;
       }
     }
