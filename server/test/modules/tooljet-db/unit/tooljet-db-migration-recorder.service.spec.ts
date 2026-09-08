@@ -391,6 +391,113 @@ describe('TooljetDbMigrationRecorderService', () => {
       });
     });
 
+    describe('.record | parent chain', () => {
+      it('leaves parent_migration_id null when the table has no migration history yet', async () => {
+        const { relation: usersRelation } = await usersTableAndRelation();
+        const internalTable = await appManager.save(
+          appManager.create(InternalTable, {
+            id: uuidv4(),
+            organizationId,
+            tableName: `blank_${uuidv4()}`,
+            co_relation_id: uuidv4(),
+          })
+        );
+        const relation = await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: internalTable.id,
+            environmentId: usersRelation.environmentId,
+            branchId: usersRelation.branchId,
+            configurations: null,
+          })
+        );
+
+        const migration = await service.record(
+          payload('create_table', { table_name: internalTable.tableName }),
+          internalTable,
+          relation
+        );
+
+        expect(migration.parentMigrationId).toBeNull();
+      });
+
+      it('chains onto whatever migration history already exists for the table (e.g. its create_table baseline)', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+        const [{ id: existingTip }] = await appManager.query(
+          `SELECT id FROM internal_table_migrations WHERE internal_table_id = $1 ORDER BY sequence DESC, id DESC LIMIT 1`,
+          [internalTable.id]
+        );
+
+        const migration = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+
+        expect(migration.parentMigrationId).toBe(existingTip);
+      });
+
+      it('points parent_migration_id at the previous chain tip', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+
+        const first = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+        const second = await service.record(
+          payload('add_column', { column: { column_name: 'score' } }),
+          internalTable,
+          relation
+        );
+
+        expect(second.parentMigrationId).toBe(first.id);
+      });
+
+      it('breaks a (sequence) tie by id, the same order replay uses', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+        const tiedSequence = Date.now() + 10_000_000;
+        const [{ id: lowerId }] = await appManager.query(
+          `INSERT INTO internal_table_migrations (internal_table_id, sequence, branch_id, kind, payload, resulting_schema, created_at)
+           VALUES ($1, $2, $3, 'baseline', '{}', null, now()) RETURNING id`,
+          [internalTable.id, tiedSequence, relation.branchId]
+        );
+        const [{ id: higherId }] = await appManager.query(
+          `INSERT INTO internal_table_migrations (internal_table_id, sequence, branch_id, kind, payload, resulting_schema, created_at)
+           VALUES ($1, $2, $3, 'baseline', '{}', null, now()) RETURNING id`,
+          [internalTable.id, tiedSequence, relation.branchId]
+        );
+        const tip = lowerId > higherId ? lowerId : higherId;
+
+        const migration = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+
+        expect(migration.parentMigrationId).toBe(tip);
+      });
+
+      it('recordRawSql chains onto the prior structured migration too', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+        const structured = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+
+        const rawSql = await service.recordRawSql(
+          { sql: `ALTER TABLE users ADD COLUMN score int`, refs: {} },
+          internalTable,
+          relation,
+          emptySnapshot(),
+          null
+        );
+
+        expect(rawSql.parentMigrationId).toBe(structured.id);
+      });
+    });
+
     describe('.record | row states', () => {
       it('inserts a pending migration and a pending application', async () => {
         const { internalTable, relation } = await usersTableAndRelation();

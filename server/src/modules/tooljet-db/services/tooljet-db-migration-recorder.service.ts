@@ -182,13 +182,14 @@ export class TooljetDbMigrationRecorderService {
     relation: InternalTableRelation,
     entityManager: EntityManager
   ): Promise<InternalTableMigration> {
-    const sequence = await this.nextSequence(internalTable.id, entityManager);
+    const { sequence, parentMigrationId } = await this.chainTail(internalTable.id, entityManager);
     const branchId = await this.relationResolverService.resolveBranchIdFor(internalTable.organizationId, entityManager);
     const userGivenName = (payload.request as { migration_name?: string })?.migration_name?.trim();
 
     const migration = entityManager.create(InternalTableMigration, {
       internalTableId: internalTable.id,
       sequence: String(sequence),
+      parentMigrationId,
       branchId,
       kind: 'structured',
       payload,
@@ -228,7 +229,7 @@ export class TooljetDbMigrationRecorderService {
     manager?: EntityManager
   ): Promise<InternalTableMigration> {
     const write = async (entityManager: EntityManager) => {
-      const sequence = await this.nextSequence(internalTable.id, entityManager);
+      const { sequence, parentMigrationId } = await this.chainTail(internalTable.id, entityManager);
       const branchId = await this.relationResolverService.resolveBranchIdFor(
         internalTable.organizationId,
         entityManager
@@ -237,6 +238,7 @@ export class TooljetDbMigrationRecorderService {
       const migration = entityManager.create(InternalTableMigration, {
         internalTableId: internalTable.id,
         sequence: String(sequence),
+        parentMigrationId,
         branchId,
         kind: 'raw_sql',
         payload,
@@ -263,20 +265,34 @@ export class TooljetDbMigrationRecorderService {
   }
 
   /**
-   * A timestamp, not a counter: `now()` wins whenever it is already past the table's highest
-   * recorded sequence, which is always true for the first real migration after the rollout
-   * baselines (sequence 1/2). The `max + 1` fallback only matters for several migrations recorded
-   * within the same request, where `Date.now()` would otherwise repeat. Scoped per table, not per
+   * The two facts every insert needs about this table's chain, from one lookup: the next
+   * `sequence` and the chain tip to stamp as `parent_migration_id`. `sequence` is a timestamp,
+   * not a counter - `now()` wins whenever it is already past the table's highest recorded
+   * sequence, which is always true for the first real migration after the rollout baselines
+   * (sequence 1/2). The `max + 1` fallback only matters for several migrations recorded within
+   * the same request, where `Date.now()` would otherwise repeat. Scoped per table, not per
    * workspace - two different tables recording at the same millisecond is not a collision.
+   *
+   * `parent_migration_id` is unread in v1 (see architecture doc's "Ordering") - it's written now
+   * so a workspace that later turns on git-sync gets branch-divergence detection out of the box,
+   * instead of needing a backfill that can no longer tell which historical chains were genuinely
+   * single-writer.
    */
-  private async nextSequence(internalTableId: string, entityManager: EntityManager): Promise<number> {
-    const [{ max }] = await entityManager.query(
-      `SELECT MAX(sequence) AS max FROM internal_table_migrations WHERE internal_table_id = $1`,
+  private async chainTail(
+    internalTableId: string,
+    entityManager: EntityManager
+  ): Promise<{ sequence: number; parentMigrationId: string | null }> {
+    const rows = await entityManager.query(
+      `SELECT id, sequence FROM internal_table_migrations WHERE internal_table_id = $1 ORDER BY sequence DESC, id DESC LIMIT 1`,
       [internalTableId]
     );
-    const highest = max === null ? 0 : Number(max);
+    const tip = rows[0] ?? null;
+    const highest = tip ? Number(tip.sequence) : 0;
     const now = Date.now();
-    return now > highest ? now : highest + 1;
+    return {
+      sequence: now > highest ? now : highest + 1,
+      parentMigrationId: tip ? tip.id : null,
+    };
   }
 
   /**
