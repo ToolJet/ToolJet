@@ -4,12 +4,12 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import {
+  commitChange,
   openEditorSidebar,
   verifyAndModifyParameter,
   dropWidget,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
   verifyExposedValue,
   clearSelectedFile,
   selectFileType,
