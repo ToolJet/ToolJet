@@ -283,8 +283,8 @@ const ToolJetDbOperations = ({
     setBulkUpsertPrimaryKey((prev) => ({ ...prev, rows: value }));
   };
 
-  const handlePrimaryKeyOptionChangedForBulkUpdate = (value, columnId) => {
-    setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value, primary_key_id: columnId }));
+  const handlePrimaryKeyOptionChangedForBulkUpdate = (value, columnIds) => {
+    setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value, primary_key_ids: columnIds }));
   };
 
   const handlePrimaryKeyOptionChangedForBulkUpsert = (value, columnIds) => {
@@ -322,6 +322,7 @@ const ToolJetDbOperations = ({
               ? data.result.columns.map((col) => ({
                   name: col.column_name,
                   table: tableId,
+                  columnId: col.column_id,
                   // alias: `${tableId}_${col.column_name}`,
                 }))
               : [])

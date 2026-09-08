@@ -3,7 +3,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { operators } from '@/TooljetDatabase/constants';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty } from 'lodash';
-import { isOperatorOptions, resolveColumnDisplayName } from './util';
+import { isOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
 import RenderColumnUI from './RenderColumnUI';
@@ -188,7 +188,7 @@ const RenderFilterFields = ({
   const handleColumnChange = (selectedOption) => {
     updateFilterOptionsChanged({
       ...updateRowsOptions?.where_filters[id],
-      ...{ column: selectedOption.value, columnId: selectedOption.columnId },
+      ...{ column: selectedOption.value, columnId: columnIdOf(selectedOption) },
     });
   };
 
@@ -267,7 +267,7 @@ const RenderColumnOptions = ({
     const updatedOption = {
       ...columnOptions[id],
       column: selectedOption.value,
-      columnId: selectedOption.columnId,
+      columnId: columnIdOf(selectedOption),
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };

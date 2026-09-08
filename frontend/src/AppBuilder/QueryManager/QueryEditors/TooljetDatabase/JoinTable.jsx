@@ -9,7 +9,7 @@ import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
-import { filterOperatorOptions, nullOperatorOptions, resolveColumnDisplayName } from './util';
+import { filterOperatorOptions, nullOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
 import { NoCondition } from './NoConditionUI';
@@ -453,7 +453,7 @@ const RenderFilterSection = ({ darkMode }) => {
               updateFilterConditionEntry('Column', index, {
                 table: newValue.table,
                 columnName: newValue.label,
-                columnId: newValue.columnId,
+                columnId: columnIdOf(newValue),
                 isLeftSideCondition: true,
               })
             }

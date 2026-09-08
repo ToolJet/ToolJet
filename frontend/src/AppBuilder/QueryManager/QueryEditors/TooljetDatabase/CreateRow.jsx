@@ -6,7 +6,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
-import { resolveColumnDisplayName } from './util';
+import { resolveColumnDisplayName, columnIdOf } from './util';
 import cx from 'classnames';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
@@ -126,7 +126,7 @@ const RenderColumnOptions = ({
     const updatedOption = {
       ...columnOptions[id],
       column: selectedOption.value,
-      columnId: selectedOption.columnId,
+      columnId: columnIdOf(selectedOption),
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };

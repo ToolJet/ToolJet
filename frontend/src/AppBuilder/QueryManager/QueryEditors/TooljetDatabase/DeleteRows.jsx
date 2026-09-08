@@ -3,7 +3,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { operators } from '@/TooljetDatabase/constants';
-import { isOperatorOptions, resolveColumnDisplayName } from './util';
+import { isOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
@@ -133,7 +133,7 @@ const RenderFilterFields = ({
       ...deleteRowsOptions?.where_filters[id],
       ...{
         column: selectedOption.value,
-        columnId: selectedOption.columnId,
+        columnId: columnIdOf(selectedOption),
         columnDataType: selectedOption?.dataType || '',
       },
     });

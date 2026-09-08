@@ -3,7 +3,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { operators } from '@/TooljetDatabase/constants';
-import { isOperatorOptions, resolveColumnDisplayName } from './util';
+import { isOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
@@ -239,7 +239,7 @@ const RenderSortFields = ({
   const handleColumnChange = (selectedOption) => {
     updateSortOptionsChanged({
       ...listRowsOptions?.order_filters[id],
-      ...{ column: selectedOption.value, columnId: selectedOption.columnId },
+      ...{ column: selectedOption.value, columnId: columnIdOf(selectedOption) },
     });
   };
 
@@ -299,7 +299,7 @@ const RenderFilterFields = ({
   const handleColumnChange = (selectedOption) => {
     updateFilterOptionsChanged({
       ...listRowsOptions?.where_filters[id],
-      ...{ column: selectedOption.value, columnId: selectedOption.columnId },
+      ...{ column: selectedOption.value, columnId: columnIdOf(selectedOption) },
     });
   };
 

@@ -49,6 +49,11 @@ export const resolveColumnDisplayName = (columns, name, columnId, nameField = 'a
   return name;
 };
 
+// Depends on DropDownSelect/SelectBox forwarding the full selected option object to onChange
+// (not a normalized {value,label} pair) - if that ever changes, columnId silently stops flowing
+// everywhere this is used. See resolveColumnDisplayName for the read-side counterpart.
+export const columnIdOf = (selectedOption) => selectedOption?.columnId;
+
 export const isOperatorOptions = [
   { value: 'null', label: 'null' },
   { value: 'notNull', label: 'not null' },

@@ -15,7 +15,10 @@ export const BulkUploadPrimaryKey = () => {
     const primaryKeyColumns = columns.filter((column) => column?.isPrimaryKey);
     const primaryKeys = primaryKeyColumns.map((column) => column?.accessor);
 
-    handlePrimaryKeyOptionChangedForBulkUpdate(primaryKeys, primaryKeyColumns[0]?.column_id);
+    handlePrimaryKeyOptionChangedForBulkUpdate(
+      primaryKeys,
+      primaryKeyColumns.map((column) => column?.column_id)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
 
