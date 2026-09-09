@@ -15,8 +15,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "./properties";
 
-// Which header button switches the canvas to each layout. A map rather than an
-// interpolated selector so a typo throws instead of silently landing on desktop.
+// A map, not an interpolated selector, so a typo throws instead of landing on desktop.
 const layoutButton = {
   mobile: commonWidgetSelector.changeLayoutToMobileButton,
   desktop: commonWidgetSelector.changeLayoutToDesktopButton,
