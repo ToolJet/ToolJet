@@ -7,6 +7,7 @@ import {
   fxExemptFields,
 } from "Texts/appBuilder/components/filePicker";
 import {
+  commitChange,
   openEditorSidebar,
   verifyAndModifyParameter,
   waitForDropSettle,
@@ -15,7 +16,6 @@ import {
   expectNoFxButton,
   openStyleAccordion,
 } from "Support/utils/commonWidget";
-import { commitChange } from "Support/utils/appBuilder/components/filePicker";
 
 // StylesFx facet — fx/dynamic-binding half; the direct half is in styles.cy.js.
 // Covers all 3 fx-capable config.styles items — source: filepicker.js:296-358
@@ -29,7 +29,7 @@ import { commitChange } from "Support/utils/appBuilder/components/filePicker";
 // stays live rather than resolving once at bind time.
 describe(
   "File Picker styles fx",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
 
@@ -57,8 +57,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify Title follows a bound colour", () => {

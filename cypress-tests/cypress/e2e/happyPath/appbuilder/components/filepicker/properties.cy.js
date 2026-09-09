@@ -12,6 +12,10 @@ import {
   parseFileTypeOptions,
 } from "Texts/appBuilder/components/filePicker";
 import {
+  commitChange,
+  verifyExposedValue,
+  hoverInPreview,
+  setTooltip,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -20,8 +24,6 @@ import {
   enableFxAndBind,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   acceptAnyFileType,
   attachFile,
   attachGeneratedFile,
@@ -34,10 +36,6 @@ import {
   deleteFileFromList,
   selectParseFileType,
   selectValidationFileType,
-  openParsedValue,
-  closeParsedValue,
-  hoverInPreview,
-  widgetTooltip,
 } from "Support/utils/appBuilder/components/filePicker";
 
 // Properties facet — every field in config.properties AND config.validation, which are two
@@ -56,26 +54,6 @@ import {
 // The five COMMENTED-OUT styles (filepicker.js:303-326, 339-344) are not on the surface
 // and are deliberately untested — see commentedOutStyles in the texts module.
 
-// One node per tooltip format, all three rendered by the shared WidgetTooltip (mounted for
-// every widget from RenderWidget.jsx:367): plainText -> span.tw-whitespace-pre-wrap,
-// markdown -> .widget-tooltip-markdown, html -> .widget-tooltip-html.
-// Raw HTML can't be typed: the CodeMirror tokenizer drops `<`, `>` and `/`, so "<b>x</b>"
-// arrives as "bxb". Pass it as {{"..."}}, which is preserved whole.
-const setTooltip = (format, content) => {
-  // data-cy comes from the option VALUE, which is camelCase (`plainText`), not the
-  // kebab-cased display name. source: filepicker.js:189-193
-  cy.get(`[data-cy="togglr-button-${format}"]`).click();
-  cy.waitForAutoSave();
-  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
-  // Confirm it landed: an empty tooltip renders no node at all, which looks the same as a
-  // hover that failed.
-  cy.get(commonWidgetSelector.tooltipInputField).should(
-    "contain.text",
-    content.replace(/[{}"]/g, "").trim()
-  );
-  commitChange();
-};
-
 const showTooltipInPreview = (name, format, content) => {
   openEditorSidebar(name);
   openAccordion(filePickerAccordion.additionalActions);
@@ -85,7 +63,7 @@ const showTooltipInPreview = (name, format, content) => {
 
 describe(
   "File Picker properties",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const {
@@ -112,8 +90,8 @@ describe(
       acceptAnyFileType(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     /* --------------------------------------------------------------- data ---- */
@@ -198,7 +176,7 @@ describe(
         "have.text",
         filePickerValidationBar.countMax(2, 2)
       );
-      verifyExposedValue("file", "Array", "[2]");
+      verifyExposedValue("file", "Array", "[2]", widget);
     });
 
     it("should verify Enable parsing: direct toggle reveals File type and parses content", () => {
@@ -214,10 +192,7 @@ describe(
       expectFileInList(csvFileName);
 
       // sample-a.csv is id,name,role, so every parsed row must report 3 keys.
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-      closeParsedValue();
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
     });
 
     it("should verify File type: the dropdown offers exactly the five configured options", () => {
@@ -326,7 +301,7 @@ describe(
       cy.get(filePickerSelector.loader(widget)).should("be.visible");
       cy.get(filePickerSelector.title(widget)).should("not.exist");
       cy.get(filePickerSelector.dropzone(widget)).should("not.exist");
-      verifyExposedValue("isLoading", "Boolean", "true");
+      verifyExposedValue("isLoading", "Boolean", "true", widget);
     });
 
     it("should verify Visibility: direct toggle hides the widget", () => {
@@ -339,7 +314,7 @@ describe(
       // File Input returns null (FileInput.jsx:240). A hidden picker therefore keeps its
       // hooks and its held files, which a hidden File Input loses.
       cy.get(filePickerSelector.widget(widget)).should("not.be.visible");
-      verifyExposedValue("isVisible", "Boolean", "false");
+      verifyExposedValue("isVisible", "Boolean", "false", widget);
     });
 
     // Both collapse tests build the same app: a Text widget sitting directly BELOW the
@@ -422,7 +397,7 @@ describe(
       cy.waitForAutoSave();
 
       expectPickerBlocked(widget);
-      verifyExposedValue("isDisabled", "Boolean", "true");
+      verifyExposedValue("isDisabled", "Boolean", "true", widget);
     });
 
     /* ------------------------------------------------------------ tooltip ---- */
@@ -435,7 +410,7 @@ describe(
 
     it("should verify Tooltip in Plain text format: content stays literal", () => {
       showTooltipInPreview(widget, "plainText", markup);
-      cy.get(widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
+      cy.get(commonWidgetSelector.widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
       cy.get(".widget-tooltip-markdown").should("not.exist");
       cy.get(".widget-tooltip-html").should("not.exist");
     });
@@ -464,8 +439,8 @@ describe(
 
       cy.get(filePickerSelector.mandatoryIndicator(widget)).should("be.visible").and("have.text", "*");
       cy.get(filePickerSelector.ariaRequired(widget)).should("exist");
-      verifyExposedValue("isMandatory", "Boolean", "true");
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
+      verifyExposedValue("isValid", "Boolean", "false", widget);
     });
 
     it("should verify Accept file types: every option accepts its own kind and rejects others", () => {
@@ -571,12 +546,12 @@ describe(
         filePickerErrors.minCountShortfall(2)
       );
       expectFileInList(csvFileName);
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("isValid", "Boolean", "false", widget);
 
       attachFile(secondCsvFile);
       expectFileInList(secondCsvFileName);
       cy.get(filePickerSelector.errorMessage(widget)).should("not.exist");
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("isValid", "Boolean", "true", widget);
     });
 
     it("should verify Max file count: selecting past the cap is refused with the exact reason", () => {

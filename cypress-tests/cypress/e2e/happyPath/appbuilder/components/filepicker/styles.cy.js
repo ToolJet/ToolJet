@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { filePickerSelector } from "Selectors/appBuilder/components/filePicker";
 import { filePickerText, filePickerAccordion } from "Texts/appBuilder/components/filePicker";
 import {
+  commitChange,
   openStyleAccordion,
   selectThemeColour,
   expectThemeColour,
@@ -12,7 +13,6 @@ import {
   verifyBoxShadowCss,
   waitForDropSettle,
 } from "Support/utils/commonWidget";
-import { commitChange } from "Support/utils/appBuilder/components/filePicker";
 
 // Styles facet — every entry in config.styles, which is only FOUR on this widget against
 // File Input's 17: File Picker has no label alignment/width group and no icon at all.
@@ -27,7 +27,7 @@ import { commitChange } from "Support/utils/appBuilder/components/filePicker";
 //           would pass on a licensed box and fail on a basic/CE runner.
 describe(
   "File Picker styles",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
 
@@ -40,8 +40,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     /* -------------------------------------------------------- drop area ---- */
@@ -119,15 +119,15 @@ describe(
       // dropping 2px of padding leaves outerHeight unchanged — a height comparison reports
       // "nothing happened" for a feature that works.
       openStyleAccordion(widget, filePickerAccordion.styleContainer);
-      cy.get('[data-cy="togglr-button-default"]')
+      cy.get(commonWidgetSelector.togglrButton("default"))
         .closest('[role="radio"]')
         .should("have.attr", "aria-checked", "true");
       cy.get(filePickerSelector.draggableWidget(widget)).should("have.css", "padding", "2px");
 
-      cy.get('[data-cy="togglr-button-none"]').click(); // source: filepicker.js:345
+      cy.get(commonWidgetSelector.togglrButton("none")).click(); // source: filepicker.js:345
       cy.waitForAutoSave();
       // Precondition, not the coverage: the padding assertion below is the effect.
-      cy.get('[data-cy="togglr-button-none"]')
+      cy.get(commonWidgetSelector.togglrButton("none"))
         .closest('[role="radio"]')
         .should("have.attr", "aria-checked", "true");
       cy.get(filePickerSelector.draggableWidget(widget)).should("have.css", "padding", "0px");

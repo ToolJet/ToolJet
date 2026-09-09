@@ -2,11 +2,14 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { filePickerSelector } from "Selectors/appBuilder/components/filePicker";
 import { filePickerText, filePickerFixtures } from "Texts/appBuilder/components/filePicker";
-import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget";
+import {
+  verifyExposedValue,
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 import { selectEvent, configureCSA, selectQueryForEvent } from "Support/utils/appBuilder/events";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import {
-  verifyExposedValue,
   acceptAnyFileType,
   attachFile,
   expectFileInList,
@@ -30,7 +33,7 @@ import {
 // withdrawn on File Input. Do not re-raise it.
 describe(
   "File Picker CSA",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName, csvFile, csvFileName } = filePickerFixtures;
@@ -112,8 +115,8 @@ describe(
       acceptAnyFileType(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should empty the file list via the Clear Files CSA", () => {
@@ -133,15 +136,15 @@ describe(
 
       // ── editor ──
       holdFile();
-      verifyExposedValue("file", "Array", "[1]");
+      verifyExposedValue("file", "Array", "[1]", widget);
       clickButton("button1");
       expectCleared();
-      verifyExposedValue("file", "Array", "[0]");
+      verifyExposedValue("file", "Array", "[0]", widget);
 
       holdFile();
       clickButton("button2");
       expectCleared();
-      verifyExposedValue("file", "Array", "[0]");
+      verifyExposedValue("file", "Array", "[0]", widget);
 
       // ── preview ── (reload drops the selection, so preview starts empty)
       cy.openPreview(filePickerSelector.widget(widget));
@@ -210,13 +213,13 @@ describe(
 
       // ── editor ──
       expectShown();
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
       clickButton("button1");
       expectHidden();
-      verifyExposedValue("isVisible", "Boolean", "false");
+      verifyExposedValue("isVisible", "Boolean", "false", widget);
       clickButton("button2");
       expectShown();
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
 
       // ── preview ──
       cy.openPreview(filePickerSelector.widget(widget));
@@ -241,7 +244,7 @@ describe(
       // ── editor ──
       expectEnabled();
       runBothTriggers(expectDisabled, expectEnabled);
-      verifyExposedValue("isDisabled", "Boolean", "false");
+      verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
       // ── preview ──
       cy.openPreview(filePickerSelector.widget(widget));
@@ -269,7 +272,7 @@ describe(
       // ── editor ──
       expectNotLoading();
       runBothTriggers(expectLoading, expectNotLoading);
-      verifyExposedValue("isLoading", "Boolean", "false");
+      verifyExposedValue("isLoading", "Boolean", "false", widget);
 
       // ── preview ──
       cy.openPreview(filePickerSelector.widget(widget));

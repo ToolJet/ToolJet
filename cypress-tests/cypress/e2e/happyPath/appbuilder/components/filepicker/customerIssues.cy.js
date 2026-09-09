@@ -8,6 +8,7 @@ import {
 } from "Texts/appBuilder/components/filePicker";
 import { commonWidgetSelector } from "Selectors/common";
 import {
+  commitChange,
   dropWidget,
   openEditorSidebar,
   openAccordion,
@@ -19,7 +20,6 @@ import {
   deleteFileFromList,
   selectValidationFileType,
   acceptAnyFileType,
-  commitChange,
 } from "Support/utils/appBuilder/components/filePicker";
 
 // Customer-issues facet — regression guards for defects found while automating this
@@ -37,7 +37,7 @@ import {
 
 describe(
   "File Picker customer issues",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName, csvFile, secondCsvFile, secondCsvFileName } =
@@ -52,8 +52,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     // FP-1 — FIXED. ErrorMessage emitted a LITERAL data-cy="file-picker-error-message" and

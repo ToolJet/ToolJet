@@ -4,7 +4,10 @@ import { commonSelectors } from "Selectors/common";
 import { filePickerSelector } from "Selectors/appBuilder/components/filePicker";
 import { filePickerText, filePickerFixtures } from "Texts/appBuilder/components/filePicker";
 import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
-import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget";
+import {
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 import {
   attachFile,
   attachGeneratedFile,
@@ -29,7 +32,7 @@ import {
 // buffer is under it. Same rejection path, no large allocation.
 describe(
   "File Picker events",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName } = filePickerFixtures;
@@ -70,8 +73,8 @@ describe(
       openEditorSidebar(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should fire onFileSelected when a file is accepted", () => {

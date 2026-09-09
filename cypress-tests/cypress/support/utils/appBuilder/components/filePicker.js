@@ -32,43 +32,11 @@ import {
  * because the module is component-scoped. Drop the default on anything ever promoted.
  */
 
-/**
- * @tjBlock  properties
- * @tjUsage  commitChange()
- * @tjDom    canvas click to blur the active field, then the autosave indicator
- */
-// Blur whatever field is focused so its value commits, then wait for the save.
-export const commitChange = () => {
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-};
-
 // Asserts the EXPOSED state (components.<widget>.<key>), a separate code path from the
 // rendered DOM. Both the Inspector tab and the Components expand-button are toggles whose
 // state persists in the app's store even after the panel closes, so each is undone in
 // reverse order before returning — otherwise a second call in the same test fails to find
 // the node the first call left expanded.
-/**
- * @tjBlock  inspector
- * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true')
- * @tjDom    inspector sidebar tab → components node → widget subnode → node value
- */
-export const verifyExposedValue = (
-  key,
-  type,
-  value,
-  widgetName = filePickerText.defaultWidgetName
-) => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  verifyNodeData(key, type, value);
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
 /**
  * @tjBlock  properties
  * @tjUsage  attachFile(filePickerFixtures.csvFile)
@@ -344,36 +312,6 @@ export const expectRejectionToast = (types) => {
 };
 
 /**
- * @tjBlock  inspector
- * @tjUsage  openParsedValue()
- * @tjDom    inspector → components → widget → `file` node → index 0
- */
-// Drills into `files`, NOT the config-declared `file` (FP-12). Both exist at runtime, and
-// they carry DIFFERENT parsed keys:
-//   file  — legacy, hand-picked fields (useFilePicker.js:567-574), carries `parsedData`,
-//           produced by DEPRECATED_processFileContent (:156)
-//   files — the current shape (:565, a spread of the processed file), carries `parsedValue`
-//           from processFileContent (:152)
-// The config declares `file[].parsedValue` (filepicker.js:361) — a combination that exists
-// nowhere: the declared array exposes the deprecated key, and the current key sits on an
-// array the config never declares.
-export const openParsedValue = (widgetName = filePickerText.defaultWidgetName) => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  cy.get('[data-cy="inspector-files-label"]').first().click();
-  cy.get('[data-cy="inspector-0-label"]').first().click();
-};
-
-// Undo both toggles so the next call starts from a known state.
-export const closeParsedValue = () => {
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
-/**
  * @tjBlock  styles
  * @tjUsage  getWidgetHeight('filepicker1').then((h) => ...)
  * @tjDom    the draggable wrapper's rendered height
@@ -383,21 +321,3 @@ export const closeParsedValue = () => {
 export const getWidgetHeight = (widgetName = filePickerText.defaultWidgetName) =>
   cy.get(filePickerSelector.draggableWidget(widgetName)).invoke("outerHeight");
 
-// The shared tooltip node. One per open tooltip, portalled to the body, so it is NOT
-// scoped to the widget.
-export const widgetTooltip = '[data-cy="widget-tooltip"]';
-
-/**
- * @tjBlock  properties
- * @tjUsage  hoverInPreview(filePickerSelector.title('filepicker1'))
- * @tjDom    preview, then realHover on the given element past Radix's delay
- */
-// A tooltip only opens in PREVIEW: on the editor canvas the drag/resize overlays swallow
-// the pointer events Radix needs, and a synthetic `mouseover` never opens it in either
-// mode. Configure in the editor, then verify here.
-export const hoverInPreview = (selector) => {
-  cy.openPreview();
-  cy.get(selector).should("be.visible").realHover();
-  // Radix mounts the content only after 500ms of sustained hover.
-  cy.wait(900);
-};

@@ -14,7 +14,10 @@ import {
   verifyAndModifyParameter,
   waitForDropSettle,
 } from "Support/utils/commonWidget";
-import { attachFile, expectFileInList } from "Support/utils/appBuilder/components/filePicker";
+import {
+  attachFile,
+  expectFileInList,
+} from "Support/utils/appBuilder/components/filePicker";
 
 // Basics facet — CI-reliable smoke; if this is red, every other facet is noise.
 // Covers: definition defaults label:376 · instructionText:377 — source: filepicker.js
@@ -24,7 +27,7 @@ import { attachFile, expectFileInList } from "Support/utils/appBuilder/component
 // Not here: exposed values → inspector.cy.js · drop placement → canvas.cy.js
 describe(
   "File Picker basics",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName, csvFile } = filePickerFixtures;
@@ -38,8 +41,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should mount and render the default title and dropzone instruction", () => {

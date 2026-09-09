@@ -11,6 +11,9 @@ import {
   fxExemptFields,
 } from "Texts/appBuilder/components/filePicker";
 import {
+  commitChange,
+  verifyExposedValue,
+  hoverInPreview,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -21,8 +24,6 @@ import {
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   acceptAnyFileType,
   attachFile,
   attachGeneratedFile,
@@ -37,10 +38,6 @@ import {
   expectPickerClickCount,
   expectFileInList,
   validationFileTypeWrapper,
-  openParsedValue,
-  closeParsedValue,
-  hoverInPreview,
-  widgetTooltip,
 } from "Support/utils/appBuilder/components/filePicker";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -83,7 +80,7 @@ const dropCompanionToggle = (x, y = COMPANION_Y) => dropWidget("Toggle Switch", 
 
 describe(
   "File Picker properties fx",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName, csvFile, csvFileName, secondCsvFile, secondCsvFileName } =
@@ -101,8 +98,8 @@ describe(
       acceptAnyFileType(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     /* --------------------------------------------------------------- data ---- */
@@ -238,10 +235,7 @@ describe(
       // sample-a.csv is id,name,role — a bound `csv` that failed to resolve would leave
       // auto-detect in place, which parses the same file to the same shape, so the row
       // KEY COUNT is asserted rather than mere presence of a parsed value.
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-      closeParsedValue();
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
     });
 
     it("should verify Delimiter resolves a binding, changing how a CSV splits", () => {
@@ -265,10 +259,7 @@ describe(
 
       attachFile(csvFile);
       expectFileInList(csvFileName);
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{1}");
-      closeParsedValue();
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{1}", widget);
     });
 
     it("should verify Dynamic height follows a bound boolean", () => {
@@ -304,7 +295,7 @@ describe(
       clickWidgetInput("toggleswitch1");
       cy.get(filePickerSelector.loader(widget)).scrollIntoView().should("be.visible");
       cy.get(filePickerSelector.dropzone(widget)).should("not.exist");
-      verifyExposedValue("isLoading", "Boolean", "true");
+      verifyExposedValue("isLoading", "Boolean", "true", widget);
     });
 
     it("should verify Visibility follows a bound boolean", () => {
@@ -321,7 +312,7 @@ describe(
 
       clickWidgetInput("toggleswitch1");
       cy.get(filePickerSelector.widget(widget)).scrollIntoView().should("exist");
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
     });
 
     it("should verify Collapse when hidden follows a bound boolean", () => {
@@ -375,7 +366,7 @@ describe(
 
       clickWidgetInput("toggleswitch1");
       expectPickerBlocked(widget);
-      verifyExposedValue("isDisabled", "Boolean", "true");
+      verifyExposedValue("isDisabled", "Boolean", "true", widget);
     });
 
     it("should verify Tooltip content resolves a binding", () => {
@@ -398,7 +389,7 @@ describe(
       // Radix needs to open it. Unlike the rest of this file the companion is seeded rather
       // than re-driven: resolution is what this asserts.
       hoverInPreview(filePickerSelector.title(widget));
-      cy.get(widgetTooltip).should("contain.text", "Bound tooltip text");
+      cy.get(commonWidgetSelector.widgetTooltip).should("contain.text", "Bound tooltip text");
     });
 
     /* --------------------------------------------------------- validation ---- */
@@ -415,7 +406,7 @@ describe(
       clickWidgetInput("toggleswitch1");
       cy.get(filePickerSelector.mandatoryIndicator(widget)).scrollIntoView().should("be.visible");
       cy.get(filePickerSelector.ariaRequired(widget)).should("exist");
-      verifyExposedValue("isMandatory", "Boolean", "true");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
     });
 
     it("should verify Accept file types via fx: a bound pattern gates the same way", () => {
@@ -504,11 +495,11 @@ describe(
         "have.text",
         filePickerErrors.minCountShortfall(2)
       );
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("isValid", "Boolean", "false", widget);
 
       attachFile(secondCsvFile);
       cy.get(filePickerSelector.errorMessage(widget)).should("not.exist");
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("isValid", "Boolean", "true", widget);
     });
 
     it("should verify Max file count follows a binding", () => {

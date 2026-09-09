@@ -9,14 +9,14 @@ import {
   filePickerErrors,
 } from "Texts/appBuilder/components/filePicker";
 import {
+  commitChange,
+  verifyExposedValue,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
   dropWidget,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   acceptAnyFileType,
   attachFile,
   expectInlineAndToastError,
@@ -27,8 +27,6 @@ import {
   endDrag,
   selectParseFileType,
   selectValidationFileType,
-  openParsedValue,
-  closeParsedValue,
 } from "Support/utils/appBuilder/components/filePicker";
 
 // Userflow facet — realistic end-to-end journeys rather than one field at a time, so a
@@ -38,7 +36,7 @@ import {
 // events.cy.js and csa.cy.js.
 describe(
   "File Picker userflow",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
     const { validFile, validFileName, csvFile, csvFileName, secondCsvFile, secondCsvFileName } =
@@ -56,8 +54,8 @@ describe(
       acceptAnyFileType(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should build a mandatory two-CSV parsing dropzone and drive it through reject, shortfall, complete and removal", () => {
@@ -101,9 +99,9 @@ describe(
         "have.text",
         filePickerValidationBar.countMin(0, 2)
       );
-      verifyExposedValue("isMandatory", "Boolean", "true");
-      verifyExposedValue("isValid", "Boolean", "false");
-      verifyExposedValue("file", "Array", "[0]");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
+      verifyExposedValue("isValid", "Boolean", "false", widget);
+      verifyExposedValue("file", "Array", "[0]", widget);
 
       // ── wrong type: rejected, and the reason is REPLACED ──
       // The toast carries the real reason, but the inline node does not keep it: an effect
@@ -122,7 +120,7 @@ describe(
         filePickerErrors.mandatory
       );
       cy.get(filePickerSelector.filePane(widget)).should("not.exist");
-      verifyExposedValue("file", "Array", "[0]");
+      verifyExposedValue("file", "Array", "[0]", widget);
 
       // ── one file: accepted but short of the floor ──
       // The shortfall message is TRANSIENT — onDropAccepted clears it 5s later
@@ -133,7 +131,7 @@ describe(
         filePickerErrors.minCountShortfall(2)
       );
       expectFileInList(csvFileName);
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("isValid", "Boolean", "false", widget);
 
       // ── second file: the floor is met and the error clears ──
       attachFile(secondCsvFile);
@@ -143,15 +141,12 @@ describe(
         "have.text",
         filePickerValidationBar.countMin(2, 2)
       );
-      verifyExposedValue("isValid", "Boolean", "true");
-      verifyExposedValue("file", "Array", "[2]");
+      verifyExposedValue("isValid", "Boolean", "true", widget);
+      verifyExposedValue("file", "Array", "[2]", widget);
 
       // ── parsing settled, and it actually parsed ──
-      verifyExposedValue("isParsing", "Boolean", "false");
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-      closeParsedValue();
+      verifyExposedValue("isParsing", "Boolean", "false", widget);
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
 
       // ── removing one drops back below the floor: the flow is reversible ──
       // isValid flips, but NO message is shown. The shortfall string is set only from
@@ -160,15 +155,15 @@ describe(
       // nothing on screen saying why, the same user-visible outcome as FP-9 reached by a
       // different route.
       deleteFileFromList(secondCsvFileName);
-      verifyExposedValue("isValid", "Boolean", "false");
-      verifyExposedValue("file", "Array", "[1]");
+      verifyExposedValue("isValid", "Boolean", "false", widget);
+      verifyExposedValue("file", "Array", "[1]", widget);
       cy.get(filePickerSelector.errorMessage(widget)).should("not.exist");
 
       // ── and the first file is still selectable again afterwards: a widget that had
       //    silently stopped accepting would satisfy every assertion above ──
       attachFile(secondCsvFile);
       expectFileInList(secondCsvFileName);
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("isValid", "Boolean", "true", widget);
     });
 
     it("should build a drop-only zone where clicking cannot open the picker but dragging still works", () => {
@@ -199,8 +194,8 @@ describe(
       // widget off.
       attachFile(csvFile);
       expectFileInList(csvFileName);
-      verifyExposedValue("file", "Array", "[1]");
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("file", "Array", "[1]", widget);
+      verifyExposedValue("isValid", "Boolean", "true", widget);
 
       // Drop zone off as well: now there is no entry point at all, and the widget still
       // renders rather than collapsing or erroring.

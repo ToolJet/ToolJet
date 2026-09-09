@@ -1,6 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
-import { waitForDropSettle } from "Support/utils/commonWidget";
+import {
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 import { commonWidgetSelector } from "Selectors/common";
 import { filePickerText } from "Texts/appBuilder/components/filePicker";
 import {
@@ -18,7 +20,7 @@ import {
 // Config-derived, so a config change dropping or renaming either list fails here first.
 describe(
   "File Picker inspector",
-  { testIsolation: false, retries: { runMode: Number(Cypress.env("TJ_RETRIES") ?? 3), openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = filePickerText.defaultWidgetName;
 
@@ -58,8 +60,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify the initial exposed values and functions on inspector", () => {
