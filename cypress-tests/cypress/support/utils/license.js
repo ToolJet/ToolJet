@@ -1,10 +1,10 @@
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { importSelectors } from "Selectors/exportImport";
-import { licenseSelectors } from "Selectors/license";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { licenseSelectors } from "Selectors/platform/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
-import { licenseText } from "Texts/license";
+import { licenseText } from "Texts/platform/license";
 
 export const getLicenseExpiryDate = () => {
   return cy
