@@ -188,7 +188,8 @@
     },
     {
       "componentType": "PDF",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PDF/TESTING.md"
     },
     {
       "componentType": "Map",

@@ -49,6 +49,12 @@ module.exports = {
         babelrc: false,
         configFile: false,
         presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+        // PDF.jsx sets the pdfjs worker via `new URL(..., import.meta.url)` at
+        // module scope. @babel/preset-env rewrites ESM->CJS, where `import.meta`
+        // has no equivalent and throws "Cannot use 'import.meta' outside a
+        // module". This plugin rewrites import.meta to a CJS-safe file URL so the
+        // module loads under jest. PDF is the only frontend/src widget using it.
+        plugins: ['babel-plugin-transform-import-meta'],
       },
     ],
     '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
@@ -66,6 +72,12 @@ module.exports = {
     // markdown *parsing* — only that the widget renders its text — so a
     // renderable pass-through component is the cheap equivalent.
     '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // STUB, not transform: react-pdf's dist is ESM-only and drags in the whole
+    // pdfjs-dist tree + a web worker jsdom can't run, so a real PDF never renders
+    // under jest anyway. Real rendering is QA-owned per the PDF contract; the
+    // engineering layer only needs the empty-url placeholder + container styles.
+    // See ee/test/app-builder/widgets/PDF/TESTING.md (D-10).
+    '^react-pdf$': '<rootDir>/__mocks__/reactPdf.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a
