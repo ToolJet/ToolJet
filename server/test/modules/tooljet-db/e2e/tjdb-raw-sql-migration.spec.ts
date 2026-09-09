@@ -154,8 +154,12 @@ describe('TooljetDb raw SQL migration', () => {
           const priorGpaUuid = relation.configurations.columns.column_names['gpa'];
           const priorIdUuid = relation.configurations.columns.column_names['id'];
 
+          // `character varying -> double precision` is still a row-dependent cast the structured
+          // routes refuse, which is what this exercises - but the target type has to stay inside
+          // `TJDB`, or the unsupported-column-type gate rejects the migration before any of the
+          // identity assertions below are reachable.
           const res = await runRawSql(organizationId, cookie, internalTable.id, {
-            sql: `ALTER TABLE "{{self}}" ALTER COLUMN gpa TYPE numeric USING gpa::numeric; ALTER TABLE "{{self}}" ADD COLUMN note character varying`,
+            sql: `ALTER TABLE "{{self}}" ALTER COLUMN gpa TYPE double precision USING gpa::double precision; ALTER TABLE "{{self}}" ADD COLUMN note character varying`,
           });
           expect([200, 201]).toContain(res.statusCode);
 
@@ -164,7 +168,7 @@ describe('TooljetDb raw SQL migration', () => {
             `SELECT data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = 'gpa'`,
             [tenantSchema, relation.id]
           );
-          expect(column.data_type).toBe('numeric');
+          expect(column.data_type).toBe('double precision');
 
           // Column identity: unaffected columns keep their uuid, the new one gets a fresh one.
           const manager = getDefaultDataSource().manager;
@@ -430,6 +434,199 @@ describe('TooljetDb raw SQL migration', () => {
       } finally {
         if (organizationId) await cleanupWorkspace(organizationId);
       }
+    });
+
+    // Task: unsupported-column-type gate (assertNoUnsupportedColumnTypes /
+    // unsupportedColumnTypes) - rejects a raw SQL migration that leaves a *new or type-changed*
+    // column with a type ToolJet Database's structured routes can't represent. Covers the gate's
+    // own table, a sibling reached through `refs`, and the pre-existing-column grandfather case.
+    describe('unsupported column type gate', () => {
+      it('rejects an array type on the migrated table, rolls back the DDL, and records no migration', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, tenantSchema } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_array_tbl');
+            const { internalTable, relation } = await tableAndRelation(organizationId, 'gate_array_tbl');
+
+            const migrationsBefore = await getDefaultDataSource().manager.count(InternalTableMigration, {
+              where: { internalTableId: internalTable.id },
+            });
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN tags text[]`,
+            });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.message).toContain('tags');
+            expect(res.body.message).toContain('text[]');
+
+            const migrationsAfter = await getDefaultDataSource().manager.count(InternalTableMigration, {
+              where: { internalTableId: internalTable.id },
+            });
+            expect(migrationsAfter).toBe(migrationsBefore);
+
+            const [column] = await getTooljetDbDataSource().query(
+              `SELECT 1 FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = 'tags'`,
+              [tenantSchema, relation.id]
+            );
+            expect(column).toBeUndefined();
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('still allows a migration adding a supported type', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_supported_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'gate_supported_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN nickname varchar`,
+            });
+            expect([200, 201]).toContain(res.statusCode);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('rejects a modifier-carrying unsupported type, keeping the modifier in the error text', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_numeric_mod_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'gate_numeric_mod_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN amount numeric(10,2)`,
+            });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.message).toContain('numeric(10,2)');
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('allows a modifier-carrying supported type, proving modifier stripping end-to-end', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_varchar_mod_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'gate_varchar_mod_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN bio character varying(255)`,
+            });
+            expect([200, 201]).toContain(res.statusCode);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('rejects an unsupported type introduced on a sibling table reached via refs, naming that table', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_sibling_a_tbl');
+            await createTable(organizationId, cookie, 'gate_sibling_b_tbl');
+            const { internalTable: tableA } = await tableAndRelation(organizationId, 'gate_sibling_a_tbl');
+            const { internalTable: tableB } = await tableAndRelation(organizationId, 'gate_sibling_b_tbl');
+
+            const res = await runRawSql(organizationId, cookie, tableA.id, {
+              sql: `ALTER TABLE "{{b}}" ADD COLUMN tags text[]`,
+              refs: { b: tableB.co_relation_id },
+            });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.message).toContain('tags');
+            expect(res.body.message).toContain('gate_sibling_b_tbl');
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('grandfathers a pre-existing unsupported column left untouched by a later migration', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, tenantSchema } = workspace;
+
+            await createTable(organizationId, cookie, 'gate_grandfather_tbl');
+            const { internalTable, relation } = await tableAndRelation(organizationId, 'gate_grandfather_tbl');
+
+            // Bypass the gated route entirely - DDL straight against the tenant schema, the same
+            // admin connection the isolation test above uses to create/drop a probe schema. This
+            // is how a column ToolJet Database doesn't support could have existed on the table
+            // before this check was introduced.
+            await getTooljetDbDataSource().query(
+              `ALTER TABLE "${tenantSchema}"."${relation.id}" ADD COLUMN legacy_tags text[]`
+            );
+
+            // unsupportedColumnTypes matches columns on uuid, not name, and treats a uuid-less
+            // column as new on every migration (see its own doc comment) - so a column added by
+            // raw DDL with no uuid recorded would misread as "new" forever, never grandfathered.
+            // Seed the uuid a real recordRawSqlMigration would have minted for it, so the before/
+            // after comparison sees the same column both times, exactly as if this column had been
+            // authored through the gate before the check existed.
+            const legacyColumnUuid = uuidv4();
+            relation.configurations.columns.column_names['legacy_tags'] = legacyColumnUuid;
+            relation.configurations.columns.configurations = relation.configurations.columns.configurations || {};
+            relation.configurations.columns.configurations[legacyColumnUuid] = {};
+            await getDefaultDataSource().manager.save(InternalTableRelation, relation);
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN note character varying`,
+            });
+            expect([200, 201]).toContain(res.statusCode);
+
+            const [column] = await getTooljetDbDataSource().query(
+              `SELECT 1 FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = 'note'`,
+              [tenantSchema, relation.id]
+            );
+            expect(column).toBeDefined();
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
     });
   });
 });

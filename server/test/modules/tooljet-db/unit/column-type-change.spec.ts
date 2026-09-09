@@ -4,7 +4,9 @@ import {
   isStructuredTypeChangeAllowed,
   normalizeRequestedType,
   assertStructuredTypeChangeAllowed,
+  unsupportedColumnTypes,
 } from '@modules/tooljet-db/helpers/column-type-change';
+import { TableSchemaSnapshotColumn } from '@modules/tooljet-db/helpers/table-schema-snapshot';
 
 describe('column-type-change allowlist', () => {
   it('allows exactly the three lossless widening casts', () => {
@@ -76,5 +78,81 @@ describe('column-type-change allowlist', () => {
         assertStructuredTypeChangeAllowed('id', 'integer', 'integer', `nextval('"ws_1"."rel_1_id_seq"'::regclass)`)
       ).not.toThrow();
     });
+  });
+});
+
+describe('unsupportedColumnTypes', () => {
+  const column = (overrides: Partial<TableSchemaSnapshotColumn>): TableSchemaSnapshotColumn => ({
+    name: 'col',
+    uuid: 'uuid-1',
+    data_type: 'integer',
+    is_nullable: true,
+    default: null,
+    is_primary_key: false,
+    ...overrides,
+  });
+
+  it('does not flag a new column with a supported type', () => {
+    const after = [column({ uuid: 'u1', data_type: 'integer' })];
+    expect(unsupportedColumnTypes([], after)).toEqual([]);
+  });
+
+  it('flags a new column with an array type', () => {
+    const after = [column({ name: 'tags', uuid: 'u1', data_type: 'text[]' })];
+    expect(unsupportedColumnTypes([], after)).toEqual([{ name: 'tags', dataType: 'text[]' }]);
+  });
+
+  it('flags a new column with numeric(10,2), keeping the modifier in the reported dataType', () => {
+    const after = [column({ name: 'amount', uuid: 'u1', data_type: 'numeric(10,2)' })];
+    expect(unsupportedColumnTypes([], after)).toEqual([{ name: 'amount', dataType: 'numeric(10,2)' }]);
+  });
+
+  it('does not flag a pre-existing unsupported column whose type never changed (grandfathering)', () => {
+    const before = [column({ name: 'tags', uuid: 'u1', data_type: 'text[]' })];
+    const after = [column({ name: 'tags', uuid: 'u1', data_type: 'text[]' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([]);
+  });
+
+  it('flags a pre-existing unsupported column whose type changed to another unsupported type', () => {
+    const before = [column({ name: 'tags', uuid: 'u1', data_type: 'text[]' })];
+    const after = [column({ name: 'tags', uuid: 'u1', data_type: 'numeric(10,2)' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([{ name: 'tags', dataType: 'numeric(10,2)' }]);
+  });
+
+  it('flags a supported column changed to an unsupported type', () => {
+    const before = [column({ name: 'qty', uuid: 'u1', data_type: 'integer' })];
+    const after = [column({ name: 'qty', uuid: 'u1', data_type: 'text[]' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([{ name: 'qty', dataType: 'text[]' }]);
+  });
+
+  it('does not flag character varying(255) - modifier stripping', () => {
+    const after = [column({ name: 'name', uuid: 'u1', data_type: 'character varying(255)' })];
+    expect(unsupportedColumnTypes([], after)).toEqual([]);
+  });
+
+  it('does not flag timestamp(3) with time zone - mid-string modifier stripping', () => {
+    const after = [column({ name: 'created_at', uuid: 'u1', data_type: 'timestamp(3) with time zone' })];
+    expect(unsupportedColumnTypes([], after)).toEqual([]);
+  });
+
+  it('does not flag a renamed column with the same uuid and unchanged supported type', () => {
+    const before = [column({ name: 'old_name', uuid: 'u1', data_type: 'integer' })];
+    const after = [column({ name: 'new_name', uuid: 'u1', data_type: 'integer' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([]);
+  });
+
+  it('does not return a dropped column that is absent from after', () => {
+    const before = [
+      column({ name: 'tags', uuid: 'u1', data_type: 'text[]' }),
+      column({ name: 'qty', uuid: 'u2', data_type: 'integer' }),
+    ];
+    const after = [column({ name: 'qty', uuid: 'u2', data_type: 'integer' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([]);
+  });
+
+  it('treats a column with an undefined uuid as new, never matching another undefined-uuid column', () => {
+    const before = [column({ name: 'legacy', uuid: undefined, data_type: 'text[]' })];
+    const after = [column({ name: 'brand_new', uuid: undefined, data_type: 'text[]' })];
+    expect(unsupportedColumnTypes(before, after)).toEqual([{ name: 'brand_new', dataType: 'text[]' }]);
   });
 });

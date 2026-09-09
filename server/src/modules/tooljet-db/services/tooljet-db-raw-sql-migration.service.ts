@@ -3,6 +3,7 @@ import { EntityManager, LessThan } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import {
   createTooljetDatabaseConnection,
@@ -10,10 +11,17 @@ import {
   findTenantSchema,
 } from 'src/helpers/tooljet_db.helper';
 import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
+import { unsupportedColumnTypes } from '../helpers/column-type-change';
+import { TJDB } from '../types';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
 import { RawSqlMigrationDto } from '../dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from '../dto/revert-migration.dto';
+
+/** A relation the type gate inspects. `tableLabel` is absent for the migrated table itself. */
+type TouchedTable = { relationId: string; columnNames: Record<string, string>; tableLabel?: string };
+
+type UnsupportedColumn = { name: string; dataType: string; tableLabel?: string };
 
 /**
  * Records a raw SQL migration step: substitutes `{{placeholders}}`, runs the statement as the
@@ -61,7 +69,7 @@ export class TooljetDbRawSqlMigrationService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      const sql = await this.substitutePlaceholders(
+      const { sql, siblingRelations } = await this.substitutePlaceholders(
         dto,
         organizationId,
         relation.id,
@@ -76,10 +84,35 @@ export class TooljetDbRawSqlMigrationService {
       // DDL in a migration takes ACCESS EXCLUSIVE. Fail fast on contention rather than spending
       // the pool's 60s statement_timeout queued behind an app query holding a conflicting lock.
       await tjdbQueryRunner.query(`SET LOCAL lock_timeout = '3s'`);
-      await tjdbQueryRunner.query(sql);
 
       const priorColumnNames = relation.configurations?.columns?.column_names || {};
-      const snapshot = await buildTableSchemaSnapshot(tjdbQueryRunner, tenantSchema, relation.id, priorColumnNames);
+      // Every table the migration can reach, self first. `refs` is how cross-table DDL (a foreign
+      // key, say) legally touches a sibling, so a sibling needs the same before/after comparison
+      // the addressed table gets - otherwise an unsupported type slips in through the side door.
+      const touchedTables: TouchedTable[] = [
+        { relationId: relation.id, columnNames: priorColumnNames },
+        ...siblingRelations.map((sibling) => ({
+          relationId: sibling.id,
+          columnNames: sibling.configurations?.columns?.column_names || {},
+          tableLabel: sibling.internalTable?.tableName ?? sibling.id,
+        })),
+      ];
+      const snapshotTouchedTables = () =>
+        Promise.all(
+          touchedTables.map((table) =>
+            buildTableSchemaSnapshot(tjdbQueryRunner, tenantSchema, table.relationId, table.columnNames)
+          )
+        );
+
+      const before = await snapshotTouchedTables();
+      await tjdbQueryRunner.query(sql);
+      const after = await snapshotTouchedTables();
+
+      this.assertNoUnsupportedColumnTypes(touchedTables, before, after);
+
+      // Self is `touchedTables[0]` by construction, so its post-SQL snapshot is already here - and
+      // it is the one recorded as this migration's resulting_schema below.
+      const snapshot = after[0];
 
       // Reconcile first, then patch the minted uuids back into the snapshot itself - resultingSchema
       // is recorded as this migration's output, and a later migration's replay reads column
@@ -177,6 +210,39 @@ export class TooljetDbRawSqlMigrationService {
   }
 
   /**
+   * Rejects a migration that left any touched table with a column type the structured routes
+   * cannot represent.
+   *
+   * Post-flight rather than pre-flight: comparing resulting schemas means an ALTER, a CREATE TABLE
+   * and a DO block all land in the same introspection, with no SQL parsing and no per-statement
+   * special-casing. Running the DDL before rejecting it costs nothing, because the caller's `catch`
+   * rolls the tenant transaction back on any throw - rejected DDL never survives to be observed.
+   *
+   * A guardrail against accident, not an enforced invariant: physical table names are UUIDs and
+   * `search_path` is scoped to this workspace, so an author can hardcode a UUID instead of a
+   * `{{placeholder}}` and reach a table absent from `touchedTables`. Schema isolation still holds -
+   * only their own workspace's tables are reachable - so the omission costs safety, not isolation.
+   * Don't later mistake this for a guarantee.
+   *
+   * Temporary: it exists until native Postgres types are escalated into `TJDB`, at which point
+   * deleting it is the intended end state, not a regression.
+   */
+  private assertNoUnsupportedColumnTypes(
+    touchedTables: TouchedTable[],
+    before: TableSchemaSnapshot[],
+    after: TableSchemaSnapshot[]
+  ): void {
+    const violations: UnsupportedColumn[] = touchedTables.flatMap((table, index) =>
+      unsupportedColumnTypes(before[index].columns, after[index].columns).map((violation) => ({
+        ...violation,
+        tableLabel: table.tableLabel,
+      }))
+    );
+
+    if (violations.length) throw new BadRequestException(buildUnsupportedColumnTypeMessage(violations));
+  }
+
+  /**
    * Columns whose `data_type` differs between this migration's `resulting_schema` and its
    * predecessor's.
    *
@@ -224,8 +290,11 @@ export class TooljetDbRawSqlMigrationService {
     selfRelationId: string,
     environmentId: string,
     branchId: string
-  ): Promise<string> {
+  ): Promise<{ sql: string; siblingRelations: InternalTableRelation[] }> {
     const resolvedIdByPlaceholder = new Map<string, string>();
+    // Keyed by relation id, not placeholder - two placeholders can legally point at the same
+    // sibling, and the type gate must inspect each touched table once.
+    const siblingRelationById = new Map<string, InternalTableRelation>();
     for (const [placeholder, coRelationId] of Object.entries(dto.refs || {})) {
       const sibling = await this.relationResolverService.resolveSiblingByCoRelationId(
         organizationId,
@@ -235,17 +304,40 @@ export class TooljetDbRawSqlMigrationService {
         this.manager
       );
       resolvedIdByPlaceholder.set(placeholder, sibling.id);
+      // A ref can point back at the table being migrated - that's `self`, already covered by the
+      // caller, not a sibling.
+      if (sibling.id !== selfRelationId) siblingRelationById.set(sibling.id, sibling);
     }
     // Seeded last: `self` always means this table's own relation, even if the caller's `refs` map
     // also has a `self` key.
     resolvedIdByPlaceholder.set('self', selfRelationId);
 
-    return dto.sql.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+    const sql = dto.sql.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
       const resolved = resolvedIdByPlaceholder.get(key);
       if (!resolved) throw new BadRequestException(`Unresolved placeholder "{{${key}}}" in raw SQL migration`);
       return resolved;
     });
+
+    return { sql, siblingRelations: Array.from(siblingRelationById.values()) };
   }
+}
+
+/**
+ * One exception naming every column the migration left with an unsupported type, across every
+ * table it touched. `tableLabel` is set only for a sibling's violation (a fault on the migrated
+ * table itself needs no table name - it's the one the caller already asked about).
+ */
+function buildUnsupportedColumnTypeMessage(violations: UnsupportedColumn[]): string {
+  const supportedTypes = Object.values(TJDB).join(', ');
+  const descriptions = violations.map((violation) =>
+    violation.tableLabel
+      ? `column "${violation.name}" in table "${violation.tableLabel}" uses type "${violation.dataType}"`
+      : `column "${violation.name}" uses type "${violation.dataType}"`
+  );
+  return (
+    `Cannot record this migration: ${descriptions.join('; ')}, which ToolJet Database does not support yet. ` +
+    `Supported types: ${supportedTypes}. Change the column to a supported type, or remove it from this migration.`
+  );
 }
 
 /**

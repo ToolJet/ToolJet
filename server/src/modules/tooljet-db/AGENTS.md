@@ -302,6 +302,21 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   rather than after commit, so a rolled-back migration never announces a schema it didn't leave.
   There is no test coverage for any of these sites and it is not cheaply addable — the e2e suite
   mocks PostgREST with Polly.js, so a proxy write succeeds whether the cache was reloaded or not.
+- **Raw SQL cannot introduce a column type outside `TJDB` — a guardrail, not an enforced
+  invariant.** `recordRawSqlMigration` snapshots every table the migration touches before and after
+  the SQL and rejects it (`assertNoUnsupportedColumnTypes` → `unsupportedColumnTypes` in
+  `helpers/column-type-change.ts`) if a column came out new-or-type-changed with an unsupported
+  type; the tenant transaction's rollback undoes the DDL, so nothing is recorded. Three things not
+  to rediscover the hard way: (1) it only fires on columns *this* migration made new or changed — a
+  pre-existing unsupported column is deliberately grandfathered, or one bad column would block
+  every future migration on the table; (2) "every table it touches" means self plus each `refs`
+  target, since cross-table DDL legally reaches siblings — but an author hardcoding a relation UUID
+  instead of a `{{placeholder}}` escapes the list entirely, which is why this is a guardrail and not
+  a guarantee; (3) **the replay path is deliberately ungated** — gating `replayRawSqlMigration` would
+  stop already-recorded migrations from promoting. The gate is temporary: deleting it once native
+  Postgres types are escalated into `TJDB` is the intended end state. The parallel hole on app
+  import is closed separately, by the `data_type` `enum` in
+  `src/dto/validators/schemas/*/tooljet_database.json`.
 - **`applyEditColumn` introspects the column's current type; it is never told what changed.**
   `record()` stores the handler's raw `params` and `replayStructuredMigration` calls the same
   `applyEditColumn` with them, so there is no client on the replay path to set a flag - and
