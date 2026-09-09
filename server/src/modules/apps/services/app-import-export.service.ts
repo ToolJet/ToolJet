@@ -3769,9 +3769,12 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          // branch_id is NOT NULL now and every app_version lives on a branch. A DRAFT on a
-          // feature branch uses that branch; everything else (workflows, PUBLISHED snapshots,
-          // and DRAFTs with no explicit branch) lands on the org's default branch.
+          // branch_id is NOT NULL now and every app_version lives on a branch. A DRAFT lands on
+          // the branch it was imported into, falling back to the default branch when the caller
+          // supplies none; anything non-DRAFT (a PUBLISHED snapshot) always lands on the default
+          // branch, since a published version has no branch component. Workflows are not carved
+          // out — they follow the same rule as apps and modules, so a workflow DRAFT imported onto
+          // a feature branch stays on it.
           branchId:
             versionStatus !== AppVersionStatus.DRAFT ? importDefaultBranchId : (branchId ?? importDefaultBranchId),
           // Imported apps/modules/workflows must be marked synced whenever git sync is enabled —
