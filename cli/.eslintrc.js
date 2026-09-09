@@ -22,6 +22,13 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
     },
+    {
+      files: ['test/**/*.ts'],
+      parserOptions: {
+        project: ['./test/tsconfig.json'],
+        tsconfigRootDir: __dirname,
+      },
+    },
   ],
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {
