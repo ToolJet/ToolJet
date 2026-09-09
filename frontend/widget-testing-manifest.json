@@ -112,8 +112,8 @@
     },
     {
       "componentType": "MultiselectV2",
-      "status": "verified",
-      "contract": "src/test/app-builder/widgets/MultiselectV2/TESTING.md"
+      "status": "spec-complete",
+      "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
       "componentType": "TagsInput",

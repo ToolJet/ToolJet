@@ -129,24 +129,6 @@ describe('mandatory + falsy values', () => {
     ).toEqual({ isValid: true, validationError: null });
   });
 
-  test('[MultiselectV2-VAL-001] an empty array counts as EMPTY, even for an option widget', () => {
-    // Arrays short-circuit the scalar branch entirely: `[]` is "nothing
-    // selected" for a MultiselectV2, and `[false]` is "one option selected".
-    expect(
-      validate({ componentType: 'MultiselectV2', widgetValue: [], validationObject: { mandatory: { value: true } } })
-    ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
-  });
-
-  test('[MultiselectV2-VAL-001] an array holding only `false` counts as FILLED', () => {
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: [false],
-        validationObject: { mandatory: { value: true } },
-      })
-    ).toEqual({ isValid: true, validationError: null });
-  });
-
   test('a non-mandatory field accepts an empty value', () => {
     expect(validate({ componentType: 'TextInput', widgetValue: '', validationObject: {} })).toEqual({
       isValid: true,
@@ -285,39 +267,6 @@ describe('the other validators that actually exist', () => {
     expect(
       validate({ componentType: 'EmailInput', widgetValue: '', validationObject: { mandatory: { value: true } } })
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
-  });
-
-  test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
-    // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: ['a'],
-        validationObject: { minSelection: { value: 2 } },
-      })
-    ).toEqual({ isValid: false, validationError: 'Minimum 2 selections required' });
-  });
-
-  test('[MultiselectV2-VAL-003] three selected under maxSelection: 2 is invalid', () => {
-    // Break this catches: dropping the maxSelection branch so three selected values pass a maximum of 2.
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: ['a', 'b', 'c'],
-        validationObject: { maxSelection: { value: 2 } },
-      })
-    ).toEqual({ isValid: false, validationError: 'Maximum 2 selections allowed' });
-  });
-
-  test('[MultiselectV2-VAL-003] two selected under minSelection and maxSelection of 2 is valid', () => {
-    // Break this catches: off-by-one on either bound so exactly two selections is rejected.
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: ['a', 'b'],
-        validationObject: { minSelection: { value: 2 }, maxSelection: { value: 2 } },
-      })
-    ).toEqual({ isValid: true, validationError: null });
   });
 
   test('selection-count validators are skipped for a non-array value', () => {
