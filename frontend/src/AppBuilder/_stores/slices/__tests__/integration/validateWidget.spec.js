@@ -103,7 +103,7 @@ describe('mandatory + falsy values', () => {
     });
   });
 
-  test('TextInput: `false` counts as EMPTY, because a text field has no option values', () => {
+  test('[TextInput-VAL-003] TextInput: `false` counts as EMPTY, because a text field has no option values', () => {
     // The mirror image of the cases above, and the reason the fix could not
     // simply be "treat false as filled everywhere".
     expect(
@@ -324,6 +324,54 @@ describe('the other validators that actually exist', () => {
     expect(
       validate({ componentType: 'DropdownV2', widgetValue: 'a', validationObject: { minSelection: { value: 2 } } })
     ).toEqual({ isValid: true, validationError: null });
+  });
+
+  // Every rule a text field can register, applied at once — and the ORDER they
+  // report in, which is what a user actually sees when more than one is violated.
+  // Tagged for the TextInput contract because that widget's registered validation
+  // surface is exactly this set (textinput.js:99-109), but the heading stays
+  // generic: the engine is shared, and `validate()` above already defaults to
+  // TextInput, so most cases in this file are text-field cases too.
+  test('[TextInput-VAL-003] a whole registered rule set is applied, regex before mandatory', () => {
+    const rules = {
+      mandatory: { value: true },
+      regex: { value: '^[A-Za-z]+$' },
+      minLength: { value: 3 },
+      maxLength: { value: 8 },
+      customRule: { value: '' },
+    };
+
+    // An EMPTY required field reports the REGEX message, not the mandatory one:
+    // unlike the email check (see the EmailInput case below), regex does not skip
+    // an empty value, and it is evaluated first. A builder who configures both
+    // gets "The input should match pattern" on a field the user simply left blank.
+    expect(validate({ widgetValue: '', validationObject: rules }).validationError).toBe(
+      'The input should match pattern'
+    );
+    // Mandatory is what reports when it is the only rule configured.
+    expect(validate({ widgetValue: '', validationObject: { mandatory: { value: true } } }).validationError).toBe(
+      'Field cannot be empty'
+    );
+
+    // Each remaining rule bites when it is the one violated.
+    expect(validate({ widgetValue: '1Ada', validationObject: rules }).validationError).toBe(
+      'The input should match pattern'
+    );
+    expect(validate({ widgetValue: 'Ad', validationObject: rules }).validationError).toBe(
+      'Minimum 3 characters is needed'
+    );
+    expect(validate({ widgetValue: 'Adalovelace', validationObject: rules }).validationError).toBe(
+      'Maximum 8 characters is allowed'
+    );
+    expect(
+      validate({ widgetValue: 'Ada', validationObject: { ...rules, customRule: { value: 'Nope' } } }).validationError
+    ).toBe('Nope');
+
+    // ...and a value satisfying all of them passes.
+    expect(validate({ widgetValue: 'Ada', validationObject: rules })).toEqual({
+      isValid: true,
+      validationError: null,
+    });
   });
 });
 
