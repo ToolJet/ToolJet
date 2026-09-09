@@ -112,7 +112,8 @@
     },
     {
       "componentType": "MultiselectV2",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
       "componentType": "TagsInput",
