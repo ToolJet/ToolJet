@@ -103,6 +103,12 @@ export class TooljetDbRawSqlMigrationService {
         );
       });
 
+      // PostgREST serves the data layer off a cached schema, so a column this migration added is
+      // invisible to it (PGRST204 on the next write) until the cache reloads - every other DDL path
+      // notifies for the same reason. Issued on the tenant transaction, not after commit, so a
+      // migration that rolls back never announces a schema it didn't leave behind.
+      await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
+
       await tjdbQueryRunner.commitTransaction();
       return result;
     } catch (err) {

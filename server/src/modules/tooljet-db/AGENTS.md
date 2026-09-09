@@ -293,6 +293,15 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   (`frontend/src/TooljetDatabase/columnTypeChange.js`) and seeded into the migration modal's SQL
   step. Since no cast expression is ever generated on the backend, that allowlist carries no
   append-only obligation - but the frontend's `lossless` tier must stay in lockstep with it.
+- **Every path that runs DDL must `NOTIFY pgrst, 'reload schema'`, or the data layer cannot see
+  what it created.** PostgREST serves reads and writes off a cached schema: a column added without
+  the notify exists in Postgres but returns `PGRST204 Could not find the '<column>' column ... in
+  the schema cache` on the next write, until some unrelated operation happens to notify. Roughly 15
+  sites do this (structured operations, import/export, `applyMigrations`, bootstrap);
+  `recordRawSqlMigration` was missed and had to be fixed. Issue it on the DDL's own transaction
+  rather than after commit, so a rolled-back migration never announces a schema it didn't leave.
+  There is no test coverage for any of these sites and it is not cheaply addable — the e2e suite
+  mocks PostgREST with Polly.js, so a proxy write succeeds whether the cache was reloaded or not.
 - **`applyEditColumn` introspects the column's current type; it is never told what changed.**
   `record()` stores the handler's raw `params` and `replayStructuredMigration` calls the same
   `applyEditColumn` with them, so there is no client on the replay path to set a flag - and
