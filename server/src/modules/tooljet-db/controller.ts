@@ -397,9 +397,9 @@ export class TooljetDbController {
 
   // Naming mirrors the sibling migrations/sql route, minus "migrations" — this isn't one: it's a
   // one-off DML action against whatever environment is currently open, not a tracked schema
-  // migration step. :tableId scopes the ability check only, same convention as .../migrations —
-  // the SQL itself isn't restricted to this table, matching sql_execution's existing behavior
-  // when run from Query Manager.
+  // migration step. Unlike Query Manager's SQL mode (also sqlExecution, unrestricted), this route
+  // is locked to the table named in the URL — the SQL must address it as "{{self}}"; any other
+  // table reference is rejected by seedDataSqlExecution.
   @InitFeature(FEATURE_KEY.SQL_EXECUTION)
   @Post('/organizations/:organizationId/table/:tableId/sql')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
@@ -408,9 +408,11 @@ export class TooljetDbController {
     @Param('tableId') tableId: string,
     @Body() sqlExecutionDto: SqlExecutionDto
   ) {
-    const result = await this.dataOperationsService.sqlExecution(
-      { sql_execution: { sqlQuery: sqlExecutionDto.sql } },
-      { app: { organization_id: organizationId, environment_id: sqlExecutionDto.environment_id } }
+    const result = await this.dataOperationsService.seedDataSqlExecution(
+      organizationId,
+      tableId,
+      sqlExecutionDto.environment_id,
+      sqlExecutionDto.sql
     );
     return decamelizeKeys({ result });
   }

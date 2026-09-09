@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
 import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
@@ -23,6 +23,7 @@ import { PostgrestProxyService } from './postgrest-proxy.service';
 import { PostgrestError, TooljetDatabaseError } from '../types';
 import { TooljetDbBulkUploadService } from './tooljet-db-bulk-upload.service';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { SELF_PLACEHOLDER, SELF_PLACEHOLDER_REGEX, containsTablePlaceholder } from '../helpers/sql-placeholders';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -680,7 +681,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async sqlExecution(queryOptions, context): Promise<QueryResult> {
+  async sqlExecution(queryOptions, context, restrictToTableName?: string): Promise<QueryResult> {
     if (isSQLModeDisabled())
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
@@ -733,6 +734,14 @@ export class TooljetDbDataOperationsService implements QueryService {
       await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
 
       const { tablesUsedInQuery, tableAndSchemaList } = this.parseTableListFromASTParser(tableList);
+      if (restrictToTableName) {
+        const otherTables = tablesUsedInQuery.filter((name) => name !== restrictToTableName);
+        if (otherTables.length) {
+          throw new BadRequestException(
+            `Seed-data SQL may only reference "{{self}}" (resolved to "${restrictToTableName}"), found: ${otherTables.join(', ')}`
+          );
+        }
+      }
       // Validate tables exist in workspace before resolving physical names - this owns the
       // "table doesn't exist" error message, and resolveTable's own NotFoundException (thrown by
       // its internal findOne, redone below) would replace that message with a worse one.
@@ -772,6 +781,38 @@ export class TooljetDbDataOperationsService implements QueryService {
     } finally {
       await tooljetDbTenantConnection.destroy();
     }
+  }
+
+  /**
+   * Seed-data SQL entry point (`POST .../table/:tableId/sql`) - unlike sqlExecution's other
+   * caller (Query Manager's SQL mode, intentionally workspace-wide), this one is opened per-table
+   * and stays that way: the caller can only ever address the table it was opened for, spelled as
+   * "{{self}}" - never a literal name, never {{table.<name>}}, never another table. See
+   * .mind/specs/2026-09-09-tjdb-sql-editor-table-referencing-design.md.
+   */
+  async seedDataSqlExecution(
+    organizationId: string,
+    tableId: string,
+    environmentId: string,
+    sql: string
+  ): Promise<QueryResult> {
+    if (containsTablePlaceholder(sql)) {
+      throw new BadRequestException('Seed-data SQL may only reference "{{self}}", not "{{table.<name>}}"');
+    }
+    if (!sql.includes(SELF_PLACEHOLDER)) {
+      throw new BadRequestException('Seed-data SQL must reference the table as "{{self}}"');
+    }
+
+    const internalTable = await this.manager.findOne(InternalTable, { where: { id: tableId, organizationId } });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableId);
+
+    const substitutedSql = sql.replace(SELF_PLACEHOLDER_REGEX, internalTable.tableName);
+
+    return this.sqlExecution(
+      { sql_execution: { sqlQuery: substitutedSql } },
+      { app: { organization_id: organizationId, environment_id: environmentId } },
+      internalTable.tableName
+    );
   }
 
   /**

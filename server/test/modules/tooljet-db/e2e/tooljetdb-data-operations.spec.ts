@@ -1145,6 +1145,134 @@ describe('TooljetDbDataController', () => {
         }
       });
 
+      describe('seedDataSqlExecution | self-only enforcement', () => {
+        it('runs a self-scoped insert when the SQL uses {{self}}', async () => {
+          expect(tooljetDbAvailable).toBe(true);
+
+          let organizationId: string | undefined;
+          try {
+            await withRealTransactions(async () => {
+              const workspace = await setUpWorkspace();
+              organizationId = workspace.organizationId;
+              const { cookie, productionEnv } = workspace;
+              const tableName = `test_seed_self_${Date.now()}`;
+              const internalTableId = await createTestTable(organizationId, cookie, tableName);
+              const { devRelation, prodRelation } = await promoteToProduction(
+                organizationId,
+                productionEnv,
+                internalTableId,
+                'x'
+              );
+
+              const dataOperationsService = app.get(TooljetDbDataOperationsService);
+              const result = await dataOperationsService.seedDataSqlExecution(
+                organizationId,
+                internalTableId,
+                productionEnv.id,
+                `INSERT INTO {{self}} (id, name) VALUES (2, 'SeededRow')`
+              );
+              expect(result.status).toBe('ok');
+
+              // Row must land in the *production* relation the insert targeted, not the
+              // development one seeded by promoteToProduction - proves environment_id, not just
+              // {{self}}, resolved correctly.
+              const tjds = getTooljetDbDataSource();
+              const schema = `workspace_${organizationId}`;
+              const prodRows = await tjds.query(`SELECT name FROM "${schema}"."${prodRelation.id}" WHERE id = 2`);
+              expect(prodRows.map((row) => row.name)).toEqual(['SeededRow']);
+
+              const devRows = await tjds.query(`SELECT name FROM "${schema}"."${devRelation.id}" WHERE id = 2`);
+              expect(devRows).toHaveLength(0);
+            });
+          } finally {
+            if (organizationId) await cleanupWorkspace(organizationId);
+          }
+        });
+
+        it('rejects SQL missing the {{self}} placeholder', async () => {
+          expect(tooljetDbAvailable).toBe(true);
+
+          let organizationId: string | undefined;
+          try {
+            await withRealTransactions(async () => {
+              const workspace = await setUpWorkspace();
+              organizationId = workspace.organizationId;
+              const { cookie, productionEnv } = workspace;
+              const tableName = `seed_noself_${Date.now()}`;
+              const internalTableId = await createTestTable(organizationId, cookie, tableName);
+
+              const dataOperationsService = app.get(TooljetDbDataOperationsService);
+              await expect(
+                dataOperationsService.seedDataSqlExecution(
+                  organizationId,
+                  internalTableId,
+                  productionEnv.id,
+                  `INSERT INTO ${tableName} (id, name) VALUES (2, 'x')`
+                )
+              ).rejects.toThrow('{{self}}');
+            });
+          } finally {
+            if (organizationId) await cleanupWorkspace(organizationId);
+          }
+        });
+
+        it('rejects {{table.<name>}} in seed-data SQL', async () => {
+          expect(tooljetDbAvailable).toBe(true);
+
+          let organizationId: string | undefined;
+          try {
+            await withRealTransactions(async () => {
+              const workspace = await setUpWorkspace();
+              organizationId = workspace.organizationId;
+              const { cookie, productionEnv } = workspace;
+              const tableName = `seed_tblref_${Date.now()}`;
+              const internalTableId = await createTestTable(organizationId, cookie, tableName);
+
+              const dataOperationsService = app.get(TooljetDbDataOperationsService);
+              await expect(
+                dataOperationsService.seedDataSqlExecution(
+                  organizationId,
+                  internalTableId,
+                  productionEnv.id,
+                  `INSERT INTO {{self}} (id) SELECT id FROM {{table.other_tbl}}`
+                )
+              ).rejects.toThrow('{{table.<name>}}');
+            });
+          } finally {
+            if (organizationId) await cleanupWorkspace(organizationId);
+          }
+        });
+
+        it('rejects SQL that reaches a second, literally-named table', async () => {
+          expect(tooljetDbAvailable).toBe(true);
+
+          let organizationId: string | undefined;
+          try {
+            await withRealTransactions(async () => {
+              const workspace = await setUpWorkspace();
+              organizationId = workspace.organizationId;
+              const { cookie, productionEnv } = workspace;
+              const selfTableName = `seed_scpself_${Date.now()}`;
+              const otherTableName = `seed_scpother_${Date.now()}`;
+              const internalTableId = await createTestTable(organizationId, cookie, selfTableName);
+              await createTestTable(organizationId, cookie, otherTableName);
+
+              const dataOperationsService = app.get(TooljetDbDataOperationsService);
+              await expect(
+                dataOperationsService.seedDataSqlExecution(
+                  organizationId,
+                  internalTableId,
+                  productionEnv.id,
+                  `INSERT INTO {{self}} (id) SELECT id FROM ${otherTableName}`
+                )
+              ).rejects.toThrow('may only reference');
+            });
+          } finally {
+            if (organizationId) await cleanupWorkspace(organizationId);
+          }
+        });
+      });
+
       it('join_tables should join production relations, not development relations, when production is named', async function () {
         expect(tooljetDbAvailable).toBe(true);
 
