@@ -1,5 +1,5 @@
-import { profileSelector } from "Selectors/profile";
-import { profileText } from "Texts/profile";
+import { profileSelector } from "Selectors/platform/profile";
+import { profileText } from "Texts/platform/profile";
 
 export const profilePageElements = () => {
   for (const elements in profileSelector.profileElements) {
