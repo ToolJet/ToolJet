@@ -1,7 +1,7 @@
 /**
  * Checkbox behaviour spec, run against the real RenderWidget/store path.
  *
- * Approved contract: `src/test/app-builder/widgets/Checkbox/TESTING.md`.
+ * Approved contract: `ee/test/app-builder/widgets/Checkbox/TESTING.md`.
  * Every test title starts with its approved scenario ID.
  */
 import { screen, waitFor, within } from '@testing-library/react';
