@@ -532,11 +532,9 @@ class BaseManageGroupPermissionResources extends React.Component {
     const { featureAccess } = this.props;
 
     const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
-    // Treat basic, starter and basicplus plans as restricted plans
-    const isBasicPlan =
-      featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter' || plan === 'basicplus';
-    const isPaidPlan =
-      featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
+    // Treat both basic and starter plans as restricted plans
+    const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
+    const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
