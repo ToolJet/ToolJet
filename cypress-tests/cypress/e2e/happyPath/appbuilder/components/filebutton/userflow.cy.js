@@ -4,19 +4,19 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import {
+  verifyExposedValue,
+  closeInspectorDetail,
   commitChange,
   openEditorSidebar,
   verifyAndModifyParameter,
   dropWidget,
 } from "Support/utils/commonWidget";
 import {
-  verifyExposedValue,
   clearSelectedFile,
   selectFileType,
   selectValidationFileType,
   expectRejectionToast,
   openParsedValue,
-  closeParsedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Userflow facet — end-to-end builder journeys. No config items of its own; it covers
@@ -72,32 +72,32 @@ describe(
 
     cy.get(fileButtonSelector.label(widget)).should("have.text", mandatoryLabel("Upload CSV"));
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("be.visible");
-    verifyExposedValue("isValid", "Boolean", "false");
+    verifyExposedValue("isValid", "Boolean", "false", widget);
 
     // 1. The wrong kind of file is refused, and the field stays invalid.
     cy.get(fileButtonSelector.inputField(widget)).selectFile(validFile, { force: true });
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
     expectRejectionToast(".xls,.xlsx,.csv,.ods");
     cy.get(fileButtonSelector.label(widget)).should("have.text", mandatoryLabel("Upload CSV"));
-    verifyExposedValue("isValid", "Boolean", "false");
+    verifyExposedValue("isValid", "Boolean", "false", widget);
 
     // 2. The right kind is accepted, parsed, and satisfies the requirement.
     clearSelectedFile();
     cy.get(fileButtonSelector.inputField(widget)).selectFile(csvFile, { force: true });
     cy.get(fileButtonSelector.label(widget)).should("have.text", mandatoryLabel(csvFileName));
-    verifyExposedValue("isValid", "Boolean", "true");
-    verifyExposedValue("files", "Array", "[1]");
+    verifyExposedValue("isValid", "Boolean", "true", widget);
+    verifyExposedValue("files", "Array", "[1]", widget);
 
     // Parsing ran: sample-a.csv has 3 data rows, one object each.
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeParsedValue();
+    closeInspectorDetail();
 
     // 3. Clearing returns the field to its empty, invalid, requirement-unmet state.
     clearSelectedFile();
     cy.get(fileButtonSelector.label(widget)).should("have.text", mandatoryLabel("Upload CSV"));
-    verifyExposedValue("files", "Array", "[0]");
-    verifyExposedValue("isValid", "Boolean", "false");
+    verifyExposedValue("files", "Array", "[0]", widget);
+    verifyExposedValue("isValid", "Boolean", "false", widget);
   });
 
   // Parsing applied to a MULTI-file selection — every other parse case holds exactly
@@ -115,16 +115,16 @@ describe(
     // Two CSVs at once: the label switches from a filename to the count form.
     cy.get(fileButtonSelector.inputField(widget)).selectFile([csvFile, secondCsvFile], { force: true });
     cy.get(fileButtonSelector.label(widget)).should("have.text", fileButtonText.multiFileLabel(2));
-    verifyExposedValue("files", "Array", "[2]");
+    verifyExposedValue("files", "Array", "[2]", widget);
 
     // Parsing ran across the batch rather than only the first entry: sample-a.csv has
     // 3 data rows, one row object each.
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeParsedValue();
+    closeInspectorDetail();
 
     // isParsing is transient; inspector.cy.js only sees its initial false. Asserting it
     // again after a real parse shows it resets rather than latching on.
-    verifyExposedValue("isParsing", "Boolean", "false");
+    verifyExposedValue("isParsing", "Boolean", "false", widget);
   });
 });

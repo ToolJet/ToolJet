@@ -9,6 +9,8 @@
 //   verifyTooltip                    -                    → properties
 //   addAndVerifyTooltip              -                    → properties
 //   commitChange                     -                    → common
+//   selectReactSelectOption          -                    → common
+//   hoverInPreview                   -                    → properties
 //   setTooltip                       -                    → properties
 //   editAndVerifyWidgetName          -                    → properties
 //   verifyPropertiesGeneralAccordion -                    → properties
@@ -217,6 +219,35 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
 export const commitChange = () => {
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
+};
+
+// The menu PORTALS to document.body, so options are never found by descending the
+// wrapper. Match is EXACT: `.contains("XLS")` would also select "XLSX".
+/**
+ * @tjBlock  common
+ * @tjUsage  selectReactSelectOption('[data-cy="dropdown-file-type"]', 'CSV')
+ * @tjDom    wrapper → .react-select__control click → .react-select__option exact-text match
+ */
+export const selectReactSelectOption = (wrapperSelector, option) => {
+  cy.get(wrapperSelector).find(".react-select__control").click();
+  cy.get(".react-select__option")
+    .filter((_i, el) => el.innerText.trim() === option)
+    .click();
+  cy.waitForAutoSave();
+};
+
+// A widget tooltip only opens in PREVIEW: the editor canvas's drag/resize overlays
+// swallow the pointer events Radix needs, and a synthetic `mouseover` opens it in neither.
+/**
+ * @tjBlock  properties
+ * @tjUsage  hoverInPreview(fileButtonSelector.button('filebutton1'))
+ * @tjDom    preview, then realHover on the given element past Radix's delay
+ */
+export const hoverInPreview = (selector) => {
+  cy.openPreview();
+  cy.get(selector).should("be.visible").realHover();
+  // Radix mounts the content only after 500ms of sustained hover.
+  cy.wait(900);
 };
 
 /**

@@ -16,6 +16,8 @@
 //   verifyComponentValueFromInspector -                    → inspector
 //   verifyMultipleComponentValuesFromInspector -                    → inspector
 //   verifyComponentFromInspector     -                    → inspector
+//   closeInspectorDetail             -                    → inspector
+//   verifyExposedValue               -                    → inspector
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/inspectorTree: left-sidebar **component-state inspector** tree.
@@ -349,4 +351,35 @@ export const verifyComponentFromInspector = (
       commonWidgetSelector.nodeComponent(componentName)
     ).verifyVisibleElement("have.text", componentName);
   }
+};
+
+// Closes an open detail view AND the Inspector tab, in reverse order, so the next call
+// starts from a known state. Both are toggles whose state persists in the app's own store
+// even after the panel closes, so a helper called more than once in a test must undo both.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  closeInspectorDetail()
+ * @tjDom    back-from-detail, then the components node, then the sidebar inspector button
+ */
+export const closeInspectorDetail = () => {
+  backFromDetail();
+  openNode("components");
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+};
+
+// Asserts the EXPOSED state (components.<widget>.<key>), a separate code path from the
+// rendered DOM. widgetName is REQUIRED: a default would let a caller who omits it silently
+// assert against the wrong widget and pass.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')
+ * @tjDom    inspector sidebar tab -> components node -> widget subnode -> node value
+ */
+export const verifyExposedValue = (key, type, value, widgetName) => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.hideTooltip();
+  openNode("components");
+  openSubNode(widgetName);
+  verifyNodeData(key, type, value);
+  closeInspectorDetail();
 };

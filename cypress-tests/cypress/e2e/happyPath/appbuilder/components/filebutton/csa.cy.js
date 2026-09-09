@@ -3,13 +3,13 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import {
+  verifyExposedValue,
   openEditorSidebar,
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 import { selectEvent, configureCSA, selectQueryForEvent } from "Support/utils/appBuilder/events";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import {
-  verifyExposedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // CSA facet — every handle driven by TWO triggers (a Control Component event and a
@@ -129,15 +129,15 @@ describe(
 
     // ── editor ──
     holdFile();
-    verifyExposedValue("files", "Array", "[1]");
+    verifyExposedValue("files", "Array", "[1]", widget);
     clickButton("button1");
     expectCleared();
-    verifyExposedValue("files", "Array", "[0]");
+    verifyExposedValue("files", "Array", "[0]", widget);
 
     holdFile();
     clickButton("button2");
     expectCleared();
-    verifyExposedValue("files", "Array", "[0]");
+    verifyExposedValue("files", "Array", "[0]", widget);
 
     // ── preview ── (reload drops `files`, so preview starts empty)
     cy.openPreview(fileButtonSelector.button(widget));
@@ -210,13 +210,13 @@ describe(
 
     // ── editor ──
     expectShown();
-    verifyExposedValue("isVisible", "Boolean", "true");
+    verifyExposedValue("isVisible", "Boolean", "true", widget);
     clickButton("button1");
     expectHidden();
-    verifyExposedValue("isVisible", "Boolean", "false");
+    verifyExposedValue("isVisible", "Boolean", "false", widget);
     clickButton("button2");
     expectShown();
-    verifyExposedValue("isVisible", "Boolean", "true");
+    verifyExposedValue("isVisible", "Boolean", "true", widget);
 
     // ── preview ──
     cy.openPreview(fileButtonSelector.button(widget));
@@ -240,13 +240,13 @@ describe(
 
     // ── editor ──
     expectEnabled();
-    verifyExposedValue("isDisabled", "Boolean", "false");
+    verifyExposedValue("isDisabled", "Boolean", "false", widget);
     clickButton("button1");
     expectDisabled();
-    verifyExposedValue("isDisabled", "Boolean", "true");
+    verifyExposedValue("isDisabled", "Boolean", "true", widget);
     clickButton("button2");
     expectEnabled();
-    verifyExposedValue("isDisabled", "Boolean", "false");
+    verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
     // ── preview ──
     cy.openPreview(fileButtonSelector.button(widget));
@@ -272,13 +272,13 @@ describe(
 
     // ── editor ──
     expectIdle();
-    verifyExposedValue("isLoading", "Boolean", "false");
+    verifyExposedValue("isLoading", "Boolean", "false", widget);
     clickButton("button1");
     expectLoading();
-    verifyExposedValue("isLoading", "Boolean", "true");
+    verifyExposedValue("isLoading", "Boolean", "true", widget);
     clickButton("button2");
     expectIdle();
-    verifyExposedValue("isLoading", "Boolean", "false");
+    verifyExposedValue("isLoading", "Boolean", "false", widget);
 
     // ── preview ──
     cy.openPreview(fileButtonSelector.button(widget));
