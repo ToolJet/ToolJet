@@ -320,13 +320,14 @@ describe('Cascader widget', () => {
     await writeProp('data', [dyn('Africa', 'africa', { isDefault: true })]);
     await writeProp('advanced', true);
     await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(true));
-    expect(display()).toHaveTextContent('');
+    expect(display()).toBeEmptyDOMElement();
     await openMenu(control);
     await waitFor(() => expect(document.querySelector('.cascader-popover .tj-widget-loader')).not.toBeNull());
   });
 
   test('[Cascader-OPT-002] Dynamic options use the first visible default true leaf and ignore Default value', async () => {
-    // Break this catches: honoring static Default value while Dynamic options is on.
+    // Break this catches: honoring static Default value while Dynamic options is on, or taking the
+    // first `default: true` leaf without skipping hidden ones.
     widget.render({
       properties: {
         advanced: binding('{{true}}'),
@@ -335,8 +336,10 @@ describe('Cascader widget', () => {
           value: [
             dyn('Asia', 'asia', {
               children: [
-                dyn('Beijing', 'beijing', { isDefault: true }),
+                // First `default: true` leaf is hidden, so "first visible" must skip it.
+                dyn('Beijing', 'beijing', { isDefault: true, visible: false }),
                 dyn('Shanghai', 'shanghai', { isDefault: true }),
+                dyn('Osaka', 'osaka', { isDefault: true }),
               ],
             }),
           ],
@@ -344,15 +347,17 @@ describe('Cascader widget', () => {
       },
     });
     await mounted();
-    await waitFor(() => expect(widget.exposed().value).toBe('beijing'));
-    expect(display()).toHaveTextContent('Asia/Beijing');
+    await waitFor(() => expect(widget.exposed().value).toBe('shanghai'));
+    expect(display()).toHaveTextContent('Asia/Shanghai');
 
+    // A schema with no `default: true` leaf leaves the selection empty, and the static Default value
+    // ('shanghai') still does not fill it.
     widget.render({
       properties: {
         advanced: binding('{{true}}'),
         value: binding('shanghai'),
         data: {
-          value: [dyn('Asia', 'asia', { children: [dyn('Beijing', 'beijing'), dyn('Shanghai', 'shanghai')] })],
+          value: [dyn('Europe', 'europe', { children: [dyn('Oslo', 'oslo'), dyn('Paris', 'paris')] })],
         },
       },
     });
@@ -443,13 +448,24 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-OPT-007] Menu highlight resets when the current level nodes or the selection change', async () => {
-    // Break this catches: leaving a stale highlightedIndex after the option list changes.
+    // Break this catches: leaving a stale highlightedIndex after the level's nodes change, or after
+    // the selection changes, by dropping either dependency of the highlight-reset effect.
     widget.render();
     const control = await mounted();
     await openMenu(control);
     fireEvent.keyDown(control, { key: 'ArrowDown' });
     await writeProp('options', [node('Europe', 'europe'), node('Asia', 'asia'), node('Africa', 'africa')]);
     await waitFor(() => expect(optionRow('europe')).not.toBeNull());
+    fireEvent.keyDown(control, { key: 'Enter' });
+    await waitFor(() => expect(widget.exposed().value).toBe('europe'));
+
+    // Selection change branch: highlight lands on the selected row, so ArrowDown wraps from the
+    // last row to the first. A highlight left at row 0 would select 'asia' instead.
+    await closeWithEscape(control);
+    await openMenu(control);
+    await widget.act('setValue', 'africa');
+    await waitFor(() => expect(widget.exposed().value).toBe('africa'));
+    fireEvent.keyDown(control, { key: 'ArrowDown' });
     fireEvent.keyDown(control, { key: 'Enter' });
     await waitFor(() => expect(widget.exposed().value).toBe('europe'));
   });
@@ -508,7 +524,8 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-OPT-011] Duplicate option values keep the first node only', async () => {
-    // Break this catches: mapping a duplicate value onto the later node (D-07).
+    // Break this catches: dropping the first-wins guard in buildPathMaps, which would map the
+    // duplicate onto the later node and make that branch's child selectable (D-07).
     widget.render({
       properties: {
         options: {
@@ -524,6 +541,14 @@ describe('Cascader widget', () => {
     await waitFor(() => expect(widget.exposed().value).toBe('a'));
     expect(widget.exposed().pathArray).toEqual(['dup', 'a']);
     expect(widget.exposed().selectedOption).toEqual({ label: 'Leaf A', value: 'a' });
+
+    // The skipped duplicate takes its whole branch with it: 'b' never enters the leaf set, so
+    // setValue('b') clears instead of selecting ['dup', 'b'].
+    await widget.act('setValue', 'b');
+    await waitFor(() => expect(widget.exposed().value).toBeNull());
+
+    await widget.act('setValue', 'a');
+    await waitFor(() => expect(widget.exposed().value).toBe('a'));
     await widget.act('setValue', 'dup');
     await waitFor(() => expect(widget.exposed().value).toBeNull());
   });
@@ -547,7 +572,8 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-EVT-002] Opening the control fires onFocus once per interaction', async () => {
-    // Break this catches: onFocus on every key while open, or never firing.
+    // Break this catches: onFocus on every key while open, never firing, or the interaction guard
+    // (isInteractingRef) never resetting so a second open is silent.
     widget.render({ events: countOn('onFocus', 'focuses') });
     const control = await mounted();
     await openMenu(control);
@@ -556,20 +582,36 @@ describe('Cascader widget', () => {
     fireEvent.keyDown(control, { key: 'ArrowDown' });
     await drain();
     expect(varCount('focuses')).toBe(1);
+
+    // A second interaction is a second onFocus - "once per interaction", not once ever.
+    await closeWithEscape(control);
+    await openMenu(control);
+    await drain();
+    expect(varCount('focuses')).toBe(2);
   });
 
   test('[Cascader-EVT-003] Dismissing without selecting fires onBlur', async () => {
-    // Break this catches: Escape/outside close skipping onBlur or clearing value.
+    // Break this catches: either dismiss path skipping onBlur, or a dismiss clearing value.
+    // Two independent paths reach closeInteraction - the Escape branch of handleKeyDown and the
+    // Popover onOpenChange(false) that outside-dismiss goes through - so both are driven and
+    // counted; dropping either one leaves the other's count short.
     widget.render({
       properties: { value: binding('africa') },
       events: countOn('onBlur', 'blurs'),
     });
     const control = await mounted();
     await waitFor(() => expect(widget.exposed().value).toBe('africa'));
+
     await openMenu(control);
     await closeWithEscape(control);
     await drain();
     expect(varCount('blurs')).toBe(1);
+
+    await openMenu(control);
+    fireEvent.pointerDown(document.body);
+    await waitFor(() => expect(control).toHaveAttribute('aria-expanded', 'false'));
+    await drain();
+    expect(varCount('blurs')).toBe(2);
     expect(widget.exposed().value).toBe('africa');
   });
 
@@ -619,18 +661,23 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-CSA-001] setValue selects a matching leaf or clears', async () => {
-    // Break this catches: setValue accepting a parent or leaving stale selection on unknown.
+    // Break this catches: setValue accepting a parent, or ignoring a parent/unknown/null/undefined
+    // input (`else setSelection(null)` -> `else return`) so a stale selection survives.
     widget.render({ properties: { placeholder: binding('Pick a city') } });
     await mounted();
     await widget.act('setValue', 'beijing');
     await waitFor(() => expect(selection().value).toBe('beijing'));
     expect(selection().pathArray).toEqual(['asia', 'china', 'beijing']);
-    await widget.act('setValue', 'asia');
-    await waitFor(() => expect(widget.exposed().value).toBeNull());
-    await widget.act('setValue', 'nope');
-    expect(widget.exposed().value).toBeNull();
-    await widget.act('setValue', null);
-    expect(widget.exposed().value).toBeNull();
+
+    // Every invalid input starts from a real selection, so "cleared" cannot be
+    // satisfied by an already-empty selection.
+    for (const invalid of ['asia', 'nope', null, undefined]) {
+      await widget.act('setValue', 'japan');
+      await waitFor(() => expect(widget.exposed().value).toBe('japan'));
+      await widget.act('setValue', invalid);
+      await waitFor(() => expect(widget.exposed().value).toBeNull());
+      expect(widget.exposed().pathArray).toEqual([]);
+    }
     expect(display()).toHaveTextContent('Pick a city');
   });
 
@@ -682,7 +729,7 @@ describe('Cascader widget', () => {
     await waitFor(() => expect(widget.exposed().value).toBe('africa'));
     await widget.act('setOptionsLoading', true);
     await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(true));
-    expect(display()).toHaveTextContent('');
+    expect(display()).toBeEmptyDOMElement();
     await openMenu(control);
     await waitFor(() => expect(document.querySelector('.cascader-popover .tj-widget-loader')).not.toBeNull());
   });
@@ -805,7 +852,7 @@ describe('Cascader widget', () => {
     });
     const control = await mounted();
     await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(true));
-    expect(display()).toHaveTextContent('');
+    expect(display()).toBeEmptyDOMElement();
     await openMenu(control);
     await waitFor(() => expect(document.querySelector('.cascader-popover .tj-widget-loader')).not.toBeNull());
   });
@@ -823,13 +870,25 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-STATE-003] Hidden widget is not visible and does not show a validation error', async () => {
-    // Break this catches: painting a validation error on a hidden Cascader.
+    // Break this catches: painting a validation error on a hidden Cascader - including one whose
+    // error was already revealed by an interaction before it was hidden (dropping the isVisible
+    // term of the error's render condition).
     widget.render({
       properties: { visibility: binding('{{false}}') },
       validation: { mandatory: binding('{{true}}') },
     });
     await waitFor(() => expect(widget.exposed().isVisible).toBe(false), { timeout: MOUNT_MS });
     expect(root()).toHaveClass('invisible');
+    expect(screen.queryByText('Field cannot be empty')).toBeNull();
+
+    // Reveal the error first, then hide: the message must go, not just stay unrevealed.
+    widget.render({ validation: { mandatory: binding('{{true}}') } });
+    const control = await mounted();
+    await openMenu(control);
+    await closeWithEscape(control);
+    await waitFor(() => expect(screen.getByText('Field cannot be empty')).toBeInTheDocument());
+    await writeProp('visibility', false);
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(false));
     expect(screen.queryByText('Field cannot be empty')).toBeNull();
   });
 
@@ -861,6 +920,8 @@ describe('Cascader widget', () => {
       properties: { value: binding('africa'), showClearBtn: binding('{{true}}'), disabledState: binding('{{true}}') },
     });
     await mounted();
+    // Without this the assertion below can pass on an unresolved (still empty) selection.
+    await waitFor(() => expect(widget.exposed().value).toBe('africa'));
     expect(document.querySelector('[data-cy="cascader-clear"]')).toBeNull();
   });
 
@@ -900,36 +961,54 @@ describe('Cascader widget', () => {
   }, 20000);
 
   test('[Cascader-PREC-001] setValue vs Default value follows current runtime', async () => {
-    // Break this catches: snapping CSA selection back on an unrelated or no-op property tick (D-01).
+    // Break this catches: re-applying Default value on an unrelated or no-op property tick (dropping
+    // useUpdateEffect's mount guard or widening its deps), or a changed Default value not winning (D-01).
     widget.render({ properties: { value: binding('africa'), label: binding('Region') } });
     await mounted();
+    await waitFor(() => expect(widget.exposed().value).toBe('africa'));
     await widget.act('setValue', 'japan');
     await waitFor(() => expect(widget.exposed().value).toBe('japan'));
+
     await writeProp('label', 'Place');
     await waitFor(() => expect(widget.exposed().label).toBe('Place'));
     expect(widget.exposed().value).toBe('japan');
-    await writeProp('value', 'japan');
+
+    // A real no-op: Default value is rewritten to the value it already resolved to, so a snap-back
+    // shows up as 'africa' replacing the CSA's 'japan'.
+    await writeProp('value', 'africa');
+    await drain();
     expect(widget.exposed().value).toBe('japan');
+
     await writeProp('value', 'beijing');
     await waitFor(() => expect(widget.exposed().value).toBe('beijing'));
   });
 
   test('[Cascader-PREC-002] setLoading vs loadingState follows current runtime', async () => {
-    // Break this catches: unrelated ticks clearing CSA loading, or a changed loadingState not overwriting it (D-01).
+    // Break this catches: unrelated or no-op property ticks clearing CSA loading, or a changed
+    // loadingState not overwriting it (D-01). The CSA always moves state away from the property's
+    // current value, so neither half can pass on a coincidence.
     widget.render({ properties: { label: binding('Region') } });
     await mounted();
     await widget.act('setLoading', true);
     await waitFor(() => expect(widget.exposed().isLoading).toBe(true));
+
     await writeProp('label', 'Place');
     expect(widget.exposed().isLoading).toBe(true);
-    await writeProp('loadingState', true);
-    expect(widget.exposed().isLoading).toBe(true);
+    // No-op: loadingState rewritten to the false it already held; CSA true must survive.
     await writeProp('loadingState', false);
+    await drain();
+    expect(widget.exposed().isLoading).toBe(true);
+
+    // Changed property overwrites the CSA: CSA says false, the property moves false -> true.
+    await widget.act('setLoading', false);
     await waitFor(() => expect(widget.exposed().isLoading).toBe(false));
+    await writeProp('loadingState', true);
+    await waitFor(() => expect(widget.exposed().isLoading).toBe(true));
   });
 
   test('[Cascader-PREC-003] setOptionsLoading vs optionsLoadingState follows current runtime', async () => {
-    // Break this catches: unrelated ticks clearing CSA options loading (D-01).
+    // Break this catches: unrelated or no-op property ticks clearing CSA options loading, or a
+    // changed optionsLoadingState not overwriting it (D-01).
     widget.render({
       properties: {
         advanced: binding('{{true}}'),
@@ -940,40 +1019,60 @@ describe('Cascader widget', () => {
     await mounted();
     await widget.act('setOptionsLoading', true);
     await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(true));
+
     await writeProp('label', 'Place');
     expect(widget.exposed().isOptionsLoading).toBe(true);
-    await writeProp('optionsLoadingState', true);
-    expect(widget.exposed().isOptionsLoading).toBe(true);
+    // No-op: optionsLoadingState rewritten to the false it already held.
     await writeProp('optionsLoadingState', false);
+    await drain();
+    expect(widget.exposed().isOptionsLoading).toBe(true);
+
+    await widget.act('setOptionsLoading', false);
     await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(false));
+    await writeProp('optionsLoadingState', true);
+    await waitFor(() => expect(widget.exposed().isOptionsLoading).toBe(true));
   });
 
   test('[Cascader-PREC-004] setVisibility vs visibility follows current runtime', async () => {
-    // Break this catches: unrelated ticks restoring visibility after setVisibility(false) (D-01).
+    // Break this catches: unrelated or no-op property ticks restoring visibility after
+    // setVisibility(false), or a changed visibility not overwriting the CSA (D-01).
     widget.render({ properties: { label: binding('Region') } });
     await mounted();
     await widget.act('setVisibility', false);
     await waitFor(() => expect(widget.exposed().isVisible).toBe(false));
+
     await writeProp('label', 'Place');
     expect(widget.exposed().isVisible).toBe(false);
-    await writeProp('visibility', false);
-    expect(widget.exposed().isVisible).toBe(false);
+    // No-op: visibility rewritten to the true it already held; CSA false must survive.
     await writeProp('visibility', true);
+    await drain();
+    expect(widget.exposed().isVisible).toBe(false);
+
+    await widget.act('setVisibility', true);
     await waitFor(() => expect(widget.exposed().isVisible).toBe(true));
+    await writeProp('visibility', false);
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(false));
   });
 
   test('[Cascader-PREC-005] setDisable vs disabledState follows current runtime', async () => {
-    // Break this catches: unrelated ticks clearing CSA disable (D-01).
+    // Break this catches: unrelated or no-op property ticks clearing CSA disable, or a changed
+    // disabledState not overwriting it (D-01).
     widget.render({ properties: { label: binding('Region') } });
     await mounted();
     await widget.act('setDisable', true);
     await waitFor(() => expect(widget.exposed().isDisabled).toBe(true));
+
     await writeProp('label', 'Place');
     expect(widget.exposed().isDisabled).toBe(true);
-    await writeProp('disabledState', true);
-    expect(widget.exposed().isDisabled).toBe(true);
+    // No-op: disabledState rewritten to the false it already held; CSA true must survive.
     await writeProp('disabledState', false);
+    await drain();
+    expect(widget.exposed().isDisabled).toBe(true);
+
+    await widget.act('setDisable', false);
     await waitFor(() => expect(widget.exposed().isDisabled).toBe(false));
+    await writeProp('disabledState', true);
+    await waitFor(() => expect(widget.exposed().isDisabled).toBe(true));
   });
 
   test('[Cascader-STYLE-001] Label color is applied as an inline color on the label', async () => {
@@ -1132,23 +1231,19 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-STYLE-012] Icon renders only when iconVisibility is on', async () => {
-    // Break this catches: always rendering the icon, or skipping iconColor.
+    // Break this catches: rendering the icon while iconVisibility is off, or skipping iconColor.
     widget.render({ styles: { iconVisibility: { value: false }, icon: { value: 'IconHome2' } } });
-    const hidden = await mounted();
-    expect(hidden.querySelectorAll('svg[width="18"]').length).toBeGreaterThan(0);
-    expect([...hidden.querySelectorAll('svg')].every((svg) => svg.getAttribute('width') === '18')).toBe(true);
+    const control = await mounted();
+    // Count, not a width proxy: exactly one svg (the chevron) with the icon off, one more with it on.
+    const chevronOnly = control.querySelectorAll('svg').length;
+    expect(chevronOnly).toBe(1);
 
     await writeProp('iconVisibility', true, 'styles');
     await writeProp('iconColor', '#334455', 'styles');
-    await waitFor(() => {
-      const svg = [...hidden.querySelectorAll('svg')].find(
-        (el) =>
-          el.style.color === 'rgb(51, 68, 85)' ||
-          el.style.color === '#334455' ||
-          el.getAttribute('style')?.includes('#334455')
-      );
-      expect(svg).toBeTruthy();
-    });
+    await waitFor(() => expect(control.querySelectorAll('svg').length).toBe(chevronOnly + 1));
+    const icon = [...control.querySelectorAll('svg')].find((el) => el.style.width === '16px');
+    expect(icon).toBeTruthy();
+    expect(icon).toHaveStyle({ color: '#334455' });
   });
 
   test('[Cascader-STYLE-013] Field border radius is the control borderRadius', async () => {
@@ -1194,7 +1289,7 @@ describe('Cascader widget', () => {
     expect(control).toHaveStyle({ height: '36px', minHeight: '36px' });
 
     await writeProp('padding', 'none', 'styles');
-    expect(control).toHaveStyle({ minHeight: '40px' });
+    await waitFor(() => expect(control).toHaveStyle({ height: '40px', minHeight: '40px' }));
   });
 
   test('[Cascader-KB-001] Keyboard opens, drills down, and selects a leaf', async () => {

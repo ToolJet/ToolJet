@@ -140,7 +140,7 @@
     },
     {
       "componentType": "Cascader",
-      "status": "approved",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/Cascader/TESTING.md"
     },
     {
