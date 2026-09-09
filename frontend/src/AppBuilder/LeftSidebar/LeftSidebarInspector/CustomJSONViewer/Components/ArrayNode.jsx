@@ -3,9 +3,10 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const ArrayNode = ({ value }) => {
   return (
-    <div className="json-viewer-node-value" style={{ color: '#1F99ED' }}>
+    <div className="json-viewer-node-value" data-cy="json-viewer-node-value" style={{ color: '#1F99ED' }}>
       <OverflowTooltip
         tooltipClassName="inspector-node-tooltip"
+        tooltipDataCy="inspector-node-tooltip"
         style={{ width: '100%' }}
       >{`[${value.length}]`}</OverflowTooltip>
     </div>

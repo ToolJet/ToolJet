@@ -19,6 +19,7 @@ export default function OverflowTooltip({
   boxWidth,
   maxLetters,
   tooltipClassName,
+  tooltipDataCy,
   ...rest
 }) {
   const [isOverflowed, setIsOverflowed] = useState(false);
@@ -64,6 +65,7 @@ export default function OverflowTooltip({
       className={className}
       delay={{ show: '0', hide: '0' }}
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
+      tooltipDataCy={tooltipDataCy}
       placement={placement}
       message={children}
       show={!!isOverflowed}
