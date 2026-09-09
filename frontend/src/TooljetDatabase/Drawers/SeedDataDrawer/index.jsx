@@ -104,15 +104,18 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
         <div className="card-body tjdb-seed-data-drawer" style={{ padding: '0.5rem 1rem 1rem 1rem' }}>
           {/* Table reference must go through {{self}} - the backend rejects anything else,
               including this table's own literal name, to keep seed-data SQL provably scoped to
-              the table this drawer was opened for. */}
+              the table this drawer was opened for. No quotes needed: {{self}} substitutes to the
+              table's logical name, which flows through the same AST-based table resolution
+              Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes
+              directly to a physical uuid and does need quoting). */}
           <div className="tw-text-muted tw-mb-1" style={{ fontSize: '12px' }}>
-            Reference this table as <code>{'"{{self}}"'}</code> - not by name.
+            Reference this table as <code>{'{{self}}'}</code> - not by name.
           </div>
           <SqlEditor
             value={sql}
             onChange={setSql}
             height="25vh"
-            placeholder={'-- e.g. INSERT INTO "{{self}}" (column) VALUES (value);'}
+            placeholder={'-- e.g. INSERT INTO {{self}} (column) VALUES (value);'}
             dataCy="seed-data-sql-textarea"
           />
           {error && (

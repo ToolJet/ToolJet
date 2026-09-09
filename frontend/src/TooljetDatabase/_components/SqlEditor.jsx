@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { sql as sqlLang } from '@codemirror/lang-sql';
 import { EditorView } from '@codemirror/view';
 import { search, openSearchPanel } from '@codemirror/search';
+import { completionStatus } from '@codemirror/autocomplete';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { createPlaceholderCompletion } from './sqlPlaceholderCompletion';
 import './SqlEditor.scss';
@@ -50,6 +51,21 @@ const SqlEditor = ({
   const [editorView, setEditorView] = useState(null);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const editable = !!onChange;
+  // Snapshotted in the capture phase (before CodeMirror's own keymap runs and closes the
+  // completion popup, which would otherwise make completionStatus() read "closed" by the time a
+  // bubble-phase check saw it) and consumed in the bubble phase, right before the same Enter
+  // keystroke would otherwise reach an ancestor's Enter-submits shortcut (e.g. DrawerFooter's
+  // document-level listener) and fire its CTA.
+  const wasAcceptingCompletionRef = useRef(false);
+
+  const handleKeyDownCapture = (event) => {
+    if (event.key === 'Enter' && editorView) {
+      wasAcceptingCompletionRef.current = !!completionStatus(editorView.state);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && wasAcceptingCompletionRef.current) event.stopPropagation();
+  };
 
   const extensions = useMemo(
     () =>
@@ -65,6 +81,8 @@ const SqlEditor = ({
       className="tj-db-sql-editor tw-overflow-hidden tw-rounded"
       style={{ border: '1px solid var(--slate5)' }}
       data-cy={dataCy}
+      onKeyDownCapture={handleKeyDownCapture}
+      onKeyDown={handleKeyDown}
     >
       {editable && editorView && (
         <span

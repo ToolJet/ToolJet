@@ -7,6 +7,24 @@ const TABLE_NAME_TRIGGER = /\{\{table\.[\w-]*$/;
 // "{{|" - offers the top-level "self"/"table." choices.
 const ROOT_TRIGGER = /\{\{[\w.]*$/;
 
+/**
+ * CodeMirror's closeBrackets (on by default in this editor's basicSetup) auto-inserts a matching
+ * "}}" the instant the user types "{{", leaving the cursor as "{{|}}". A completion that just
+ * appends its own "}}" would double up into "{{self}}}}" - this consumes the auto-inserted pair
+ * instead of adding a second one, and is a no-op (falls back to a plain insert) if there wasn't
+ * one to consume.
+ */
+function applyClosingToken(tokenText) {
+  return (view, _completion, from, to) => {
+    const consumeTo = view.state.sliceDoc(to, to + 2) === '}}' ? to + 2 : to;
+    const insert = `${tokenText}}}`;
+    view.dispatch({
+      changes: { from, to: consumeTo, insert },
+      selection: { anchor: from + insert.length },
+    });
+  };
+}
+
 function placeholderCompletionSource({ allowTableRef, tableNames }) {
   return (context) => {
     const tableMatch = context.matchBefore(TABLE_NAME_TRIGGER);
@@ -17,7 +35,7 @@ function placeholderCompletionSource({ allowTableRef, tableNames }) {
         options: tableNames.map((name) => ({
           label: name,
           type: 'class',
-          apply: `${name}}}`,
+          apply: applyClosingToken(name),
         })),
         validFor: /^[\w-]*$/,
       };
@@ -26,7 +44,7 @@ function placeholderCompletionSource({ allowTableRef, tableNames }) {
     const rootMatch = context.matchBefore(ROOT_TRIGGER);
     if (!rootMatch) return null;
 
-    const options = [{ label: 'self', type: 'keyword', apply: 'self}}', detail: 'this table' }];
+    const options = [{ label: 'self', type: 'keyword', apply: applyClosingToken('self'), detail: 'this table' }];
     if (allowTableRef) {
       options.push({ label: 'table.', type: 'keyword', apply: 'table.', detail: 'reference another table' });
     }
