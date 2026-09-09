@@ -25,11 +25,13 @@ inline; do not guess.
 Research is required before writing or modifying widget tests:
 
 1. Classify the work as `existing-widget` or `new-widget` in the contract.
-2. For `existing-widget`, use Context7 for official ToolJet widget documentation and inspect Git
-   commits from the last 2 years for bugs, regressions, fixes, and behavior changes. If Context7
-   is unavailable, stop and ask the agent or engineer to install/configure it first.
+2. For `existing-widget`, read the widget's official doc page and inspect Git commits from the last
+   2 years for bugs, regressions, fixes, and behavior changes. Doc pages live on the `documentation`
+   branch, mapped per component type in the widget-TDD skill's `widget-docs.json`. If the page
+   cannot be resolved, stop and ask before continuing — a Context7 miss is not evidence a widget is
+   undocumented, because Context7 indexes `main` and lacks several widget pages.
 3. For `new-widget`, use an approved product PRD from GitHub, ClickUp, or Notion. This replaces the
-   Context7 and Git-history prerequisites because no released widget docs or history exists yet.
+   doc-page and Git-history prerequisites because no released widget docs or history exists yet.
 4. Record the applicable source and findings in the widget's canonical `TESTING.md` before proposing
    scenarios.
 
