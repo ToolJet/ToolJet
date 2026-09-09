@@ -52,10 +52,10 @@ export class DataQueriesController implements IDataQueriesController {
     JwtAuthGuard,
     ValidateAppVersionGuard,
     ValidateQueryAppGuard,
-    MutableAppVersionGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
@@ -73,10 +73,10 @@ export class DataQueriesController implements IDataQueriesController {
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
-    MutableAppVersionGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Patch(':id/versions/:versionId')
@@ -97,8 +97,8 @@ export class DataQueriesController implements IDataQueriesController {
     JwtAuthGuard,
     ValidateAppVersionGuard,
     ValidateQueryAppGuard,
-    MutableAppVersionGuard,
-    AppFeatureAbilityGuard
+    AppFeatureAbilityGuard,
+    MutableAppVersionGuard
   )
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
@@ -109,10 +109,10 @@ export class DataQueriesController implements IDataQueriesController {
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
-    MutableAppVersionGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
