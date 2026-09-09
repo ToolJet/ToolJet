@@ -401,6 +401,9 @@ export const commonWidgetSelector = {
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
   togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
+  // Radix, not bootstrap's `.tooltip-inner`. Renders its content twice (once
+  // VisuallyHidden), so scope every match with .first() or `have.text` sees it doubled.
+  widgetTooltip: '[data-cy="widget-tooltip"]',
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",
