@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useEffectiveLibraryRevision, libraryFileUrl, setLibraryComponentActions } from './libraryComponentRevision';
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 
 const DevBadge = ({ label }) => (
   <div
@@ -49,8 +49,8 @@ export const LibraryComponent = ({
   const effectiveRevision = useEffectiveLibraryRevision(correlationId, revisionId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
 
-  const devEmail = useCustomComponentPreviewStore((state) => state.devPreviewEmails?.[libraryId]);
-  const devNonce = useCustomComponentPreviewStore((state) =>
+  const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmails?.[libraryId]);
+  const devNonce = useCustomComponentLibrariesStore((state) =>
     isDevPin ? state.devBundleUpdatedAt?.[libraryId] : undefined
   );
 

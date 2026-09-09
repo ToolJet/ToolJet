@@ -8,6 +8,7 @@ import {
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 
@@ -102,7 +103,13 @@ const VersionDropdownItem = ({
 
   const devPinnedLibrariesCount = useMemo(() => {
     const pins = customComponentLibraries ?? {};
-    return Object.values(pins).filter((value) => typeof value === 'string' && value.startsWith('dev:')).length;
+    // normalizePin handles legacy pins stored as { revisionId: 'dev:...' } — without it,
+    // an imported/older object-shaped dev pin slips past this check and can be saved
+    // into an app version, defeating the dev-build guard below.
+    return Object.values(pins).filter((value) => {
+      const pin = normalizePin(value);
+      return typeof pin === 'string' && pin.startsWith('dev:');
+    }).length;
   }, [customComponentLibraries]);
 
   const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;

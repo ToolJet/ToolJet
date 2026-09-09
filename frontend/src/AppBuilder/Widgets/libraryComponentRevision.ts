@@ -19,7 +19,10 @@ interface ResolvedAction {
   params: ResolvedActionParam[];
 }
 
-export const pinKey = (libraryId: string | undefined): string | undefined => libraryId?.replace(/-/g, '');
+// Every call site passes a correlationId (pins are keyed by dashless correlationId,
+// never by libraryId — see useEffectiveLibraryRevision below), so this takes a generic
+// id rather than implying it's library-specific.
+export const dashlessId = (id: string | undefined): string | undefined => id?.replace(/-/g, '');
 
 export const normalizePin = (pin: Pin): string | undefined =>
   typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id;
@@ -35,7 +38,7 @@ export const useEffectiveLibraryRevision = (
 ): string | undefined => {
   const pin: string | undefined = useStore((state: any) => {
     const pins: Record<string, Pin> | undefined = state.globalSettings?.customComponentLibraries;
-    return normalizePin(pins?.[pinKey(correlationId) ?? ''] ?? pins?.[correlationId ?? '']);
+    return normalizePin(pins?.[dashlessId(correlationId) ?? ''] ?? pins?.[correlationId ?? '']);
   });
   return pin ?? instanceRevisionId;
 };
