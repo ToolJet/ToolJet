@@ -490,8 +490,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -678,7 +678,9 @@ const useAppData = (
           );
         }
 
-        if (mode === 'edit' && !moduleMode && setFolders) {
+        const ownsEditableCanvas = !moduleMode || moduleId === 'canvas';
+
+        if (mode === 'edit' && ownsEditableCanvas && setFolders) {
           const versionId = appData.editing_version?.id || appData.current_version_id;
           dataQueryFolderService
             .getAll(versionId)
@@ -688,8 +690,9 @@ const useAppData = (
             })
             .catch(() => {});
         } else if (moduleMode && moduleId === 'canvas' && setFolders) {
-          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
-          // renders the flat query list instead of returning null while waiting for fetch.
+          // View/preview mode inside the module editor: no folder tree needed, just signal
+          // foldersReady so the EE QueryFolderTree renders the flat query list instead of
+          // returning null while it waits.
           setFolders([]);
           setFolderMappings([]);
         }
@@ -964,8 +967,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
