@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
-import { groupsSelector } from "Selectors/manageGroups";
+import { usersSelector } from "Selectors/platform/manageUsers";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
 import { bulkUserUpload } from "Support/utils/manageUsers";

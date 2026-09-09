@@ -2,7 +2,7 @@
  * Shared-layer spec for the widget tooltip.
  *
  * Commissioned by decision D-02, recorded in every option-widget contract
- * (`src/test/app-builder/widgets/<Widget>/TESTING.md`). `tooltip` and `tooltipFormat`
+ * (`ee/test/app-builder/widgets/<Widget>/TESTING.md`). `tooltip` and `tooltipFormat`
  * are declared by each widget's registered definition but implemented once, in
  * `RenderWidget` (`RenderWidget.jsx:293-301` into `WidgetTooltip`). Testing it
  * per widget would be the same test copied N times, so each widget contract

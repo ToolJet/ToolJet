@@ -1,12 +1,12 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
-import { usersSelector } from "Selectors/manageUsers";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { ssoSelector } from "Selectors/platform/manageSSO";
+import { usersSelector } from "Selectors/platform/manageUsers";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import * as common from "Support/utils/common";
 import { fillInputField } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { ssoText } from "Texts/manageSSO";
-import { usersText } from "Texts/manageUsers";
+import { ssoText } from "Texts/platform/manageSSO";
+import { usersText } from "Texts/platform/manageUsers";
 
 const envVar = Cypress.env("environment");
 

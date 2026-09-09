@@ -14,6 +14,7 @@ export const aiService = {
   listConversations,
   createConversation,
   getConversation,
+  getConversationStatus,
   autoSort,
   getTokenUsage,
   getLlmPreference,
@@ -189,6 +190,11 @@ async function createConversation(payload) {
 async function getConversation(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
+}
+
+async function getConversationStatus(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/status`, requestOptions).then(handleResponse);
 }
 
 async function autoSort(body) {
