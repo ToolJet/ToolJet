@@ -1,5 +1,6 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // canvas.js
+//   grantClipboardAccess             -                    → canvas
 //   copyWidget                       -                    → canvas
 //   pasteWidget                      -                    → canvas
 //   copyPasteWidget                  -                    → canvas
@@ -37,10 +38,11 @@
  * (config-handle trash) in basicComponents.js.
  * MODIFIER: the shortcut modifier is platform-aware — Meta (Cmd) on macOS,
  * Control elsewhere (Linux CI) — because ToolJet binds the "mod" combo.
- * CAVEAT (verified): in headless Chrome the pasted/duplicated clone is created
- * with DEFAULT config — clipboard read returns empty for paste, and this build
- * has a clone-persistence gap for Cmd+D / menu Duplicate. These helpers assert
- * the clone is CREATED (+ toast), NOT that live property edits carry over.
+ * CAVEAT (verified): the pasted/duplicated clone is created with DEFAULT config —
+ * this build has a clone-persistence gap for Cmd+D / menu Duplicate. These helpers
+ * assert the clone is CREATED (+ toast), NOT that live property edits carry over.
+ * Clipboard paste is NOT empty in headless: readText is permission-DENIED until
+ * grantClipboardAccess() runs, which copyWidget/cutWidget now do.
  * NOT here: styling → styles.js · properties → properties.js · exposed-value
  * tree / inspector-delete → inspectorTree.js.
  */
@@ -50,12 +52,33 @@ import { openEditorSidebar } from "./properties";
 // Meta (Cmd) on macOS, Control on Linux/Windows CI — ToolJet binds "mod".
 const modKey = () => (Cypress.platform === "darwin" ? "Meta" : "Control");
 
+// Cypress's Chrome starts `clipboard-read` at "prompt"; headless cannot answer it, so
+// readText is DENIED and the paste handler swallows it (HotkeyProvider.jsx:47 only logs).
+// Measured: writeText resolves fine without this — only the READ side is blocked.
+// The empty catch is deliberate: without CDP the callers fail as they did before.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  grantClipboardAccess()
+ * @tjDom    CDP Browser.grantPermissions for the baseUrl origin
+ */
+export const grantClipboardAccess = () =>
+  cy.then(() =>
+    Cypress.automation("remote:debugger:protocol", {
+      command: "Browser.grantPermissions",
+      params: {
+        origin: Cypress.config("baseUrl"),
+        permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
+      },
+    }).catch(() => {})
+  );
+
 /**
  * @tjBlock  canvas
  * @tjUsage  copyWidget('button1')
  * @tjDom    select widget on canvas → Cmd/Ctrl+C → "Component copied successfully" toast
  */
 export const copyWidget = (widgetName) => {
+  grantClipboardAccess();
   cy.forceClickOnCanvas();
   // Select the widget ON THE CANVAS so it is the editor's active component when
   // the copy fires (otherwise the copy captures nothing).
@@ -259,6 +282,7 @@ export const nudgeWidget = (widgetName, direction = "ArrowRight", times = 1) => 
  * @tjDom    select widget → Cmd/Ctrl+X → widget removed (NO toast, unlike copy)
  */
 export const cutWidget = (widgetName) => {
+  grantClipboardAccess();
   cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .first()
