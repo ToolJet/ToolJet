@@ -31,7 +31,7 @@ import {
 // Only the widget name and the drop-placement assertion are File-Input-specific.
 describe(
   "File Input canvas",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const namePrefix = "fileinput"; // duplicates land as fileinput2, fileinput3, ...
@@ -47,8 +47,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("drag-and-drop places the widget where it was dropped", () => {

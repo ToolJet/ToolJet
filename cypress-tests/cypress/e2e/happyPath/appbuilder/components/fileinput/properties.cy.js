@@ -9,6 +9,10 @@ import {
   acceptedTypeCases,
 } from "Texts/appBuilder/components/fileInput";
 import {
+  verifyExposedValue,
+  setTooltip,
+  hoverInPreview,
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -16,17 +20,11 @@ import {
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   attachFile,
   expectPickerBlocked,
   selectParseFileType,
   selectValidationFileType,
   expectRejectionToast,
-  openParsedValue,
-  closeParsedValue,
-  widgetTooltip,
-  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileInput";
 
 // Properties facet — every field in config.properties AND config.validation, which are
@@ -41,23 +39,6 @@ import {
 //           device-layout surface; covering it in both facets buys no coverage.
 //           fx binding of these same fields → propertiesFx.cy.js
 
-// One node per format, all three rendered by the shared WidgetTooltip (mounted for every
-// widget from RenderWidget.jsx:367): plainText -> span.tw-whitespace-pre-wrap,
-// markdown -> .widget-tooltip-markdown, html -> .widget-tooltip-html.
-// Raw HTML can't be typed: the CodeMirror tokenizer drops `<`, `>` and `/`, so "<b>x</b>"
-// arrives as "bxb". Pass it as {{"..."}}, which is preserved whole.
-const setTooltip = (format, content) => {
-  // data-cy comes from the option VALUE, which is camelCase (`plainText`), not the
-  // kebab-cased display name. source: fileinput.js:127-131
-  cy.get(`[data-cy="togglr-button-${format}"]`).click();
-  cy.waitForAutoSave();
-  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
-  // Confirm it landed: an empty tooltip renders no node at all, which looks
-  // the same as a hover that failed.
-  cy.get(commonWidgetSelector.tooltipInputField).should("contain.text", content.replace(/[{}"]/g, "").trim());
-  commitChange();
-};
-
 // Configure in the editor, then verify on the preview — where the tooltip can
 // actually open (see hoverInPreview).
 const showTooltipInPreview = (name, format, content) => {
@@ -69,7 +50,7 @@ const showTooltipInPreview = (name, format, content) => {
 
 describe(
   "File Input properties",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, validFileName, csvFile, csvFileName, secondCsvFile, tinyAudioFile } = fileInputFixtures;
@@ -83,8 +64,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify Label and Placeholder: direct change", () => {
@@ -143,10 +124,7 @@ describe(
       cy.get(fileInputSelector.summary(widget)).should("have.text", csvFileName);
 
       // sample-a.csv is id,name,role, so every parsed row must report 3 keys.
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-      closeParsedValue();
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
     });
 
     it("should verify Mark as mandatory: direct toggle", () => {
@@ -160,7 +138,7 @@ describe(
       // Two independent surfaces: the visible `*` and the input's aria-required.
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible").and("have.text", "*");
       cy.get(fileInputSelector.ariaRequired(widget)).should("exist");
-      verifyExposedValue("isMandatory", "Boolean", "true");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
     });
 
     acceptedTypeCases.forEach(({ label, value, accept, acceptName, reject }) => {
@@ -289,7 +267,7 @@ describe(
       cy.get(fileInputSelector.loader(widget)).should("be.visible");
       cy.get(fileInputSelector.browseButton(widget)).should("not.exist");
       cy.get(fileInputSelector.ariaBusy(widget)).should("exist");
-      verifyExposedValue("isLoading", "Boolean", "true");
+      verifyExposedValue("isLoading", "Boolean", "true", widget);
     });
 
     it("should verify Visibility: direct toggle unmounts the field", () => {
@@ -303,7 +281,7 @@ describe(
       // assertion would pass either way.
       cy.get(fileInputSelector.field(widget)).should("not.exist");
       // The Inspector tree survives the unmount, so the exposed value is still readable.
-      verifyExposedValue("isVisible", "Boolean", "false");
+      verifyExposedValue("isVisible", "Boolean", "false", widget);
     });
 
     it("should verify Disable: direct toggle", () => {
@@ -314,7 +292,7 @@ describe(
 
       expectPickerBlocked(widget);
       cy.get(fileInputSelector.ariaDisabled(widget)).should("exist");
-      verifyExposedValue("isDisabled", "Boolean", "true");
+      verifyExposedValue("isDisabled", "Boolean", "true", widget);
     });
 
     // Plain text and Markdown share this string, so only the format switch can
@@ -326,7 +304,7 @@ describe(
 
     it("should verify Tooltip in Plain text format: content stays literal", () => {
       showTooltipInPreview(widget, "plainText", markup);
-      cy.get(widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
+      cy.get(commonWidgetSelector.widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
       cy.get(".widget-tooltip-markdown").should("not.exist");
       cy.get(".widget-tooltip-html").should("not.exist");
     });

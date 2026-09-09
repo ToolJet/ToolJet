@@ -18,7 +18,7 @@ import {
 // Not here: exposed values → inspector.cy.js · drop placement → canvas.cy.js
 describe(
   "File Input basics",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
 
@@ -31,8 +31,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should mount and render the default label, placeholder and Browse trigger", () => {

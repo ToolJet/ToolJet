@@ -17,7 +17,7 @@ import {
 // Config-derived, so a config change dropping or renaming either list fails here first.
 describe(
   "File Input inspector",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
 
@@ -53,8 +53,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify the initial exposed values and functions on inspector", () => {

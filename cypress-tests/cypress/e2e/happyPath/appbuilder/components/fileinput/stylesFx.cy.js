@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputAccordion, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
 import {
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -13,7 +14,11 @@ import {
   expectNoFxButton,
   openStyleAccordion,
 } from "Support/utils/commonWidget";
-import { commitChange, attachFile, unlockLabelWidth, toggleIconVisibility } from "Support/utils/appBuilder/components/fileInput";
+import {
+  attachFile,
+  unlockLabelWidth,
+  toggleIconVisibility,
+} from "Support/utils/appBuilder/components/fileInput";
 
 // StylesFx facet — fx/dynamic-binding half; the direct half is in styles.cy.js.
 // Covers all 12 fx-capable config.styles items — source: fileinput.js:233-423
@@ -28,7 +33,7 @@ import { commitChange, attachFile, unlockLabelWidth, toggleIconVisibility } from
 // then drives the SOURCE and re-asserts, which proves the binding stays live.
 describe(
   "File Input styles fx",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { csvFile } = fileInputFixtures;
@@ -71,8 +76,8 @@ describe(
       waitForDropSettle(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify Color follows a bound colour", () => {
@@ -280,7 +285,7 @@ describe(
       // Located by its control rather than a name: direction declares showLabel:false and
       // has no usable displayName (fileinput.js:256-265). "Alignment" is the fx-CAPABLE
       // control in the same open accordion, so a wrong selector cannot pass silently.
-      expectNoFxButton(() => cy.get('[data-cy="togglr-button-right"]'), "Alignment");
+      expectNoFxButton(() => cy.get(commonWidgetSelector.togglrButton("right")), "Alignment");
     });
 
     it("should verify Width, label width and Width type expose no fx button", () => {
@@ -301,7 +306,7 @@ describe(
       // opened alongside it to supply "Border radius" as that control.
       openStyleAccordion(widget, fileInputAccordion.styleField);
       openAccordion(fileInputAccordion.styleContainer);
-      expectNoFxButton(() => cy.get('[data-cy="togglr-button-none"]'), "Border radius"); // source: fileinput.js:416
+      expectNoFxButton(() => cy.get(commonWidgetSelector.togglrButton("none")), "Border radius"); // source: fileinput.js:416
     });
   }
 );

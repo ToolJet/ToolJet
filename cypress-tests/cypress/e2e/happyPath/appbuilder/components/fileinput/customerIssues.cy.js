@@ -3,13 +3,16 @@ import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPane
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
 import {
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
   dropWidget,
   clearParameter,
 } from "Support/utils/commonWidget";
-import { commitChange, attachFile } from "Support/utils/appBuilder/components/fileInput";
+import {
+  attachFile,
+} from "Support/utils/appBuilder/components/fileInput";
 
 // Customer-issues facet — regression guards for defects found while automating this
 // widget. Two are shared useFilePicker bugs that also affect File Button and File Picker;
@@ -29,7 +32,7 @@ import { commitChange, attachFile } from "Support/utils/appBuilder/components/fi
 
 describe(
   "File Input customer issues",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, validFileName, csvFile, secondCsvFile } = fileInputFixtures;
@@ -43,8 +46,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     // File Input is registered in `widgets` (widgetConfig.js:130, under the

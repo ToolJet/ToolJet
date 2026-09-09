@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputAccordion, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
 import {
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -16,7 +17,6 @@ import {
   verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
   attachFile,
   unlockLabelWidth,
   toggleIconVisibility,
@@ -47,7 +47,7 @@ import {
 // wrong reason. Theme tokens never equal those literals.
 describe(
   "File Input styles",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { csvFile } = fileInputFixtures;
@@ -61,8 +61,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     // The picker does not always land on the exact value typed, so assert the theme token
@@ -102,7 +102,7 @@ describe(
       cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-col");
 
       openStyleAccordion(widget, fileInputAccordion.styleLabel);
-      cy.get('[data-cy="togglr-button-side"]').click(); // source: fileinput.js:246
+      cy.get(commonWidgetSelector.togglrButton("side")).click(); // source: fileinput.js:246
       cy.waitForAutoSave();
 
       cy.get(fileInputSelector.widget(widget)).should("have.class", "tw-flex-row");
@@ -111,7 +111,7 @@ describe(
 
     it("should verify Direction: direct toggle only", () => {
       openStyleAccordion(widget, fileInputAccordion.styleLabel);
-      cy.get('[data-cy="togglr-button-right"]').click(); // source: fileinput.js:256
+      cy.get(commonWidgetSelector.togglrButton("right")).click(); // source: fileinput.js:256
       cy.waitForAutoSave();
 
       // With the shipped `top` alignment, direction right adds tw-text-right
@@ -290,15 +290,15 @@ describe(
     // `inputElementHeight` (:85) memos are dead code — the feature still works.
     it("should verify Padding: None changes the field height", () => {
       openStyleAccordion(widget, fileInputAccordion.styleContainer);
-      cy.get('[data-cy="togglr-button-default"]')
+      cy.get(commonWidgetSelector.togglrButton("default"))
         .closest('[role="radio"]')
         .should("have.attr", "aria-checked", "true");
 
       getWidgetHeight(widget).then((before) => {
-        cy.get('[data-cy="togglr-button-none"]').click();
+        cy.get(commonWidgetSelector.togglrButton("none")).click();
         cy.waitForAutoSave();
         // Precondition, not the coverage: the height assertion below is the effect.
-        cy.get('[data-cy="togglr-button-none"]').closest('[role="radio"]').should("have.attr", "aria-checked", "true");
+        cy.get(commonWidgetSelector.togglrButton("none")).closest('[role="radio"]').should("have.attr", "aria-checked", "true");
         getWidgetHeight(widget).should("not.equal", before);
       });
     });

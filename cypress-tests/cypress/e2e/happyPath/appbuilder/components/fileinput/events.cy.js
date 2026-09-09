@@ -4,7 +4,9 @@ import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
 import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget";
-import { attachFile } from "Support/utils/appBuilder/components/fileInput";
+import {
+  attachFile,
+} from "Support/utils/appBuilder/components/fileInput";
 
 // Events facet — both config.events, each asserted in the editor AND in preview.
 //   onFileSelected:230 — fires on an accepted file
@@ -21,7 +23,7 @@ import { attachFile } from "Support/utils/appBuilder/components/fileInput";
 // taken from this widget's config rather than copied from the sibling spec.
 describe(
   "File Input events",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, validFileName, tinyAudioFile } = fileInputFixtures;
@@ -46,8 +48,8 @@ describe(
       openEditorSidebar(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should fire onFileSelected when a file is accepted", () => {

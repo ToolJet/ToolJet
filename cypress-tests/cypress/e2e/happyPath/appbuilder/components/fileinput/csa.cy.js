@@ -2,10 +2,16 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
-import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget";
+import {
+  verifyExposedValue,
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 import { selectEvent, configureCSA, selectQueryForEvent } from "Support/utils/appBuilder/events";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
-import { verifyExposedValue, attachFile } from "Support/utils/appBuilder/components/fileInput";
+import {
+  attachFile,
+} from "Support/utils/appBuilder/components/fileInput";
 
 // CSA facet — every handle driven by TWO triggers (a Control Component event and a RunJS
 // query) in TWO environments (editor and preview).
@@ -21,7 +27,7 @@ import { verifyExposedValue, attachFile } from "Support/utils/appBuilder/compone
 // like a live defect until the runtime path was checked. Do not re-raise it as one.
 describe(
   "File Input CSA",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, validFileName } = fileInputFixtures;
@@ -108,8 +114,8 @@ describe(
       waitForDropSettle(widget);
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should clear the selected file via the Clear CSA", () => {
@@ -128,15 +134,15 @@ describe(
 
       // ── editor ──
       holdFile();
-      verifyExposedValue("files", "Array", "[1]");
+      verifyExposedValue("files", "Array", "[1]", widget);
       clickButton("button1");
       expectCleared();
-      verifyExposedValue("files", "Array", "[0]");
+      verifyExposedValue("files", "Array", "[0]", widget);
 
       holdFile();
       clickButton("button2");
       expectCleared();
-      verifyExposedValue("files", "Array", "[0]");
+      verifyExposedValue("files", "Array", "[0]", widget);
 
       // ── preview ── (reload drops `files`, so preview starts empty)
       cy.openPreview(fileInputSelector.field(widget));
@@ -220,13 +226,13 @@ describe(
 
       // ── editor ──
       expectShown();
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
       clickButton("button1");
       expectHidden();
-      verifyExposedValue("isVisible", "Boolean", "false");
+      verifyExposedValue("isVisible", "Boolean", "false", widget);
       clickButton("button2");
       expectShown();
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
 
       // ── preview ──
       cy.openPreview(fileInputSelector.field(widget));
@@ -249,7 +255,7 @@ describe(
       // ── editor ──
       expectEnabled();
       runBothTriggers(expectDisabled, expectEnabled);
-      verifyExposedValue("isDisabled", "Boolean", "false");
+      verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
       // ── preview ──
       cy.openPreview(fileInputSelector.field(widget));
@@ -279,7 +285,7 @@ describe(
       // ── editor ──
       expectNotLoading();
       runBothTriggers(expectLoading, expectNotLoading);
-      verifyExposedValue("isLoading", "Boolean", "false");
+      verifyExposedValue("isLoading", "Boolean", "false", widget);
 
       // ── preview ──
       cy.openPreview(fileInputSelector.field(widget));

@@ -32,38 +32,11 @@ import {
  * because the module is component-scoped. Drop the default on anything ever promoted.
  */
 
-/**
- * @tjBlock  properties
- * @tjUsage  commitChange()
- * @tjDom    canvas click to blur the active field, then the autosave indicator
- */
-// Blur whatever field is focused so its value commits, then wait for the save.
-export const commitChange = () => {
-  cy.forceClickOnCanvas();
-  cy.waitForAutoSave();
-};
-
 // Asserts the EXPOSED state (components.<widget>.<key>), a separate code path from the
 // rendered DOM. Both the Inspector tab and the Components expand-button are toggles whose
 // state persists in the app's store even after the panel closes, so each is undone in
 // reverse order before returning — otherwise a second call in the same test fails to find
 // the node the first call left expanded.
-/**
- * @tjBlock  inspector
- * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true')
- * @tjDom    inspector sidebar tab → components node → widget subnode → node value
- */
-export const verifyExposedValue = (key, type, value, widgetName = fileInputText.defaultWidgetName) => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  verifyNodeData(key, type, value);
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
 // useFilePicker's duplicate guard SILENTLY drops a file it already holds, BEFORE
 // validation runs — so re-selecting the same file after changing a property is a no-op and
 // the next assertion proves nothing. Clear between phases, or use a different fixture.
@@ -169,7 +142,7 @@ export const expectRejectionToast = (types) => {
  * @tjDom    togglr-button-side, then the auto-width checkbox
  */
 export const unlockLabelWidth = () => {
-  cy.get('[data-cy="togglr-button-side"]').click();
+  cy.get(commonWidgetSelector.togglrButton("side")).click();
   cy.waitForAutoSave();
   cy.get('[data-cy="auto-width-checkbox"]').uncheck({ force: true });
   cy.waitForAutoSave();
@@ -200,46 +173,3 @@ export const toggleIconVisibility = () => {
   cy.waitForAutoSave();
 };
 
-/**
- * @tjBlock  inspector
- * @tjUsage  openParsedValue(); ... ; closeParsedValue()
- * @tjDom    inspector components → <widget> → files → [0], expanded by LABEL clicks
- */
-// Drills components > fileinput1 > files > [0] to reach parsedValue. Nested rows have no
-// expand-button data-cy (only -label/-value), so the LABEL is what toggles them.
-export const openParsedValue = (widgetName = fileInputText.defaultWidgetName) => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  cy.get('[data-cy="inspector-files-label"]').first().click();
-  cy.get('[data-cy="inspector-0-label"]').first().click();
-};
-
-// Undo both toggles so the next call starts from a known state.
-export const closeParsedValue = () => {
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
-// Radix, not bootstrap: the tooltip renders as [data-cy="widget-tooltip"], never
-// `.tooltip-inner`. It also renders its content TWICE (once visibly, once in a
-// VisuallyHidden copy), so every match inside it needs .first() — an unscoped
-// `have.text` sees the string doubled.
-export const widgetTooltip = '[data-cy="widget-tooltip"]';
-
-/**
- * @tjBlock  properties
- * @tjUsage  hoverInPreview(fileInputSelector.field('fileinput1'))
- * @tjDom    preview, then realHover on the given element past Radix's delay
- */
-// A tooltip only opens in PREVIEW: on the editor canvas the drag/resize overlays swallow
-// the pointer events Radix needs, and a synthetic `mouseover` never opens it in either
-// mode. Configure in the editor, then verify here.
-export const hoverInPreview = (selector) => {
-  cy.openPreview();
-  cy.get(selector).should("be.visible").realHover();
-  // Radix mounts the content only after 500ms of sustained hover.
-  cy.wait(900);
-};

@@ -4,20 +4,18 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputFixtures } from "Texts/appBuilder/components/fileInput";
 import {
+  verifyExposedValue,
+  commitChange,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
   dropWidget,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   attachFile,
   selectParseFileType,
   selectValidationFileType,
   expectRejectionToast,
-  openParsedValue,
-  closeParsedValue,
 } from "Support/utils/appBuilder/components/fileInput";
 
 // Userflow facet — realistic end-to-end journeys rather than one field at a time, so a
@@ -27,7 +25,7 @@ import {
 // events.cy.js and csa.cy.js.
 describe(
   "File Input userflow",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, csvFile, secondCsvFile, pdfFile, pdfFileName } = fileInputFixtures;
@@ -41,8 +39,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should build a mandatory document upload field and drive it through reject, accept and clear", () => {
@@ -70,35 +68,35 @@ describe(
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible");
       cy.get(fileInputSelector.ariaRequired(widget)).should("exist");
       cy.get(fileInputSelector.summary(widget)).should("have.text", "Attach a PDF");
-      verifyExposedValue("isMandatory", "Boolean", "true");
-      verifyExposedValue("isValid", "Boolean", "false");
-      verifyExposedValue("files", "Array", "[0]");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
+      verifyExposedValue("isValid", "Boolean", "false", widget);
+      verifyExposedValue("files", "Array", "[0]", widget);
 
       // ── wrong type: rejected, nothing kept ──
       attachFile(validFile);
       expectRejectionToast(".pdf");
       cy.get(fileInputSelector.summary(widget)).should("have.text", "Attach a PDF");
-      verifyExposedValue("files", "Array", "[0]");
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("files", "Array", "[0]", widget);
+      verifyExposedValue("isValid", "Boolean", "false", widget);
 
       // ── correcting it works without a reload ──
       attachFile(pdfFile);
       cy.get(fileInputSelector.summary(widget)).should("have.text", pdfFileName);
-      verifyExposedValue("files", "Array", "[1]");
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("files", "Array", "[1]", widget);
+      verifyExposedValue("isValid", "Boolean", "true", widget);
 
       // ── clearing returns it to empty ──
       cy.get(fileInputSelector.clearButton(widget)).should("be.visible").click();
       cy.get(fileInputSelector.summary(widget)).should("have.text", "Attach a PDF");
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible");
-      verifyExposedValue("files", "Array", "[0]");
-      verifyExposedValue("isValid", "Boolean", "false");
+      verifyExposedValue("files", "Array", "[0]", widget);
+      verifyExposedValue("isValid", "Boolean", "false", widget);
 
       // ── still accepts a fresh attachment: a cleared widget that silently stopped
       //    working would satisfy every assertion above ──
       attachFile(pdfFile);
       cy.get(fileInputSelector.summary(widget)).should("have.text", pdfFileName);
-      verifyExposedValue("files", "Array", "[1]");
+      verifyExposedValue("files", "Array", "[1]", widget);
     });
 
     it("should build a multi-file CSV parsing upload and settle after parsing both files", () => {
@@ -111,25 +109,22 @@ describe(
 
       attachFile([csvFile, secondCsvFile]);
       cy.get(fileInputSelector.summary(widget)).should("have.text", fileInputText.multiFileLabel(2));
-      verifyExposedValue("files", "Array", "[2]");
+      verifyExposedValue("files", "Array", "[2]", widget);
 
       // isParsing must settle back to false — a widget stuck mid-parse looks identical
       // in the DOM
-      verifyExposedValue("isParsing", "Boolean", "false");
-      verifyExposedValue("isValid", "Boolean", "true");
+      verifyExposedValue("isParsing", "Boolean", "false", widget);
+      verifyExposedValue("isValid", "Boolean", "true", widget);
 
       // files[0] is sample-a.csv (id,name,role), so each parsed row must report 3 keys.
-      openParsedValue(widget);
-      cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-      cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-      closeParsedValue();
+      verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
 
       // Re-attaching a held file leaves the selection UNCHANGED: with enableMultiple on a
       // selection adds rather than replaces, and this one is dropped. maxFileCount is 2, so
       // the cap and the duplicate guard would both hold it here — asserts the outcome only.
       attachFile(csvFile);
       cy.get(fileInputSelector.summary(widget)).should("have.text", fileInputText.multiFileLabel(2));
-      verifyExposedValue("files", "Array", "[2]");
+      verifyExposedValue("files", "Array", "[2]", widget);
     });
   }
 );

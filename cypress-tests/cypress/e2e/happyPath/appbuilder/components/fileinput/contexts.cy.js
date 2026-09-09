@@ -3,7 +3,11 @@ import { closeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPane
 import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText } from "Texts/appBuilder/components/fileInput";
-import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget";
+import {
+  switchLayout,
+  openEditorSidebar,
+  waitForDropSettle,
+} from "Support/utils/commonWidget";
 
 // Contexts facet — the widget across device contexts.
 // Covers both config.others items — source: fileinput.js:11-12
@@ -12,17 +16,9 @@ import { openEditorSidebar, waitForDropSettle } from "Support/utils/commonWidget
 // `visibility` property in properties.cy.js. This facet OWNS config.others; properties
 // deliberately does not repeat it.
 
-// Desktop/mobile canvas switch in the editor header. A widget hidden by these toggles
-// UNMOUNTS, so anything needing its Inspector must be done from the layout where it is
-// still visible.
-const switchLayout = (target) => {
-  cy.get(`[data-cy="button-change-layout-to-${target}"]`).click();
-  cy.waitForAutoSave();
-};
-
 describe(
   "File Input contexts",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
 
@@ -35,8 +31,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     // The shared verifyLayout() helper walks a strict subset of this test, so it is not

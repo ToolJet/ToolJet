@@ -4,6 +4,9 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileInputSelector } from "Selectors/appBuilder/components/fileInput";
 import { fileInputText, fileInputAccordion, fileInputFixtures, fxExemptFields } from "Texts/appBuilder/components/fileInput";
 import {
+  verifyExposedValue,
+  commitChange,
+  hoverInPreview,
   openEditorSidebar,
   openAccordion,
   verifyAndModifyParameter,
@@ -13,14 +16,10 @@ import {
   expectNoFxButton,
 } from "Support/utils/commonWidget";
 import {
-  commitChange,
-  verifyExposedValue,
   attachFile,
   expectPickerBlocked,
   validationFileTypeWrapper,
   expectRejectionToast,
-  widgetTooltip,
-  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileInput";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -43,7 +42,7 @@ const dropCompanionToggle = (x, y) => dropWidget("Toggle Switch", "toggleswitch1
 
 describe(
   "File Input properties fx",
-  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
+  { testIsolation: false },
   () => {
     const widget = fileInputText.defaultWidgetName;
     const { validFile, validFileName, csvFile, csvFileName, secondCsvFile } = fileInputFixtures;
@@ -57,8 +56,8 @@ describe(
       closeQueryPanel();
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === "passed") cy.apiDeleteApp();
+    afterEach(() => {
+      cy.apiDeleteApp();
     });
 
     it("should verify Label resolves and re-resolves a binding", () => {
@@ -157,12 +156,12 @@ describe(
       enableFxAndBind("Loading", "{{components.toggleswitch1.value}}"); // source: fileinput.js:94
       commitChange();
       cy.get(fileInputSelector.loader(widget)).should("not.exist");
-      verifyExposedValue("isLoading", "Boolean", "false");
+      verifyExposedValue("isLoading", "Boolean", "false", widget);
 
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.loader(widget)).should("be.visible");
       cy.get(fileInputSelector.browseButton(widget)).should("not.exist");
-      verifyExposedValue("isLoading", "Boolean", "true");
+      verifyExposedValue("isLoading", "Boolean", "true", widget);
     });
 
     it("should verify Visibility follows a bound boolean", () => {
@@ -173,11 +172,11 @@ describe(
       commitChange();
       // Bound to a false source, so the field unmounts (FileInput.jsx:236).
       cy.get(fileInputSelector.field(widget)).should("not.exist");
-      verifyExposedValue("isVisible", "Boolean", "false");
+      verifyExposedValue("isVisible", "Boolean", "false", widget);
 
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.field(widget)).should("be.visible");
-      verifyExposedValue("isVisible", "Boolean", "true");
+      verifyExposedValue("isVisible", "Boolean", "true", widget);
     });
 
     it("should verify Disable follows a bound boolean", () => {
@@ -187,11 +186,11 @@ describe(
       enableFxAndBind("Disable", "{{components.toggleswitch1.value}}"); // source: fileinput.js:112
       commitChange();
       cy.get(fileInputSelector.browseButton(widget)).should("not.be.disabled");
-      verifyExposedValue("isDisabled", "Boolean", "false");
+      verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
       clickWidgetInput("toggleswitch1");
       expectPickerBlocked(widget);
-      verifyExposedValue("isDisabled", "Boolean", "true");
+      verifyExposedValue("isDisabled", "Boolean", "true", widget);
     });
 
     it("should verify Tooltip content resolves a binding", () => {
@@ -214,7 +213,7 @@ describe(
       // Radix needs to open it. Unlike the rest of this file the companion is seeded rather
       // than re-driven: resolution is what this asserts.
       hoverInPreview(fileInputSelector.field(widget));
-      cy.get(widgetTooltip).should("contain.text", "Bound tooltip text");
+      cy.get(commonWidgetSelector.widgetTooltip).should("contain.text", "Bound tooltip text");
     });
 
     it("should verify Mark as mandatory follows a bound boolean", () => {
@@ -228,7 +227,7 @@ describe(
       clickWidgetInput("toggleswitch1");
       cy.get(fileInputSelector.mandatoryIndicator(widget)).should("be.visible");
       cy.get(fileInputSelector.ariaRequired(widget)).should("exist");
-      verifyExposedValue("isMandatory", "Boolean", "true");
+      verifyExposedValue("isMandatory", "Boolean", "true", widget);
     });
 
     it("should verify File Type follows a bound value and gates the same way", () => {
