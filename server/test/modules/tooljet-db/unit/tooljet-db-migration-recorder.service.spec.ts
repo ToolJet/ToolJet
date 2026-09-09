@@ -496,6 +496,34 @@ describe('TooljetDbMigrationRecorderService', () => {
 
         expect(rawSql.parentMigrationId).toBe(structured.id);
       });
+
+      it('records the caller-supplied name on a raw SQL migration', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+
+        const rawSql = await service.recordRawSql(
+          { sql: `ALTER TABLE users ADD COLUMN score int`, refs: {}, name: 'Add score column' },
+          internalTable,
+          relation,
+          emptySnapshot(),
+          null
+        );
+
+        expect(rawSql.name).toBe('Add score column');
+      });
+
+      it('falls back to a default name when no name is supplied', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+
+        const rawSql = await service.recordRawSql(
+          { sql: `ALTER TABLE users ADD COLUMN score int`, refs: {} },
+          internalTable,
+          relation,
+          emptySnapshot(),
+          null
+        );
+
+        expect(rawSql.name).toBeTruthy();
+      });
     });
 
     describe('.record | row states', () => {

@@ -102,7 +102,9 @@ export default function useMigrationModal() {
         const { error: sqlError } = await tooljetDatabaseService.recordRawSqlMigration(
           organizationId,
           tableIdForSql,
-          state.sql
+          state.sql,
+          {},
+          state.title
         );
         if (sqlError) {
           setState((prev) => ({

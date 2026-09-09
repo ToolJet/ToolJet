@@ -129,7 +129,7 @@ export class TooljetDbRawSqlMigrationService {
       const result = await this.manager.transaction(async (transactionManager) => {
         await transactionManager.save(relation);
         return this.migrationRecorderService.recordRawSql(
-          { sql: dto.sql, refs: dto.refs },
+          { sql: dto.sql, refs: dto.refs, name: dto.name },
           internalTable,
           relation,
           snapshot,

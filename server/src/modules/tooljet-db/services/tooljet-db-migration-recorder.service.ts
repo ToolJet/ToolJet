@@ -219,9 +219,13 @@ export class TooljetDbMigrationRecorderService {
    * already-applied application row in one transaction, after the SQL has already run and
    * resultingSchema has already been computed - this method's own transaction is the atomicity
    * boundary, no confirm()/discard() call needed afterward.
+   *
+   * `payload.name` mirrors the structured path's `migration_name` override - "a migration always
+   * gets a name" (see defaultMigrationName above) applies here too, just with no request shape to
+   * derive a description from, so the fallback is a fixed string rather than a per-action one.
    */
   async recordRawSql(
-    payload: { sql: string; refs: Record<string, string> },
+    payload: { sql: string; refs: Record<string, string>; name?: string },
     internalTable: InternalTable,
     relation: InternalTableRelation,
     resultingSchema: TableSchemaSnapshot,
@@ -234,6 +238,7 @@ export class TooljetDbMigrationRecorderService {
         internalTable.organizationId,
         entityManager
       );
+      const userGivenName = payload.name?.trim();
 
       const migration = entityManager.create(InternalTableMigration, {
         internalTableId: internalTable.id,
@@ -242,6 +247,7 @@ export class TooljetDbMigrationRecorderService {
         branchId,
         kind: 'raw_sql',
         payload,
+        name: (userGivenName || 'Raw SQL migration').slice(0, 120),
         resultingSchema,
         revertsMigrationId,
         tooljetVersion: globalThis.TOOLJET_VERSION || null,
