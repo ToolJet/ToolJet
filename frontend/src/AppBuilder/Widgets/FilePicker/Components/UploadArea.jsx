@@ -71,7 +71,7 @@ const UploadArea = ({
 
       {hasUiError && (
         <div className="ui-error-message-container">
-          <ErrorMessage message={uiErrorMessage} />
+          <ErrorMessage message={uiErrorMessage} dataCy={dataCy} />
         </div>
       )}
 

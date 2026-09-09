@@ -277,6 +277,7 @@ const FilePicker = (props) => {
                 onRemoveFile={handleRemoveFile}
                 errors={fileErrors}
                 uploadingStatus={uploadingStatus}
+                dataCy={dataCy}
               />
             </div>
           )}
