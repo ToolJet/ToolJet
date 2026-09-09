@@ -102,11 +102,17 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
           </span>
         </div>
         <div className="card-body tjdb-seed-data-drawer" style={{ padding: '0.5rem 1rem 1rem 1rem' }}>
+          {/* Table reference must go through {{self}} - the backend rejects anything else,
+              including this table's own literal name, to keep seed-data SQL provably scoped to
+              the table this drawer was opened for. */}
+          <div className="tw-text-muted tw-mb-1" style={{ fontSize: '12px' }}>
+            Reference this table as <code>{'"{{self}}"'}</code> - not by name.
+          </div>
           <SqlEditor
             value={sql}
             onChange={setSql}
             height="25vh"
-            placeholder="INSERT INTO your_table (column1, column2) VALUES (value1, value2);"
+            placeholder={'-- e.g. INSERT INTO "{{self}}" (column) VALUES (value);'}
             dataCy="seed-data-sql-textarea"
           />
           {error && (
