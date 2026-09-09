@@ -120,14 +120,20 @@ cd plugins && npm install && npm run build
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 - Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
 
+## Context efficiency
+
+- Before re-reading a file, check if it was already read earlier in this session. If so, reference that content instead of re-reading it.
+- When reading files over ~200 lines, use the Read tool's `offset`/`limit` arguments to read only the relevant section first. Only read the full file if the targeted read isn't enough.
+- For open-ended exploration (searching for usages, understanding a module, tracing a bug across files), delegate to an `Explore` subagent via the `Agent` tool rather than reading files directly in the main thread.
+
 ## Skills
 
 Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load the one matching the task instead of improvising — ToolJet is a superproject with two submodules, and every git operation has to fan out across all three in a fixed order.
 
-| Task | Skill |
-|---|---|
-| Merge a branch across root + submodules | `merge` |
-| Commit across root + submodules | `commit` |
+| Task                                       | Skill       |
+|--------------------------------------------|-------------|
+| Merge a branch across root + submodules    | `merge`     |
+| Commit across root + submodules            | `commit`    |
 | Push and open PRs across root + submodules | `create-pr` |
 | Add, move, or repair a skill | `manage-skills` |
 
@@ -137,18 +143,32 @@ Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` 
 
 Context is layered — the closest file to the code you're changing wins:
 
-| File | Scope |
-|---|---|
-| `AGENTS.md` (this file) | Repo-wide architecture, editions, structure |
-| `.agents/context/product-map.md` | Public product capabilities, users, journeys, and business rules |
-| `.agents/context/architecture-map.md` | Public system components, data flows, integrations, and failure modes |
-| `UBIQUITOUS_LANGUAGE.md` | Canonical domain glossary |
-| `server/AGENTS.md` | Backend + testing conventions |
-| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
-| `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
-| `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
-| `server/docs/testing.md` | Backend testing — what to test, then how to write it |
+| File                                    | Scope                                                                 |
+|-----------------------------------------|-----------------------------------------------------------------------|
+| `AGENTS.md` (this file)                 | Repo-wide architecture, editions, structure                           |
+| `.agents/context/product-map.md`        | Public product capabilities, users, journeys, and business rules      |
+| `.agents/context/architecture-map.md`   | Public system components, data flows, integrations, and failure modes |
+| `UBIQUITOUS_LANGUAGE.md`                | Canonical domain glossary                                             |
+| `server/AGENTS.md`                      | Backend + testing conventions                                         |
+| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants                             |
+| `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                 |
+| `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary              |
+| `server/docs/testing.md`                | Backend testing — what to test, then how to write it                  |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature.
 
 Update `.agents/context/product-map.md` when a public capability, user journey, role, or business rule changes. Update `.agents/context/architecture-map.md` when a runtime component, data store, integration boundary, authentication path, deployment topology, or major failure mode changes. Keep evidence links current, preserve explicit inference labels, and review map changes with the same owners as the code. Stale context is worse than no context.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on this repo (`ToolJet/ToolJet`); skills use the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles map to default label strings of the same name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` + `docs/adr/` at root); the existing canonical glossary is `UBIQUITOUS_LANGUAGE.md`. See `docs/agents/domain.md`.

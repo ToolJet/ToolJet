@@ -6,6 +6,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
+import { resolveColumnDisplayName, columnIdOf } from './util';
 import cx from 'classnames';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
@@ -59,6 +60,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
                 key={key}
                 columnOptions={columnOptions}
                 column={value.column}
+                columnId={value.columnId}
                 columns={columns}
                 value={value.value}
                 handleColumnOptionChange={handleColumnOptionChange}
@@ -93,6 +95,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
 
 const RenderColumnOptions = ({
   column,
+  columnId,
   value,
   id,
   columns,
@@ -104,16 +107,18 @@ const RenderColumnOptions = ({
   const filteredColumns = columns.filter(({ column_default }) =>
     _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
   );
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
-  let displayColumns = filteredColumns.map(({ accessor, dataType }) => ({
+  let displayColumns = filteredColumns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
 
   if (existingColumnOption.length > 0) {
     displayColumns = displayColumns.filter(
-      ({ value }) => !existingColumnOption.map((item) => item.column !== column && item.column).includes(value)
+      ({ value }) => !existingColumnOption.map((item) => item.column !== resolvedColumn && item.column).includes(value)
     );
   }
 
@@ -121,6 +126,7 @@ const RenderColumnOptions = ({
     const updatedOption = {
       ...columnOptions[id],
       column: selectedOption.value,
+      columnId: columnIdOf(selectedOption),
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };
@@ -137,11 +143,11 @@ const RenderColumnOptions = ({
 
     handleColumnOptionChange(newColumnOptions);
   };
-  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === column)?.dataType;
+  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === resolvedColumn)?.dataType;
 
   return (
     <RenderColumnUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}

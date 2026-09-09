@@ -1,0 +1,88 @@
+.migration-confirm-modal {
+  .migration-confirm-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .migration-changes-list {
+    border: 1px solid var(--borders-disabled-on-white);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .migration-change-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-family: monospace;
+    font-size: 13px;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--borders-disabled-on-white);
+    }
+
+    .migration-change-icon {
+      width: 14px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    &.add .migration-change-icon {
+      color: var(--status-success-strong);
+    }
+
+    &.remove .migration-change-icon {
+      color: var(--status-error-strong);
+    }
+
+    &.edit .migration-change-icon {
+      color: var(--primary-brand);
+    }
+  }
+
+  .migration-deps-warning {
+    border: 1px solid var(--status-warning-strong);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .migration-deps-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .migration-deps-list {
+    margin: 8px 0 0;
+    padding-left: 20px;
+
+    li {
+      display: flex;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .migration-deps-app-name {
+      font-weight: 600;
+    }
+
+    .migration-deps-app-type {
+      color: var(--text-placeholder);
+    }
+  }
+
+  .migration-deps-fk-tables {
+    color: var(--status-warning-strong);
+    font-weight: 500;
+
+    &:not(:first-child) {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--status-warning-strong);
+    }
+  }
+}

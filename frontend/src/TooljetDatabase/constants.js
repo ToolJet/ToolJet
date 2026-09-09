@@ -1,4 +1,6 @@
 import React from 'react';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import config from 'config';
 import BigInt from './Icons/Biginteger.svg';
 import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
@@ -284,26 +286,26 @@ export default function tjdbDropdownStyles(
         state.isDisabled && darkMode
           ? darkDisabledBackground
           : state.isDisabled && !darkMode
-            ? lightDisabledBackground
-            : state.isFocused && !darkMode
-              ? lightFocussedBackground
-              : state.isFocused && darkMode
-                ? darkFocussedBackground
-                : !darkMode
-                  ? lightBackground
-                  : darkBackground,
+          ? lightDisabledBackground
+          : state.isFocused && !darkMode
+          ? lightFocussedBackground
+          : state.isFocused && darkMode
+          ? darkFocussedBackground
+          : !darkMode
+          ? lightBackground
+          : darkBackground,
       borderColor:
         state.isFocused && !darkMode
           ? lightFocussedBorder
           : state.isFocused && darkMode
-            ? darkFocussedBorder
-            : darkMode && state.isDisabled
-              ? !darkMode && state.isDisabled
-                ? lightDisabledBorder
-                : darkDisabledBorder
-              : darkMode
-                ? darkBorder
-                : lightBorder,
+          ? darkFocussedBorder
+          : darkMode && state.isDisabled
+          ? !darkMode && state.isDisabled
+            ? lightDisabledBorder
+            : darkDisabledBorder
+          : darkMode
+          ? darkBorder
+          : lightBorder,
       '&:hover': {
         borderColor: darkMode ? darkBorderHover : lightBorderHover,
       },
@@ -363,10 +365,47 @@ export const renderDatatypeIcon = (type) => {
   }
 };
 
+// The last of `appliedMigrationIds` (an environment's applied set) that is still present in the
+// full ordered `migrations` chain - i.e. the environment's head migration. Shared by
+// MigrationHistoryDrawer (the "<env> is here" badge, matched by id) and ExportCsvModal (the row
+// label, derived from the id's index) so this lookup exists in exactly one place.
+export const findHeadMigrationId = (migrations = [], appliedMigrationIds = []) =>
+  [...appliedMigrationIds].reverse().find((id) => migrations.some((m) => m.id === id)) ?? null;
+
+// `m<index+1>` label for the environment's head migration, or null when nothing has been applied
+// yet / the head migration has since been dropped from the chain.
+export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) => {
+  const headId = findHeadMigrationId(migrations, appliedMigrationIds);
+  if (headId == null) return null;
+  const index = migrations.findIndex((m) => m.id === headId);
+  if (index < 0) return null;
+  return migrations[index].name || `m${index + 1}`;
+};
+
+export const envHasRelation = (relationsByEnvironment = [], environmentId) =>
+  relationsByEnvironment.find((r) => r.environment_id === environmentId)?.has_relation ?? false;
+
+export const SCHEMA_ENV_TOOLTIP = 'Schema changes can only be made in the Development environment';
+export const TABLE_ABSENT_TOOLTIP = 'Table does not exist in this environment';
+
 export const listAllPrimaryKeyColumns = (columns) => {
   const primarykeyColumns = [];
   columns.forEach((column) => {
     if ((column?.constraints_type?.is_primary_key ?? false) && column.accessor) primarykeyColumns.push(column.accessor);
   });
   return primarykeyColumns;
+};
+
+export const isSqlModeDisabled = () => {
+  // Check legacy environment variable for backward compatibility
+  if (window.public_config?.TJDB_SQL_MODE_DISABLE === 'true') {
+    return true;
+  }
+
+  const edition = fetchEdition(config);
+  if (edition === 'cloud') {
+    return true;
+  }
+
+  return false;
 };

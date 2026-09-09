@@ -3,7 +3,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { operators } from '@/TooljetDatabase/constants';
-import { isOperatorOptions } from './util';
+import { isOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
@@ -204,6 +204,7 @@ export const ListRows = React.memo(({ darkMode }) => {
 
 const RenderSortFields = ({
   column,
+  columnId,
   order,
   id,
   removeSortConditionPair,
@@ -220,23 +221,25 @@ const RenderSortFields = ({
 
   order = orders.find((val) => val.value === order);
 
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
   const existingColumnOptions = Object.values(listRowsOptions?.order_filters).map((item) => item.column);
-  let displayColumns = columns.map(({ accessor, dataType }) => ({
+  let displayColumns = columns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
 
   if (existingColumnOptions.length > 0) {
     displayColumns = displayColumns.filter(
-      ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      ({ value }) => !existingColumnOptions.map((item) => item !== resolvedColumn && item).includes(value)
     );
   }
 
   const handleColumnChange = (selectedOption) => {
     updateSortOptionsChanged({
       ...listRowsOptions?.order_filters[id],
-      ...{ column: selectedOption.value },
+      ...{ column: selectedOption.value, columnId: columnIdOf(selectedOption) },
     });
   };
 
@@ -251,11 +254,11 @@ const RenderSortFields = ({
     });
   };
 
-  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === resolvedColumn)?.dataType === 'jsonb';
 
   return (
     <RenderSortUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}
@@ -273,6 +276,7 @@ const RenderSortFields = ({
 
 const RenderFilterFields = ({
   column,
+  columnId,
   operator,
   value,
   id,
@@ -283,17 +287,19 @@ const RenderFilterFields = ({
   darkMode,
   jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor, dataType }) => ({
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
+  let displayColumns = columns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
   operator = operators.find((val) => val.value === operator);
 
   const handleColumnChange = (selectedOption) => {
     updateFilterOptionsChanged({
       ...listRowsOptions?.where_filters[id],
-      ...{ column: selectedOption.value },
+      ...{ column: selectedOption.value, columnId: columnIdOf(selectedOption) },
     });
   };
 
@@ -312,11 +318,11 @@ const RenderFilterFields = ({
     });
   };
 
-  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === resolvedColumn)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}

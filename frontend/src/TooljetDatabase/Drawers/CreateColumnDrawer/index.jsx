@@ -1,10 +1,8 @@
 import React, { useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
-import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
-import { getColumnDataType } from '../../constants';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 
 const CreateColumnDrawer = ({
   setIsCreateColumnDrawerOpen,
@@ -13,16 +11,10 @@ const CreateColumnDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const {
-    organizationId,
-    selectedTable,
-    setColumns,
-    setPageCount,
-    handleRefetchQuery,
-    pageSize,
-    setForeignKeys,
-    setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setColumns, handleRefetchQuery, setForeignKeys, setConfigurations } =
+    useContext(TooljetDatabaseContext);
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const { fetchTableMetadata, setPageCount } = useTjdbActions();
 
   return (
     <>
@@ -34,30 +26,11 @@ const CreateColumnDrawer = ({
       >
         <CreateColumnForm
           onCreate={() => {
-            tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-                return;
-              }
-
-              const { foreign_keys = [] } = data?.result || {};
-              setConfigurations(data?.result?.configurations || {});
-              if (data?.result?.columns?.length > 0) {
-                setColumns(
-                  data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-                    Header: column_name,
-                    accessor: column_name,
-                    dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-                    ...rest,
-                  }))
-                );
-              }
-
-              if (foreign_keys.length > 0) {
-                setForeignKeys([...foreign_keys]);
-              } else {
-                setForeignKeys([]);
-              }
+            fetchTableMetadata(organizationId, selectedTable.table_name).then((metadata) => {
+              if (!metadata) return;
+              setConfigurations(metadata.configurations);
+              if (metadata.columns.length > 0) setColumns(metadata.columns);
+              setForeignKeys([...metadata.foreignKeys]);
             });
             handleRefetchQuery({}, {}, 1, pageSize);
             setPageCount(1);

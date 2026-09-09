@@ -14,6 +14,12 @@ export const TJDB = {
 
 export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
 
+// Shape of InternalTableRelation.configurations (jsonb, typed `any` on the entity). Only the
+// column_names map is named here - callers reading configurations for anything else keep casting.
+export interface TooljetDbRelationConfigurations {
+  columns?: { column_names?: Record<string, string> };
+}
+
 export type TooljetDatabaseColumn = {
   column_name: string;
   data_type: TooljetDatabaseDataTypes;
@@ -26,6 +32,7 @@ export type TooljetDatabaseColumn = {
     is_unique: boolean;
   };
   keytype: string | null;
+  column_id?: string | null;
 };
 
 export type TooljetDatabaseForeignKey = {
@@ -74,7 +81,11 @@ export type TooljetDbActions =
   | 'sql_execution'
   | 'bulk_upload'
   | 'proxy_postgrest'
-  | 'bulk_upsert_with_primary_key';
+  | 'bulk_upsert_with_primary_key'
+  // Origin tag for applyMigrations' own catch block - not a client-facing action; applyMigrations
+  // never writes its own migration row, so there's nothing for ADJUDICATION_PREDICATES to cover
+  // here.
+  | 'apply_migrations';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
 type ErrorCodeMapping = {

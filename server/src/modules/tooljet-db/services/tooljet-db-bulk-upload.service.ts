@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
 import * as csv from 'fast-csv';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
 import { InjectEntityManager } from '@nestjs/typeorm';
@@ -33,7 +34,7 @@ export class TooljetDbBulkUploadService {
         : 1000;
   }
 
-  async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
+  async perform(organizationId: string, tableName: string, fileBuffer: Buffer, environmentId?: string) {
     const internalTable = await this.manager.findOne(InternalTable, {
       select: ['id'],
       where: { organizationId, tableName },
@@ -43,13 +44,14 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table ${tableName} not found`);
     }
 
-    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId);
+    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, environmentId);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
-    organizationId: string
+    organizationId: string,
+    environmentId?: string
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -58,9 +60,14 @@ export class TooljetDbBulkUploadService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        environmentId
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -70,6 +77,17 @@ export class TooljetDbBulkUploadService {
     const internalTables = await this.tableOperationsService.findOrFailInternalTableFromTableId(
       tablesInvolvedList,
       organizationId
+    );
+
+    // Resolved once here: this is the physical name the INSERT below writes to. The FK-referenced
+    // tables in internalTables aren't resolved eagerly - they're only needed if a raw Postgres
+    // error has to be translated back to a display name, so bulkUpsertRows resolves those lazily,
+    // on its error path.
+    const { relation: targetRelation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      internalTableId,
+      environmentId,
+      this.manager
     );
 
     const csvStream = csv.parseString(fileBuffer.toString(), {
@@ -129,10 +147,11 @@ export class TooljetDbBulkUploadService {
       await this.bulkUpsertRows(
         tooljetDbManager,
         rowsToUpsert,
-        internalTableId,
+        targetRelation.id,
         internalTableDatabaseColumn,
         organizationId,
-        internalTables
+        internalTables,
+        environmentId
       );
     });
 
@@ -142,10 +161,11 @@ export class TooljetDbBulkUploadService {
   async bulkUpsertRows(
     tooljetDbManager: EntityManager,
     rowsToUpsert: unknown[],
-    internalTableId: string,
+    relationId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    environmentId?: string
   ) {
     if (isEmpty(rowsToUpsert)) return;
 
@@ -189,7 +209,7 @@ export class TooljetDbBulkUploadService {
     const columnsQuoted = allColumns.map((column) => `"${column}"`);
     const tenantSchema = findTenantSchema(organizationId);
     const queryText =
-      `INSERT INTO "${tenantSchema}"."${internalTableId}" (${columnsQuoted.join(', ')}) ` +
+      `INSERT INTO "${tenantSchema}"."${relationId}" (${columnsQuoted.join(', ')}) ` +
       `VALUES ${allValueSets.join(', ')} ` +
       `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
       `DO UPDATE SET ${onConflictUpdate};`;
@@ -197,11 +217,34 @@ export class TooljetDbBulkUploadService {
     try {
       await tooljetDbManager.query(queryText, allPlaceholders);
     } catch (error) {
+      // Raw Postgres error text names the physical relation, not the logical table - internalTables
+      // is still keyed by logical id at this point (resolving it up front for every upload would
+      // pay for FK-referenced tables' relation ids on every success too), so translate it here,
+      // on the error path, before handing it to TooljetDatabaseError. Best-effort per table: this is
+      // already inside the error-reporting path, so a translation failure (e.g. no relation for a
+      // referenced table in this environment) must fall back to the logical entry rather than
+      // replace the real Postgres error we're trying to report.
+      const relationTaggedTables = await Promise.all(
+        internalTables.map(async (table) => {
+          try {
+            const { relation } = await this.tableOperationsService.resolveTableById(
+              organizationId,
+              table.id,
+              environmentId,
+              this.manager
+            );
+            return { id: relation.id, tableName: table.tableName };
+          } catch {
+            return { id: table.id, tableName: table.tableName };
+          }
+        })
+      );
+
       throw new TooljetDatabaseError(
         error.message,
         {
           origin: 'bulk_upload',
-          internalTables: internalTables,
+          internalTables: relationTaggedTables,
         },
         error
       );
@@ -297,7 +340,8 @@ export class TooljetDbBulkUploadService {
     payload: Array<{ [key: string]: any }>,
     tableId: string,
     primaryKeyColumns: string | string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; updatedRows: number; error?: string; data?: Array<{ [key: string]: any }> }> {
     if (!payload || payload.length === 0) {
       throw new Error('Payload is empty. Nothing to update.');
@@ -310,6 +354,16 @@ export class TooljetDbBulkUploadService {
     if (!internalTable) {
       throw new NotFoundException(`Table not found`);
     }
+
+    // getRelation's "not found in this environment" throws NotFoundException, same as the tenancy
+    // check above - a real miss, not the structured { status: 'failed' } shape this method returns
+    // from inside the try block below.
+    const { relation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      tableId,
+      environmentId,
+      this.manager
+    );
 
     const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
     const tenantSchema = findTenantSchema(organizationId);
@@ -338,7 +392,7 @@ export class TooljetDbBulkUploadService {
           .join(' AND ');
 
         const query = `
-          UPDATE "${tenantSchema}"."${tableId}"
+          UPDATE "${tenantSchema}"."${relation.id}"
           SET ${setClause}
           WHERE ${whereClause}
           RETURNING *;
@@ -375,7 +429,8 @@ export class TooljetDbBulkUploadService {
     rows: Record<string, any>[],
     tableId: string,
     primaryKeyColumns: string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
     const rowsToUpsert = [...rows];
     if (isEmpty(rowsToUpsert)) {
@@ -411,9 +466,37 @@ export class TooljetDbBulkUploadService {
       };
     }
 
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tableId,
-    });
+    // getRelation's "not found in this environment" throws NotFoundException, but this method's
+    // convention is the structured { status: 'failed' } return, not a throw - convert only that;
+    // a transient failure (e.g. the app-DB call itself failing) should propagate, not be reported
+    // as a business-level failure.
+    let relation: InternalTableRelation;
+    try {
+      ({ relation } = await this.tableOperationsService.resolveTableById(
+        organizationId,
+        tableId,
+        environmentId,
+        this.manager
+      ));
+    } catch (error) {
+      if (!(error instanceof NotFoundException)) throw error;
+      return {
+        status: 'failed',
+        error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        id: tableId,
+      },
+      environmentId
+    );
     const tableColumns = result?.columns || [];
 
     // Check if pk columns exist in the table
@@ -516,7 +599,7 @@ export class TooljetDbBulkUploadService {
         if (omittedSerialPKs.length > 0) {
           // For groups omitting serial PKs, use plain INSERT (so PostgreSQL auto-generates those values)
           queryText = `
-            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            INSERT INTO "${tenantSchema}"."${relation.id}" (${columnsQuoted.join(', ')})
             VALUES ${allValueSets.join(', ')}
             RETURNING *, true as inserted;
           `;
@@ -527,7 +610,7 @@ export class TooljetDbBulkUploadService {
           const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
           const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
           queryText = `
-            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            INSERT INTO "${tenantSchema}"."${relation.id}" (${columnsQuoted.join(', ')})
             VALUES ${allValueSets.join(', ')}
             ON CONFLICT (${conflictTarget})
             DO UPDATE SET

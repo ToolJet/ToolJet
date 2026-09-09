@@ -359,7 +359,12 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   app: {
     pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
     permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
+    features: {
+      promote: true,
+      release: true,
+      history: true,
+      jsLibraries: false,
+    },
   },
   modules: { enabled: true },
   permissions: { customGroups: true },

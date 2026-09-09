@@ -23,6 +23,7 @@ import { getLocalTimeZone, timeZonesWithOffsets } from '@/AppBuilder/QueryManage
 import defaultStyles from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 
 const ColumnForm = ({
   onCreate,
@@ -36,9 +37,9 @@ const ColumnForm = ({
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
-  const [fetching, setFetching] = useState(false);
 
   const { organizationId, selectedTable, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
   const [timezone, setTimezone] = useState(getLocalTimeZone());
   const [onDeletePopup, setOnDeletePopup] = useState(false);
   const [isNotNull, setIsNotNull] = useState(false);
@@ -165,7 +166,7 @@ const ColumnForm = ({
     setDataType(value);
   };
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     const isSerialType = dataType.value === 'serial' ? true : false;
     if (isEmpty(columnName)) {
       toast.error('Column name cannot be empty');
@@ -178,30 +179,34 @@ const ColumnForm = ({
 
     const isCheckingValues = foreignKeyDetails?.length > 0 && isForeignKey ? true : false;
 
-    setFetching(true);
     const reqConfigurations = {};
     if (dataType.value === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
 
-    const { error } = await tooljetDatabaseService.createColumn(
-      organizationId,
-      selectedTable.table_name,
-      columnName,
-      dataType.value,
-      defaultValue,
-      isNotNull,
-      isUniqueConstraint,
-      isSerialType,
-      isCheckingValues,
-      foreignKeyDetails,
-      reqConfigurations
-    );
-    setFetching(false);
-    if (error) {
-      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-      return;
-    }
-    toast.success(`Column created successfully`);
-    onCreate && onCreate();
+    runMigration({
+      titlePlaceholder: `Add column "${columnName}"`,
+      changes: [{ type: '+', label: `Add column "${columnName}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      run: (migrationName) =>
+        tooljetDatabaseService.createColumn(
+          organizationId,
+          selectedTable.table_name,
+          columnName,
+          dataType.value,
+          defaultValue,
+          isNotNull,
+          isUniqueConstraint,
+          isSerialType,
+          isCheckingValues,
+          foreignKeyDetails,
+          reqConfigurations,
+          migrationName
+        ),
+      onSuccess: () => {
+        toast.success(`Column created successfully`);
+        onCreate && onCreate();
+      },
+    });
   };
 
   const handleCreateForeignKey = () => {
@@ -448,8 +453,8 @@ const ColumnForm = ({
                       dataType === 'serial'
                         ? 'Auto-generated'
                         : foreignKeyDefaultValue?.value === null
-                          ? 'Null'
-                          : 'Enter a value'
+                        ? 'Null'
+                        : 'Enter a value'
                     }
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
@@ -481,12 +486,12 @@ const ColumnForm = ({
               dataType?.value === 'serial'
                 ? 'Foreign key relation cannot be created for serial type column'
                 : dataType?.value === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType?.value === 'timestamp with time zone'
-                    ? 'Foreign key relation cannot be created with this data type'
-                    : isJsonbColumnType
-                      ? 'Foreign key relation cannot be created for jsonb type column'
-                      : 'Fill in column details to create a foreign key relation'
+                ? 'Foreign key relation cannot be created for boolean type column'
+                : dataType?.value === 'timestamp with time zone'
+                ? 'Foreign key relation cannot be created with this data type'
+                : isJsonbColumnType
+                ? 'Foreign key relation cannot be created for jsonb type column'
+                : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -618,10 +623,10 @@ const ColumnForm = ({
               dataType?.value === 'boolean'
                 ? 'Unique constraint cannot be added for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
-                  ? 'Unique constraint cannot be added for this type column'
-                  : isJsonbColumnType
-                    ? 'Unique constraint cannot be added for JSON type column'
-                    : ''
+                ? 'Unique constraint cannot be added for this type column'
+                : isJsonbColumnType
+                ? 'Unique constraint cannot be added for JSON type column'
+                : ''
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -650,7 +655,6 @@ const ColumnForm = ({
         </div>
       </div>
       <DrawerFooter
-        fetching={fetching}
         onClose={onClose}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
@@ -683,6 +687,7 @@ const ColumnForm = ({
         // confirmIcon={<DeleteIcon />}
         footerStyle={footerStyle}
       />
+      {migrationModal}
     </div>
   );
 };

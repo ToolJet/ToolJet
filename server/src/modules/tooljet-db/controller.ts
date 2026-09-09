@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Delete,
   Patch,
   UseInterceptors,
@@ -16,12 +17,24 @@ import {
   BadRequestException,
   UseFilters,
   Put,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
+import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
+import { PromoteTableDto } from './dto/promote.dto';
+import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
+import { RevertMigrationDto } from './dto/revert-migration.dto';
+import { SqlExecutionDto } from './dto/sql-execution.dto';
+import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
+import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
+import { TooljetDbRawSqlMigrationService } from './services/tooljet-db-raw-sql-migration.service';
+import { TooljetDbDataOperationsService } from './services/tooljet-db-data-operations.service';
+import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TooljetDbJoinDto } from '@modules/tooljet-db/dto/join.dto';
 import { TooljetDbJoinExceptionFilter } from '@modules/tooljet-db/filters/tooljetdb-join-exceptions-filter';
@@ -48,6 +61,10 @@ export class TooljetDbController {
     protected readonly tableOperationsService: TooljetDbTableOperationsService,
     protected readonly postgrestProxyService: PostgrestProxyService,
     protected readonly bulkUploadService: TooljetDbBulkUploadService,
+    protected readonly promoteService: TooljetDbPromoteService,
+    protected readonly environmentAssignmentService: TooljetDbEnvironmentAssignmentService,
+    protected readonly rawSqlMigrationService: TooljetDbRawSqlMigrationService,
+    protected readonly dataOperationsService: TooljetDbDataOperationsService,
     protected readonly logger: Logger
   ) {
     this.pinoLogger = logger;
@@ -69,7 +86,7 @@ export class TooljetDbController {
   @Get('/organizations/:organizationId/tables')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async tables(@Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'view_tables');
+    const result = await this.tableOperationsService.perform(organizationId, 'view_tables', {}, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -84,8 +101,18 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.VIEW_TABLE)
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', { table_name: tableName });
+  async table(
+    @Body() body,
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Query('environment_id', new ParseUUIDPipe({ optional: true })) environmentId?: string
+  ) {
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      { table_name: tableName },
+      environmentId
+    );
     const decamelizedResult = decamelizeKeys({ result });
     decamelizedResult['result']['configurations'] = result.configurations || {};
     return decamelizedResult;
@@ -95,7 +122,7 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/table')
   @UseGuards(JwtAuthGuard, TableCountGuard, FeatureAbilityGuard)
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto);
+    const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -103,15 +130,24 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody);
+    const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody, undefined);
     return decamelizeKeys({ result });
   }
 
   @InitFeature(FEATURE_KEY.DROP_TABLE)
   @Delete('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async dropTable(@Param('organizationId') organizationId, @Param('tableName') tableName) {
-    const result = await this.tableOperationsService.perform(organizationId, 'drop_table', { table_name: tableName });
+  async dropTable(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Body('migration_name') migrationName?: string
+  ) {
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'drop_table',
+      { table_name: tableName, migration_name: migrationName },
+      undefined
+    );
     return decamelizeKeys({ result });
   }
 
@@ -127,8 +163,9 @@ export class TooljetDbController {
       table_name: tableName,
       column: addColumnBody.column,
       foreign_keys: addColumnBody?.foreign_keys || [],
+      migration_name: addColumnBody.migration_name,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'add_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'add_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -138,14 +175,16 @@ export class TooljetDbController {
   async dropColumn(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Param('columnName') columnName
+    @Param('columnName') columnName,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       column: { column_name: columnName },
+      migration_name: migrationName,
     };
 
-    const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -153,11 +192,16 @@ export class TooljetDbController {
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+  async bulkUpload(
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @UploadedFile() file: any,
+    @Query('environment_id', new ParseUUIDPipe({ optional: true })) environmentId?: string
+  ) {
     if (file?.size > this.MAX_CSV_FILE_SIZE) {
       throw new BadRequestException(`File size cannot be greater than ${this.MAX_CSV_FILE_SIZE / (1024 * 1024)}MB`);
     }
-    const result = await this.bulkUploadService.perform(organizationId, tableName, file?.buffer);
+    const result = await this.bulkUploadService.perform(organizationId, tableName, file?.buffer, environmentId);
 
     return decamelizeKeys({ result });
   }
@@ -173,7 +217,7 @@ export class TooljetDbController {
       user: req.user,
     };
 
-    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -184,14 +228,16 @@ export class TooljetDbController {
     @Body('column') columnDto: EditColumnTableDto,
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string
+    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       column: columnDto,
       foreign_key_id_to_delete: foreignKeyIdToDelete || '',
+      migration_name: migrationName,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -201,14 +247,16 @@ export class TooljetDbController {
   async createForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_keys: foreign_keys,
       shouldDestroyDbConnection: true,
+      migration_name: migrationName,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -219,14 +267,16 @@ export class TooljetDbController {
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Body('foreign_key_id') foreign_key_id: string,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
+    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_key_id: foreign_key_id,
       foreign_keys: foreign_keys,
+      migration_name: migrationName,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -236,13 +286,134 @@ export class TooljetDbController {
   async deleteForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Param('foreignKeyId') foreignKeyId: string
+    @Param('foreignKeyId') foreignKeyId: string,
+    @Body('migration_name') migrationName?: string
   ) {
     const params = {
       table_name: tableName,
       foreign_key_id: foreignKeyId,
+      migration_name: migrationName,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params, undefined);
+    return decamelizeKeys({ result });
+  }
+
+  // Keys on :tableId, not :tableName like its neighbours — promote is an identity operation and a
+  // display name is not one.
+  @InitFeature(FEATURE_KEY.PROMOTE_TABLE)
+  @Post('/organizations/:organizationId/table/:tableId/promote')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async promoteTable(
+    @User() user: UserEntity,
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() promoteTableDto: PromoteTableDto
+  ) {
+    const result = await this.promoteService.promote(user, organizationId, tableId, promoteTableDto.environment_id);
+    return decamelizeKeys({ result });
+  }
+
+  @InitFeature(FEATURE_KEY.PROMOTE_TABLE_PREVIEW)
+  @Get('/organizations/:organizationId/table/:tableId/promote/preview')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async previewPromoteTable(
+    @User() user: UserEntity,
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Query('environment_id', new ParseUUIDPipe()) environmentId: string
+  ) {
+    const result = await this.promoteService.previewPromote(user, organizationId, tableId, environmentId);
+    return decamelizeKeys({ result });
+  }
+
+  // No licence gate here — repair is real logic in CE, not a promotion.
+  @InitFeature(FEATURE_KEY.REPAIR_BASELINE)
+  @Post('/organizations/:organizationId/table/:tableId/baseline/repair')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async repairBaseline(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.repairBaseline(tableId, organizationId);
+    return decamelizeKeys({ result });
+  }
+
+  // Org-wide, not scoped to a table — lists every relation currently blocked on baseline_error so a
+  // "baseline report" view can point at all of them at once, repair links included.
+  @InitFeature(FEATURE_KEY.BASELINE_REPORT)
+  @Get('/organizations/:organizationId/baseline-report')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async baselineReport(@Param('organizationId') organizationId: string) {
+    const result = await this.environmentAssignmentService.listBaselineErrors(organizationId);
+    return decamelizeKeys({ result });
+  }
+
+  // Scoped to one table, unlike baseline-report — the full migration chain, per-environment applied
+  // state (reusing computeMissingMigrations, not a second "applied" query), and this table's
+  // baseline-skip reason if it has one.
+  @InitFeature(FEATURE_KEY.TABLE_MIGRATIONS)
+  @Get('/organizations/:organizationId/table/:tableId/migrations')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async tableMigrations(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.getTableMigrations(tableId, organizationId);
+    return decamelizeKeys({ result });
+  }
+
+  // A floor, not a "will break" count - only finds query references, and only through the app's
+  // current draft or an ever-released version. See InternalTableRepository.findDependents.
+  @InitFeature(FEATURE_KEY.TABLE_DEPENDENTS)
+  @Get('/organizations/:organizationId/table/:tableId/dependents')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async tableDependents(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.getDependents(tableId, organizationId);
+    // foreignKeyTables rides through as-is - the frontend's dependents warning reads it camelCase,
+    // unlike every other key on this response.
+    return decamelizeKeysExcept({ result }, ['foreignKeyTables']);
+  }
+
+  // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
+  // identity operation, not a display-name one.
+  @InitFeature(FEATURE_KEY.ADD_RAW_SQL_MIGRATION)
+  @Post('/organizations/:organizationId/table/:tableId/migrations/sql')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async recordRawSqlMigration(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() rawSqlMigrationDto: RawSqlMigrationDto
+  ) {
+    const result = await this.rawSqlMigrationService.recordRawSqlMigration(organizationId, tableId, rawSqlMigrationDto);
+    return decamelizeKeys({ result });
+  }
+
+  @InitFeature(FEATURE_KEY.REVERT_MIGRATION)
+  @Post('/organizations/:organizationId/table/:tableId/migrations/:migrationId/revert')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async revertMigration(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Param('migrationId') migrationId: string,
+    @Body() revertMigrationDto: RevertMigrationDto
+  ) {
+    const result = await this.rawSqlMigrationService.revert(organizationId, tableId, migrationId, revertMigrationDto);
+    return decamelizeKeys({ result });
+  }
+
+  // Naming mirrors the sibling migrations/sql route, minus "migrations" — this isn't one: it's a
+  // one-off DML action against whatever environment is currently open, not a tracked schema
+  // migration step. Unlike Query Manager's SQL mode (also sqlExecution, unrestricted), this route
+  // is locked to the table named in the URL — the SQL must address it as "{{self}}"; any other
+  // table reference is rejected by seedDataSqlExecution.
+  @InitFeature(FEATURE_KEY.SQL_EXECUTION)
+  @Post('/organizations/:organizationId/table/:tableId/sql')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async sqlExecution(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() sqlExecutionDto: SqlExecutionDto
+  ) {
+    const result = await this.dataOperationsService.seedDataSqlExecution(
+      organizationId,
+      tableId,
+      sqlExecutionDto.environment_id,
+      sqlExecutionDto.sql
+    );
     return decamelizeKeys({ result });
   }
 }

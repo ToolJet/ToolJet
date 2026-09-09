@@ -11,6 +11,7 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
 
 function Header({
   featureAccess,
@@ -85,6 +86,7 @@ function Header({
     return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -198,6 +200,7 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
+              {isDatabasePage && <EnvironmentSwitcher />}
             </div>
           </div>
         </div>

@@ -219,6 +219,7 @@
     "@types/setup-polly-jest": "^0.5.5",
     "@types/sshpk": "^1.17.1",
     "@types/supertest": "^6.0.3",
+    "@types/uuid": "^10.0.0",
     "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",

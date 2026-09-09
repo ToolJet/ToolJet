@@ -7,19 +7,17 @@ import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import { CellEditMenu } from '../Menu/CellEditMenu';
-import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
-import { renderDatatypeIcon, listAllPrimaryKeyColumns, getColumnDataType } from '../constants';
+import { renderDatatypeIcon, listAllPrimaryKeyColumns, isSqlModeDisabled, SCHEMA_ENV_TOOLTIP } from '../constants';
 import Menu from '../Icons/Menu.svg';
 import Warning from '../Icons/warning.svg';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import WarningDark from '../Icons/warning-dark.svg';
-import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
 import TjdbTableHeader from './Header';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -32,6 +30,9 @@ import {
   getLocalTimeZone,
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -42,13 +43,7 @@ const Table = ({ collapseSidebar }) => {
     selectedTableData,
     setSelectedTableData,
     setColumns,
-    queryFilters,
-    setQueryFilters,
-    sortFilters,
-    setSortFilters,
     resetAll,
-    pageSize,
-    pageCount,
     handleRefetchQuery,
     loadingState,
     setForeignKeys,
@@ -56,21 +51,36 @@ const Table = ({ collapseSidebar }) => {
     configurations,
     setConfigurations,
     getConfigurationProperty,
-    canEditTjdb,
+    canEditSchema,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
+    (state) => ({
+      queryFilters: state.queryFilters,
+      sortFilters: state.sortFilters,
+      pageCount: state.pageCount,
+      pageSize: state.pageSize,
+    }),
+    shallow
+  );
+  const {
+    registerEnvironmentSwitchHandler,
+    fetchTableMetadata: fetchMetadata,
+    setQueryFilters,
+    setSortFilters,
+  } = useTjdbActions();
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
+  const [isSeedDataDrawerOpen, setIsSeedDataDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [editColumnHeader, setEditColumnHeader] = useState({
     hoveredColumn: null,
     clickedColumn: null,
-    columnHeaderValue: null,
-    deletePopupModal: false,
     columnEditPopover: false,
   });
 
@@ -114,7 +124,6 @@ const Table = ({ collapseSidebar }) => {
 
       tooljetDatabaseService
         .findOne(
-          organizationId,
           foreignKeys?.length > 0 && foreignKey?.referenced_table_id,
           `${selectQuery.url.toString()}&limit=${15}&offset=${0}&${filterQuery.url.toString()}&${orderQuery.url.toString()}`
         )
@@ -364,35 +373,16 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const fetchTableMetadata = () => {
-    if (!isEmpty(selectedTable)) {
-      tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
-          return;
-        }
-
-        const { foreign_keys = [], configurations = {} } = data?.result || {};
-        setConfigurations(configurations);
-        if (data?.result?.columns?.length > 0) {
-          setColumns(
-            data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-              Header: column_name,
-              accessor: column_name,
-              dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-              ...rest,
-            }))
-          );
-        }
-        if (foreign_keys.length > 0) {
-          setForeignKeys([...foreign_keys]);
-        } else {
-          setForeignKeys([]);
-        }
-      });
-    } else {
+  const fetchTableMetadata = async () => {
+    if (isEmpty(selectedTable)) {
       setColumns([]);
+      return;
     }
+    const metadata = await fetchMetadata(organizationId, selectedTable.table_name);
+    if (!metadata) return;
+    setConfigurations(metadata.configurations);
+    if (metadata.columns.length > 0) setColumns(metadata.columns);
+    setForeignKeys([...metadata.foreignKeys]);
   };
 
   const onSelectedTableChange = () => {
@@ -411,6 +401,32 @@ const Table = ({ collapseSidebar }) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
+
+  // Steps 3-5 of the ordered environment switch (see switchEnvironment in tjdbStore.js). This
+  // component owns every derived cache involved, which is why the store calls back into it rather
+  // than trying to hold them itself.
+  //
+  // selectedRowIds MUST be cleared: stale row ids from development, carried into staging, feed
+  // handleDeleteRow - a cross-environment delete by primary key.
+  const handleEnvironmentSwitch = async () => {
+    setSelectedTableData([]);
+    setColumns([]);
+    setConfigurations({});
+    setForeignKeys([]);
+    setCahedOptions({});
+    setReferencedColumnDetails([]);
+    setSelectedRowIds({});
+    await fetchTableMetadata();
+    handleRefetchQuery({}, {}, 1, useTjdbStore.getState().pageSize);
+  };
+
+  // Deliberately no dependency array: re-registering on every render is what keeps the handler's
+  // closure over selectedTable/columns fresh. The store slot holds exactly one handler, so this is
+  // an assignment, not an accumulating subscription.
+  useEffect(() => {
+    registerEnvironmentSwitchHandler(handleEnvironmentSwitch);
+    return () => registerEnvironmentSwitchHandler(null);
+  });
 
   useEffect(() => {
     if (!isEditRowDrawerOpen && isDirectRowExpand) {
@@ -698,7 +714,7 @@ const Table = ({ collapseSidebar }) => {
 
         let query = `?${primaryKey?.accessor}=in.(${deletionKeys.toString()})`;
 
-        const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
+        const { error } = await tooljetDatabaseService.deleteRows(selectedTable.id, query);
 
         if (error) {
           toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
@@ -714,19 +730,20 @@ const Table = ({ collapseSidebar }) => {
     }
   };
 
-  const handleDeleteColumn = async () => {
-    const columnName = editColumnHeader?.columnHeaderValue;
-    setEditColumnHeader((prevState) => ({
-      ...prevState,
-      deletePopupModal: false,
-    }));
-    const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
-    if (error) {
-      toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
-      return;
-    }
-    await fetchTableMetadata();
-    toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+  const handleDeleteColumn = (columnName) => {
+    runMigration({
+      titlePlaceholder: `Drop column "${columnName}"`,
+      changes: [{ type: '-', label: `Drop column "${columnName}"` }],
+      tableId: selectedTable.id,
+      showSqlEditor: false,
+      run: (migrationName) =>
+        tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName, migrationName),
+      onSuccess: async () => {
+        await fetchTableMetadata();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+      },
+    });
   };
 
   const handleProgressAnimation = (message, status) => {
@@ -759,7 +776,6 @@ const Table = ({ collapseSidebar }) => {
     const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
     const filterQuery = new PostgrestQueryBuilder();
     const sortQuery = new PostgrestQueryBuilder();
-    console.log(cellValue, 'cellValue Before');
 
     primaryKeyColumns.forEach((primaryKeyColumnName) => {
       if (rows[rIndex]?.values[primaryKeyColumnName]) {
@@ -773,7 +789,7 @@ const Table = ({ collapseSidebar }) => {
     const dataType = headerGroups[0].headers[index].dataType;
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
     const cellData = directToggle === true ? { [cellKey]: !cellValue } : { [cellKey]: cellValue };
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, cellData, query);
+    const { error } = await tooljetDatabaseService.updateRows(selectedTable.id, cellData, query);
 
     if (error) {
       handleProgressAnimation(
@@ -840,12 +856,8 @@ const Table = ({ collapseSidebar }) => {
   }, [editColumnHeader.columnEditPopover]);
 
   const handleDelete = (column) => {
-    setEditColumnHeader((prevState) => ({
-      ...prevState,
-      deletePopupModal: true,
-      columnHeaderValue: column,
-    }));
     closeMenu();
+    handleDeleteColumn(column);
   };
 
   if (!selectedTable) return null;
@@ -1103,18 +1115,16 @@ const Table = ({ collapseSidebar }) => {
     setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
   };
 
+  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
+    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
+  };
+
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
   const emptyData = filterEnable
     ? 'No data found matching the criteria specified in current filters.'
     : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
   const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
-
-  const footerStyle = {
-    borderTop: '1px solid var(--slate5)',
-    paddingTop: '12px',
-    marginTop: '0px',
-  };
 
   return (
     <div>
@@ -1125,6 +1135,8 @@ const Table = ({ collapseSidebar }) => {
         setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
         setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
         isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+        isSeedDataDrawerOpen={isSeedDataDrawerOpen}
+        setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen}
         selectedRowIds={selectedRowIds}
         handleDeleteRow={handleDeleteRow}
         rows={rows}
@@ -1233,15 +1245,15 @@ const Table = ({ collapseSidebar }) => {
                       key={column.Header}
                       width={230}
                       style={{ height: index === 0 ? '32px' : '' }}
-                      title={(column?.constraints_type?.is_primary_key ?? false) ? '' : column?.Header}
+                      title={column?.constraints_type?.is_primary_key ?? false ? '' : column?.Header}
                       className={
                         darkMode
                           ? 'table-header-dark tj-database-column-header tj-text-xsm'
                           : !darkMode
-                            ? 'table-header tj-database-column-header tj-text-xsm'
-                            : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
-                              ? 'table-header-click tj-database-column-header tj-text-xsm'
-                              : 'table-header tj-database-column-header tj-text-xsm'
+                          ? 'table-header tj-database-column-header tj-text-xsm'
+                          : editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                          ? 'table-header-click tj-database-column-header tj-text-xsm'
+                          : 'table-header tj-database-column-header tj-text-xsm'
                       }
                       data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                       {...column.getHeaderProps()}
@@ -1251,42 +1263,47 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
-                        <TablePopover
-                          onEdit={() => {
-                            setSelectedColumn(column);
-                            setIsEditColumnDrawerOpen(true);
-                            closeMenu();
-                          }}
-                          onDelete={() => handleDelete(column.Header)}
-                          disabled={!canEditTjdb}
-                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                          className="column-popover-parent"
-                          darkMode={darkMode}
-                          showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
-                        >
-                          <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                            <Menu
-                              width="20"
-                              height="20"
-                              className="tjdb-menu-icon"
-                              onClick={(e) => onMenuClick(index, e)}
-                            />
-                          </div>
-                        </TablePopover>
+                        <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
+                          <TablePopover
+                            onEdit={() => {
+                              setSelectedColumn(column);
+                              setIsEditColumnDrawerOpen(true);
+                              closeMenu();
+                            }}
+                            onDelete={() => handleDelete(column.Header)}
+                            disabled={!canEditSchema}
+                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                            className="column-popover-parent"
+                            darkMode={darkMode}
+                            showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
+                          >
+                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                              <Menu
+                                width="20"
+                                height="20"
+                                className="tjdb-menu-icon"
+                                onClick={(e) => onMenuClick(index, e)}
+                              />
+                            </div>
+                          </TablePopover>
+                        </ToolTip>
                       </div>
                     </th>
                   ))}
-                  {canEditTjdb && (
+                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
                     <th
                       onClick={() => {
-                        resetCellAndRowSelection();
-                        setIsCreateColumnDrawerOpen(true);
+                        if (canEditSchema) {
+                          resetCellAndRowSelection();
+                          setIsCreateColumnDrawerOpen(true);
+                        }
                       }}
                       className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                      style={!canEditSchema ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                     >
                       <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                     </th>
-                  )}
+                  </ToolTip>
                 </tr>
               ))}
             </thead>
@@ -1321,7 +1338,7 @@ const Table = ({ collapseSidebar }) => {
                           }}
                         >
                           <IndeterminateCheckbox
-                            checked={!isDirectRowExpand ? (selectedRowIds[row.id] ?? false) : false}
+                            checked={!isDirectRowExpand ? selectedRowIds[row.id] ?? false : false}
                             onChange={() => toggleRowSelection(row.id)}
                           />
 
@@ -1358,20 +1375,20 @@ const Table = ({ collapseSidebar }) => {
                                 !darkMode
                                   ? `table-columnHeader-click`
                                   : editColumnHeader?.clickedColumn === index &&
-                                      editColumnHeader?.columnEditPopover === true &&
-                                      darkMode
-                                    ? `table-columnHeader-click-dark`
-                                    : editColumnHeader?.hoveredColumn === index && !darkMode
-                                      ? 'table-cell-hover-background'
-                                      : editColumnHeader?.hoveredColumn === index && darkMode
-                                        ? 'table-cell-hover-background-dark'
-                                        : cellClick.rowIndex === rIndex &&
-                                            cellClick.cellIndex === index &&
-                                            cellClick.editable === true
-                                          ? 'table-editable-parent-cell'
-                                          : darkMode
-                                            ? `table-cell table-cell-dark`
-                                            : `table-cell`
+                                    editColumnHeader?.columnEditPopover === true &&
+                                    darkMode
+                                  ? `table-columnHeader-click-dark`
+                                  : editColumnHeader?.hoveredColumn === index && !darkMode
+                                  ? 'table-cell-hover-background'
+                                  : editColumnHeader?.hoveredColumn === index && darkMode
+                                  ? 'table-cell-hover-background-dark'
+                                  : cellClick.rowIndex === rIndex &&
+                                    cellClick.cellIndex === index &&
+                                    cellClick.editable === true
+                                  ? 'table-editable-parent-cell'
+                                  : darkMode
+                                  ? `table-cell table-cell-dark`
+                                  : `table-cell`
                               }`,
                               {
                                 'table-cell-selected': selectedRowIds[row.id] ?? false,
@@ -1390,10 +1407,10 @@ const Table = ({ collapseSidebar }) => {
                                       getConfigurationProperty(cell.column.Header, 'timezone', getLocalTimeZone())
                                     )
                                   : cell.column.dataType === 'jsonb' &&
-                                      typeof cell?.value !== 'string' &&
-                                      cell?.value !== null
-                                    ? JSON.stringify(cell?.value)
-                                    : cell?.value,
+                                    typeof cell?.value !== 'string' &&
+                                    cell?.value !== null
+                                  ? JSON.stringify(cell?.value)
+                                  : cell?.value,
                                 index
                               )}
                               placement="bottom"
@@ -1417,11 +1434,11 @@ const Table = ({ collapseSidebar }) => {
                                   cellClick.errorState === true
                                     ? 'tjdb-cell-error'
                                     : cellClick.rowIndex === rIndex &&
-                                        cellClick.cellIndex === index &&
-                                        cellClick.editable === true &&
-                                        !isCellUpdateInProgress
-                                      ? 'tjdb-selected-cell'
-                                      : 'tjdb-column-select-border'
+                                      cellClick.cellIndex === index &&
+                                      cellClick.editable === true &&
+                                      !isCellUpdateInProgress
+                                    ? 'tjdb-selected-cell'
+                                    : 'tjdb-column-select-border'
                                 }`}
                                 id={`tjdb-cell-row${rIndex}-column${index}`}
                               >
@@ -1628,15 +1645,15 @@ const Table = ({ collapseSidebar }) => {
                                             {isBoolean(cell?.value)
                                               ? cell?.value?.toString()
                                               : cell.column?.dataType === 'timestamp with time zone'
-                                                ? convertDateToTimeZoneFormatted(
-                                                    cell?.value,
-                                                    getConfigurationProperty(
-                                                      cell.column.Header,
-                                                      'timezone',
-                                                      getLocalTimeZone()
-                                                    )
+                                              ? convertDateToTimeZoneFormatted(
+                                                  cell?.value,
+                                                  getConfigurationProperty(
+                                                    cell.column.Header,
+                                                    'timezone',
+                                                    getLocalTimeZone()
                                                   )
-                                                : cell.render('Cell')}
+                                                )
+                                              : cell.render('Cell')}
                                           </div>
                                           {/* <ToolTip
                                             message={'Open referenced table'}
@@ -1716,6 +1733,8 @@ const Table = ({ collapseSidebar }) => {
                   toggleAddNewDataMenu={toggleAddNewDataMenu}
                   handleOnClickCreateNewRow={handleOnClickCreateNewRow}
                   handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                  handleOnClickSeedData={handleOnClickSeedData}
+                  hideSeedDataOption={isSqlModeDisabled()}
                 >
                   <span className="col-auto">
                     <ButtonSolid
@@ -1773,33 +1792,7 @@ const Table = ({ collapseSidebar }) => {
           initiator="EditColumnForm"
         />
       </Drawer>
-      <ConfirmDialog
-        title={'Delete Column'}
-        show={editColumnHeader?.deletePopupModal}
-        message={
-          'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
-        }
-        onConfirm={handleDeleteColumn}
-        onCancel={() => {
-          setEditColumnHeader((prevState) => ({
-            ...prevState,
-            deletePopupModal: false,
-          }));
-        }}
-        darkMode={darkMode}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => {
-          setEditColumnHeader((prevState) => ({
-            ...prevState,
-            deletePopupModal: false,
-          }));
-        }}
-        confirmButtonText={'Delete Column'}
-        cancelButtonText={'Cancel'}
-        confirmIcon={<DeleteIcon />}
-        footerStyle={footerStyle}
-      />
+      {migrationModal}
     </div>
   );
 };

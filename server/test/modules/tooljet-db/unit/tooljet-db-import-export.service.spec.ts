@@ -5,9 +5,20 @@ import { BadRequestException, ConflictException, INestApplication } from '@nestj
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, withRealTransactions, createUser, setDataSources, closeTestApp } from 'test-helper';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import {
+  resetDB,
+  withRealTransactions,
+  createUser,
+  setDataSources,
+  closeTestApp,
+  ensureAppEnvironments,
+} from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
@@ -71,11 +82,15 @@ describe('TooljetDbImportExportService', () => {
             GroupPermission,
             UserGroupPermission,
             InternalTable,
+            InternalTableRelation,
           ]),
         ],
         providers: [
           TooljetDbImportExportService,
           TooljetDbTableOperationsService,
+          TooljetDbRelationResolverService,
+          TooljetDbMigrationRecorderService,
+          AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
@@ -112,6 +127,7 @@ describe('TooljetDbImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       organizationId = adminUserData.organization.id;
+      await ensureAppEnvironments(app, organizationId);
 
       // Create the workspace schema that ToolJet DB requires for each organization
       const schemaName = `workspace_${organizationId}`;
@@ -445,10 +461,16 @@ describe('TooljetDbImportExportService', () => {
         expect(productsTable).toBeDefined();
         expect(ordersTable).toBeDefined();
 
-        // Verify foreign key
+        // Verify foreign key. The physical table is named by the relation id, not the logical
+        // table id - import goes through create_table, which mints an independent relation id.
+        const ordersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: ordersTable.id },
+        });
+        expect(ordersRelation.id).not.toBe(ordersTable.id);
+
         const foreignKeys = await tjDbManager.query(
           'SELECT * FROM information_schema.table_constraints WHERE table_name = $1 AND constraint_type = $2',
-          [ordersTable.id, 'FOREIGN KEY']
+          [ordersRelation.id, 'FOREIGN KEY']
         );
 
         expect(foreignKeys).toHaveLength(1);

@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
-import { InternalTable } from '@entities/internal_table.entity';
 import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from 'src/modules/tooljet-db/types';
+import { getTooljetDbDataSource } from 'test-helper';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
   {
@@ -117,6 +117,7 @@ interface TableOperationsService {
     organizationId: string,
     action: string,
     params: Record<string, any>,
+    environmentId: string | undefined,
     connectionManagers?: Record<string, EntityManager>
   ): Promise<any>;
 }
@@ -148,17 +149,39 @@ async function createTable(
   organizationId: string,
   params: { table_name: string; columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] }
 ) {
-  await tooljetDbService.perform(organizationId, 'create_table', params, { appManager, tjdbManager });
+  await tooljetDbService.perform(organizationId, 'create_table', params, undefined, { appManager, tjdbManager });
 }
 
-export async function dropTable(
-  appManager: EntityManager,
-  tjdbManager: EntityManager,
-  tooljetDbService: TableOperationsService,
-  organizationId: string,
-  tableName: string
-) {
-  await tooljetDbService.perform(organizationId, 'drop_table', { table_name: tableName }, { appManager, tjdbManager });
+export async function ensureWorkspaceSchema(orgId: string): Promise<boolean> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return false;
+  try {
+    await tjds.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  await appManager.delete(InternalTable, { organizationId, tableName });
+/**
+ * Drops a test-created tenant schema. Optional belt-and-suspenders cleanup for a spec that wants
+ * its schema gone before the process exits, not just at the end of the run — the global
+ * setup/teardown pair (reset-tooljet-db-schemas.ts) diff-cleans whatever's left regardless.
+ */
+export async function dropWorkspaceSchema(orgId: string): Promise<void> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return;
+  await tjds.query(`DROP SCHEMA IF EXISTS "workspace_${orgId}" CASCADE`);
+}
+
+export async function ensureTenantRole(orgId: string): Promise<boolean> {
+  const tjds = getTooljetDbDataSource();
+  if (!tjds) return false;
+  try {
+    const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
+    if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
+    return true;
+  } catch {
+    return false;
+  }
 }

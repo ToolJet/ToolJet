@@ -6,11 +6,16 @@ import { Logger } from 'nestjs-pino';
 import { Credential } from '../../../src/entities/credential.entity';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
+import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from 'src/entities/internal_table_migration_application.entity';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
+import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { InternalTableRepository } from './repository';
 
 export class TooljetDbModule extends SubModule {
   constructor(
@@ -34,6 +39,12 @@ export class TooljetDbModule extends SubModule {
       TooljetDbDataOperationsService,
       TooljetDbImportExportService,
       PostgrestProxyService,
+      TooljetDbRelationResolverService,
+      TooljetDbMigrationRecorderService,
+      TooljetDbMigrationSqlCompilerService,
+      TooljetDbEnvironmentAssignmentService,
+      TooljetDbPromoteService,
+      TooljetDbRawSqlMigrationService,
     } = await this.getProviders(configs, 'tooljet-db', [
       'controller',
       'services/tooljet-db-table-operations.service',
@@ -41,20 +52,43 @@ export class TooljetDbModule extends SubModule {
       'services/tooljet-db-data-operations.service',
       'services/tooljet-db-import-export.service',
       'services/postgrest-proxy.service',
+      'services/relation-resolver.service',
+      'services/tooljet-db-migration-recorder.service',
+      'services/tooljet-db-migration-sql-compiler.service',
+      'services/tooljet-db-environment-assignment.service',
+      'services/tooljet-db-promote.service',
+      'services/tooljet-db-raw-sql-migration.service',
     ]);
 
     return this.cacheModule(cacheKey, {
       module: TooljetDbModule,
-      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser])],
+      imports: [
+        TypeOrmModule.forFeature([
+          Credential,
+          InternalTable,
+          AppUser,
+          InternalTableRelation,
+          InternalTableMigration,
+          InternalTableMigrationApplication,
+        ]),
+        AppEnvironmentsModule.register(configs),
+      ],
       controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
         AbilityUtilService,
         RolesRepository,
+        InternalTableRepository,
         TooljetDbTableOperationsService,
         TooljetDbBulkUploadService,
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
         PostgrestProxyService,
+        TooljetDbRelationResolverService,
+        TooljetDbMigrationRecorderService,
+        TooljetDbMigrationSqlCompilerService,
+        TooljetDbEnvironmentAssignmentService,
+        TooljetDbPromoteService,
+        TooljetDbRawSqlMigrationService,
         TableCountGuard,
         FeatureAbilityFactory,
       ],
@@ -63,6 +97,10 @@ export class TooljetDbModule extends SubModule {
         TooljetDbBulkUploadService,
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
+        TooljetDbRelationResolverService,
+        TooljetDbMigrationRecorderService,
+        TooljetDbMigrationSqlCompilerService,
+        TooljetDbEnvironmentAssignmentService,
       ],
     });
   }

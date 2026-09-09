@@ -41,6 +41,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { InternalTable } from '@entities/internal_table.entity';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
@@ -1495,9 +1496,20 @@ export class AppsUtilService implements IAppsUtilService {
         if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
       });
 
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
+      // A join_table ref's `.name` field is misleadingly named — it holds a table id like
+      // everything else here — but keep this guard: a malformed non-uuid value would otherwise
+      // throw a Postgres cast error on the IN clause below.
+      const ids = [...uniqTableIds].filter((id): id is string => isUUID(id));
+      if (!ids.length) return [];
+
+      const live = await manager
+        .createQueryBuilder(InternalTable, 'it')
+        .select('it.id', 'id')
+        .where('it.id IN (:...ids)', { ids })
+        .andWhere('it.deleted_at IS NULL')
+        .getRawMany();
+
+      return live.map(({ id }) => ({ table_id: id }));
     });
   }
 

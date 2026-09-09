@@ -8,11 +8,10 @@ import _, { isEmpty } from 'lodash';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
-import { ConfirmDialog } from '@/_components';
-import { serialDataType } from '../constants';
+import { serialDataType, ChangesComponent } from '../constants';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 
 const TableForm = ({
   selectedTable = {},
@@ -42,11 +41,10 @@ const TableForm = ({
     setDisabledCreateButton(bool);
   };
 
-  const [fetching, setFetching] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
   const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
 
   const [columns, setColumns] = useState(
     (() => {
@@ -186,7 +184,7 @@ const TableForm = ({
   const isErrorText =
     helperText !== 'Table name can contain letters, numbers and underscores and must be within 32 characters';
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!validateTableName()) return;
     const columnNames = Object.values(columns).map((column) => column.column_name);
     if (columnNames.some((columnName) => isEmpty(columnName))) {
@@ -200,32 +198,35 @@ const TableForm = ({
 
     const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
 
-    setFetching(true);
-    const { error, data } = await tooljetDatabaseService.createTable(
-      organizationId,
-      tableName,
-      Object.values(columns),
-      foreignKeyDetails,
-      checkingValues
-    );
-    setFetching(false);
-    if (error) {
-      toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
-      return;
-    }
-
-    toast.success(`${tableName} created successfully`);
-    onCreate && onCreate({ id: data.result.id, table_name: tableName });
-    posthogHelper.captureEvent('click_create_tooljet_table', {
-      workspace_id:
-        authenticationService?.currentUserValue?.organization_id ||
-        authenticationService?.currentSessionValue?.current_organization_id,
-      datasource: 'tooljet_db',
+    runMigration({
+      titlePlaceholder: `Create table "${tableName}"`,
+      // Every column is new - a create has no prior shape to diff against.
+      changes: Object.values(columns).map((column) => ({ type: '+', label: `Add column "${column.column_name}"` })),
+      showSqlEditor: true,
+      run: (migrationName) =>
+        tooljetDatabaseService.createTable(
+          organizationId,
+          tableName,
+          Object.values(columns),
+          foreignKeyDetails,
+          checkingValues,
+          migrationName
+        ),
+      onSuccess: (resultData) => {
+        toast.success(`${tableName} created successfully`);
+        onCreate && onCreate({ id: resultData.result.id, table_name: tableName });
+        posthogHelper.captureEvent('click_create_tooljet_table', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          datasource: 'tooljet_db',
+        });
+        setCreateForeignKeyInEdit(false);
+      },
     });
-    setCreateForeignKeyInEdit(false);
   };
 
-  const handleEdit = async () => {
+  const handleEdit = () => {
     if (!validateTableName()) return;
 
     if (disabledCreateButton) {
@@ -233,26 +234,40 @@ const TableForm = ({
       return;
     }
 
-    setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(
-      organizationId,
-      selectedTable.table_name,
-      tableName,
-      data
-    );
-    setFetching(false);
-
-    if (error) {
-      toast.error(error?.message ?? `Failed to edit table "${tableName}"`);
-      return;
-    }
-
-    toast.success(`${tableName} updated successfully`);
-    updateSidebarNAV(tableName);
-    updateSelectedTable({ ...selectedTable, table_name: tableName });
-
-    onEdit && onEdit(tableName);
-    setCreateForeignKeyInEdit(false);
+    runMigration({
+      titlePlaceholder: `Edit table "${selectedTable.table_name}"`,
+      // edit_table's request IS the diff: + -> isEmpty(old_column), - -> isEmpty(new_column),
+      // otherwise both present -> an edit.
+      changes: data.map(({ old_column, new_column }) => {
+        if (isEmpty(old_column)) return { type: '+', label: `Add column "${new_column.column_name}"` };
+        if (isEmpty(new_column)) return { type: '-', label: `Drop column "${old_column.column_name}"` };
+        return { type: '✎', label: `Edit column "${old_column.column_name}"` };
+      }),
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      // Folded in from the old PK-change ConfirmDialog: same warning, same visual, one modal
+      // instead of two chained ones.
+      banner:
+        newPrimaryKeyChanges.length > 0 ? (
+          <div className="mb-3">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })}>Change in primary key</div>
+            <div className="tw-text-muted tw-mb-2" style={{ fontSize: '13px' }}>
+              Updating the table will drop the current primary key constraints and add the new one. This action cannot
+              be reversed.
+            </div>
+            <ChangesComponent currentPrimaryKeyIcons={currentPrimaryKeyIcons} newPrimaryKeyIcons={newPrimaryKeyIcons} />
+          </div>
+        ) : null,
+      run: (migrationName) =>
+        tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName, data, migrationName),
+      onSuccess: () => {
+        toast.success(`${tableName} updated successfully`);
+        updateSidebarNAV(tableName);
+        updateSelectedTable({ ...selectedTable, table_name: tableName });
+        onEdit && onEdit(tableName);
+        setCreateForeignKeyInEdit(false);
+      },
+    });
   };
 
   const isRequiredFieldsExistForCreateTableOperation = (columnDetails) => {
@@ -264,12 +279,6 @@ const TableForm = ({
     )
       return false;
     return true;
-  };
-
-  const footerStyle = {
-    borderTop: '1px solid var(--slate5)',
-    paddingTop: '12px',
-    marginTop: '0px',
   };
 
   const hasPrimaryKey = Object.values(columns).some((e) => e?.constraints_type?.is_primary_key === true);
@@ -369,16 +378,9 @@ const TableForm = ({
         />
       </div>
       <DrawerFooter
-        fetching={fetching}
         isEditMode={isEditMode}
         onClose={onClose}
-        onEdit={() => {
-          if (newPrimaryKeyChanges.length > 0) {
-            setShowModal(true);
-          } else {
-            handleEdit();
-          }
-        }}
+        onEdit={handleEdit}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isErrorText ||
@@ -392,25 +394,7 @@ const TableForm = ({
         showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}
       />
-      <ConfirmDialog
-        title={'Change in primary key'}
-        show={showModal}
-        message={
-          'Updating the table will drop the current primary key contraints and add the new one. This action is cannot be reversed. Are you sure you want to continue?'
-        }
-        onConfirm={handleEdit}
-        onCancel={() => setShowModal(false)}
-        darkMode={darkMode}
-        confirmButtonType="primary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => setShowModal(false)}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
-        footerStyle={footerStyle}
-        currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-      />
+      {migrationModal}
     </div>
   );
 };

@@ -3,6 +3,7 @@
  */
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, Repository } from 'typeorm';
+import type { DeepPartial } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -29,7 +30,7 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
-import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
+import { ConfigScope, SSOConfigs, SSOType } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -402,7 +403,10 @@ export async function createGroupPermission(
     mappedParams.organizationId = mappedParams.organization.id;
     delete mappedParams.organization;
   }
-  const groupPermission = groupPermissionsRepository.create(mappedParams);
+  const groupPermission = groupPermissionsRepository.create({
+    ...mappedParams,
+    type: (mappedParams.type ?? GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) as GROUP_PERMISSIONS_TYPE,
+  } as DeepPartial<GroupPermissions>);
   await groupPermissionsRepository.save(groupPermission);
 
   return groupPermission;
@@ -588,21 +592,20 @@ export async function createUser(
   const organizationUsersRepository: Repository<OrganizationUser> =
     getDefaultDataSource().getRepository(OrganizationUser);
 
-  const buildOrg = () =>
-    organizationRepository.create({
-      name: organizationName,
-      enableSignUp,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ssoConfigs: [
-        {
-          sso: 'form',
-          enabled: formLoginStatus,
-          configScope: 'organization',
-        },
-        ...ssoConfigs,
-      ],
-    });
+  const buildOrg = (): DeepPartial<Organization> => ({
+    name: organizationName,
+    enableSignUp,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ssoConfigs: [
+      {
+        sso: SSOType.FORM,
+        enabled: formLoginStatus,
+        configScope: ConfigScope.ORGANIZATION,
+      },
+      ...ssoConfigs,
+    ] as Array<DeepPartial<SSOConfigs>>,
+  });
   if (!organization) {
     try {
       organization = await organizationRepository.save(buildOrg());
@@ -666,26 +669,24 @@ export async function createApplication(
 ): Promise<App> {
   const appRepository: Repository<App> = getDefaultDataSource().getRepository(App);
 
-  user = user || (await (await createUser(nestApp, {})).user);
+  user = user || (await createUser(nestApp, {})).user;
 
   if (shouldCreateEnvs) {
     await ensureAppEnvironments(nestApp, user.organizationId);
   }
 
-  const newApp = await appRepository.save(
+  return await appRepository.save(
     appRepository.create({
       name,
       user,
       slug,
-      type,
+      type: (type ?? APP_TYPES.FRONT_END) as APP_TYPES,
       isPublic: isPublic || false,
       organizationId: user.organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
+    } as DeepPartial<App>)
   );
-
-  return newApp;
 }
 
 /** Resolves (or seeds) the org default branch — branch_id is NOT NULL on app_versions. */

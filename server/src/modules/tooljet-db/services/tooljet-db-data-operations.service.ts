@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
 import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
@@ -22,6 +22,8 @@ import { ConfigService } from '@nestjs/config';
 import { PostgrestProxyService } from './postgrest-proxy.service';
 import { PostgrestError, TooljetDatabaseError } from '../types';
 import { TooljetDbBulkUploadService } from './tooljet-db-bulk-upload.service';
+import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { SELF_PLACEHOLDER, SELF_PLACEHOLDER_REGEX, containsTablePlaceholder } from '../helpers/sql-placeholders';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -34,8 +36,292 @@ export class TooljetDbDataOperationsService implements QueryService {
     @InjectEntityManager('tooljetDb')
     protected readonly tooljetDbManager: EntityManager,
     protected readonly configService: ConfigService,
-    protected readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
+    protected readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService
   ) {}
+
+  /**
+   * Resolves colOpts.columnId (when present) to the column's current name via the relation
+   * resolver, falling back to colOpts.column when there's no id, or the id no longer resolves
+   * (column deleted/renamed away since the query was saved) - same fail-soft-to-caller contract
+   * as the resolver itself. Options with no columnId (queries saved before Task 4) are untouched.
+   */
+  private async resolveColumnName(
+    organizationId: string,
+    tableId: string,
+    colOpts: { column?: string; columnId?: string },
+    environmentId: string | undefined
+  ): Promise<string | undefined> {
+    if (!colOpts?.columnId) return colOpts?.column;
+    const resolved = await this.relationResolverService.resolveColumnName(
+      organizationId,
+      tableId,
+      colOpts.columnId,
+      environmentId
+    );
+    return resolved ?? colOpts.column;
+  }
+
+  /**
+   * Batch variant of resolveColumnName(): one relation load resolves every entry's columnId, so
+   * an operation touching several columns (create_row's payload, update_rows' columns map, a
+   * where_filters/order_filters set) doesn't pay N relation loads. Returns names in the same
+   * order as `entries`.
+   */
+  private async resolveColumnNames(
+    organizationId: string,
+    tableId: string,
+    entries: Array<{ column?: string; columnId?: string }>,
+    environmentId: string | undefined
+  ): Promise<Array<string | undefined>> {
+    const columnIds = [...new Set(entries.filter((entry) => entry?.columnId).map((entry) => entry.columnId))];
+    const resolvedMap = columnIds.length
+      ? await this.relationResolverService.resolveColumnNames(organizationId, tableId, columnIds, environmentId)
+      : new Map<string, string | null>();
+    return entries.map((entry) =>
+      entry?.columnId ? (resolvedMap.get(entry.columnId) ?? entry.column) : entry?.column
+    );
+  }
+
+  /**
+   * Resolves the `column` field inside every entry of a where_filters/order_filters map in
+   * place-equivalent fashion (returns a new map - buildPostgrestQuery only ever reads the result).
+   * Entries without a columnId pass through untouched.
+   */
+  private async resolveFilterColumns(
+    organizationId: string,
+    tableId: string,
+    filters: Record<string, { column?: string; columnId?: string; [key: string]: any }> | undefined,
+    environmentId: string | undefined
+  ): Promise<typeof filters> {
+    if (isEmpty(filters)) return filters;
+    const keys = Object.keys(filters);
+    const resolvedNames = await this.resolveColumnNames(
+      organizationId,
+      tableId,
+      keys.map((key) => filters[key]),
+      environmentId
+    );
+    return keys.reduce(
+      (acc, key, index) => {
+        acc[key] = { ...filters[key], column: resolvedNames[index] };
+        return acc;
+      },
+      {} as typeof filters
+    );
+  }
+
+  /**
+   * A single column-bearing slot inside join_table JSON: `get`/`set` read and write whatever key
+   * that shape actually uses for the column name (`columnName` for conditions/order_by, `name`
+   * for fields, `column` for aggregates/group_by) without the collector needing to know which.
+   */
+  private static makeColumnRef(
+    table: string | undefined,
+    columnId: string | undefined,
+    get: () => string | undefined,
+    set: (name: string) => void
+  ): { table?: string; columnId?: string; get: () => string | undefined; set: (name: string) => void } {
+    return { table, columnId, get, set };
+  }
+
+  /**
+   * Resolves a batch of column refs that all belong to the same table: one relation load
+   * resolves every ref's columnId, same batching rationale as resolveColumnNames(). Refs with no
+   * columnId are left untouched (no id to resolve); a columnId that no longer resolves falls back
+   * to whatever the ref already held, same fail-soft contract as resolveColumnName().
+   */
+  private async resolveColumnRefs(
+    organizationId: string,
+    tableId: string,
+    refs: Array<{ columnId?: string; get: () => string | undefined; set: (name: string) => void }>,
+    environmentId: string | undefined
+  ): Promise<void> {
+    const refsWithId = refs.filter((ref) => ref.columnId);
+    if (!refsWithId.length) return;
+    const columnIds = [...new Set(refsWithId.map((ref) => ref.columnId))];
+    const resolvedMap = await this.relationResolverService.resolveColumnNames(
+      organizationId,
+      tableId,
+      columnIds,
+      environmentId
+    );
+    for (const ref of refsWithId) {
+      const resolved = resolvedMap.get(ref.columnId);
+      if (resolved) ref.set(resolved);
+    }
+  }
+
+  /**
+   * Returns a deep-cloned, columnId-resolved copy of join_table JSON - never mutates the caller's
+   * queryOptions (see finding #7: joinTables only shallow-copies join_table, so join/condition
+   * sub-objects are shared references with the original options the caller may reuse/log/re-save).
+   *
+   * Resolves columnId on every column-bearing entry, not just conditions (finding #3): the ON/WHERE
+   * conditions (top-level and each join's), the mandatory SELECT list (`fields`), `order_by`, and
+   * `group_by`/`aggregates`. Grouped by the logical table a field addresses (field.table for
+   * conditions/fields/order_by, aggregate.table_id for aggregates, the group_by map's own key for
+   * group_by - it's already keyed by table) so a join across N tables costs N relation loads, not
+   * one per column.
+   *
+   * group_by entries may be a bare column name string (legacy/no rename to resolve) or
+   * `{ column, columnId }`; either way the resolved value collapses back to a bare string, so
+   * table-operations' consumer of group_by never has to learn the object shape.
+   */
+  private async resolveJoinColumns(
+    organizationId: string,
+    joinQueryJson: Record<string, any>,
+    environmentId: string | undefined
+  ): Promise<Record<string, any>> {
+    const cloned = structuredClone(joinQueryJson);
+    type ColumnRef = { table?: string; columnId?: string; get: () => string | undefined; set: (name: string) => void };
+    const refs: ColumnRef[] = [];
+
+    const collectConditions = (conditions: any) => {
+      conditions?.conditionsList?.forEach((condition: any) => {
+        (['leftField', 'rightField'] as const).forEach((side) => {
+          const field = condition[side];
+          if (field?.type === 'Column') {
+            refs.push(
+              TooljetDbDataOperationsService.makeColumnRef(
+                field.table,
+                field.columnId,
+                () => field.columnName,
+                (name) => {
+                  field.columnName = name;
+                }
+              )
+            );
+          }
+        });
+      });
+    };
+    collectConditions(cloned.conditions);
+    (cloned.joins || []).forEach((join: any) => collectConditions(join.conditions));
+
+    (cloned.fields || []).forEach((field: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          field.table,
+          field.columnId,
+          () => field.name,
+          (name) => {
+            field.name = name;
+          }
+        )
+      );
+    });
+
+    (cloned.order_by || []).forEach((entry: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          entry.table,
+          entry.columnId,
+          () => entry.columnName,
+          (name) => {
+            entry.columnName = name;
+          }
+        )
+      );
+    });
+
+    Object.values<any>(cloned.aggregates || {}).forEach((aggregate: any) => {
+      refs.push(
+        TooljetDbDataOperationsService.makeColumnRef(
+          aggregate.table_id,
+          aggregate.columnId,
+          () => aggregate.column,
+          (name) => {
+            aggregate.column = name;
+          }
+        )
+      );
+    });
+
+    Object.entries<any>(cloned.group_by || {}).forEach(([tableId, entries]) => {
+      if (!Array.isArray(entries)) return;
+      entries.forEach((entry: any, index: number) => {
+        if (typeof entry === 'string') return;
+        refs.push(
+          TooljetDbDataOperationsService.makeColumnRef(
+            tableId,
+            entry?.columnId,
+            () => entry?.column,
+            (name) => {
+              entries[index] = name;
+            }
+          )
+        );
+      });
+    });
+
+    const refsByTable = new Map<string, ColumnRef[]>();
+    for (const ref of refs) {
+      if (!ref.table) continue;
+      if (!refsByTable.has(ref.table)) refsByTable.set(ref.table, []);
+      refsByTable.get(ref.table).push(ref);
+    }
+
+    for (const [tableId, tableRefs] of refsByTable) {
+      await this.resolveColumnRefs(organizationId, tableId, tableRefs, environmentId);
+    }
+
+    return cloned;
+  }
+
+  /**
+   * Returns a deep-cloned, columnId-resolved copy of list_rows' aggregates/group_by (finding #4).
+   * Single-table operation - the tableId is already known, no per-field table grouping needed like
+   * resolveJoinColumns, so this is one resolveColumnRefs() call. Same group_by entry convention as
+   * resolveJoinColumns: a bare string passes through, `{ column, columnId }` resolves and collapses
+   * back to a bare string.
+   */
+  private async resolveAggregateAndGroupByColumns(
+    organizationId: string,
+    tableId: string,
+    aggregates: Record<string, { aggFx: string; column: string; columnId?: string }>,
+    groupBy: Record<string, Array<string | { column: string; columnId?: string }>>,
+    environmentId: string | undefined
+  ): Promise<{
+    aggregates: typeof aggregates;
+    groupBy: Record<string, Array<string>>;
+  }> {
+    if (isEmpty(aggregates) && isEmpty(groupBy))
+      return { aggregates, groupBy: groupBy as unknown as Record<string, Array<string>> };
+
+    const cloned = structuredClone({ aggregates, groupBy });
+    const refs: Array<{ columnId?: string; get: () => string | undefined; set: (name: string) => void }> = [];
+
+    Object.values<any>(cloned.aggregates).forEach((aggregate: any) => {
+      refs.push({
+        columnId: aggregate.columnId,
+        get: () => aggregate.column,
+        set: (name) => {
+          aggregate.column = name;
+        },
+      });
+    });
+
+    Object.values<any>(cloned.groupBy).forEach((entries: any) => {
+      if (!Array.isArray(entries)) return;
+      entries.forEach((entry: any, index: number) => {
+        if (typeof entry === 'string') return;
+        refs.push({
+          columnId: entry?.columnId,
+          get: () => entry?.column,
+          set: (name) => {
+            entries[index] = name;
+          },
+        });
+      });
+    });
+
+    await this.resolveColumnRefs(organizationId, tableId, refs, environmentId);
+    // Every group_by entry above is either an untouched string or has just been overwritten with
+    // the resolved column name string via `set` - the array is string[] at runtime even though the
+    // clone's static type still carries the pre-resolution `string | {column, columnId}` union.
+    return { aggregates: cloned.aggregates, groupBy: cloned.groupBy as unknown as Record<string, Array<string>> };
+  }
 
   async run(
     _sourceOptions,
@@ -75,9 +361,10 @@ export class TooljetDbDataOperationsService implements QueryService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, string>,
-    body: Record<string, any> = {}
+    body: Record<string, any>,
+    environmentId: string | undefined
   ): Promise<QueryResult> {
-    const result: any = await this.postgrestProxyService.perform(url, method, headers, body);
+    const result: any = await this.postgrestProxyService.perform(url, method, headers, body, environmentId);
 
     return { status: 'ok', data: result };
   }
@@ -93,14 +380,30 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     try {
       const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
-      const { primary_key: primaryKeyColumn, rows_update: rowsToUpdate } = bulkUpdateWithPrimaryKey;
-      const { organization_id: organizationId } = context.app;
+      const {
+        primary_key: primaryKeyColumn,
+        primary_key_ids: primaryKeyColumnIds,
+        rows_update: rowsToUpdate,
+      } = bulkUpdateWithPrimaryKey;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
+
+      // Mirrors bulkUpsertUsingPrimaryKey: primary_key is a composite key ARRAY of column names,
+      // primary_key_ids the same-index array of columnIds. resolveColumnName (singular) would
+      // collapse the whole array to one resolved string - see finding #1.
+      const primaryKeyColumns = Array.isArray(primaryKeyColumn) ? primaryKeyColumn : [primaryKeyColumn];
+      const resolvedPrimaryKeyColumns = await this.resolveColumnNames(
+        organizationId,
+        tableId,
+        primaryKeyColumns.map((column, index) => ({ column, columnId: primaryKeyColumnIds?.[index] })),
+        environmentId
+      );
 
       const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsWithPrimaryKey(
         rowsToUpdate,
         tableId,
-        primaryKeyColumn,
-        organizationId
+        resolvedPrimaryKeyColumns,
+        organizationId,
+        environmentId
       );
 
       if (result.status === 'failed') {
@@ -134,7 +437,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
     try {
       const { table_id: tableId, list_rows: listRows } = queryOptions;
-      const { organization_id: organizationId } = context.app;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
       const query = [];
 
       if (!isEmpty(listRows)) {
@@ -161,13 +464,32 @@ export class TooljetDbDataOperationsService implements QueryService {
 
         if (!internalTable) throw new NotFoundException('Table not found');
 
-        const whereQuery = buildPostgrestQuery(whereFilters);
-        const orderQuery = buildPostgrestQuery(orderFilters);
+        const resolvedWhereFilters = await this.resolveFilterColumns(
+          organizationId,
+          tableId,
+          whereFilters,
+          environmentId
+        );
+        const resolvedOrderFilters = await this.resolveFilterColumns(
+          organizationId,
+          tableId,
+          orderFilters,
+          environmentId
+        );
+        const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
+        const orderQuery = buildPostgrestQuery(resolvedOrderFilters);
         if (!isEmpty(aggregates) || !isEmpty(groupBy)) {
+          const resolved = await this.resolveAggregateAndGroupByColumns(
+            organizationId,
+            tableId,
+            aggregates,
+            groupBy,
+            environmentId
+          );
           const groupByAndAggregateQueryList = this.buildAggregateAndGroupByQuery(
             internalTable.tableName,
-            aggregates,
-            groupBy
+            resolved.aggregates,
+            resolved.groupBy
           );
           if (groupByAndAggregateQueryList.length) query.push(`select=${groupByAndAggregateQueryList.join(',')}`);
         }
@@ -183,22 +505,26 @@ export class TooljetDbDataOperationsService implements QueryService {
           ? `/api/tooljet-db/proxy/${tableId}` + `?${query.join('&')}`
           : `/api/tooljet-db/proxy/${tableId}`;
 
-      return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers);
+      return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers, {}, environmentId);
     } catch (error) {
       throw new QueryError(error.message, error.message, {});
     }
   }
 
   async createRow(queryOptions, context): Promise<QueryResult> {
-    const columns = Object.values(queryOptions.create_row).reduce((acc, colOpts: { column: string; value: any }) => {
-      if (isEmpty(colOpts.column)) return acc;
-      return Object.assign(acc, { [colOpts.column]: colOpts.value });
+    const { table_id: tableId, create_row: createRow } = queryOptions;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
+    const colOptsList = Object.values<{ column: string; columnId?: string; value: any }>(createRow);
+    const resolvedNames = await this.resolveColumnNames(organizationId, tableId, colOptsList, environmentId);
+    const columns = colOptsList.reduce((acc, colOpts, index) => {
+      const columnName = resolvedNames[index];
+      if (isEmpty(columnName)) return acc;
+      return Object.assign(acc, { [columnName]: colOpts.value });
     }, {});
-    const { organization_id: organizationId } = context.app;
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
 
-    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
-    return await this.proxyPostgrest(url, 'POST', headers, columns);
+    const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}`);
+    return await this.proxyPostgrest(url, 'POST', headers, columns, environmentId);
   }
 
   async updateRows(queryOptions, context): Promise<QueryResult> {
@@ -211,20 +537,24 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
     const { table_id: tableId, update_rows: updateRows } = queryOptions;
     const { where_filters: whereFilters, columns } = updateRows;
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
-    const whereQuery = buildPostgrestQuery(whereFilters);
-    const body = Object.values<{ column: string; value: any }>(columns).reduce((acc, colOpts) => {
-      if (isEmpty(colOpts.column)) return acc;
-      return Object.assign(acc, { [colOpts.column]: colOpts.value });
+    const resolvedWhereFilters = await this.resolveFilterColumns(organizationId, tableId, whereFilters, environmentId);
+    const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
+    const colOptsList = Object.values<{ column: string; columnId?: string; value: any }>(columns);
+    const resolvedColumnNames = await this.resolveColumnNames(organizationId, tableId, colOptsList, environmentId);
+    const body = colOptsList.reduce((acc, colOpts, index) => {
+      const columnName = resolvedColumnNames[index];
+      if (isEmpty(columnName)) return acc;
+      return Object.assign(acc, { [columnName]: colOpts.value });
     }, {});
 
     if (!isEmpty(whereQuery)) query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
-    return await this.proxyPostgrest(url, 'PATCH', headers, body);
+    return await this.proxyPostgrest(url, 'PATCH', headers, body, environmentId);
   }
 
   async deleteRows(queryOptions, context): Promise<QueryResult> {
@@ -236,11 +566,17 @@ export class TooljetDbDataOperationsService implements QueryService {
       };
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
-    const { where_filters: whereFilters, limit = 1, order_column: orderColumn } = deleteRows;
-    const { organization_id: organizationId } = context.app;
+    const {
+      where_filters: whereFilters,
+      limit = 1,
+      order_column: orderColumn,
+      order_column_id: orderColumnId,
+    } = deleteRows;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
-    const whereQuery = buildPostgrestQuery(whereFilters);
+    const resolvedWhereFilters = await this.resolveFilterColumns(organizationId, tableId, whereFilters, environmentId);
+    const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
     if (isEmpty(whereQuery)) {
       return {
         status: 'failed',
@@ -257,18 +593,24 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     if (limit && limit !== '') {
       query.push(`limit=${limit}`);
-      if (orderColumn) {
-        query.push(`order=${orderColumn}`);
+      const resolvedOrderColumn = await this.resolveColumnName(
+        organizationId,
+        tableId,
+        { column: orderColumn, columnId: orderColumnId },
+        environmentId
+      );
+      if (resolvedOrderColumn) {
+        query.push(`order=${resolvedOrderColumn}`);
       }
     }
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
-    return await this.proxyPostgrest(url, 'DELETE', headers);
+    return await this.proxyPostgrest(url, 'DELETE', headers, {}, environmentId);
   }
 
   async joinTables(queryOptions, context): Promise<QueryResult> {
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const { join_table = {} } = queryOptions;
 
     // Empty Input is restricted
@@ -325,18 +667,25 @@ export class TooljetDbDataOperationsService implements QueryService {
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
-    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', {
-      joinQueryJson: sanitizedJoinTableJson,
-    });
+    const resolvedJoinTableJson = await this.resolveJoinColumns(organizationId, sanitizedJoinTableJson, environmentId);
 
-    return { status: 'ok', data: { result } };
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'join_tables',
+      {
+        joinQueryJson: resolvedJoinTableJson,
+      },
+      environmentId
+    );
+
+    return { status: 'ok', data: result };
   }
 
-  async sqlExecution(queryOptions, context): Promise<QueryResult> {
+  async sqlExecution(queryOptions, context, restrictToTableName?: string): Promise<QueryResult> {
     if (isSQLModeDisabled())
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const { sql_execution: sqlExecution = {} } = queryOptions;
     const { sqlQuery = '' } = sqlExecution;
     if (isEmpty(sqlQuery)) return;
@@ -385,30 +734,37 @@ export class TooljetDbDataOperationsService implements QueryService {
       await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
 
       const { tablesUsedInQuery, tableAndSchemaList } = this.parseTableListFromASTParser(tableList);
-      // Validate tables are exists in workspace.
-      const tableDetailsInList = await this.verifyTablesExistInWorkspace(tablesUsedInQuery, organizationId);
-      const internalTableNameToIdMap = tablesUsedInQuery.reduce((acc, tableName) => {
-        const tableId = tableDetailsInList.find((table) => table.tableName === tableName).id;
-        internalTableInfo.push({ id: tableId, tableName: tableName });
-
-        return {
-          ...acc,
-          [tableName]: tableId,
-        };
-      }, {});
+      if (restrictToTableName) {
+        const otherTables = tablesUsedInQuery.filter((name) => name !== restrictToTableName);
+        if (otherTables.length) {
+          throw new BadRequestException(
+            `Seed-data SQL may only reference "{{self}}" (resolved to "${restrictToTableName}"), found: ${otherTables.join(', ')}`
+          );
+        }
+      }
+      // Validate tables exist in workspace before resolving physical names - this owns the
+      // "table doesn't exist" error message, and resolveTable's own NotFoundException (thrown by
+      // its internal findOne, redone below) would replace that message with a worse one.
+      await this.verifyTablesExistInWorkspace(tablesUsedInQuery, organizationId);
+      const internalTableNameToRelationIdMap = await this.resolveTableNameToRelationIdMap(
+        tablesUsedInQuery,
+        organizationId,
+        environmentId,
+        internalTableInfo
+      );
 
       await this.validateSchemaAndTablePrivileges(
         this.tooljetDbManager,
         tenantSchema,
         pgUser,
         tableAndSchemaList,
-        internalTableNameToIdMap
+        internalTableNameToRelationIdMap
       );
 
-      this.parseTableNameInAST(ast, internalTableNameToIdMap);
-      const validSql = await sqlParser.sqlify(ast);
+      this.parseTableNameInAST(ast, internalTableNameToRelationIdMap);
+      const validSql = sqlParser.sqlify(ast);
       const results = await tooljetDbTenantConnection.query(validSql);
-      return { status: 'ok', data: { results } };
+      return { status: 'ok', data: results };
     } catch (error) {
       const modifiedErrorObj = modifyTjdbErrorObject(error);
       const errorObj = new QueryFailedError(error, [], new PostgrestError(modifiedErrorObj));
@@ -428,23 +784,94 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   /**
-   * Helper function to UPDATE TableName with TableId in the parsed sql (AST)
-   * @param parsedSql - AST Json for SQL
-   * @param internalTableNameToIdMap - Object which holds tablename and its respective tableId
+   * Seed-data SQL entry point (`POST .../table/:tableId/sql`) - unlike sqlExecution's other
+   * caller (Query Manager's SQL mode, intentionally workspace-wide), this one is opened per-table
+   * and stays that way: the caller can only ever address the table it was opened for, spelled as
+   * "{{self}}" - never a literal name, never {{table.<name>}}, never another table. See
+   * .mind/specs/2026-09-09-tjdb-sql-editor-table-referencing-design.md.
    */
-  protected parseTableNameInAST(parsedSql, internalTableNameToIdMap) {
+  async seedDataSqlExecution(
+    organizationId: string,
+    tableId: string,
+    environmentId: string,
+    sql: string
+  ): Promise<QueryResult> {
+    if (containsTablePlaceholder(sql)) {
+      throw new BadRequestException('Seed-data SQL may only reference "{{self}}", not "{{table.<name>}}"');
+    }
+    if (!sql.includes(SELF_PLACEHOLDER)) {
+      throw new BadRequestException('Seed-data SQL must reference the table as "{{self}}"');
+    }
+
+    const internalTable = await this.manager.findOne(InternalTable, { where: { id: tableId, organizationId } });
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableId);
+
+    const substitutedSql = sql.replace(SELF_PLACEHOLDER_REGEX, internalTable.tableName);
+
+    return this.sqlExecution(
+      { sql_execution: { sqlQuery: substitutedSql } },
+      { app: { organization_id: organizationId, environment_id: environmentId } },
+      internalTable.tableName
+    );
+  }
+
+  /**
+   * Helper function to UPDATE TableName with its relation id in the parsed sql (AST)
+   * @param parsedSql - AST Json for SQL
+   * @param internalTableNameToRelationIdMap - Object which holds tablename and its respective relation id
+   */
+  protected parseTableNameInAST(parsedSql, internalTableNameToRelationIdMap) {
     if (Array.isArray(parsedSql)) {
-      parsedSql.forEach((item) => this.parseTableNameInAST(item, internalTableNameToIdMap));
+      parsedSql.forEach((item) => this.parseTableNameInAST(item, internalTableNameToRelationIdMap));
     } else if (typeof parsedSql === 'object' && parsedSql !== null) {
-      if (parsedSql['table'] && !isEmpty(internalTableNameToIdMap)) {
-        parsedSql.table = internalTableNameToIdMap[parsedSql.table]
-          ? internalTableNameToIdMap[parsedSql.table]
+      if (parsedSql['table'] && !isEmpty(internalTableNameToRelationIdMap)) {
+        parsedSql.table = internalTableNameToRelationIdMap[parsedSql.table]
+          ? internalTableNameToRelationIdMap[parsedSql.table]
           : parsedSql.table;
       }
       Object.keys(parsedSql).forEach((key) => {
-        this.parseTableNameInAST(parsedSql[key], internalTableNameToIdMap);
+        this.parseTableNameInAST(parsedSql[key], internalTableNameToRelationIdMap);
       });
     }
+  }
+
+  /**
+   * Resolves each display name used in a SQL-mode query to the relation id naming its current
+   * physical table, via TooljetDbTableOperationsService.resolveTable - the single door from a
+   * display name to a physical name. Kept as its own method (rather than inline in sqlExecution)
+   * so the map construction can be unit-tested without going through AST parsing or opening a
+   * Postgres connection.
+   *
+   * Call only after verifyTablesExistInWorkspace has confirmed every name in tablesUsedInQuery
+   * belongs to this workspace - resolveTable does its own (redundant, accepted) existence check
+   * and would surface a worse-worded NotFoundException first otherwise.
+   *
+   * @param tablesUsedInQuery - display names, from parseTableListFromASTParser
+   * @param organizationId - Workspace id
+   * @param environmentId - environment to resolve each display name's relation in
+   * @param internalTableInfo - accumulator mutated in place with { id: relationId, tableName } as
+   *   each table resolves, so it is populated for TooljetDatabaseError's error-translation context
+   *   even if resolution fails partway through the list
+   * @returns display name -> relation id
+   */
+  protected async resolveTableNameToRelationIdMap(
+    tablesUsedInQuery: Array<string>,
+    organizationId: string,
+    environmentId: string | undefined,
+    internalTableInfo: Array<{ id: string; tableName: string }>
+  ): Promise<Record<string, string>> {
+    const internalTableNameToRelationIdMap: Record<string, string> = {};
+    for (const tableName of tablesUsedInQuery) {
+      const { relation } = await this.tableOperationsService.resolveTable(
+        organizationId,
+        tableName,
+        environmentId,
+        this.manager
+      );
+      internalTableInfo.push({ id: relation.id, tableName });
+      internalTableNameToRelationIdMap[tableName] = relation.id;
+    }
+    return internalTableNameToRelationIdMap;
   }
 
   /**
@@ -511,23 +938,23 @@ export class TooljetDbDataOperationsService implements QueryService {
    * @param tenantSchema - Schema for specific workspace.
    * @param pgUser - Tenant user
    * @param tableAndSchemaList
-   * @param internalTableNameToIdMap
+   * @param internalTableNameToRelationIdMap
    */
   protected async validateSchemaAndTablePrivileges(
     tooljetDbManager: EntityManager,
     tenantSchema: string,
     pgUser: string,
     tableAndSchemaList: Array<{ schema: string; table: string }>,
-    internalTableNameToIdMap
+    internalTableNameToRelationIdMap
   ) {
     // Validates if Tenant User has access to Workspace Schema.
     await this.validateSchemaPrivileges(tooljetDbManager, pgUser, tenantSchema);
     for (const tableAndSchema of tableAndSchemaList) {
       const { schema, table } = tableAndSchema;
       if (schema) await this.validateSchemaPrivileges(tooljetDbManager, pgUser, schema);
-      if (!isEmpty(internalTableNameToIdMap[table]))
+      if (!isEmpty(internalTableNameToRelationIdMap[table]))
         await this.validateUserHasTablePrivileges(
-          internalTableNameToIdMap,
+          internalTableNameToRelationIdMap,
           tooljetDbManager,
           pgUser,
           schema,
@@ -545,7 +972,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   protected async validateUserHasTablePrivileges(
-    internalTableNameToIdMap,
+    internalTableNameToRelationIdMap,
     tooljetDbManager: EntityManager,
     pgUser: string,
     schema: string,
@@ -553,8 +980,8 @@ export class TooljetDbDataOperationsService implements QueryService {
     tenantSchema: string
   ) {
     const queryToExecute = schema
-      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`
-      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`;
+      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`
+      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`;
     const [{ has_table_privilege }] = await tooljetDbManager.query(queryToExecute);
     if (!has_table_privilege) throw new Error('TJDB table permission denied');
   }
@@ -599,8 +1026,12 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     try {
       const { table_id: tableId, bulk_upsert_with_primary_key: bulkUpsertOptions } = queryOptions;
-      const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
-      const { organization_id: organizationId } = context.app;
+      const {
+        primary_key: primaryKeyColumns,
+        primary_key_ids: primaryKeyColumnIds,
+        rows: rowsToUpsert,
+      } = bulkUpsertOptions;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
       // Validate input
       if (!Array.isArray(rowsToUpsert) || rowsToUpsert.length === 0) {
@@ -619,12 +1050,20 @@ export class TooljetDbDataOperationsService implements QueryService {
         };
       }
 
+      const resolvedPrimaryKeyColumns = await this.resolveColumnNames(
+        organizationId,
+        tableId,
+        primaryKeyColumns.map((column, index) => ({ column, columnId: primaryKeyColumnIds?.[index] })),
+        environmentId
+      );
+
       // Perform bulk upsert
       const result = await this.tooljetDbBulkUploadService.bulkUpsertRowsWithPrimaryKey(
         rowsToUpsert,
         tableId,
-        primaryKeyColumns,
-        organizationId
+        resolvedPrimaryKeyColumns,
+        organizationId,
+        environmentId
       );
 
       if (result.status === 'failed') {
