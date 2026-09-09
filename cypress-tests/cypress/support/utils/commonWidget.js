@@ -131,4 +131,5 @@ export {
   verifyComponentFromInspector,
   closeInspectorDetail,
   verifyExposedValue,
+  openExposedPath,
 } from "./appBuilder/inspectorTree";

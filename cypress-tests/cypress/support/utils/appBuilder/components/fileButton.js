@@ -23,8 +23,6 @@ import { selectReactSelectOption } from "Support/utils/appBuilder/properties";
  *
  * STILL HERE and still promotable, blocked on fixing an existing helper rather than
  * adding one (see [[component-facet-model-gaps]]):
- *   openParsedValue — drills files[0], so it is file-widget-specific, not generic
- *     inspector navigation. It wants a file-widget FAMILY module, which does not exist yet.
  *
  * The widgetName argument defaults to "filebutton1" throughout. That is safe HERE
  * because the module is component-scoped — drop the default on anything promoted, or a
@@ -87,21 +85,5 @@ export const expectRejectionToast = (types) => {
       cy.closeToastMessage();
     }
   });
-};
-
-/**
- * @tjBlock  inspector
- * @tjUsage  openParsedValue(); ... ; closeInspectorDetail()
- * @tjDom    inspector components → <widget> → files → [0], expanded by LABEL clicks
- */
-// Drills components > filebutton1 > files > [0] to reach parsedValue. Nested rows have
-// no expand-button data-cy (only -label/-value), so the LABEL is what toggles them.
-export const openParsedValue = (widgetName = "filebutton1") => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  cy.get('[data-cy="inspector-files-label"]').first().click();
-  cy.get('[data-cy="inspector-0-label"]').first().click();
 };
 

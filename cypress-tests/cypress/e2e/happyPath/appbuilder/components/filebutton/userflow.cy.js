@@ -5,7 +5,6 @@ import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures } from "Texts/appBuilder/components/fileButton";
 import {
   verifyExposedValue,
-  closeInspectorDetail,
   commitChange,
   openEditorSidebar,
   verifyAndModifyParameter,
@@ -16,7 +15,6 @@ import {
   selectFileType,
   selectValidationFileType,
   expectRejectionToast,
-  openParsedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Userflow facet — end-to-end builder journeys. No config items of its own; it covers
@@ -89,9 +87,7 @@ describe(
     verifyExposedValue("files", "Array", "[1]", widget);
 
     // Parsing ran: sample-a.csv has 3 data rows, one object each.
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue"], "Array", "[3]", widget);
 
     // 3. Clearing returns the field to its empty, invalid, requirement-unmet state.
     clearSelectedFile();
@@ -119,9 +115,7 @@ describe(
 
     // Parsing ran across the batch rather than only the first entry: sample-a.csv has
     // 3 data rows, one row object each.
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue"], "Array", "[3]", widget);
 
     // isParsing is transient; inspector.cy.js only sees its initial false. Asserting it
     // again after a real parse shows it resets rather than latching on.
