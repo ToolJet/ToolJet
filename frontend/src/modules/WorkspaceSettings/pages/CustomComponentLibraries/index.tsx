@@ -6,51 +6,65 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 import Dialog from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button/Button';
-import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
-import { licenseService } from '@/_services';
+import { licenseService } from '@/_services/license.service';
+import { customComponentLibrariesService, type CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 
 import './custom-component-libraries.styles.scss';
 
-export default function CustomComponentLibraries({ darkMode }) {
-  const [libraries, setLibraries] = useState(null); // null = loading
-  const [loadFailed, setLoadFailed] = useState(false); // failed fetch ≠ empty list
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleteInProgress, setDeleteInProgress] = useState(false);
-  const [popoverToOpenId, setPopoverToOpenId] = useState(null);
-  const [hasAccess, setHasAccess] = useState(null);
+const ButtonComponent = Button as React.ComponentType<any>;
 
-  const fetchLibraries = () => {
-    setLoadFailed(false);
-    customComponentLibrariesService
-      .list()
-      .then((res) => setLibraries(Array.isArray(res) ? res : []))
-      .catch(() => {
-        setLibraries([]);
-        setLoadFailed(true);
-      });
+interface DeleteErrorResponse {
+  data?: {
+    apps?: string[];
+    message?: string;
   };
+}
+
+interface CustomComponentLibrariesProps {
+  darkMode: boolean;
+}
+
+export default function CustomComponentLibraries({ darkMode }: CustomComponentLibrariesProps) {
+  const libraries = useCustomComponentLibrariesStore((state: any) => state.libraries) as
+    | CustomComponentLibrary[]
+    | null; // null = loading
+  const loadFailed = useCustomComponentLibrariesStore((state: any) => state.loadFailed) as boolean; // failed fetch ≠ empty list
+  const [deleteTarget, setDeleteTarget] = useState<CustomComponentLibrary | null>(null);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [popoverToOpenId, setPopoverToOpenId] = useState<string | null>(null);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
 
   useEffect(() => {
     licenseService
       .getFeatureAccess()
-      .then((data) => setHasAccess(data?.customComponentLibraries === true))
+      .then((data: { customComponentLibraries?: boolean }) => setHasAccess(data?.customComponentLibraries === true))
       .catch(() => setHasAccess(false));
   }, []);
 
   useEffect(() => {
-    if (hasAccess === true) fetchLibraries();
+    if (hasAccess === true) useCustomComponentLibrariesStore.getState().fetchLibraries();
   }, [hasAccess]);
+
+  // Cache is shared with the RightSideBar tab and the dev-pin sync — this page invalidates
+  // its own reference on unmount so a delete/publish made elsewhere is picked up next visit.
+  useEffect(() => {
+    return () => useCustomComponentLibrariesStore.getState().invalidate();
+  }, []);
 
   if (hasAccess !== true) return null;
 
   const handleDelete = async () => {
+    if (!deleteTarget) return;
+
     setDeleteInProgress(true);
     try {
       await customComponentLibrariesService.deleteLibrary(deleteTarget.id);
       toast.success('Library deleted', { duration: 2000 });
       setDeleteTarget(null);
-      fetchLibraries();
-    } catch (error) {
+      useCustomComponentLibrariesStore.getState().fetchLibraries({ force: true });
+    } catch (err) {
+      const error = err as DeleteErrorResponse;
       const apps = error?.data?.apps;
       toast.error(
         apps?.length
@@ -62,7 +76,7 @@ export default function CustomComponentLibraries({ darkMode }) {
     setDeleteInProgress(false);
   };
 
-  const handleOpenDeleteDialog = (library) => () => {
+  const handleOpenDeleteDialog = (library: CustomComponentLibrary) => () => {
     setDeleteTarget(library);
     setPopoverToOpenId(null);
   };
@@ -85,7 +99,11 @@ export default function CustomComponentLibraries({ darkMode }) {
           <div className="libraries-empty" data-cy="libraries-load-error">
             <p className="libraries-empty-title">Could not load libraries</p>
             <p className="libraries-empty-subtitle">
-              <button type="button" className="libraries-retry-link" onClick={fetchLibraries}>
+              <button
+                type="button"
+                className="libraries-retry-link"
+                onClick={() => useCustomComponentLibrariesStore.getState().fetchLibraries({ force: true })}
+              >
                 Retry
               </button>
             </p>
@@ -107,9 +125,9 @@ export default function CustomComponentLibraries({ darkMode }) {
                   trigger="click"
                   placement="bottom-end"
                   overlay={
-                    <Popover id="popover-ccl-menu" className={darkMode && 'dark-theme'} style={{ transition: 'none' }}>
+                    <Popover id="popover-ccl-menu" className={(darkMode && 'dark-theme') || ''} style={{ transition: 'none' }}>
                       <Popover.Body bsPrefix="popover-body">
-                        <Button
+                        <ButtonComponent
                           isLucid
                           size="medium"
                           variant="ghost"
@@ -120,12 +138,12 @@ export default function CustomComponentLibraries({ darkMode }) {
                           data-cy={`delete-library-${library.name}`}
                         >
                           Delete library
-                        </Button>
+                        </ButtonComponent>
                       </Popover.Body>
                     </Popover>
                   }
                 >
-                  <Button
+                  <ButtonComponent
                     isLucid
                     iconOnly
                     size="small"

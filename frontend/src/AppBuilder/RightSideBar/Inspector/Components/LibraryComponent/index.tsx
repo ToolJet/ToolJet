@@ -4,7 +4,7 @@ import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 import { useEffectiveLibraryRevision, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel, getComponentIdentity } from './utils';
 
 import type { LibraryComponentPropertiesProps } from './types';
@@ -40,7 +40,7 @@ export const LibraryComponentProperties = ({
   const [manifest, setManifest] = useState<LibraryManifest | null>(null);
 
   // Live-reload: a dev-preview push bumps this nonce
-  const devNonce = useCustomComponentPreviewStore((state: any) =>
+  const devNonce = useCustomComponentLibrariesStore((state: any) =>
     effectiveRevision?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[libraryId ?? ''] : undefined
   );
 

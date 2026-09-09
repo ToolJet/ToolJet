@@ -7,7 +7,26 @@ interface StreamDevBundleUpdatesOptions {
   onError?: (error: unknown) => void;
 }
 
-function list() {
+export interface CustomComponentLibraryRevision {
+  id: string;
+  version: string;
+  createdAt?: string;
+}
+
+export interface CustomComponentLibraryDevBundle {
+  userId: string;
+  userEmail?: string;
+}
+
+export interface CustomComponentLibrary {
+  id: string;
+  name: string;
+  correlationId?: string;
+  revisions: CustomComponentLibraryRevision[];
+  devBundles?: CustomComponentLibraryDevBundle[];
+}
+
+function list(): Promise<CustomComponentLibrary[]> {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' as const };
   return fetch(`${config.apiUrl}/custom-component-libraries`, requestOptions).then(handleResponse);
 }

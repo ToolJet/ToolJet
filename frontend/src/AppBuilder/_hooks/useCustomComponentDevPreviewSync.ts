@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -19,12 +19,14 @@ export default function useCustomComponentDevPreviewSync(appId: string | number 
   }, [pins]);
 
   useEffect(() => {
-    useCustomComponentPreviewStore.getState().syncDevPinStreams(devPinKeys);
+    useCustomComponentLibrariesStore.getState().syncDevPinStreams(devPinKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(devPinKeys)]);
 
-  // Editor isn't remounted on same-tab app switches, so reset previews manually here.
+  // Editor isn't remounted on same-tab app switches, so reset previews and the cached
+  // library list manually here — the next app may have a version published while this
+  // one was open, so the switch also refetches rather than reusing a stale cache.
   useEffect(() => {
-    return () => useCustomComponentPreviewStore.getState().resetAllDevPreviews();
+    return () => useCustomComponentLibrariesStore.getState().resetAll();
   }, [appId]);
 }

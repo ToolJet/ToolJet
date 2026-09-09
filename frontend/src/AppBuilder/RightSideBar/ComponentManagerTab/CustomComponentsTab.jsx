@@ -7,10 +7,9 @@ import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
-import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 import { authenticationService } from '@/_services/authentication.service';
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
-import { normalizePin, pinKey, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import { normalizePin, dashlessId, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Container } from 'lucide-react';
 import {
@@ -29,7 +28,7 @@ const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join(''
 // see invariant #14, HANDOFF-NISHIDH.md), so `current` is `pin ?? latest`. A dev-only
 // library (no revisions, no pin yet) falls back to the LOGGED-IN USER'S OWN dev bundle
 // if they have one — regardless of how many other developers also have one — same
-// scoping as the live-reload stream (customComponentPreviewStore.syncDevPinStreams):
+// scoping as the live-reload stream (customComponentLibrariesStore.syncDevPinStreams):
 // your own bundle is the only default that's actually live for you, so it's the only
 // safe thing to show without an explicit pick. Note this makes `current` genuinely
 // viewer-dependent before any pin exists (each developer previews their own WIP by
@@ -41,7 +40,7 @@ const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join(''
 const useLibraryCurrentRevision = (library) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const latest = library.revisions[0]?.version;
-  const pin = normalizePin(pins?.[pinKey(library.correlationId)] ?? pins?.[library.correlationId]);
+  const pin = normalizePin(pins?.[dashlessId(library.correlationId)] ?? pins?.[library.correlationId]);
   const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
   const ownDevBundle = !latest ? library.devBundles?.find((d) => d.userId === currentUserId) : null;
   const current = pin ?? latest ?? (ownDevBundle ? `dev:${ownDevBundle.userId}` : undefined);
@@ -55,7 +54,7 @@ const useLibraryCurrentRevision = (library) => {
 const useResolvedManifest = (library, current, latest) => {
   const cacheRef = useRef({});
 
-  const devNonce = useCustomComponentPreviewStore((state) =>
+  const devNonce = useCustomComponentLibrariesStore((state) =>
     current?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[library.id] : undefined
   );
 
@@ -130,8 +129,8 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
         handleDrop(item, currentDragCanvasId);
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[pinKey(correlationId)] ?? pins[correlationId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [pinKey(correlationId)]: revisionId } });
+        if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
+          globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
         }
       },
     }),
@@ -169,11 +168,11 @@ const VersionPicker = ({ library }) => {
   const hasUpdate = Boolean(pin && pin !== latest);
 
   const normalizedPins = () =>
-    Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [pinKey(libId), normalizePin(value)]));
+    Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [dashlessId(libId), normalizePin(value)]));
 
   const selectRevision = (version) => {
     globalSettingsChanged({
-      customComponentLibraries: { ...normalizedPins(), [pinKey(library.correlationId)]: version },
+      customComponentLibraries: { ...normalizedPins(), [dashlessId(library.correlationId)]: version },
     });
   };
 
@@ -181,7 +180,7 @@ const VersionPicker = ({ library }) => {
   // private-preview step (see invariant #14, HANDOFF-NISHIDH.md).
   const selectDevPreview = (userId) => {
     globalSettingsChanged({
-      customComponentLibraries: { ...normalizedPins(), [pinKey(library.correlationId)]: `dev:${userId}` },
+      customComponentLibraries: { ...normalizedPins(), [dashlessId(library.correlationId)]: `dev:${userId}` },
     });
   };
 
@@ -321,13 +320,10 @@ const LibrarySection = ({ library, searchQuery = '' }) => {
 };
 
 export const CustomComponentsTab = ({ searchQuery = '' }) => {
-  const [libraries, setLibraries] = useState(null); // null = loading
+  const libraries = useCustomComponentLibrariesStore((state) => state.libraries); // null = loading
 
   useEffect(() => {
-    customComponentLibrariesService
-      .list()
-      .then(setLibraries)
-      .catch(() => setLibraries([]));
+    useCustomComponentLibrariesStore.getState().fetchLibraries();
   }, []);
 
   const filtered = useMemo(() => {
