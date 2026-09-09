@@ -35,6 +35,7 @@ export default function MigrationConfirmModal({
   showSqlEditor,
   sql,
   onSqlChange,
+  tableNames = [],
   depsLoading,
   dependents,
   error,
@@ -80,14 +81,12 @@ export default function MigrationConfirmModal({
         {showSqlEditor && (
           <div className="mb-3">
             <div className="form-label">Run migration on development environment</div>
-            {/* Unlike the seed-data SQL box, this step never parses the SQL - the table must be
-                addressed as "{{self}}", never by its logical name, or Postgres reports it
-                missing. It resolves to a raw uuid (hyphens included), which Postgres only accepts
-                as a bare identifier when quoted - unquoted, the hyphens read as subtraction and
-                fail with "syntax error at or near '-'". */}
+            {/* Table references must go through {{self}}/{{table.<name>}}, never a logical name
+                directly - the physical table name is a uuid, which Postgres only accepts as a bare
+                identifier when quoted (unquoted, the hyphens read as subtraction). */}
             <div className="tw-text-muted tw-mb-1" style={{ fontSize: '12px' }}>
-              Reference this table as <code>{'"{{self}}"'}</code> (double-quoted - its physical name is a uuid), not by
-              its logical name.
+              Reference tables as <code>{'"{{self}}"'}</code> (this table) or <code>{'"{{table.<name>}}"'}</code>{' '}
+              (another table) - not by logical name.
             </div>
             <SqlEditor
               value={sql}
@@ -95,6 +94,8 @@ export default function MigrationConfirmModal({
               height="15vh"
               placeholder={'-- Optional: an accompanying data step, e.g. UPDATE "{{self}}" SET column = value;'}
               dataCy="migration-confirm-sql-editor"
+              allowTableRef
+              tableNames={tableNames}
             />
           </div>
         )}

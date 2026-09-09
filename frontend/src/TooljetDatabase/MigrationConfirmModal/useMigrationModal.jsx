@@ -38,7 +38,7 @@ const emptyState = {
  * own JSX; `runMigration(options)` opens it.
  */
 export default function useMigrationModal() {
-  const { organizationId } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables } = useContext(TooljetDatabaseContext);
   const { bumpMigrations } = useTjdbActions();
   const [state, setState] = useState(emptyState);
   const optionsRef = useRef(null);
@@ -137,6 +137,7 @@ export default function useMigrationModal() {
       showSqlEditor={!!optionsRef.current?.showSqlEditor}
       sql={state.sql}
       onSqlChange={(sql) => setState((prev) => ({ ...prev, sql }))}
+      tableNames={tables.map((table) => table.table_name)}
       depsLoading={state.depsLoading}
       dependents={state.dependents}
       error={state.error}
