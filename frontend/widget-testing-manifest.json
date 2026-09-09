@@ -112,7 +112,7 @@
     },
     {
       "componentType": "MultiselectV2",
-      "status": "spec-complete",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
