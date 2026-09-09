@@ -495,9 +495,9 @@ export const inspectorSelectors = {
   inspectorNodeValue: (nodeName) => {
     return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
   },
-  jsonViewerNodeValue: ".json-viewer-node-value",
+  jsonViewerNodeValue: '[data-cy="json-viewer-node-value"]',
   // Overflow tooltip shown when a node value is truncated
-  nodeTooltip: ".inspector-node-tooltip",
+  nodeTooltip: '[data-cy="inspector-node-tooltip"]',
 };
 
 export const whiteLabelSelectors = {
