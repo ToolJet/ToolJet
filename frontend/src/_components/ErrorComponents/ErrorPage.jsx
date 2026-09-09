@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from '@/_helpers/constants';
+import { ERROR_MESSAGES, ERROR_TYPES } from '@/_helpers/constants';
 import { redirectToDashboard, getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { eraseCookie } from '@/_helpers/cookie';
 import React, { useEffect } from 'react';
@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { sessionService } from '@/_services';
+import { sessionService, appService } from '@/_services';
+import { CopyToClipboardComponent } from '@/_components/CopyToClipboard/CopyToClipboard';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
@@ -28,12 +29,19 @@ export default function ErrorPage({ darkMode }) {
 
   const [isLoading, setLoading] = React.useState(true);
   const [isValidSession, setValidSession] = React.useState(null);
+  const [appDetails, setAppDetails] = React.useState(null);
 
   useEffect(() => {
     sessionService
       .validateSession()
       .then(() => {
         setValidSession(true);
+        if (errorType === ERROR_TYPES.RESTRICTED && appSlug) {
+          appService
+            .getRestrictedAccessInfo(appSlug)
+            .then((details) => setAppDetails(details))
+            .catch(() => {});
+        }
       })
       .catch(() => {
         setValidSession(false);
@@ -41,6 +49,7 @@ export default function ErrorPage({ darkMode }) {
       .finally(() => {
         setLoading(false);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {
@@ -60,6 +69,8 @@ export default function ErrorPage({ darkMode }) {
         }
         isValidSession={isValidSession === true}
         appSlug={appSlug}
+        errorType={errorType}
+        appDetails={appDetails}
         show={true}
         darkMode={darkMode}
       />
@@ -67,7 +78,7 @@ export default function ErrorPage({ darkMode }) {
   );
 }
 
-export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
+export const ErrorModal = ({ errorMsg, appSlug, isValidSession, errorType, appDetails, ...props }) => {
   const { t } = useTranslation();
 
   // Redirect to edit app URL in a new tab
@@ -142,7 +153,7 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
               {t('globals.workspace-modal.continue-btn', 'Retry')}
             </button>
           )}
-          {appSlug && (
+          {appSlug && errorType !== ERROR_TYPES.RESTRICTED && (
             <button
               className={'btn btn-primary action-btn'}
               onClick={() => openAppEditorInNewTab()}
@@ -164,6 +175,23 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
             </button>
           ) : (
             <span className="pb-1"></span>
+          )}
+          {isValidSession && errorType === ERROR_TYPES.RESTRICTED && appDetails && (
+            <CopyToClipboardComponent
+              data={appDetails}
+              callback={(details) => {
+                let text = `App: ${details.appName}`;
+                if (details.folderName) {
+                  text += `\nFolder: ${details.folderName}`;
+                }
+                text += `\nURL: ${window.location.href}`;
+                return text;
+              }}
+            >
+              <button className="btn btn-primary" data-cy="copy-app-details-button">
+                {t('globals.workspace-modal.continue-btn', 'Copy app details')}
+              </button>
+            </CopyToClipboardComponent>
           )}
         </Modal.Footer>
       </Modal>

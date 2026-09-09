@@ -92,7 +92,7 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
             redirectToErrorPage(ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED);
             return;
           }
-          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED, appSlug ? { appSlug } : {});
           return;
         }
         case 401: {
@@ -102,7 +102,7 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           // If user is already authenticated but still got 401, they lack app-level access.
           // Show restricted error page instead of redirecting to login (which would loop).
           if (currentSession?.current_user?.id) {
-            redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED, appSlug ? { appSlug } : {});
             return;
           }
           // For unauthenticated app viewer URLs, redirect to app-scoped login preserving the original URL

@@ -13,6 +13,7 @@ import {
   AppCreateDto,
   AppListDto,
   AppUpdateDto,
+  RestrictedAccessInfoDto,
   ValidateAppAccessDto,
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
@@ -51,6 +52,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -257,6 +259,24 @@ export class AppsService implements IAppsService {
       isPublic: app.isPublic,
       organizationId: app.organizationId,
     };
+  }
+
+  async getRestrictedAccessInfo(slug: string, user: User): Promise<RestrictedAccessInfoDto> {
+    // Scoped to the requesting user's organization so this never leaks app names across workspaces.
+    const app = await this.appRepository.findBySlug(slug, user.organizationId);
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    const folderApp = await dbTransactionWrap((manager: EntityManager) =>
+      manager.findOne(FolderApp, { where: { appId: app.id }, relations: ['folder'] })
+    );
+
+    return plainToClass(RestrictedAccessInfoDto, {
+      appName: app.name,
+      folderName: folderApp?.folder?.name ?? null,
+    });
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
