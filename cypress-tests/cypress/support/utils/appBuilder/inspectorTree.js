@@ -378,12 +378,8 @@ const inspectorKey = (key) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-// Walks a PATH into a widget's nested exposed value and leaves the tree open at the leaf.
-// `path` is keys and/or array indices: ['selectedOption','value'] or ['selectedRows','0','name'].
-// Every hop is scoped to its parent's `.json-viewer-children` because CustomJSONViewer's Row
-// renders children INSIDE the parent row (Row.jsx) — and that scoping is the whole point:
-// `label` and `value` recur at multiple depths with the SAME data-cy, so a global lookup
-// silently returns whichever comes first in document order.
+// Each hop is scoped to its parent's `.json-viewer-children`: `label` and `value` recur at
+// multiple depths with the SAME data-cy, so a global lookup returns whichever comes first.
 /**
  * @tjBlock  inspector
  * @tjUsage  openExposedPath('dropdown1', ['selectedOption', 'label'])
@@ -418,13 +414,9 @@ export const openExposedPath = (widgetName, path) => {
 };
 
 
-// Asserts an exposed value at any depth. `keyOrPath` is a flat key ('isLoading') or a path
-// into an object/array (['selectedOption','value'], ['files','0','parsedValue']) — a flat key
-// IS a path of length 1, so both go through one walk. widgetName is REQUIRED: a default would
-// let a caller who omits it silently assert against the wrong widget and pass.
-// `type` only distinguishes the Function case; it is not otherwise validated.
-// Collapses every hop in reverse and closes the panel, so a second call in the same test
-// starts from the same state.
+// Flat key or path — a flat key IS a path of length 1, so both take one walk. widgetName is
+// REQUIRED: a default would let a caller who omits it assert against the wrong widget and pass.
+// Collapses in reverse and closes, so a second call in one test starts from a known state.
 /**
  * @tjBlock  inspector
  * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')
