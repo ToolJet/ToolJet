@@ -374,7 +374,6 @@ export const Table = (props) => {
     [actionPopOverRootClose, renderActionPopover]
   );
 
-  // Derived state
   const displayServerSideFilter = useMemo(
     () => resolveReferences(component.component.definition.properties.showFilterButton?.value) ?? false,
     [component.component.definition.properties.showFilterButton?.value]
