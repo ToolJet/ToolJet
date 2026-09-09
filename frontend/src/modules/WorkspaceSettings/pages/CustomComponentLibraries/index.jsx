@@ -113,9 +113,9 @@ export default function CustomComponentLibraries({ darkMode }) {
                           isLucid
                           size="medium"
                           variant="ghost"
-                          fill="#E54D2E"
+                          fill="var(--icon-danger)"
                           leadingIcon="trash-2"
-                          className="tw-text-[#E54D2E]"
+                          className="tw-text-text-danger"
                           onClick={handleOpenDeleteDialog(library)}
                           data-cy={`delete-library-${library.name}`}
                         >

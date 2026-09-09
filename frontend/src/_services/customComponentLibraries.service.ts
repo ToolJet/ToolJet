@@ -1,26 +1,28 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { fetchEventSource, type EventSourceMessage } from '@microsoft/fetch-event-source';
 
-export const customComponentLibrariesService = {
-  list,
-  deleteLibrary,
-  streamDevBundleUpdates,
-};
+interface StreamDevBundleUpdatesOptions {
+  onMessage?: (event: EventSourceMessage) => void;
+  onError?: (error: unknown) => void;
+}
 
 function list() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' as const };
   return fetch(`${config.apiUrl}/custom-component-libraries`, requestOptions).then(handleResponse);
 }
 
-function deleteLibrary(id) {
-  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+function deleteLibrary(id: string) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' as const };
   return fetch(`${config.apiUrl}/custom-component-libraries/${id}`, requestOptions).then(handleResponse);
 }
 
-// Live-reload push for the dev-preview track. One SSE connection per (libraryId, userId);
-// returns an AbortController so the caller can tear it down when the dev preview is cleared or switched.
-async function streamDevBundleUpdates(libraryId, userId, { onMessage, onError = () => {} } = {}) {
+// One SSE connection per (libraryId, userId); caller aborts it via the returned controller.
+async function streamDevBundleUpdates(
+  libraryId: string,
+  userId: string,
+  { onMessage, onError = () => {} }: StreamDevBundleUpdatesOptions = {}
+) {
   const controller = new AbortController();
 
   fetchEventSource(`${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${userId}/stream`, {
@@ -43,3 +45,9 @@ async function streamDevBundleUpdates(libraryId, userId, { onMessage, onError = 
 
   return controller;
 }
+
+export const customComponentLibrariesService = {
+  list,
+  deleteLibrary,
+  streamDevBundleUpdates,
+};
