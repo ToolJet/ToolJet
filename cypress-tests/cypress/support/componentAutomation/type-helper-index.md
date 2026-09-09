@@ -60,6 +60,7 @@
 | - | `closeInspectorDetail` | appBuilder/inspectorTree.js | inspector | `closeInspectorDetail()` |
 | - | `openExposedPath` | appBuilder/inspectorTree.js | inspector | `openExposedPath('dropdown1', ['selectedOption', 'label'])` |
 | - | `verifyExposedValue` | appBuilder/inspectorTree.js | inspector | `verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')` |
+| - | `grantClipboardAccess` | appBuilder/canvas.js | canvas | `grantClipboardAccess()` |
 | - | `copyWidget` | appBuilder/canvas.js | canvas | `copyWidget('button1')` |
 | - | `pasteWidget` | appBuilder/canvas.js | canvas | `pasteWidget()                                            // onto the root canvas` |
 | - | `copyPasteWidget` | appBuilder/canvas.js | canvas | `copyPasteWidget('button1')   // clones button1 → button2 via clipboard` |
