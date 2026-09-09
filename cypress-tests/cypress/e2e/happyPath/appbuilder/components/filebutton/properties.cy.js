@@ -5,7 +5,6 @@ import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
 import {
   verifyExposedValue,
-  closeInspectorDetail,
   hoverInPreview,
   commitChange,
   setTooltip,
@@ -20,7 +19,6 @@ import {
   selectFileType,
   selectValidationFileType,
   expectRejectionToast,
-  openParsedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Properties facet — direct-control half; the fx half is in propertiesFx.cy.js.
@@ -149,9 +147,7 @@ describe(
     // CSV yields an ARRAY of row objects, one per data row (sample-a.csv has 3).
     selectFileType("CSV");
     cy.get(fileButtonSelector.inputField(widget)).selectFile(csvFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue"], "Array", "[3]", widget);
 
     // JSON yields an OBJECT of 2 keys instead: same upload path, different
     // structure purely because of File type.
@@ -159,9 +155,7 @@ describe(
     openEditorSidebar(widget);
     selectFileType("JSON");
     cy.get(fileButtonSelector.inputField(widget)).selectFile(jsonFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "{2}");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue"], "Object", "{2}", widget);
   });
 
   it("should verify Delimiter changes how a CSV splits into columns", () => {
@@ -173,10 +167,7 @@ describe(
     // Row count is identical either way, so only the key count per row shows
     // the split. Default "," on a semicolon file gives one column: {1}.
     cy.get(fileButtonSelector.inputField(widget)).selectFile(semicolonCsvFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-    cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{1}");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{1}", widget);
 
     // Matching the delimiter splits the same file into its 3 real columns.
     clearSelectedFile();
@@ -184,10 +175,7 @@ describe(
     verifyAndModifyParameter("Delimiter", ";");
     commitChange();
     cy.get(fileButtonSelector.inputField(widget)).selectFile(semicolonCsvFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-    cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
   });
 
   it("should verify Make this field mandatory: direct toggle", () => {
