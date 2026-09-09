@@ -169,8 +169,12 @@ export const MultiselectV2 = ({
       return foundItem;
     }
     if (isDefault) {
-      return Array.isArray(selectOptions)
-        ? selectOptions.filter((item) => value?.find((val) => val === item.value))
+      // `values` carries no validation schema, so a broken binding can resolve
+      // to a string or an object. Without this guard `.find` throws and the
+      // platform error boundary replaces the whole field; a non-array `options`
+      // already degrades to an empty list, so match it.
+      return Array.isArray(selectOptions) && Array.isArray(value)
+        ? selectOptions.filter((item) => value.find((val) => val === item.value))
         : [];
     } else {
       return Array.isArray(selectOptions)
