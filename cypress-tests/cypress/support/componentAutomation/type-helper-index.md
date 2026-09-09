@@ -58,6 +58,7 @@
 | - | `verifyMultipleComponentValuesFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyMultipleComponentValuesFromInspector('select1', ['opt1', 'opt2'])` |
 | - | `verifyComponentFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyComponentFromInspector('textinput1')` |
 | - | `closeInspectorDetail` | appBuilder/inspectorTree.js | inspector | `closeInspectorDetail()` |
+| - | `openExposedPath` | appBuilder/inspectorTree.js | inspector | `openExposedPath('dropdown1', ['selectedOption', 'label'])` |
 | - | `verifyExposedValue` | appBuilder/inspectorTree.js | inspector | `verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')` |
 | - | `copyWidget` | appBuilder/canvas.js | canvas | `copyWidget('button1')` |
 | - | `pasteWidget` | appBuilder/canvas.js | canvas | `pasteWidget()                                            // onto the root canvas` |

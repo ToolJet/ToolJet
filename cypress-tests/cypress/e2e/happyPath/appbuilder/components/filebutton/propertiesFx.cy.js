@@ -5,7 +5,6 @@ import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
 import {
   verifyExposedValue,
-  closeInspectorDetail,
   hoverInPreview,
   commitChange,
   openEditorSidebar,
@@ -22,7 +21,6 @@ import {
   clearSelectedFile,
   selectFileType,
   expectRejectionToast,
-  openParsedValue,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -121,9 +119,7 @@ describe(
     enableFxAndBind("File type", '{{"csv"}}');
     commitChange();
     cy.get(fileButtonSelector.inputField(widget)).selectFile(csvFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue"], "Array", "[3]", widget);
   });
 
   it("should verify Delimiter resolves a binding, changing how a CSV splits", () => {
@@ -146,10 +142,7 @@ describe(
     // Row count is identical either way, so only the key count per row shows the
     // split: the bound ";" finds this file's 3 real columns.
     cy.get(fileButtonSelector.inputField(widget)).selectFile(semicolonCsvFile, { force: true });
-    openParsedValue();
-    cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
-    cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-    closeInspectorDetail();
+    verifyExposedValue(["files", "0", "parsedValue", "1"], "Object", "{3}", widget);
   });
 
   it("should verify Tooltip content resolves a binding", () => {
