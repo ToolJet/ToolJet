@@ -22,6 +22,7 @@ import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/gua
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
+import { MutableAppVersionGuard } from '@modules/apps/guards/mutable-app-version.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { AppDecorator } from '@modules/app/decorators/app.decorator';
@@ -54,6 +55,7 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
@@ -74,6 +76,7 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Patch(':id/versions/:versionId')
@@ -90,7 +93,13 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    MutableAppVersionGuard
+  )
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
@@ -103,6 +112,7 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
+    MutableAppVersionGuard,
     GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
