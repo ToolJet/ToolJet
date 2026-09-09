@@ -71,6 +71,10 @@
     font-weight: 500;
     font-size: 12px;
     line-height: 18px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__divider {
@@ -87,7 +91,7 @@
   }
 
   &__popover {
-    width: 237px;
+    width: 290px;
     border-radius: 10px;
     border: 1px solid var(--border-weak);
     box-shadow: var(--elevation-400-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.12));
@@ -143,8 +147,7 @@
       display: flex;
       align-items: center;
       gap: 2px;
-      flex: 1 0 0;
-      min-width: 0;
+      flex: 0 1 auto;
     }
 
     &-dot-wrap {
@@ -161,11 +164,8 @@
       font-size: 12px;
       line-height: 18px;
       letter-spacing: -0.24px;
-      flex: 1;
-      min-width: 0;
+      flex-shrink: 0;
       text-align: left;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -174,7 +174,14 @@
       font-size: 12px;
       line-height: 18px;
       letter-spacing: -0.24px;
-      flex-shrink: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: 130px;
+      margin-left: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
     }
   }
 

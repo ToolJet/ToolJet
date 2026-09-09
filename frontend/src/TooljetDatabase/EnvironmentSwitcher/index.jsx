@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
-import { capitalize } from 'lodash';
+import { capitalize, truncate } from 'lodash';
 import { Overlay, Popover } from 'react-bootstrap';
 import { IconChevronRight } from '@tabler/icons-react';
 import { TooljetDatabaseContext } from '../context';
@@ -113,7 +113,10 @@ const EnvironmentSwitcher = () => {
 
   const selectedStatus = statusFor(selectedEnvironment);
 
-  const openMigrationHistory = () => setIsHistoryDrawerOpen(true);
+  const openMigrationHistory = () => {
+    setIsOpen(false);
+    setIsHistoryDrawerOpen(true);
+  };
 
   return (
     <div className="tjdb-environment-switcher d-flex align-items-center gap-2">
@@ -125,7 +128,9 @@ const EnvironmentSwitcher = () => {
       >
         <div className={cx('tjdb-environment-switcher__dot', selectedStatus.dot)} />
         {selectedStatus.lastMigrationName && (
-          <span className="tjdb-environment-switcher__badge">{selectedStatus.lastMigrationName}</span>
+          <span className="tjdb-environment-switcher__badge" title={selectedStatus.lastMigrationName}>
+            {truncate(selectedStatus.lastMigrationName, { length: 30 })}
+          </span>
         )}
         <div className="tjdb-environment-switcher__divider" />
         <span className="tjdb-environment-switcher__name" data-cy={`${selectedEnvironment.name}-environment-name`}>
@@ -184,7 +189,9 @@ const EnvironmentSwitcher = () => {
                       <span className="tjdb-environment-switcher__row-name">{capitalize(environment.name)}</span>
                     </span>
                     {status.lastMigrationName && (
-                      <span className="tjdb-environment-switcher__row-badge">{status.lastMigrationName}</span>
+                      <span className="tjdb-environment-switcher__row-badge" title={status.lastMigrationName}>
+                        {truncate(status.lastMigrationName, { length: 30 })}
+                      </span>
                     )}
                   </button>
                 );

@@ -19,7 +19,7 @@ export const AddNewDataPopOver = ({
     <Popover
       className={`table-list-items ${darkMode && 'dark-theme'}`}
       style={{
-        width: '160px',
+        width: '170px',
       }}
     >
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
