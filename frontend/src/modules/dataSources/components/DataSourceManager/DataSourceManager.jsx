@@ -1076,8 +1076,8 @@ class DataSourceManagerComponent extends React.Component {
       const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
         ? key
         : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
-          ? camelize(key)
-          : key;
+        ? camelize(key)
+        : key;
       if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
       if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
     });
@@ -1094,8 +1094,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1181,6 +1181,9 @@ class DataSourceManagerComponent extends React.Component {
                             )}
                           </div>
                           {(() => {
+                            // Dummy/unresolved data sources show their own "missing, pull from git" warning below;
+                            // the global-setting branching warning isn't relevant when the data source is missing.
+                            if (selectedDataSource.is_dummy) return null;
                             const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
                             if (!isInitialized || !orgGitConfig) return null;
                             const isBranchingEnabled =
