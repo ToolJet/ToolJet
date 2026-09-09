@@ -16,7 +16,7 @@
     { "id": "persistence-import-export", "name": "Persistence, import, and export", "owner": "", "roots": [] },
     { "id": "editor-viewer", "name": "Editor and Viewer", "owner": "", "roots": ["Viewer"] },
     { "id": "collaboration-history", "name": "Collaboration and history", "owner": "", "roots": ["RealTimeEditor"] },
-    { "id": "builder-shell", "name": "Builder shell", "owner": "", "roots": ["Header", "LeftSidebar", "Popups", "Shared"], "files": ["AppBuilder.jsx", "Cursor.jsx", "EmbedApp.jsx", "RealtimeCursors.jsx", "index.js"] }
+    { "id": "builder-shell", "name": "Builder shell", "owner": "", "roots": ["Header", "LeftSidebar", "Popups", "Shared"], "files": ["AgentBuildingOverlay.jsx", "AppBuilder.jsx", "Cursor.jsx", "EmbedApp.jsx", "RealtimeCursors.jsx", "index.js"] }
   ],
   "overrides": {
     "src/AppBuilder/_stores/slices/appSlice.js": "persistence-import-export",

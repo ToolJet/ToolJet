@@ -90,7 +90,12 @@
     gap: 12px;
     height: 100%;
     overflow-y: auto;
+    scrollbar-color: var(--interactive-selected) transparent;
   }
+}
+
+.real-canvas.flex-container-canvas .key-value-pair-content {
+  scrollbar-color: inherit;
 }
 
 // Key-Value Row Styles

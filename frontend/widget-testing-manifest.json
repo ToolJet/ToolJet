@@ -1,0 +1,334 @@
+{
+  "baseline": "lts-3.16",
+  "registry": "src/AppBuilder/WidgetManager/configs/widgetConfig.js",
+  "widgets": [
+    {
+      "componentType": "Button",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ButtonGroupV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "PopoverMenu",
+      "status": "not-started"
+    },
+    {
+      "componentType": "FileButton",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Table",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Chart",
+      "status": "not-started"
+    },
+    {
+      "componentType": "KeyValuePair",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Form",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ModalV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Container",
+      "status": "not-started"
+    },
+    {
+      "componentType": "FlexContainer",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Accordion",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Tabs",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Listview",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Calendar",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Kanban",
+      "status": "not-started"
+    },
+    {
+      "componentType": "TextInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "EmailInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "PasswordInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "TextArea",
+      "status": "not-started"
+    },
+    {
+      "componentType": "RichTextEditor",
+      "status": "not-started"
+    },
+    {
+      "componentType": "NumberInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "PhoneInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "CurrencyInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "RangeSliderV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "StarRating",
+      "status": "not-started"
+    },
+    {
+      "componentType": "DropdownV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "MultiselectV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "TagsInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Checkbox",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ToggleSwitchV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "RadioButtonV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "FileInput",
+      "status": "not-started"
+    },
+    {
+      "componentType": "TreeSelect",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Cascader",
+      "status": "not-started"
+    },
+    {
+      "componentType": "DatePickerV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "TimePicker",
+      "status": "not-started"
+    },
+    {
+      "componentType": "DatetimePickerV2",
+      "status": "not-started"
+    },
+    {
+      "componentType": "DaterangePicker",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Navigation",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Link",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Steps",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Pagination",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Icon",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Image",
+      "status": "not-started"
+    },
+    {
+      "componentType": "SvgImage",
+      "status": "not-started"
+    },
+    {
+      "componentType": "PDF",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Map",
+      "status": "not-started"
+    },
+    {
+      "componentType": "AudioRecorder",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Camera",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Text",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Tags",
+      "status": "not-started"
+    },
+    {
+      "componentType": "CircularProgressBar",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ProgressBar",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Divider",
+      "status": "not-started"
+    },
+    {
+      "componentType": "VerticalDivider",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Statistics",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Timeline",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Timer",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Spinner",
+      "status": "not-started"
+    },
+    {
+      "componentType": "JSONExplorer",
+      "status": "not-started"
+    },
+    {
+      "componentType": "CustomComponent",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Html",
+      "status": "not-started"
+    },
+    {
+      "componentType": "IFrame",
+      "status": "not-started"
+    },
+    {
+      "componentType": "FilePicker",
+      "status": "not-started"
+    },
+    {
+      "componentType": "CodeEditor",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ColorPicker",
+      "status": "not-started"
+    },
+    {
+      "componentType": "BoundedBox",
+      "status": "not-started"
+    },
+    {
+      "componentType": "QrScanner",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Chat",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ReorderableList",
+      "status": "not-started"
+    },
+    {
+      "componentType": "JSONEditor",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Modal",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Datepicker",
+      "status": "not-started"
+    },
+    {
+      "componentType": "RadioButton",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ToggleSwitch",
+      "status": "not-started"
+    },
+    {
+      "componentType": "DropDown",
+      "status": "not-started"
+    },
+    {
+      "componentType": "Multiselect",
+      "status": "not-started"
+    },
+    {
+      "componentType": "RangeSlider",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ButtonGroup",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ModuleContainer",
+      "status": "not-started"
+    },
+    {
+      "componentType": "ModuleViewer",
+      "status": "not-started"
+    }
+  ]
+}
