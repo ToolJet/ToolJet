@@ -20,7 +20,7 @@
  *   see surface-cache `colorTokenNames`.
  * NOT here: properties → properties.js · events & CSA → events.js.
  */
-import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import { commonWidgetSelector, commonSelectors, cyParamName } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar } from "./properties";
 
@@ -135,11 +135,16 @@ export const verifyBoxShadowCss = (
  * @tjBlock  styles
  * @tjUsage  verifyAndModifyStylePickerFx('Border radius', '0', '4px')
  *           verifyAndModifyStylePickerFx('Text color', 'Text/Primary', '#111', 0, '', false, '#1B1F24')
+ *           verifyAndModifyStylePickerFx('Text', 'Text/Primary', '#111', 0, '', 1, '#1B1F24') // 2nd of two 'Text' rows
  * @tjDom    style picker label + fx button + CodeMirror input
  * NOTE: color swatches display a design-TOKEN name in the value row (e.g.
  *   'Text/Primary') but the fx CODE editor shows the RESOLVED hex (e.g.
  *   '#1B1F24'). Pass `fxDefaultValue` when they differ; it defaults to
  *   `defaultValue` for non-color pickers where the two match.
+ *   `hasIndex`: when a displayName is shared by TWO style rows that both stay
+ *   mounted+visible (e.g. numberInput label 'Text' color + field 'Text'
+ *   textColor), pass the 0-based DOM index (accordion order: label before
+ *   field) to disambiguate every multi-match lookup. Default false = single match.
  */
 export const verifyAndModifyStylePickerFx = (
   paramName,
@@ -150,45 +155,78 @@ export const verifyAndModifyStylePickerFx = (
   hasIndex = false,
   fxDefaultValue = defaultValue
 ) => {
-  cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
-    "have.text",
-    paramName
-  );
-  cy.get(commonWidgetSelector.stylePicker(paramName)).should("be.visible");
+  // Multi-match selectors (label / picker / value / fx-button) are scoped to
+  // `.eq(hasIndex)` when hasIndex is a number, else matched as-is.
+  const gi = (sel) => (hasIndex === false ? cy.get(sel) : cy.get(sel).eq(hasIndex));
+
+  gi(commonWidgetSelector.parameterLabel(paramName)).should("have.text", paramName);
+  gi(commonWidgetSelector.stylePicker(paramName)).should("be.visible");
   cy.get('body').then(($b) => {
     if ($b.find(commonWidgetSelector.stylePickerValueIcon(paramName)).length) {
-      cy.get(commonWidgetSelector.stylePickerValueIcon(paramName)).should("be.visible");
+      gi(commonWidgetSelector.stylePickerValueIcon(paramName)).should("be.visible");
     }
   });
 
-  cy.get(commonWidgetSelector.stylePickerValue(paramName))
+  gi(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
 
   if (hasIndex === false) {
     cy.get(commonWidgetSelector.stylePicker(paramName)).last().realHover();
   } else {
-    cy.get(commonWidgetSelector.stylePicker(paramName))
-      .eq(hasIndex)
-      .realHover();
+    cy.get(commonWidgetSelector.stylePicker(paramName)).eq(hasIndex).realHover();
   }
 
-  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
+  gi(commonWidgetSelector.parameterFxButton(paramName)).click();
+
+  // After the fx toggle only the clicked row enters code mode, so its
+  // `<label>-input-field` CodeMirror is unique — no index needed below.
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".cm-line")
       .should("be.visible")
       .and("have.text", `${boxShadow}${fxDefaultValue}`);
   });
 
-  cy.get(
-    commonWidgetSelector.stylePickerFxInput(paramName)
-  ).clearAndTypeOnCodeMirror(value);
+  cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).clearAndTypeOnCodeMirror(value);
 
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName))
     .eq(index)
     .within(() => {
       cy.get(".cm-line").should("be.visible").and("have.text", value);
     });
+};
+
+/**
+ * @tjType   numberInput
+ * @tjBlock  styles
+ * @tjUsage  verifyAndModifyStyleNumberFx('Size', '12', '{{20}}')
+ *           verifyAndModifyStyleNumberFx('Border radius', '6', '{{4}}')
+ * @tjDom    numeric style row → `<label>-input` (value) · `<label>-fx-button` (toggle) · `<label>-input-field` (fx CodeMirror)
+ * NOTE: numeric style pickers (config type 'numberInput', e.g. labelFontSize 'Size' /
+ *   borderRadius 'Border radius') render a plain number input (`<cyLabel>-input`), NOT the
+ *   colorSwatch `<cyLabel>-picker` row — so verifyAndModifyStylePickerFx does not apply here.
+ *   Code-mode is OFF by default for these (paramType!=='code'), so the fx button must be
+ *   clicked to reveal the `<cyLabel>-input-field` CodeMirror before typing the binding.
+ *   source: SingleLineCodeEditor.jsx:662 (codeShow) · NumberInput.jsx (`<cyLabel>-input`).
+ */
+export const verifyAndModifyStyleNumberFx = (paramName, defaultValue, value) => {
+  cy.get(commonWidgetSelector.parameterLabel(paramName))
+    .scrollIntoView()
+    .should("have.text", paramName);
+  // the default numeric value is shown in the non-fx number input
+  cy.get(`[data-cy="${cyParamName(paramName)}-input"]`)
+    .should("be.visible")
+    .and("have.value", String(defaultValue));
+  // reveal the row's fx toggle and click it → swaps the number input for the CodeMirror editor
+  cy.get(commonWidgetSelector.parameterLabel(paramName)).realHover();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName)).click({ force: true });
+  // type the {{binding}} into the fx code editor. Re-query for each type (see
+  // verifyAndModifyParameter note: clearAndTypeOnCodeMirror yields a detached subject).
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).clearAndTypeOnCodeMirror(" ");
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).clearAndTypeOnCodeMirror(value);
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).within(() => {
+    cy.get(".cm-line").should("be.visible").and("have.text", value);
+  });
 };
 
 /**
