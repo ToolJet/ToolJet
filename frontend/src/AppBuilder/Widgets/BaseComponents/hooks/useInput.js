@@ -55,16 +55,6 @@ export const useInput = ({
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);
   const [loading, setLoading] = useState(loadingState);
-  // Tracks the Disable property ALONE, never Loading. Every consumer already ORs
-  // it with `loading` for the rendered/interactive state (BaseInput.jsx:88,105,
-  // 225,232,283; PhoneInput.jsx:170; CurrencyInput.jsx:103), so seeding it from
-  // `disabledState || loadingState` changed nothing visible — it only made the
-  // mount-only effect below publish `isDisabled: true` for a field that is merely
-  // loading, and only a CHANGE to `disabledState` ever republishes that. Since
-  // RenderWidget prefers the exposed value over the resolved property
-  // (RenderWidget.jsx:155-159) and feeds it the `disabled` class
-  // (pointer-events:none, opacity .5), such a field stayed greyed out for good.
-  // Regression: [TextInput-STATE-005].
   const [disable, setDisable] = useState(disabledState);
 
   const numberFormat = properties?.numberFormat;
