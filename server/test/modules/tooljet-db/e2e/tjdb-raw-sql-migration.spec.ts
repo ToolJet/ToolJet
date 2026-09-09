@@ -551,7 +551,7 @@ describe('TooljetDb raw SQL migration', () => {
         }
       });
 
-      it('rejects an unsupported type introduced on a sibling table reached via refs, naming that table', async () => {
+      it('rejects an unsupported type introduced on a sibling table reached via {{table.<name>}}, naming that table', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
@@ -564,11 +564,9 @@ describe('TooljetDb raw SQL migration', () => {
             await createTable(organizationId, cookie, 'gate_sibling_a_tbl');
             await createTable(organizationId, cookie, 'gate_sibling_b_tbl');
             const { internalTable: tableA } = await tableAndRelation(organizationId, 'gate_sibling_a_tbl');
-            const { internalTable: tableB } = await tableAndRelation(organizationId, 'gate_sibling_b_tbl');
 
             const res = await runRawSql(organizationId, cookie, tableA.id, {
-              sql: `ALTER TABLE "{{b}}" ADD COLUMN tags text[]`,
-              refs: { b: tableB.co_relation_id },
+              sql: `ALTER TABLE "{{table.gate_sibling_b_tbl}}" ADD COLUMN tags text[]`,
             });
             expect(res.statusCode).toBe(400);
             expect(res.body.message).toContain('tags');
@@ -622,6 +620,127 @@ describe('TooljetDb raw SQL migration', () => {
               [tenantSchema, relation.id]
             );
             expect(column).toBeDefined();
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+    });
+
+    describe('{{table.<name>}} references', () => {
+      it('resolves {{table.<name>}} by current display name, same as an explicit refs entry', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'table_ref_a_tbl');
+            await createTable(organizationId, cookie, 'table_ref_b_tbl');
+            const { internalTable: tableA } = await tableAndRelation(organizationId, 'table_ref_a_tbl');
+
+            const res = await runRawSql(organizationId, cookie, tableA.id, {
+              sql: `ALTER TABLE "{{table.table_ref_b_tbl}}" ADD COLUMN note character varying`,
+            });
+            expect(res.statusCode).toBe(201);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('404s when {{table.<name>}} names a table absent from the workspace', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'table_ref_missing_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'table_ref_missing_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{table.does_not_exist_tbl}}" ADD COLUMN note character varying`,
+            });
+            expect(res.statusCode).toBe(404);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+    });
+
+    describe('DDL token-check enforcement', () => {
+      it('rejects a literal table name in ALTER TABLE position', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'ddl_literal_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'ddl_literal_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE ddl_literal_tbl ADD COLUMN note character varying`,
+            });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.message).toContain('{{self}}');
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('rejects a hardcoded uuid in CREATE TABLE position', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'ddl_hardcoded_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'ddl_hardcoded_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `CREATE TABLE "11111111-1111-1111-1111-111111111111" (id integer primary key)`,
+            });
+            expect(res.statusCode).toBe(400);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('still accepts {{self}} in ALTER TABLE position', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie } = workspace;
+
+            await createTable(organizationId, cookie, 'ddl_self_ok_tbl');
+            const { internalTable } = await tableAndRelation(organizationId, 'ddl_self_ok_tbl');
+
+            const res = await runRawSql(organizationId, cookie, internalTable.id, {
+              sql: `ALTER TABLE "{{self}}" ADD COLUMN note character varying`,
+            });
+            expect(res.statusCode).toBe(201);
           });
         } finally {
           if (organizationId) await cleanupWorkspace(organizationId);

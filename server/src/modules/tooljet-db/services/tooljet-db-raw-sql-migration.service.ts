@@ -15,6 +15,7 @@ import { unsupportedColumnTypes } from '../helpers/column-type-change';
 import { TJDB } from '../types';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
 import { RawSqlMigrationDto } from '../dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from '../dto/revert-migration.dto';
 
@@ -35,7 +36,8 @@ export class TooljetDbRawSqlMigrationService {
   constructor(
     protected readonly manager: EntityManager,
     protected readonly relationResolverService: TooljetDbRelationResolverService,
-    protected readonly migrationRecorderService: TooljetDbMigrationRecorderService
+    protected readonly migrationRecorderService: TooljetDbMigrationRecorderService,
+    protected readonly tableOperationsService: TooljetDbTableOperationsService
   ) {}
 
   async recordRawSqlMigration(
@@ -278,11 +280,15 @@ export class TooljetDbRawSqlMigrationService {
   }
 
   /**
-   * Explicit `{{name}}` tokens only, resolved against the caller-supplied `refs` map - the same
-   * closed-substitution regex `replayBaselineMigration` uses. Nothing here parses the SQL; a
-   * placeholder-shaped token inside a string literal or comment is substituted exactly the same
-   * as one that is not - the contract is "author placeholders carefully," not "we understood your
-   * SQL."
+   * Resolves `{{name}}` tokens against the caller-supplied `refs` map (unchanged - the closed
+   * -substitution path baseline synthesis and replay both depend on), plus two additional forms
+   * resolved independently of `refs`: `{{self}}` (this table's own relation, seeded last so it
+   * always wins) and `{{table.<name>}}` (another table, resolved fresh by its current display
+   * name via the same resolveTable() seed-data SQL uses - this is the user-facing path the
+   * editor's autocomplete drives).
+   *
+   * `assertTableDdlTargetsAreTemplated` runs first and inspects the *original* SQL - it must see
+   * literal table names before substitution replaces them.
    */
   private async substitutePlaceholders(
     dto: RawSqlMigrationDto,
@@ -291,6 +297,8 @@ export class TooljetDbRawSqlMigrationService {
     environmentId: string,
     branchId: string
   ): Promise<{ sql: string; siblingRelations: InternalTableRelation[] }> {
+    this.assertTableDdlTargetsAreTemplated(dto.sql);
+
     const resolvedIdByPlaceholder = new Map<string, string>();
     // Keyed by relation id, not placeholder - two placeholders can legally point at the same
     // sibling, and the type gate must inspect each touched table once.
@@ -304,21 +312,61 @@ export class TooljetDbRawSqlMigrationService {
         this.manager
       );
       resolvedIdByPlaceholder.set(placeholder, sibling.id);
-      // A ref can point back at the table being migrated - that's `self`, already covered by the
-      // caller, not a sibling.
       if (sibling.id !== selfRelationId) siblingRelationById.set(sibling.id, sibling);
     }
+
+    // {{table.<name>}} - independent of refs. Deduped via Set: two placeholders naming the same
+    // table only need resolving once.
+    const tableNames = new Set<string>();
+    for (const match of dto.sql.matchAll(/\{\{table\.([\w-]+)\}\}/g)) tableNames.add(match[1]);
+    for (const tableName of tableNames) {
+      const { internalTable, relation: sibling } = await this.tableOperationsService.resolveTable(
+        organizationId,
+        tableName,
+        environmentId,
+        this.manager
+      );
+      // resolveTable's relation has no internalTable eagerly loaded (unlike
+      // resolveSiblingByCoRelationId, which attaches it) - the type gate's violation message
+      // needs it for tableLabel, so attach it here the same way.
+      sibling.internalTable = internalTable;
+      resolvedIdByPlaceholder.set(`table.${tableName}`, sibling.id);
+      if (sibling.id !== selfRelationId) siblingRelationById.set(sibling.id, sibling);
+    }
+
     // Seeded last: `self` always means this table's own relation, even if the caller's `refs` map
     // also has a `self` key.
     resolvedIdByPlaceholder.set('self', selfRelationId);
 
-    const sql = dto.sql.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+    const sql = dto.sql.replace(/\{\{([\w.-]+)\}\}/g, (_match, key) => {
       const resolved = resolvedIdByPlaceholder.get(key);
       if (!resolved) throw new BadRequestException(`Unresolved placeholder "{{${key}}}" in raw SQL migration`);
       return resolved;
     });
 
     return { sql, siblingRelations: Array.from(siblingRelationById.values()) };
+  }
+
+  /**
+   * Every `CREATE|ALTER|DROP TABLE` target must be an exact `{{self}}`/`{{table.<name>}}` token -
+   * a literal table name (or a hardcoded uuid) is rejected here instead of left to fail at
+   * execution or, worse, silently succeed against a table `assertNoUnsupportedColumnTypes` never
+   * inspected. A token check, not a DDL parser: the only positions inspected are exact keyword
+   * matches, so a placeholder-shaped token inside a string literal or comment isn't validated -
+   * same accepted boundary as this file's placeholder substitution itself.
+   */
+  private assertTableDdlTargetsAreTemplated(sql: string): void {
+    const targetPattern = /\b(?:CREATE|ALTER|DROP)\s+TABLE\s+(?:IF\s+(?:NOT\s+)?EXISTS\s+)?("?[^\s(;]+)/gi;
+    const templatedPattern = /^"?\{\{(?:self|table\.[\w-]+)\}\}"?$/;
+
+    for (const match of sql.matchAll(targetPattern)) {
+      const target = match[1];
+      if (!templatedPattern.test(target)) {
+        throw new BadRequestException(
+          `Table DDL must target "{{self}}" or "{{table.<name>}}", found literal identifier "${target}"`
+        );
+      }
+    }
   }
 }
 
