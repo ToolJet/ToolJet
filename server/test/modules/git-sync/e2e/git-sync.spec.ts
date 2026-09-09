@@ -23,12 +23,38 @@ import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.servi
 // Tests in the save+retrieve block and the App git life cycle hit this
 // server for real (no stubs). All URLs are derived from TEST_GIT_BASE_URL +
 // TEST_GIT_REPO_PATH so changing the host needs only one override.
-// Required environment variables for this suite. No defaults: a missing or
-// empty value is a hard error so misconfigured CI fails loudly instead of
-// silently hitting the wrong host or sending placeholder credentials.
+// Required environment variables for this suite. Checked up front rather than
+// on first use, so a CI without the simulator skips the suite instead of
+// failing it: these reads happen at module scope, and throwing there aborts the
+// import and reports "Test suite failed to run" with no indication that the
+// cause was configuration. Same shape as git-sync-gitlab.spec.ts and
+// save-release-gitsync.
+const REQUIRED_ENV = [
+  'TEST_GIT_BASE_URL',
+  'TOOLJET_GITHUB_APP_ID',
+  'TOOLJET_GITHUB_INSTALLATION_ID',
+  'TOOLJET_GITHUB_APP_PRIVATE_KEY',
+  'TOOLJET_GIT_ADMIN_USER',
+  'TOOLJET_GIT_ADMIN_PASSWORD',
+];
+const MISSING_ENV = REQUIRED_ENV.filter((name) => !process.env[name]);
+const GITSYNC_E2E_ENABLED = MISSING_ENV.length === 0;
+if (!GITSYNC_E2E_ENABLED) {
+  console.warn(
+    `[git-sync] SKIPPED — set ${MISSING_ENV.join(', ')} (plus a GitHub-Enterprise-shaped simulator) to run this suite.`
+  );
+}
+const describeGitSync = GITSYNC_E2E_ENABLED ? describe : describe.skip;
+
+// A missing or empty value is still a hard error when the suite is enabled, so
+// a half-configured CI fails loudly instead of silently hitting the wrong host
+// or sending placeholder credentials. When the suite is skipped the reads are
+// inert and return '' — the values are never used, and throwing would defeat
+// the skip above.
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
+    if (!GITSYNC_E2E_ENABLED) return '';
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
@@ -73,7 +99,7 @@ const BASIC =
 /**
  * @group gitsync
  */
-describe('GitSyncController', () => {
+describeGitSync('GitSyncController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let tokenCookie: string;
