@@ -11,6 +11,8 @@
 | - | `verifyTooltip` | appBuilder/properties.js | properties | `verifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
 | - | `addAndVerifyTooltip` | appBuilder/properties.js | properties | `addAndVerifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
 | - | `commitChange` | appBuilder/properties.js | common | `commitChange()` |
+| - | `selectReactSelectOption` | appBuilder/properties.js | common | `selectReactSelectOption('[data-cy="dropdown-file-type"]', 'CSV')` |
+| - | `hoverInPreview` | appBuilder/properties.js | properties | `hoverInPreview(fileButtonSelector.button('filebutton1'))` |
 | - | `setTooltip` | appBuilder/properties.js | properties | `setTooltip('markdown', 'bold text')` |
 | - | `editAndVerifyWidgetName` | appBuilder/properties.js | properties | `editAndVerifyWidgetName('myButton', ['General', 'Properties', 'Devices'])` |
 | - | `verifyPropertiesGeneralAccordion` | appBuilder/properties.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
@@ -55,6 +57,8 @@
 | - | `verifyComponentValueFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyComponentValueFromInspector('textinput1', 'hello')` |
 | - | `verifyMultipleComponentValuesFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyMultipleComponentValuesFromInspector('select1', ['opt1', 'opt2'])` |
 | - | `verifyComponentFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyComponentFromInspector('textinput1')` |
+| - | `closeInspectorDetail` | appBuilder/inspectorTree.js | inspector | `closeInspectorDetail()` |
+| - | `verifyExposedValue` | appBuilder/inspectorTree.js | inspector | `verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')` |
 | - | `copyWidget` | appBuilder/canvas.js | canvas | `copyWidget('button1')` |
 | - | `pasteWidget` | appBuilder/canvas.js | canvas | `pasteWidget()                                            // onto the root canvas` |
 | - | `copyPasteWidget` | appBuilder/canvas.js | canvas | `copyPasteWidget('button1')   // clones button1 → button2 via clipboard` |
