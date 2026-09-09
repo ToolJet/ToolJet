@@ -132,9 +132,9 @@ const Table = memo(
     const hasDataChanged = useRef(false);
 
     const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-      isLoading: loadingState,
-      isVisible: visibility,
-      isDisabled: disabledState,
+      isLoading: loadingState ?? restOfProperties?.loadingState ?? false,
+      isVisible: visibility ?? restOfProperties?.visibility ?? true,
+      isDisabled: disabledState ?? restOfProperties?.disabledState ?? false,
     });
 
     // ===== HELPER FUNCTION =====
