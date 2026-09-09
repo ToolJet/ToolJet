@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -6,6 +6,7 @@ import { sql as sqlLang } from '@codemirror/lang-sql';
 import { EditorView } from '@codemirror/view';
 import { search, openSearchPanel } from '@codemirror/search';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { createPlaceholderCompletion } from './sqlPlaceholderCompletion';
 import './SqlEditor.scss';
 
 // Same basicSetup shape as AppBuilder/Widgets/CodeEditor.jsx - the only other standalone (non
@@ -37,10 +38,27 @@ const READ_ONLY_BASIC_SETUP = {
  * Editable (with the search-panel button, richer basicSetup, onChange) when `onChange` is passed;
  * read-only otherwise.
  */
-const SqlEditor = ({ value, onChange, height, placeholder, dataCy = 'sql-editor' }) => {
+const SqlEditor = ({
+  value,
+  onChange,
+  height,
+  placeholder,
+  dataCy = 'sql-editor',
+  allowTableRef = false,
+  tableNames = [],
+}) => {
   const [editorView, setEditorView] = useState(null);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const editable = !!onChange;
+
+  const extensions = useMemo(
+    () =>
+      editable
+        ? [sqlLang(), EditorView.lineWrapping, search(), createPlaceholderCompletion({ allowTableRef, tableNames })]
+        : [sqlLang(), EditorView.lineWrapping],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editable, allowTableRef, tableNames.join(',')]
+  );
 
   return (
     <div
@@ -61,7 +79,7 @@ const SqlEditor = ({ value, onChange, height, placeholder, dataCy = 'sql-editor'
         value={value || (editable ? '' : '-- No SQL available for this migration')}
         height={height}
         theme={darkMode ? okaidia : githubLight}
-        extensions={editable ? [sqlLang(), EditorView.lineWrapping, search()] : [sqlLang(), EditorView.lineWrapping]}
+        extensions={extensions}
         editable={editable}
         onChange={editable ? onChange : undefined}
         basicSetup={editable ? EDITABLE_BASIC_SETUP : READ_ONLY_BASIC_SETUP}
