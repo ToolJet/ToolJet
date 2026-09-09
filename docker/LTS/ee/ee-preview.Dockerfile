@@ -147,7 +147,7 @@ RUN npm --prefix server run build
 
 FROM node:22.15.1-bullseye
 
-RUN apt-get update -yq \
+RUN apt-get update -yq -o Acquire::Check-Valid-Until=false \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
