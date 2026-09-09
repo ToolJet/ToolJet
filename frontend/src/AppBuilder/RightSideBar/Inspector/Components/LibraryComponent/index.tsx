@@ -1,47 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 import { useEffectiveLibraryRevision, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import { buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel, getComponentIdentity } from './utils';
 
-// F4b: manifest-driven Inspector for LibraryComponent (LLD §5.6, ModuleViewerInspector
-// pattern). Identity (libraryId/componentName/revisionId) lives ONLY in
-// definition.properties — never rendered as editable fields. Props and events come
-// from the PINNED revision's manifest (public, immutable-cached endpoint), so the
+import type { LibraryComponentPropertiesProps } from './types';
+import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
+
+const AccordionComponent = Accordion as React.ComponentType<any>;
+const EventManagerComponent = EventManager as React.ComponentType<any>;
+
+// F4b: manifest-driven Inspector panel for the LibraryComponent widget (LLD §5.6,
+// ModuleViewerInspector pattern). Identity (libraryId/componentName/revisionId) lives
+// ONLY in definition.properties — never rendered as editable fields. Props and events
+// come from the PINNED revision's manifest (public, immutable-cached endpoint), so the
 // Inspector always matches what the instance actually runs — not the library's latest.
-
-// manifest prop.type → inspector field type (Code.jsx consumes customMeta wholesale).
-// NEVER set customMeta.defaultValue here: Code.jsx getInitialValue() returns it BEFORE
-// reading the stored definition.value, so edited values would display as the default
-// again on every Inspector mount (found 2026-08-06). Drop-time stamping already writes
-// manifest defaults into definition.properties — that's the correct default channel.
-const fieldMeta = (prop) => {
-  const displayName = prop.label ?? prop.name; // label lands with C2; name until then
-
-  switch (prop.type) {
-    case 'boolean': {
-      const inputType = prop.inspector ?? 'toggle';
-
-      return { displayName, name: prop.name, type: inputType, ...(inputType === 'checkbox' && { checkboxLabel: '' }) };
-    }
-    case 'enumeration': {
-      const inputType = prop.inspector ?? 'select';
-      const optionLabelKeyName = inputType === 'switch' ? 'displayName' : 'name';
-
-      return {
-        displayName,
-        name: prop.name,
-        type: inputType,
-        options: (prop.enumValues ?? []).map((v) => ({ [optionLabelKeyName]: prop.enumLabels?.[v] ?? v, value: v })),
-      };
-    }
-    default: // string | number | object | array → CodeHinter
-      return { displayName, name: prop.name, type: prop.inspector ?? 'code' };
-  }
-};
-
-export const LibraryComponent = ({
+export const LibraryComponentProperties = ({
   componentMeta,
   darkMode,
   layoutPropertyChanged,
@@ -53,22 +30,18 @@ export const LibraryComponent = ({
   apps,
   allComponents,
   pages,
-}) => {
-  const definitionProps = component.component?.definition?.properties ?? {};
-  const libraryId = definitionProps.libraryId?.value;
-  const correlationId = definitionProps.correlationId?.value;
-  const componentName = definitionProps.componentName?.value;
-  const revisionId = definitionProps.revisionId?.value;
+}: LibraryComponentPropertiesProps) => {
+  const { libraryId, correlationId, componentName, revisionId } = getComponentIdentity(component);
 
   // F5: same resolution as the runner (dev preview > app pin > instance property),
   // so the Inspector always describes the revision that's actually rendering.
-  const effectiveRevision = useEffectiveLibraryRevision(correlationId, revisionId);
+  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId, revisionId);
 
-  const [manifest, setManifest] = useState(null);
+  const [manifest, setManifest] = useState<LibraryManifest | null>(null);
 
   // Live-reload: a dev-preview push bumps this nonce
-  const devNonce = useCustomComponentPreviewStore((state) =>
-    effectiveRevision?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[libraryId] : undefined
+  const devNonce = useCustomComponentPreviewStore((state: any) =>
+    effectiveRevision?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[libraryId ?? ''] : undefined
   );
 
   useEffect(() => {
@@ -80,23 +53,14 @@ export const LibraryComponent = ({
       .catch(() => setManifest(null));
   }, [libraryId, effectiveRevision, devNonce]);
 
-  const componentManifest = manifest?.components?.[componentName];
+  const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
   const props = componentManifest?.props ?? [];
-  const visibleProps = props.filter((prop) => prop.inspector !== 'hidden');
+  const visibleProps = filterVisibleProps(props);
   const events = componentManifest?.events ?? [];
 
-  // EventManager's whole pipeline keys off eventMetaDefinition.events — synthesizing
-  // it from the manifest reuses creation/storage/execution untouched (fireEvent(name)
-  // from the shell bridge matches eventId = event.name).
-  const eventMetaDefinition = useMemo(
-    () => ({
-      ...componentMeta,
-      events: Object.fromEntries(events.map((e) => [e.name, { displayName: e.name }])),
-    }),
-    [componentMeta, events]
-  );
+  const eventMetaDefinition = useMemo(() => buildEventMetaDefinition(componentMeta, events), [componentMeta, events]);
 
-  const items = [];
+  const items: { title: string; isOpen: boolean; children: React.ReactNode }[] = [];
 
   // Identity — read-only context (picker UX arrives with F5's revision picker).
   items.push({
@@ -106,7 +70,7 @@ export const LibraryComponent = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
         {[
           ['Component', componentManifest?.displayName ?? componentName],
-          ['Revision', effectiveRevision?.startsWith?.('dev:') ? 'Dev preview' : effectiveRevision],
+          ['Revision', formatRevisionLabel(effectiveRevision)],
         ].map(([label, value]) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
             <span style={{ color: 'var(--text-placeholder)' }}>{label}</span>
@@ -137,7 +101,7 @@ export const LibraryComponent = ({
               '',
               undefined,
               null,
-              fieldMeta(prop)
+              fieldMeta(prop) as any // renderElement (untyped JS) infers customMeta as `null` from its default param
             )
           )}
         </>
@@ -150,7 +114,7 @@ export const LibraryComponent = ({
       title: 'Events',
       isOpen: true,
       children: (
-        <EventManager
+        <EventManagerComponent
           sourceId={component?.id}
           eventSourceType="component"
           eventMetaDefinition={eventMetaDefinition}
@@ -195,5 +159,5 @@ export const LibraryComponent = ({
     ),
   });
 
-  return <Accordion items={items} />;
+  return <AccordionComponent items={items} />;
 };
