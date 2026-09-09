@@ -20,6 +20,7 @@ import { AppVersionType, AppVersionStatus } from '@entities/app_version.entity';
  * single-line docblock of its own makes it inert and the suite invisible to --group.
  *
  * @group workflows
+ * @group gitsync
  */
 describe('resolveWorkflowRef', () => {
   const organizationId = 'org-1';

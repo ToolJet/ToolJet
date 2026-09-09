@@ -24,6 +24,7 @@
  * changing behaviour. The git tree-SHA freshness arm needs a real repo on disk and belongs in e2e.
  *
  * @group workflows
+ * @group gitsync
  */
 import { Test } from '@nestjs/testing';
 import { PlatformGitPullService } from '@ee/platform-git-sync/pull.service';

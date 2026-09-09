@@ -16,6 +16,7 @@
  * resource lookup, which would only assert that git was called with certain arguments.
  *
  * @group workflows
+ * @group gitsync
  */
 import { extraSparsePathsForHydrate } from '@ee/platform-git-sync/pull.service';
 import { APP_TYPES } from '@modules/apps/constants';
