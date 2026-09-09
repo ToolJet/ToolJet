@@ -17,6 +17,7 @@
 //   verifyMultipleComponentValuesFromInspector -                    → inspector
 //   verifyComponentFromInspector     -                    → inspector
 //   closeInspectorDetail             -                    → inspector
+//   openExposedPath                  -                    → inspector
 //   verifyExposedValue               -                    → inspector
 // └──────────────────────────────────────────────────────────────────┘
 /**
@@ -367,19 +368,78 @@ export const closeInspectorDetail = () => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
 };
 
-// Asserts the EXPOSED state (components.<widget>.<key>), a separate code path from the
-// rendered DOM. widgetName is REQUIRED: a default would let a caller who omits it silently
-// assert against the wrong widget and pass.
+
+// Matches the PRODUCT's derivation (generateCypressDataCy, cypressHelpers.js) — NOT the
+// test-side cyParamName, which only replaces whitespace and so diverges on any key
+// containing `_` or `.`.
+const inspectorKey = (key) =>
+  String(key)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+// Walks a PATH into a widget's nested exposed value and leaves the tree open at the leaf.
+// `path` is keys and/or array indices: ['selectedOption','value'] or ['selectedRows','0','name'].
+// Every hop is scoped to its parent's `.json-viewer-children` because CustomJSONViewer's Row
+// renders children INSIDE the parent row (Row.jsx) — and that scoping is the whole point:
+// `label` and `value` recur at multiple depths with the SAME data-cy, so a global lookup
+// silently returns whichever comes first in document order.
 /**
  * @tjBlock  inspector
- * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')
- * @tjDom    inspector sidebar tab -> components node -> widget subnode -> node value
+ * @tjUsage  openExposedPath('dropdown1', ['selectedOption', 'label'])
+ * @tjDom    components node -> widget subnode -> one label click per hop, parent-scoped
  */
-export const verifyExposedValue = (key, type, value, widgetName) => {
+export const openExposedPath = (widgetName, path) => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   cy.hideTooltip();
   openNode("components");
   openSubNode(widgetName);
-  verifyNodeData(key, type, value);
+  path.forEach((key, i) => {
+    const sel = `[data-cy="inspector-${inspectorKey(key)}-label"]`;
+    // Hop 0 must exclude nested rows: a top-level label has no `.json-viewer-children`
+    // ancestor, and without this the same global-ambiguity bug this helper exists to fix
+    // would sit in its own first step.
+    if (i === 0)
+      cy.get(sel)
+        .filter((_i, el) => !el.closest(".json-viewer-children"))
+        .first()
+        .as(`tjRow${i}`);
+    else cy.get(`@tjKids${i - 1}`).find(sel).first().as(`tjRow${i}`);
+    // Expand every hop except the leaf, and capture its children as the next scope.
+    if (i < path.length - 1) {
+      cy.get(`@tjRow${i}`).click();
+      cy.get(`@tjRow${i}`)
+        .closest(".json-viewer-row-container")
+        .parent()
+        .children(".json-viewer-children")
+        .as(`tjKids${i}`);
+    }
+  });
+};
+
+
+// Asserts an exposed value at any depth. `keyOrPath` is a flat key ('isLoading') or a path
+// into an object/array (['selectedOption','value'], ['files','0','parsedValue']) — a flat key
+// IS a path of length 1, so both go through one walk. widgetName is REQUIRED: a default would
+// let a caller who omits it silently assert against the wrong widget and pass.
+// `type` only distinguishes the Function case; it is not otherwise validated.
+// Collapses every hop in reverse and closes the panel, so a second call in the same test
+// starts from the same state.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true', 'textinput1')
+ * @tjDom    components node -> widget subnode -> parent-scoped label clicks -> leaf value
+ */
+export const verifyExposedValue = (keyOrPath, type, value, widgetName) => {
+  const path = Array.isArray(keyOrPath) ? keyOrPath : [keyOrPath];
+  openExposedPath(widgetName, path);
+  const leaf = path.length - 1;
+  cy.get(`@tjRow${leaf}`).realHover().verifyVisibleElement("have.text", `${path[leaf]}`);
+  cy.get(`@tjRow${leaf}`)
+    .closest(".json-viewer-row-container")
+    .find('[data-cy$="-value"]')
+    .first()
+    .verifyVisibleElement("have.text", type === "Function" ? "function" : value);
+  for (let i = path.length - 2; i >= 0; i--) cy.get(`@tjRow${i}`).click();
   closeInspectorDetail();
 };
