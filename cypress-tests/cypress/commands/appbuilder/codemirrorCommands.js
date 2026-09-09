@@ -32,6 +32,10 @@ Cypress.Commands.add(
       // branches on "{{" / "}}" / "((" tokens, which single-brace-only
       // alternatives can never produce.
       const regex = /(\{\{|\}\}|\{|\}|\(\(|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
+      // prefix backspaces away the closer autoclose inserted, so every branch
+      // must consume it exactly once. Leaving it set re-applies it to the NEXT
+      // token and eats a real character — with a "{{" token that is a whole
+      // brace: "{{ 'x' }}" typed as "{'x' }}".
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
@@ -43,10 +47,13 @@ Cypress.Commands.add(
             prefix = "{backspace}";
           } else if (part === "}}") {
             acc.push(prefix + part);
+            prefix = "";
           } else if (part === " ") {
             acc.push(prefix + " ");
+            prefix = "";
           } else if (part === ":") {
             acc.push(prefix + ":");
+            prefix = "";
           } else {
             acc.push(prefix + part);
             prefix = "";
