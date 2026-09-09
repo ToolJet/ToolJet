@@ -213,9 +213,8 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
  * @tjUsage  commitChange()
  * @tjDom    canvas click to blur the active field, then the autosave indicator
  */
-// Blur whatever field is focused so its value commits, then wait for the save. Not
-// properties-specific — styles, events and CSA edits all commit the same way, which is
-// why it sits alongside the other `common` panel helpers rather than under properties.
+// Blur the focused field so its value commits, then wait for the save. Not
+// properties-specific — styles, events and CSA edits all commit the same way.
 export const commitChange = () => {
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
