@@ -3,6 +3,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { SessionModule } from '@modules/session/module';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { AppsRepository } from '@modules/apps/repository';
 import { FeatureAbilityFactory } from './ability';
 
 export class PersonalAccessTokensModule extends SubModule {
@@ -17,7 +18,7 @@ export class PersonalAccessTokensModule extends SubModule {
       module: PersonalAccessTokensModule,
       // SessionModule: the PAT -> session exchange mints a normal session via SessionUtilService.
       imports: [await SessionModule.register(configs)],
-      providers: [PersonalAccessTokensService, FeatureAbilityFactory, UserRepository, OrganizationRepository],
+      providers: [PersonalAccessTokensService, FeatureAbilityFactory, UserRepository, OrganizationRepository, AppsRepository],
       controllers: isMainImport ? [PersonalAccessTokensController] : [],
       exports: [PersonalAccessTokensService],
     };

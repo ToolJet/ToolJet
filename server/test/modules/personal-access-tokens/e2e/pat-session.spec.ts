@@ -1,7 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { createUser, initTestApp, login, closeTestApp, getDefaultDataSource } from 'test-helper';
+import { createApplication } from '../../../helpers/seed';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
+import { User } from '@entities/user.entity';
 import * as request from 'supertest';
 
 /**
@@ -32,6 +34,24 @@ describe('Personal access token session exchange', () => {
       throw new Error(`createPat expected 201, got ${res.status}: ${JSON.stringify(res.body)}`);
     }
     return { token: res.body.token, id: res.body.id };
+  };
+
+  const createApp = async (name: string): Promise<string> => {
+    const owner = await getDefaultDataSource().getRepository(User).findOne({ where: { id: userId } });
+    const application = await createApplication(app, { name, user: owner });
+    return application.id;
+  };
+
+  // A real app owned by another workspace, not just an unknown id.
+  const createAppInOtherWorkspace = async (): Promise<string> => {
+    const { user: outsider } = await createUser(app, {
+      email: 'outsider@tooljet.io',
+      firstName: 'other',
+      lastName: 'workspace',
+      organizationName: 'Other workspace',
+    });
+    const application = await createApplication(app, { name: 'foreign-app', user: outsider });
+    return application.id;
   };
 
   const exchange = (token: string) =>
@@ -88,6 +108,40 @@ describe('Personal access token session exchange', () => {
       expect(payload.appId).toBeUndefined();
       // Attribution: PAT-driven writes must be distinguishable from a human's in audit logs.
       expect(payload.tj_api_source).toBe('personal_access_token');
+    });
+
+    it('should mint an app-scoped session for an app in the token workspace', async () => {
+      const { token } = await createPat('app-scoped');
+      const appId = await createApp('render-target');
+
+      const res = await exchange(token).send({ appId }).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      expect(payload.isPATLogin).toBe(true);
+      expect(payload.appId).toBe(appId);
+      expect(payload.scope).toBe('App');
+      expect(payload.organizationIds).toEqual([orgId]);
+    });
+
+    it('should refuse an app in another workspace', async () => {
+      const { token } = await createPat('foreign-app');
+      const foreignAppId = await createAppInOtherWorkspace();
+
+      await exchange(token).send({ appId: foreignAppId }).expect(404);
+    });
+
+    it('should refuse an app that does not exist', async () => {
+      const { token } = await createPat('missing-app');
+      await exchange(token).send({ appId: '00000000-0000-0000-0000-000000000000' }).expect(404);
+    });
+
+    it('should still mint a workspace session when no app is named', async () => {
+      const { token } = await createPat('no-app-named');
+      const res = await exchange(token).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      expect(payload.appId).toBeUndefined();
+      expect(payload.scope).toBeUndefined();
     });
 
     it('should reject an expired token', async () => {

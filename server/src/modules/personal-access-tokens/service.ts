@@ -23,7 +23,11 @@ export class PersonalAccessTokensService implements IPersonalAccessTokensService
     throw new Error('Method not implemented.');
   }
 
-  async createSessionFromPat(pat: UserPersonalAccessToken, response: Response): Promise<PatSession> {
+  async createSessionFromPat(
+    pat: UserPersonalAccessToken,
+    response: Response,
+    appId?: string
+  ): Promise<PatSession> {
     throw new Error('Method not implemented.');
   }
 
