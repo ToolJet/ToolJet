@@ -4,6 +4,9 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
 import {
+  verifyExposedValue,
+  closeInspectorDetail,
+  hoverInPreview,
   commitChange,
   openEditorSidebar,
   openAccordion,
@@ -15,15 +18,11 @@ import {
   expectNoFxButton,
 } from "Support/utils/commonWidget";
 import {
-  verifyExposedValue,
+  validationFileTypeWrapper,
   clearSelectedFile,
   selectFileType,
-  validationFileTypeWrapper,
   expectRejectionToast,
   openParsedValue,
-  closeParsedValue,
-  widgetTooltip,
-  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // PropertiesFx facet — fx/dynamic-binding half; the direct half is in properties.cy.js.
@@ -124,7 +123,7 @@ describe(
     cy.get(fileButtonSelector.inputField(widget)).selectFile(csvFile, { force: true });
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeParsedValue();
+    closeInspectorDetail();
   });
 
   it("should verify Delimiter resolves a binding, changing how a CSV splits", () => {
@@ -150,7 +149,7 @@ describe(
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
     cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-    closeParsedValue();
+    closeInspectorDetail();
   });
 
   it("should verify Tooltip content resolves a binding", () => {
@@ -169,7 +168,7 @@ describe(
     // Only observable on the preview — the editor canvas swallows the pointer
     // events Radix needs to open it.
     hoverInPreview(fileButtonSelector.button(widget));
-    cy.get(widgetTooltip).should("contain.text", "Bound tooltip text");
+    cy.get(commonWidgetSelector.widgetTooltip).should("contain.text", "Bound tooltip text");
   });
 
   it("should verify Min file count resolves a binding to a numeric source", () => {
@@ -224,11 +223,11 @@ describe(
     enableFxAndBind("Make this field mandatory", "{{components.toggleswitch1.value}}");
     commitChange();
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("not.exist");
-    verifyExposedValue("isMandatory", "Boolean", "false");
+    verifyExposedValue("isMandatory", "Boolean", "false", widget);
 
     clickWidgetInput("toggleswitch1");
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).scrollIntoView().should("be.visible");
-    verifyExposedValue("isMandatory", "Boolean", "true");
+    verifyExposedValue("isMandatory", "Boolean", "true", widget);
   });
 
   it("should verify Accepted file types via fx: bound values gate the same way", () => {
@@ -320,11 +319,11 @@ describe(
     enableFxAndBind("Loading state", "{{components.toggleswitch1.value}}");
     commitChange();
     cy.get(fileButtonSelector.loader(widget)).should("not.exist");
-    verifyExposedValue("isLoading", "Boolean", "false");
+    verifyExposedValue("isLoading", "Boolean", "false", widget);
 
     clickWidgetInput("toggleswitch1");
     cy.get(fileButtonSelector.loader(widget)).scrollIntoView().should("be.visible");
-    verifyExposedValue("isLoading", "Boolean", "true");
+    verifyExposedValue("isLoading", "Boolean", "true", widget);
   });
 
   it("should verify Visibility follows a bound boolean", () => {
@@ -335,11 +334,11 @@ describe(
     commitChange();
     // Turning visibility off unmounts the widget entirely (returns null).
     cy.get(fileButtonSelector.widget(widget)).should("not.exist");
-    verifyExposedValue("isVisible", "Boolean", "false");
+    verifyExposedValue("isVisible", "Boolean", "false", widget);
 
     clickWidgetInput("toggleswitch1");
     cy.get(fileButtonSelector.widget(widget)).scrollIntoView().should("exist");
-    verifyExposedValue("isVisible", "Boolean", "true");
+    verifyExposedValue("isVisible", "Boolean", "true", widget);
   });
 
   it("should verify Disable follows a bound boolean", () => {
@@ -349,11 +348,11 @@ describe(
     enableFxAndBind("Disable", "{{components.toggleswitch1.value}}");
     commitChange();
     cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("not.be.disabled");
-    verifyExposedValue("isDisabled", "Boolean", "false");
+    verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
     clickWidgetInput("toggleswitch1");
     cy.get(fileButtonSelector.button(widget)).scrollIntoView().should("be.disabled");
-    verifyExposedValue("isDisabled", "Boolean", "true");
+    verifyExposedValue("isDisabled", "Boolean", "true", widget);
   });
 
   // ── NEGATIVE: the one property field declaring isFxNotRequired ──────────────

@@ -4,6 +4,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText } from "Texts/appBuilder/components/fileButton";
 import {
+  selectReactSelectOption,
   openEditorSidebar,
   openAccordion,
   selectColourFromColourPicker,
@@ -31,11 +32,8 @@ import {
 
 // labelWeight is a `type: 'select'` react-select, whose menu portals out of the
 // wrapper — so the option is matched from the menu, not by descending the field.
-const selectLabelWeight = (option) => {
-  cy.get('[data-cy="dropdown-label-weight"]').find(".react-select__control").click();
-  cy.get(".react-select__menu").contains(option).click();
-  cy.waitForAutoSave();
-};
+const selectLabelWeight = (option) =>
+  selectReactSelectOption('[data-cy="dropdown-label-weight"]', option);
 
 describe(
   "File Button styles",

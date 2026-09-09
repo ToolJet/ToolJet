@@ -6,6 +6,7 @@ import {
   backFromDetail,
   verifyNodeData,
 } from "Support/utils/appBuilder/inspectorTree";
+import { selectReactSelectOption } from "Support/utils/appBuilder/properties";
 
 /**
  * MODULE — appBuilder/components/fileButton: what is genuinely File-Button-specific.
@@ -22,39 +23,13 @@ import {
  *
  * STILL HERE and still promotable, blocked on fixing an existing helper rather than
  * adding one (see [[component-facet-model-gaps]]):
- *   verifyExposedValue — the inspector family already has six near-variants; this one's
- *     contribution is symmetric toggle-undo, which belongs IN openAndVerifyNode.
- *   widgetTooltip / hoverInPreview — the shared verifyTooltip + addAndVerifyTooltip are
- *     wrong for Radix widget tooltips (synthetic mouseover, `.tooltip-inner`, editor
- *     surface); fix those rather than add a third.
+ *   openParsedValue — drills files[0], so it is file-widget-specific, not generic
+ *     inspector navigation. It wants a file-widget FAMILY module, which does not exist yet.
  *
  * The widgetName argument defaults to "filebutton1" throughout. That is safe HERE
  * because the module is component-scoped — drop the default on anything promoted, or a
  * caller who omits the argument silently asserts against filebutton1 and passes.
  *//**
- * @tjBlock  inspector
- * @tjUsage  verifyExposedValue('isLoading', 'Boolean', 'true')
- * @tjDom    inspector sidebar tab → components node → widget subnode → node value
- */
-// Asserts the EXPOSED state (components.<widget>.<key>), not just the rendered DOM — a
-// separate code path from the visual checks.
-// Both the Inspector tab AND the Components expand-button are toggles whose state
-// persists in the app's own store even after the panel closes, so each is undone in
-// reverse order before returning. Every call then starts from the same known
-// tab-closed / components-collapsed state; without this, a second call in the same test
-// fails to find the node the first call left expanded.
-export const verifyExposedValue = (key, type, value, widgetName = "filebutton1") => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-  cy.hideTooltip();
-  openNode("components");
-  openSubNode(widgetName);
-  verifyNodeData(key, type, value);
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
-/**
  * @tjBlock  properties
  * @tjUsage  clearSelectedFile()
  * @tjDom    <widget>-clear-button, clicked only when present
@@ -84,10 +59,7 @@ export const validationFileTypeWrapper = '[data-cy="filetype-fx-select"]';
 // found by descending the wrapper. The shared selectFromSidebarDropdown is unusable
 // too: it calls .type() on what is a div.
 export const selectFileType = (option) => {
-  cy.get('[data-cy="dropdown-file-type"]').find(".react-select__control").click();
-  // Exact match: .contains("XLS") would also hit "XLSX".
-  cy.get(".react-select__option").filter((_i, el) => el.innerText.trim() === option).click();
-  cy.waitForAutoSave();
+  selectReactSelectOption('[data-cy="dropdown-file-type"]', option);
 };
 
 /**
@@ -98,9 +70,7 @@ export const selectFileType = (option) => {
 // The Validation section's own accepted-file-types field — a different control from
 // selectFileType above, which drives parsing. Same portal caveat.
 export const selectValidationFileType = (option) => {
-  cy.get(validationFileTypeWrapper).find(".react-select__control").click();
-  cy.get(".react-select__option").filter((_i, el) => el.innerText.trim() === option).click();
-  cy.waitForAutoSave();
+  selectReactSelectOption(validationFileTypeWrapper, option);
 };
 
 /**
@@ -121,7 +91,7 @@ export const expectRejectionToast = (types) => {
 
 /**
  * @tjBlock  inspector
- * @tjUsage  openParsedValue(); ... ; closeParsedValue()
+ * @tjUsage  openParsedValue(); ... ; closeInspectorDetail()
  * @tjDom    inspector components → <widget> → files → [0], expanded by LABEL clicks
  */
 // Drills components > filebutton1 > files > [0] to reach parsedValue. Nested rows have
@@ -135,30 +105,3 @@ export const openParsedValue = (widgetName = "filebutton1") => {
   cy.get('[data-cy="inspector-0-label"]').first().click();
 };
 
-// Undo both toggles so the next call starts from a known state.
-export const closeParsedValue = () => {
-  backFromDetail();
-  openNode("components");
-  cy.get(commonWidgetSelector.sidebarinspector).click();
-};
-
-// Radix, not bootstrap: the tooltip renders as [data-cy="widget-tooltip"], never
-// `.tooltip-inner`. It also renders its content TWICE (once visibly, once in a
-// VisuallyHidden copy), so every match inside it needs .first() — an unscoped
-// `have.text` sees the string doubled.
-export const widgetTooltip = '[data-cy="widget-tooltip"]';
-
-/**
- * @tjBlock  properties
- * @tjUsage  hoverInPreview(fileButtonSelector.button('filebutton1'))
- * @tjDom    preview, then realHover on the given element past Radix's delay
- */
-// A tooltip only opens in PREVIEW: on the editor canvas the drag/resize overlays
-// swallow the pointer events Radix needs, and a synthetic `mouseover` never opens it
-// in either mode. Configure in the editor, then verify here.
-export const hoverInPreview = (selector) => {
-  cy.openPreview();
-  cy.get(selector).should("be.visible").realHover();
-  // Radix mounts the content only after 500ms of sustained hover.
-  cy.wait(900);
-};

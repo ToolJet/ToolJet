@@ -56,6 +56,7 @@ export {
   openEditorSidebar,
   closeAccordions,
   selectFromSidebarDropdown,
+  selectReactSelectOption,
   verifyAndModifyParameter,
   verifyAndModifyToggleFx,
   verifyAndModifySwitch,
@@ -66,6 +67,7 @@ export {
   addAndVerifyTooltip,
   verifyTooltip,
   setTooltip,
+  hoverInPreview,
   enableFxAndBind,
   clearParameter,
   expectNoFxButton,
@@ -127,4 +129,6 @@ export {
   verifyComponentValueFromInspector,
   verifyMultipleComponentValuesFromInspector,
   verifyComponentFromInspector,
+  closeInspectorDetail,
+  verifyExposedValue,
 } from "./appBuilder/inspectorTree";

@@ -4,6 +4,9 @@ import { commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import { fileButtonText, fileButtonFixtures, acceptedTypeCases } from "Texts/appBuilder/components/fileButton";
 import {
+  verifyExposedValue,
+  closeInspectorDetail,
+  hoverInPreview,
   commitChange,
   setTooltip,
   openEditorSidebar,
@@ -13,15 +16,11 @@ import {
   clearParameter,
 } from "Support/utils/commonWidget";
 import {
-  verifyExposedValue,
   clearSelectedFile,
   selectFileType,
   selectValidationFileType,
   expectRejectionToast,
   openParsedValue,
-  closeParsedValue,
-  widgetTooltip,
-  hoverInPreview,
 } from "Support/utils/appBuilder/components/fileButton";
 
 // Properties facet — direct-control half; the fx half is in propertiesFx.cy.js.
@@ -152,7 +151,7 @@ describe(
     cy.get(fileButtonSelector.inputField(widget)).selectFile(csvFile, { force: true });
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "[3]");
-    closeParsedValue();
+    closeInspectorDetail();
 
     // JSON yields an OBJECT of 2 keys instead: same upload path, different
     // structure purely because of File type.
@@ -162,7 +161,7 @@ describe(
     cy.get(fileButtonSelector.inputField(widget)).selectFile(jsonFile, { force: true });
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-value"]').first().should("have.text", "{2}");
-    closeParsedValue();
+    closeInspectorDetail();
   });
 
   it("should verify Delimiter changes how a CSV splits into columns", () => {
@@ -177,7 +176,7 @@ describe(
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
     cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{1}");
-    closeParsedValue();
+    closeInspectorDetail();
 
     // Matching the delimiter splits the same file into its 3 real columns.
     clearSelectedFile();
@@ -188,34 +187,34 @@ describe(
     openParsedValue();
     cy.get('[data-cy="inspector-parsedvalue-label"]').first().click();
     cy.get('[data-cy="inspector-1-value"]').first().should("have.text", "{3}");
-    closeParsedValue();
+    closeInspectorDetail();
   });
 
   it("should verify Make this field mandatory: direct toggle", () => {
     openEditorSidebar(widget);
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("not.exist");
-    verifyExposedValue("isMandatory", "Boolean", "false");
+    verifyExposedValue("isMandatory", "Boolean", "false", widget);
     // isValid starts as !isMandatory (useFilePicker.js:77): nothing is
     // required yet, so an empty field is already valid.
-    verifyExposedValue("isValid", "Boolean", "true");
+    verifyExposedValue("isValid", "Boolean", "true", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Make this field mandatory")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("be.visible");
     cy.get(fileButtonSelector.ariaRequired(widget)).should("exist");
-    verifyExposedValue("isMandatory", "Boolean", "true");
+    verifyExposedValue("isMandatory", "Boolean", "true", widget);
 
     // Required with nothing selected, so invalid until a file satisfies it.
-    verifyExposedValue("isValid", "Boolean", "false");
+    verifyExposedValue("isValid", "Boolean", "false", widget);
     cy.get(fileButtonSelector.inputField(widget)).selectFile(validFile, { force: true });
-    verifyExposedValue("isValid", "Boolean", "true");
+    verifyExposedValue("isValid", "Boolean", "true", widget);
     clearSelectedFile();
-    verifyExposedValue("isValid", "Boolean", "false");
+    verifyExposedValue("isValid", "Boolean", "false", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Make this field mandatory")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("not.exist");
-    verifyExposedValue("isMandatory", "Boolean", "false");
+    verifyExposedValue("isMandatory", "Boolean", "false", widget);
   });
 
   it("should verify Accepted file types: every option accepts its own kind and rejects others", () => {
@@ -367,19 +366,19 @@ describe(
     openAccordion("Additional Actions");
     cy.get(fileButtonSelector.loader(widget)).should("not.exist");
     cy.get(fileButtonSelector.label(widget)).should("be.visible");
-    verifyExposedValue("isLoading", "Boolean", "false");
+    verifyExposedValue("isLoading", "Boolean", "false", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Loading state")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.loader(widget)).should("be.visible");
     cy.get(fileButtonSelector.label(widget)).should("not.exist");
-    verifyExposedValue("isLoading", "Boolean", "true");
+    verifyExposedValue("isLoading", "Boolean", "true", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Loading state")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.loader(widget)).should("not.exist");
     cy.get(fileButtonSelector.label(widget)).should("be.visible");
-    verifyExposedValue("isLoading", "Boolean", "false");
+    verifyExposedValue("isLoading", "Boolean", "false", widget);
   });
 
   it("should verify Visibility: direct toggle", () => {
@@ -387,18 +386,18 @@ describe(
     openEditorSidebar(widget);
     openAccordion("Additional Actions");
     cy.get(fileButtonSelector.widget(widget)).should("exist");
-    verifyExposedValue("isVisible", "Boolean", "true");
+    verifyExposedValue("isVisible", "Boolean", "true", widget);
 
     // The panel stays open even once the widget unmounts.
     cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.widget(widget)).should("not.exist");
-    verifyExposedValue("isVisible", "Boolean", "false");
+    verifyExposedValue("isVisible", "Boolean", "false", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.widget(widget)).should("exist");
-    verifyExposedValue("isVisible", "Boolean", "true");
+    verifyExposedValue("isVisible", "Boolean", "true", widget);
   });
 
   it("should verify Disable: direct toggle", () => {
@@ -406,17 +405,17 @@ describe(
     openEditorSidebar(widget);
     openAccordion("Additional Actions");
     cy.get(fileButtonSelector.button(widget)).should("not.be.disabled");
-    verifyExposedValue("isDisabled", "Boolean", "false");
+    verifyExposedValue("isDisabled", "Boolean", "false", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("be.disabled");
-    verifyExposedValue("isDisabled", "Boolean", "true");
+    verifyExposedValue("isDisabled", "Boolean", "true", widget);
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
     cy.waitForAutoSave();
     cy.get(fileButtonSelector.button(widget)).should("not.be.disabled");
-    verifyExposedValue("isDisabled", "Boolean", "false");
+    verifyExposedValue("isDisabled", "Boolean", "false", widget);
   });
 
   // Plain text and Markdown share this string, so only the format switch can
@@ -428,7 +427,7 @@ describe(
 
   it("should verify Tooltip in Plain text format: content stays literal", () => {
     showTooltipInPreview(widget, "plainText", markup);
-    cy.get(widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
+    cy.get(commonWidgetSelector.widgetTooltip).find("span.tw-whitespace-pre-wrap").first().should("have.text", markup);
     cy.get(".widget-tooltip-markdown").should("not.exist");
     cy.get(".widget-tooltip-html").should("not.exist");
   });
