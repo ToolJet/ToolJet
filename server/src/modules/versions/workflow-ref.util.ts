@@ -40,19 +40,24 @@ export async function resolveWorkflowRef(
   // Tier C — follow the consumer app's active branch. Publish and promote callers omit
   // consumerBranchId deliberately: there the question is whether the target is publishable, so
   // this falls through to the default-branch draft and the DRAFT check blocks it.
+  // No fall-through on a feature branch though: a missing BRANCH row means the workflow isn't on
+  // this branch, and main's copy is not what the pin names. __default_branch_draft__ pins that.
   if (workflowVersionId === WORKFLOW_CURRENT_BRANCH_SENTINEL) {
-    const onBranch =
-      consumerBranchId && consumerBranchId !== defaultBranchId
-        ? await manager.findOne(AppVersion, {
-            where: {
-              appId: workflowApp.id,
-              branchId: consumerBranchId,
-              versionType: AppVersionType.BRANCH,
-              isStub: false,
-            },
-          })
-        : null;
-    if (onBranch) return { appId: workflowApp.id, appVersionId: onBranch.id };
+    if (consumerBranchId && consumerBranchId !== defaultBranchId) {
+      // A stub counts as absent; the hydrate cascades make that state self-healing.
+      const onBranch = await manager.findOne(AppVersion, {
+        where: {
+          appId: workflowApp.id,
+          branchId: consumerBranchId,
+          versionType: AppVersionType.BRANCH,
+          isStub: false,
+        },
+      });
+      if (onBranch) return { appId: workflowApp.id, appVersionId: onBranch.id };
+      throw new BadRequestException(
+        'This workflow has no version on the current branch. Open or pull the workflow on this branch before running it.'
+      );
+    }
 
     const draftOnDefault = defaultBranchId
       ? await manager.findOne(AppVersion, {

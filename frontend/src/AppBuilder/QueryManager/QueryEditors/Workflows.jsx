@@ -38,7 +38,6 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   // Portable ids post-migration — plain value match, no name-fallback needed.
   const resolvedWorkflowId = workflowOptions.find((o) => o.value === options.workflowId)?.value ?? null;
-  const resolvedWorkflowVersionId = versionOptions.find((o) => o.value === options.workflowVersionId)?.value ?? null;
 
   const { activeBranchId, currentBranch } = useWorkspaceBranchesStore((state) => ({
     activeBranchId: state.activeBranchId,
@@ -46,6 +45,18 @@ export function Workflows({ options, optionsChanged, currentState }) {
   }));
   const { isGitSyncEnabled, defaultBranch: defaultBranchName } = useGitSyncConfig();
   const isOnMain = !!(currentBranch?.is_default ?? currentBranch?.isDefault);
+
+  // Must resolve to null, never `{}` — _ui/Select treats any truthy value as selected
+  // (`currentValue = find(...) || value`), so `{}` renders a blank chip and hides the placeholder.
+  //
+  // On main, `__current_branch__` has no entry of its own (no BRANCH row there), but the server
+  // still resolves it to main's draft — the row `__default_branch_draft__` names. Display only:
+  // the stored `options.workflowVersionId` is untouched until the user picks.
+  const displayVersionValue =
+    isOnMain && options.workflowVersionId === WORKFLOW_CURRENT_BRANCH_SENTINEL
+      ? DEFAULT_BRANCH_DRAFT_SENTINEL
+      : options.workflowVersionId;
+  const resolvedWorkflowVersionId = versionOptions.find((o) => o.value === displayVersionValue)?.value ?? null;
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -102,9 +113,13 @@ export function Workflows({ options, optionsChanged, currentState }) {
           }));
 
           // One entry off a boolean, never one per draft row: an unsynced workflow may hold
-          // several default-branch drafts. Hidden on main, where Current branch already is main.
+          // several default-branch drafts.
+          //
+          // Shown on main too: the default branch never holds a BRANCH-type row (every creation
+          // site writes VERSION there — pull.service.ts:260, :1797, :1940, :2053), so the
+          // "Current branch" entry can't stand in for it and the draft would have no entry at all.
           const mainDraftEntry =
-            isSynced && hasDefaultBranchDraft(all) && !isOnMain
+            isSynced && hasDefaultBranchDraft(all)
               ? [{ value: DEFAULT_BRANCH_DRAFT_SENTINEL, label: defaultBranchName, badge: VERSION_BADGES.DRAFT }]
               : [];
 
@@ -167,7 +182,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
           <div data-cy="workflow-version-dropdown"></div>
           <Select
             options={versionOptions}
-            value={resolvedWorkflowVersionId ?? {}}
+            value={resolvedWorkflowVersionId}
+            placeholder="Select version"
             onChange={(workflowVersionId) => {
               optionsChanged({ ...options, workflowVersionId: workflowVersionId || null });
             }}

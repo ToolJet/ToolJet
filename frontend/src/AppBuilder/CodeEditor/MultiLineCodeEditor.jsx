@@ -74,6 +74,7 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
     readOnly = false,
     editable = true,
+    usePortalEditor = true, // honoured the same way as in SingleLineCodeEditor
     renderCopilot,
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
@@ -326,14 +327,18 @@ const MultiLineCodeEditor = (props) => {
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
-        <CodeHinter.PopupIcon
-          callback={handleTogglePopupExapand}
-          icon="portal-open"
-          tip="Pop out code editor into a new window"
-          isMultiEditor={true}
-          isQueryManager={isInsideQueryPane}
-          position={{ height: height }}
-        />
+        {/* The portal renders into document.body, so it escapes any parent `inert` wrapper.
+            Callers that must stay uneditable opt out here. */}
+        {usePortalEditor && (
+          <CodeHinter.PopupIcon
+            callback={handleTogglePopupExapand}
+            icon="portal-open"
+            tip="Pop out code editor into a new window"
+            isMultiEditor={true}
+            isQueryManager={isInsideQueryPane}
+            position={{ height: height }}
+          />
+        )}
 
         <CodeHinter.Portal
           isCopilotEnabled={false}
