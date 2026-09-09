@@ -3,8 +3,12 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const NullNode = ({ value }) => {
   return (
-    <div className="json-viewer-node-value" style={{ color: '#ca3973' }}>
-      <OverflowTooltip tooltipClassName="inspector-node-tooltip" style={{ width: '100%' }}>
+    <div className="json-viewer-node-value" data-cy="json-viewer-node-value" style={{ color: '#ca3973' }}>
+      <OverflowTooltip
+        tooltipClassName="inspector-node-tooltip"
+        tooltipDataCy="inspector-node-tooltip"
+        style={{ width: '100%' }}
+      >
         {value === null ? 'null' : 'undefined'}
       </OverflowTooltip>
     </div>

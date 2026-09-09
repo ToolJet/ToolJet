@@ -13,8 +13,11 @@ const StringNode = ({ value }) => {
   }, [value]);
 
   return (
-    <div className="json-viewer-node-value" style={{ color: '#2CA02C' }}>
-      <OverflowTooltip tooltipClassName="inspector-node-tooltip">{`"${displayValue}"`}</OverflowTooltip>
+    <div className="json-viewer-node-value" data-cy="json-viewer-node-value" style={{ color: '#2CA02C' }}>
+      <OverflowTooltip
+        tooltipClassName="inspector-node-tooltip"
+        tooltipDataCy="inspector-node-tooltip"
+      >{`"${displayValue}"`}</OverflowTooltip>
     </div>
   );
 };
