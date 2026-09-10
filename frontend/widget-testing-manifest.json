@@ -84,7 +84,8 @@
     },
     {
       "componentType": "RichTextEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RichTextEditor/TESTING.md"
     },
     {
       "componentType": "NumberInput",
@@ -144,7 +145,8 @@
     },
     {
       "componentType": "DatePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatePickerV2/TESTING.md"
     },
     {
       "componentType": "TimePicker",
