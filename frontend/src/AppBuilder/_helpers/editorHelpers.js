@@ -7,7 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
-import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
