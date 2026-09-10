@@ -19,6 +19,7 @@ describe('AI build cancellation', () => {
       connected: true,
       active: false,
       emit: jest.fn(),
+      timeout: jest.fn(() => socket),
       on: jest.fn((event, callback) => {
         events[event] = callback;
       }),
@@ -79,6 +80,8 @@ describe('AI build cancellation', () => {
     );
     // Settle the credential/routing promises without advancing the cancellation poll.
     for (let i = 0; i < 20; i++) await Promise.resolve();
+    events.connect();
+    events.connected({ session_id: 'synthetic-session', known_thread: false });
     return { pending };
   };
 
@@ -86,7 +89,10 @@ describe('AI build cancellation', () => {
     const { pending } = await start(util, jest.fn().mockResolvedValue(true));
     await events['ingest-complete']({ data: { message: 'ingested' } });
     expect(socket.emit).not.toHaveBeenCalled();
-    expect((await pending)[1]).toMatchObject({ cancelled: true, reload: false });
+    expect((await pending)[1]).toMatchObject({
+      cancelled: true,
+      reload: false,
+    });
     expect(jest.getTimerCount()).toBe(0);
   });
 
@@ -102,11 +108,14 @@ describe('AI build cancellation', () => {
     const { pending } = await start(util, shouldCancel);
     await events['ingest-complete']({ data: { message: 'ingested' } });
     const runId = socket.emit.mock.calls.find(([event]) => event === 'request')[1].request_id;
-    await events.response({ request_id: 'earlier-run', data: { cancelled: true } });
+    await events.response({
+      request_id: 'earlier-run',
+      data: { cancelled: true },
+    });
     expect(socket.disconnect).not.toHaveBeenCalled();
     shouldCancel.mockResolvedValue(true);
     await jest.advanceTimersByTimeAsync(1000);
-    expect(socket.emit).toHaveBeenCalledWith('cancel', { request_id: runId });
+    expect(socket.emit).toHaveBeenCalledWith('cancel', { request_id: runId }, expect.any(Function));
     expect(socket.disconnect).not.toHaveBeenCalled();
     await events.response({ request_id: runId, data: { cancelled: true } });
     expect((await pending)[1].cancelled).toBe(true);
@@ -121,7 +130,6 @@ describe('AI build cancellation', () => {
     shouldCancel.mockResolvedValue(true);
     socket.connected = false;
     socket.active = true;
-    events.connect();
     events.disconnect('transport close');
     await events.connect_error(new Error('Synthetic reconnect failure'));
     expect(socket.disconnect).not.toHaveBeenCalled();
@@ -129,6 +137,9 @@ describe('AI build cancellation', () => {
     expect(socket.emit.mock.calls.filter(([event]) => event === 'cancel')).toHaveLength(0);
     socket.connected = true;
     events.connect();
+    // A transport connection alone must not send cancellation before thread reattachment.
+    expect(socket.emit.mock.calls.filter(([event]) => event === 'cancel')).toHaveLength(0);
+    events.connected({ session_id: 'synthetic-session', known_thread: true });
     shouldCancel.mockClear();
     await jest.advanceTimersByTimeAsync(1000);
     expect(socket.emit.mock.calls.filter(([event]) => event === 'cancel')).toHaveLength(1);
