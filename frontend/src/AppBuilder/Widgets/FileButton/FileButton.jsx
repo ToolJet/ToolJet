@@ -82,6 +82,11 @@ export const FileButton = (props) => {
         : 'var(--cc-primary-brand)'
       : loaderColor;
 
+  // Mirrors the Button widget's label-driven sizing so the icon scales with labelSize instead of
+  // staying fixed while the label grows around it.
+  const computedLineHeight = labelSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+
   const mergedProperties = useMemo(
     () => ({
       ...properties,
@@ -222,7 +227,12 @@ export const FileButton = (props) => {
             ) : (
               <>
                 {iconVisibility && (
-                  <TablerIcon iconName={icon} size={16} color={computedIconColor} data-cy={`${cyBase}-icon`} />
+                  <TablerIcon
+                    iconName={icon}
+                    size={computedIconSize}
+                    color={computedIconColor}
+                    data-cy={`${cyBase}-icon`}
+                  />
                 )}
                 <span
                   className={clsx(
@@ -234,7 +244,11 @@ export const FileButton = (props) => {
                   <span
                     id={`${id}-label`}
                     data-cy={`${cyBase}-label`}
-                    style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
+                    style={{
+                      fontSize: `${labelSize}px`,
+                      lineHeight: `${computedLineHeight}px`,
+                      color: computedLabelColor,
+                    }}
                     className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                   >
                     {selectedFiles.length === 0 ? buttonText : selectedSummary}
