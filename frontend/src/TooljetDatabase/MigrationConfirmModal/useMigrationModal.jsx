@@ -9,6 +9,9 @@ const emptyState = {
   isOpen: false,
   title: '',
   sql: '',
+  // Collapsed behind an "Add migration" button until opened - or already open when `initialSql`
+  // prefills it (the column type-change cast case), so there's nothing to click through.
+  sqlOpen: false,
   error: null,
   submitting: false,
   // `structuredApplied`: set once the request built by the call site's `run:` thunk has
@@ -59,7 +62,13 @@ export default function useMigrationModal() {
       lastRunDataRef.current = null;
       // `initialSql` pre-fills the SQL step - used by a column type change, where the cast has to be
       // spelled out as `ALTER ... USING ...` and the user reviews it before it is recorded.
-      setState({ ...emptyState, isOpen: true, sql: options.initialSql || '', depsLoading: !!options.tableId });
+      setState({
+        ...emptyState,
+        isOpen: true,
+        sql: options.initialSql || '',
+        sqlOpen: !!options.initialSql,
+        depsLoading: !!options.tableId,
+      });
 
       if (options.tableId) {
         tooljetDatabaseService.getTableDependents(organizationId, options.tableId).then(({ error, data }) => {
@@ -126,6 +135,8 @@ export default function useMigrationModal() {
     }
   }, [state.title, state.sql, state.structuredApplied, organizationId, close, bumpMigrations]);
 
+  const onOpenSql = useCallback(() => setState((prev) => ({ ...prev, sqlOpen: true })), []);
+
   const modal = (
     <MigrationConfirmModal
       show={state.isOpen}
@@ -137,6 +148,8 @@ export default function useMigrationModal() {
       changes={optionsRef.current?.changes || []}
       banner={optionsRef.current?.banner}
       showSqlEditor={!!optionsRef.current?.showSqlEditor}
+      sqlOpen={state.sqlOpen}
+      onOpenSql={onOpenSql}
       sql={state.sql}
       onSqlChange={(sql) => setState((prev) => ({ ...prev, sql }))}
       tableNames={tables.map((table) => table.table_name)}

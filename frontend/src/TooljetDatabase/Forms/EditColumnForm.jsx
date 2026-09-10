@@ -33,6 +33,7 @@ import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE, typeChangeDetail } from '../MigrationConfirmModal';
 import { castFor, buildCastabilityQuery, allowedTargets, blockedReason, buildTypeChangeSql } from '../columnTypeChange';
 
 // Info boxes for the cast report and the omitted-conversions notice, shaped to match the existing
@@ -264,7 +265,13 @@ const ColumnForm = ({
 
     runMigration({
       titlePlaceholder: `Add foreign key on "${selectedTable.table_name}"`,
-      changes: [{ type: '+', label: `Add foreign key on "${selectedTable.table_name}"` }],
+      changes: [
+        {
+          type: CHANGE_TYPE.ADD,
+          name: selectedTable.table_name,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
       tableId: selectedTable.id,
       showSqlEditor: true,
       run: (migrationName) =>
@@ -422,26 +429,47 @@ const ColumnForm = ({
     const isStructuredTypeChange = cast?.tier === 'lossless';
     const needsGeneratedSql = !!cast && !isStructuredTypeChange;
 
+    // One row per changed dimension, all against the (possibly renamed) new column name - matches
+    // the existing rename-vs-type-change split, extended to the other constraint edits.
+    const changeRows = [];
+    if (isRenamed) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName, oldName: selectedColumn?.Header });
+    }
+    if (isTypeChanged) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: typeChangeDetail(selectedColumn?.dataType, dataType.value),
+      });
+    }
+    if (isNotNull !== nullValue) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: isNotNull ? 'add NOT NULL constraint' : 'drop NOT NULL constraint',
+      });
+    }
+    if (defaultValue !== selectedColumn?.column_default && (defaultValue || selectedColumn?.column_default)) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName, detail: `default ${defaultValue}` });
+    }
+    if (isUniqueConstraint !== uniqueConstraintValue) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: isUniqueConstraint ? 'add UNIQUE constraint' : 'drop UNIQUE constraint',
+      });
+    }
+    // FK-only edits (isForeignKey flipped false) don't touch the column shape - fall back to a
+    // plain row so the list isn't empty.
+    if (changeRows.length === 0) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName });
+    }
+
     runMigration({
       titlePlaceholder: isRenamed
         ? `Rename column "${selectedColumn?.Header}" to "${columnName}"`
         : `Edit column "${selectedColumn?.Header}"`,
-      changes: [
-        {
-          type: '✎',
-          label: isRenamed
-            ? `Rename column "${selectedColumn?.Header}" to "${columnName}"`
-            : `Edit column "${selectedColumn?.Header}"`,
-        },
-        ...(isTypeChanged
-          ? [
-              {
-                type: '✎',
-                label: `Change "${selectedColumn?.Header}" from ${selectedColumn?.dataType} to ${dataType.value}`,
-              },
-            ]
-          : []),
-      ],
+      changes: changeRows,
       tableId: selectedTable.id,
       showSqlEditor: true,
       // The structured request runs first (see useMigrationModal's run sequence), so if this save
@@ -490,7 +518,7 @@ const ColumnForm = ({
     const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
     runMigration({
       titlePlaceholder: `Remove foreign key on "${selectedTable.table_name}"`,
-      changes: [{ type: '-', label: `Remove foreign key on "${selectedTable.table_name}"` }],
+      changes: [{ type: CHANGE_TYPE.REMOVE, name: selectedTable.table_name }],
       tableId: selectedTable.id,
       showSqlEditor: false,
       run: (migrationName) =>
@@ -520,7 +548,13 @@ const ColumnForm = ({
 
     runMigration({
       titlePlaceholder: `Edit foreign key on "${selectedTable.table_name}"`,
-      changes: [{ type: '✎', label: `Edit foreign key on "${selectedTable.table_name}"` }],
+      changes: [
+        {
+          type: CHANGE_TYPE.EDIT,
+          name: selectedTable.table_name,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
       tableId: selectedTable.id,
       showSqlEditor: true,
       // Folded in from the old "Change in foreign key relation" ConfirmDialog.

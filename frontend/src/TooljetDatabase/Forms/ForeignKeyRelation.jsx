@@ -17,6 +17,7 @@ import { TooljetDatabaseContext } from '../index';
 import { useTjdbActions, useTjdbStore } from '../_stores/tjdbStore';
 import cx from 'classnames';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE } from '../MigrationConfirmModal';
 
 function ForeignKeyRelation({
   onMouseHoverFunction = () => {},
@@ -129,7 +130,13 @@ function ForeignKeyRelation({
 
     runMigration({
       titlePlaceholder: `Add foreign key on "${tableName}"`,
-      changes: [{ type: '+', label: `Add foreign key on "${tableName}"` }],
+      changes: [
+        {
+          type: CHANGE_TYPE.ADD,
+          name: tableName,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
       tableId: selectedTable?.id,
       showSqlEditor: true,
       run: (migrationName) => tooljetDatabaseService.createForeignKey(organizationId, tableName, data, migrationName),
@@ -168,7 +175,13 @@ function ForeignKeyRelation({
 
     runMigration({
       titlePlaceholder: `Edit foreign key on "${tableName}"`,
-      changes: [{ type: '✎', label: `Edit foreign key on "${tableName}"` }],
+      changes: [
+        {
+          type: CHANGE_TYPE.EDIT,
+          name: tableName,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
       tableId: selectedTable?.id,
       showSqlEditor: true,
       // Folded in from the old "Change in foreign key relation" ConfirmDialog: same warning, one
@@ -219,7 +232,7 @@ function ForeignKeyRelation({
     setOnDeletePopup(false);
     runMigration({
       titlePlaceholder: `Remove foreign key on "${tableName}"`,
-      changes: [{ type: '-', label: `Remove foreign key on "${tableName}"` }],
+      changes: [{ type: CHANGE_TYPE.REMOVE, name: tableName }],
       tableId: selectedTable?.id,
       showSqlEditor: false,
       run: (migrationName) => tooljetDatabaseService.deleteForeignKey(organizationId, tableName, id, migrationName),

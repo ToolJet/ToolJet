@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
 // "N resources reference this table" - a floor, never phrased as "will break" (the backend can
 // only see query references, not e.g. a table id hardcoded in a RunJS query).
@@ -26,10 +26,13 @@ export default function DependentsWarning({ loading, dependents, foreignKeyTable
       {hasDependents && (
         <>
           <div className="migration-deps-summary" onClick={() => setExpanded((prev) => !prev)}>
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            <span>
-              {dependents.count} resource{dependents.count === 1 ? '' : 's'} reference this table
+            <span className="migration-deps-summary-label">
+              <AlertTriangle size={14} className="migration-deps-warning-icon" />
+              <span>
+                {dependents.count} resource{dependents.count === 1 ? '' : 's'} depend on this table
+              </span>
             </span>
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </div>
           {expanded && (
             <ul className="migration-deps-list">

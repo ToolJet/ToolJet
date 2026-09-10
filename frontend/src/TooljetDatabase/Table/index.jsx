@@ -33,6 +33,7 @@ import {
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE } from '../MigrationConfirmModal';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -733,7 +734,7 @@ const Table = ({ collapseSidebar }) => {
   const handleDeleteColumn = (columnName) => {
     runMigration({
       titlePlaceholder: `Drop column "${columnName}"`,
-      changes: [{ type: '-', label: `Drop column "${columnName}"` }],
+      changes: [{ type: CHANGE_TYPE.REMOVE, name: columnName }],
       tableId: selectedTable.id,
       showSqlEditor: false,
       run: (migrationName) =>

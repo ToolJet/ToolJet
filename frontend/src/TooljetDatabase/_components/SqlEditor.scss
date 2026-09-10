@@ -3,6 +3,12 @@
 // rather than the component itself.
 .tj-db-sql-editor {
   position: relative;
+  flex: 1;
+  min-height: 0;
+
+  .cm-theme {
+    height: 100%;
+  }
 
   .cm-content {
     padding: 0.5rem 0.75rem !important;

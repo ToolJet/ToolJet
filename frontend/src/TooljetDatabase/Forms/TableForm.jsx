@@ -12,6 +12,7 @@ import { serialDataType, ChangesComponent } from '../constants';
 import cx from 'classnames';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE } from '../MigrationConfirmModal';
 
 const TableForm = ({
   selectedTable = {},
@@ -43,6 +44,7 @@ const TableForm = ({
 
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
+  const [isCreatingTable, setIsCreatingTable] = useState(false);
   const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
   const { runMigration, modal: migrationModal } = useMigrationModal();
 
@@ -184,7 +186,11 @@ const TableForm = ({
   const isErrorText =
     helperText !== 'Table name can contain letters, numbers and underscores and must be within 32 characters';
 
-  const handleCreate = () => {
+  // create_table skips the migration-confirmation modal entirely - it runs immediately with the
+  // backend's own default migration name (`Create table "<name>"`, see defaultMigrationName in
+  // tooljet-db-migration-recorder.service.ts), same as omitting migration_name from any other
+  // structured request.
+  const handleCreate = async () => {
     if (!validateTableName()) return;
     const columnNames = Object.values(columns).map((column) => column.column_name);
     if (columnNames.some((columnName) => isEmpty(columnName))) {
@@ -198,32 +204,30 @@ const TableForm = ({
 
     const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
 
-    runMigration({
-      titlePlaceholder: `Create table "${tableName}"`,
-      // Every column is new - a create has no prior shape to diff against.
-      changes: Object.values(columns).map((column) => ({ type: '+', label: `Add column "${column.column_name}"` })),
-      showSqlEditor: true,
-      run: (migrationName) =>
-        tooljetDatabaseService.createTable(
-          organizationId,
-          tableName,
-          Object.values(columns),
-          foreignKeyDetails,
-          checkingValues,
-          migrationName
-        ),
-      onSuccess: (resultData) => {
-        toast.success(`${tableName} created successfully`);
-        onCreate && onCreate({ id: resultData.result.id, table_name: tableName });
-        posthogHelper.captureEvent('click_create_tooljet_table', {
-          workspace_id:
-            authenticationService?.currentUserValue?.organization_id ||
-            authenticationService?.currentSessionValue?.current_organization_id,
-          datasource: 'tooljet_db',
-        });
-        setCreateForeignKeyInEdit(false);
-      },
+    setIsCreatingTable(true);
+    const { error, data } = await tooljetDatabaseService.createTable(
+      organizationId,
+      tableName,
+      Object.values(columns),
+      foreignKeyDetails,
+      checkingValues
+    );
+    setIsCreatingTable(false);
+
+    if (error) {
+      toast.error(error?.message ?? 'Failed to create table');
+      return;
+    }
+
+    toast.success(`${tableName} created successfully`);
+    onCreate && onCreate({ id: data.result.id, table_name: tableName });
+    posthogHelper.captureEvent('click_create_tooljet_table', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      datasource: 'tooljet_db',
     });
+    setCreateForeignKeyInEdit(false);
   };
 
   const handleEdit = () => {
@@ -236,12 +240,12 @@ const TableForm = ({
 
     runMigration({
       titlePlaceholder: `Edit table "${selectedTable.table_name}"`,
-      // edit_table's request IS the diff: + -> isEmpty(old_column), - -> isEmpty(new_column),
+      // edit_table's request IS the diff: add -> isEmpty(old_column), remove -> isEmpty(new_column),
       // otherwise both present -> an edit.
       changes: data.map(({ old_column, new_column }) => {
-        if (isEmpty(old_column)) return { type: '+', label: `Add column "${new_column.column_name}"` };
-        if (isEmpty(new_column)) return { type: '-', label: `Drop column "${old_column.column_name}"` };
-        return { type: '✎', label: `Edit column "${old_column.column_name}"` };
+        if (isEmpty(old_column)) return { type: CHANGE_TYPE.ADD, name: new_column.column_name };
+        if (isEmpty(new_column)) return { type: CHANGE_TYPE.REMOVE, name: old_column.column_name };
+        return { type: CHANGE_TYPE.EDIT, name: old_column.column_name };
       }),
       tableId: selectedTable.id,
       showSqlEditor: true,
@@ -382,6 +386,7 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
+        fetching={isCreatingTable}
         shouldDisableCreateBtn={
           isErrorText ||
           isEmpty(tableName) ||

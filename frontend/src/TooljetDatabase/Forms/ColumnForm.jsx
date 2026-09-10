@@ -24,6 +24,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE } from '../MigrationConfirmModal';
 
 const ColumnForm = ({
   onCreate,
@@ -184,7 +185,13 @@ const ColumnForm = ({
 
     runMigration({
       titlePlaceholder: `Add column "${columnName}"`,
-      changes: [{ type: '+', label: `Add column "${columnName}"` }],
+      changes: [
+        {
+          type: CHANGE_TYPE.ADD,
+          name: columnName,
+          detail: defaultValue ? `${dataType.value} · default ${defaultValue}` : dataType.value,
+        },
+      ],
       tableId: selectedTable.id,
       showSqlEditor: true,
       run: (migrationName) =>

@@ -18,12 +18,10 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   const pageSize = useTjdbStore((state) => state.pageSize);
   const [sql, setSql] = useState('');
   const [isRunningSql, setIsRunningSql] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleClose = () => {
     setIsSeedDataDrawerOpen(false);
     setSql('');
-    setError(null);
   };
 
   const refetchRows = () => {
@@ -51,7 +49,6 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
   const handleRunSql = async () => {
     if (!sql.trim()) return;
     setIsRunningSql(true);
-    setError(null);
 
     try {
       const { error, data } = await tooljetDatabaseService.sqlExecution(organizationId, selectedTable.id, {
@@ -72,7 +69,6 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
           error?.message ??
           [result?.error_message, result?.data?.message].filter(Boolean).join(': ') ??
           'Failed to run SQL';
-        setError(message);
         toast.error(message, { position: 'top-center' });
         return;
       }
@@ -85,7 +81,6 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
       // { error } rather than throw, but a network failure or an unexpected non-JSON response
       // must still surface something rather than leaving the button stuck mid-spin.
       const message = err?.message ?? 'Failed to run SQL';
-      setError(message);
       toast.error(message, { position: 'top-center' });
     } finally {
       setIsRunningSql(false);
@@ -101,28 +96,26 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
             <SolidIcon name="remove" width="16" fill="#889096" />
           </span>
         </div>
-        <div className="card-body tjdb-seed-data-drawer" style={{ padding: '0.5rem 1rem 1rem 1rem' }}>
+        <div
+          className="card-body tjdb-seed-data-drawer"
+          style={{ padding: '0.5rem 1rem 1rem 1rem', display: 'flex', flexDirection: 'column' }}
+        >
           {/* Table reference must go through {{self}} - the backend rejects anything else,
               including this table's own literal name, to keep seed-data SQL provably scoped to
               the table this drawer was opened for. No quotes needed: {{self}} substitutes to the
               table's logical name, which flows through the same AST-based table resolution
               Query Manager's SQL mode uses (unlike the migration DDL step, which substitutes
               directly to a physical uuid and does need quoting). */}
-          <div className="tw-text-muted tw-mb-1" style={{ fontSize: '12px' }}>
+          <div className="tw-text-muted-foreground tw-mb-1" style={{ fontSize: '12px' }}>
             Reference this table as <code>{'{{self}}'}</code> - not by name.
           </div>
           <SqlEditor
             value={sql}
             onChange={setSql}
-            height="25vh"
+            height="100%"
             placeholder={'-- e.g. INSERT INTO {{self}} (column) VALUES (value);'}
             dataCy="seed-data-sql-textarea"
           />
-          {error && (
-            <div className="text-danger mt-2" data-cy="seed-data-sql-error">
-              {error}
-            </div>
-          )}
         </div>
       </div>
       <DrawerFooter
