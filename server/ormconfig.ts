@@ -46,7 +46,11 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     host: data.PG_HOST,
     connectTimeoutMS: data.NODE_ENV === 'test' ? 30000 : 5000,
     extra: {
-      max: data.NODE_ENV === 'test' ? 10 : +(data.PG_POOL_MAX || 25),
+      max: data.NODE_ENV === 'test' ? 10 : 25,
+      // Reap orphaned transactions (e.g. a pod that dies mid-transaction): Postgres
+      // rolls back any transaction left idle past this window and releases its locks.
+      // 1h sits far above any legitimate idle gap, so it only catches stuck sessions.
+      idle_in_transaction_session_timeout: +data.PG_IDLE_IN_TRANSACTION_TIMEOUT || 3600000,
     },
     maxQueryExecutionTime: data.SLOW_QUERY_LOGGING_THRESHOLD || (data.DISABLE_CUSTOM_QUERY_LOGGING === 'true' ? 30 : 1), // Set 1ms to log all queries by default with execution time. Set 30ms in case custom query logging is disabled
     ...dbSslConfig(data),
@@ -109,5 +113,5 @@ function fetchConnectionOptions(type: string): TypeOrmModuleOptions {
 const ormconfig: TypeOrmModuleOptions = fetchConnectionOptions('postgres');
 const tooljetDbOrmconfig: TypeOrmModuleOptions = fetchConnectionOptions('tooljetDb');
 
-export { ormconfig, tooljetDbOrmconfig };
+export { ormconfig, tooljetDbOrmconfig, buildConnectionOptions };
 export default ormconfig;
