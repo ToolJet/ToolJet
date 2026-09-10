@@ -17,7 +17,13 @@ import React from 'react';
 import { waitFor } from '@testing-library/react';
 import WidgetWrapper from '@/AppBuilder/AppCanvas/WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
-import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';
+import {
+  AppBuilderTestSession,
+  defineAppBuilderScenario,
+  seedApp,
+  componentDefinition,
+  binding,
+} from '@/test/app-builder';
 
 const MODULE_ID = 'canvas';
 
@@ -56,6 +62,22 @@ function seedHiddenOnMobileRadio(id) {
     mobile: { top: 0, left: 0, width: 8, height: 40 },
   };
   seedApp({ [id]: definition }, { moduleId: MODULE_ID });
+}
+
+function seedHiddenOnMobileRadioWithDependent(id, dependentId) {
+  const radioDefinition = componentDefinition(id, 'radio1', 'RadioButtonV2', { options: RADIO_OPTIONS });
+  radioDefinition.component.definition.others = {
+    showOnDesktop: { value: '{{true}}' },
+    showOnMobile: { value: '{{false}}' },
+  };
+  radioDefinition.layouts = {
+    desktop: { top: 0, left: 0, width: 8, height: 40 },
+    mobile: { top: 0, left: 0, width: 8, height: 40 },
+  };
+  const textDefinition = componentDefinition(dependentId, 'text1', 'Text', {
+    text: binding(`{{components.radio1.value}}`),
+  });
+  seedApp({ [id]: radioDefinition, [dependentId]: textDefinition }, { moduleId: MODULE_ID });
 }
 
 function widgetWrapperProps(id, currentLayout) {
@@ -118,5 +140,30 @@ describe('a widget hidden by a layout switch', () => {
     // behind for the widget to recompute from once it remounts.
     await waitFor(() => expect(document.getElementById('radio1')).toBeInTheDocument());
     expect(useStore.getState().getExposedValueOfComponent('radio1').value).toBe('2');
+  });
+
+  test('a dependent of the hidden widget resolves it again once it is shown and remounts', async () => {
+    seedHiddenOnMobileRadioWithDependent('radio1', 'text1');
+    const state = useStore.getState();
+    state.setEditorLoading(false, MODULE_ID);
+    state.setCurrentMode('edit', MODULE_ID);
+
+    session.render(<WidgetWrapper {...widgetWrapperProps('radio1', 'desktop')} />);
+    await waitFor(() => expect(document.getElementById('radio1')).toBeInTheDocument());
+    expect(useStore.getState().getResolvedComponent('text1').properties.text).toBe('2');
+
+    await session.store.act('setCurrentLayout', 'mobile');
+    session.render(<WidgetWrapper {...widgetWrapperProps('radio1', 'mobile')} />);
+    await waitFor(() => expect(document.getElementById('radio1')).not.toBeInTheDocument());
+    expect(useStore.getState().getResolvedComponent('text1').properties.text).not.toBe('2');
+
+    await session.store.act('setCurrentLayout', 'desktop');
+    session.render(<WidgetWrapper {...widgetWrapperProps('radio1', 'desktop')} />);
+    await waitFor(() => expect(document.getElementById('radio1')).toBeInTheDocument());
+
+    // Break this catches: clearing the widget on hide via removeNode also
+    // severing the dependency-graph edge to text1, so nothing reconnects
+    // text1 when radio1 remounts and recomputes its value.
+    expect(useStore.getState().getResolvedComponent('text1').properties.text).toBe('2');
   });
 });
