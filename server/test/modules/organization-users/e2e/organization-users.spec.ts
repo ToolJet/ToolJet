@@ -381,7 +381,10 @@ describe('OrganizationUsersController', () => {
           .set('Cookie', attackerData['tokenCookie'])
           .send({ organizationId: victimOrganization.id });
 
-        expect(response.statusCode).not.toBe(201);
+        // The service looks up the target row scoped to the caller's own organizationId
+        // (never the attacker-supplied one), so it is simply not found in the attacker's org.
+        expect(response.statusCode).toBe(500);
+        expect(response.body.message).toContain('Could not find any entity of type "OrganizationUser"');
 
         await victimData.orgUser.reload();
         expect(victimData.orgUser.status).toBe('active');
@@ -617,7 +620,10 @@ describe('OrganizationUsersController', () => {
           .set('Cookie', attackerData['tokenCookie'])
           .send({ organizationId: victimOrganization.id });
 
-        expect(response.statusCode).not.toBe(201);
+        // The service looks up the target row scoped to the caller's own organizationId
+        // (never the attacker-supplied one), so it is simply not found in the attacker's org.
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('User not exist');
 
         await victimData.orgUser.reload();
         expect(victimData.orgUser.status).toBe('archived');
