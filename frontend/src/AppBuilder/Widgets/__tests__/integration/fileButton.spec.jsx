@@ -85,6 +85,28 @@ describe('FileButton widget', () => {
     });
   });
 
+  describe('content height vs widget padding', () => {
+    const contentBox = (container) => container.querySelector('.fileButton-widget > div');
+
+    test('fills the full widget height when padding is "none"', async () => {
+      const { container } = widget.render({ styles: { padding: binding('none') } });
+      await screen.findByText('Upload file');
+
+      // Break this catches: dropping the `padding === 'none' ? height + 4 : height`
+      // compensation FileButton needs — RenderWidget always hands the widget
+      // `widgetHeight - 4`, reserving 4px for its own 2px/side wrapper padding, but
+      // zeroes that wrapper padding out when the widget's padding style is 'none'.
+      expect(contentBox(container)).toHaveStyle({ height: '40px' });
+    });
+
+    test('renders 4px short of the full widget height when padding is "default"', async () => {
+      const { container } = widget.render({ styles: { padding: binding('default') } });
+      await screen.findByText('Upload file');
+
+      expect(contentBox(container)).toHaveStyle({ height: '36px' });
+    });
+  });
+
   describe('clearing the selection while at capacity', () => {
     // The clear button must be a sibling of the browse Button, not nested inside it, so a
     // disabled browse button can't take the clear button down with it (see FileInput.jsx too).
