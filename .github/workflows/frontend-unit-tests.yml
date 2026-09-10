@@ -71,6 +71,8 @@ jobs:
 
       - uses: actions/checkout@v4
         if: steps.scope.outputs.frontend == 'true'
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.frontend == 'true'
