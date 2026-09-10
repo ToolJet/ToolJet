@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { ListItem } from '../LIstItem';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog, ToolTip } from '@/_components';
 import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -13,6 +13,8 @@ import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { DataSourceFolders } from '../DataSourceFolders';
+import { FolderFormModal } from '../DataSourceFolders/FolderFormModal';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -26,6 +28,11 @@ export const List = ({ updateSelectedDatasource }) => {
     setCurrentEnvironment,
     setActiveDatasourceList,
     setLoading,
+    folders,
+    createDataSourceFolder,
+    renameDataSourceFolder,
+    deleteDataSourceFolder,
+    canCreateDataSourceFolder,
   } = useContext(GlobalDataSourcesContext);
 
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
@@ -35,9 +42,29 @@ export const List = ({ updateSelectedDatasource }) => {
   const [showDependentQueriesInfo, setShowDependentQueriesInfo] = useState(false);
   const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
   const [pendingDeleteSource, setPendingDeleteSource] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
+  // Folder create/rename modal (create from the "+" header button, rename from a folder's menu).
+  const [folderModal, setFolderModal] = useState({ show: false, mode: 'create', folder: null });
+  const [deletingFolder, setDeletingFolder] = useState(null);
+  const [isDeletingFolder, setIsDeletingFolder] = useState(false);
   const pendingDeleteAfterSwitchRef = useRef(null);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const searchActive = searchValue.trim().length > 0;
+
+  // Data sources already placed in a folder are rendered inside their folder, not in the stray
+  // list. Stray = the (search-filtered) data sources belonging to no folder, kept alphabetical.
+  const folderedDataSourceIds = React.useMemo(() => {
+    const ids = new Set();
+    (folders ?? []).forEach((folder) =>
+      (folder.folder_data_sources ?? []).forEach((membership) => ids.add(membership.data_source_id))
+    );
+    return ids;
+  }, [folders]);
+
+  const strayDataSources = filteredData.filter((ds) => !folderedDataSourceIds.has(ds.id));
+  const hasSidebarContent = (folders?.length ?? 0) > 0 || strayDataSources.length > 0;
 
   const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -127,15 +154,32 @@ export const List = ({ updateSelectedDatasource }) => {
   };
 
   const handleSearch = (e) => {
-    const value = e?.target?.value;
+    const value = e?.target?.value ?? '';
+    setSearchValue(value);
     const filtered = dataSources.filter((item) => item?.name?.toLowerCase().includes(value?.toLowerCase()));
     setFilteredData(filtered);
   };
 
   function handleClose() {
     setShowInput(false);
+    setSearchValue('');
     setFilteredData(dataSources);
   }
+
+  const executeFolderDeletion = () => {
+    setIsDeletingFolder(true);
+    deleteDataSourceFolder(deletingFolder.id)
+      .then(() => {
+        toast.success('Folder deleted successfully!');
+        setIsDeletingFolder(false);
+        setDeletingFolder(null);
+      })
+      .catch(({ error }) => {
+        setIsDeletingFolder(false);
+        setDeletingFolder(null);
+        toast.error(error || 'Could not delete folder');
+      });
+  };
 
   const EmptyState = () => {
     return (
@@ -172,18 +216,34 @@ export const List = ({ updateSelectedDatasource }) => {
                       Data sources added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
-                    <Button
-                      size="medium"
-                      variant="ghost"
-                      iconOnly
-                      ariaLabel="Search for folders"
-                      onClick={() => {
-                        setShowInput(true);
-                      }}
-                      data-cy="added-ds-search-icon"
-                    >
-                      <SolidIcon name="search" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
-                    </Button>
+                    <div className="d-flex align-items-center" style={{ gap: '4px' }}>
+                      {canCreateDataSourceFolder() && (
+                        <ToolTip message="Create folder" placement="top">
+                          <Button
+                            size="medium"
+                            variant="ghost"
+                            iconOnly
+                            ariaLabel="Create folder"
+                            onClick={() => setFolderModal({ show: true, mode: 'create', folder: null })}
+                            data-cy="create-datasource-folder-icon"
+                          >
+                            <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                          </Button>
+                        </ToolTip>
+                      )}
+                      <Button
+                        size="medium"
+                        variant="ghost"
+                        iconOnly
+                        ariaLabel="Search for folders"
+                        onClick={() => {
+                          setShowInput(true);
+                        }}
+                        data-cy="added-ds-search-icon"
+                      >
+                        <SolidIcon name="search" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                      </Button>
+                    </div>
                   </>
                 ) : (
                   <SearchBox
@@ -198,15 +258,26 @@ export const List = ({ updateSelectedDatasource }) => {
                 )}
               </div>
 
-              {!isLoading && filteredData?.length ? (
+              {!isLoading && hasSidebarContent ? (
                 <div className="list-group">
-                  {filteredData?.map((source, idx) => {
+                  {/* Folders first (alphabetical), each with its data sources nested inside. */}
+                  <DataSourceFolders
+                    visibleDataSources={filteredData}
+                    searchActive={searchActive}
+                    onDeleteDataSource={deleteDataSource}
+                    updateSelectedDatasource={updateSelectedDatasource}
+                    onRenameFolder={(folder) => setFolderModal({ show: true, mode: 'rename', folder })}
+                    onDeleteFolder={(folder) => setDeletingFolder(folder)}
+                    darkMode={darkMode}
+                  />
+                  {/* Stray (unfoldered) data sources below the folders, alphabetical. */}
+                  {strayDataSources.map((source, idx) => {
                     const sanpleDBtoolTipText =
                       source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
                     return (
                       <ListItem
                         dataSource={source}
-                        key={idx}
+                        key={source.id ?? idx}
                         toolTipText={sanpleDBtoolTipText}
                         active={selectedDataSource?.id === source?.id}
                         onDelete={deleteDataSource}
@@ -263,6 +334,24 @@ export const List = ({ updateSelectedDatasource }) => {
           }}
         />
       )}
+      <FolderFormModal
+        show={folderModal.show}
+        mode={folderModal.mode}
+        folder={folderModal.folder}
+        onClose={() => setFolderModal((prev) => ({ ...prev, show: false }))}
+        onCreate={createDataSourceFolder}
+        onRename={renameDataSourceFolder}
+      />
+      <ConfirmDialog
+        show={!!deletingFolder}
+        title={`Delete ${deletingFolder?.name ?? ''}`}
+        message="Deleting this folder will only delete the folder and not the data sources in it. This action is irreversible. Are you sure you want to continue?"
+        confirmButtonText="Delete"
+        confirmButtonLoading={isDeletingFolder}
+        onConfirm={executeFolderDeletion}
+        onCancel={() => setDeletingFolder(null)}
+        darkMode={darkMode}
+      />
     </>
   );
 };

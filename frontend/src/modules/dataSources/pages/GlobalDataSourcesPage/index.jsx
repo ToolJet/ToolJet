@@ -1,7 +1,13 @@
 import React, { createContext, useMemo, useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
+import {
+  globalDatasourceService,
+  appEnvironmentService,
+  authenticationService,
+  licenseService,
+  dataSourceFolderService,
+} from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
@@ -39,6 +45,16 @@ export const GlobalDataSourcesPage = (props) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [featureAccess, setFeatureAccess] = useState({});
   const initialUrlSelectionHandled = useRef(false);
+
+  // Data-source folders (workspace + active-branch scoped). `folders` carries each folder's
+  // `folder_data_sources` membership; stray (unfoldered) data sources are derived in the sidebar
+  // by subtracting foldered ids from `dataSources`. Expanding a folder is inline/accordion — it
+  // never changes the right-hand pane (that keeps whatever was open). `selectedDataSourceIds`
+  // backs shift+click multi-select for drag and the "Add to folder" modal.
+  const [folders, setFolders] = useState([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
+  const [expandedFolderIds, setExpandedFolderIds] = useState([]);
+  const [selectedDataSourceIds, setSelectedDataSourceIds] = useState([]);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
@@ -185,6 +201,79 @@ export const GlobalDataSourcesPage = (props) => {
     });
   };
 
+  // Coarse folder permissions surface on the session's user_permissions (decamelized from the
+  // ability service's dataSourceFolderCreate/Delete). Admins/super-admins always pass.
+  const canManageDataSourceFolder = (action) => {
+    const { super_admin, admin, user_permissions } = authenticationService.currentSessionValue;
+    return !!(super_admin || admin || user_permissions?.[`data_source_folder_${action}`]);
+  };
+  const canCreateDataSourceFolder = () => canManageDataSourceFolder('create');
+  const canDeleteDataSourceFolder = () => canManageDataSourceFolder('delete');
+  // Rename reuses the create gate (matches the app-folder convention where folderCreate is the
+  // master flag for folder mutations).
+  const canUpdateDataSourceFolder = () => canManageDataSourceFolder('create');
+
+  const fetchFolders = async (searchKey = '') => {
+    setFoldersLoading(true);
+    try {
+      const data = await dataSourceFolderService.getFolders(searchKey);
+      setFolders(data?.folders ?? []);
+    } catch {
+      setFolders([]);
+    } finally {
+      setFoldersLoading(false);
+    }
+  };
+
+  const toggleFolderExpanded = (folderId) => {
+    setExpandedFolderIds((prev) =>
+      prev.includes(folderId) ? prev.filter((id) => id !== folderId) : [...prev, folderId]
+    );
+  };
+
+  // Folder CRUD + membership wrappers. Each resolves the service promise (so the caller can show a
+  // loading state and success toast) and refetches folders on success to reflect the new state.
+  const createDataSourceFolder = (name) =>
+    dataSourceFolderService.createFolder(name).then((res) => {
+      fetchFolders();
+      return res;
+    });
+
+  const renameDataSourceFolder = (name, id) =>
+    dataSourceFolderService.renameFolder(name, id).then((res) => {
+      fetchFolders();
+      return res;
+    });
+
+  const deleteDataSourceFolder = (id) =>
+    dataSourceFolderService.deleteFolder(id).then((res) => {
+      // Auto-expanding folders that no longer exist would leak stale ids; prune on delete.
+      setExpandedFolderIds((prev) => prev.filter((fid) => fid !== id));
+      fetchFolders();
+      return res;
+    });
+
+  // Add/move one or many data sources into a folder. The backend POST is idempotent and
+  // auto-moves any data source already foldered elsewhere on this branch, so this covers both
+  // "add to folder" and "move across folders" for single and bulk.
+  const addDataSourcesToFolder = (dataSourceIds, folderId) => {
+    const ids = Array.isArray(dataSourceIds) ? dataSourceIds : [dataSourceIds];
+    const request =
+      ids.length > 1
+        ? dataSourceFolderService.bulkAddToFolder(ids, folderId)
+        : dataSourceFolderService.addToFolder(ids[0], folderId);
+    return request.then((res) => {
+      fetchFolders();
+      return res;
+    });
+  };
+
+  const removeDataSourceFromFolder = (dataSourceId, folderId) =>
+    dataSourceFolderService.removeFromFolder(dataSourceId, folderId).then((res) => {
+      fetchFolders();
+      return res;
+    });
+
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     toggleDataSourceManagerModal(false);
     setLoading(true);
@@ -244,6 +333,9 @@ export const GlobalDataSourcesPage = (props) => {
         if (!orderedDataSources.length) {
           setActiveDatasourceList('#commonlyused');
         }
+        // Keep folders in lockstep with the data-source list (initial load + every branch switch
+        // / git-pull refetch share the same active-branch context here).
+        fetchFolders();
         setLoading(false);
       })
       .catch(() => {
@@ -321,6 +413,22 @@ export const GlobalDataSourcesPage = (props) => {
       setActiveDatasourceList,
       setLoading,
       environmentLoading,
+      // Data-source folders
+      folders,
+      foldersLoading,
+      fetchFolders,
+      expandedFolderIds,
+      toggleFolderExpanded,
+      selectedDataSourceIds,
+      setSelectedDataSourceIds,
+      createDataSourceFolder,
+      renameDataSourceFolder,
+      deleteDataSourceFolder,
+      addDataSourcesToFolder,
+      removeDataSourceFromFolder,
+      canCreateDataSourceFolder,
+      canUpdateDataSourceFolder,
+      canDeleteDataSourceFolder,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -334,6 +442,10 @@ export const GlobalDataSourcesPage = (props) => {
       isLoading,
       activeDatasourceList,
       environmentLoading,
+      folders,
+      foldersLoading,
+      expandedFolderIds,
+      selectedDataSourceIds,
     ]
   );
 

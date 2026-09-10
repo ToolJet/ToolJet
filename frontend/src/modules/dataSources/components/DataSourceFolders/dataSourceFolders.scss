@@ -1,0 +1,97 @@
+// Data-source folders in the workspace "Data sources added" sidebar. Mirrors the app-builder
+// query-folder look (see queryDataPane.scss) so the two folder UIs read as one system.
+
+.datasource-folders-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.datasource-folder-row {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin: 0 12px;
+  padding: 0 8px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--slate3);
+
+    .datasource-folder-menu-trigger {
+      display: flex;
+    }
+  }
+}
+
+.datasource-folder-leading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.datasource-folder-name {
+  flex: 1 0 0;
+  min-width: 0;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-default, #1b1f24);
+}
+
+.datasource-folder-menu-trigger {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: none;
+
+  &.is-open {
+    display: flex;
+  }
+}
+
+.datasource-folder-empty {
+  font-size: 12px;
+  line-height: 18px;
+  font-style: italic;
+  color: var(--text-placeholder, #6a727c);
+  padding: 6px 12px 6px 42px;
+  pointer-events: none;
+  user-select: none;
+}
+
+// Context menu (rename / delete) — matches .folder-context-menu from the query folders.
+.datasource-folder-context-menu {
+  background: var(--base, #fff);
+  border-radius: 10px;
+  box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 8px 16px rgba(48, 50, 51, 0.1);
+  padding: 8px;
+  min-width: 160px;
+  border: 1px solid var(--border-weak, #e4e7eb);
+}
+
+.datasource-folder-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-default, #1b1f24);
+  text-align: left;
+
+  &:hover {
+    background: var(--slate3);
+  }
+
+  &--delete {
+    color: var(--tomato9, #e54d2e);
+  }
+}

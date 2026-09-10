@@ -1008,6 +1008,49 @@ naming the module (`/not ready to sync/i` + `toContain('sc-multidraft-module')`)
 
 ---
 
+## 34. Data source folders — git round-trip + branch-lock + permission isolation
+
+Data sources can live in folders (`folder_data_sources`, keyed `(data_source_id, branch_id)`), the
+data-source analogue of `folder_apps`. Folder placement round-trips through git as a directory
+segment — `data-sources/<folder>/<ds-name>/data-source.json` (root when unfoldered) — mirroring
+`apps/<folder>/<app>/`.
+
+### Unit coverage (implemented, `@group gitsync` / `platform`, run via `test:gitsync:unit`)
+
+| File | Mirrors (apps/modules) | Covers |
+|---|---|---|
+| `git-sync/unit/data-source-fs.util.spec.ts` | `git-resource-fs.util.spec.ts` | `readDataSourceEntries` (root / folder-nested / legacy-flat / mixed / backward-compat / malformed / dedup), `dataSourceFilePath`, `pruneStaleDataSourceFolders` (delete / rename / folder-move + empty-folder sweep) |
+| `git-sync/unit/data-source-path-resolution.spec.ts` | `platform-git-sync/unit/push-path-resolution.spec.ts` | serialize path — `resolvePlacementFolderName` root vs folder, 100-char name preserved, branch-scoped `(data_source_id, branch_id)` lookup |
+| `folder-data-sources/unit/ability.spec.ts` | `folder-apps/unit/ability.spec.ts` | **permission isolation** — an app-folder grant does NOT authorize a data-source-folder mutation; `DATA_SOURCE_FOLDER` bucket (blanket + specific folder); owner; admin; `dataSourceFolderCreate` fallback |
+
+The pull-side reconcile (`attachFoldersForDataSources`) has **no** unit test — deliberate parity
+with apps, whose `attachFoldersForExistingApps` is exercised only by the e2e steps below.
+
+### e2e (PLANNED — steps not yet in `git-sync.spec.ts`; mirror app-folder steps 42–48, 50)
+
+| # | Planned step |
+|---|------|
+| a | Create folder `ds-folder-1` (`type='data_source'`) on `feat-*`; list `GET /folder-data-sources` → present, 0 data sources |
+| b | Add a global data source to `ds-folder-1` (`POST /folder-data-sources`); list → count = 1, branch-scoped |
+| c | Bulk add two data sources (`data_source_ids`); list → count = 2 |
+| d | `scope=datasource` push, merge `feat-*` → `main`, pull `main` → data sources land under `data-sources/ds-folder-1/<ds>/` and the `folder_data_sources` mapping is reconstructed on `main` |
+| e | **Folder-only move**: move a data source to `ds-folder-2` on a branch, push+merge+pull → mapping moves; the DS's own subtree SHA is unchanged, so the reconcile must run despite the per-DSV content-skip |
+| f | **Delete-cleanup**: delete a data source on a feature branch (soft) → its `folder_data_sources` row is removed on that branch only; delete on the (single-branch) default branch (hard DSV delete) → row removed; other branches keep their mapping |
+| g | **`is_active` listing**: a soft-deleted / orphaned data source drops out of the folder listing (inner-join to an active DSV) even if a stale mapping row lingers |
+| h | **Branch-lock (EE)**: `POST`/`PUT /folder-data-sources` on the default branch is **rejected 400** under multi-branch; allowed on a feature branch and in single-branch mode; **403** under git license lock (mirrors the folder-membership row of §3's matrix) |
+| i | **Permission isolation (e2e)**: a builder granted app-folder edit but no `DATA_SOURCE_FOLDER` grant → **403** on data-source-folder mutation |
+
+### Folder-name validation (relevant to the directory-segment layout)
+
+Folder names become git path segments, so slash `/` and backslash `\` must never appear in one.
+Enforced by `AllowedCharactersValidator` (`/^[a-zA-Z0-9 -]+$/`) on **both**:
+- `CreateFolderDto` (folder create) — always had it.
+- `UpdateFolderDto` (folder **rename**) — added alongside this feature; previously rename only ran
+  `sanitizeInput` (HTML-escape), which leaves `/` and `\` intact, so a rename could have injected a
+  path separator into `data-sources/<folder>/…` / `apps/<folder>/…`. Now rejected on rename too.
+
+---
+
 ## Test-only license control
 
 The real License path (`ee/licensing/configs/License.ts`) always decrypts its key — no test-only branch. In

@@ -59,6 +59,13 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     return await this.granularPermissionsService.getAddableModuleFolders(user.organizationId);
   }
 
+  @InitFeature(FEATURE_KEY.GET_ADDABLE_DATA_SOURCE_FOLDERS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Get('granular-permissions/addable-data-source-folders')
+  async getAddableDataSourceFolders(@User() user: UserEntity): Promise<AddableResourceItem[]> {
+    return await this.granularPermissionsService.getAddableDataSourceFolders(user.organizationId);
+  }
+
   @InitFeature(FEATURE_KEY.CREATE_GRANULAR_APP_PERMISSIONS)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Post(':id/granular-permissions/app')
@@ -111,6 +118,18 @@ export class GranularPermissionsController implements IGranularPermissionsContro
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Post(':id/granular-permissions/module-folder')
   async createGranularModuleFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') groupId: string,
+    @Body() createGranularPermissionsDto: CreateGranularPermissionDto
+  ) {
+    createGranularPermissionsDto.groupId = groupId;
+    return await this.granularPermissionsService.create(user, createGranularPermissionsDto);
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Post(':id/granular-permissions/data-source-folder')
+  async createGranularDataSourceFolderPermissions(
     @User() user: UserEntity,
     @Param('id') groupId: string,
     @Body() createGranularPermissionsDto: CreateGranularPermissionDto
@@ -184,6 +203,17 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Put('granular-permissions/data-source-folder/:id')
+  async updateGranularDataSourceFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string,
+    @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ) {
+    await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
+  }
+
   @InitFeature(FEATURE_KEY.DELETE_GRANULAR_APP_PERMISSIONS)
   @UseGuards(FeatureAbilityGuard)
   @Delete('granular-permissions/app/:id')
@@ -228,6 +258,16 @@ export class GranularPermissionsController implements IGranularPermissionsContro
   @UseGuards(FeatureAbilityGuard)
   @Delete('granular-permissions/module-folder/:id')
   async deleteGranularModuleFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string
+  ): Promise<void> {
+    await this.granularPermissionsService.delete(granularPermissionsId, user);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Delete('granular-permissions/data-source-folder/:id')
+  async deleteGranularDataSourceFolderPermissions(
     @User() user: UserEntity,
     @Param('id') granularPermissionsId: string
   ): Promise<void> {

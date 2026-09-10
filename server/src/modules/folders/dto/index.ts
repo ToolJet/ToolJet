@@ -45,7 +45,11 @@ export class CreateFolderDto {
 export class UpdateFolderDto {
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value }) => sanitizeInput(value).trim())
+  // Match CreateFolderDto: folder names become git path segments (apps/<folder>/<app>,
+  // data-sources/<folder>/<ds>), so slash/backslash and other special chars must be rejected on
+  // rename too — sanitizeInput only HTML-escapes and leaves '/' and '\' intact.
+  @Validate(AllowedCharactersValidator)
   @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
   @MinLength(0, { message: 'Folder name cannot be empty' })
   name: string;
