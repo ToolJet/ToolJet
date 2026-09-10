@@ -12,17 +12,21 @@
  *
  * @group gitsync
  */
+import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { initTestApp, createUser, closeTestApp } from 'test-helper';
+import { initTestApp, createUser, createWorkflowForUser, closeTestApp } from 'test-helper';
 import { GitSyncWebhookWorker } from '@ee/git-sync-webhooks/processors/git-sync-webhook.worker';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { App } from '@entities/app.entity';
+import { User } from '@entities/user.entity';
 
 describe('GitSyncWebhookWorker (auto-sync decision flow)', () => {
   let app: INestApplication;
   let ds: DataSource;
   let orgId: string;
+  let adminUser: User & { organizationId: string };
   let defaultBranchId: string;
 
   // Fakes rebuilt per test so call assertions are isolated.
@@ -68,12 +72,13 @@ describe('GitSyncWebhookWorker (auto-sync decision flow)', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    const { organization } = await createUser(app, {
+    const { organization, user } = await createUser(app, {
       email: 'webhook-worker@tooljet.io',
       firstName: 'webhook',
       lastName: 'worker',
     });
     orgId = organization.id;
+    adminUser = user;
     ds = app.get<DataSource>(getDataSourceToken('default'));
 
     // Webhooks enabled, multi-branch, all events. (organizationId is the only required column;
@@ -220,5 +225,36 @@ describe('GitSyncWebhookWorker (auto-sync decision flow)', () => {
     );
     expect(pullTagVersion).not.toHaveBeenCalled();
     expect(res.status).toBe('skipped');
+  });
+
+  // C5 — "Save Version" tag push for a WORKFLOW. handleTagPush looks the app up by
+  // co_relation_id with NO type filter (git-sync-webhook.worker.ts:335-337), so a workflow is
+  // resolved by the same path as an app — the auto-sync tag import works for workflows by
+  // composition, not because anyone wrote workflow handling. Regression guard: if a `type` /
+  // `type: 'front-end'` filter is ever added to that lookup, a workflow tag push silently
+  // becomes "app not found" and this fails instead of passing.
+  it('tag push for a known WORKFLOW → handleTagPush resolves it and imports the version', async () => {
+    const coRelationId = randomUUID();
+    const workflow = await createWorkflowForUser(app, adminUser, `c5-tag-workflow-${Date.now()}`);
+    await ds.getRepository(App).update({ id: workflow.id }, { co_relation_id: coRelationId });
+
+    const tagName = `${coRelationId}/v1`;
+    const commitHash = 'c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5';
+
+    const res = await worker.process(
+      job({
+        organizationId: orgId,
+        provider: 'github',
+        event: 'push',
+        deliveryId: 'd-tag-workflow',
+        payload: { ref: `refs/tags/${tagName}`, after: commitHash },
+      })
+    );
+
+    // The lookup found the workflow and drove the real import flow — not skipped as "not found".
+    expect(pullTagVersion).toHaveBeenCalledWith(orgId, coRelationId, tagName, commitHash, 'v1');
+    expect(res.status).toBe('processed');
+    expect(res.action).toBe('version_imported');
+    expect(res.versionName).toBe('v1');
   });
 });
