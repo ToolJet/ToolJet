@@ -28,10 +28,10 @@ const DevBadge = ({ label }) => (
 
 const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'revisionId']);
 
-/*same-origin iframe and speaks the postMessage protocol:
+/* sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
    props change → we send props
-   shell → stateChange/event → setExposedVariable / fireEvent 
+   shell → stateChange/event → setExposedVariable / fireEvent
 */
 export const LibraryComponent = ({
   id,
@@ -211,6 +211,9 @@ export const LibraryComponent = ({
         src="/assets/custom-components/shell.html"
         title={componentName}
         data-cy={dataCy}
+        // Opaque origin: uploaded/dev-pushed bundle JS gets no window.parent DOM access and no
+        // shared cookies/storage — only the postMessage channel above. Do NOT add allow-same-origin.
+        sandbox="allow-scripts"
         style={{ width: '100%', height: '100%', border: 'none', display: 'block', boxShadow: styles.boxShadow }}
       />
       {devBadge}
