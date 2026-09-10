@@ -244,7 +244,8 @@
     },
     {
       "componentType": "JSONExplorer",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONExplorer/TESTING.md"
     },
     {
       "componentType": "CustomComponent",
@@ -273,7 +274,8 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {
       "componentType": "QrScanner",
