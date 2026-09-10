@@ -122,7 +122,7 @@ export const ErrorModal = ({ errorMsg, appSlug, isValidSession, errorType, appDe
     <div className="custom-backdrop">
       <Modal
         {...props}
-        className={`organization-switch-modal static-error-modal ${isRestrictedType ? 'restricted-access-modal' : ''} ${
+        className={`${isRestrictedType ? 'restricted-access-modal' : 'organization-switch-modal'} static-error-modal ${
           props.darkMode ? 'dark-mode' : ''
         }`}
         aria-labelledby="contained-modal-title-vcenter"
