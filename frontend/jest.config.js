@@ -84,6 +84,13 @@ module.exports = {
     // layer drives the widget's own onScan/onError handlers through the mock's
     // captured props. See ee/test/app-builder/widgets/QrScanner/TESTING.md (D-01/D-02).
     '^react-qr-reader$': '<rootDir>/__mocks__/reactQrReader.jsx',
+    // STUB, not transform: react-media-recorder wraps MediaRecorder +
+    // getUserMedia, neither of which jsdom implements, so a real recording never
+    // happens under jest. Real photo capture (canvas) and live recording are
+    // QA-owned per the Camera contract; the engineering layer drives the widget's
+    // own onRecordingStart/onStop logic through the stub's status transitions and
+    // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
+    '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a
