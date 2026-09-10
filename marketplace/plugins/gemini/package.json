@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
+    "@google/genai": "^2.21.0",
     "@tooljet-marketplace/common": "^1.0.0"
   },
   "devDependencies": {
