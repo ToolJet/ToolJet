@@ -155,7 +155,8 @@
     },
     {
       "componentType": "DatetimePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatetimePickerV2/TESTING.md"
     },
     {
       "componentType": "DaterangePicker",
