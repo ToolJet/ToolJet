@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { DndContext, DragOverlay, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
+import { CustomPointerSensor } from '@/_ui/SortableTree';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { ListItem } from '../LIstItem';
+import { DraggableDataSource, DroppableZone } from '../DataSourceFolders/dnd';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
@@ -15,6 +18,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { DataSourceFolders } from '../DataSourceFolders';
 import { FolderFormModal } from '../DataSourceFolders/FolderFormModal';
+import { MoveDataSourceModal } from '../DataSourceFolders/MoveDataSourceModal';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -32,6 +36,11 @@ export const List = ({ updateSelectedDatasource }) => {
     createDataSourceFolder,
     renameDataSourceFolder,
     deleteDataSourceFolder,
+    addDataSourcesToFolder,
+    removeDataSourcesFromFolder,
+    expandFolder,
+    selectedDataSourceIds,
+    setSelectedDataSourceIds,
     canCreateDataSourceFolder,
   } = useContext(GlobalDataSourcesContext);
 
@@ -47,7 +56,13 @@ export const List = ({ updateSelectedDatasource }) => {
   const [folderModal, setFolderModal] = useState({ show: false, mode: 'create', folder: null });
   const [deletingFolder, setDeletingFolder] = useState(null);
   const [isDeletingFolder, setIsDeletingFolder] = useState(false);
+  const [movingDataSource, setMovingDataSource] = useState(null);
+  const [activeDragDataSource, setActiveDragDataSource] = useState(null);
   const pendingDeleteAfterSwitchRef = useRef(null);
+
+  // Drag only starts past 8px of movement (and only from a [data-draggable] row), so clicking a
+  // data source to open it, or its delete button, still works.
+  const dndSensors = useSensors(useSensor(CustomPointerSensor, { activationConstraint: { distance: 8 } }));
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -166,6 +181,50 @@ export const List = ({ updateSelectedDatasource }) => {
     setFilteredData(dataSources);
   }
 
+  const handleDragStart = ({ active }) => {
+    setActiveDragDataSource(active?.data?.current?.dataSource ?? null);
+  };
+
+  // The ids that actually move on drop: the whole multi-selection when the dragged row is part of
+  // it, otherwise just the dragged row (dragging an unselected row ignores the selection).
+  const getDraggedIds = (draggedId) =>
+    selectedDataSourceIds.length > 1 && selectedDataSourceIds.includes(draggedId) ? selectedDataSourceIds : [draggedId];
+
+  // Drop semantics (no ordering): onto a folder → add/move there; onto the stray zone → remove
+  // from its current folder. Dropping onto the same folder, or stray rows onto the stray zone,
+  // is a no-op.
+  const handleDragEnd = ({ active, over }) => {
+    setActiveDragDataSource(null);
+    if (!over) return;
+    const dataSourceId = active?.data?.current?.dataSource?.id;
+    const sourceFolderId = active?.data?.current?.sourceFolderId ?? null;
+    const targetFolderId = over?.data?.current?.folderId ?? null;
+    if (!dataSourceId) return;
+
+    const ids = getDraggedIds(dataSourceId);
+
+    if (targetFolderId) {
+      // A single dragged row already in the target folder is a no-op; for a multi-drag the backend
+      // idempotently skips ones already there and moves the rest.
+      if (ids.length === 1 && targetFolderId === sourceFolderId) return;
+      // Open the destination folder so the dropped data source(s) are immediately visible.
+      expandFolder(targetFolderId);
+      addDataSourcesToFolder(ids, targetFolderId)
+        .then(() => setSelectedDataSourceIds([]))
+        .catch(({ error }) => toast.error(error || 'Could not move data source to folder'));
+    } else {
+      removeDataSourcesFromFolder(ids)
+        .then(() => setSelectedDataSourceIds([]))
+        .catch(({ error }) => toast.error(error || 'Could not remove data source from folder'));
+    }
+  };
+
+  // Count shown on the drag chip: the selection size when dragging a multi-selection, else 1.
+  const dragCount =
+    activeDragDataSource && selectedDataSourceIds.includes(activeDragDataSource.id) && selectedDataSourceIds.length > 1
+      ? selectedDataSourceIds.length
+      : 1;
+
   const executeFolderDeletion = () => {
     setIsDeletingFolder(true);
     deleteDataSourceFolder(deletingFolder.id)
@@ -259,33 +318,53 @@ export const List = ({ updateSelectedDatasource }) => {
               </div>
 
               {!isLoading && hasSidebarContent ? (
-                <div className="list-group">
-                  {/* Folders first (alphabetical), each with its data sources nested inside. */}
-                  <DataSourceFolders
-                    visibleDataSources={filteredData}
-                    searchActive={searchActive}
-                    onDeleteDataSource={deleteDataSource}
-                    updateSelectedDatasource={updateSelectedDatasource}
-                    onRenameFolder={(folder) => setFolderModal({ show: true, mode: 'rename', folder })}
-                    onDeleteFolder={(folder) => setDeletingFolder(folder)}
-                    darkMode={darkMode}
-                  />
-                  {/* Stray (unfoldered) data sources below the folders, alphabetical. */}
-                  {strayDataSources.map((source, idx) => {
-                    const sanpleDBtoolTipText =
-                      source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
-                    return (
-                      <ListItem
-                        dataSource={source}
-                        key={source.id ?? idx}
-                        toolTipText={sanpleDBtoolTipText}
-                        active={selectedDataSource?.id === source?.id}
-                        onDelete={deleteDataSource}
-                        updateSelectedDatasource={updateSelectedDatasource}
-                      />
-                    );
-                  })}
-                </div>
+                <DndContext
+                  sensors={dndSensors}
+                  collisionDetection={pointerWithin}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={() => setActiveDragDataSource(null)}
+                >
+                  <div className="list-group">
+                    {/* Folders first (alphabetical), each with its data sources nested inside. */}
+                    <DataSourceFolders
+                      visibleDataSources={filteredData}
+                      searchActive={searchActive}
+                      onDeleteDataSource={deleteDataSource}
+                      updateSelectedDatasource={updateSelectedDatasource}
+                      onRenameFolder={(folder) => setFolderModal({ show: true, mode: 'rename', folder })}
+                      onDeleteFolder={(folder) => setDeletingFolder(folder)}
+                      onMoveDataSource={(ds) => setMovingDataSource(ds)}
+                      darkMode={darkMode}
+                    />
+                    {/* Stray (unfoldered) data sources below the folders, alphabetical. Dropping a
+                        foldered data source here removes it from its folder. */}
+                    <DroppableZone id="stray-zone" data={{ folderId: null }} className="datasource-stray-zone">
+                      {strayDataSources.map((source, idx) => {
+                        const sanpleDBtoolTipText =
+                          source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
+                        return (
+                          <DraggableDataSource key={source.id ?? idx} dataSource={source} sourceFolderId={null}>
+                            <ListItem
+                              dataSource={source}
+                              toolTipText={sanpleDBtoolTipText}
+                              active={selectedDataSource?.id === source?.id}
+                              onDelete={deleteDataSource}
+                              updateSelectedDatasource={updateSelectedDatasource}
+                            />
+                          </DraggableDataSource>
+                        );
+                      })}
+                    </DroppableZone>
+                  </div>
+                  <DragOverlay dropAnimation={null}>
+                    {activeDragDataSource ? (
+                      <div className="datasource-drag-overlay">
+                        {dragCount > 1 ? `${dragCount} data sources` : activeDragDataSource.name}
+                      </div>
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
               ) : (
                 <EmptyState />
               )}
@@ -341,6 +420,18 @@ export const List = ({ updateSelectedDatasource }) => {
         onClose={() => setFolderModal((prev) => ({ ...prev, show: false }))}
         onCreate={createDataSourceFolder}
         onRename={renameDataSourceFolder}
+      />
+      <MoveDataSourceModal
+        show={!!movingDataSource}
+        initialDataSource={movingDataSource}
+        dataSources={dataSources}
+        folders={folders}
+        onClose={() => setMovingDataSource(null)}
+        onSubmit={(dsIds, folderId) => {
+          // Open the destination folder so the moved data source(s) show immediately.
+          expandFolder(folderId);
+          return addDataSourcesToFolder(dsIds, folderId);
+        }}
       />
       <ConfirmDialog
         show={!!deletingFolder}

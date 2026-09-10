@@ -61,6 +61,18 @@
   user-select: none;
 }
 
+// Per-data-source "⋮" menu trigger (Move folder / Delete) on foldered rows — reveal on row hover.
+.datasource-row-menu-trigger {
+  display: none;
+
+  &.is-open {
+    display: flex;
+  }
+}
+.datasources-list:hover .datasource-row-menu-trigger {
+  display: flex;
+}
+
 // Context menu (rename / delete) — matches .folder-context-menu from the query folders.
 .datasource-folder-context-menu {
   background: var(--base, #fff);
@@ -69,6 +81,68 @@
   padding: 8px;
   min-width: 160px;
   border: 1px solid var(--border-weak, #e4e7eb);
+}
+
+// ─── Drag and drop ─────────────────────────────────────────────────────────
+.datasource-folder.is-drop-over {
+  background: var(--indigo3, #f0f4ff);
+  border-radius: 6px;
+  outline: 1px solid var(--indigo8, #7c93f3);
+}
+
+// Keep the stray zone droppable even when it holds few (or no) rows.
+.datasource-stray-zone {
+  min-height: 24px;
+
+  &.is-drop-over {
+    background: var(--slate3);
+    border-radius: 6px;
+  }
+}
+
+.datasource-draggable {
+  cursor: grab;
+  // Prevent shift/⌘+click from creating a text selection — a live text selection makes the
+  // dnd-kit CustomPointerSensor refuse to start the drag, which would break multi-select drag.
+  user-select: none;
+
+  // Multi-select highlight (shift / ⌘ / ctrl + click). Targets the inner data-source row so it
+  // reads the same as the active-row highlight.
+  &.is-selected .datasources-list {
+    background: var(--indigo3, #f0f4ff);
+    outline: 1px solid var(--indigo8, #7c93f3);
+  }
+}
+
+// Stray (unfoldered) data-source rows sit ~11px further right than the folder icons because the
+// shared ListItem row carries extra left padding. Trim it so a stray data source's icon lines up
+// with the folder icons (16px margin + 4px padding = 20px, matching a folder row's 12+8). Foldered
+// rows are untouched, so they stay indented under their folder.
+.datasource-stray-zone .datasources-list {
+  padding-left: 4px;
+}
+
+.datasource-folder-row {
+  user-select: none;
+}
+
+// Cursor-following chip while dragging.
+.datasource-drag-overlay {
+  display: inline-flex;
+  align-items: center;
+  max-width: 220px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--slate12, #1b1f24);
+  color: var(--base, #fff);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0px 8px 16px rgba(48, 50, 51, 0.2);
+  pointer-events: none;
 }
 
 .datasource-folder-menu-item {
@@ -94,4 +168,128 @@
   &--delete {
     color: var(--tomato9, #e54d2e);
   }
+}
+
+// ─── "Update folder" (move data sources) modal ─────────────────────────────
+// Compact 320px-wide modal per the design spec (320×332, 6px radius). Scoped to the dialog
+// wrapping this modal's content.
+.custom-modal-width:has(.move-datasource-modal) {
+  max-width: 320px;
+  width: 320px;
+}
+
+.move-datasource-modal {
+  border-radius: 6px;
+
+  // Header + footer dividers must be full-bleed lines (edge to edge). The header is a direct child
+  // of the content so its border-bottom already spans full width; the footer lives inside
+  // .modal-body-scrollable, so that wrapper's padding is zeroed (overriding home-modal-component)
+  // and padding is applied on the inner body/footer instead — keeping both rules full-bleed.
+  .modal-header {
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+    padding: 16px 20px !important;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .modal-body-scrollable {
+    padding: 0 !important;
+  }
+}
+
+.move-datasource-modal-body {
+  padding: 20px;
+}
+
+.move-ds-field + .move-ds-to {
+  margin-top: 12px;
+}
+
+.move-ds-to + .move-ds-field {
+  margin-top: 12px;
+}
+
+.move-ds-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--text-default, #1b1f24);
+}
+
+.move-ds-to {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-default, #1b1f24);
+}
+
+// react-select tuned to match the design: single caret, compact height, token colours.
+.move-ds-select {
+  .move-ds-select__control {
+    min-height: 34px;
+    border-radius: 6px;
+    border-color: var(--border-default, #ccd1d5);
+    box-shadow: none;
+    background: var(--base, #fff);
+
+    &:hover {
+      border-color: var(--border-strong, #b5bbc2);
+    }
+
+    &--is-focused {
+      border-color: var(--indigo9, #4368e3);
+      box-shadow: 0 0 0 1px var(--indigo9, #4368e3);
+    }
+  }
+
+  .move-ds-select__value-container {
+    padding: 2px 10px;
+    gap: 4px;
+  }
+
+  .move-ds-select__placeholder {
+    color: var(--text-placeholder, #6a727c);
+    font-size: 13px;
+  }
+
+  .move-ds-select__single-value {
+    font-size: 13px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .move-ds-select__multi-value {
+    background: var(--slate3, #f1f3f5);
+    border-radius: 6px;
+    padding: 1px 2px 1px 4px;
+
+    .move-ds-select__multi-value__label {
+      font-size: 13px;
+      color: var(--text-default, #1b1f24);
+    }
+  }
+
+  .move-ds-select__indicator {
+    padding: 6px;
+    color: var(--icon-default, #6a727c);
+  }
+
+  .move-ds-select__menu {
+    font-size: 13px;
+    border-radius: 6px;
+    box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 8px 16px rgba(48, 50, 51, 0.1);
+  }
+}
+
+.move-datasource-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-weak, #e4e7eb);
 }

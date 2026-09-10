@@ -1,6 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import cx from 'classnames';
 import { useNavigate } from 'react-router-dom';
+import { Overlay, Popover } from 'react-bootstrap';
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
+import { EllipsisVerticalIcon } from 'lucide-react';
+import { Button } from '@/components/ui/Button/Button';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { DataSourceTypes } from '../../../common/components/DataSourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -29,6 +33,9 @@ export const ListItem = ({
   updateSelectedDatasource,
   toolTipText,
   disableDelButton = false,
+  // When provided, the row's right slot shows a "⋮" menu (e.g. Move folder / Delete) instead of
+  // the bare delete button. Each option: { label, icon, danger?, onClick(dataSource) }.
+  menuOptions,
 }) => {
   const {
     setSelectedDataSource,
@@ -44,6 +51,9 @@ export const ListItem = ({
   const [syncIconHovered, setSyncIconHovered] = useState(false);
   const [rowHovered, setRowHovered] = useState(false);
   const [pushModalOpen, setPushModalOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuBtnRef = useRef(null);
+  const hasMenu = menuOptions?.length > 0;
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
   const featureAccess = useLicenseStore((state) => state.featureAccess);
@@ -190,6 +200,26 @@ export const ListItem = ({
                 </div>
               </ToolTip>
             </div>
+          ) : hasMenu ? (
+            <div
+              className={cx('col-auto datasource-row-menu-trigger', { 'is-open': showMenu })}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                ref={menuBtnRef}
+                iconOnly
+                size="small"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isGitLicenseLocked) return;
+                  setShowMenu((v) => !v);
+                }}
+                data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-menu-btn`}
+              >
+                <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
+              </Button>
+            </div>
           ) : (
             showDeleteButton && (
               <div className="col-auto">
@@ -218,6 +248,53 @@ export const ListItem = ({
           )}
         </div>
       </ToolTip>
+      {hasMenu && (
+        <Overlay
+          show={showMenu}
+          target={menuBtnRef.current}
+          placement="bottom-start"
+          rootClose
+          transition={false}
+          onHide={() => setShowMenu(false)}
+          popperConfig={{ modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] }}
+        >
+          {(overlayProps) => (
+            <Popover
+              {...overlayProps}
+              id={`datasource-row-menu-${dataSource.id}`}
+              className="transparent-popover"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="datasource-folder-context-menu">
+                {menuOptions.map((option) => (
+                  <button
+                    key={option.label}
+                    className={cx('datasource-folder-menu-item', {
+                      'datasource-folder-menu-item--delete': option.danger,
+                    })}
+                    onClick={() => {
+                      setShowMenu(false);
+                      option.onClick(dataSource);
+                    }}
+                    data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-${String(option.label)
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')}-menu-item`}
+                  >
+                    {option.icon && (
+                      <DynamicIcon
+                        name={option.icon}
+                        size={16}
+                        style={{ color: option.danger ? 'var(--tomato9, #e54d2e)' : 'var(--icon-default, #6a727c)' }}
+                      />
+                    )}
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </Popover>
+          )}
+        </Overlay>
+      )}
       {PushAppsModal && isUnsynced && (
         <PushAppsModal
           show={pushModalOpen}

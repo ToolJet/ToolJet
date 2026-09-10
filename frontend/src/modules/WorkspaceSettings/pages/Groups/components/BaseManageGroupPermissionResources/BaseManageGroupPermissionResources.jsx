@@ -912,6 +912,100 @@ class BaseManageGroupPermissionResources extends React.Component {
     );
   };
 
+  renderDataSourceFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
+    const showConsolidated = isCE;
+    const dataSourceFolderCRUD = groupPermission.dataSourceFolderCreate || groupPermission.dataSourceFolderDelete;
+
+    if (showConsolidated) {
+      return (
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={dataSourceFolderCRUD}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              const newValue = !dataSourceFolderCRUD;
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderCreate: newValue,
+                dataSourceFolderDelete: newValue,
+              });
+              this.setState({
+                updateParam: { dataSourceFolderCreate: newValue, dataSourceFolderDelete: newValue },
+              });
+            }}
+            data-cy="data-source-folder-crud-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-crud-label">
+            {this.props.t(
+              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+              'Create/Update/Delete'
+            )}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-crud-helper-text"
+          >
+            All operations on data source folders
+          </span>
+        </label>
+      );
+    }
+
+    return (
+      <>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.dataSourceFolderCreate}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderCreate: !groupPermission.dataSourceFolderCreate,
+              });
+              this.setState({ updateParam: { dataSourceFolderCreate: !groupPermission.dataSourceFolderCreate } });
+            }}
+            data-cy="data-source-folder-create-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-create-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.create', 'Create')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-create-helper-text"
+          >
+            Create new data source folders in this workspace
+          </span>
+        </label>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.dataSourceFolderDelete}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderDelete: !groupPermission.dataSourceFolderDelete,
+              });
+              this.setState({ updateParam: { dataSourceFolderDelete: !groupPermission.dataSourceFolderDelete } });
+            }}
+            data-cy="data-source-folder-delete-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-delete-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.delete', 'Delete')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-delete-helper-text"
+          >
+            Delete any data source folders in this workspace
+          </span>
+        </label>
+      </>
+    );
+  };
+
   render() {
     if (!this.props.groupPermissionId) return null;
 
@@ -1517,6 +1611,19 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   <div className="text-muted">
                                     <div className="d-flex apps-permission-wrap flex-column">
                                       {this.renderModuleFolderPermissions({
+                                        groupPermission,
+                                        isCE,
+                                        isBasicPlan,
+                                        disableNonPromoteReleasePermissions,
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-data-source-folders">Data source folder</div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      {this.renderDataSourceFolderPermissions({
                                         groupPermission,
                                         isCE,
                                         isBasicPlan,

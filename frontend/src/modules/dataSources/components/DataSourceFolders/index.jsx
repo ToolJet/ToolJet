@@ -10,6 +10,7 @@ export const DataSourceFolders = ({
   visibleDataSources,
   searchActive,
   onDeleteDataSource,
+  onMoveDataSource,
   updateSelectedDatasource,
   onRenameFolder,
   onDeleteFolder,
@@ -58,6 +59,7 @@ export const DataSourceFolders = ({
             onRename={onRenameFolder}
             onDelete={onDeleteFolder}
             onDeleteDataSource={onDeleteDataSource}
+            onMoveDataSource={onMoveDataSource}
             updateSelectedDatasource={updateSelectedDatasource}
             canRename={canRename}
             canDelete={canDelete}

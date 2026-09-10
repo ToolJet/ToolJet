@@ -51,6 +51,9 @@ export interface CreateFolderPermissionsObject {
   canEditFolder?: boolean;
   canEditApps?: boolean;
   canViewApps?: boolean;
+  // Data-source folders only: false restricts query-run on the folder's data sources. Ignored for
+  // app/workflow/module folders. Defaults true.
+  canRunQuery?: boolean;
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
 }
 
@@ -117,6 +120,9 @@ export interface FoldersGroupPermissionsActions {
   canEditFolder: boolean;
   canEditApps: boolean;
   canViewApps: boolean;
+  // Data-source folders only: false restricts query-run on the folder's data sources. Optional so
+  // app/workflow/module folder updates need not send it.
+  canRunQuery?: boolean;
 }
 
 export interface ResourcePermissionMetaData {

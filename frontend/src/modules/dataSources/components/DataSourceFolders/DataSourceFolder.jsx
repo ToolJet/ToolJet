@@ -1,9 +1,12 @@
 import React, { useContext, useRef, useState } from 'react';
+import cx from 'classnames';
 import { Overlay, Popover } from 'react-bootstrap';
+import { useDroppable } from '@dnd-kit/core';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { ListItem } from '../LIstItem';
+import { DraggableDataSource } from './dnd';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 
 // A single data-source folder row: expand/collapse header + (when expanded) its data-source rows.
@@ -17,6 +20,7 @@ export const DataSourceFolder = ({
   onRename,
   onDelete,
   onDeleteDataSource,
+  onMoveDataSource,
   updateSelectedDatasource,
   canRename,
   canDelete,
@@ -26,6 +30,13 @@ export const DataSourceFolder = ({
   const canManageFolder = canRename || canDelete;
   const [showMenu, setShowMenu] = useState(false);
   const menuBtnRef = useRef(null);
+
+  // The whole folder (header + contents) is a drop target, so a data source can be dropped
+  // anywhere on it. `folderId` in the drop data tells the drag-end handler where it landed.
+  const { setNodeRef, isOver } = useDroppable({
+    id: `folder-drop:${folder.id}`,
+    data: { folderId: folder.id },
+  });
 
   const hasItems = contents.length > 0;
   const folderIcon = isExpanded ? 'folder-open' : hasItems ? 'folder-dot' : 'folder';
@@ -37,7 +48,7 @@ export const DataSourceFolder = ({
   };
 
   return (
-    <div className="datasource-folder">
+    <div ref={setNodeRef} className={cx('datasource-folder', { 'is-drop-over': isOver })}>
       <div
         className="datasource-folder-row"
         role="button"
@@ -119,13 +130,18 @@ export const DataSourceFolder = ({
         <div className="datasource-folder-contents">
           {hasItems ? (
             contents.map((source) => (
-              <ListItem
-                dataSource={source}
-                key={source.id}
-                active={selectedDataSource?.id === source?.id}
-                onDelete={onDeleteDataSource}
-                updateSelectedDatasource={updateSelectedDatasource}
-              />
+              <DraggableDataSource key={source.id} dataSource={source} sourceFolderId={folder.id}>
+                <ListItem
+                  dataSource={source}
+                  active={selectedDataSource?.id === source?.id}
+                  onDelete={onDeleteDataSource}
+                  updateSelectedDatasource={updateSelectedDatasource}
+                  menuOptions={[
+                    { label: 'Move folder', icon: 'folder-input', onClick: onMoveDataSource },
+                    { label: 'Delete', icon: 'trash-2', danger: true, onClick: onDeleteDataSource },
+                  ]}
+                />
+              </DraggableDataSource>
             ))
           ) : (
             <div className="datasource-folder-empty" data-cy={`datasource-folder-empty-${folder.id}`}>

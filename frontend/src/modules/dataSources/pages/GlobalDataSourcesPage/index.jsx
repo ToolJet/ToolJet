@@ -231,6 +231,13 @@ export const GlobalDataSourcesPage = (props) => {
     );
   };
 
+  // Ensure a folder is expanded (no-op if already open) — used after dropping/moving a data source
+  // into a folder so its new contents are immediately visible.
+  const expandFolder = (folderId) => {
+    if (!folderId) return;
+    setExpandedFolderIds((prev) => (prev.includes(folderId) ? prev : [...prev, folderId]));
+  };
+
   // Folder CRUD + membership wrappers. Each resolves the service promise (so the caller can show a
   // loading state and success toast) and refetches folders on success to reflect the new state.
   const createDataSourceFolder = (name) =>
@@ -273,6 +280,28 @@ export const GlobalDataSourcesPage = (props) => {
       fetchFolders();
       return res;
     });
+
+  // Remove several data sources from whatever folder each currently sits in (multi-select drag to
+  // the stray zone). Resolves each id's folder from the current folder state, fires the removals in
+  // parallel, then refetches once. Ids that aren't in any folder are ignored.
+  const removeDataSourcesFromFolder = (dataSourceIds) => {
+    const folderByDataSourceId = new Map();
+    (folders ?? []).forEach((folder) =>
+      (folder.folder_data_sources ?? []).forEach((membership) =>
+        folderByDataSourceId.set(membership.data_source_id, folder.id)
+      )
+    );
+    const removals = dataSourceIds
+      .map((id) => ({ id, folderId: folderByDataSourceId.get(id) }))
+      .filter((entry) => entry.folderId);
+    if (removals.length === 0) return Promise.resolve([]);
+    return Promise.all(
+      removals.map((entry) => dataSourceFolderService.removeFromFolder(entry.id, entry.folderId))
+    ).then((res) => {
+      fetchFolders();
+      return res;
+    });
+  };
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     toggleDataSourceManagerModal(false);
@@ -419,6 +448,7 @@ export const GlobalDataSourcesPage = (props) => {
       fetchFolders,
       expandedFolderIds,
       toggleFolderExpanded,
+      expandFolder,
       selectedDataSourceIds,
       setSelectedDataSourceIds,
       createDataSourceFolder,
@@ -426,6 +456,7 @@ export const GlobalDataSourcesPage = (props) => {
       deleteDataSourceFolder,
       addDataSourcesToFolder,
       removeDataSourceFromFolder,
+      removeDataSourcesFromFolder,
       canCreateDataSourceFolder,
       canUpdateDataSourceFolder,
       canDeleteDataSourceFolder,

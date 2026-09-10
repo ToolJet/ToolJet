@@ -225,7 +225,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     createFolderPermissionsObj: CreateResourcePermissionObject<ResourceType.FOLDER>,
     manager: EntityManager
   ): Promise<void> {
-    const { resourcesToAdd, canEditFolder, canEditApps, canViewApps } = createFolderPermissionsObj;
+    const { resourcesToAdd, canEditFolder, canEditApps, canViewApps, canRunQuery } = createFolderPermissionsObj;
     // Module folders are never end-user-assignable — reject for view too, unlike plain/workflow
     // folders where end-users can be granted view-only access.
     const isBuilderOnlyFolder =
@@ -248,6 +248,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           canEditFolder: canEditFolder ?? false,
           canEditApps: canEditApps ?? false,
           canViewApps: canViewApps ?? false,
+          // Defaults true (no restriction) — only data-source folders send/consume this.
+          canRunQuery: canRunQuery ?? true,
           granularPermissionId: granularPermissions.id,
         })
       );
@@ -619,6 +621,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           canEditFolder: actions.canEditFolder ?? foldersGroupPermissions.canEditFolder,
           canEditApps: actions.canEditApps ?? foldersGroupPermissions.canEditApps,
           canViewApps: actions.canViewApps ?? foldersGroupPermissions.canViewApps,
+          canRunQuery: actions.canRunQuery ?? foldersGroupPermissions.canRunQuery,
         });
       }
 
