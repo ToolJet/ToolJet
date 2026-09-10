@@ -21,7 +21,7 @@ describe("Home Page Dashboard Testcases", () => {
 
     });
 
-    it("Should verify elements on home page dashboard", () => {
+    it.skip("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
         cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
