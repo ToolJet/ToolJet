@@ -10,7 +10,7 @@
  *
  * No store import, zero mocks.
  */
-import { isGroupVisible, isMenuItemVisible } from '../utils';
+import { isGroupVisible, isMenuItemVisible, parseStyleDimension } from '../utils';
 
 const visibleChild = (id) => ({ id, isGroup: false, visible: false, disable: false });
 const hiddenChild = (id) => ({ id, isGroup: false, visible: true, disable: false });
@@ -83,5 +83,22 @@ describe('isMenuItemVisible', () => {
 
     const hiddenItem = { id: 'i2', isGroup: false, visible: true, disable: false };
     expect(isMenuItemVisible(hiddenItem)).toBe(false);
+  });
+});
+
+describe('parseStyleDimension', () => {
+  test('respects an explicit 0 instead of falling back to the default', () => {
+    expect(parseStyleDimension('0', 8)).toBe(0);
+    expect(parseStyleDimension(0, 2)).toBe(0);
+  });
+
+  test('falls back to the default for undefined, null, or non-numeric input', () => {
+    expect(parseStyleDimension(undefined, 8)).toBe(8);
+    expect(parseStyleDimension(null, 8)).toBe(8);
+    expect(parseStyleDimension('not-a-number', 2)).toBe(2);
+  });
+
+  test('parses a positive numeric string', () => {
+    expect(parseStyleDimension('12', 8)).toBe(12);
   });
 });
