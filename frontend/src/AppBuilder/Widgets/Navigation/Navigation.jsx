@@ -353,7 +353,7 @@ export const Navigation = function Navigation(props) {
       }
     }
 
-    // Then filter by visibility (a group also needs at least one visible, enabled child)
+    // Then filter by visibility (a group also needs at least one visible child; disabled doesn't count against it)
     return deduplicatedItems.filter(isMenuItemVisible);
   }, [menuItems]);
 

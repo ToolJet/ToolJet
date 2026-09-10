@@ -16,12 +16,11 @@ export const isItemDisabled = (item) =>
     : item.disable === true;
 
 // A group is only visible if it isn't hidden itself AND at least one of its children
-// is both visible and enabled (mirrors the page/navigation group logic)
+// is visible. A child being disabled doesn't count against the group — disabled just
+// means greyed-out/unclickable, not hidden, so it shouldn't hide the group.
 export const isGroupVisible = (group) => {
   if (!isItemVisible(group)) return false;
-  return (
-    Array.isArray(group.children) && group.children.some((child) => isItemVisible(child) && !isItemDisabled(child))
-  );
+  return Array.isArray(group.children) && group.children.some((child) => isItemVisible(child));
 };
 
 export const isMenuItemVisible = (item) => (item.isGroup ? isGroupVisible(item) : isItemVisible(item));
