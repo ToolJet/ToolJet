@@ -25,27 +25,69 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
     let totalProcessed = 0;
     let batchNum = 0;
 
+    // Only kinds that ever go through an OAuth flow. Filtering by kind (not just by the shape
+    // of the `access_token`/`tokenData` fields) matters: intercom's manifest has a manually-typed
+    // `access_token` field (a personal access token, no OAuth involved) that is shaped identically
+    // to an OAuth access_token ({credential_id, encrypted:true}) — without this filter, that field
+    // gets swept up and mis-migrated into the OAuth token table.
+    const OAUTH_CAPABLE_KINDS = [
+      'restapi',
+      'openapi',
+      'graphql',
+      'googlesheets',
+      'googlesheetsv2',
+      'slack',
+      'zendesk',
+      'servicenow',
+      'salesforce',
+      'googlecalendar',
+      'snowflake',
+      'microsoft_graph',
+      'hubspot',
+      'xero',
+      'bigquery',
+      'databricks',
+      'asana',
+      'gmail',
+    ];
+
     while (true) {
       // ── Fetch next batch via UUID cursor ──────────────────────────────────
       const batch: Array<{ id: string; options: Record<string, any> }> = await queryRunner.query(
         `
-          SELECT id, options
-          FROM   data_source_version_options
-          WHERE  ($1::uuid IS NULL OR id > $1::uuid)
+          SELECT dso.id, dso.options
+          FROM   data_source_version_options dso
+          JOIN   data_source_versions dsv ON dsv.id = dso.data_source_version_id
+          JOIN   data_sources ds ON ds.id = dsv.data_source_id
+          WHERE  ($1::uuid IS NULL OR dso.id > $1::uuid)
+          AND    ds.kind = ANY($3::text[])
           AND    (
                    -- multi-auth ON: has tokenData array
-                   (options->'multiple_auth_enabled'->>'value')::boolean = true
-                   AND options->'tokenData'->>'value' IS NOT NULL
+                   (dso.options->'multiple_auth_enabled'->>'value')::boolean = true
+                   AND dso.options->'tokenData'->>'value' IS NOT NULL
 
                    OR
 
                    -- multi-auth OFF: has credential_id on access_token
-                   options->'access_token'->>'credential_id' IS NOT NULL
+                   dso.options->'access_token'->>'credential_id' IS NOT NULL
+
+                   OR
+
+                   -- multi-auth OFF but stored as plaintext tokenData object instead of an
+                   -- access_token.credential_id — restapi/graphql/openapi/servicenow never
+                   -- implement accessDetailsFrom, so their OAuth connect always went through
+                   -- the generic authorizeOauth2 branch, which stored the token as a plaintext
+                   -- {key:'tokenData', value:{access_token,refresh_token}, encrypted:false}
+                   -- regardless of multi-auth — the single-auth case was previously missed here.
+                   (
+                     COALESCE((dso.options->'multiple_auth_enabled'->>'value')::boolean, false) = false
+                     AND jsonb_typeof(dso.options->'tokenData'->'value') = 'object'
+                   )
                  )
-          ORDER  BY id
+          ORDER  BY dso.id
           LIMIT  $2
           `,
-        [lastId, BATCH_SIZE]
+        [lastId, BATCH_SIZE, OAUTH_CAPABLE_KINDS]
       );
 
       if (!batch.length) break;
@@ -54,18 +96,25 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
       for (const row of batch) {
         const options = row.options ?? {};
         const multiAuthEnabled = options?.multiple_auth_enabled?.value === true;
+        const tokenDataValue = options?.tokenData?.value;
+
+        const hasArrayTokenData = multiAuthEnabled && Array.isArray(tokenDataValue) && tokenDataValue.length > 0;
+        const hasCredentialAccessToken = !multiAuthEnabled && options?.access_token?.credential_id != null;
+        const hasPlaintextSingleAuthTokenData =
+          !multiAuthEnabled &&
+          tokenDataValue != null &&
+          typeof tokenDataValue === 'object' &&
+          !Array.isArray(tokenDataValue);
 
         // ── Skip rows with no token data worth migrating ───────────────────
-        const hasTokenData = multiAuthEnabled
-          ? Array.isArray(options?.tokenData?.value) && options.tokenData.value.length > 0
-          : options?.access_token?.credential_id != null;
+        const hasTokenData = hasArrayTokenData || hasCredentialAccessToken || hasPlaintextSingleAuthTokenData;
 
         if (!hasTokenData) continue;
 
         await dbTransactionWrap(async (manager: EntityManager) => {
           const credentialIdsToDelete: string[] = [];
 
-          if (multiAuthEnabled) {
+          if (hasArrayTokenData) {
             // ── Multi-auth ON: one row per user entry in tokenData ─────────
             // Tokens are plaintext in the JSON — encrypt and store directly
             const tokenDataArr: Array<{
@@ -113,6 +162,32 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
                 [tokenEntry.user_id, row.id, encryptedAccessToken, encryptedRefreshToken]
               );
             }
+
+            delete options.tokenData;
+          } else if (hasPlaintextSingleAuthTokenData) {
+            // ── Multi-auth OFF, plaintext tokenData: restapi/graphql/openapi/servicenow ──
+            // Tokens here were never encrypted at all (stored as a plain {access_token,
+            // refresh_token} object with encrypted:false) — encrypt on the way into the new table.
+            const tokenObj: { access_token?: string; refresh_token?: string } = tokenDataValue;
+            const accessToken = tokenObj.access_token || null;
+            const refreshToken = tokenObj.refresh_token || null;
+
+            const encryptedAccessToken = accessToken
+              ? await encryptionService.encryptColumnValue('credentials', 'value', accessToken)
+              : null;
+            const encryptedRefreshToken = refreshToken
+              ? await encryptionService.encryptColumnValue('credentials', 'value', refreshToken)
+              : null;
+
+            await manager.query(
+              `
+              INSERT INTO datasource_user_token_data
+                (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
+              VALUES
+                (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
+              `,
+              [row.id, encryptedAccessToken, encryptedRefreshToken]
+            );
 
             delete options.tokenData;
           } else {

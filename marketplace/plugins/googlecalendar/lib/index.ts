@@ -4,6 +4,7 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat, QueryResult } from './types';
 import got, { Headers, OptionsOfTextResponseBody } from 'got';
@@ -106,6 +107,13 @@ export default class GoogleCalendar implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
+      // A 401 from Google means the access token is missing/expired/invalid — throwing
+      // OAuthUnauthorizedClientError (instead of a generic QueryError) is what lets the
+      // server's query-execution flow attempt a token refresh or redirect to reconnect,
+      // rather than surfacing this as a raw failed-query error.
+      if (error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Authentication required', 'Access token invalid or expired.', {});
+      }
       const errorMessage = error?.message === 'Query could not be completed' ? error?.description : error?.message;
       throw new QueryError('Query could not be completed', errorMessage, error?.data || {});
     }
@@ -310,6 +318,17 @@ export default class GoogleCalendar implements QueryService {
         );
       }
     } catch (error) {
+      // A 4xx here means Google rejected the refresh_token itself (expired/revoked) — throw
+      // OAuthUnauthorizedClientError so the caller redirects to reconnect instead of showing
+      // a raw connection error.
+      const statusCode = error?.response?.statusCode;
+      if (statusCode >= 400 && statusCode < 500) {
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from Oauth server',
+          JSON.stringify({ statusCode, message: error.response?.body }),
+          {}
+        );
+      }
       throw new QueryError(
         'Could not connect to Googles Calendar',
         JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
