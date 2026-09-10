@@ -110,8 +110,8 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-        : [];
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+      : [];
 
   const [versionName, setVersionName] = useState('');
 

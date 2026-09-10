@@ -24,8 +24,8 @@ const ListItems = (props) => {
           props.disabled
             ? 'tw-bg-interactive-disabled'
             : props.background
-              ? 'tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/45'
-              : 'active:tw-bg-[#CCD1D5]/30'
+            ? 'tw-bg-[#CCD1D5]/30 active:tw-bg-[#ACB2B9]/45'
+            : 'active:tw-bg-[#CCD1D5]/30'
         } hover:tw-bg-[#ACB2B9]/35 tw-py-[7px] tw-px-[8px] tw-items-center tw-rounded-[6px]`,
         props.className
       )}

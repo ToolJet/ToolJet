@@ -348,8 +348,8 @@ export const SelectRenderer = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-          ? []
-          : {},
+        ? []
+        : {},
     [isMulti, defaultOptionsList]
   );
 
