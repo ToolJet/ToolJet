@@ -558,6 +558,12 @@ export const createResolvedSlice = (set, get) => {
     resetComponentExposedValues: (componentId, moduleId = 'canvas') => {
       const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId];
 
+      // ListView-row components store exposed values as a per-row array — resetting
+      // here would blindly overwrite it with a single flat object, clearing every row.
+      // Callers must use resetComponentExposedValuesPerRow for those (RenderWidget
+      // branches on nearestListviewId, mirroring setExposedVariable).
+      if (Array.isArray(existing)) return;
+
       if (!existing || Object.keys(existing).length === 0) return;
 
       const { id, ...rest } = existing;
