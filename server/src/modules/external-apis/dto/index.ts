@@ -10,12 +10,14 @@ import {
   MaxLength,
   Matches,
   ValidateIf,
+  Validate,
   IsNotEmpty,
   IsDefined,
   IsObject,
   IsUrl,
   IsInt,
   Min,
+  Max,
   IsNumber,
   IsPositive,
   registerDecorator,
@@ -27,6 +29,8 @@ import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
+import { sanitizeInput } from '@helpers/utils.helper';
+import { AllowedCharactersValidator } from '@modules/folders/dto';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
@@ -588,4 +592,214 @@ export class UnbanWorkspaceDto {
   @IsNotEmpty()
   @IsString()
   slug?: string;
+}
+
+export class CreateAppV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  slug?: string;
+
+  // accepts either the folder's id or its name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameAppV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  slug?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
+export class ListAppsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "apps not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportAppV2Dto {
+  // Matches the shape Export App v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateModuleV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+}
+
+export class RenameModuleV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+}
+
+export class ListModulesV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportModuleV2Dto {
+  // Matches the shape Export Module v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateWorkflowV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+
+  // workflow folder, by id or name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameWorkflowV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
+export class ListWorkflowsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "workflows not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportWorkflowV2Dto {
+  // Matches the shape Export Workflow v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+// Shared across App/Module/Workflow Folders — same validators as the internal
+// CreateFolderDto/UpdateFolderDto (server/src/modules/folders/dto/index.ts).
+export class CreateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty({ message: "Folder name can't be empty" })
+  @Transform(({ value }) => sanitizeInput(value).trim())
+  @Validate(AllowedCharactersValidator)
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  name: string;
+}
+
+export class UpdateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
+  @MinLength(0, { message: 'Folder name cannot be empty' })
+  name: string;
+}
+
+export class ListFoldersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
 }
