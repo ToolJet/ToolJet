@@ -16,6 +16,7 @@ import {
   isGroupVisible,
   isMenuItemVisible,
   updateItemById,
+  parseStyleDimension,
 } from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -534,8 +535,8 @@ export const Navigation = function Navigation(props) {
 
   // Container styles
   const containerStyle = useMemo(() => {
-    const parsedPadding = parseInt(padding, 10) || 2;
-    const parsedBorderRadius = parseInt(borderRadius, 10) || 8;
+    const parsedPadding = parseStyleDimension(padding, 2);
+    const parsedBorderRadius = parseStyleDimension(borderRadius, 8);
     const bgColor = backgroundColor || 'var(--cc-surface1-surface)';
     const bdrColor = borderColor || 'var(--cc-weak-border)';
 

@@ -1,6 +1,12 @@
 // Guards against non-primitive fx-resolved values crashing JSX rendering.
 export const toDisplayText = (value) => (typeof value === 'string' || typeof value === 'number' ? value : '');
 
+// parseInt(value) || fallback would replace an explicit 0 with the fallback, since 0 is falsy.
+export const parseStyleDimension = (value, fallback) => {
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 export const isItemVisible = (item) =>
   typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
 
