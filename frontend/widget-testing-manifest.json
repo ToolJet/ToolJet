@@ -88,7 +88,8 @@
     },
     {
       "componentType": "NumberInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/NumberInput/TESTING.md"
     },
     {
       "componentType": "PhoneInput",
