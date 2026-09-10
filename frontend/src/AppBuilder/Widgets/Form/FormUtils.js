@@ -6,6 +6,7 @@ import {
   resolveStyles,
 } from '@/AppBuilder/_utils/component-properties-resolution';
 import { validateProperties } from '@/AppBuilder/_utils/component-properties-validation';
+import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
 const resolvedComponentTypes = {};
@@ -552,3 +553,86 @@ export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60,
 
   return `${Math.max(rounded - 20, 40)}px`;
 };
+
+/* Containers a Form does NOT look through when collecting its fields.
+ * Anything else is treated as pure layout, so its children are still the Form's fields.
+ *
+ * Two reasons a container is opaque:
+ *
+ *  1. ROW-SCOPED (Listview, Kanban, Table) store a child's exposed values as an ARRAY, one entry per row.
+ *     A field repeated across rows has no single value to flatten into `formData`.
+ *     Derived rather than re-listed, so a new row-scoped container cannot go stale here.
+ *
+ *  2. A MODAL is a pop-up that is closed most of the time, and it is reachable inside a Form through a plain
+ *     Container even though RESTRICTED_WIDGETS_CONFIG blocks it directly. Collecting a closed modal's inputs
+ *     would let a required field the user cannot open block every submit.
+ *
+ *  3. A nested Form is opaque too — it owns its own submission.
+ */
+export const OPAQUE_FORM_CONTAINERS = new Set([...ROW_SCOPED_WIDGET_TYPES, 'Modal', 'ModalV2', 'Form']);
+
+/* Every tab's child canvas for a Tabs widget. Tabs parents each tab under `<id>-<tabId>`
+ * instead of its base id, so the plain mapping lookup finds nothing.
+ *
+ * Read from the live mapping rather than the resolved `tabs` property, which is a {{ }} binding that can
+ * change at runtime.
+ */
+export const tabCanvasIds = (mapping, tabsId) => Object.keys(mapping).filter((key) => key.startsWith(`${tabsId}-`));
+
+/**
+ * Exposed values of every field belonging to `formId`, keyed by component id.
+ *
+ * `containerChildrenMapping` is keyed by IMMEDIATE parent, so a field inside a Container inside the Form
+ * lives under the Container's id. With `includeNested` the walk descends through layout-only containers so
+ * those fields reach `data`, `formData`, `children` and `isValid`; without it only direct children are
+ * collected, which is the behaviour every Form had before the `registerNestedFields` toggle existed.
+ *
+ * Cost is proportional to the fields the Form actually has: one extra mapping lookup per container node,
+ * plain object reads, no cloning and no store round-trips. `result` doubles as the visited set, so a
+ * corrupted parent chain terminates instead of recursing forever, with no cap on how deep a real layout nests.
+ *
+ * @param state           App Builder store state
+ * @param formId          the Form's component id
+ * @param indices         row indices when the Form itself sits inside a ListView
+ * @param includeNested   the Form's `registerNestedFields` property
+ */
+export function collectFormFieldExposedValues(
+  state,
+  formId,
+  { moduleId = 'canvas', indices = [], includeNested = false } = {}
+) {
+  const exposedComponents = state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components;
+  const pageComponents = state.modules?.[moduleId]?.pages?.[state.modules?.[moduleId]?.currentPageIndex]?.components;
+  const mapping = state.containerChildrenMapping ?? {};
+  const result = {};
+
+  const collect = (parentId) => {
+    const childIds = mapping[parentId];
+    if (!childIds?.length) return;
+    childIds.forEach((childId) => {
+      // Already collected: a cycle in the parent chain, or a duplicate entry.
+      if (Object.prototype.hasOwnProperty.call(result, childId)) return;
+
+      let val = exposedComponents?.[childId];
+      // If per-row (Form is inside a ListView), navigate to the correct row
+      if (Array.isArray(val) && indices.length > 0) {
+        for (const idx of indices) {
+          val = val?.[idx];
+          if (!val) break;
+        }
+      }
+      result[childId] = val || null;
+
+      if (!includeNested) return;
+      const childType = pageComponents?.[childId]?.component?.component;
+      if (OPAQUE_FORM_CONTAINERS.has(childType)) return;
+
+      collect(childId);
+      // Tabs keeps its children under per-tab canvas keys, not its base id.
+      if (childType === 'Tabs') tabCanvasIds(mapping, childId).forEach((canvasId) => collect(canvasId));
+    });
+  };
+
+  collect(formId);
+  return result;
+}
