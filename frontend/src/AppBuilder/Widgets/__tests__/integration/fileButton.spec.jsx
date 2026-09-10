@@ -107,6 +107,36 @@ describe('FileButton widget', () => {
     });
   });
 
+  describe('label size scaling', () => {
+    test('label line-height grows with labelSize instead of staying fixed', async () => {
+      const { container } = widget.render({ styles: { labelSize: binding('32') } });
+      await screen.findByText('Upload file');
+
+      // Break this catches: leaving line-height unset on the label span, which makes it inherit
+      // the shared Button component's fixed 24px `size="default"` line-height — a larger labelSize
+      // then gets clipped by the wrapping span's tw-overflow-hidden no matter how large the widget
+      // itself is resized, since that inherited line-height never grows with labelSize.
+      expect(labelSpan(container)).toHaveStyle({ fontSize: '32px', lineHeight: '45.44px' });
+    });
+
+    test('icon size grows together with labelSize instead of staying fixed at 16px', async () => {
+      const { container } = widget.render({
+        styles: { labelSize: binding('32'), iconVisibility: { value: true } },
+      });
+      await screen.findByText('Upload file');
+
+      const icon = await waitFor(() => {
+        const svg = container.querySelector('svg');
+        expect(svg).toBeInTheDocument();
+        return svg;
+      });
+      // Break this catches: leaving the icon's size hardcoded at 16 instead of deriving it from
+      // labelSize, so the icon stays visually mismatched with a label whose font size grew.
+      expect(icon).toHaveAttribute('width', '36.352');
+      expect(icon).toHaveAttribute('height', '36.352');
+    });
+  });
+
   describe('clearing the selection while at capacity', () => {
     // The clear button must be a sibling of the browse Button, not nested inside it, so a
     // disabled browse button can't take the clear button down with it (see FileInput.jsx too).
