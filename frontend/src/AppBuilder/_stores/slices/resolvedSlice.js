@@ -739,7 +739,7 @@ export const createResolvedSlice = (set, get) => {
       }
       return data;
     },
-    getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
+    getExposedValueOfComponent: (componentId, moduleId = 'canvas', subContainerIndex = null) => {
       try {
         const components = get().getCurrentPageComponents(moduleId);
         const {
@@ -754,7 +754,27 @@ export const createResolvedSlice = (set, get) => {
             );
           }
         }
-        return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+        const data = get().resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        if (Array.isArray(data)) {
+          // Row-scoped component (e.g. inside a Table's expanded row / ListView) — its exposed
+          // values are stored per-row. Navigate to the row of the component that fired the event,
+          // the same way getResolvedComponent walks subContainerIndex above.
+          const indices =
+            subContainerIndex !== null
+              ? Array.isArray(subContainerIndex)
+                ? subContainerIndex
+                : [subContainerIndex]
+              : [0];
+          let current = data;
+          for (let i = 0; i < indices.length; i++) {
+            if (!Array.isArray(current)) break;
+            const value = current?.[indices[i]];
+            current = value !== undefined ? value : current?.[0];
+            if (current === undefined) break;
+          }
+          return current || {};
+        }
+        return data || {};
       } catch (error) {
         return {};
       }

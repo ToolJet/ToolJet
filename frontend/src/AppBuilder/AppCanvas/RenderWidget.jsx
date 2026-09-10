@@ -258,10 +258,17 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, moduleId, customResolvables?.[effectiveSubContainerIndex] ?? {}, options);
+      fireEvent(
+        eventName,
+        id,
+        moduleId,
+        customResolvables?.[effectiveSubContainerIndex] ?? {},
+        options,
+        resolveIndex ?? null
+      );
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
