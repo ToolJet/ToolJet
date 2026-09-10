@@ -165,6 +165,11 @@ export const FileButton = (props) => {
     }),
   };
 
+  // RenderWidget always hands us `widgetHeight - 4`, reserving 4px for its own 2px/side wrapper
+  // padding — but it zeroes that wrapper padding out when `padding` is 'none', so we grow by the
+  // same 4px to still fill the widget's full assigned height.
+  const contentHeight = padding === 'none' ? height + 4 : height;
+
   const selectedSummary = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`;
 
   // disablePicker is true once the selection limit is reached.
@@ -174,7 +179,7 @@ export const FileButton = (props) => {
 
   return (
     <div className="fileButton-widget tw-flex tw-flex-col tw-w-full" data-cy={dataCy}>
-      <div className="tw-flex tw-items-center" style={{ height, width: '100%' }}>
+      <div className="tw-flex tw-items-center" style={{ height: contentHeight, width: '100%' }}>
         <input
           {...inputProps}
           aria-required={isMandatory}
