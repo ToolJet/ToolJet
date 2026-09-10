@@ -71,9 +71,16 @@ Cypress.Commands.add(
       });
     } else {
       splitIntoFlatArray(value).forEach((i) => {
+        // No .click() per token. It lands on the element CENTRE, and {end} only
+        // reaches the end of that VISUAL row (the editor sets lineWrapping), so
+        // on a wrapped value the caret parked mid-text and every later token was
+        // inserted at that one spot — the words came back REVERSED:
+        //   "…reprehenderit nihil ipsam quod voluptatum modi officia nisi."
+        //   → "…reprehen     modivoluptatumquodipsamnihilderi  nisi.officiat"
+        // The clear phase above already focused the editor; the caret advances
+        // on its own. Keystrokes are otherwise unchanged.
         cy.wrap(subject)
           .last()
-          .click()
           .realType(
             `{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}${i}`,
             { parseSpecialCharSequences: false, delay: 0, force: true }
