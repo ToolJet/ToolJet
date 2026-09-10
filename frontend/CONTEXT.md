@@ -9,9 +9,8 @@ and canonical contract paths live in `widget-testing-manifest.json`; widget-spec
 Research is a hard gate. Existing widgets require the widget's official doc page plus the last 2
 years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead. Doc
 pages live on the `documentation` branch and are mapped per component type in that skill's
-`widget-docs.json`; Context7 indexes `main` and is missing several widget pages, so a Context7 miss
-is not evidence a widget is undocumented. Record the applicable source in the canonical contract; if
-the doc page cannot be resolved, stop and ask before writing tests.
+`widget-docs.json`. Record the applicable source in the canonical contract; if the doc page cannot
+be resolved, stop and ask before writing tests.
 
 ## Glossary
 

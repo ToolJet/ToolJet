@@ -28,8 +28,7 @@ Research is required before writing or modifying widget tests:
 2. For `existing-widget`, read the widget's official doc page and inspect Git commits from the last
    2 years for bugs, regressions, fixes, and behavior changes. Doc pages live on the `documentation`
    branch, mapped per component type in the widget-TDD skill's `widget-docs.json`. If the page
-   cannot be resolved, stop and ask before continuing — a Context7 miss is not evidence a widget is
-   undocumented, because Context7 indexes `main` and lacks several widget pages.
+   cannot be resolved, stop and ask before continuing.
 3. For `new-widget`, use an approved product PRD from GitHub, ClickUp, or Notion. This replaces the
    doc-page and Git-history prerequisites because no released widget docs or history exists yet.
 4. Record the applicable source and findings in the widget's canonical `TESTING.md` before proposing
