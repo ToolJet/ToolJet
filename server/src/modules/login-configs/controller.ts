@@ -1,14 +1,14 @@
-import { Controller, Get, Delete, UseGuards, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Delete, UseGuards, Body, Patch, Param, ParseEnumPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
-import { OrganizationConfigsUpdateDto } from './dto';
+import { OrganizationConfigsUpdateDto, UpdateEnvConfigDTO } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ILoginConfigsController } from './interfaces/IController';
 import { LoginConfigsService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY } from './constants';
+import { FEATURE_KEY, SsoEnvProvider, InstanceSsoEnvProvider } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { SSOGuard } from '@modules/licensing/guards/sso.guard';
 import { InstanceConfigsUpdateDto } from './dto';
@@ -97,5 +97,27 @@ export class LoginConfigsController implements ILoginConfigsController {
     const inheritSso = organizationConfigsUpdateDto.inheritSSO;
     await this.loginConfigsService.updateInheritSSO(user, inheritSso);
     return;
+  }
+
+  @InitFeature(FEATURE_KEY.SAVE_ENV_CONFIGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/:provider/env-configs')
+  async toggleEnvConfig(
+    @Param('provider', new ParseEnumPipe(SsoEnvProvider)) provider: SsoEnvProvider,
+    @Body() configData: UpdateEnvConfigDTO,
+    @User() user: UserEntity
+  ): Promise<{ id: string | null } | void> {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.SAVE_INSTANCE_ENV_CONFIGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/:provider/instance-env-configs')
+  async toggleInstanceEnvConfig(
+    @Param('provider', new ParseEnumPipe(InstanceSsoEnvProvider)) provider: InstanceSsoEnvProvider,
+    @Body() configData: UpdateEnvConfigDTO,
+    @User() user: UserEntity
+  ) {
+    throw new NotFoundException();
   }
 }
