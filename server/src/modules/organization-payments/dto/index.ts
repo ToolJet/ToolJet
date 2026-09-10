@@ -36,6 +36,7 @@ enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export enum SubscriptionMode {

@@ -144,4 +144,42 @@
       color: #4368e3;
     }
   }
+
+  &.dark-mode {
+    .modal-content {
+      background: #2b394a;
+      border: 1px solid #232e3c;
+    }
+
+    .header-text,
+    .description {
+      color: #ffffff;
+    }
+
+    .description {
+      opacity: 0.7;
+    }
+
+    .restricted-access-details {
+      background: rgba(255, 255, 255, 0.08);
+
+      ul {
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+
+    .restricted-access-grip {
+      opacity: 0.5;
+    }
+
+    .restricted-back-btn {
+      background: transparent;
+      border: 1px solid #232e3c;
+      color: #ffffff;
+    }
+
+    .restricted-copy-btn.copied {
+      color: #4368e3;
+    }
+  }
 }
