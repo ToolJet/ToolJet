@@ -304,8 +304,12 @@ export class DataSourcesService implements IDataSourcesService {
     return dataSource;
   }
 
-  async testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id);
+  async testConnection(
+    testDataSourceDto: TestDataSourceDto,
+    organization_id: string,
+    dataSourceId?: string
+  ): Promise<object> {
+    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId);
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
@@ -401,7 +405,8 @@ export class DataSourcesService implements IDataSourcesService {
       dataSourceOptions.options,
       user.organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      dataSourceOptions.id
     );
 
     const resolvedArgs = resolvedOptions
@@ -462,7 +467,8 @@ export class DataSourcesService implements IDataSourcesService {
               updatedDataSourceOptions.options,
               user.organizationId,
               updatedDataSourceOptions.environmentId,
-              user
+              user,
+              updatedDataSourceOptions.id
             );
 
             // Retry invoke
