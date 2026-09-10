@@ -1,5 +1,5 @@
 ---
-id: ai-model-guide
+id: ai-model-performance
 title: AI Model Performance and Credit Usage
 ---
 
