@@ -91,6 +91,13 @@ module.exports = {
     // own onRecordingStart/onStop logic through the stub's status transitions and
     // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
     '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
+    // STUB, not transform: @react-google-maps/api wraps the Google Maps JS SDK
+    // (window.google, an external script, an API key), none of which jsdom has, so
+    // a real map never renders under jest. Real tiles/pan/zoom/drag geometry and the
+    // Places service are QA-owned per the Map contract; the engineering layer drives
+    // the widget's own onLoad/marker/polygon/map-click/drag/search handlers through
+    // the mock's captured props. See ee/test/app-builder/widgets/Map/TESTING.md (D-01/D-03).
+    '^@react-google-maps/api$': '<rootDir>/__mocks__/reactGoogleMapsApi.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a

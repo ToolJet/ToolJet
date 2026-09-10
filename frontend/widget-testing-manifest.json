@@ -197,7 +197,8 @@
     },
     {
       "componentType": "Map",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Map/TESTING.md"
     },
     {
       "componentType": "AudioRecorder",
