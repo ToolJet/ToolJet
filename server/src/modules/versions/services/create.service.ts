@@ -27,6 +27,8 @@ import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
+import { EncryptionService } from '@modules/encryption/service';
 import {
   parseParentIdAndSuffix,
   remapFlexContainerChildOrder,
@@ -40,7 +42,8 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly dataQueryRepository: DataQueryRepository
+    protected readonly dataQueryRepository: DataQueryRepository,
+    protected readonly encryptionService: EncryptionService
   ) {}
   async setupNewVersion(
     appVersion: AppVersion,
@@ -251,13 +254,17 @@ export class VersionsCreateService implements IVersionsCreateService {
             where: { dataSourceVersionId: defaultDsv.id, environmentId: appEnvironment.id },
           });
           if (!existingDsvo) {
-            await manager.save(
+            const newDsvo = await manager.save(
               manager.create(DataSourceVersionOptions, {
                 dataSourceVersionId: defaultDsv.id,
                 environmentId: appEnvironment.id,
                 options: newOptions,
               })
             );
+            // Copy token data from source DSVO to new DSVO
+            if (sourceDsvo) {
+              await this.duplicateTokenData(sourceDsvo.id, newDsvo.id, manager);
+            }
           }
         }
       }
@@ -757,6 +764,33 @@ export class VersionsCreateService implements IVersionsCreateService {
           generationTimeMs: bundle.generationTimeMs,
           error: bundle.error,
         })
+      );
+    }
+  }
+
+  protected async duplicateTokenData(
+    sourceDsvoId: string,
+    targetDsvoId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const tokenRows = await manager.find(DatasourceUserTokenData, {
+      where: { dataSourceVersionOptionId: sourceDsvoId },
+    });
+
+    for (const row of tokenRows) {
+      const accessToken = row.authToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.authToken)
+        : null;
+      const refreshToken = row.refreshToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
+        : null;
+
+      await this.dataSourceUtilService.upsertUserTokenData(
+        targetDsvoId,
+        row.userId ?? null,
+        accessToken,
+        refreshToken,
+        manager
       );
     }
   }
