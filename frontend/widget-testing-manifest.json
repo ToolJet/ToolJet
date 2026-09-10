@@ -150,7 +150,8 @@
     },
     {
       "componentType": "TimePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TimePicker/TESTING.md"
     },
     {
       "componentType": "DatetimePickerV2",
