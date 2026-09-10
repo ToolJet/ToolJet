@@ -89,6 +89,7 @@ const FormComponent = (props) => {
     canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
+    registerNestedFields = false,
     newJsonSchema,
   } = properties;
 
@@ -213,7 +214,7 @@ const FormComponent = (props) => {
         result[childId] = val || null;
 
         // Descend through layout-only containers;
-        if (!OPAQUE_FORM_CONTAINERS.has(pageComponents?.[childId]?.component?.component)) {
+        if (registerNestedFields && !OPAQUE_FORM_CONTAINERS.has(pageComponents?.[childId]?.component?.component)) {
           collect(childId);
         }
       });
