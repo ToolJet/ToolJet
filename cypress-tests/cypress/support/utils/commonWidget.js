@@ -8,7 +8,7 @@ import { commonWidgetSelector } from "Selectors/common";
  * @tjUsage  randomNumber(1, 100)
  */
 export const randomNumber = (x, y) => {
-  return faker.datatype.number({ min: x, max: y });
+  return faker.number.int({ min: x, max: y });
 };
 
 /**
