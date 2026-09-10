@@ -10,11 +10,14 @@ const initialState = {
 export const createLayoutSlice = (set, get) => ({
   ...initialState,
   // A component hidden by the incoming layout gets unmounted by WidgetWrapper,
-  // but its exposed value (often only computed on mount) is never cleared,
-  // so it goes stale. Clear it like a real deletion would, for top-level
-  // components whose own visibility flag now hides them.
+  // but its exposed value (often only computed on mount) is never cleared, so
+  // it goes stale. Clear it for top-level components whose own visibility
+  // flag now hides them — but, unlike a real deletion, leave the dependency
+  // graph node/edges alone: the component still exists and will remount and
+  // recompute its value the next time it's shown, and dependents can only
+  // pick that up automatically if the edge to them survives the hide.
   clearExposedValuesHiddenByLayout: (nextLayout) => {
-    const { modules, getCurrentPageComponents, getResolvedComponent, updateDependencyValues, removeNode } = get();
+    const { modules, getCurrentPageComponents, getResolvedComponent, updateDependencyValues } = get();
     const displayProperty = nextLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
 
     Object.keys(modules || {}).forEach((moduleId) => {
@@ -33,9 +36,7 @@ export const createLayoutSlice = (set, get) => ({
         set((state) => {
           delete state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
         });
-        // Notify dependents before removeNode strips the graph edges they'd be found through.
         keys.forEach((key) => updateDependencyValues(`components.${componentId}.${key}`, moduleId));
-        removeNode(`components.${componentId}`, moduleId);
       });
     });
   },
