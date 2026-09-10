@@ -951,7 +951,7 @@
         },
         "Settings": {
             "text": "Ajustes",
-            "tip": "Ajustes globales",
+            "tip": "Ajustes de la aplicación",
             "hideHeader": "Ocultar encabezado para aplicaciones desplegadas",
             "maintenanceMode": "Modo de mantenimiento",
             "maxWidthOfCanvas": "Ancho máximo del lienzo",

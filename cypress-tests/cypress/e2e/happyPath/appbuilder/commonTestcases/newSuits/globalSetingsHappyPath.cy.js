@@ -7,7 +7,7 @@ import {
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 
 describe(
-  "Editor- Global Settings",
+  "Editor- App Settings",
   { testIsolation: false },
   () => {
     const data = {};
@@ -18,14 +18,14 @@ describe(
       cy.openApp();
     });
 
-    it("should verify global settings", () => {
+    it("should verify app settings", () => {
       data.backgroundColor = fake.randomRgba;
       cy.get("[data-cy='left-sidebar-settings-button']").click();
 
       // Source: GlobalSettingsHeader.jsx:8 — header title is a span.global-settings-header-title (no data-cy)
       cy.get(".global-settings-header-title").verifyVisibleElement(
         "have.text",
-        "Global settings"
+        "App settings"
       );
       cy.hideTooltip();
 

@@ -5,7 +5,7 @@ import cx from 'classnames';
 const GlobalSettingsHeader = ({ darkMode, onClose }) => {
   return (
     <div className={cx('global-settings-header', { 'dark-theme': darkMode })}>
-      <span className="global-settings-header-title">Global settings</span>
+      <span className="global-settings-header-title">App settings</span>
       <Button
         iconOnly
         leadingIcon="x"

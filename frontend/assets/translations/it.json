@@ -914,7 +914,7 @@
         },
         "Settings": {
             "text": "Impostazioni",
-            "tip": "Impostazioni globali",
+            "tip": "Impostazioni app",
             "hideHeader": "Nascondi l'intestazione delle app avviate",
             "maintenanceMode": "Modalità di manutenzione",
             "maxWidthOfCanvas": "Larghezza massima della tela",

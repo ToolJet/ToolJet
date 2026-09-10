@@ -914,7 +914,7 @@
     },
     "Settings": {
       "text": "Pengaturan",
-      "tip": "Pengaturan global",
+      "tip": "Pengaturan aplikasi",
       "hideHeader": "Sembunyikan header untuk aplikasi yang diluncurkan",
       "maintenanceMode": "Mode pemeliharaan",
       "maxWidthOfCanvas": "Lebar Maksimum Kanvas",
