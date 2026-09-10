@@ -4760,6 +4760,10 @@ function migrateProperties(
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
+
+      if (!properties.registerNestedFields) {
+        properties.registerNestedFields = { value: '{{false}}' };
+      }
     }
 
     // Tabs

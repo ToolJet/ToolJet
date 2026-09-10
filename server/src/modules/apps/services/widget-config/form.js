@@ -132,7 +132,7 @@ export const formConfig = {
       section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     loadingState: {
@@ -367,7 +367,7 @@ export const formConfig = {
       footerHeight: { value: 60 },
       validateOnSubmit: { value: '{{true}}' },
       resetOnSubmit: { value: '{{true}}' },
-      registerNestedFields: { value: '{{false}}' },
+      registerNestedFields: { value: '{{true}}' },
       generateFormFrom: {
         value: '',
       },
