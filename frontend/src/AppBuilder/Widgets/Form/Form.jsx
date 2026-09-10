@@ -14,6 +14,7 @@ import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
+  ROW_SCOPED_WIDGET_TYPES,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { HorizontalSlot } from './Components/HorizontalSlot';
@@ -27,6 +28,19 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import FormSignalContext from './FormSignalContext';
+
+/* Containers a Form does NOT look through when collecting its fields.
+ * Anything else is treated as pure layout, so its children are still this Form's fields.
+ *
+ *  - ROW_SCOPED_WIDGET_TYPES (Listview, Kanban, Table) store a child's exposed values as an ARRAY, one entry per row.
+ *    A field repeated across rows has no single value to flatten into `formData`.
+ *    Derived rather than re-listed, so a new row-scoped container cannot go stale here.
+ *  - ModalV2 is usually closed. Pulling its fields in would let a required field the user cannot even see block every submit.
+ *  - A nested Form owns its own submission; its fields belong to it, not here.
+ *
+ * Slots need no entry: a slot child is parented to `<containerId>-header`, a different containerChildrenMapping key the walk never reaches.
+ */
+const OPAQUE_FORM_CONTAINERS = new Set([...ROW_SCOPED_WIDGET_TYPES, 'ModalV2', 'Form']);
 
 const FormComponent = (props) => {
   const {
@@ -171,21 +185,41 @@ const FormComponent = (props) => {
 
   // Lightweight selector: returns raw exposed value references (no spreading).
   // shallow comparison works because immer only creates new references for mutated paths.
+  //
+  // Walks NESTED containers, not just direct children.
+  // RESTRICTED_WIDGETS_CONFIG lets Container and FlexContainer be dropped into a Form, so that nesting is a supported layout.
+  // Cost stays proportional to the fields the Form actually has.
   const childExposedMap = useStore((state) => {
-    const childIds = state.containerChildrenMapping?.[id] || [];
     const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
+    const pageComponents = state.modules[moduleId]?.pages?.[state.modules[moduleId]?.currentPageIndex]?.components;
     const result = {};
-    childIds.forEach((childId) => {
-      let val = exposedComponents?.[childId];
-      // If per-row (Form is inside a ListView), navigate to correct row
-      if (Array.isArray(val) && indices.length > 0) {
-        for (const idx of indices) {
-          val = val?.[idx];
-          if (!val) break;
+
+    const collect = (parentId) => {
+      const childIds = state.containerChildrenMapping?.[parentId];
+      if (!childIds?.length) return;
+      childIds.forEach((childId) => {
+        // Already collected: a cycle in the parent chain, or a duplicate entry.
+        if (Object.prototype.hasOwnProperty.call(result, childId)) return;
+
+        let val = exposedComponents?.[childId];
+        // If per-row (Form is inside a ListView), navigate to correct row
+        if (Array.isArray(val) && indices.length > 0) {
+          for (const idx of indices) {
+            val = val?.[idx];
+            if (!val) break;
+          }
         }
-      }
-      result[childId] = val || null;
-    });
+
+        result[childId] = val || null;
+
+        // Descend through layout-only containers;
+        if (!OPAQUE_FORM_CONTAINERS.has(pageComponents?.[childId]?.component?.component)) {
+          collect(childId);
+        }
+      });
+    };
+
+    collect(id);
     return result;
   }, shallow);
 
