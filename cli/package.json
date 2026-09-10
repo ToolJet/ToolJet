@@ -1,7 +1,4 @@
 {
-  "name": "@tooljet/cli",
-  "description": "tooljet cli tool",
-  "version": "0.0.14",
   "bin": {
     "tooljet": "./bin/run"
   },
@@ -15,6 +12,7 @@
     "inquirer": "^7.3.3",
     "rimraf": "^3.0.2"
   },
+  "description": "tooljet cli tool",
   "devDependencies": {
     "@oclif/test": "^2",
     "@types/chai": "^4",
@@ -39,7 +37,7 @@
   },
   "dirname": "oex",
   "engines": {
-    "node": ">=12.0.0"
+    "node": "\u003e=12.0.0"
   },
   "files": [
     "/bin",
@@ -54,6 +52,7 @@
   ],
   "license": "MIT",
   "main": "dist/index.js",
+  "name": "@tooljet/cli",
   "oclif": {
     "bin": "tooljet",
     "commands": "./dist/commands",
@@ -65,18 +64,30 @@
       }
     }
   },
+  "overrides": {
+    "brace-expansion": "1.1.18",
+    "cross-spawn": "7.0.6",
+    "degit": "2.8.6",
+    "diff": "4.0.4",
+    "js-yaml": "3.15.2",
+    "lodash": "4.18.1",
+    "minimatch": "5.1.9",
+    "picomatch": "2.3.2",
+    "tmp": "0.2.7"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist \u0026\u0026 tsc -b",
     "lint": "eslint .  '**/*.ts'",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
-    "prepack": "npm run build && oclif manifest && oclif readme",
+    "prepack": "npm run build \u0026\u0026 oclif manifest \u0026\u0026 oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme \u0026\u0026 git add README.md"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "version": "0.0.14"
 }

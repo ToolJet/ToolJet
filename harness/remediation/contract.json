@@ -1,0 +1,186 @@
+{
+  "allowedPaths": [
+    "cli/package-lock.json",
+    "cli/package.json"
+  ],
+  "baseSha": "1794841c3c964a7c93cc902f4d6f6cd0cfe7751a",
+  "conflictDomain": {
+    "ecosystem": "npm",
+    "id": "89377c71f57eef9b",
+    "lockArtifacts": [
+      "cli/package-lock.json"
+    ],
+    "proofClass": "LOCK_EXACT",
+    "rootManifest": "cli/package-lock.json"
+  },
+  "limits": {
+    "maxChangedFiles": 10,
+    "maxChangedLines": 300
+  },
+  "remediationKey": "1d4a3c88d20343c13ac83dbe863248d73027c23c780d3f15a37c85bda8d6a477",
+  "repository": "https://github.com/gregkroon/ToolJet",
+  "rules": {
+    "lockfileTextPatchForbidden": true,
+    "nativePackageManagerRequired": true,
+    "scmWritesByAgentForbidden": true,
+    "securityControlModificationForbidden": true,
+    "testModificationForbidden": true
+  },
+  "scanSha": "1794841c3c964a7c93cc902f4d6f6cd0cfe7751a",
+  "schema": "harness.remediation/contract.v1",
+  "stoExecutionId": "xx2IkTM8RvCOZWJRCvawQA",
+  "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
+  "targetBranch": "main",
+  "units": [
+    {
+      "candidateVersions": [
+        "4.18.1"
+      ],
+      "coordinate": {
+        "normalisedName": "lodash",
+        "purl": "pkg:npm/lodash@4.17.21"
+      },
+      "fromVersion": "4.17.21",
+      "issueIds": [
+        "LbRsjHmXyAaT4Z1ApxoILi"
+      ],
+      "minimumFixedVersion": "4.18.0",
+      "package": "lodash"
+    },
+    {
+      "candidateVersions": [
+        "1.1.18"
+      ],
+      "coordinate": {
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@1.1.11"
+      },
+      "fromVersion": "1.1.11",
+      "issueIds": [
+        "Hh_ed2SC9IN47CwYYsxbos"
+      ],
+      "minimumFixedVersion": "1.1.16",
+      "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "3.1.5"
+      ],
+      "coordinate": {
+        "normalisedName": "minimatch",
+        "purl": "pkg:npm/minimatch@3.1.2"
+      },
+      "fromVersion": "3.1.2",
+      "issueIds": [
+        "fx-spfAgRUxoSyLUNBgJvR"
+      ],
+      "minimumFixedVersion": "3.1.3",
+      "package": "minimatch"
+    },
+    {
+      "candidateVersions": [
+        "3.15.2"
+      ],
+      "coordinate": {
+        "normalisedName": "js-yaml",
+        "purl": "pkg:npm/js-yaml@3.14.1"
+      },
+      "fromVersion": "3.14.1",
+      "issueIds": [
+        "POFmr1sYu8ccO8x9Pmg6I7"
+      ],
+      "minimumFixedVersion": "3.15.0",
+      "package": "js-yaml"
+    },
+    {
+      "candidateVersions": [
+        "2.3.2"
+      ],
+      "coordinate": {
+        "normalisedName": "picomatch",
+        "purl": "pkg:npm/picomatch@2.3.1"
+      },
+      "fromVersion": "2.3.1",
+      "issueIds": [
+        "iAWBVvyjkAt25S70LGJLCN"
+      ],
+      "minimumFixedVersion": "2.3.2",
+      "package": "picomatch"
+    },
+    {
+      "candidateVersions": [
+        "0.2.7"
+      ],
+      "coordinate": {
+        "normalisedName": "tmp",
+        "purl": "pkg:npm/tmp@0.0.33"
+      },
+      "fromVersion": "0.0.33",
+      "issueIds": [
+        "SZhnI88gc4x-wS0_P2lAzn"
+      ],
+      "minimumFixedVersion": "0.2.6",
+      "package": "tmp"
+    },
+    {
+      "candidateVersions": [
+        "5.1.9"
+      ],
+      "coordinate": {
+        "normalisedName": "minimatch",
+        "purl": "pkg:npm/minimatch@5.1.6"
+      },
+      "fromVersion": "5.1.6",
+      "issueIds": [
+        "OHVqogjvQ6ZUXowRlegiQL"
+      ],
+      "minimumFixedVersion": "5.1.8",
+      "package": "minimatch"
+    },
+    {
+      "candidateVersions": [
+        "7.0.6"
+      ],
+      "coordinate": {
+        "normalisedName": "cross-spawn",
+        "purl": "pkg:npm/cross-spawn@7.0.3"
+      },
+      "fromVersion": "7.0.3",
+      "issueIds": [
+        "BAq4c-DBKTgsY8u94nbgn_"
+      ],
+      "minimumFixedVersion": "7.0.5",
+      "package": "cross-spawn"
+    },
+    {
+      "candidateVersions": [
+        "2.8.6"
+      ],
+      "coordinate": {
+        "normalisedName": "degit",
+        "purl": "pkg:npm/degit@2.8.4"
+      },
+      "fromVersion": "2.8.4",
+      "issueIds": [
+        "VOzXzFd5isNs2Cq10bQXNd"
+      ],
+      "minimumFixedVersion": "2.8.6",
+      "package": "degit"
+    },
+    {
+      "candidateVersions": [
+        "4.0.4"
+      ],
+      "coordinate": {
+        "normalisedName": "diff",
+        "purl": "pkg:npm/diff@4.0.2"
+      },
+      "fromVersion": "4.0.2",
+      "issueIds": [
+        "8J8p5GPThUrkRcdR57dt0f"
+      ],
+      "minimumFixedVersion": "4.0.4",
+      "package": "diff"
+    }
+  ]
+}
