@@ -1,5 +1,5 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
-import { DataSource, MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableUnique } from 'typeorm';
+import { DataSource, MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { findTenantSchema } from '@helpers/tooljet_db.helper';
@@ -7,20 +7,23 @@ import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthes
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
 
-// "Migration A": pure substrate. Every existing internal_tables row gets an
-// internal_table_relations row at the priority-1 (development) environment on the org's default
-// branch, plus a synthesized baseline recording what the physical table already looks like. No
-// licence check anywhere here — assigning licensed workspaces' data to production is a separate
-// later migration. See ~/Documents/Obsidian/.mind/feature/tjdb-environments-architecture.md
-// ("Data model", "The baseline") for the schema and design this implements.
+// "Migration A": the data half of the environment substrate. Every existing internal_tables row
+// gets an internal_table_relations row at the priority-1 (development) environment on the org's
+// default branch, plus a synthesized baseline recording what the physical table already looks
+// like. No license check anywhere here — assigning licensed workspaces' data to production is a
+// separate later migration (Migration B). See src/modules/tooljet-db/AGENTS.md for the data model
+// this implements.
+//
+// The 3 internal_table* tables + internal_tables' soft-delete/unique-index shape are created by the
+// sibling schema migration `migrations/1787564882000-TjdbRolloutSubstrateSchema.ts` — DDL ownership
+// lives entirely there; this migration only backfills data into them. Revert order (not enforced
+// mechanically — both data sources share one `migrations` table, reverted by insertion id, not
+// timestamp): TjdbRolloutMigrationBEnvironmentAssignment1788252587903 (down) -> this migration
+// (down) -> TjdbRolloutSubstrateSchema1787564882000 (down).
 type InternalTableRow = { id: string; organization_id: string; configurations: any };
 
 export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await this.createRelationsTable(queryRunner);
-    await this.createMigrationsTable(queryRunner);
-    await this.createMigrationApplicationsTable(queryRunner);
-    await this.addSoftDeleteToInternalTables(queryRunner);
     await this.dedupeAndLockDownCoRelationId(queryRunner);
 
     const tooljetDbConnection = new DataSource({ ...tooljetDbOrmconfig, name: `${MIGRATION_NAME}Tjdb` } as any);
@@ -42,216 +45,27 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       'internal_tables',
       new TableColumn({ name: 'configurations', type: 'jsonb', isNullable: true })
     );
-    // Restore the install's shape from each table's priority-1-environment relation. Duplicate
-    // co_relation_id cleanup and column-identity repair are data changes, not shape — not undone.
+    // Restore the install's shape from each table's priority-1-environment relation. Prefer this
+    // migration's own row (id = internal_table_id) if present, else the development-environment
+    // relation, else the earliest — deterministic even when Migration B has created a second
+    // relation per table. Duplicate co_relation_id cleanup and column-identity repair are data
+    // changes, not shape — not undone.
     await queryRunner.query(`
       UPDATE internal_tables it
-      SET configurations = r.configurations
-      FROM internal_table_relations r
-      WHERE r.internal_table_id = it.id
+      SET configurations = pick.configurations
+      FROM (
+        SELECT DISTINCT ON (r.internal_table_id) r.internal_table_id, r.configurations
+        FROM internal_table_relations r
+        JOIN app_environments e ON e.id = r.environment_id
+        ORDER BY r.internal_table_id, (r.id = r.internal_table_id) DESC, e.priority ASC, r.created_at ASC
+      ) pick
+      WHERE pick.internal_table_id = it.id
     `);
 
     await queryRunner.query(
       `ALTER TABLE internal_tables DROP CONSTRAINT IF EXISTS organization_id_co_relation_id_unique`
     );
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP NOT NULL`);
-
-    await queryRunner.query(`DROP INDEX IF EXISTS organization_id_table_name_unique`);
-    await queryRunner.dropColumn('internal_tables', 'deleted_at');
-    await queryRunner.createUniqueConstraint(
-      'internal_tables',
-      new TableUnique({ name: 'organization_id_table_name_unique', columnNames: ['organization_id', 'table_name'] })
-    );
-
-    await queryRunner.dropTable('internal_table_migration_applications');
-    await queryRunner.dropTable('internal_table_migrations');
-    await queryRunner.dropTable('internal_table_relations');
-  }
-
-  // --- Schema: the three new tables. Raw SQL only — nothing in this migration reads through
-  // TypeORM entities, it only creates the tables. ---
-
-  private async createRelationsTable(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'internal_table_relations',
-        columns: [
-          // Not generated: for rollout-migration rows this is explicitly set to internal_table_id.
-          { name: 'id', type: 'uuid', isPrimary: true },
-          { name: 'internal_table_id', type: 'uuid', isNullable: false },
-          { name: 'environment_id', type: 'uuid', isNullable: false },
-          { name: 'branch_id', type: 'uuid', isNullable: false },
-          { name: 'configurations', type: 'jsonb', isNullable: true },
-          // Not in the architecture doc's ERD — records why a table couldn't be baselined instead
-          // of failing the whole migration. NULL = baselined fine.
-          { name: 'baseline_error', type: 'text', isNullable: true },
-          { name: 'created_at', type: 'timestamp', default: 'now()' },
-        ],
-      }),
-      true
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_relations',
-      new TableForeignKey({
-        columnNames: ['internal_table_id'],
-        referencedTableName: 'internal_tables',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_relations',
-      new TableForeignKey({
-        columnNames: ['environment_id'],
-        referencedTableName: 'app_environments',
-        referencedColumnNames: ['id'],
-        onDelete: 'RESTRICT',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_relations',
-      new TableForeignKey({
-        columnNames: ['branch_id'],
-        referencedTableName: 'organization_git_sync_branches',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createUniqueConstraint(
-      'internal_table_relations',
-      new TableUnique({ columnNames: ['internal_table_id', 'environment_id', 'branch_id'] })
-    );
-  }
-
-  private async createMigrationsTable(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'internal_table_migrations',
-        columns: [
-          { name: 'id', type: 'uuid', isPrimary: true, isGenerated: true, default: 'gen_random_uuid()' },
-          { name: 'internal_table_id', type: 'uuid', isNullable: false },
-          // A timestamp, not a counter — baselines get literal 1 (create) / 2 (FKs), workspace-wide.
-          { name: 'sequence', type: 'numeric', precision: 15, isNullable: false },
-          { name: 'parent_migration_id', type: 'uuid', isNullable: true },
-          { name: 'branch_id', type: 'uuid', isNullable: false },
-          { name: 'kind', type: 'enum', enum: ['structured', 'raw_sql', 'baseline'], isNullable: false },
-          { name: 'payload', type: 'jsonb', isNullable: false },
-          // NULL means authoring not yet confirmed - the migration-side twin of applied_at IS NULL.
-          { name: 'resulting_schema', type: 'jsonb', isNullable: true },
-          { name: 'name', type: 'varchar', isNullable: true },
-          { name: 'description', type: 'varchar', isNullable: true },
-          { name: 'reverts_migration_id', type: 'uuid', isNullable: true },
-          { name: 'tooljet_version', type: 'varchar', isNullable: true },
-          { name: 'created_by', type: 'uuid', isNullable: true },
-          { name: 'created_at', type: 'timestamp', default: 'now()' },
-        ],
-      }),
-      true
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migrations',
-      new TableForeignKey({
-        columnNames: ['internal_table_id'],
-        referencedTableName: 'internal_tables',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migrations',
-      new TableForeignKey({
-        columnNames: ['parent_migration_id'],
-        referencedTableName: 'internal_table_migrations',
-        referencedColumnNames: ['id'],
-        onDelete: 'SET NULL',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migrations',
-      new TableForeignKey({
-        columnNames: ['reverts_migration_id'],
-        referencedTableName: 'internal_table_migrations',
-        referencedColumnNames: ['id'],
-        onDelete: 'SET NULL',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migrations',
-      new TableForeignKey({
-        columnNames: ['branch_id'],
-        referencedTableName: 'organization_git_sync_branches',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migrations',
-      new TableForeignKey({
-        columnNames: ['created_by'],
-        referencedTableName: 'users',
-        referencedColumnNames: ['id'],
-        onDelete: 'SET NULL',
-      })
-    );
-    await queryRunner.query(
-      `CREATE INDEX internal_table_migrations_table_id_sequence_idx ON internal_table_migrations (internal_table_id, sequence)`
-    );
-  }
-
-  private async createMigrationApplicationsTable(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'internal_table_migration_applications',
-        columns: [
-          { name: 'id', type: 'uuid', isPrimary: true, isGenerated: true, default: 'gen_random_uuid()' },
-          { name: 'migration_id', type: 'uuid', isNullable: false },
-          { name: 'relation_id', type: 'uuid', isNullable: false },
-          { name: 'applied_at', type: 'timestamp', isNullable: true },
-        ],
-      }),
-      true
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migration_applications',
-      new TableForeignKey({
-        columnNames: ['migration_id'],
-        referencedTableName: 'internal_table_migrations',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createForeignKey(
-      'internal_table_migration_applications',
-      new TableForeignKey({
-        columnNames: ['relation_id'],
-        referencedTableName: 'internal_table_relations',
-        referencedColumnNames: ['id'],
-        onDelete: 'CASCADE',
-      })
-    );
-    await queryRunner.createUniqueConstraint(
-      'internal_table_migration_applications',
-      new TableUnique({ columnNames: ['migration_id', 'relation_id'] })
-    );
-  }
-
-  // --- internal_tables repairs ---
-
-  private async addSoftDeleteToInternalTables(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumn(
-      'internal_tables',
-      new TableColumn({ name: 'deleted_at', type: 'timestamp', isNullable: true })
-    );
-    // Partial unique index instead of the plain constraint: soft-deleted tables (once drop_table
-    // starts setting deleted_at, in whatever ticket wires that up) must free their table_name for
-    // reuse. No read site of internal_tables is updated in this migration — deleted_at is never
-    // set today, so every row's predicate is trivially true and behaviour is unchanged.
-    await queryRunner.query(`ALTER TABLE internal_tables DROP CONSTRAINT organization_id_table_name_unique`);
-    await queryRunner.query(`
-      CREATE UNIQUE INDEX organization_id_table_name_unique
-      ON internal_tables (organization_id, table_name)
-      WHERE deleted_at IS NULL
-    `);
   }
 
   private async dedupeAndLockDownCoRelationId(queryRunner: QueryRunner): Promise<void> {
@@ -276,8 +90,6 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       ADD CONSTRAINT organization_id_co_relation_id_unique UNIQUE (organization_id, co_relation_id)
     `);
   }
-
-  // --- Per-table: repair column identity, insert its relation row, synthesize a baseline ---
 
   private async repairAndBaselineEveryTable(queryRunner: QueryRunner, tjdbQueryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM internal_tables`);
@@ -354,17 +166,24 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     // ("current transaction is aborted") even though the catch in the caller looks like it recovered.
     await queryRunner.query(`SAVEPOINT relation_repair`);
     try {
-      await queryRunner.query(
+      const [inserted] = await queryRunner.query(
         `INSERT INTO internal_table_relations (id, internal_table_id, environment_id, branch_id, configurations, baseline_error, created_at)
          VALUES ($1, $1, $2, $3, $4, $5, now())
-         ON CONFLICT (internal_table_id, environment_id, branch_id) DO NOTHING`,
+         ON CONFLICT (internal_table_id, environment_id, branch_id) DO NOTHING
+         RETURNING id`,
         [row.id, environmentId, branchId, configurations, baselineError]
       );
+      if (!inserted) {
+        // Already processed by an earlier run of this migration (dev revert/rerun cycle) — the
+        // migrations/applications rows below were inserted then too, don't duplicate them.
+        await queryRunner.query(`RELEASE SAVEPOINT relation_repair`);
+        return;
+      }
 
       for (const migration of migrations) {
         const [{ id: migrationId }] = await queryRunner.query(
           `INSERT INTO internal_table_migrations
-             (internal_table_id, sequence, branch_id, kind, payload, resulting_schema, tooljet_version, created_at)
+           (internal_table_id, sequence, branch_id, kind, payload, resulting_schema, tooljet_version, created_at)
            VALUES ($1, $2, $3, 'baseline', $4, $5, $6, now())
            RETURNING id`,
           [
@@ -392,7 +211,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
   /**
    * Mints uuids for any physical column missing from configurations.columns.column_names and
    * drops the literal "undefined" key some rows picked up from the editColumn bug this migration
-   * also fixes. Root cause of the gap: the original backfill (UpdateInternalTablesConfigurationsColumn)
+   * also fixes. The root cause of the gap: the original backfill (UpdateInternalTablesConfigurationsColumn)
    * queried information_schema.columns without a table_schema filter, silently returning zero rows
    * for every org whose tenant schema isn't "public".
    */

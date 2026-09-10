@@ -23,7 +23,13 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1788252587903'
  * from A and are skipped. Licence bought later moves nothing - the first promote's find-or-create
  * handles it. No cutover flag, no admin action.
  *
- * See ~/Documents/Obsidian/.mind/feature/tjdb-environments-architecture.md.
+ * See src/modules/tooljet-db/AGENTS.md for the environments data model this assigns into.
+ *
+ * Revert order (not enforced mechanically — both datasources share one `migrations` table,
+ * reverted by insertion id, not timestamp): this migration (down) -> Migration A
+ * (data-migrations/1787564882760-TjdbRolloutMigrationASubstrate.ts, down) ->
+ * TjdbRolloutSubstrateSchema1787564882000 (down). A duplicate-baseline bug would surface here
+ * first, since B is the first thing to read Migration A's baseline rows.
  *
  * B is a data migration under `migrationsTransactionMode: 'all'` - it shares migration A's single
  * uncommitted transaction on `queryRunner`. All `internal_table*` work therefore goes through
