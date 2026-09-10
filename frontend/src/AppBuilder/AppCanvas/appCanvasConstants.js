@@ -39,6 +39,8 @@ export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion', 'FlexContainer'];
 
+export const SLOT_SUPPORTED_WIDGETS = ['Container', 'Form', 'ModalV2', 'Accordion'];
+
 // Subcontainer widget types that use per-row resolution (customResolvables)
 export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
 
