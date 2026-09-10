@@ -38,7 +38,7 @@ describe('PopoverMenu', () => {
   afterEach(widget.teardown);
 
   describe('show menu on hover', () => {
-    test('hovering the trigger opens the popup', async () => {
+    test('[PopoverMenu-TRG-002] hovering the trigger opens the popup', async () => {
       const { container } = widget.render();
 
       await widget.session.user.hover(triggerEl(container));
@@ -46,7 +46,7 @@ describe('PopoverMenu', () => {
       await waitFor(() => expect(popupContent()).toBeInTheDocument());
     });
 
-    test('moving away from the trigger without entering the popup closes it', async () => {
+    test('[PopoverMenu-TRG-003] moving away from the trigger without entering the popup closes it', async () => {
       const { container } = widget.render();
 
       await widget.session.user.hover(triggerEl(container));
@@ -57,7 +57,7 @@ describe('PopoverMenu', () => {
       await waitFor(() => expect(popupContent()).not.toBeInTheDocument());
     });
 
-    test('moving from the trigger into the popup within the grace window keeps it open', async () => {
+    test('[PopoverMenu-TRG-004] moving from the trigger into the popup within the grace window keeps it open', async () => {
       const { container } = widget.render();
 
       await widget.session.user.hover(triggerEl(container));
@@ -73,7 +73,7 @@ describe('PopoverMenu', () => {
       expect(popupContent()).toBeInTheDocument();
     });
 
-    test('leaving the popup content closes it', async () => {
+    test('[PopoverMenu-TRG-005] leaving the popup content closes it', async () => {
       const { container } = widget.render();
 
       await widget.session.user.hover(triggerEl(container));
