@@ -1,6 +1,7 @@
 import { DataSource } from '@entities/data_source.entity';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -824,12 +825,33 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return value;
   }
 
-  async testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object> {
+  async testConnection(
+    testDataSourceDto: TestDataSourceDto,
+    organization_id: string,
+    dataSourceId?: string
+  ): Promise<object> {
     const { kind, options, plugin_id, environment_id } = testDataSourceDto;
 
     let result = {};
 
     const parsedOptions = JSON.parse(JSON.stringify(options));
+
+    // A credential_id in the body must belong to the data source being tested (path :id) -
+    // otherwise a caller could supply another data source's/tenant's credential_id and have
+    // it decrypted and forwarded to a plugin-controlled endpoint. Mirrors the ownership check
+    // in validateOptions(). Skipped for callers that don't test against a persisted data
+    // source (e.g. testSampleDBConnection, which already loads its own options from the DB).
+    if (dataSourceId) {
+      const storedOptions =
+        (await this.appEnvironmentUtilService.getOptions(dataSourceId, organization_id, environment_id))?.options || {};
+
+      for (const key of Object.keys(parsedOptions)) {
+        const credentialId = parsedOptions[key]?.['credential_id'];
+        if (credentialId && storedOptions[key]?.['credential_id'] !== credentialId) {
+          throw new ForbiddenException('credential_id does not belong to this data source');
+        }
+      }
+    }
 
     // need to match if currentOption is a contant, {{constants.psql_db}
     const constantMatcher = /{{constants|secrets|globals.server\..+?}}/g;
