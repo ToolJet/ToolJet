@@ -70,6 +70,7 @@ export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export class PaymentRedirectDto {
