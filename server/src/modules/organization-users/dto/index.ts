@@ -1,6 +1,14 @@
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { IsOptional, IsString, IsArray, IsUUID, IsObject, IsEnum } from 'class-validator';
 
+export class ArchiveOrgUserDto {
+  // Honored only for a server-verified super admin (see OrganizationUsersController.archive/unarchive);
+  // ignored for every other caller, who is always scoped to their own session organization.
+  @IsOptional()
+  @IsUUID()
+  organizationId?: string;
+}
+
 export class UpdateOrgUserDto {
   @IsOptional()
   @IsString()
