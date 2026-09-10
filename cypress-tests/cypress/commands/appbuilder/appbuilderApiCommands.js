@@ -253,9 +253,11 @@ Cypress.Commands.add(
 
           const { id: editingVersionId, home_page_id: homePageId } =
             response.body.editing_version;
-          const componentId = crypto.randomUUID
-            ? crypto.randomUUID()
-            : require("uuid").v4();
+          // crypto.randomUUID() is available in the Cypress browser (Chrome)
+          // and Node 22; the old `require("uuid")` fallback pulled a transitive
+          // that vanished with @cypress/code-coverage and broke the webpack
+          // build (Module not found: 'uuid').
+          const componentId = crypto.randomUUID();
 
           let finalProperties = {};
           if (componentType === "Text") {
