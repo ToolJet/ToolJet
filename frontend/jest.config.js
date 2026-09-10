@@ -78,6 +78,12 @@ module.exports = {
     // engineering layer only needs the empty-url placeholder + container styles.
     // See ee/test/app-builder/widgets/PDF/TESTING.md (D-10).
     '^react-pdf$': '<rootDir>/__mocks__/reactPdf.jsx',
+    // STUB, not transform: react-qr-reader@2.2.1 calls getUserMedia at mount,
+    // which jsdom has no camera for, so a real scan never happens under jest.
+    // Real camera scanning is QA-owned per the QrScanner contract; the engineering
+    // layer drives the widget's own onScan/onError handlers through the mock's
+    // captured props. See ee/test/app-builder/widgets/QrScanner/TESTING.md (D-01/D-02).
+    '^react-qr-reader$': '<rootDir>/__mocks__/reactQrReader.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a
