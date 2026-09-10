@@ -127,6 +127,8 @@ describe("Modules — Versions", () => {
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("exist");
     // Container already has text1, so drop directly rather than reusing
     // dropModuleComponent (which requires the blank-container placeholder).
+    cy.wait(3000)
+    cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.dragAndDropWidget("Text", 500, 200); // -> text2
     cy.get(commonWidgetSelector.draggableWidget("text2")).should("exist");
     publishModuleVersion("v2-draft", "v2-published");
