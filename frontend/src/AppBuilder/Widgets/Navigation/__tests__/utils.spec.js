@@ -8,6 +8,10 @@
  * or raw `true`, means disabled). See isItemVisible/isItemDisabled above these
  * helpers in the source file.
  *
+ * A group only hides when EVERY child is hidden — a disabled-but-visible
+ * child still keeps the group visible, since disabled just means
+ * greyed-out/unclickable, not hidden.
+ *
  * No store import, zero mocks.
  */
 import { isGroupVisible, isMenuItemVisible, parseStyleDimension } from '../utils';
@@ -38,7 +42,7 @@ describe('isGroupVisible', () => {
     expect(isGroupVisible(group)).toBe(false);
   });
 
-  test('a group with children where ALL are disabled (but not hidden) is not visible', () => {
+  test('a group with children where ALL are disabled (but not hidden) is still visible — disabled is not hidden', () => {
     const group = {
       id: 'g1',
       isGroup: true,
@@ -46,16 +50,16 @@ describe('isGroupVisible', () => {
       disable: false,
       children: [disabledChild('c1'), disabledChild('c2')],
     };
-    expect(isGroupVisible(group)).toBe(false);
+    expect(isGroupVisible(group)).toBe(true);
   });
 
-  test('a group with at least one child that is both visible and enabled is visible', () => {
+  test('a group with at least one visible child is visible, even if that child is disabled', () => {
     const group = {
       id: 'g1',
       isGroup: true,
       visible: false,
       disable: false,
-      children: [hiddenChild('c1'), disabledChild('c2'), visibleChild('c3')],
+      children: [hiddenChild('c1'), disabledChild('c2')],
     };
     expect(isGroupVisible(group)).toBe(true);
   });
