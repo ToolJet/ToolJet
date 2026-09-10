@@ -1,6 +1,6 @@
 import { commonSelectors, commonWidgetSelector, cyParamName } from 'Selectors/common';
 import { moduleSelectors } from 'Selectors/platform/modules';
-import { versionModalSelector } from 'Selectors/eeCommon';
+import { versionModalSelector } from 'Selectors/platform/eeCommon';
 
 export const openModulesList = () => {
   cy.intercept('GET', '/api/library_apps').as('libraryApps');
@@ -41,10 +41,10 @@ export const defineModuleContract = () => {
   cy.get(moduleSelectors.moduleContainerWidget).click();
   cy.get(commonWidgetSelector.widgetConfigHandle('modulecontainer')).click();
 
-  cy.get(commonWidgetSelector.accordion('input')).next().find('[data-cy="button-add-column"]').click();
+  cy.get('[data-cy="button-new-input"]').click();
   cy.get(moduleSelectors.inputItem('input1')).should('exist');
 
-  cy.get(commonWidgetSelector.accordion('output')).next().find('[data-cy="button-add-column"]').click();
+  cy.get('[data-cy="button-new-output"]').click();
   cy.get(moduleSelectors.outputItem('output1')).should('exist');
 };
 

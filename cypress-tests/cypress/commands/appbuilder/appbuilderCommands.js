@@ -52,6 +52,9 @@ Cypress.Commands.add(
       // renderer's intercept state; without this the first drag goes cold and
       // the plugin's retry loop can overrun the 15s task timeout. Priming here
       // lands the drag on the first attempt.
+      cy.wait(1000);
+      cy.realDragInit();
+      cy.wait(1000);
       cy.realDragRewarm();
       cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
         targetX: positionX,

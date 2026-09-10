@@ -2,26 +2,26 @@ import { faker } from "@faker-js/faker";
 export let fake = {};
 
 function email() {
-  return `${faker.name.firstName()}@example.com`;
+  return `${faker.person.firstName()}@example.com`;
 }
 function password() {
   return faker.internet.password();
 }
 function firstName() {
-  return faker.name.firstName().replace(/[^a-z0-9]/g, "");;
+  return faker.person.firstName().replace(/[^a-z0-9]/g, "");;
 }
 function lastName() {
-  return faker.name.lastName().replace(/[^a-z0-9]/g, "");;
+  return faker.person.lastName().replace(/[^a-z0-9]/g, "");;
 }
 function fullName() {
-  return `${faker.name.firstName()} ${faker.name.lastName()}`;
+  return `${faker.person.firstName()} ${faker.person.lastName()}`;
 }
 function companyName() {
-  const str = `${faker.company.companyName()} ${faker.name.lastName()}`;
+  const str = `${faker.company.name()} ${faker.person.lastName()}`;
   return str.substring(0, str.indexOf(" ")).replace(/[^a-zA-Z ]/g, "");
 }
 function widgetName() {
-  return faker.name.firstName();
+  return faker.person.firstName();
 }
 function randomSentence() {
   return faker.lorem.sentence();
@@ -42,19 +42,19 @@ function randomRgb() {
 
 function boxShadowParam() {
   const paramArray = [
-    faker.datatype.number({
+    faker.number.int({
       min: -20,
       max: 20,
     }),
-    faker.datatype.number({
+    faker.number.int({
       min: -20,
       max: 20,
     }),
-    faker.datatype.number({
+    faker.number.int({
       min: 0,
       max: 20,
     }),
-    faker.datatype.number({
+    faker.number.int({
       min: 0,
       max: 20,
     }),
@@ -69,7 +69,7 @@ function randomRgbaHex() {
 }
 
 function tableName() {
-  return faker.name.firstName();
+  return faker.person.firstName();
 }
 
 Object.defineProperty(fake, "email", { get: email });
