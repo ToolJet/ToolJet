@@ -6,6 +6,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import './popoverMenu.scss';
 import { CustomOptions, CustomButton } from './components';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { useMenuWidth } from './useMenuWidth';
 
 export const PopoverMenu = function PopoverMenu(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -22,7 +23,7 @@ export const PopoverMenu = function PopoverMenu(props) {
     darkMode,
   } = props;
 
-  const { optionsTextColor, optionsIconColor, optionsDescriptionColor } = styles;
+  const { optionsTextColor, optionsIconColor, optionsDescriptionColor, menuWidthMode, menuCustomWidth } = styles;
 
   const {
     loadingState,
@@ -99,6 +100,7 @@ export const PopoverMenu = function PopoverMenu(props) {
 
   // ===== COMPUTED STYLES =====
   const computedOptionHoverColor = getModifiedColor('var(--cc-surface1-surface)', 'hover');
+  const menuWidthStyle = useMenuWidth(menuWidthMode, menuCustomWidth, width);
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -210,8 +212,7 @@ export const PopoverMenu = function PopoverMenu(props) {
               sideOffset={2}
               align="start"
               style={{
-                width: width,
-                maxWidth: width,
+                ...menuWidthStyle,
                 '--popover-option-hover-color': computedOptionHoverColor,
                 ...((optionsLoadingState || hasNoOptions) && {
                   height: '120px',
