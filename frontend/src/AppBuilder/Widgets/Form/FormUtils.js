@@ -6,7 +6,7 @@ import {
   resolveStyles,
 } from '@/AppBuilder/_utils/component-properties-resolution';
 import { validateProperties } from '@/AppBuilder/_utils/component-properties-validation';
-import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { ROW_SCOPED_WIDGET_TYPES, SLOT_SUPPORTED_WIDGETS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
 
 const resolvedComponentTypes = {};
@@ -568,6 +568,10 @@ export const getBodyHeight = (height, showHeader, showFooter, headerHeight = 60,
  *     would let a required field the user cannot open block every submit.
  *
  *  3. A nested Form is opaque too — it owns its own submission.
+ *
+ *  4. The Form's OWN header/footer are never collected: they hold its chrome, which is what `defaultChildren`
+ *     puts there (a title Text and the submit Button) and what `buttonToSubmit` looks through. A NESTED
+ *     container's slots ARE collected — a field an author put in a Container's header is still a form field.
  */
 export const OPAQUE_FORM_CONTAINERS = new Set([...ROW_SCOPED_WIDGET_TYPES, 'Modal', 'ModalV2', 'Form']);
 
@@ -628,8 +632,15 @@ export function collectFormFieldExposedValues(
       if (OPAQUE_FORM_CONTAINERS.has(childType)) return;
 
       collect(childId);
+
       // Tabs keeps its children under per-tab canvas keys, not its base id.
       if (childType === 'Tabs') tabCanvasIds(mapping, childId).forEach((canvasId) => collect(canvasId));
+
+      // A nested container's header/footer are separate sub-canvases, and
+      // a field placed in one is still a field of this Form. Only ever reached for CHILDREN.
+      if (SLOT_SUPPORTED_WIDGETS.includes(childType)) {
+        ['header', 'footer'].forEach((slot) => collect(`${childId}-${slot}`));
+      }
     });
   };
 
