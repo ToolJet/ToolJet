@@ -167,6 +167,24 @@ describe('LoginConfigsController', () => {
         expect((await getInstanceOidcRow())?.useEnvConfig).toBe(false);
       });
 
+      it('should never take over a row already enabled outside auto-enable, e.g. by the legacy SSO_OPENID_* migration', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await ssoConfigsRepository.update(
+          { sso: SSOType.OPENID, organizationId: IsNull() },
+          {
+            useEnvConfig: false,
+            enabled: true,
+            configs: { clientId: 'legacy-client-id', name: 'legacy-name', wellKnownUrl: 'https://legacy.example.com' },
+          }
+        );
+
+        await runBootSequence();
+
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.clientId).toBe('legacy-client-id');
+      });
+
       it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
         const savedWellKnownUrl = process.env.OIDC_WELL_KNOWN_URL;
         delete process.env.OIDC_WELL_KNOWN_URL;
@@ -231,6 +249,35 @@ describe('LoginConfigsController', () => {
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/OIDC_WELL_KNOWN_URL/);
+      });
+
+      it('should throw the specific missing keys, not "already in use", when the workspace has no config entry at all', async () => {
+        delete process.env.WORKSPACE_OIDC_CONFIG;
+        await app.get(OrganizationEnvUtilService).initialize();
+
+        await expect(
+          app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
+        ).rejects.toThrow(/OIDC_CLIENT_ID is required/);
+      });
+
+      it('should still report "already in use" when every real slot is genuinely claimed', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [TEST_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'id-1',
+              OIDC_CLIENT_SECRET: 'secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        await runBootSequence();
+
+        await expect(
+          app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
+        ).rejects.toThrow(/already being used/);
       });
     });
 
@@ -300,6 +347,20 @@ describe('LoginConfigsController', () => {
         await expect(
           app.get(LoginConfigsService).toggleLdapEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/LDAP_BASE_DN/);
+      });
+
+      it('should replace a stale real basedns array with the env-key token once env-config is applied', async () => {
+        await app.get(OrganizationEnvUtilService).initialize();
+        await app.get(LoginConfigsService).toggleLdapEnvConfig('a-human-user-id', orgId, { useEnvConfig: true });
+        const row = await getOrgRow(SSOType.LDAP);
+        await ssoConfigsRepository.update(row.id, {
+          configs: { ...(row.configs as Record<string, unknown>), basedns: ['dc=stale,dc=example,dc=com'] } as any,
+        });
+
+        const result = await app.get(LoginConfigsService).getProcessedOrganizationConfigs(orgId);
+        const ldapEntry = (result?.organization_details?.sso_configs || []).find((c: any) => c.sso === SSOType.LDAP);
+
+        expect(ldapEntry?.configs?.basedns).toEqual(['LDAP_BASE_DN']);
       });
     });
 
