@@ -126,6 +126,8 @@ const NavItemPopover = forwardRef(
                   initialValue={item?.id}
                   placeholder={'Item ID'}
                   onChange={(value) => handleChange('id', value)}
+                  // Commit synchronously on blur — the popover's rootClose can beat a deferred setTimeout(0) commit.
+                  delayOnChange={false}
                   validationFn={(value) => validateItemId(value, item?.id)}
                   componentId={componentId}
                   paramName="id"

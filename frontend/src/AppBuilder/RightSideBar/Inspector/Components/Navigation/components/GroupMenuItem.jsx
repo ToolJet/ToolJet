@@ -112,7 +112,8 @@ export const GroupMenuItem = ({
               rootCloseEvent="mousedown"
               onHide={(e) => {
                 if (isClickInsidePortaledOverlay(e?.target)) return;
-                setShowEditPopover(false);
+                // Defer so a field's blur-commit (e.g. Id) runs before this mousedown-triggered close.
+                setTimeout(() => setShowEditPopover(false), 0);
               }}
             >
               <NavItemPopover

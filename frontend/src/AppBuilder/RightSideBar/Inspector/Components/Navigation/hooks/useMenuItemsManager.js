@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { validateStaticId } from '../../../Utils';
@@ -11,12 +12,22 @@ export const useMenuItemsManager = (component, paramUpdated) => {
 
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
+  // `_key` is render-only identity; strip before persisting.
+  const stripInternalKeys = (items) =>
+    items.map(({ _key, ...item }) => {
+      if (item.children) {
+        return { ...item, children: stripInternalKeys(item.children) };
+      }
+      return item;
+    });
+
   // Helper function to update menu items
   const updateMenuItems = (newItems) => {
+    const itemsToPersist = stripInternalKeys(newItems);
     // Track that this update originated locally so the sync effect can skip it
-    lastLocalUpdateRef.current = JSON.stringify(newItems);
+    lastLocalUpdateRef.current = JSON.stringify(itemsToPersist);
     setMenuItems(newItems);
-    paramUpdated({ name: 'menuItems' }, 'value', newItems, 'properties', false);
+    paramUpdated({ name: 'menuItems' }, 'value', itemsToPersist, 'properties', false);
   };
 
   // Helper function to construct menu items from component definition
@@ -27,6 +38,8 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     }
     return itemsValue.map((item) => {
       const newItem = { ...item };
+      // Stable row identity, independent of the editable `id`; backfilled for legacy items.
+      newItem._key = item._key || uuidv4();
       Object.keys(item).forEach((key) => {
         if (typeof item[key]?.value === 'boolean') {
           newItem[key] = { ...item[key], value: `{{${item[key]?.value}}}` };
@@ -36,6 +49,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       if (item.isGroup && item.children) {
         newItem.children = item.children.map((child) => {
           const newChild = { ...child };
+          newChild._key = child._key || uuidv4();
           Object.keys(child).forEach((key) => {
             if (typeof child[key]?.value === 'boolean') {
               newChild[key] = { ...child[key], value: `{{${child[key]?.value}}}` };
@@ -93,6 +107,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
 
     const baseItem = {
       id,
+      _key: uuidv4(),
       label: isGroup ? `Group ${id.replace('group', '')}` : `Item ${id.replace('item', '')}`,
       icon: { value: randomIcon },
       iconVisibility: true,

@@ -75,6 +75,7 @@ export function SortableTree({
   containerElement,
   dragOverlayModifiers,
   disabled = false,
+  getItemKey = (item) => item.id,
   ...restProps
 }) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
@@ -315,7 +316,7 @@ export function SortableTree({
 
             return (
               <SortableTreeItem
-                key={id}
+                key={getItemKey(data)}
                 id={id}
                 value={data}
                 groupToHighlight={groupToHighlight}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
@@ -65,6 +66,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     }
     return tabItems?.map((tabItem) => {
       const newTabItem = { ...tabItem };
+      // Stable row identity, independent of the editable `id`/`title`; backfilled for legacy items.
+      newTabItem._key = tabItem._key || uuidv4();
 
       Object.keys(tabItem)?.forEach((key) => {
         if (typeof tabItem[key]?.value === 'boolean') {
@@ -94,6 +97,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
       return {
         id,
+        _key: uuidv4(),
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
@@ -258,7 +262,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const updateAllTabItemsParams = (tabItems) => {
     if (areAllTabIdsValid()) {
-      paramUpdated({ name: 'tabItems' }, 'value', tabItems, 'properties', false);
+      // `_key` is render-only identity; strip before persisting.
+      const itemsToPersist = tabItems.map(({ _key, ...tabItem }) => tabItem);
+      paramUpdated({ name: 'tabItems' }, 'value', itemsToPersist, 'properties', false);
     }
   };
 
@@ -430,8 +436,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {tabItems?.map((item, index) => {
+                  const dragId = item._key || item.title + item.id;
                   return (
-                    <Draggable key={item.title + item.id} draggableId={item.title + item.id} index={index}>
+                    <Draggable key={dragId} draggableId={dragId} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -445,6 +452,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
+                            show={activeColumnPopoverIndex === index}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(show) => {
                               if (show) {
