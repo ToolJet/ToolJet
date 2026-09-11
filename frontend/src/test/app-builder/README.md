@@ -1,29 +1,46 @@
-# App Builder test contract
+# App Builder testing
 
-Use this contract before adding or changing tests for `frontend/src/AppBuilder/**`. The goal is
-meaningful regression protection, not test volume or line coverage by itself.
+The goal is meaningful regression protection with a workflow developers can use for everyday changes.
 
-## Widget contract gate
+## Choose the task
 
-Before adding or changing a registered widget test, use
-`frontend/ee/.agents/skills/app-builder-widget-tdd/SKILL.md` and check
-`frontend/widget-testing-manifest.json`. Research creates the canonical contract at
-`frontend/ee/test/app-builder/widgets/<ComponentType>/TESTING.md`; do not bulk-create empty files.
+| Task | Entry skill | Example |
+| --- | --- | --- |
+| Existing widget coverage | [Widget backfill](../../../ee/.agents/skills/app-builder-widget-backfill/SKILL.md) | “Backfill Cascader clear/reset” or “Audit the whole Button widget” |
+| Defect anywhere in App Builder | [Bug fix](../../../ee/.agents/skills/app-builder-bugfix/SKILL.md) | “Fix queries rerunning across modules” |
+| New/changed capability anywhere in App Builder | [Feature](../../../ee/.agents/skills/app-builder-feature/SKILL.md) | “Add query cancellation” or “Build a new widget” |
 
-TDD cannot begin until product behavior and test design have recorded human approval. Every maintained
-widget test starts its title with an approved scenario ID. New widget definitions and modified widget
-tests fail validation without an approved contract; untouched widgets remain a report-only backfill.
-Run `npm --prefix frontend run validate:widget-testing-contracts`.
+These are the only three developer-facing testing skills. They load the same
+[test design and verification](../../../ee/.agents/skills/app-builder-testing/test-design-and-verification.md),
+[quality guide](../../../ee/.agents/skills/app-builder-testing/writing-good-tests.md),
+[conventions](../../../ee/.agents/skills/app-builder-testing/conventions.md), and
+[product-decision protocol](../../../ee/.agents/skills/app-builder-testing/product-decisions.md).
+Read `frontend/CONTEXT.md` for repository context. Research facts first; ask only for unresolved
+product behavior. Accepted requirements/session decisions permit work followed by normal PR review,
+without a separate pre-implementation test-design approval.
 
-For unresolved product behavior, use [`app-builder-grill-me`](../../../../ee/.agents/skills/app-builder-grill-me/SKILL.md)
-skill: research facts first, then ask one decision at a time with a recommendation and wait for
-explicit confirmation. If skill discovery is unavailable, follow the same one-question protocol
-inline; do not guess.
+All three workflows require [plan grilling](../../../ee/.agents/skills/app-builder-testing/test-design-and-verification.md#stress-test-the-proposed-test-plan-required)
+after drafting scenarios and before implementation. The agent challenges correctness, omissions,
+false confidence, test boundaries, and scope; revises weaknesses; and records a short note beside
+the design. Only unresolved product decisions become user questions, one at a time. This is separate
+from the final review of implemented tests and does not replace executed regression sensitivity.
 
-## Mandatory research gate
+## Scope and evidence
 
-Research is required before writing or modifying widget tests:
+Backfill can be focused or whole-widget. Bug fixes/features anywhere in App Builder cover their
+changed guarantees and affected interactions; they do not require unrelated widget backfill.
+Entirely new widgets need the full intended surface defined from accepted requirements.
 
+<<<<<<< HEAD
+Widget-specific guarantees and executed evidence live in the manifest-linked canonical
+`frontend/ee/test/app-builder/widgets/<ComponentType>/TESTING.md`, using `TESTING.template.md` there.
+Follow the shared [widget contract reference](../../../ee/.agents/skills/app-builder-testing/widget-contracts.md).
+Manifest `status` and matching `contract_status` describe whole-widget progress. A focused contract
+can contain verified scenarios while both remain `not-started`. New scenarios use
+`ready → implemented → verified`; existing approval records remain historical facts.
+For other App Builder changes, keep durable guarantees in tests and sources, design, scope, and
+executed evidence in the PR or a ready-to-paste PR handoff. No extra contract system is required.
+=======
 1. Classify the work as `existing-widget` or `new-widget` in the contract.
 2. For `existing-widget`, read the widget's official doc page and inspect Git commits from the last
    2 years for bugs, regressions, fixes, and behavior changes. Doc pages live on the `documentation`
@@ -33,65 +50,66 @@ Research is required before writing or modifying widget tests:
    doc-page and Git-history prerequisites because no released widget docs or history exists yet.
 4. Record the applicable source and findings in the widget's canonical `TESTING.md` before proposing
    scenarios.
+>>>>>>> lts-3.16
 
-The validator requires both research fields on every approved contract.
+Record Guarantee, Sources, Public seam, Setup, Action, and Fault before code. Challenge no-ops,
+competing values, and alternate paths; assert counts for “once.” Name each test's break with
+`// Break this catches:`. Use literal independent expectations and keep relevant ToolJet collaborators real.
 
-Browser scenarios are classified `Layer: Browser` and `Owner: QA`. Engineers do not implement or
-prescribe Cypress in this workflow.
+Existing behavior requires PASS → realistic fault → intended assertion FAIL → restore → PASS.
+Bugs/features require behavioral FAIL → implementation → PASS. Record the actual revision,
+commands, pre-fix behavior/fault, failed assertion and restored/GREEN result once per run, linked
+by scenario ID. Passing tests without demonstrated sensitivity remain `implemented`.
 
-## Evidence before code
+## Supported test seams
 
-For the behavior under test, record:
+- Pure Jest: exported deterministic product API, with an independent semantic oracle.
+- Store integration: real composed store via `AppBuilderTestSession.store.act` and `store.read`.
+- RTL: smallest production UI with real providers, stores, resolvers, bindings/events, and
+  `RenderWidget` where integration is the guarantee. Session owns rendering and cleanup.
+- Browser: QA owns real geometry, computed CSS, focus order, persistence, routing and complete
+  cross-surface journeys. Record explicit Browser / QA scenarios; assignment is not verification.
 
-1. the outcome a user, builder, or consuming app relies on;
-2. an independent source such as public documentation, registered configuration, an approved product
-   decision, or a reproduced regression;
-3. the failure mode and affected App Builder execution surfaces;
-4. the lowest stable public seam and real first-party collaborators exercised; and
-5. the disposition of overlapping tests: keep, rewrite, move, or delete.
+Control true boundaries only: HTTP through MSW, time, generated IDs, browser observers/media/geometry,
+storage, edition selection, documented third-party systems. The `capabilities.dnd` option mounts
+production's real `DndProvider`; enable it for Form/ListView children instead of injecting contexts.
+Use supported builders and seeding, accessible queries, and realistic user interactions. Do not
+mock App Builder modules, services, stores, selectors, hooks or child components; do not use raw
+singleton mutations, fixed sleeps, private call-order assertions or ungrounded snapshots.
+An unavailable public seam is `harness-blocked`; improve the harness before claiming coverage.
 
-Current runtime behavior alone is not a product contract. If the expected outcome is ambiguous, stop
-and request a product decision, then record it as an answered `D-nn` entry in the widget contract's
-`## Decisions` section — an unanswered decision blocks `spec-complete`. Do not append coverage merely
-because an existing test is difficult to assess.
+## Commands and gates
 
-Contract tables carry disposition tokens, never prose: `covered:<ID>`, `shared:<test path>#<ID>`,
-`qa:<ID>`, `decision:<D-nn>`, or `none:<closed reason code>`. See
-`frontend/ee/test/app-builder/widgets/TESTING.template.md` and run `npm run validate:widget-testing-contracts`.
+Run commands from the repository root:
 
-## Supported seams
+```sh
+npm --prefix frontend test -- --runInBand --runTestsByPath <frontend-relative-spec-path>
+npm --prefix frontend run test:layout
+npm --prefix frontend run validate:widget-testing-contracts
+npm --prefix frontend run validate:widget-testing-contracts -- --base-ref <local-base-ref>
+npm --prefix frontend run test:app-builder -- --runInBand --edition=ce
+npm --prefix frontend run test:app-builder -- --runInBand --edition=ee
+```
 
-- Pure Jest calls an exported deterministic product API.
-- Store integration uses the real composed App Builder store through `AppBuilderTestSession.store.act`
-  and `store.read`.
-- RTL renders the smallest production UI boundary with real providers, store, resolver, bindings,
-  events, and `RenderWidget` where widget integration is the behavior.
-- Contract tests use immutable inputs and an independent semantic oracle.
-- Cypress owns complete browser journeys, real geometry and computed CSS, routes, persistence,
-  access, Editor/Viewer transitions, and cross-surface behavior.
+Use focused tests during implementation, then related suites and applicable edition lanes.
+The plain validator command checks recorded contracts; `--base-ref` also checks changed widget
+statements, including deleted assertions and local untracked tests. The ref must exist locally.
+CI uses newline-delimited JSON PR file records (`status`, `path`, `patch`, `additions`, `deletions`).
+Missing/truncated patches fail with an instruction to obtain a reliable base comparison. Legacy
+TSV input remains readable but cannot establish a modified test's scope without patch evidence.
 
-Control only genuine boundaries when needed: HTTP through MSW, time, generated IDs, browser geometry,
-observers/media, storage, edition selection, and documented third-party adapters. `capabilities.dnd`
-is the one provider capability: it mounts the REAL react-dnd `DndProvider` that `AppBuilder.jsx`
-supplies in production, which `AppCanvas/Container` requires — any widget rendered as a
-sub-container child (a Form field, a ListView row) throws `Expected drag drop context` without it.
-Enable it instead of injecting a container's context by hand. Do not mock App
-Builder modules, services, stores, selectors, hooks, or child components. Do not use raw store
-mutation, direct singleton-store reads in test bodies, fixed sleeps, generated CSS selectors when a
-public query exists, internal call-order assertions, or snapshots without an approved oracle.
+Added/changed widget declarations need ready scenario IDs. Untouched legacy tests do not need
+conversion. Shared setup changes require review/rerun of the affected suite; file-level helper
+changes affect all its tests. Imported helper changes need caller review too; diff selection is not
+a dependency analysis. New widgets require `spec-complete` intended scope, without an approval ceremony.
 
-## Widget integration workflow
+Structural checks reject missing references/evidence, focused tests, disabled tests presented as
+implemented, and incomplete whole-widget verification. They cannot prove assertion quality,
+source authenticity, complete registered-key coverage, or actual execution. Reconcile the inventory
+and full relevant run before claiming whole-widget verification; deferred/harness-blocked engineering
+work prevents that claim. Report QA work separately. Preserve useful legacy regression coverage.
 
-Before changing a widget spec, inspect its public documentation, registration under
-`AppBuilder/WidgetManager/widgets/`, runtime implementation, regression history, the shared
-`Widgets/__tests__/integration/widgetHarness.js`, and every overlapping test. Read the manifest-linked
-widget contract containing facts that must not be generalized to other widgets.
-
-Name a test as a public guarantee. Arrange through builders or supported harness seeding, act through
-an accessible user interaction or public component action, and assert a semantic DOM or public
-store/action result. Let `AppBuilderTestSession` own rendering and cleanup.
-
-For existing behavior, prove characterization sensitivity with a targeted fault. For new behavior or
-bug fixes, capture red before production code and then make the smallest green change. Report the
-focused command and result, `npm --prefix frontend run test:layout`, applicable CE/EE or Cypress lanes,
-the sensitivity result, warnings, unrun lanes, and unresolved product decisions.
+Resolve unexpected HTTP/console errors, including caught MSW failures. Narrow pre-existing warning
+allowances need owner/reason; never broadly suppress output. Report warnings and unrun lanes honestly.
+Private EE contracts must exist: absence is a failure. The frontend CI job currently does not check
+out the private EE submodule; that access/setup issue remains a rollout blocker, not a reason to skip validation.
