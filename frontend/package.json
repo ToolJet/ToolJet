@@ -304,6 +304,8 @@
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "lint-quiet": "eslint --quiet 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:changed": "bash -c 'FILES=$(git diff --relative --name-only --diff-filter=ACMR; git diff --relative --name-only --cached --diff-filter=ACMR; git ls-files --others --exclude-standard); FILES=$(echo \"$FILES\" | sort -u | grep -E \"^src/.*\\.(js|jsx|ts|tsx)$\"); if [ -z \"$FILES\" ]; then echo \"No changed files to lint.\"; else echo \"$FILES\" | tr \"\\n\" \"\\0\" | xargs -0 ./node_modules/.bin/eslint; fi'",
+    "format:changed": "bash -c 'FILES=$(git diff --relative --name-only --diff-filter=ACMR; git diff --relative --name-only --cached --diff-filter=ACMR; git ls-files --others --exclude-standard); FILES=$(echo \"$FILES\" | sort -u | grep -E \"^src/.*\\.(js|jsx|ts|tsx)$\"); if [ -z \"$FILES\" ]; then echo \"No changed files to format.\"; else echo \"$FILES\" | tr \"\\n\" \"\\0\" | xargs -0 ./node_modules/.bin/eslint --fix; fi'",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
