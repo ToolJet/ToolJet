@@ -11034,18 +11034,19 @@ tbody {
 }
 
 .bounded-box {
-  .sc-dxgOiQ.jcdOkx {
-    height: 100%;
-    margin: auto;
-    width: max-content;
-    max-width: 100% !important;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 
+  > div {
     img {
-      height: 100% !important;
-    }
-
-    .gVmiLs {
-      width: auto !important;
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
     }
   }
 

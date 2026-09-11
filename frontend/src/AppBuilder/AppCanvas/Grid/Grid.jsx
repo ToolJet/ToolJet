@@ -42,6 +42,7 @@ import {
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
 import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import { isDragFromConfigHandle } from './helpers/dragGuards';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -285,26 +286,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
           </Suspense>
         </span>
-        {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img
-              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-              src="assets/images/icons/settings.svg"
-              width="12"
-              height="12"
-              draggable="false"
-            />
-            <span>components</span>
-
-            <hr
-              className={cn(
-                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
-              )}
-            />
-
-            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
-          </div> */}
-        {/* </span> */}
       </div>
     );
   };
@@ -1069,9 +1050,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
             isDragOnInnerElement
           ) {
-            const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
-            if (!isHandle) {
+            // These widgets are only draggable from their config handle, so
+            // their interiors stay interactive. See dragGuards for why this
+            // cannot go back to hit-testing 'handle-content'.
+            if (!isDragFromConfigHandle(document.elementsFromPoint(e.clientX, e.clientY))) {
               return false;
             }
           }

@@ -33,11 +33,10 @@
 
 .config-handle,
 .multiple-components-config-handle {
-  .handle-content {
-    cursor: move;
-    color: #ffffff;
-    background: rgb(77, 114, 250);
-  }
+  // `.handle-content` was removed here: the badge that carried the class became
+  // ConfigHandleButton in 84b8d29f49. Its cursor lives in
+  // _components/_styles/config-handle-button.scss and its colours are inline
+  // tokens on the button, so the rule had nothing left to style.
 
   .badge {
     font-size: 9px;

@@ -5,7 +5,7 @@ export const boundedBoxConfig = {
   component: 'BoundedBox',
   defaultSize: {
     width: 30,
-    height: 420,
+    height: 600,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
