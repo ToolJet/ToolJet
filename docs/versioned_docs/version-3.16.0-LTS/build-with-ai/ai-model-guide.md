@@ -31,7 +31,7 @@ For model selection, the most useful metrics are:
 - **Credits** — the approximate cost of generating the app.
 
 | Model | Avg. features | Credits per build* | Time per build* | Best fit |
-|---|---:|---:|---:|---|
+|---|---|---|---|---|
 | **Opus 5** | **9.6/10** | 273–636 | 6.7–21.0 min | Most complete apps |
 | **Luna max** | **8.7/10** | **19–51** | 17.0–61.2 min | Large apps on a budget |
 | **Fable 5.1** | 8.4/10 | 344–1,349 | 5.7–19.5 min | High-quality UI and complex apps |
@@ -87,7 +87,7 @@ Higher credit usage did not consistently produce a more complete app.
 For a typical four-page build in the benchmark, approximate usage was:
 
 | Model | Approx. credits |
-|---|---:|
+|---|---|
 | Luna medium | **20** |
 | Sol | **340** |
 | Opus 5 | **490** |
@@ -101,7 +101,7 @@ For larger apps, choosing a higher-cost model can improve feature completion, bu
 - **Terra is better suited to smaller apps.** It performed well on one- and two-page tasks but often stopped early on larger builds.
 - **Luna high was inconsistent in this benchmark.** Luna medium or Luna max were more reliable choices.
 - **Fable 5.1 produced consistently strong UI, but at the highest credit usage.**
-- **Gemini Flash and Gemini Pro were not reliable on larger app-generation tasks in this benchmark.**
+- **Gemini Flash and Gemini Pro are not optimized for ToolJet app generation.** In this benchmark, they were unreliable on larger tasks and may produce apps that do not work as expected.
 
 ## How the benchmark was measured
 
