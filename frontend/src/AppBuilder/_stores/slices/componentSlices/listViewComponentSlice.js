@@ -190,6 +190,44 @@ export const listViewComponentSlice = (set, get) => {
       scheduleExposedValuesPerRow(componentId, values, indices, moduleId);
     },
 
+    // Clears every exposed variable (except id) for ONE row of a ListView child —
+    // the per-row counterpart to resolvedSlice's resetComponentExposedValues, which
+    // would blindly overwrite the whole per-row array (all rows) with a single flat
+    // object. Walks `indices` the same way setExposedValuePerRow does to reach the
+    // leaf row object.
+    resetComponentExposedValuesPerRow: (componentId, indices, moduleId = 'canvas') => {
+      const components = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
+      const lastIdx = indices[indices.length - 1];
+      let existingRow = Array.isArray(components?.[componentId]) ? components[componentId] : null;
+      for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
+      const existing = existingRow?.[lastIdx];
+
+      if (!existing || Object.keys(existing).length === 0) return;
+
+      const { id, ...rest } = existing;
+      const keys = Object.keys(rest);
+
+      if (keys.length === 0) return;
+
+      set(
+        (state) => {
+          let current = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          for (let i = 0; i < indices.length - 1; i++) current = current[indices[i]];
+          current[lastIdx] = id !== undefined ? { id } : {};
+        },
+        false,
+        { type: 'resetComponentExposedValuesPerRow', payload: { componentId, indices, moduleId } }
+      );
+
+      keys.forEach((key) => get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []));
+
+      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        get()._deriveListviewChain(nearestListviewId, indices, moduleId);
+      }
+    },
+
     // Initialize exposed value arrays for all children of a ListView
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
       const { getContainerChildrenMapping } = get();

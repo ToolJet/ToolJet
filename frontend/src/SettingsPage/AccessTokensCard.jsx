@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import moment from 'moment';
 
 import { cn } from '@/lib/utils';
+import { authenticationService } from '@/_services/authentication.service';
 import { personalAccessTokensService } from '@/_services/personalAccessTokens.service';
 import { organizationService } from '@/_services';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -45,6 +46,8 @@ export const AccessTokensCard = ({ darkMode }) => {
 
   const edition = fetchEdition();
 
+  const currentOrgId = authenticationService.currentSessionValue?.current_organization_id;
+
   const fetchTokens = () => {
     setLoadFailed(false);
     personalAccessTokensService
@@ -65,7 +68,7 @@ export const AccessTokensCard = ({ darkMode }) => {
       .then((res) => {
         const orgs = res?.organizations ?? res ?? [];
         setOrganizations(orgs);
-        if (orgs.length > 0) setOrganizationId(orgs[0].id);
+        if (orgs.length > 0) setOrganizationId(orgs.find((org) => org.id === currentOrgId)?.id ?? orgs[0].id);
       })
       .catch(() => toast.error('Could not load your workspaces', { duration: 3000 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps

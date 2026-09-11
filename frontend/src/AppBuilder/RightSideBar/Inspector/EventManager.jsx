@@ -3,6 +3,7 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
+import { getLibraryComponentActions } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import {
   Popover,
   PopoverTrigger,
@@ -229,13 +230,20 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function resolveComponentActions(componentId, componentDef) {
+    if (componentDef?.component?.component === 'LibraryComponent') {
+      return getLibraryComponentActions(componentId);
+    }
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => componentDef?.component?.component === componentType.component
+    );
+    return targetComponentMeta?.actions ?? [];
+  }
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      const targetComponentMeta = componentTypes.find(
-        (componentType) => components[key].component.component === componentType.component
-      );
-      if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
+      if ((resolveComponentActions(key, components[key])?.length ?? 0) > 0) {
         if (componentType === '' || components[key].component.component === componentType) {
           componentOptions.push({
             name: components[key].component.name,
@@ -252,10 +260,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return [];
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
 
     const options = (actions || []).map((action) => ({
       name: action?.displayName,
@@ -270,10 +275,7 @@ export const EventManager = ({
     const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
     if (_.isEmpty(filteredComponents)) return {};
     const component = filteredComponents[0][1];
-    const targetComponentMeta = componentTypes.find(
-      (componentType) => component.component.component === componentType.component
-    );
-    const actions = targetComponentMeta.actions;
+    const actions = resolveComponentActions(componentId, component);
     return (actions || []).find((action) => action.handle === actionHandle);
   }
 

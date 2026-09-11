@@ -122,6 +122,8 @@ const RenderWidget = ({
   const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
   const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
+  const resetComponentExposedValues = useStore((state) => state.resetComponentExposedValues, shallow);
+  const resetComponentExposedValuesPerRow = useStore((state) => state.resetComponentExposedValuesPerRow, shallow);
   const resolvedValidation = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
@@ -200,6 +202,16 @@ const RenderWidget = ({
   const resetComponent = useCallback(() => {
     setKey(Math.random());
   }, []);
+
+  const resetExposedVariables = useCallback(() => {
+    if (nearestListviewId && resolveIndex) {
+      // Inside a ListView — per-row reset (flat reset would clear every row's array slot)
+      const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
+      resetComponentExposedValuesPerRow(id, indices, moduleId);
+    } else {
+      resetComponentExposedValues(id, moduleId);
+    }
+  }, [id, moduleId, resetComponentExposedValues, resetComponentExposedValuesPerRow, nearestListviewId, resolveIndex]);
 
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
@@ -336,6 +348,7 @@ const RenderWidget = ({
           fireEvent={fireEventWrapper}
           validate={validate}
           resetComponent={resetComponent}
+          resetExposedVariables={resetExposedVariables}
           onComponentClick={onComponentClick}
           darkMode={darkMode}
           componentName={componentName}

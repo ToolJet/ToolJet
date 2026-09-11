@@ -550,6 +550,38 @@ export const createResolvedSlice = (set, get) => {
       });
     },
 
+    // Clears every exposed variable for a component except id
+    // Needed for widgets whose exposed-variable set isn't statically declared and can
+    // shrink at runtime (e.g. a CCL LibraryComponent's manifest losing a `useStateX`
+    // property on a dev-bundle live-reload push) — without this, a removed variable's
+    // last value lingers forever in currentState/the left-sidebar Inspector.
+    resetComponentExposedValues: (componentId, moduleId = 'canvas') => {
+      const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId];
+
+      // ListView-row components store exposed values as a per-row array — resetting
+      // here would blindly overwrite it with a single flat object, clearing every row.
+      // Callers must use resetComponentExposedValuesPerRow for those (RenderWidget
+      // branches on nearestListviewId, mirroring setExposedVariable).
+      if (Array.isArray(existing)) return;
+
+      if (!existing || Object.keys(existing).length === 0) return;
+
+      const { id, ...rest } = existing;
+      const keys = Object.keys(rest);
+
+      if (keys.length === 0) return;
+
+      set(
+        (state) => {
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = id !== undefined ? { id } : {};
+        },
+        false,
+        { type: 'resetComponentExposedValues', payload: { componentId, moduleId } }
+      );
+
+      keys.forEach((key) => scheduleDependencyUpdate(`components.${componentId}.${key}`, moduleId));
+    },
+
     setDefaultExposedValues: (id, parentId, componentType, moduleId = 'canvas') => {
       const val = get().resolvedStore.modules[moduleId].exposedValues.components[id];
       if (val && Object.keys(val).length > 0) return;
