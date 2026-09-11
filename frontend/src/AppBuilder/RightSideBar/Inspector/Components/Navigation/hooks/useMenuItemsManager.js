@@ -44,10 +44,22 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     if (!Array.isArray(itemsValue)) {
       itemsValue = itemsValue ? Object.values(itemsValue) : [];
     }
+    // `_key` never round-trips from the store (stripped before persisting), so reusing an
+    // existing item's previous `_key` here keeps its row identity stable — otherwise a resync
+    // would re-key it, remounting the row and closing any popover open on it.
+    const previousKeyById = new Map();
+    const collectKeys = (items) => {
+      items.forEach((item) => {
+        if (item._key) previousKeyById.set(item.id, item._key);
+        if (item.children) collectKeys(item.children);
+      });
+    };
+    collectKeys(menuItemsRef.current);
+
     return itemsValue.map((item) => {
       const newItem = { ...item };
       // Stable row identity, independent of the editable `id`; backfilled for legacy items.
-      newItem._key = item._key || uuidv4();
+      newItem._key = item._key || previousKeyById.get(item.id) || uuidv4();
       Object.keys(item).forEach((key) => {
         if (typeof item[key]?.value === 'boolean') {
           newItem[key] = { ...item[key], value: `{{${item[key]?.value}}}` };
@@ -57,7 +69,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       if (item.isGroup && item.children) {
         newItem.children = item.children.map((child) => {
           const newChild = { ...child };
-          newChild._key = child._key || uuidv4();
+          newChild._key = child._key || previousKeyById.get(child.id) || uuidv4();
           Object.keys(child).forEach((key) => {
             if (typeof child[key]?.value === 'boolean') {
               newChild[key] = { ...child[key], value: `{{${child[key]?.value}}}` };
