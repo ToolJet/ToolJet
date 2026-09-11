@@ -327,26 +327,41 @@ describe('the other validators that actually exist', () => {
   });
 });
 
-describe('known bugs: `||` still swallows a zero bound', () => {
+describe('minValue/maxValue of exactly 0 (NumberInput-VAL-006/007/008)', () => {
   // BUG (unfixed): componentsSlice.js:825 `resolveValue(minValue) || undefined`
   // collapses a configured minimum of 0 to `undefined`, which skips the check
-  // entirely. A NumberInput configured with "Min value: 0" therefore accepts
-  // negative numbers. Same `||`-swallows-falsy class as the mandatory/`false`
-  // bugs above, just not fixed yet. The fix is `??` at componentsSlice.js:825 and :835.
-  // Wrong: { isValid: true }. Right: rejected with 'Minimum value is 0'.
-  test.failing('minValue of 0 must reject a negative number', () => {
+  // entirely. Fix: `??` instead of `||`, with an explicit undefined/null/''
+  // check so the unconfigured default (see NumberInput-VAL-008) isn't broken.
+  test.failing('[NumberInput-VAL-006] minValue of 0 must reject a negative number', () => {
     expect(
       validate({ componentType: 'NumberInput', widgetValue: -5, validationObject: { minValue: { value: 0 } } })
     ).toEqual({ isValid: false, validationError: 'Minimum value is 0' });
   });
 
-  // BUG (unfixed): componentsSlice.js:835, the maxValue twin of the above. A
-  // NumberInput configured with "Max value: 0" accepts any positive number.
-  // Wrong: { isValid: true }. Right: rejected with 'Maximum value is 0'.
-  test.failing('maxValue of 0 must reject a positive number', () => {
+  // BUG (unfixed): componentsSlice.js:835, the maxValue twin of the above.
+  test.failing('[NumberInput-VAL-007] maxValue of 0 must reject a positive number', () => {
     expect(
       validate({ componentType: 'NumberInput', widgetValue: 5, validationObject: { maxValue: { value: 0 } } })
     ).toEqual({ isValid: false, validationError: 'Maximum value is 0' });
+  });
+
+  // Break this catches: fixing VAL-006/007 with a naive `resolveValue(minValue) ?? undefined` —
+  // `resolveValue('')` returns the literal empty string (componentsSlice.js's resolver only
+  // transforms `{{}}` bindings, numberinput.js's own unconfigured default), so `'' ?? undefined`
+  // stays `''`, which is not `undefined` and would wrongly enter the bound-check branch.
+  test('[NumberInput-VAL-008] an unconfigured minValue/maxValue does not reject an undefined widget value', () => {
+    // `{ value: '' }` — not an omitted key — is how an unconfigured minValue/maxValue actually
+    // arrives (numberinput.js's `definition.validation.minValue/maxValue` default to `{ value: '' }`).
+    expect(
+      validate({
+        componentType: 'NumberInput',
+        widgetValue: undefined,
+        validationObject: { minValue: { value: '' }, maxValue: { value: '' } },
+      })
+    ).toEqual({
+      isValid: true,
+      validationError: null,
+    });
   });
 });
 
