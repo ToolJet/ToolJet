@@ -258,6 +258,54 @@ export function renderElement(
   );
 }
 
+// Radix/Base UI popovers, selects and comboboxes portal their content into `document.body`, outside
+// the DOM subtree of the react-bootstrap `Overlay` (`rootClose`) wrapping `NavItemPopover`. `rootClose`
+// only checks DOM containment, so it wrongly treats a click inside one of these portals as "outside".
+const PORTALED_OVERLAY_SELECTOR = [
+  '[data-radix-popper-content-wrapper]', // Radix Popover/Select content
+  '[data-slot="combobox-content"]', // Base UI Combobox content
+  '.cm-tooltip-autocomplete', // CodeMirror autocomplete list
+  '#codehinter-preview-box-popover', // CodeHinter's own preview/error popover, portaled to document.body
+].join(', ');
+
+// Radix Select can also make a click's real target unresolvable: it briefly disables page-wide
+// pointer-events while open, and unmounts the clicked option on `pointerup` (before `click` fires)
+// when selecting a value. Either way the browser falls back to `<html>` as the target. Treat that as
+// noise from a closing Radix layer, not a genuine "click outside".
+const isUnresolvedClickTarget = (target) => typeof document !== 'undefined' && target === document.documentElement;
+
+export const isClickInsidePortaledOverlay = (target) =>
+  isUnresolvedClickTarget(target) || !!target?.closest?.(PORTALED_OVERLAY_SELECTOR);
+
+// Shared with validateStaticId's own trimmed comparison — a static id is always stored trimmed.
+export const trimStaticId = (value) => (typeof value === 'string' ? value.trim() : value);
+
+// Validate a candidate static id (Tabs' tab id, Nav item id, etc). Ids are compared with
+// plain equality everywhere at runtime (never resolved), so a `{{ }}` binding can never work
+// as an id and must be rejected outright rather than accepted and silently broken.
+export const validateStaticId = (value, existingIds = [], currentId = null, messages = {}) => {
+  const {
+    emptyMessage = 'ID cannot be empty',
+    bindingMessage = 'ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+    duplicateMessage = 'ID must be unique. This ID is already used by another item.',
+  } = messages;
+
+  if (value === null || value === undefined || String(value).trim() === '') {
+    return [false, emptyMessage];
+  }
+  const trimmedValue = String(value).trim();
+
+  if (trimmedValue.includes('{{') || trimmedValue.includes('}}')) {
+    return [false, bindingMessage];
+  }
+
+  if (existingIds.some((id) => id === trimmedValue && id !== currentId)) {
+    return [false, duplicateMessage];
+  }
+
+  return [true, null];
+};
+
 export const goToModule = (moduleAppId) => {
   const subpath = getSubpath();
   const slug =

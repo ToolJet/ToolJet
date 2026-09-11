@@ -90,7 +90,7 @@ export const createEventsSlice = (set, get) => ({
         'setEvents'
       );
     },
-    fireEvent: (eventName, id, moduleId, customResolvables, options) => {
+    fireEvent: (eventName, id, moduleId, customResolvables, options, sourceSubContainerIndex = null) => {
       const { eventsSlice, getCurrentMode, getEditorLoading } = get();
       const { handleEvent } = eventsSlice;
       // A write made just before firing this event — by this component or another one entirely
@@ -105,7 +105,7 @@ export const createEventsSlice = (set, get) => ({
       handleEvent(
         eventName,
         componentEvents,
-        { ...options, customVariables: { ...customResolvables } },
+        { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
         moduleId,
         mode
       );
@@ -291,6 +291,7 @@ export const createEventsSlice = (set, get) => ({
     onEvent: async (eventName, events, options = {}, mode = 'edit', moduleId = 'canvas') => {
       const executeActionsForEventId = get().eventsSlice.executeActionsForEventId;
       const customVariables = options?.customVariables ?? {};
+      const sourceSubContainerIndex = options?.sourceSubContainerIndex ?? null;
       const { setExposedValue } = get();
 
       if (eventName === 'onPageLoad') {
@@ -446,7 +447,7 @@ export const createEventsSlice = (set, get) => ({
           'onRefresh',
         ].includes(eventName)
       ) {
-        executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
       if (eventName === 'onBulkUpdate') {
         await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -457,14 +458,21 @@ export const createEventsSlice = (set, get) => ({
         await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
       }
     },
-    executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
+    executeActionsForEventId: async (
+      eventId,
+      events = [],
+      mode,
+      customVariables,
+      moduleId = 'canvas',
+      sourceSubContainerIndex = null
+    ) => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
         ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
     },
     logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error', page) {
@@ -542,531 +550,533 @@ export const createEventsSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       });
     },
-    executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
-      const { event = eventObj } = eventObj;
-      const { getExposedValueOfComponent, getResolvedValue } = get();
+    executeAction: debounce(
+      (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
+        const { event = eventObj } = eventObj;
+        const { getExposedValueOfComponent, getResolvedValue } = get();
 
-      if (event?.disabled) {
-        return false;
-      }
-
-      if (event?.runOnlyIf) {
-        const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);
-        if (!shouldRun) {
+        if (event?.disabled) {
           return false;
         }
-      }
 
-      if (event) {
-        //! TODO run only if conditions
-        switch (event.actionId) {
-          case 'show-alert': {
-            let message = getResolvedValue(event.message, customVariables, moduleId);
-            if (typeof message === 'object') message = JSON.stringify(message);
-            if (Number.isNaN(message)) message = '';
+        if (event?.runOnlyIf) {
+          const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);
+          if (!shouldRun) {
+            return false;
+          }
+        }
 
-            switch (event.alertType) {
-              case 'success':
-              case 'error':
-                toast[event.alertType](message);
-                break;
-              case 'info':
-                toast(message);
-                break;
-              case 'warning':
-                toast(message, {
-                  icon: '⚠️',
-                });
-                break;
+        if (event) {
+          //! TODO run only if conditions
+          switch (event.actionId) {
+            case 'show-alert': {
+              let message = getResolvedValue(event.message, customVariables, moduleId);
+              if (typeof message === 'object') message = JSON.stringify(message);
+              if (Number.isNaN(message)) message = '';
+
+              switch (event.alertType) {
+                case 'success':
+                case 'error':
+                  toast[event.alertType](message);
+                  break;
+                case 'info':
+                  toast(message);
+                  break;
+                case 'warning':
+                  toast(message, {
+                    icon: '⚠️',
+                  });
+                  break;
+              }
+              return Promise.resolve();
             }
-            return Promise.resolve();
-          }
-          case 'log-info': {
-            get().eventsSlice.logError(
-              'Custom Log',
-              'Custom-log',
-              '',
-              eventObj,
-              {
+            case 'log-info': {
+              get().eventsSlice.logError(
+                'Custom Log',
+                'Custom-log',
+                '',
+                eventObj,
+                {
+                  eventId: event.eventId,
+                },
+                'success'
+              );
+              break;
+            }
+            case 'log': {
+              get().eventsSlice.logError(
+                'Custom Log',
+                'Custom-log',
+                '',
+                eventObj,
+                {
+                  eventId: event.eventId,
+                },
+                'success'
+              );
+              break;
+            }
+            case 'log-error': {
+              get().eventsSlice.logError('Custom Log', 'Custom-log', '', eventObj, {
                 eventId: event.eventId,
-              },
-              'success'
-            );
-            break;
-          }
-          case 'log': {
-            get().eventsSlice.logError(
-              'Custom Log',
-              'Custom-log',
-              '',
-              eventObj,
-              {
-                eventId: event.eventId,
-              },
-              'success'
-            );
-            break;
-          }
-          case 'log-error': {
-            get().eventsSlice.logError('Custom Log', 'Custom-log', '', eventObj, {
-              eventId: event.eventId,
-            });
-            break;
-          }
-          case 'run-query': {
-            try {
-              const { queryId, queryName, component, eventId, callbackFns } = event;
-              const params = event['parameters'];
-              if (!queryId && !queryName) {
-                throw new Error('No query selected');
-              }
-              // Check and replace the module input dummy queries with the linked query id
-              /* Logic starts here */
-              const moduleInputDummyQueries = get()?.getModuleInputDummyQueries?.() || {};
-              let updatedQueryId = queryId,
-                updatedQueryName = queryName,
-                updatedModuleId = moduleId;
-              if (moduleInputDummyQueries[queryId]) {
-                updatedQueryId =
-                  get().resolvedStore.modules[moduleId].exposedValues.input[moduleInputDummyQueries[queryId]]?.id;
-                updatedModuleId = 'canvas'; // Updating the moduleId to canvas as the query is a module input query which will be present on canvas
-              }
-              /* Logic ends here */
+              });
+              break;
+            }
+            case 'run-query': {
+              try {
+                const { queryId, queryName, component, eventId, callbackFns } = event;
+                const params = event['parameters'];
+                if (!queryId && !queryName) {
+                  throw new Error('No query selected');
+                }
+                // Check and replace the module input dummy queries with the linked query id
+                /* Logic starts here */
+                const moduleInputDummyQueries = get()?.getModuleInputDummyQueries?.() || {};
+                let updatedQueryId = queryId,
+                  updatedQueryName = queryName,
+                  updatedModuleId = moduleId;
+                if (moduleInputDummyQueries[queryId]) {
+                  updatedQueryId =
+                    get().resolvedStore.modules[moduleId].exposedValues.input[moduleInputDummyQueries[queryId]]?.id;
+                  updatedModuleId = 'canvas'; // Updating the moduleId to canvas as the query is a module input query which will be present on canvas
+                }
+                /* Logic ends here */
 
-              if (!updatedQueryId) {
-                throw new Error('No query selected');
-              }
-              const resolvedParams = {};
-              if (params) {
-                Object.keys(params).map(
-                  (param) => (resolvedParams[param] = getResolvedValue(params[param], customVariables, moduleId))
+                if (!updatedQueryId) {
+                  throw new Error('No query selected');
+                }
+                const resolvedParams = {};
+                if (params) {
+                  Object.keys(params).map(
+                    (param) => (resolvedParams[param] = getResolvedValue(params[param], customVariables, moduleId))
+                  );
+                }
+                // !Todo tackle confirm query part once done
+                return get().queryPanel.runQuery(
+                  updatedQueryId,
+                  updatedQueryName,
+                  undefined,
+                  undefined,
+                  resolvedParams,
+                  component,
+                  eventId,
+                  false,
+                  false,
+                  updatedModuleId,
+                  callbackFns
                 );
-              }
-              // !Todo tackle confirm query part once done
-              return get().queryPanel.runQuery(
-                updatedQueryId,
-                updatedQueryName,
-                undefined,
-                undefined,
-                resolvedParams,
-                component,
-                eventId,
-                false,
-                false,
-                updatedModuleId,
-                callbackFns
-              );
-            } catch (error) {
-              get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
-                eventId: event.eventId,
-              });
-              return Promise.reject(error);
-            }
-          }
-          case 'reset-query': {
-            const { queryId } = event;
-            return get().queryPanel.resetQuery(queryId, moduleId);
-          }
-          case 'abort-query': {
-            const { queryId } = event;
-            return get().queryPanel.abortQuery(queryId, moduleId);
-          }
-          case 'logout': {
-            return logoutAction();
-          }
-          case 'open-webpage': {
-            //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
-            const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
-            // const url = resolveReferences(event.url, undefined, customVariables);
-            window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
-            return Promise.resolve();
-          }
-          case 'go-to-app': {
-            try {
-              if (!event.slug) {
-                throw new Error('No application slug provided');
-              }
-              const resolvedValue = getResolvedValue(event.slug, customVariables, moduleId);
-              const slug = resolvedValue;
-              const queryParams = event.queryParams?.reduce(
-                (result, queryParam) => ({
-                  ...result,
-                  ...{
-                    [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
-                      queryParam[1],
-                      customVariables,
-                      moduleId
-                    ),
-                  },
-                }),
-                {}
-              );
-              let url = `/applications/${slug}`;
-
-              if (queryParams) {
-                const queryPart = serializeNestedObjectToQueryParams(queryParams);
-
-                if (queryPart.length > 0) url = url + `?${queryPart}`;
-              }
-
-              const path = getSubpath();
-              if (path) url = path + url;
-
-              if (mode === 'view') {
-                window.open(url, '_self');
-              } else {
-                if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  // eslint-disable-next-line no-undef
-                  window.open(urlJoin(getHostURL(), url));
-                }
-              }
-              return Promise.resolve();
-            } catch (error) {
-              get().eventsSlice.logError('go_to_app', 'go-to-app', error, eventObj, { eventId: event.eventId });
-              return Promise.reject();
-            }
-          }
-
-          case 'show-modal':
-            return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId);
-
-          case 'close-modal':
-            return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId);
-          case 'copy-to-clipboard': {
-            const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
-            copyToClipboard(contentToCopy);
-
-            return Promise.resolve();
-          }
-          case 'set-localstorage-value': {
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            const value = getResolvedValue(event.value, customVariables, moduleId);
-            localStorage.setItem(key, value);
-
-            return Promise.resolve();
-          }
-          case 'generate-file': {
-            // const fileType = event.fileType;
-            const data = getResolvedValue(event.data, customVariables, moduleId) || [];
-            const fileName = getResolvedValue(event.fileName, customVariables, moduleId) || 'data.txt';
-            const fileType = getResolvedValue(event.fileType, customVariables, moduleId) || 'csv';
-            const fileData = {
-              csv: generateCSV,
-              plaintext: (plaintext) => plaintext,
-              pdf: (pdfData) => pdfData,
-            }[fileType](data);
-            return generateFile(fileName, fileData, fileType);
-          }
-
-          case 'set-table-page': {
-            get().eventsSlice.setTablePageIndex(
-              event.table,
-              getResolvedValue(event.pageIndex, undefined, moduleId),
-              eventObj,
-              moduleId
-            );
-            break;
-          }
-
-          case 'set-custom-variable': {
-            const { setVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            const value = getResolvedValue(event.value, customVariables, moduleId);
-
-            setVariable(key, value, moduleId);
-            return Promise.resolve();
-            // customAppVariables[key] = value;
-            // const resp = useCurrentStateStore.getState().actions.setCurrentState({
-            //   variables: customAppVariables,
-            // });
-
-            // return useStore.getState().setVariable(key, value);
-            // console.log("useStore.getState->", useStore.getState());
-
-            // useResolveStore.getState().actions.addAppSuggestions({
-            //   variables: customAppVariables,
-            // });
-
-            // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
-
-            // return resp;
-          }
-
-          // case 'set-custom-variables': {
-          //   const { setVariables } = get();
-          //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
-
-          //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
-          //     setVariables(variables, moduleId);
-          //   }
-
-          //   return Promise.resolve();
-          // }
-
-          case 'get-custom-variable': {
-            const { getVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            return getVariable(key, moduleId);
-          }
-
-          case 'unset-all-custom-variables': {
-            const { unsetAllVariables } = get();
-            unsetAllVariables(moduleId);
-            return Promise.resolve();
-          }
-
-          case 'unset-custom-variable': {
-            const { unsetVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            unsetVariable(key, moduleId);
-            return Promise.resolve();
-            // const customAppVariables = { ...getCurrentState().variables };
-            // delete customAppVariables[key];
-            // useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
-            // useResolveStore
-            //   .getState()
-            //   .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
-
-            // return useCurrentStateStore.getState().actions.setCurrentState({
-            //   variables: customAppVariables,
-            // });
-            // return useStore.getState().unsetVariable(key);
-          }
-
-          case 'set-page-variable': {
-            const { setPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            const value = getResolvedValue(event.value, customVariables, moduleId);
-            setPageVariable(key, value, moduleId);
-            return Promise.resolve();
-            // const customPageVariables = {
-            //   ...getCurrentState().page.variables,
-            //   [key]: value,
-            // };
-
-            // useResolveStore.getState().actions.addAppSuggestions({
-            //   page: {
-            //     ...getCurrentState().page,
-            //     variables: customPageVariables,
-            //   },
-            // });
-
-            // const resp = useCurrentStateStore.getState().actions.setCurrentState({
-            //   page: {
-            //     ...getCurrentState().page,
-            //     variables: customPageVariables,
-            //   },
-            // });
-
-            // useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
-
-            // const resp = useStore.getState().setPageVariable(key, value);
-
-            // return resp;
-          }
-
-          case 'get-page-variable': {
-            const { getPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            return getPageVariable(key, moduleId);
-          }
-
-          case 'unset-all-page-variables': {
-            const { unsetAllPageVariables } = get();
-            unsetAllPageVariables(moduleId);
-            return Promise.resolve();
-          }
-
-          case 'unset-page-variable': {
-            const { unsetPageVariable } = get();
-            const key = getResolvedValue(event.key, customVariables, moduleId);
-            unsetPageVariable(key, moduleId);
-            return Promise.resolve();
-
-            // useStore.getState().unsetPageVariable(key);
-            // const customPageVariables = _.omit(getCurrentState().page.variables, key);
-
-            // useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
-
-            // const pageRef = {
-            //   page: {
-            //     ...getCurrentState().page,
-            //     variables: customPageVariables,
-            //   },
-            // };
-
-            // const toUpdateRefs = [
-            //   { hint: 'page', newRef: pageRef },
-            //   { hint: 'page.variables', newRef: customPageVariables },
-            // ];
-
-            // useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
-
-            // return useCurrentStateStore.getState().actions.setCurrentState({
-            //   page: {
-            //     ...getCurrentState().page,
-            //     variables: customPageVariables,
-            //   },
-            // });
-            // return;
-          }
-          case 'control-component': {
-            try {
-              const { getComponentDefinition } = get();
-              // let component = Object.values(getCurrentState()?.components ?? {}).filter(
-              //   (component) => component.id === event.componentId
-              // )[0];
-              if (!event.componentSpecificActionHandle) {
-                throw new Error('No component-specific action handle provided.');
-              }
-              const componentDefinition = getComponentDefinition(event.componentId, moduleId);
-              const componentName = componentDefinition?.component?.name;
-              const parent = componentDefinition?.component?.parent;
-              const parentDefinition = getComponentDefinition(parent, moduleId);
-              const parentType = parentDefinition?.component?.component;
-              let component = getExposedValueOfComponent(event.componentId, moduleId);
-              if (parentType === 'Form' && componentName) {
-                component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
-              }
-
-              if (!event.componentId || !Object.keys(component).length) {
-                throw new Error('No component ID provided for control-component action.');
-              }
-              const action = component?.[event.componentSpecificActionHandle];
-              // let action = '';
-              // let actionArguments = '';
-              // check if component id not found then try to find if its available as child widget else continue
-              //  with normal flow finding action
-              // if (component == undefined) {
-              //   component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
-              //   const parent = Object.values(getCurrentState()?.components ?? {}).find(
-              //     (item) => item.id === component.parent
-              //   );
-              //   const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
-              //   if (child) {
-              //     action = child[event.componentSpecificActionHandle];
-              //   }
-              // } else {
-              //   //normal component outside a container ex : form
-              //   action = component?.[event.componentSpecificActionHandle];
-              // }
-              // actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-              //   ...param,
-              //   value: resolveReferences(param.value, undefined, customVariables),
-              // }));
-              // console.log('actionArguments', event.componentSpecificActionParams);
-              const actionArguments = event.componentSpecificActionParams.map((param) => {
-                const value = getResolvedValue(param.value, customVariables, moduleId);
-                return {
-                  ...param,
-                  value: value,
-                };
-              });
-
-              const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
-              return actionPromise ?? Promise.resolve();
-            } catch (error) {
-              get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
-                eventId: event.eventId,
-              });
-              return Promise.reject(error);
-            }
-          }
-          case 'scroll-component-into-view': {
-            try {
-              const componentId = event.componentId;
-              if (!componentId) {
-                throw new Error('No component selected for scroll-component-into-view action.');
-              }
-              const element = document.getElementById(componentId);
-              if (!element) {
-                throw new Error('Component element not found in DOM.');
-              }
-              const behavior = event?.scrollBehavior || 'smooth';
-              const block = event?.scrollBlock || 'nearest';
-              element.scrollIntoView({ behavior, block });
-              return Promise.resolve();
-            } catch (error) {
-              get().eventsSlice.logError('scroll_to_component', 'scroll-component-into-view', error, eventObj, {
-                eventId: event.eventId,
-              });
-              return Promise.reject(error);
-            }
-          }
-          case 'toggle-app-mode': {
-            const {
-              updateIsTJDarkMode,
-              globalSettings: { appMode },
-            } = get();
-            if (appMode !== 'auto') return;
-            const value = event.appMode === 'dark' ? true : false;
-            localStorage.setItem('darkMode', `${value}`);
-            updateIsTJDarkMode(value);
-            return Promise.resolve();
-          }
-          case 'switch-page': {
-            try {
-              let { pageId } = event;
-              const { pageHandle } = event;
-
-              // Resolve pageHandle → pageId if pageId not provided
-              if (!pageId && pageHandle) {
-                const pages = get().modules[moduleId].pages;
-                pageId = pages.find((p) => p.handle === pageHandle.toLowerCase())?.id;
-                if (!pageId) {
-                  throw new Error(`Invalid page handle: "${pageHandle}"`);
-                }
-              }
-
-              if (!pageId) {
-                throw new Error('Either pageId or pageHandle must be provided');
-              }
-              const { switchPage } = get();
-              const page = get().modules[moduleId].pages.find((page) => page.id === pageId);
-              const queryParams = event.queryParams || [];
-              if (page.restricted && mode !== 'edit') {
-                toast.error('Access to this page is restricted. Contact admin to know more.');
-              } else if (!page.disabled) {
-                const resolvedQueryParams = [];
-                queryParams.forEach((param) => {
-                  resolvedQueryParams.push([
-                    getResolvedValue(param[0], customVariables, moduleId),
-                    getResolvedValue(param[1], customVariables, moduleId),
-                  ]);
+              } catch (error) {
+                get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
+                  eventId: event.eventId,
                 });
-                const currentUrlParams = new URLSearchParams(window.location.search);
-                currentUrlParams.forEach((value, key) => {
-                  if (key === 'version' || key === 'env') {
-                    // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
-                    const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
-                    if (!exists) {
-                      resolvedQueryParams.unshift([key, value]);
-                    }
+                return Promise.reject(error);
+              }
+            }
+            case 'reset-query': {
+              const { queryId } = event;
+              return get().queryPanel.resetQuery(queryId, moduleId);
+            }
+            case 'abort-query': {
+              const { queryId } = event;
+              return get().queryPanel.abortQuery(queryId, moduleId);
+            }
+            case 'logout': {
+              return logoutAction();
+            }
+            case 'open-webpage': {
+              //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
+              const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
+              // const url = resolveReferences(event.url, undefined, customVariables);
+              window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
+              return Promise.resolve();
+            }
+            case 'go-to-app': {
+              try {
+                if (!event.slug) {
+                  throw new Error('No application slug provided');
+                }
+                const resolvedValue = getResolvedValue(event.slug, customVariables, moduleId);
+                const slug = resolvedValue;
+                const queryParams = event.queryParams?.reduce(
+                  (result, queryParam) => ({
+                    ...result,
+                    ...{
+                      [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
+                        queryParam[1],
+                        customVariables,
+                        moduleId
+                      ),
+                    },
+                  }),
+                  {}
+                );
+                let url = `/applications/${slug}`;
+
+                if (queryParams) {
+                  const queryPart = serializeNestedObjectToQueryParams(queryParams);
+
+                  if (queryPart.length > 0) url = url + `?${queryPart}`;
+                }
+
+                const path = getSubpath();
+                if (path) url = path + url;
+
+                if (mode === 'view') {
+                  window.open(url, '_self');
+                } else {
+                  if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
+                    // eslint-disable-next-line no-undef
+                    window.open(urlJoin(getHostURL(), url));
                   }
-                });
-                switchPage(page.id, page.handle, resolvedQueryParams, moduleId);
-              } else {
-                toast.error('Page is disabled');
-                //!TODO push to debugger
-                get().debugger.log({
-                  logLevel: 'error',
-                  type: 'navToDisablePage',
-                  kind: 'page',
-                  message: `Attempt to switch to disabled page ${page.name} blocked.`,
-                  error: 'Page is disabled',
-                });
+                }
+                return Promise.resolve();
+              } catch (error) {
+                get().eventsSlice.logError('go_to_app', 'go-to-app', error, eventObj, { eventId: event.eventId });
+                return Promise.reject();
               }
+            }
+
+            case 'show-modal':
+              return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId);
+
+            case 'close-modal':
+              return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId);
+            case 'copy-to-clipboard': {
+              const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
+              copyToClipboard(contentToCopy);
 
               return Promise.resolve();
-            } catch (error) {
-              get().eventsSlice.logError('switch_page', 'switch-page', error, eventObj, {
-                eventId: event.eventId,
-              });
+            }
+            case 'set-localstorage-value': {
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              const value = getResolvedValue(event.value, customVariables, moduleId);
+              localStorage.setItem(key, value);
+
+              return Promise.resolve();
+            }
+            case 'generate-file': {
+              // const fileType = event.fileType;
+              const data = getResolvedValue(event.data, customVariables, moduleId) || [];
+              const fileName = getResolvedValue(event.fileName, customVariables, moduleId) || 'data.txt';
+              const fileType = getResolvedValue(event.fileType, customVariables, moduleId) || 'csv';
+              const fileData = {
+                csv: generateCSV,
+                plaintext: (plaintext) => plaintext,
+                pdf: (pdfData) => pdfData,
+              }[fileType](data);
+              return generateFile(fileName, fileData, fileType);
+            }
+
+            case 'set-table-page': {
+              get().eventsSlice.setTablePageIndex(
+                event.table,
+                getResolvedValue(event.pageIndex, undefined, moduleId),
+                eventObj,
+                moduleId
+              );
+              break;
+            }
+
+            case 'set-custom-variable': {
+              const { setVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              const value = getResolvedValue(event.value, customVariables, moduleId);
+
+              setVariable(key, value, moduleId);
+              return Promise.resolve();
+              // customAppVariables[key] = value;
+              // const resp = useCurrentStateStore.getState().actions.setCurrentState({
+              //   variables: customAppVariables,
+              // });
+
+              // return useStore.getState().setVariable(key, value);
+              // console.log("useStore.getState->", useStore.getState());
+
+              // useResolveStore.getState().actions.addAppSuggestions({
+              //   variables: customAppVariables,
+              // });
+
+              // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
+              // return resp;
+            }
+
+            // case 'set-custom-variables': {
+            //   const { setVariables } = get();
+            //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
+
+            //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
+            //     setVariables(variables, moduleId);
+            //   }
+
+            //   return Promise.resolve();
+            // }
+
+            case 'get-custom-variable': {
+              const { getVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              return getVariable(key, moduleId);
+            }
+
+            case 'unset-all-custom-variables': {
+              const { unsetAllVariables } = get();
+              unsetAllVariables(moduleId);
+              return Promise.resolve();
+            }
+
+            case 'unset-custom-variable': {
+              const { unsetVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              unsetVariable(key, moduleId);
+              return Promise.resolve();
+              // const customAppVariables = { ...getCurrentState().variables };
+              // delete customAppVariables[key];
+              // useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
+              // useResolveStore
+              //   .getState()
+              //   .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
+
+              // return useCurrentStateStore.getState().actions.setCurrentState({
+              //   variables: customAppVariables,
+              // });
+              // return useStore.getState().unsetVariable(key);
+            }
+
+            case 'set-page-variable': {
+              const { setPageVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              const value = getResolvedValue(event.value, customVariables, moduleId);
+              setPageVariable(key, value, moduleId);
+              return Promise.resolve();
+              // const customPageVariables = {
+              //   ...getCurrentState().page.variables,
+              //   [key]: value,
+              // };
+
+              // useResolveStore.getState().actions.addAppSuggestions({
+              //   page: {
+              //     ...getCurrentState().page,
+              //     variables: customPageVariables,
+              //   },
+              // });
+
+              // const resp = useCurrentStateStore.getState().actions.setCurrentState({
+              //   page: {
+              //     ...getCurrentState().page,
+              //     variables: customPageVariables,
+              //   },
+              // });
+
+              // useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+              // const resp = useStore.getState().setPageVariable(key, value);
+
+              // return resp;
+            }
+
+            case 'get-page-variable': {
+              const { getPageVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              return getPageVariable(key, moduleId);
+            }
+
+            case 'unset-all-page-variables': {
+              const { unsetAllPageVariables } = get();
+              unsetAllPageVariables(moduleId);
+              return Promise.resolve();
+            }
+
+            case 'unset-page-variable': {
+              const { unsetPageVariable } = get();
+              const key = getResolvedValue(event.key, customVariables, moduleId);
+              unsetPageVariable(key, moduleId);
+              return Promise.resolve();
+
+              // useStore.getState().unsetPageVariable(key);
+              // const customPageVariables = _.omit(getCurrentState().page.variables, key);
+
+              // useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
+
+              // const pageRef = {
+              //   page: {
+              //     ...getCurrentState().page,
+              //     variables: customPageVariables,
+              //   },
+              // };
+
+              // const toUpdateRefs = [
+              //   { hint: 'page', newRef: pageRef },
+              //   { hint: 'page.variables', newRef: customPageVariables },
+              // ];
+
+              // useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
+
+              // return useCurrentStateStore.getState().actions.setCurrentState({
+              //   page: {
+              //     ...getCurrentState().page,
+              //     variables: customPageVariables,
+              //   },
+              // });
+              // return;
+            }
+            case 'control-component': {
+              try {
+                const { getComponentDefinition } = get();
+                // let component = Object.values(getCurrentState()?.components ?? {}).filter(
+                //   (component) => component.id === event.componentId
+                // )[0];
+                if (!event.componentSpecificActionHandle) {
+                  throw new Error('No component-specific action handle provided.');
+                }
+                const componentDefinition = getComponentDefinition(event.componentId, moduleId);
+                const componentName = componentDefinition?.component?.name;
+                const parent = componentDefinition?.component?.parent;
+                const parentDefinition = getComponentDefinition(parent, moduleId);
+                const parentType = parentDefinition?.component?.component;
+                let component = getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
+                if (parentType === 'Form' && componentName) {
+                  component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+                }
+
+                if (!event.componentId || !Object.keys(component).length) {
+                  throw new Error('No component ID provided for control-component action.');
+                }
+                const action = component?.[event.componentSpecificActionHandle];
+                // let action = '';
+                // let actionArguments = '';
+                // check if component id not found then try to find if its available as child widget else continue
+                //  with normal flow finding action
+                // if (component == undefined) {
+                //   component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
+                //   const parent = Object.values(getCurrentState()?.components ?? {}).find(
+                //     (item) => item.id === component.parent
+                //   );
+                //   const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+                //   if (child) {
+                //     action = child[event.componentSpecificActionHandle];
+                //   }
+                // } else {
+                //   //normal component outside a container ex : form
+                //   action = component?.[event.componentSpecificActionHandle];
+                // }
+                // actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+                //   ...param,
+                //   value: resolveReferences(param.value, undefined, customVariables),
+                // }));
+                // console.log('actionArguments', event.componentSpecificActionParams);
+                const actionArguments = event.componentSpecificActionParams.map((param) => {
+                  const value = getResolvedValue(param.value, customVariables, moduleId);
+                  return {
+                    ...param,
+                    value: value,
+                  };
+                });
+
+                const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
+                return actionPromise ?? Promise.resolve();
+              } catch (error) {
+                get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
+                  eventId: event.eventId,
+                });
+                return Promise.reject(error);
+              }
+            }
+            case 'scroll-component-into-view': {
+              try {
+                const componentId = event.componentId;
+                if (!componentId) {
+                  throw new Error('No component selected for scroll-component-into-view action.');
+                }
+                const element = document.getElementById(componentId);
+                if (!element) {
+                  throw new Error('Component element not found in DOM.');
+                }
+                const behavior = event?.scrollBehavior || 'smooth';
+                const block = event?.scrollBlock || 'nearest';
+                element.scrollIntoView({ behavior, block });
+                return Promise.resolve();
+              } catch (error) {
+                get().eventsSlice.logError('scroll_to_component', 'scroll-component-into-view', error, eventObj, {
+                  eventId: event.eventId,
+                });
+                return Promise.reject(error);
+              }
+            }
+            case 'toggle-app-mode': {
+              const {
+                updateIsTJDarkMode,
+                globalSettings: { appMode },
+              } = get();
+              if (appMode !== 'auto') return;
+              const value = event.appMode === 'dark' ? true : false;
+              localStorage.setItem('darkMode', `${value}`);
+              updateIsTJDarkMode(value);
+              return Promise.resolve();
+            }
+            case 'switch-page': {
+              try {
+                let { pageId } = event;
+                const { pageHandle } = event;
+
+                // Resolve pageHandle → pageId if pageId not provided
+                if (!pageId && pageHandle) {
+                  const pages = get().modules[moduleId].pages;
+                  pageId = pages.find((p) => p.handle === pageHandle.toLowerCase())?.id;
+                  if (!pageId) {
+                    throw new Error(`Invalid page handle: "${pageHandle}"`);
+                  }
+                }
+
+                if (!pageId) {
+                  throw new Error('Either pageId or pageHandle must be provided');
+                }
+                const { switchPage } = get();
+                const page = get().modules[moduleId].pages.find((page) => page.id === pageId);
+                const queryParams = event.queryParams || [];
+                if (page.restricted && mode !== 'edit') {
+                  toast.error('Access to this page is restricted. Contact admin to know more.');
+                } else if (!page.disabled) {
+                  const resolvedQueryParams = [];
+                  queryParams.forEach((param) => {
+                    resolvedQueryParams.push([
+                      getResolvedValue(param[0], customVariables, moduleId),
+                      getResolvedValue(param[1], customVariables, moduleId),
+                    ]);
+                  });
+                  const currentUrlParams = new URLSearchParams(window.location.search);
+                  currentUrlParams.forEach((value, key) => {
+                    if (key === 'version' || key === 'env') {
+                      // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
+                      const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
+                      if (!exists) {
+                        resolvedQueryParams.unshift([key, value]);
+                      }
+                    }
+                  });
+                  switchPage(page.id, page.handle, resolvedQueryParams, moduleId);
+                } else {
+                  toast.error('Page is disabled');
+                  //!TODO push to debugger
+                  get().debugger.log({
+                    logLevel: 'error',
+                    type: 'navToDisablePage',
+                    kind: 'page',
+                    message: `Attempt to switch to disabled page ${page.name} blocked.`,
+                    error: 'Page is disabled',
+                  });
+                }
+
+                return Promise.resolve();
+              } catch (error) {
+                get().eventsSlice.logError('switch_page', 'switch-page', error, eventObj, {
+                  eventId: event.eventId,
+                });
+              }
             }
           }
         }
       }
-    }),
+    ),
 
     generateAppActions: (queryId, mode, isPreview = false, moduleId = 'canvas') => {
       const {

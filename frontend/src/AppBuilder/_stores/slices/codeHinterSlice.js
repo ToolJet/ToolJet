@@ -3,6 +3,14 @@ import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 /**
+ * Arrays at or above this length get one hint describing the array, templated off element 0;
+ * shorter ones get a hint per element (`data.0.name`, `data.1.name`, ...). Inherited from the
+ * legacy reference builder in _stores/utils.js. traverseObjectToHints and computeShapeHash must
+ * share it, or the shape hash stops matching what the hints actually contain.
+ */
+const ARRAY_HINT_TEMPLATE_THRESHOLD = 10;
+
+/**
  * Module-level single-entry caches for context hints.
  *
  * These live OUTSIDE the Zustand/Immer-managed state intentionally:
@@ -26,8 +34,8 @@ let _tableContextHintsCache = null; // { id: tableId, version: number, hints: Ar
  * Each entry is { hint: 'dotted.path', type: 'Object'|'Array'|'String'|etc }.
  *
  * Mirrors the old createReferencesLookup / buildMap logic from _stores/utils.js.
- * For arrays with >= 10 elements, only row 0 is used as a structural template
- * (same optimization as the legacy code — avoids traversing thousands of rows).
+ * Long arrays use row 0 as a structural template (see ARRAY_HINT_TEMPLATE_THRESHOLD) — avoids
+ * traversing thousands of rows.
  */
 function traverseObjectToHints(data, prefix, maxDepth = 3, _depth = 0) {
   const hints = [];
@@ -44,8 +52,7 @@ function traverseObjectToHints(data, prefix, maxDepth = 3, _depth = 0) {
     if (_type === 'Object') {
       hints.push(...traverseObjectToHints(value, newPath, maxDepth, _depth + 1));
     } else if (_type === 'Array') {
-      // Same optimization as old code: arrays >= 10 elements use row 0 as template
-      const template = value.length >= 10 ? value[0] : value;
+      const template = value.length >= ARRAY_HINT_TEMPLATE_THRESHOLD ? value[0] : value;
       if (template && typeof template === 'object') {
         hints.push(...traverseObjectToHints(template, newPath, maxDepth, _depth + 1));
       }
@@ -168,9 +175,9 @@ function buildActionHints() {
  * Compute a structural "shape hash" of an object for comparison.
  * Returns a string like "{id:Number,name:String,items:[{price:Number}]}".
  *
- * Used by rebuildQueryHints to skip rebuilding when a query re-runs but its
- * result shape hasn't changed (e.g., same columns, different row values).
- * This avoids unnecessary hint recomputation on frequent query polling.
+ * Lets rebuildQueryHints and refreshComponentHintsIfShapeChanged skip the rebuild when only values changed
+ * (query polling, typing into an input). Array handling mirrors traverseObjectToHints so the hash
+ * covers exactly what the hints cover.
  */
 function computeShapeHash(obj, maxDepth = 3, _depth = 0) {
   if (_depth >= maxDepth || obj == null) return typeof obj;
@@ -178,7 +185,9 @@ function computeShapeHash(obj, maxDepth = 3, _depth = 0) {
 
   if (type === 'Array') {
     if (obj.length === 0) return '[]';
-    return `[${computeShapeHash(obj[0], maxDepth, _depth + 1)}]`;
+    // Shorter arrays get a hint per element, so their length and every element's shape matter here.
+    if (obj.length >= ARRAY_HINT_TEMPLATE_THRESHOLD) return `[${computeShapeHash(obj[0], maxDepth, _depth + 1)}]`;
+    return `[${obj.map((item) => computeShapeHash(item, maxDepth, _depth + 1)).join(',')}]`;
   }
 
   if (type === 'Object') {
@@ -213,7 +222,9 @@ const initialState = {
     appHints: [], // Merged cache of all segments — used by getSuggestions()
   },
   _queryShapeHashes: {}, // queryId → shape string, for skipping redundant query hint rebuilds
+  _componentShapeHashes: {}, // `${moduleId}|${componentId}` → shape string, for skipping redundant component hint rebuilds
   _contextHintsVersion: 0, // Bumped when customResolvables or component exposed values change; invalidates context hint caches
+  _suggestionsInitialized: false, // True once initSuggestions has run (edit mode only) — gates exposed-value driven refreshes
 };
 
 export const createCodeHinterSlice = (set, get) => ({
@@ -245,6 +256,39 @@ export const createCodeHinterSlice = (set, get) => ({
       false,
       'rebuildComponentHints'
     );
+  },
+
+  /**
+   * Keeps hints in sync when a component's exposed values change shape — e.g. a Form's `data` gains
+   * a key as a child widget is added, which no name-mapping rebuild covers.
+   *
+   * Deferred while an exposed-value batch is open, since its writes aren't in the store yet.
+   */
+  refreshComponentHintsIfShapeChanged: (componentId, moduleId = 'canvas') => {
+    const state = get();
+    if (!state._suggestionsInitialized || !componentId) return;
+
+    if (state.isExposedValueBatching()) {
+      // flush() closes the batch before running callbacks, so re-entry takes the normal path.
+      state.bufferExposedValuePostFlush(
+        () => get().refreshComponentHintsIfShapeChanged(componentId, moduleId),
+        `componentHints|${componentId}|${moduleId}`
+      );
+      return;
+    }
+
+    const key = `${moduleId}|${componentId}`;
+    const hash = computeShapeHash(state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[componentId]);
+    if (state._componentShapeHashes[key] === hash) return; // values changed, shape didn't
+
+    set(
+      (draft) => {
+        draft._componentShapeHashes[key] = hash;
+      },
+      false,
+      'updateComponentShapeHash'
+    );
+    get().rebuildComponentHints(moduleId);
   },
 
   rebuildQueryHints: (moduleId = 'canvas', queryId = null) => {
@@ -333,13 +377,22 @@ export const createCodeHinterSlice = (set, get) => ({
     const jsHints = createJavaScriptSuggestions();
     const appHints = mergeAllSegments(segments);
 
+    // Seed the shape hashes so post-load writes only rebuild for real shape changes.
+    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components || {};
+    const componentShapeHashes = {};
+    Object.keys(exposedComponents).forEach((componentId) => {
+      componentShapeHashes[`${moduleId}|${componentId}`] = computeShapeHash(exposedComponents[componentId]);
+    });
+
     set(
       (draft) => {
         draft.suggestions.segments = segments;
         draft.suggestions.jsHints = jsHints;
         draft.suggestions.appHints = appHints;
         draft._queryShapeHashes = {};
+        draft._componentShapeHashes = componentShapeHashes;
         draft._contextHintsVersion += 1;
+        draft._suggestionsInitialized = true;
       },
       false,
       'initSuggestions'

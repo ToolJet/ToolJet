@@ -539,6 +539,9 @@ export const createGridSlice = (set, get) => {
           '.inspector-select.react-select__menu-list',
           '.icon-widget-popover',
           '.inspector-header-actions-menu',
+          '.nav-item-popover',
+          '.nav-item-actions-popover',
+          '.nav-add-menu-popover',
         ].join(',');
         return !!document.querySelector(selector);
       };

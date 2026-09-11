@@ -19,7 +19,10 @@ export default function OverflowTooltip({
   boxWidth,
   maxLetters,
   tooltipClassName,
-  ...rest
+  childrenClassName,
+  style,
+  width,
+  ...domProps
 }) {
   const [isOverflowed, setIsOverflowed] = useState(false);
   const textContentRef = useRef(null);
@@ -50,10 +53,16 @@ export default function OverflowTooltip({
     };
   }, [children, checkOverflow, maxLetters]);
 
+  const isPrimitiveChildren = typeof children === 'string' || typeof children === 'number';
+
   const displayText =
     maxLetters && typeof children === 'string' && children.length > maxLetters
       ? `${children.substring(0, maxLetters)}...`
       : children;
+
+  // The tooltip message must be a plain string; non-primitive children (e.g. an unresolved fx binding
+  // or a React node like a highlighter) have no safe text representation, so fall back to empty.
+  const tooltipMessage = isPrimitiveChildren ? children : '';
 
   useEffect(() => {
     checkOverflow();
@@ -65,19 +74,20 @@ export default function OverflowTooltip({
       delay={{ show: '0', hide: '0' }}
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
-      message={children}
+      message={tooltipMessage}
       show={!!isOverflowed}
-      width={rest?.width}
+      width={width}
     >
       <div
         ref={textContentRef}
-        className={rest.childrenClassName}
+        className={childrenClassName}
         style={{
           whiteSpace,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          ...rest.style,
+          ...style,
         }}
+        {...domProps}
       >
         {displayText}
       </div>

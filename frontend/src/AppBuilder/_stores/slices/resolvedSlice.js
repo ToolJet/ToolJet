@@ -490,11 +490,13 @@ export const createResolvedSlice = (set, get) => {
 
       if (_exposedValueBatch.isBatching()) {
         _exposedValueBatch.bufferMutation(mutation, depPaths);
+        get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
         return;
       }
 
       set(mutation, false, { type: 'setExposedValue', payload: { componentId, property, value, moduleId } });
       depPaths.forEach(({ path }) => scheduleDependencyUpdate(path, moduleId));
+      get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
@@ -512,6 +514,7 @@ export const createResolvedSlice = (set, get) => {
             else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
           });
         }, depPaths);
+        if (type === 'components') get().refreshComponentHintsIfShapeChanged(id, moduleId);
         return;
       }
 
@@ -548,6 +551,9 @@ export const createResolvedSlice = (set, get) => {
         if (typeof value !== 'function' && !skipKeys.has(key))
           scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
       });
+      // Nothing written when every value already matched, so hints cannot have gone stale.
+      if (type === 'components' && skipKeys.size !== Object.keys(values).length)
+        get().refreshComponentHintsIfShapeChanged(id, moduleId);
     },
 
     setDefaultExposedValues: (id, parentId, componentType, moduleId = 'canvas') => {
@@ -733,7 +739,7 @@ export const createResolvedSlice = (set, get) => {
       }
       return data;
     },
-    getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
+    getExposedValueOfComponent: (componentId, moduleId = 'canvas', subContainerIndex = null) => {
       try {
         const components = get().getCurrentPageComponents(moduleId);
         const {
@@ -748,7 +754,27 @@ export const createResolvedSlice = (set, get) => {
             );
           }
         }
-        return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+        const data = get().resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        if (Array.isArray(data)) {
+          // Row-scoped component (e.g. inside a Table's expanded row / ListView) — its exposed
+          // values are stored per-row. Navigate to the row of the component that fired the event,
+          // the same way getResolvedComponent walks subContainerIndex above.
+          const indices =
+            subContainerIndex !== null
+              ? Array.isArray(subContainerIndex)
+                ? subContainerIndex
+                : [subContainerIndex]
+              : [0];
+          let current = data;
+          for (let i = 0; i < indices.length; i++) {
+            if (!Array.isArray(current)) break;
+            const value = current?.[indices[i]];
+            current = value !== undefined ? value : current?.[0];
+            if (current === undefined) break;
+          }
+          return current || {};
+        }
+        return data || {};
       } catch (error) {
         return {};
       }

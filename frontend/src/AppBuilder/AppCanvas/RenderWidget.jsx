@@ -258,10 +258,17 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, moduleId, customResolvables?.[effectiveSubContainerIndex] ?? {}, options);
+      fireEvent(
+        eventName,
+        id,
+        moduleId,
+        customResolvables?.[effectiveSubContainerIndex] ?? {},
+        options,
+        resolveIndex ?? null
+      );
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
@@ -298,7 +305,7 @@ const RenderWidget = ({
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
-  const hasUserTooltip = !!userTooltipContent?.toString().trim();
+  const hasUserTooltip = !!String(userTooltipContent ?? '').trim();
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
