@@ -49,6 +49,9 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
       'databricks',
       'asana',
       'gmail',
+      'grpcv2',
+      'quickbooks',
+      'sharepoint',
     ];
 
     while (true) {

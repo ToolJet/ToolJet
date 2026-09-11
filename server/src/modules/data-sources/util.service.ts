@@ -1525,8 +1525,19 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (dataSourceOptionId) {
       const isMultiAuth = parsedOptions['multiple_auth_enabled'] === true;
       if (isMultiAuth) {
+        // Capture the legacy in-options array (set by the generic per-key loop above from
+        // options.tokenData.value) before it gets overwritten below — rows the backfill hasn't
+        // migrated to datasource_user_token_data yet still carry their tokens here.
+        const legacyTokenData = parsedOptions['tokenData'];
         const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id ?? null);
-        parsedOptions['tokenData'] = tokenRow ? [{ user_id: user?.id, ...tokenRow }] : [];
+        if (tokenRow) {
+          parsedOptions['tokenData'] = [{ user_id: user?.id, ...tokenRow }];
+        } else if (Array.isArray(legacyTokenData)) {
+          const legacyEntry = legacyTokenData.find((entry) => entry?.user_id === user?.id);
+          parsedOptions['tokenData'] = legacyEntry ? [legacyEntry] : [];
+        } else {
+          parsedOptions['tokenData'] = [];
+        }
       } else {
         const tokenRow = await this.getUserTokenData(dataSourceOptionId, null);
         if (tokenRow) {
