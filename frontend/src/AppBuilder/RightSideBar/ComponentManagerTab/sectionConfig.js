@@ -34,6 +34,7 @@ const sectionConfig = {
       'Checkbox',
       'TreeSelect',
       'Cascader',
+      'FileInput',
     ]),
   },
   dateTimeInputs: {
