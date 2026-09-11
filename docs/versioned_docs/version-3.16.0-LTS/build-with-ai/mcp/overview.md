@@ -86,6 +86,15 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 - **Self-verifying**: Agents can run their own queries to confirm the data is right, and those with browser access can open the app they built and check it works before handing it back.
 - **Extensible**: Pair ToolJet MCP with other skills, tools, and MCP servers to extend what your agent can do, such as reading a Figma design before building from it.
 
+## ToolJet MCP Auditability
+
+ToolJet MCP authenticates using a Personal Access Token (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
+
+Because MCP requests are authenticated through a user-linked PAT, changes made by the MCP agent are executed within the PAT owner’s ToolJet permission context. ToolJet’s audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event.
+
+Accordingly, MCP-driven changes that generate standard ToolJet platform events can be associated with the authenticated PAT owner in the audit trail. This provides accountability and traceability for changes made through ToolJet MCP.
+
+
 ## Supported MCP Clients
 
 ToolJet MCP works with any MCP-compatible client. The following are supported directly, with a packaged plugin that installs the server and the `tooljet-app-builder` skill together:
