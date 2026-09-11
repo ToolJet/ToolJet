@@ -245,8 +245,7 @@
     },
     {
       "componentType": "JSONExplorer",
-      "status": "verified",
-      "contract": "ee/test/app-builder/widgets/JSONExplorer/TESTING.md"
+      "status": "not-started"
     },
     {
       "componentType": "CustomComponent",
@@ -254,8 +253,7 @@
     },
     {
       "componentType": "Html",
-      "status": "verified",
-      "contract": "ee/test/app-builder/widgets/Html/TESTING.md"
+      "status": "not-started"
     },
     {
       "componentType": "IFrame",
