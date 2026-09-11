@@ -1,11 +1,71 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
+import { Folder } from '@entities/folder.entity';
+import { DATA_SOURCE_FOLDER_TYPE } from '@modules/folders/constants';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { IFolderDataSourcesUtilService } from './interfaces/IUtilService';
 
 @Injectable()
 export class FolderDataSourcesUtilService implements IFolderDataSourcesUtilService {
+  // Builds the data-source-folder tree for a branch, keeping only the data sources present in
+  // `permittedDataSourceIds` (which the caller has already permission-filtered upstream, so no
+  // permission is resolved here). Folders left with no permitted data source are dropped. Returns
+  // lightweight `{ id, name, type, organizationId, createdAt, updatedAt, dataSourceIds }` rows —
+  // just the ids, since the caller already holds the full data-source objects.
+  async getFoldersWithDataSourceIds(
+    organizationId: string,
+    branchId: string,
+    permittedDataSourceIds: string[],
+    manager?: EntityManager
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      type: string;
+      organizationId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      dataSourceIds: string[];
+    }>
+  > {
+    if (!organizationId || !branchId || permittedDataSourceIds.length === 0) return [];
+
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const folders = await manager.find(Folder, {
+        where: { organizationId, type: DATA_SOURCE_FOLDER_TYPE },
+      });
+      if (folders.length === 0) return [];
+
+      const memberships = await this.findFolderDataSourcesForFolders(
+        folders.map((folder) => folder.id),
+        branchId,
+        manager
+      );
+
+      const permitted = new Set(permittedDataSourceIds);
+      const dataSourceIdsByFolder = new Map<string, string[]>();
+      for (const membership of memberships) {
+        if (!permitted.has(membership.dataSourceId)) continue;
+        const bucket = dataSourceIdsByFolder.get(membership.folderId) ?? [];
+        bucket.push(membership.dataSourceId);
+        dataSourceIdsByFolder.set(membership.folderId, bucket);
+      }
+
+      return folders
+        .filter((folder) => (dataSourceIdsByFolder.get(folder.id)?.length ?? 0) > 0)
+        .map((folder) => ({
+          id: folder.id,
+          name: folder.name,
+          type: folder.type,
+          organizationId: folder.organizationId,
+          createdAt: folder.createdAt,
+          updatedAt: folder.updatedAt,
+          dataSourceIds: dataSourceIdsByFolder.get(folder.id) ?? [],
+        }));
+    }, manager);
+  }
+
   async findFolderDataSourcesForFolders(
     folderIds: string[],
     branchId: string,

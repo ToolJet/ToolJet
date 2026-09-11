@@ -15,6 +15,28 @@ export interface IFolderDataSourcesUtilService {
     viewableDataSourceIds?: string[] | null
   ): Promise<FolderDataSource[]>;
 
+  /**
+   * Data-source-folder tree for a branch, restricted to `permittedDataSourceIds` (already
+   * permission-filtered upstream — nothing is resolved here) and with empty folders dropped.
+   * Returns just the folder metadata + the ids of the permitted data sources it contains.
+   */
+  getFoldersWithDataSourceIds(
+    organizationId: string,
+    branchId: string,
+    permittedDataSourceIds: string[],
+    manager?: EntityManager
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      type: string;
+      organizationId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      dataSourceIds: string[];
+    }>
+  >;
+
   create(folderId: string, dataSourceId: string, branchId: string): Promise<FolderDataSource>;
 
   bulkCreate(folderId: string, dataSourceIds: string[], branchId: string): Promise<FolderDataSource[]>;
