@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { validateStaticId } from '../../../Utils';
+import { validateStaticId, trimStaticId } from '../../../Utils';
 
 export const useMenuItemsManager = (component, paramUpdated) => {
   const [menuItems, setMenuItems] = useState([]);
@@ -175,9 +175,12 @@ export const useMenuItemsManager = (component, paramUpdated) => {
   };
 
   // Event handlers
-  const handleItemChange = (propertyPath, value, itemKey, parentId = null) => {
+  const handleItemChange = (propertyPath, rawValue, itemKey, parentId = null) => {
     const currentItems = menuItemsRef.current;
     const oldId = findItemByKey(currentItems, itemKey, parentId)?.id;
+
+    // Store id trimmed, matching what was validated.
+    const value = propertyPath === 'id' ? trimStaticId(rawValue) : rawValue;
 
     // Reject a colliding id outright, even locally — NavItemPopover already blocks
     // this, but keep the hook itself safe against any other caller too.

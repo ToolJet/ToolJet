@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
-import { renderElement, validateStaticId } from '../Utils';
+import { renderElement, validateStaticId, trimStaticId } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
@@ -44,7 +44,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
-  // Bumped per row (by `_key`) to force just that row's Id field to remount on a rejected collision.
+  // Bumped per row (by `_key`) to force just that row's Id field to remount and re-seed.
   const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
   const bumpIdFieldResetKey = (itemKey) => {
     setIdFieldResetKeys((prev) => ({ ...prev, [itemKey]: (prev[itemKey] || 0) + 1 }));
@@ -161,7 +161,10 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
-  const handleValueChange = (item, value, property, index) => {
+  const handleValueChange = (item, rawValue, property, index) => {
+    // Store id trimmed, matching what was validated.
+    const value = property === 'id' ? trimStaticId(rawValue) : rawValue;
+
     // Reject a colliding id outright, even locally (matches Nav's fix), and bump
     // the row's reset key so its Id field snaps back to the current id.
     if (property === 'id') {
@@ -170,6 +173,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         bumpIdFieldResetKey(item._key);
         return;
       }
+      // Nothing else would resync the field's own displayed text after a trim.
+      if (value !== rawValue) bumpIdFieldResetKey(item._key);
     }
 
     const updatedTabItems = tabItems.map((tabItem) => {

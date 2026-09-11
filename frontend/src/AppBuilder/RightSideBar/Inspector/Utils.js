@@ -277,6 +277,9 @@ const isUnresolvedClickTarget = (target) => typeof document !== 'undefined' && t
 export const isClickInsidePortaledOverlay = (target) =>
   isUnresolvedClickTarget(target) || !!target?.closest?.(PORTALED_OVERLAY_SELECTOR);
 
+// Shared with validateStaticId's own trimmed comparison — a static id is always stored trimmed.
+export const trimStaticId = (value) => (typeof value === 'string' ? value.trim() : value);
+
 // Validate a candidate static id (Tabs' tab id, Nav item id, etc). Ids are compared with
 // plain equality everywhere at runtime (never resolved), so a `{{ }}` binding can never work
 // as an id and must be rejected outright rather than accepted and silently broken.

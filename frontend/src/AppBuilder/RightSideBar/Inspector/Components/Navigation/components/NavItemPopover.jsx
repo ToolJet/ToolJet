@@ -3,6 +3,7 @@ import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import { trimStaticId } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 const NAV_ITEM_EVENT_META = { name: 'Navigation', events: { onClick: { displayName: 'On click' } } };
 
 const NavItemPopover = forwardRef(
@@ -23,17 +24,15 @@ const NavItemPopover = forwardRef(
   ) => {
     const iconVisibility = item?.iconVisibility;
 
-    // Stable identity for the Id field's `validationFn`: it's a dependency of
-    // SingleLineCodeEditor's value-reset effect, so a fresh closure on every render
-    // (as an inline arrow normally would be) re-fires that effect and wipes whatever
-    // the user has typed so far back to `item.id` on any unrelated re-render — not
-    // just an outside click. Reading `item` via a ref keeps this callback's reference
-    // stable across renders while still validating against the current id.
+    // Stable identity for the Id field's `validationFn` — it's a dependency of
+    // SingleLineCodeEditor's value-reset effect, so a fresh closure each render would
+    // wipe an in-progress edit on any unrelated re-render. Reading `item` via a ref
+    // keeps the reference stable while still validating the current id.
     const itemRef = useRef(item);
     itemRef.current = item;
     const validateIdField = useCallback((value) => validateItemId(value, itemRef.current?.id), [validateItemId]);
 
-    // Bumped to force just the Id field to remount and re-seed from `initialValue` on a rejected collision.
+    // Bumped to force just the Id field to remount and re-seed from `initialValue`.
     const [idFieldResetKey, setIdFieldResetKey] = useState(0);
 
     // Common CodeHinter props
@@ -53,18 +52,22 @@ const NavItemPopover = forwardRef(
       type: 'fxEditor',
     };
 
-    // Identify the item by its stable `_key`, not `id` — `id` is itself editable here,
-    // and every field's onChange shares this same closure's `item`, so an id rename and
-    // another field's change landing in the same tick must still each resolve to the
-    // right item rather than one losing track once the id changes underneath it.
+    // Identify the item by its stable `_key`, not `id` — `id` is itself editable, and
+    // a same-tick sibling edit must still resolve to the right item after a rename.
     const handleChange = (propertyPath, value) => {
       if (propertyPath === 'id') {
-        const [isValid] = validateIdField(value);
+        const trimmedValue = trimStaticId(value);
+        const [isValid] = validateIdField(trimmedValue);
         if (!isValid) {
           // Reject outright — letting a colliding id sit in state, even unpersisted, let two items share one.
           setIdFieldResetKey((key) => key + 1);
           return;
         }
+        onItemChange(propertyPath, value, item._key, parentId);
+        // Stored trimmed (see useMenuItemsManager); nothing else would resync the
+        // field's own displayed text, so force it to re-seed from the trimmed value.
+        if (trimmedValue !== value) setIdFieldResetKey((key) => key + 1);
+        return;
       }
       onItemChange(propertyPath, value, item._key, parentId);
     };
