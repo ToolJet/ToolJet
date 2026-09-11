@@ -273,7 +273,8 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {
       "componentType": "QrScanner",
