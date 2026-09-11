@@ -304,7 +304,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'slack' ||
             dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2' ||
-            dataSource.kind === 'servicenow'
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
