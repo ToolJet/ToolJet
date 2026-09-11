@@ -25,6 +25,16 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
     typing-extensions==4.12.2
 
 
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+FROM node:22.15.1 AS mcp-builder
+WORKDIR /mcp
+ARG CUSTOM_GITHUB_TOKEN
+ARG TOOLJET_MCP_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN npm ci && npm run build:plugin
+
+
 FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -236,6 +246,12 @@ COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+
+# tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
 
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
