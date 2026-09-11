@@ -34,10 +34,9 @@ const FxSelect = ({
   isFxActive: _isFxActive,
 }) => {
   const [isFxActive, setIsFxActive] = useState(_isFxActive || false);
-  // Derive from paramName, not `label`: this field's label is "File type",
-  // which would collide with the properties-panel parseFileType field of the
-  // same name. `fileType` -> `filetype` keeps the two addressable separately.
-  const cyName = String(paramName).toLowerCase();
+  // From paramName, not label: the label "File type" collides with the
+  // properties-panel parseFileType field of the same name.
+  const cyLabel = String(paramName).toLowerCase().trim().replace(/\s+/g, '-');
 
   const handleFxButtonClick = () => {
     paramUpdated({ name: paramName }, 'fxActive', !isFxActive, paramType);
@@ -46,19 +45,18 @@ const FxSelect = ({
 
   return (
     <div
-      data-cy={`${cyName}-fx-select`}
-      // `input-date-display-format` is a real style hook (theme.scss), not a
-      // leftover — keep it in the className even though the data-cy has moved.
+      data-cy={`${cyLabel}-fx-select`}
+      // input-date-display-format is a live style hook, not a leftover.
       className="field mb-2 w-100 input-date-display-format"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label" data-cy={`${cyName}-fx-select-label`}>
+          <label className="form-label" data-cy={`${cyLabel}-fx-select-label`}>
             {label}
           </label>
           <div className={cx({ 'hide-fx': !isFxActive })}>
-            <FxButton active={isFxActive} onPress={handleFxButtonClick} dataCy={cyName} />
+            <FxButton active={isFxActive} onPress={handleFxButtonClick} dataCy={cyLabel} />
           </div>
         </div>
         {isFxActive ? (
