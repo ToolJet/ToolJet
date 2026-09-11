@@ -160,7 +160,8 @@
     },
     {
       "componentType": "DaterangePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DaterangePicker/TESTING.md"
     },
     {
       "componentType": "Navigation",
