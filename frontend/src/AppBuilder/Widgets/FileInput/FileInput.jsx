@@ -17,6 +17,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 import './fileInput.scss';
 const { ClearIndicator } = components;
@@ -43,6 +44,7 @@ export const FileInput = (props) => {
     setExposedVariables,
     dataCy,
   } = props;
+  const cyBase = generateCypressDataCy(dataCy);
 
   const {
     alignment = 'top',
@@ -262,6 +264,7 @@ export const FileInput = (props) => {
           id={`${id}-label`}
           fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
+          dataCy={cyBase}
         />
 
         <div
@@ -278,6 +281,7 @@ export const FileInput = (props) => {
               aria-busy={isLoading}
               aria-labelledby={`${id}-label`}
               className="tw-hidden"
+              data-cy={`${cyBase}-input-field`}
             />
 
             <div
@@ -288,6 +292,7 @@ export const FileInput = (props) => {
                 <div
                   className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-px-2 tw-rounded-none tw-justify-center"
                   style={{ height: '100%' }}
+                  data-cy={`${cyBase}-loader`}
                 >
                   <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
                 </div>
@@ -304,6 +309,7 @@ export const FileInput = (props) => {
                   // Button's own disabled:pointer-events-none, which doesn't apply to this element.
                   style={{ height: '100%', cursor: disabledState || disablePicker ? 'not-allowed' : 'pointer' }}
                   disabled={disabledState || disablePicker}
+                  data-cy={`${cyBase}-button`}
                 >
                   {iconVisibility && (
                     <TablerIcon
@@ -311,6 +317,7 @@ export const FileInput = (props) => {
                       size={16}
                       color={iconColor}
                       className="cursor-pointer clear-indicator"
+                      data-cy={`${cyBase}-icon`}
                     />
                   )}
                   <span className="tw-text-lg">Browse</span>
@@ -339,6 +346,7 @@ export const FileInput = (props) => {
                     clearFiles();
                   }}
                   style={{ flexShrink: 0 }}
+                  data-cy={`${cyBase}-clear-button`}
                 >
                   <IconX width={16} className="cursor-pointer" color={'var(--icon-default)'} />
                 </Button>
@@ -357,6 +365,7 @@ export const FileInput = (props) => {
             fontWeight: '400',
             lineHeight: '16px',
           }}
+          data-cy={`${cyBase}-invalid-feedback`}
         >
           {uiErrorMessage}
         </div>
