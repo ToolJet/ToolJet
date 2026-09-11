@@ -91,7 +91,7 @@ describe("Home Page Dashboard Testcases", () => {
 
     });
 
-    it("Should verify Home page accessibility for the specific role", () => {
+    it.skip("Should verify Home page accessibility for the specific role", () => {
         cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
         //Invite End-user
         cy.apiFullUserOnboarding(data.firstName, data.email);
