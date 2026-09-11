@@ -30,11 +30,7 @@ const OWNERS = new Set(['Engineering', 'QA']);
 const RANKS = new Set(['Critical', 'High', 'Medium', 'Low']);
 const DEVELOPMENT_TYPES = new Set(['existing-widget', 'new-widget']);
 const PRODUCTION_CHANGE_POLICIES = new Set(['forbidden', 'allowed']);
-// Each entry is a field name, or a list of accepted names whose FIRST is canonical.
-// `research_context7` is the retired name for `research_docs`:
-//  - widget docs are read from the `documentation` branch now, not Context7
-//  - Both are accepted so contracts written under either gate keep validating.
-const REQUIRED_RESEARCH_FIELDS = [['research_docs', 'research_context7'], 'research_git_history'];
+const REQUIRED_RESEARCH_FIELDS = ['research_docs', 'research_git_history'];
 const DISPOSITION_SECTIONS = [
   '## Research findings',
   '## Registered-surface disposition',
@@ -452,9 +448,8 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], desig
         }
       } else {
         for (const field of REQUIRED_RESEARCH_FIELDS) {
-          const accepted = Array.isArray(field) ? field : [field];
-          if (!accepted.some((name) => contract.metadata[name])) {
-            errors.push(`${widget.componentType}: ${widget.status} contract requires ${accepted[0]}`);
+          if (!contract.metadata[field]) {
+            errors.push(`${widget.componentType}: ${widget.status} contract requires ${field}`);
           }
         }
       }

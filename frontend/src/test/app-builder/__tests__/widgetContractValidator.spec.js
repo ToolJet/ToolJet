@@ -31,7 +31,7 @@ development_type: ${developmentType}
 production_changes: forbidden
 product_approval: Nakul, 2026-09-10
 test_design_approval: Nakul, 2026-09-10
-research_context7: https://docs.tooljet.com/docs/widgets/dropdown/
+research_docs: origin/documentation:docs/docs/widgets/dropdown.md
 research_git_history: git log --since=2 years
 prd_source: ${developmentType === 'new-widget' ? 'https://github.com/ToolJet/tj-ee/issues/6000' : ''}
 ---
@@ -581,7 +581,7 @@ describe('widget testing contract validator', () => {
       status: 'spec-complete',
       scenarioStatus: 'ready',
     })
-      .replace(/research_context7:.*\n/, '')
+      .replace(/research_docs:.*\n/, '')
       .replace(/research_git_history:.*\n/, '');
     expect(run({ manifestStatus: 'spec-complete', contract }, { designOnly: true }).errors).toEqual(
       expect.arrayContaining([
@@ -645,13 +645,11 @@ describe('widget testing contract validator', () => {
     expect(result.warnings).toEqual([`Cannot map modified widget test ${unmapped} to a registered component type`]);
   });
 
-  test('accepts either research_docs or the retired research_context7', () => {
-    // The fixture above still uses the retired name, so that path is covered by
-    // every other case here. This pins the canonical one, and pins that supplying
-    // NEITHER is what fails — see REQUIRED_RESEARCH_FIELDS.
-    const renamed = validContract().replace('research_context7:', 'research_docs:');
-    expect(run({ contract: renamed }).errors).toEqual([]);
+  test('requires documentation evidence for approved existing widgets', () => {
     expect(run({ contract: validContract() }).errors).toEqual([]);
+    expect(run({ contract: validContract().replace(/^research_docs:.*\n/m, '') }).errors).toContain(
+      'DropdownV2: approved contract requires research_docs'
+    );
   });
 
   test('rejects mismatched or empty approved frontmatter', () => {
@@ -659,7 +657,6 @@ describe('widget testing contract validator', () => {
       .replace('component_type: DropdownV2', 'component_type: Nope')
       .replace('baseline: lts-3.16', 'baseline: main')
       .replace('contract_status: approved', 'contract_status: shipped')
-      .replace(/research_context7: .*/, 'research_context7:')
       .replace(/research_docs: .*/, 'research_docs:')
       .replace(/research_git_history: .*/, 'research_git_history:');
     expect(run({ contract: bad }).errors).toEqual(
