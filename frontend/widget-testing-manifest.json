@@ -117,7 +117,8 @@
     },
     {
       "componentType": "TagsInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TagsInput/TESTING.md"
     },
     {
       "componentType": "Checkbox",
