@@ -56,19 +56,21 @@ export const LibraryComponent = ({
 
   const devBadge = isDevPin ? <DevBadge label={devEmail ?? effectiveRevision.slice(4)} /> : null;
 
-  // A dev-bundle push can remove/rename a `useStateX` variable; setExposedVariable is
+  // A dev-bundle push, or switching to a different published revision/component export,
+  // can remove/rename a `useStateX` variable or an action; setExposedVariable is
   // additive-only (nothing else ever deletes a key from currentState), so a removed
-  // variable's last value would otherwise linger forever in the left-sidebar Inspector.
-  const isFirstDevNonce = useRef(true);
+  // variable's last value or a stale action would otherwise linger forever. Reset
+  // whenever either the dev nonce or the rendered library identity changes.
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstDevNonce.current) {
-      isFirstDevNonce.current = false;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
 
     resetExposedVariables?.();
-  }, [devNonce, resetExposedVariables]);
+  }, [devNonce, libraryId, effectiveRevision, componentName, resetExposedVariables]);
 
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
