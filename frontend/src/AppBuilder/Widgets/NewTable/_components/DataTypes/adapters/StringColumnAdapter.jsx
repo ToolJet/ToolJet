@@ -63,6 +63,7 @@ export const StringColumn = ({
       SearchHighlightComponent={HighLightSearch}
       isEditing={isEditing}
       setIsEditing={setIsEditing}
+      enableTabNavigation
     />
   );
 };

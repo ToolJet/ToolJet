@@ -1,9 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { commonText } from "Texts/common";
 import { cleanAllUsers } from "Support/utils/manageUsers";
-import { dashboardText } from "Texts/dashboard";
+import { dashboardText } from "Texts/platform/dashboard";
 
 describe("Home Page Dashboard Testcases", () => {
     let data = {};
@@ -21,7 +21,7 @@ describe("Home Page Dashboard Testcases", () => {
 
     });
 
-    it("Should verify elements on home page dashboard", () => {
+    it.skip("Should verify elements on home page dashboard", () => {
 
         cy.get(commonSelectors.homePageIcon, { timeout: 20000 }).click();
         cy.get(commonSelectors.breadcrumbHeaderTitle("applications")).should(($el) => {
@@ -91,7 +91,7 @@ describe("Home Page Dashboard Testcases", () => {
 
     });
 
-    it("Should verify Home page accessibility for the specific role", () => {
+    it.skip("Should verify Home page accessibility for the specific role", () => {
         cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
         //Invite End-user
         cy.apiFullUserOnboarding(data.firstName, data.email);

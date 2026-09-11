@@ -24,6 +24,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_ALL_USERS,
           FEATURE_KEY.UPDATE_USER_TYPE,
           FEATURE_KEY.UPDATE_USER_TYPE_INSTANCE,
+          FEATURE_KEY.TOGGLE_USER_MFA,
         ],
         User
       );

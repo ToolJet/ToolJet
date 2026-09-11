@@ -78,6 +78,7 @@ const legacyUniversalProps = {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
   },
   definition: {
+    properties: {},
     others: {},
     events: [],
     styles: {

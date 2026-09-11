@@ -105,7 +105,6 @@ const Modal = ({
 
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
-  console.log('Rendering Portal Modal with componentName:', componentName, 'and canRefresh:', canRefresh);
   const renderModalContent = () => (
     <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
@@ -182,7 +181,7 @@ const Modal = ({
             height: codehinterPopupRndDefault.height,
             width: codehinterPopupRndDefault.width,
           }}
-          bounds="body"
+          bounds="window"
           dragHandleClassName={'resize-handle'}
           minWidth={'500px'}
           minHeight={'350px'}
@@ -193,7 +192,9 @@ const Modal = ({
               x: position.x,
               y: position.y,
             });
-            console.log('onResizeStop', position);
+          }}
+          onDragStop={(_e, data) => {
+            onPortalDimensionsChange?.({ x: data.x, y: data.y });
           }}
         >
           {renderModalContent()}

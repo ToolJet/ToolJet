@@ -5,9 +5,12 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import './tags.scss';
 
 export const Tags = function Tags({
+  id,
   width,
   height,
   properties,
@@ -15,6 +18,10 @@ export const Tags = function Tags({
   dataCy,
   setExposedVariable,
   setExposedVariables,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) {
   const {
     data,
@@ -34,6 +41,23 @@ export const Tags = function Tags({
     isVisible: visibility,
     isLoading: tagsLoadingState,
     isDisabled: disabledState,
+  });
+
+  // Tags wrap to multiple rows (overflow: 'wrap'),
+  // the observer fires on those height changes for dynamic height
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -133,14 +157,15 @@ export const Tags = function Tags({
 
   const computedStyles = {
     width,
-    height,
+    height: isDynamicHeightEnabled ? 'auto' : height,
+    ...(isDynamicHeightEnabled && { minHeight: height }),
     opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
     pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
       ? {
           display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
           flexWrap: 'wrap',
-          overflowY: 'auto',
+          overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
           overflowX: 'hidden',
           justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
           alignContent: 'flex-start',

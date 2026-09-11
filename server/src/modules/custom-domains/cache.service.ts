@@ -1,16 +1,17 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CustomDomainRepository } from './repository';
 import { RedisService } from '@modules/redis/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class CustomDomainCacheService implements OnModuleInit {
-  private readonly logger = new Logger(CustomDomainCacheService.name);
   private readonly CACHE_PREFIX = 'custom_domain:org:';
   private readonly TTL_SECONDS = 300; // 5 minutes
 
   constructor(
     private readonly repository: CustomDomainRepository,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly logger: TransactionLogger
   ) {}
 
   onModuleInit() {

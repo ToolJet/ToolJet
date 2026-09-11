@@ -65,7 +65,12 @@ export const buttonGroupV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
-
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
@@ -427,6 +432,7 @@ export const buttonGroupV2Config = {
       layout: { value: 'row' },
       visibility: { value: '{{true}}' },
 
+      dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

@@ -10,34 +10,8 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { CurrencyMap } from './constants';
+import { CurrencyMap, getNumberFormatConfig, parseValueToNumber } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-
-// Parse value to number based on the number format
-// Always returns a number for consistent exposed value
-export const parseValueToNumber = (val, numberFormat) => {
-  if (val === undefined || val === null || val === '') return 0;
-
-  const strVal = String(val);
-
-  // Check if value is a raw number (no commas, just digits and optionally one decimal point)
-  // This handles the case after format switch when we store "1234.56"
-  if (/^-?\d+\.?\d*$/.test(strVal)) {
-    return parseFloat(strVal) || 0;
-  }
-
-  let normalized;
-  if (numberFormat === 'eu') {
-    // European format: dot is group separator, comma is decimal
-    // e.g., "1.234,56" → "1234.56"
-    normalized = strVal.replace(/\./g, '').replace(',', '.');
-  } else {
-    // US/UK format: comma is group separator, dot is decimal
-    // e.g., "1,234.56" → "1234.56"
-    normalized = strVal.replace(/,/g, '');
-  }
-  return parseFloat(normalized) || 0;
-};
 
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
@@ -54,7 +28,7 @@ export const CurrencyInput = (props) => {
     loading,
     disable,
     showValidationError,
-    handlePhoneCurrencyInputChange,
+    setCurrencyInputValue,
     isFocused,
     labelWidth,
     isValid,
@@ -66,6 +40,7 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
+
   const {
     label,
     placeholder,
@@ -77,15 +52,10 @@ export const CurrencyInput = (props) => {
     showClearBtn,
   } = properties;
 
-  // Track previous number format to detect format changes
-  const previousNumberFormat = useRef(numberFormat);
-  // Get separators based on number format
-  const separators = useMemo(() => {
-    if (numberFormat === 'eu') {
-      return { groupSeparator: '.', decimalSeparator: ',' };
-    }
-    // Default: US/UK style
-    return { groupSeparator: ',', decimalSeparator: '.' };
+  // Separator characters (rendered as-is) and the locale that drives grouping positions.
+  const { separators, intlConfig } = useMemo(() => {
+    const { locale, groupSeparator, decimalSeparator } = getNumberFormatConfig(numberFormat);
+    return { separators: { groupSeparator, decimalSeparator }, intlConfig: { locale } };
   }, [numberFormat]);
 
   const handleKeyUp = (e) => {
@@ -102,11 +72,11 @@ export const CurrencyInput = (props) => {
     }));
   }, []);
 
-  const onInputValueChange = (value) => {
-    handlePhoneCurrencyInputChange(value);
-    setExposedVariables({
-      country: country,
-    });
+  // `numericValue` is the library-parsed float (from onValueChange);
+  // it keeps the exposed numeric `value` accurate and set BEFORE onChange fires.
+  const onInputValueChange = (displayValue, numericValue) => {
+    setCurrencyInputValue(displayValue ?? '', numericValue);
+    fireEvent('onChange');
   };
 
   const {
@@ -132,6 +102,8 @@ export const CurrencyInput = (props) => {
   const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
+  // The format the current `value` string is in; needed to parse it before a format switch reformats it.
+  const previousNumberFormat = useRef(numberFormat);
   const hasValue = value !== '' && value !== null && value !== undefined;
   const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const computedStyles = {
@@ -181,8 +153,8 @@ export const CurrencyInput = (props) => {
   const formattedValue = (value) => {
     return formatValue({
       value: `${value}`,
-      groupSeparator: separators.groupSeparator,
-      decimalSeparator: separators.decimalSeparator,
+      intlConfig,
+      ...separators,
     });
   };
 
@@ -193,17 +165,18 @@ export const CurrencyInput = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
 
-  // Normalize value when number format changes
+  // Reformat when the number format changes:
+  // rebuild the display string from the format-agnostic number
+  // so it re-renders with the new separators without mis-parsing.
   useEffect(() => {
-    if (!isInitialRender.current && previousNumberFormat.current !== numberFormat && value) {
-      // Convert value from old format to raw number, then the component will re-render with new format
-      const rawNumber = parseValueToNumber(value, previousNumberFormat.current);
-      if (!isNaN(rawNumber) && rawNumber !== 0) {
-        // Store as raw number string - the component will format it with new separators
-        handlePhoneCurrencyInputChange(String(rawNumber));
-      }
-    }
+    if (isInitialRender.current) return;
+    // `value` is still in the PREVIOUS format's separators here, so parse it with that format.
+    const num = parseValueToNumber(value, previousNumberFormat.current);
     previousNumberFormat.current = numberFormat;
+    // Reformat any non-empty value; guarding on emptiness (not `num !== 0`) so "0"/"0,00" reformat too.
+    if (value !== '' && value !== null && value !== undefined && Number.isFinite(num)) {
+      setCurrencyInputValue(String(num), num);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberFormat]);
 
@@ -216,15 +189,6 @@ export const CurrencyInput = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country, value, numberFormat]);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariables({
-        value: parseValueToNumber(value, numberFormat),
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, numberFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -326,14 +290,16 @@ export const CurrencyInput = (props) => {
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
             value={value}
-            decimalsLimit={decimalPlaces}
+            decimalsLimit={Number(decimalPlaces) || 0}
+            intlConfig={intlConfig}
             groupSeparator={separators.groupSeparator}
             decimalSeparator={separators.decimalSeparator}
             style={computedStyles}
             data-ignore-hover={true}
-            onValueChange={(newVal) => {
+            onValueChange={(newVal, _name, values) => {
               if (newVal === value) return;
-              onInputValueChange(newVal);
+              // `values.float` is the library-parsed number; pass it so the exposed value is accurate.
+              onInputValueChange(newVal, values?.float);
             }}
             prefix={''}
             onBlur={handleBlur}

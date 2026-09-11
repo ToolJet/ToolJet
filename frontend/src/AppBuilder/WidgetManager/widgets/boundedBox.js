@@ -50,6 +50,12 @@ export const boundedBoxConfig = {
         defaultValue: `{{['Car', 'Tree']}}`,
       },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onChange: { displayName: 'On change' },
@@ -110,6 +116,7 @@ export const boundedBoxConfig = {
       },
       selector: { value: `RECTANGLE` },
       labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {

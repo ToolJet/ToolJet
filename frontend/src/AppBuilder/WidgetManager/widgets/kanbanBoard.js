@@ -17,6 +17,12 @@ export const kanbanBoardConfig = {
     columns: { type: 'code', displayName: 'Columns' },
     cardData: { type: 'code', displayName: 'Card Data' },
     enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onCardAdded: { displayName: 'Card added' },
@@ -55,6 +61,7 @@ export const kanbanBoardConfig = {
       enableAddCard: {
         value: `{{true}}`,
       },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {

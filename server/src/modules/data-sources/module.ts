@@ -15,6 +15,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -53,6 +54,7 @@ export class DataSourcesModule extends SubModule {
         await InMemoryCacheModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await AppPermissionsModule.register(configs!),
+        await CustomDomainsModule.register(configs!),
       ],
       providers: [
         DataSourcesService,

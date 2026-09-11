@@ -52,4 +52,6 @@ export enum MODULES {
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
   WORKFLOW_FOLDER = 'WorkflowFolder',
   MODULE_FOLDER = 'ModuleFolder',
+  PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
+  FRONTEND_METRICS = 'FrontendMetrics',
 }

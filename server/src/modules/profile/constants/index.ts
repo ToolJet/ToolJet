@@ -5,4 +5,8 @@ export enum FEATURE_KEY {
   UPDATE = 'update',
   UPDATE_AVATAR = 'update_avatar',
   UPDATE_PASSWORD = 'update_password',
+  UPDATE_PREFERENCES = 'update_preferences',
+  MFA_SETUP = 'mfa_setup',
+  MFA_CONFIRM = 'mfa_confirm',
+  MFA_DISABLE = 'mfa_disable',
 }

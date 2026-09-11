@@ -6,6 +6,21 @@ import { Content } from './Content';
 import { Footer } from './Footer';
 import './camera.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cameraDevices';
+
+// Mobile cameras are selected by facing direction, not deviceId: iOS lists several
+// rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
+// stable across sessions, so `facingMode` is the only reliable front/back switch.
+
+// TEMPORARY: surfaces camera failures on phones, where the console is unreachable.
+// Delete this block and its three call sites before merging.
+const alertedMessages = new Set();
+const debugAlert = (headline, details = '') => {
+  const message = `[camera] ${headline}\n${details}`;
+  if (alertedMessages.has(message)) return;
+  alertedMessages.add(message);
+  window.alert(message);
+};
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
@@ -15,6 +30,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   // State
   const [deviceLists, setDeviceLists] = useState({ cameras: [], microphones: [] });
   const [selectedCameraId, setSelectedCameraId] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment');
   const [selectedMicrophoneId, setSelectedMicrophoneId] = useState(null);
   const [mediaStream, setMediaStream] = useState(null);
   const [permissionError, setPermissionError] = useState(null);
@@ -31,6 +47,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const videoElementRef = useRef(null);
   const capturedImageRef = useRef(null);
   const savedImageUrlRef = useRef(null);
+  const mediaStreamRef = useRef(null);
 
   // Media recorder setup
   const recorderOptions = useMemo(
@@ -88,6 +105,15 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     [updateCapturedImage]
   );
 
+  // Either signal is enough. Labels are blank until permission is granted (and some
+  // browsers only ever expose the granted camera), so the front/back pair alone would
+  // miss real phones; the browser heuristic alone misses Android "Desktop site" mode
+  // and ChromeOS, which report a desktop user agent.
+  const isMobile = useMemo(
+    () => hasFrontAndBackCameras(deviceLists.cameras) || isMobileBrowser(),
+    [deviceLists.cameras]
+  );
+
   const isBusy = useMemo(
     () =>
       status === 'acquiring_media' ||
@@ -102,6 +128,10 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const handleCameraSelect = (deviceId) => setSelectedCameraId(deviceId);
 
   const handleMicrophoneSelect = (deviceId) => setSelectedMicrophoneId(deviceId);
+
+  const handleFlipCamera = useCallback(() => {
+    setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+  }, []);
 
   const handleClearRecording = () => {
     setRecordingResult(null);
@@ -295,55 +325,52 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     }
   }, [contentType]);
 
-  // Device enumeration
+  // Device enumeration. Runs on mount and again once a stream is granted: before the
+  // permission prompt is answered browsers anonymise the device list (blank deviceId,
+  // blank label, often a single placeholder per kind), so the first pass alone can never
+  // populate a usable camera list.
+  const refreshDeviceLists = useCallback(async () => {
+    const mediaDevices = navigator?.mediaDevices;
+    if (!mediaDevices?.enumerateDevices) return;
+
+    try {
+      const availableDevices = await mediaDevices.enumerateDevices();
+
+      const cameras = mapCameraDevices(availableDevices.filter((device) => device.kind === 'videoinput'));
+
+      const microphones = availableDevices
+        .filter((device) => device.kind === 'audioinput')
+        .map((device, index) => ({
+          id: device.deviceId || `microphone-${index}`,
+          label: device.label || `Microphone ${index + 1}`,
+          value: device.deviceId || `microphone-${index}`,
+        }));
+
+      setDeviceLists({ cameras, microphones });
+      // On mobile the camera is chosen by facing direction, so no deviceId is selected.
+      if (!isMobile) {
+        setSelectedCameraId((prev) =>
+          prev && cameras.some((d) => d.value === prev) ? prev : (cameras[0]?.value ?? null)
+        );
+      }
+      setSelectedMicrophoneId((prev) =>
+        prev && microphones.some((d) => d.value === prev) ? prev : (microphones[0]?.value ?? null)
+      );
+    } catch (error) {
+      console.error('Failed to enumerate media devices', error);
+      debugAlert(`enumerateDevices failed — ${error?.name || 'UnknownError'}`, error?.message || '');
+    }
+  }, [isMobile]);
+
   useEffect(() => {
     const mediaDevices = navigator?.mediaDevices;
     if (!mediaDevices?.enumerateDevices) return;
 
-    let isMounted = true;
+    refreshDeviceLists();
+    mediaDevices.addEventListener?.('devicechange', refreshDeviceLists);
 
-    const updateDeviceLists = async () => {
-      try {
-        const availableDevices = await mediaDevices.enumerateDevices();
-
-        const cameras = availableDevices
-          .filter((device) => device.kind === 'videoinput')
-          .map((device, index) => ({
-            id: device.deviceId || `camera-${index}`,
-            label: device.label || `Camera ${index + 1}`,
-            value: device.deviceId || `camera-${index}`,
-          }));
-
-        const microphones = availableDevices
-          .filter((device) => device.kind === 'audioinput')
-          .map((device, index) => ({
-            id: device.deviceId || `microphone-${index}`,
-            label: device.label || `Microphone ${index + 1}`,
-            value: device.deviceId || `microphone-${index}`,
-          }));
-
-        if (isMounted) {
-          setDeviceLists({ cameras, microphones });
-          setSelectedCameraId((prev) =>
-            prev && cameras.some((d) => d.value === prev) ? prev : (cameras[0]?.value ?? null)
-          );
-          setSelectedMicrophoneId((prev) =>
-            prev && microphones.some((d) => d.value === prev) ? prev : (microphones[0]?.value ?? null)
-          );
-        }
-      } catch (error) {
-        console.error('Failed to enumerate media devices', error);
-      }
-    };
-
-    updateDeviceLists();
-    mediaDevices.addEventListener?.('devicechange', updateDeviceLists);
-
-    return () => {
-      isMounted = false;
-      mediaDevices.removeEventListener?.('devicechange', updateDeviceLists);
-    };
-  }, []);
+    return () => mediaDevices.removeEventListener?.('devicechange', refreshDeviceLists);
+  }, [refreshDeviceLists]);
 
   // Media stream acquisition
   useEffect(() => {
@@ -352,16 +379,30 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     const requestStream = async () => {
       if (!navigator?.mediaDevices?.getUserMedia) {
         setPermissionError('unsupported');
-        setMediaStream((prev) => {
-          prev?.getTracks().forEach((track) => track.stop());
-          return null;
-        });
+        setMediaStream(null);
+        debugAlert('getUserMedia unavailable', `secure context: ${window.isSecureContext}`);
         return;
       }
 
+      // Stopping the old tracks in the cleanup below is not enough: the <video> element
+      // still holds them as its srcObject, and mobile browsers refuse to hand out the
+      // second camera until that reference is dropped. Detach synchronously and yield a
+      // frame so the element has actually released the hardware before we ask again.
+      const videoElement = videoElementRef.current;
+      if (videoElement?.srcObject) {
+        videoElement.pause();
+        videoElement.srcObject = null;
+      }
+      setMediaStream(null);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (cancelled) return;
+
       const constraints = {
-        video:
-          selectedCameraId && !selectedCameraId.startsWith?.('camera-')
+        // `ideal` rather than `exact`: a device with only one camera still resolves
+        // instead of throwing OverconstrainedError.
+        video: isMobile
+          ? { facingMode: { ideal: facingMode } }
+          : selectedCameraId && !selectedCameraId.startsWith?.('camera-')
             ? { deviceId: { exact: selectedCameraId } }
             : true,
         audio:
@@ -378,37 +419,38 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           return;
         }
 
+        mediaStreamRef.current = stream;
         setPermissionError(null);
-        setMediaStream((prev) => {
-          if (prev && prev !== stream) {
-            prev.getTracks().forEach((track) => track.stop());
-          }
-          return stream;
-        });
+        setMediaStream(stream);
+        refreshDeviceLists();
       } catch (error) {
         if (cancelled) return;
         console.error('Failed to acquire media stream', error);
+        debugAlert(
+          `${error?.name || 'UnknownError'}: ${error?.message || ''}`,
+          [
+            `isMobile: ${isMobile}`,
+            `facingMode: ${facingMode}`,
+            `video constraint: ${JSON.stringify(constraints.video)}`,
+            `cameras: ${deviceLists.cameras.map((c) => `${c.label} [${c.facing}]`).join(' | ') || 'none'}`,
+          ].join('\n')
+        );
         setPermissionError(error?.name || 'permission_denied');
-        setMediaStream((prev) => {
-          prev?.getTracks().forEach((track) => track.stop());
-          return null;
-        });
+        setMediaStream(null);
       }
     };
 
     requestStream();
 
+    // Cleanup runs before the next acquisition (and on unmount), so the previous camera
+    // is always released first. iOS Safari refuses to hand out a second camera while an
+    // earlier stream is still live, which would otherwise break the front/back flip.
     return () => {
       cancelled = true;
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
     };
-  }, [selectedCameraId, selectedMicrophoneId]);
-
-  // Cleanup media stream on unmount
-  useEffect(() => {
-    return () => {
-      mediaStream?.getTracks().forEach((track) => track.stop());
-    };
-  }, [mediaStream]);
+  }, [selectedCameraId, selectedMicrophoneId, facingMode, isMobile, refreshDeviceLists]);
 
   // Fullscreen handling
   useEffect(() => {
@@ -440,6 +482,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const captureDisabled = !mediaStream || !!permissionError || isBusy;
   const hasPendingCapture = contentType === 'image' && !!capturedImage;
   const deviceSelectDisabled = status === 'recording' || isBusy;
+  const canFlipCamera = isMobile && !deviceSelectDisabled;
   const fullscreenSupported = document.fullscreenEnabled ?? true;
   const fullscreenDisabled = !fullscreenSupported || permissionError === 'unsupported';
 
@@ -485,6 +528,9 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         selectedMicrophoneId={selectedMicrophoneId}
         onCameraSelect={handleCameraSelect}
         onMicrophoneSelect={handleMicrophoneSelect}
+        onFlipCamera={handleFlipCamera}
+        canFlipCamera={canFlipCamera}
+        showFlipCamera={isMobile}
         onCaptureToggle={handleCaptureToggle}
         recordingStatus={status}
         captureDisabled={captureDisabled}

@@ -136,6 +136,15 @@ export class User extends BaseEntity {
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;
 
+  @Column({ name: 'mfa_enabled', default: false })
+  mfaEnabled: boolean;
+
+  @Column({ name: 'mfa_setup_completed_at', type: 'timestamptz', nullable: true })
+  mfaSetupCompletedAt: Date | null;
+
+  @Column({ name: 'ai_build_notifications_enabled', default: true })
+  aiBuildNotificationsEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -223,4 +232,9 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
+  /* Session provenance, mirrored from the JWT. isPATLogin covers BOTH personal-access-token
+     species; patAppId is set only by the app-scoped embed flow, so `isPATLogin && !patAppId`
+     identifies a workspace PAT session. */
+  isPATLogin?: boolean;
+  patAppId?: string;
 }

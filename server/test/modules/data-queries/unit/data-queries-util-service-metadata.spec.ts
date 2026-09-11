@@ -24,7 +24,10 @@ describe('DataQueriesUtilService.runQuery — isPublic/appName resolution', () =
         },
         {
           provide: DataSourcesUtilService,
-          useValue: { parseSourceOptions: jest.fn().mockResolvedValue({}) },
+          useValue: {
+            parseSourceOptions: jest.fn().mockResolvedValue({}),
+            resolveOAuthRedirectHost: jest.fn().mockResolvedValue('http://localhost'),
+          },
         },
         {
           provide: PluginsServiceSelector,
