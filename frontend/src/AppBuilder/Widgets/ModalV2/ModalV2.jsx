@@ -332,7 +332,7 @@ export const ModalV2 = function Modal({
         id="modal-container"
         component-id={id}
         backdrop={'static'}
-        scrollable={true}
+        scrollable={isDynamicHeightEnabled || isFullScreen}
         modalProps={{
           customStyles,
           parentRef,
