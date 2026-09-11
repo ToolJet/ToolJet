@@ -3,7 +3,7 @@ import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { generateUIComponents, getBodyHeight } from './FormUtils';
+import { collectFormFieldExposedValues, generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -75,6 +75,7 @@ const FormComponent = (props) => {
     canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
+    registerNestedFields = false,
     newJsonSchema,
   } = properties;
 
@@ -171,23 +172,11 @@ const FormComponent = (props) => {
 
   // Lightweight selector: returns raw exposed value references (no spreading).
   // shallow comparison works because immer only creates new references for mutated paths.
-  const childExposedMap = useStore((state) => {
-    const childIds = state.containerChildrenMapping?.[id] || [];
-    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
-    const result = {};
-    childIds.forEach((childId) => {
-      let val = exposedComponents?.[childId];
-      // If per-row (Form is inside a ListView), navigate to correct row
-      if (Array.isArray(val) && indices.length > 0) {
-        for (const idx of indices) {
-          val = val?.[idx];
-          if (!val) break;
-        }
-      }
-      result[childId] = val || null;
-    });
-    return result;
-  }, shallow);
+  // See collectFormFieldExposedValues for which containers the walk descends into.
+  const childExposedMap = useStore(
+    (state) => collectFormFieldExposedValues(state, id, { moduleId, indices, includeNested: registerNestedFields }),
+    shallow
+  );
 
   useExposedValueBatch(componentCount);
 
