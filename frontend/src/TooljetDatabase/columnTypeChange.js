@@ -9,9 +9,12 @@
  *                  server/src/modules/tooljet-db/helpers/column-type-change.ts.
  *   'safe'      -> generated `ALTER ... USING ...` recorded as a raw SQL migration. Needs the cast
  *                  spelled out, but no value can fail it.
- *   'may_fail'  -> same, but a bad row raises 22P02/22003. These carry a `probe`: a SQL predicate
- *                  that is TRUE for a value that will cast, used to report the offending values
- *                  before the user commits to the migration.
+ *   'may_fail'  -> same, but a bad row raises 22P02/22003. These carry a `probe`: a descriptor for
+ *                  the condition that is TRUE for a value that will cast - `{ kind: 'regex', pattern,
+ *                  ci? }` or `{ kind: 'range', min, max }`. Used both to build the SQL that counts
+ *                  offending rows (`buildCastabilityCountQuery`) and, for regex probes, the PostgREST
+ *                  filter that shows them (`inconsistentRowsFilter`) - one descriptor, two consumers,
+ *                  so the "does this value cast" definition can't drift between the two.
  *
  * Anything absent from this table is blocked, deliberately. Notably absent:
  *   - `double precision -> integer/bigint`, `integer/bigint -> boolean`: succeed while silently
@@ -24,12 +27,22 @@
  * Types are `information_schema.columns.data_type` spellings, matching `dataTypes` in ./constants.
  */
 
-// POSIX character classes, not \d / \s: these predicates travel through the SQL-mode AST parser on
+// POSIX character classes, not \d / \s: these patterns travel through the SQL-mode AST parser on
 // their way to Postgres, and backslash escapes are the first thing to break there.
-const INTEGER_PROBE = `%COL% ~ '^[[:space:]]*[+-]?[0-9]+[[:space:]]*$'`;
-const FLOAT_PROBE = `%COL% ~ '^[[:space:]]*[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)([eE][+-]?[0-9]+)?[[:space:]]*$'`;
-const BOOLEAN_PROBE = `lower(btrim(%COL%)) IN ('t','true','y','yes','on','1','f','false','n','no','off','0')`;
-const INT4_RANGE_PROBE = `%COL% BETWEEN -2147483648 AND 2147483647`;
+const INTEGER_PROBE = { kind: 'regex', pattern: `^[[:space:]]*[+-]?[0-9]+[[:space:]]*$` };
+const FLOAT_PROBE = {
+  kind: 'regex',
+  pattern: `^[[:space:]]*[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)([eE][+-]?[0-9]+)?[[:space:]]*$`,
+};
+// Case-insensitive regex, not `lower(btrim(col)) IN (...)` - same set of accepted spellings, but a
+// regex is also a PostgREST `match`/`imatch` filter, so this stays usable by inconsistentRowsFilter
+// below. A SQL function wrapped around the column (lower/btrim) has no PostgREST equivalent.
+const BOOLEAN_PROBE = {
+  kind: 'regex',
+  ci: true,
+  pattern: `^[[:space:]]*(t|true|y|yes|on|1|f|false|n|no|off|0)[[:space:]]*$`,
+};
+const INT4_RANGE_PROBE = { kind: 'range', min: -2147483648, max: 2147483647 };
 
 export const CAST_TIERS = [
   { from: 'integer', to: 'bigint', tier: 'lossless' },
@@ -60,6 +73,13 @@ const BLOCKED_REASONS = [
     match: (from, to) => (from === 'integer' || from === 'bigint') && to === 'boolean',
     reason: 'Every non-zero number would become true, collapsing distinct values.',
   },
+  // `general: true` - these two hold regardless of the column's current type, so the dropdown's
+  // "not seeing the type you need?" popover always shows them, on top of whatever is context-specific.
+  {
+    match: (from, to) => from === 'serial' || to === 'serial',
+    reason: 'Auto-incrementing columns carry a sequence that would have to change with them.',
+    general: true,
+  },
   {
     match: (from, to) =>
       (from === 'character varying' && to === 'timestamp with time zone') ||
@@ -67,12 +87,11 @@ const BLOCKED_REASONS = [
     reason:
       'Date conversions depend on the database timezone, so environments could end up with ' +
       'different values. Write the conversion yourself with an explicit format.',
-  },
-  {
-    match: (from, to) => from === 'serial' || to === 'serial',
-    reason: 'Auto-incrementing columns carry a sequence that would have to change with them.',
+    general: true,
   },
 ];
+
+export const ALWAYS_BLOCKED_REASONS = BLOCKED_REASONS.filter((entry) => entry.general).map((entry) => entry.reason);
 
 export function castFor(fromType, toType) {
   return CAST_TIERS.find((entry) => entry.from === fromType && entry.to === toType);
@@ -114,19 +133,34 @@ export function buildTypeChangeSql({ columnName, targetType, hasDefault }) {
   return statements.join('\n');
 }
 
+// The SQL condition a probe describes, against an already-quoted column identifier. Shared by
+// buildCastabilityCountQuery (wrapped in NOT (), for the count) - the one place a probe becomes SQL.
+function probeSql(probe, col) {
+  if (probe.kind === 'regex') return `${col} ${probe.ci ? '~*' : '~'} '${probe.pattern}'`;
+  if (probe.kind === 'range') return `${col} BETWEEN ${probe.min} AND ${probe.max}`;
+  return null;
+}
+
 /**
- * Distinct offending values, not row numbers: a TJDB table is not guaranteed to have a column worth
- * quoting back as an identifier, and the value is what the user has to go and fix anyway. LIMIT 21
- * so the caller can say "20+" without a second COUNT query.
+ * How many rows in this column fail to cast - a plain count, not a sample, so there's nothing to
+ * truncate or slice client-side.
  *
- * Uses the table's *display* name - sqlExecution parses the SQL and rewrites display names to the
- * relation id for whichever environment the caller is on.
+ * `{{self}}` is substituted server-side with the relation being targeted, same as buildTypeChangeSql -
+ * seedDataSqlExecution rejects any seed-data SQL that doesn't use it.
  */
-export function buildCastabilityQuery({ tableName, columnName, probe }) {
+export function buildCastabilityCountQuery({ columnName, probe }) {
   if (!probe) return null;
   const col = quoteIdentifier(columnName);
-  return (
-    `SELECT DISTINCT ${col} FROM ${quoteIdentifier(tableName)} ` +
-    `WHERE ${col} IS NOT NULL AND NOT (${probe.replace(/%COL%/g, col)}) LIMIT 21`
-  );
+  return `SELECT COUNT(*) FROM "{{self}}" WHERE ${col} IS NOT NULL AND NOT (${probeSql(probe, col)})`;
+}
+
+/**
+ * The PostgREST column/operator/value shape that filters the table down to the same rows the count
+ * above counts - only possible for regex probes (PostgREST has no BETWEEN/function-wrapped filter).
+ * Range probes (bigint -> integer overflow) return null; the caller falls back to a count-only
+ * message with no "show rows" link for those.
+ */
+export function inconsistentRowsFilter(probe) {
+  if (!probe || probe.kind !== 'regex') return null;
+  return { operator: probe.ci ? 'not.imatch' : 'not.match', value: probe.pattern };
 }

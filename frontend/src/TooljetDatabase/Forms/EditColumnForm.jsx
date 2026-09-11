@@ -34,7 +34,16 @@ import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE, typeChangeDetail } from '../MigrationConfirmModal';
-import { castFor, buildCastabilityQuery, allowedTargets, blockedReason, buildTypeChangeSql } from '../columnTypeChange';
+import {
+  castFor,
+  buildCastabilityCountQuery,
+  inconsistentRowsFilter,
+  allowedTargets,
+  blockedReason,
+  buildTypeChangeSql,
+  ALWAYS_BLOCKED_REASONS,
+} from '../columnTypeChange';
+import { CircleAlert } from 'lucide-react';
 
 // Info boxes for the cast report and the omitted-conversions notice, shaped to match the existing
 // `.edit-warning-info` box above (Forms/styles.scss) so all the drawer's callouts read as one
@@ -87,7 +96,7 @@ const ColumnForm = ({
     shallow
   );
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
-  const { fetchTableMetadata } = useTjdbActions();
+  const { fetchTableMetadata, setQueryFilters } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const { runMigration, modal: migrationModal } = useMigrationModal();
@@ -345,6 +354,35 @@ const ColumnForm = ({
     dropdownContainerWidth
   );
 
+  const hasCastError = castReport?.status === 'done' && castReport.count > 0;
+
+  // Scoped to just the type-change Select below (constants.js's tjdbDropdownStyles is shared with
+  // ColumnForm.jsx/TableSchema.jsx - overriding here instead of there keeps their dropdowns as-is).
+  // TWEAK HERE for the type dropdown's own look:
+  //   - menu width/radius
+  //   - option hover color/radius
+  //   - error border color/width
+  const typeDropdownStyles = {
+    ...customStyles,
+    menu: (base) => ({
+      ...customStyles.menu(base),
+      width: '100%', // match the input field's width instead of the fixed dropdownContainerWidth
+      borderRadius: 'var(--radius-lg)', // 8px
+    }),
+    option: (base, state) => ({
+      ...customStyles.option(base, state),
+      borderRadius: 'var(--radius-md)', // 6px
+      ':hover': { backgroundColor: 'var(--background-accent-weak)' },
+    }),
+    control: (base, state) => ({
+      ...customStyles.control(base, state),
+      ...(hasCastError && {
+        borderColor: 'var(--border-danger-strong)',
+        ':hover': { borderColor: 'var(--border-danger-strong)' },
+      }),
+    }),
+  };
+
   const handleTypeChange = (value) => {
     setDataType(value);
   };
@@ -385,8 +423,9 @@ const ColumnForm = ({
   }, [currentDataType, isTypeChangeLocked]);
 
   // A type that isn't offered would otherwise just be silently missing from the dropdown, leaving a
-  // user who wants `double precision -> integer` with no idea why. Deduplicated, since several
-  // omitted types can share one reason.
+  // user who wants `double precision -> integer` with no idea why. Column-specific reasons come
+  // first, deduplicated, then the two reasons that hold regardless of the current type - unless a
+  // column-specific reason already said the same thing.
   const omittedReasons = React.useMemo(() => {
     if (isTypeChangeLocked) return [];
     const offered = new Set(typeOptions.map((type) => type.value));
@@ -394,8 +433,51 @@ const ColumnForm = ({
       .filter((type) => !offered.has(type.value))
       .map((type) => blockedReason(currentDataType, type.value))
       .filter(Boolean);
-    return [...new Set(reasons)];
+    const merged = [...new Set(reasons)];
+    ALWAYS_BLOCKED_REASONS.forEach((reason) => {
+      if (!merged.includes(reason)) merged.push(reason);
+    });
+    return merged;
   }, [typeOptions, currentDataType, isTypeChangeLocked]);
+
+  // Pure CSS hover (see .tj-db-type-omitted-footer in Forms/styles.scss) rather than a React-state
+  // popover - toggling state here re-renders ColumnForm, which recreates this Menu component with a
+  // new identity every time, and react-select remounts its open menu when that identity changes.
+  // The result was the dropdown closing the instant it was hovered.
+  const CustomTypeMenu = (menuProps) => (
+    <components.Menu {...menuProps}>
+      {menuProps.children}
+      {omittedReasons.length > 0 && (
+        <div className="tj-db-type-omitted-footer" data-cy="data-type-omitted-footer">
+          <CircleAlert color="var(--icon-strong)" width="14" height="14" />
+          <span className="tj-db-type-omitted-text">
+            Not seeing the type you need?{' '}
+            <span className="tj-db-type-omitted-link">
+              Some conversions
+              <div
+                className="tj-db-type-omitted-popover tw-border tw-border-solid tw-border-border-weak tw-rounded-md tw-p-2 tw-bg-background-surface-layer-01 tw-text-accent tw-text-sm"
+                data-cy="data-type-omitted-popover"
+              >
+                <CircleAlert color="var(--icon-accent)" width="16" height="16" />
+                <div className="tw-flex tw-items-start tw-gap-2 tw-mt-2">
+                  <span>
+                    The following conversions are not supported out of the box:
+                    <ul className="tw-mt-1 tw-mb-2 tw-pl-4">
+                      {omittedReasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                    Write SQL migration from the migration history drawer for these.
+                  </span>
+                </div>
+              </div>
+            </span>{' '}
+            need SQL migration
+          </span>
+        </div>
+      )}
+    </components.Menu>
+  );
 
   const handleEdit = () => {
     const isTypeChanged = !!dataType?.value && dataType.value !== selectedColumn?.dataType;
@@ -686,8 +768,7 @@ const ColumnForm = ({
 
     if (!selectedEnvironment?.id) return;
 
-    const query = buildCastabilityQuery({
-      tableName: selectedTable.table_name,
+    const query = buildCastabilityCountQuery({
       columnName: selectedColumn?.Header,
       probe: cast.probe,
     });
@@ -719,18 +800,31 @@ const ColumnForm = ({
         }
 
         // Raw array since commit 026740b242 ("return raw array for join_tables and sql_execution").
+        // COUNT(*) comes back as a numeric-looking string, not a number.
         const rows = Array.isArray(result?.data) ? result.data : [];
-        setCastReport({
-          status: 'done',
-          values: rows.slice(0, 20).map((row) => row[selectedColumn?.Header]),
-          truncated: rows.length > 20,
-        });
+        const count = parseInt(rows[0]?.count, 10) || 0;
+        // probe/columnName travel with the report so "Show rows" doesn't have to re-derive `cast`
+        // from dataType/selectedColumn a second time - it uses exactly what this check ran against.
+        setCastReport({ status: 'done', count, probe: cast.probe, columnName: selectedColumn?.Header });
       });
 
     return () => {
       cancelled = true;
     };
   }, [dataType, selectedColumn, selectedTable, selectedEnvironment, organizationId]);
+
+  // Filters the table down to exactly the rows the count above counts, replacing whatever filters
+  // were already active (a fresh "show me these" view, not a further-narrow-what-you-had-open one),
+  // then closes the drawer so the user lands straight on the table. Only reachable for regex probes -
+  // inconsistentRowsFilter returns null for range probes and the link isn't rendered for those.
+  const handleShowInconsistentRows = () => {
+    const filter = inconsistentRowsFilter(castReport?.probe);
+    if (!filter) return;
+    const newFilters = { 0: { column: castReport.columnName, operator: filter.operator, value: filter.value } };
+    setQueryFilters(newFilters);
+    handleRefetchQuery(newFilters, sortFilters, 1, pageSize);
+    onClose && onClose();
+  };
 
   const handleInputError = (bool = false) => {
     setDisabledSaveButton(bool);
@@ -837,46 +931,6 @@ const ColumnForm = ({
               autoFocus
             />
           </div>
-          {castReport?.status === 'loading' && (
-            <div className={cx(infoBoxClass('accent'), 'tw-mb-2')} data-cy="cast-report-loading">
-              <Spinner size="small" />
-              <span>Checking existing values…</span>
-            </div>
-          )}
-          {castReport?.status === 'uncheckable' && (
-            <div className={cx(infoBoxClass('accent'), 'tw-mb-2')} data-cy="cast-report-uncheckable">
-              <Information fill="var(--icon-accent)" width="28" />
-              <span>
-                Existing values can&apos;t be checked in advance for this conversion. Rows that aren&apos;t valid will
-                stop the migration.
-              </span>
-            </div>
-          )}
-          {castReport?.status === 'error' && (
-            <div className={cx(infoBoxClass('accent'), 'tw-mb-2')} data-cy="cast-report-error">
-              <Information fill="var(--icon-accent)" width="28" />
-              <span>Couldn&apos;t check existing values: {castReport.message}</span>
-            </div>
-          )}
-          {castReport?.status === 'done' && castReport.values.length > 0 && (
-            <div className={cx(infoBoxClass('danger'), 'tw-mb-2')} data-cy="cast-report-bad-values">
-              <Warning fill="var(--icon-danger)" width="28" height="28" />
-              <span>
-                {castReport.truncated ? '20+ values' : `${castReport.values.length} value(s)`} in this column can&apos;t
-                be converted: {castReport.values.map((value) => `'${value}'`).join(', ')}
-                {castReport.truncated ? ', …' : ''}. Fix these in every environment before promoting.
-              </span>
-            </div>
-          )}
-          {castReport?.status === 'done' && castReport.values.length === 0 && (
-            <div className={cx(infoBoxClass('success'), 'tw-mb-2')} data-cy="cast-report-clean">
-              <CheckCircle fill="var(--icon-success)" width="28" height="28" />
-              <span>
-                Every value in this environment converts cleanly. Other environments are checked when you switch to
-                them.
-              </span>
-            </div>
-          )}
           <div
             className="column-datatype-selector mb-3 data-type-dropdown-section"
             data-cy="data-type-dropdown-section"
@@ -894,8 +948,8 @@ const ColumnForm = ({
                 formatOptionLabel={formatOptionLabel}
                 options={typeOptions}
                 onChange={handleTypeChange}
-                components={{ IndicatorSeparator: () => null }}
-                styles={customStyles}
+                components={{ IndicatorSeparator: () => null, Menu: CustomTypeMenu }}
+                styles={typeDropdownStyles}
                 isSearchable={false}
               />
             </div>
@@ -908,17 +962,63 @@ const ColumnForm = ({
                   : 'An auto-incrementing column’s type cannot be changed.'}
               </div>
             )}
-            {omittedReasons.length > 0 && (
-              <div className={cx(infoBoxClass('accent'), 'tw-mt-1')} data-cy="data-type-omitted-reasons">
-                <Information fill="var(--icon-accent)" width="28" height="28" />
+            {castReport?.status === 'loading' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-loading">
+                <Spinner size="small" />
+                <span>Checking existing values…</span>
+              </div>
+            )}
+            {castReport?.status === 'uncheckable' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-uncheckable">
+                <Information fill="var(--icon-accent)" width="28" />
                 <span>
-                  Some conversions aren&apos;t listed:
-                  <ul className="tw-mt-1 tw-mb-0 tw-pl-4">
-                    {omittedReasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                  Record a SQL migration from the migration history drawer for those.
+                  Existing values can&apos;t be checked in advance for this conversion. Rows that aren&apos;t valid will
+                  stop the migration.
+                </span>
+              </div>
+            )}
+            {castReport?.status === 'error' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-error">
+                <Information fill="var(--icon-accent)" width="28" />
+                <span>Couldn&apos;t check existing values: {castReport.message}</span>
+              </div>
+            )}
+            {hasCastError && castReport.probe?.kind === 'regex' && (
+              <div
+                className="tw-flex tw-items-start tw-gap-1 tw-mt-1 tw-text-xs tw-text-[var(--text-danger)]"
+                data-cy="cast-report-bad-values"
+              >
+                <Warning fill="var(--icon-danger)" width="14" height="14" />
+                <span>
+                  {castReport.count} value(s) in this column can&apos;t be converted.{' '}
+                  <span
+                    className="tw-underline tw-cursor-pointer"
+                    onClick={handleShowInconsistentRows}
+                    data-cy="cast-report-show-rows"
+                  >
+                    Show rows
+                  </span>
+                </span>
+              </div>
+            )}
+            {hasCastError && castReport.probe?.kind === 'range' && (
+              <div
+                className="tw-flex tw-items-start tw-gap-1 tw-mt-1 tw-text-xs tw-text-[var(--text-danger)]"
+                data-cy="cast-report-bad-values-range"
+              >
+                <Warning fill="var(--icon-danger)" width="14" height="14" />
+                <span>
+                  {castReport.count} value(s) in this column can&apos;t be converted — they&apos;re outside
+                  integer&apos;s range.
+                </span>
+              </div>
+            )}
+            {castReport?.status === 'done' && castReport.count === 0 && (
+              <div className={cx(infoBoxClass('success'), 'tw-mt-2')} data-cy="cast-report-clean">
+                <CheckCircle fill="var(--icon-success)" width="28" height="28" />
+                <span>
+                  Every value in this environment converts cleanly. Other environments are checked when you switch to
+                  them.
                 </span>
               </div>
             )}
