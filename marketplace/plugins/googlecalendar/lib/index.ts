@@ -14,12 +14,23 @@ export default class GoogleCalendar implements QueryService {
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const oauth_type = source_options.oauth_type.value;
+    // source_options arrives in two different shapes depending on the caller: the initial
+    // "fetch-oauth2-base-url" call sends raw {value: ...}-wrapped fields straight from the
+    // frontend form, but the needs_oauth reconnect fallback (server/.../data-queries/util.service.ts,
+    // triggered when a query fails with an expired/invalid token) passes already-resolved flat
+    // values from parseSourceOptions. Reading `.value` unconditionally silently returns undefined
+    // for the flat shape (property access on a string primitive), not a crash — which is why this
+    // only ever surfaced once the reconnect fallback started actually reaching this plugin.
+    const getValue = (key: string) => {
+      const opt = (source_options as any)?.[key];
+      return opt && typeof opt === 'object' && 'value' in opt ? opt.value : opt;
+    };
+    const oauth_type = getValue('oauth_type');
     let clientId: string;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
     } else {
-      clientId = source_options?.client_id?.value;
+      clientId = getValue('client_id');
     }
     const scope = 'https://www.googleapis.com/auth/calendar';
     if (!clientId) {
