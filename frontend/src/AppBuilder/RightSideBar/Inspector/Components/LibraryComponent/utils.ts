@@ -8,7 +8,6 @@ export const getComponentIdentity = (component: InspectorComponent): ComponentId
     libraryId: definitionProps.libraryId?.value,
     correlationId: definitionProps.correlationId?.value,
     componentName: definitionProps.componentName?.value,
-    revisionId: definitionProps.revisionId?.value,
   };
 };
 

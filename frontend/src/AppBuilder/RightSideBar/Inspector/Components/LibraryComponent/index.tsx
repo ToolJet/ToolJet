@@ -14,9 +14,9 @@ const AccordionComponent = Accordion as React.ComponentType<any>;
 const EventManagerComponent = EventManager as React.ComponentType<any>;
 
 // F4b: manifest-driven Inspector panel for the LibraryComponent widget (LLD §5.6,
-// ModuleViewerInspector pattern). Identity (libraryId/componentName/revisionId) lives
-// ONLY in definition.properties — never rendered as editable fields. Props and events
-// come from the PINNED revision's manifest (public, immutable-cached endpoint), so the
+// ModuleViewerInspector pattern). Identity (libraryId/componentName) lives ONLY in
+// definition.properties — never rendered as editable fields. Props and events come
+// from the PINNED revision's manifest (public, immutable-cached endpoint), so the
 // Inspector always matches what the instance actually runs — not the library's latest.
 export const LibraryComponentProperties = ({
   componentMeta,
@@ -31,11 +31,11 @@ export const LibraryComponentProperties = ({
   allComponents,
   pages,
 }: LibraryComponentPropertiesProps) => {
-  const { libraryId, correlationId, componentName, revisionId } = getComponentIdentity(component);
+  const { libraryId, correlationId, componentName } = getComponentIdentity(component);
 
-  // F5: same resolution as the runner (dev preview > app pin > instance property),
-  // so the Inspector always describes the revision that's actually rendering.
-  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId, revisionId);
+  // F5: same resolution as the runner — the library-level pin only, no per-instance
+  // fallback — so the Inspector always describes the revision that's actually rendering.
+  const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
 
   const [manifest, setManifest] = useState<LibraryManifest | null>(null);
 

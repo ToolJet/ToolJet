@@ -32,16 +32,11 @@ export const normalizePin = (pin: Pin): string | undefined =>
 // separate session-local preview layer anymore (see invariant #14, HANDOFF-NISHIDH.md).
 // Keyed by the library's correlationId (stable across workspaces), not its workspace-scoped
 // id — so a pin keeps resolving after the app is exported/imported into another workspace.
-export const useEffectiveLibraryRevision = (
-  correlationId: string | undefined,
-  instanceRevisionId: string | undefined
-): string | undefined => {
-  const pin: string | undefined = useStore((state: any) => {
+export const useEffectiveLibraryRevision = (correlationId: string | undefined): string | undefined =>
+  useStore((state: any) => {
     const pins: Record<string, Pin> | undefined = state.globalSettings?.customComponentLibraries;
     return normalizePin(pins?.[dashlessId(correlationId) ?? ''] ?? pins?.[correlationId ?? '']);
   });
-  return pin ?? instanceRevisionId;
-};
 
 // Builds bundle/css/manifest URLs for either a published revision ('v2') or a
 // dev slot ('dev:{userId}' → the per-developer no-store endpoint).

@@ -26,14 +26,14 @@ const DevBadge = ({ label }) => (
   </div>
 );
 
-const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'revisionId']);
+const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName']);
 
 /* sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
    props change → we send props
    shell → stateChange/event → setExposedVariable / fireEvent
 */
-export const LibraryComponent = ({
+const LibraryComponent = ({
   id,
   properties = {},
   styles = {},
@@ -43,10 +43,10 @@ export const LibraryComponent = ({
   fireEvent,
   dataCy,
 }) => {
-  const { libraryId, correlationId, componentName, revisionId } = properties;
+  const { libraryId, correlationId, componentName } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
 
-  const effectiveRevision = useEffectiveLibraryRevision(correlationId, revisionId);
+  const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
 
   const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmails?.[libraryId]);
@@ -222,3 +222,5 @@ export const LibraryComponent = ({
     </div>
   );
 };
+
+export default LibraryComponent;

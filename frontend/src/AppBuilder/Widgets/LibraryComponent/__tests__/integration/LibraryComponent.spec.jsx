@@ -10,10 +10,20 @@ import {
 import { seedApp, componentDefinition } from '@/test/app-builder';
 import WidgetWrapper from '@/AppBuilder/AppCanvas/WidgetWrapper';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 
 const ID = 'lib1';
 const LIBRARY_ID = 'lib-1';
 const CORRELATION_ID = '11111111-2222-3333-4444-555555555555';
+const PIN_KEY = dashlessId(CORRELATION_ID);
+
+// Effective revision now comes ONLY from the library-level pin
+// (globalSettings.customComponentLibraries) — there is no per-instance fallback
+// (see useEffectiveLibraryRevision). Every scenario below that expects a
+// configured/iframe render sets this pin explicitly instead of a `revisionId`
+// property on the instance.
+const setPin = (value) =>
+  act(() => store().setGlobalSettings({ customComponentLibraries: value ? { [PIN_KEY]: value } : {} }));
 
 const manifest = {
   components: {
@@ -35,7 +45,6 @@ const widget = createWidgetHarness({
     correlationId: binding(CORRELATION_ID),
     libraryName: binding('My UI Library'),
     componentName: binding('Widget'),
-    revisionId: binding('v1'),
   },
   defaultStyles: {
     visibility: binding('{{true}}'),
@@ -70,7 +79,6 @@ const shortWidget = createWidgetHarness({
     correlationId: binding(CORRELATION_ID),
     libraryName: binding('My UI Library'),
     componentName: binding('Widget'),
-    revisionId: binding('v1'),
   },
   widgetHeight: 2,
 });
@@ -103,7 +111,6 @@ function renderWrapped({ properties = {}, styles = {}, others = {}, currentMode 
     correlationId: binding(CORRELATION_ID),
     libraryName: binding('My UI Library'),
     componentName: binding('Widget'),
-    revisionId: binding('v1'),
     ...properties,
   });
   definition.component.definition.styles = {
@@ -135,17 +142,23 @@ function renderWrapped({ properties = {}, styles = {}, others = {}, currentMode 
 }
 
 describe('LibraryComponent integration', () => {
-  beforeEach(() => widget.setup());
+  beforeEach(() => {
+    widget.setup();
+    setPin('v1');
+  });
   afterEach(() => widget.teardown());
 
-  test('[LibraryComponent-SLOT-001] an unconfigured instance renders the Slot placeholder, not an iframe', () => {
+  test('[LibraryComponent-SLOT-001] an unconfigured instance renders the Slot placeholder, not an iframe', async () => {
     // Break this catches: rendering the iframe (or nothing) instead of the Slot
     // placeholder when `configured` is false — a builder dragging in a Custom-tab
     // component before it's wired up would see a broken/empty widget instead of
     // a clear "not set up yet" affordance.
+    // LibraryComponent is lazy-loaded (editorHelpers.js) and RenderWidget wraps it
+    // in Suspense with `fallback={null}` — the first render can suspend, so this
+    // waits for it to settle instead of asserting synchronously.
     widget.render({ properties: { componentName: binding('') } });
 
-    expect(screen.getByText('Slot')).toBeInTheDocument();
+    expect(await screen.findByText('Slot')).toBeInTheDocument();
     expect(getIframe()).toBeNull();
   });
 
@@ -160,8 +173,10 @@ describe('LibraryComponent integration', () => {
     widget.render({ properties: { componentName: binding('') } });
     expect(screen.getByText('Slot')).toBeInTheDocument();
 
-    // effectiveRevision unresolvable: no pin AND no instance revisionId.
-    widget.render({ properties: { revisionId: binding('') } });
+    // effectiveRevision unresolvable: no pin for this library, and there is no
+    // per-instance fallback.
+    setPin(undefined);
+    widget.render();
     expect(screen.getByText('Slot')).toBeInTheDocument();
   });
 
@@ -223,8 +238,8 @@ describe('LibraryComponent integration', () => {
 
   test('[LibraryComponent-PROPS-001] property changes are forwarded to the shell with identity keys excluded', async () => {
     // Break this catches: forwarding the raw `properties` object (leaking
-    // libraryId/correlationId/libraryName/componentName/revisionId to the
-    // author's code), or failing to re-post `props` on a later change.
+    // libraryId/correlationId/libraryName/componentName to the author's code),
+    // or failing to re-post `props` on a later change.
     widget.render({ properties: { componentName: binding('Widget') } });
     await postFromShell({ type: 'ready' });
 
@@ -333,7 +348,8 @@ describe('LibraryComponent integration', () => {
     // reusing the old iframe instead of a fresh shell environment).
     // Dev-pinned so `devNonce` is actually read into the key (isDevPin gates it) —
     // otherwise the nonce-bump half of this test would pass for the wrong reason.
-    widget.render({ properties: { revisionId: binding('dev:user-1') } });
+    setPin('dev:user-1');
+    widget.render();
     const firstIframe = getIframe();
 
     await act(async () => {
@@ -360,7 +376,8 @@ describe('LibraryComponent integration', () => {
     });
     const resetSpy = jest.spyOn(store(), 'resetComponentExposedValues');
 
-    widget.render({ properties: { revisionId: binding('dev:user-1') } });
+    setPin('dev:user-1');
+    widget.render();
     await waitFor(() => expect(widget.exposed().id).toBe(ID)); // settle mount-time effects
 
     expect(resetSpy).not.toHaveBeenCalled();
@@ -374,7 +391,10 @@ describe('LibraryComponent integration', () => {
 });
 
 describe('LibraryComponent height clamp', () => {
-  beforeEach(() => shortWidget.setup());
+  beforeEach(() => {
+    shortWidget.setup();
+    setPin('v1');
+  });
   afterEach(() => shortWidget.teardown());
 
   test('[LibraryComponent-STYLE-004] a negative resolved height is clamped to 0 before reaching the iframe wrapper', () => {

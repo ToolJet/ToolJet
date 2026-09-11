@@ -18,11 +18,14 @@ describe('LibraryComponent drop-time identity stamping', () => {
     useGridStore.getState().actions.setGhostDragPosition(null);
   });
 
-  it('[LibraryComponent-IDENT-001] stamps libraryId/correlationId/libraryName/componentName/revisionId from the drag payload', () => {
-    // Break this catches: dropping (or renaming) any of the five
+  it('[LibraryComponent-IDENT-001] stamps libraryId/correlationId/libraryName/componentName from the drag payload', () => {
+    // Break this catches: dropping (or renaming) any of the four
     // `componentData.definition.properties.<key> = { value: ... }` assignments in
     // `addNewWidgetToTheEditor`'s libraryComponentInfo branch — the new instance
     // would land with blank identity and render the unconfigured Slot forever.
+    // Note: `revisionId` is deliberately NOT stamped — the effective revision
+    // comes only from the library-level pin (globalSettings.customComponentLibraries),
+    // never from a per-instance value (see useEffectiveLibraryRevision).
     const libraryComponentInfo = {
       libraryId: 'lib-42',
       correlationId: '11111111-2222-3333-4444-555555555555',
@@ -46,6 +49,6 @@ describe('LibraryComponent drop-time identity stamping', () => {
     expect(props.correlationId.value).toBe('11111111-2222-3333-4444-555555555555');
     expect(props.libraryName.value).toBe('My UI Library');
     expect(props.componentName.value).toBe('StatusBadge');
-    expect(props.revisionId.value).toBe('v3');
+    expect(props.revisionId).toBeUndefined();
   });
 });

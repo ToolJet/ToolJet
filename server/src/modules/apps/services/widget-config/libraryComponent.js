@@ -39,7 +39,6 @@ export const libraryComponentConfig = {
       correlationId: { value: '' },
       libraryName: { value: '' },
       componentName: { value: '' },
-      revisionId: { value: 'v1' },
     },
     events: [],
     styles: {
