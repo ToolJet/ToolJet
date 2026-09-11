@@ -73,7 +73,7 @@ describe('TooljetDbController | view_tables environments', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('GET .../tables returns one environments entry, marked present, for a created table', async () => {
+    it('should return one environments entry, marked present, for a created table', async () => {
       expect(tooljetDbAvailable).toBe(true);
 
       await request
@@ -152,7 +152,7 @@ describe('TooljetDbController | view_tables environments', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('GET .../tables returns one entry per licensed environment, with per-environment presence and baseline_error flags', async () => {
+    it('should return one entry per licensed environment, with per-environment presence and baseline_error flags', async () => {
       expect(tooljetDbAvailable).toBe(true);
 
       await request

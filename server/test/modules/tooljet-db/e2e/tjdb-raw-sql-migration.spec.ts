@@ -21,8 +21,9 @@ import {
   getDefaultDataSource,
   getTooljetDbDataSource,
   closeTestApp,
-  ensureAppEnvironments,
   withRealTransactions,
+  setUpTjdbWorkspace,
+  cleanupTjdbWorkspace,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -30,7 +31,6 @@ import { InternalTableMigration } from '@entities/internal_table_migration.entit
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { TooljetDbController } from '@ee/tooljet-db/controller';
-import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 
 describe('TooljetDb raw SQL migration', () => {
   describe('EE (plan: enterprise)', () => {
@@ -45,39 +45,6 @@ describe('TooljetDb raw SQL migration', () => {
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
-
-    async function setUpWorkspace() {
-      const email = `raw-sql-${uuidv4()}@tooljet.io`;
-      const { user, organization } = await createUser(app, {
-        email,
-        firstName: 'RawSql',
-        lastName: 'Test',
-        groups: ['admin', 'end-user'],
-      });
-      const organizationId = user.defaultOrganizationId;
-      const tenantSchema = `workspace_${organizationId}`;
-      await ensureAppEnvironments(app, organizationId);
-
-      // Real provisioning, not just the schema: recordRawSqlMigration opens its own connection as
-      // the tenant role, which needs a real login role and a matching OrganizationTjdbConfigurations
-      // row - createUser() (unlike the real signup flow) never provisions either.
-      await app
-        .get(TooljetDbTableOperationsService)
-        .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
-
-      const { tokenCookie } = await login(app, email);
-      return { organizationId, tenantSchema, cookie: tokenCookie, organization };
-    }
-
-    // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
-    // withRealTransactions only rolls back this suite's transaction, it never reclaims those.
-    async function cleanupWorkspace(organizationId: string) {
-      try {
-        await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(organizationId);
-      } catch {
-        // best-effort - a failed setup earlier in the test shouldn't mask the real failure
-      }
-    }
 
     function headers(organizationId: string, cookie: string[]) {
       return { Cookie: cookie, 'tj-workspace-id': organizationId };
@@ -139,13 +106,13 @@ describe('TooljetDb raw SQL migration', () => {
         .send({ environment_id: sourceEnvironmentId });
     }
 
-    it('runs a DDL statement as the tenant role, adds no pending window, and mints a fresh uuid only for the new column', async () => {
+    it('should run a DDL statement as the tenant role, add no pending window, and mint a fresh uuid only for the new column', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = workspace.organizationId;
           const { tenantSchema, cookie } = workspace;
 
@@ -198,17 +165,17 @@ describe('TooljetDb raw SQL migration', () => {
           expect(application.appliedAt).not.toBeNull();
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('leaves no migration and no application row when the SQL fails', async () => {
+    it('should leave no migration and no application row when the SQL fails', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
 
@@ -230,7 +197,7 @@ describe('TooljetDb raw SQL migration', () => {
           expect(after).toBe(before);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
@@ -239,13 +206,13 @@ describe('TooljetDb raw SQL migration', () => {
     // transaction wrapping it - so it stayed applied with no migration row for anything to ever
     // detect. After the fix, the SQL's own connection is still inside a transaction when the later
     // failure happens, so rolling it back undoes the SQL too.
-    it('rolls back the SQL when the migration record write fails after it', async () => {
+    it('should roll back the SQL when the migration record write fails after it', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = workspace.organizationId;
           const { cookie, tenantSchema } = workspace;
 
@@ -285,17 +252,17 @@ describe('TooljetDb raw SQL migration', () => {
           expect(column).toBeUndefined();
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('403s a caller without tjdb_crud, and still succeeds for one with it', async () => {
+    it('should 403 a caller without tjdb_crud, and still succeed for one with it', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = workspace.organizationId;
           const { cookie, organization } = workspace;
 
@@ -321,17 +288,17 @@ describe('TooljetDb raw SQL migration', () => {
           expect([200, 201]).toContain(allowed.statusCode);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('runs the SQL as the workspace tenant role, not the TJDB admin - a different workspace stays unreachable', async () => {
+    it('should run the SQL as the workspace tenant role, not the TJDB admin - a different workspace stays unreachable', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
 
@@ -355,17 +322,17 @@ describe('TooljetDb raw SQL migration', () => {
           }
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('runs migration SQL with lock_timeout set, so a blocked DDL fails fast', async () => {
+    it('should run migration SQL with lock_timeout set, so a blocked DDL fails fast', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const { organizationId: orgId, cookie } = await setUpWorkspace();
+          const { organizationId: orgId, cookie } = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = orgId;
 
           await createTable(organizationId, cookie, 'locks_probe');
@@ -392,17 +359,17 @@ describe('TooljetDb raw SQL migration', () => {
           expect(res.status).toBe(201);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('replays migration SQL with lock_timeout set, so a promote sees the same guard as authoring', async () => {
+    it('should replay migration SQL with lock_timeout set, so a promote sees the same guard as authoring', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const { organizationId: orgId, cookie } = await setUpWorkspace();
+          const { organizationId: orgId, cookie } = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
           organizationId = orgId;
 
           await createTable(organizationId, cookie, 'locks_probe_replay');
@@ -432,7 +399,7 @@ describe('TooljetDb raw SQL migration', () => {
           expect([200, 201]).toContain(promoted.status);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
@@ -441,13 +408,13 @@ describe('TooljetDb raw SQL migration', () => {
     // column with a type ToolJet Database's structured routes can't represent. Covers the gate's
     // own table, a sibling reached through `refs`, and the pre-existing-column grandfather case.
     describe('unsupported column type gate', () => {
-      it('rejects an array type on the migrated table, rolls back the DDL, and records no migration', async () => {
+      it('should reject an array type on the migrated table, roll back the DDL, and record no migration', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie, tenantSchema } = workspace;
 
@@ -477,17 +444,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(column).toBeUndefined();
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('still allows a migration adding a supported type', async () => {
+      it('should still allow a migration adding a supported type', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -500,17 +467,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect([200, 201]).toContain(res.statusCode);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('rejects a modifier-carrying unsupported type, keeping the modifier in the error text', async () => {
+      it('should reject a modifier-carrying unsupported type, keeping the modifier in the error text', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -524,17 +491,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.body.message).toContain('numeric(10,2)');
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('allows a modifier-carrying supported type, proving modifier stripping end-to-end', async () => {
+      it('should allow a modifier-carrying supported type, proving modifier stripping end-to-end', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -547,17 +514,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect([200, 201]).toContain(res.statusCode);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('rejects an unsupported type introduced on a sibling table reached via {{table.<name>}}, naming that table', async () => {
+      it('should reject an unsupported type introduced on a sibling table reached via {{table.<name>}}, naming that table', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -573,17 +540,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.body.message).toContain('gate_sibling_b_tbl');
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('grandfathers a pre-existing unsupported column left untouched by a later migration', async () => {
+      it('should grandfather a pre-existing unsupported column left untouched by a later migration', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie, tenantSchema } = workspace;
 
@@ -622,19 +589,19 @@ describe('TooljetDb raw SQL migration', () => {
             expect(column).toBeDefined();
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
     describe('{{table.<name>}} references', () => {
-      it('resolves {{table.<name>}} by current display name, same as an explicit refs entry', async () => {
+      it('should resolve {{table.<name>}} by current display name, same as an explicit refs entry', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -648,17 +615,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.statusCode).toBe(201);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('404s when {{table.<name>}} names a table absent from the workspace', async () => {
+      it('should 404 when {{table.<name>}} names a table absent from the workspace', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -671,19 +638,19 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.statusCode).toBe(404);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
     describe('DDL token-check enforcement', () => {
-      it('rejects a literal table name in ALTER TABLE position', async () => {
+      it('should reject a literal table name in ALTER TABLE position', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -697,17 +664,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.body.message).toContain('{{self}}');
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('rejects a hardcoded uuid in CREATE TABLE position', async () => {
+      it('should reject a hardcoded uuid in CREATE TABLE position', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -720,17 +687,17 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.statusCode).toBe(400);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
 
-      it('still accepts {{self}} in ALTER TABLE position', async () => {
+      it('should still accept {{self}} in ALTER TABLE position', async () => {
         expect(tjdbAvailable).toBe(true);
 
         let organizationId: string | undefined;
         try {
           await withRealTransactions(async () => {
-            const workspace = await setUpWorkspace();
+            const workspace = await setUpTjdbWorkspace(app, { prefix: 'raw-sql' });
             organizationId = workspace.organizationId;
             const { cookie } = workspace;
 
@@ -743,7 +710,7 @@ describe('TooljetDb raw SQL migration', () => {
             expect(res.statusCode).toBe(201);
           });
         } finally {
-          if (organizationId) await cleanupWorkspace(organizationId);
+          if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });

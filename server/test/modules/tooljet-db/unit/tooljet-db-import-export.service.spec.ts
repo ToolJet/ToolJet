@@ -15,8 +15,8 @@ import {
   setDataSources,
   closeTestApp,
   ensureAppEnvironments,
+  setupTestTables,
 } from 'test-helper';
-import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { Test, TestingModule } from '@nestjs/testing';

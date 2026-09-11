@@ -17,3 +17,6 @@ export * from './helpers/api';
 
 // --- Workflows: workflow-specific factories (apps, queries, executions, bundles) ---
 export * from './helpers/workflows';
+
+// --- TJDB: TooljetDB test-table + tenant-schema factories ---
+export * from './helpers/tooljet-db';

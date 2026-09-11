@@ -81,7 +81,7 @@ describe('TooljetDbController | view_table environments', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('reflects the requested environment relation, not development, when environment_id is given', async () => {
+    it('should reflect the requested environment relation, not development, when environment_id is given', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await request

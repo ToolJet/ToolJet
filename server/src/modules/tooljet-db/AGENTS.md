@@ -27,6 +27,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B's per-table routine: re-points a migration-A relation (`id === internal_table_id`) to the highest-priority environment and materializes an empty `LIKE`-cloned development twin. Every app-DB statement runs on a caller-supplied `appManager` (no `this.manager`) so migration B can share migration A's transaction; idempotent on the `id === internal_table_id` predicate. Also called by task 7 for a single repaired table. Also owns the two read routes below. |
 | `services/tooljet-db-promote.service.ts` (CE stub, real logic in `server/ee/tooljet-db/services/`) | `POST .../table/:tableId/promote`: resolves source → next-highest-priority target environment, finds-or-creates the target relation, computes the missing migration set (`computeMissingMigrations`), and replays it via `applyMigrations`. CE throws `ForbiddenException`; the licence/permission gates live in EE. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape (columns, primary key, unique constraints, indexes, foreign keys). Used by the recorder and by the rollout migration's baseline synthesis - kept byte-identical between the two on purpose. |
+| `helpers/reconcile-columns.ts` | Reconciles a raw SQL migration's resulting column set against the relation's prior `column_uuids`/`configurations` after DDL runs, minting a uuid only for a column with none. Lives in its own file, not in either service that calls it (`tooljet-db-raw-sql-migration.service.ts` and `tooljet-db-table-operations.service.ts` both import it) — the two previously imported it from each other, and NestJS's `design:paramtypes` reflection breaks non-deterministically on that kind of cycle (see gotcha below). |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
 ## Edition split
@@ -257,6 +258,14 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `TooljetDbRawSqlMigrationService.revert()`** (`kind === 'structured' && payload.action ===
   'add_column'`), separate from `ADJUDICATION_PREDICATES` — extending "what's destructive" means
   adding a case there, not in the recorder.
+- **`reconcileColumns` (`helpers/reconcile-columns.ts`) is the one place a column uuid is minted
+  outside a `normalize*` method** — arbitrary raw SQL has no `normalize*` pass to have minted one
+  up front, so a column new to the resulting snapshot gets a uuid here instead, after the DDL has
+  already run. Keep this helper standalone: `tooljet-db-raw-sql-migration.service.ts` and
+  `tooljet-db-table-operations.service.ts` both call it, and having either import it from the other
+  is what caused a real circular-import bug — NestJS's `design:paramtypes` reflection resolved one
+  constructor param as `undefined` depending on which file's module cache entry populated first,
+  breaking DI non-deterministically per test file.
 
 - **Two org-scoped read routes**: `GET .../organizations/:organizationId/baseline-report`
   (`listBaselineErrors` — every relation currently carrying a `baseline_error`) and

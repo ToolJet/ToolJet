@@ -10,7 +10,6 @@
  * @group database
  */
 import { INestApplication } from '@nestjs/common';
-import { ensureWorkspaceSchema, ensureTenantRole } from '../../../../test/tooljet-db-test.helper';
 import * as request from 'supertest';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
@@ -23,6 +22,8 @@ import {
   getTooljetDbDataSource,
   closeTestApp,
   ensureAppEnvironments,
+  ensureWorkspaceSchema,
+  ensureTenantRole,
 } from 'test-helper';
 
 describe('PostgrestProxyService', () => {

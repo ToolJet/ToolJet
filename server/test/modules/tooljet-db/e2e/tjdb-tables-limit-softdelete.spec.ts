@@ -123,7 +123,7 @@ describe('TooljetDbController | getTablesLimit soft-delete exclusion', () => {
       expect(res.statusCode).toBe(200);
     }
 
-    it('excludes a soft-deleted table from the count', async function () {
+    it('should exclude a soft-deleted table from the count', async function () {
       expect(tooljetDbAvailable).toBe(true);
 
       const baseline = await getLimit();

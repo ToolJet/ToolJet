@@ -157,7 +157,7 @@ describe('TooljetDb replay equivalence', () => {
     }
 
     describe('Structured chain: authored via create_table, foreign key, edit, and rename', () => {
-      it('promotes into an empty environment and introspects identically to the source', async () => {
+      it('should promote into an empty environment and introspect identically to the source', async () => {
         expect(tjdbAvailable).toBe(true);
 
         await createTable('req_parent', [
@@ -276,7 +276,7 @@ describe('TooljetDb replay equivalence', () => {
     });
 
     describe('Baseline chain: shaped like a pre-existing table migration A carried over', () => {
-      it('promotes into an empty environment and introspects identically to the source', async () => {
+      it('should promote into an empty environment and introspect identically to the source', async () => {
         expect(tjdbAvailable).toBe(true);
 
         const appManager = getDefaultDataSource().manager;

@@ -15,8 +15,8 @@ import {
   closeTestApp,
   ensureAppEnvironments,
   resolveOrSeedDefaultBranch,
+  setupTestTables,
 } from 'test-helper';
-import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
@@ -433,7 +433,7 @@ describe('TooljetDbRelationResolverService', () => {
       });
     });
 
-    describe('CE', () => {
+    describe('unlicensed (MULTI_ENVIRONMENT off)', () => {
       it('should refuse a request that names a non-development environment', async () => {
         getLicenseTerms.mockResolvedValue(false); // MULTI_ENVIRONMENT off
         const stagingEnvId = (await appManager.findOne(AppEnvironment, { where: { organizationId, priority: 2 } })).id;
@@ -453,7 +453,7 @@ describe('TooljetDbRelationResolverService', () => {
         return appManager.findOneOrFail(AppEnvironment, { where: { organizationId, priority } });
       }
 
-      it('unlicensed + names production: 403 from resolveEnvironmentId, never a relation', async () => {
+      it('should 403 from resolveEnvironmentId, never a relation, when unlicensed and naming production', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const productionEnv = await getEnvByPriority(3);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
@@ -464,7 +464,7 @@ describe('TooljetDbRelationResolverService', () => {
         );
       });
 
-      it('unlicensed + names nothing: resolves to the development relation', async () => {
+      it('should resolve to the development relation when unlicensed and naming nothing', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
         const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
@@ -475,7 +475,7 @@ describe('TooljetDbRelationResolverService', () => {
         expect(resolved.get(table.id)).toBe(devRelation.id);
       });
 
-      it('unlicensed + names development explicitly: development relation, no throw', async () => {
+      it('should resolve to the development relation with no throw when unlicensed and naming development explicitly', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
         const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
@@ -489,7 +489,7 @@ describe('TooljetDbRelationResolverService', () => {
         });
       });
 
-      it('licensed + names production, relation exists: resolves to the production relation id', async () => {
+      it('should resolve to the production relation id when licensed, naming production, and the relation exists', async () => {
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
         const productionEnv = await getEnvByPriority(3);
         const prodRelation = await appManager.save(
@@ -506,7 +506,7 @@ describe('TooljetDbRelationResolverService', () => {
         expect((await service.getRelation(organizationId, table.id, productionEnv.id)).id).toBe(prodRelation.id);
       });
 
-      it('licensed + names production, no relation: omitted from the map, 404 from getRelation', async () => {
+      it('should omit it from the map and 404 from getRelation when licensed, naming production, with no relation', async () => {
         // 'orders' has never been promoted to production - setupTestTables only mints development.
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
         const productionEnv = await getEnvByPriority(3);
@@ -518,7 +518,7 @@ describe('TooljetDbRelationResolverService', () => {
         );
       });
 
-      it("licensed + a foreign workspace's environment id: no match - the org predicate holds regardless of environment id", async () => {
+      it("should find no match when licensed and given a foreign workspace's environment id - the org predicate holds regardless of environment id", async () => {
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
         const foreignUserData = await createUser(app, {
           email: 'foreign-env-matrix@tooljet.io',
@@ -542,7 +542,7 @@ describe('TooljetDbRelationResolverService', () => {
        * indistinguishable from data loss. The workspace cannot address its own data; that is a
        * licence answer (403), not a promotion answer (404) and never a silent empty success.
        */
-      it('unlicensed + a sibling relation exists above development: 403, not an empty resolve', async () => {
+      it('should 403, not empty-resolve, when unlicensed and a sibling relation exists above development', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
         const productionEnv = await getEnvByPriority(3);
@@ -562,7 +562,7 @@ describe('TooljetDbRelationResolverService', () => {
       // table. Unlicensed must still resolve normally when there is no sibling to be locked out of -
       // this is the case at 'unlicensed + names nothing' above, restated here to pin it against this
       // task's condition explicitly (single relation, no higher-priority sibling -> no 403).
-      it('unlicensed + no sibling relation: resolves normally, no throw', async () => {
+      it('should resolve normally with no throw when unlicensed and no sibling relation exists', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
         const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
@@ -578,7 +578,7 @@ describe('TooljetDbRelationResolverService', () => {
       // reaches getLicenseTerms - it must not throw, and it's the branch that makes a missing
       // LicenseTermsService dependency a 500 on every licensed EE read of a promoted table, not
       // just the unlicensed 403 case.
-      it('licensed + resolved to development + a sibling relation exists above development: resolves normally, no throw', async () => {
+      it('should resolve normally with no throw when licensed, resolved to development, and a sibling relation exists above development', async () => {
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
         const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
           where: { internalTableId: table.id },
@@ -597,7 +597,7 @@ describe('TooljetDbRelationResolverService', () => {
         expect(resolved.get(table.id)).toBe(devRelation.id);
       });
 
-      it('never falls back to the priority-1 relation on a refused request', async () => {
+      it('should never fall back to the priority-1 relation on a refused request', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const stagingEnv = await getEnvByPriority(2);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });

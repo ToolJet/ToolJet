@@ -27,7 +27,7 @@ import { TooljetDbEnvironmentAssignmentService } from '@ee/tooljet-db/services/t
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 import { TjdbRolloutMigrationBEnvironmentAssignment1788252587903 } from '../../../../data-migrations/1788252587903-TjdbRolloutMigrationBEnvironmentAssignment';
 
-describe('TjdbRolloutMigrationB', () => {
+describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let tooljetDbAvailable: boolean;
@@ -224,7 +224,7 @@ describe('TjdbRolloutMigrationB', () => {
         .join('\n');
     }
 
-    it('licensed workspace: existing relation moves to production, an empty development twin is created', async () => {
+    it('should move the existing relation to production and create an empty development twin, for a licensed workspace', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-licensed@tooljet.io');
       const { tableId, schema } = await seedMigrationATable(organizationId, 'orders');
@@ -253,7 +253,7 @@ describe('TjdbRolloutMigrationB', () => {
       expect(owner.tableowner).toBe(`user_${organizationId}`);
     });
 
-    it('development inserts do not advance production sequence (serial default rewritten)', async () => {
+    it('should not let development inserts advance the production sequence (serial default rewritten)', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-serial@tooljet.io');
       const { tableId, schema } = await seedMigrationATable(organizationId, 'invoices');
@@ -290,7 +290,7 @@ describe('TjdbRolloutMigrationB', () => {
       }
     });
 
-    it('ticks the baseline create migration against the development twin', async () => {
+    it('should tick the baseline create migration against the development twin', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-tick@tooljet.io');
       const { tableId } = await seedMigrationATable(organizationId, 'customers');
@@ -300,7 +300,7 @@ describe('TjdbRolloutMigrationB', () => {
       expect(await confirmedBaselineSequences(tableId, result.developmentRelationId)).toEqual([1]);
     });
 
-    it('is idempotent: a second run changes nothing and never promotes an empty relation', async () => {
+    it('should be idempotent: a second run changes nothing and never promotes an empty relation', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-idem@tooljet.io');
       const { tableId, schema } = await seedMigrationATable(organizationId, 'products');
@@ -338,7 +338,7 @@ describe('TjdbRolloutMigrationB', () => {
       expect(await confirmedBaselineSequences(tableId, first.developmentRelationId)).toEqual([1]);
     });
 
-    it('crash recovery: a re-run rebuilds a twin relation whose physical table went missing', async () => {
+    it('should rebuild a twin relation whose physical table went missing, on a crash-recovery re-run', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-crash@tooljet.io');
       const { tableId, schema } = await seedMigrationATable(organizationId, 'shipments');
@@ -354,7 +354,7 @@ describe('TjdbRolloutMigrationB', () => {
       expect(await confirmedBaselineSequences(tableId, first.developmentRelationId)).toEqual([1]);
     });
 
-    it('licence gate: runMigrationB processes the licensed workspace and leaves the unlicensed one untouched', async () => {
+    it('should process the licensed workspace and leave the unlicensed one untouched (licence gate)', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const licensedOrgId = await newWorkspace('mig-b-gate-licensed@tooljet.io');
       const unlicensedOrgId = await newWorkspace('mig-b-gate-unlicensed@tooljet.io');
@@ -395,7 +395,7 @@ describe('TjdbRolloutMigrationB', () => {
       expect(await physicalRowCount(unlicensed.schema, unlicensed.tableId)).toBe(1);
     });
 
-    it('foreign-key pass is re-run safe: running runMigrationB twice keeps both baseline sequences confirmed', async () => {
+    it('should keep both baseline sequences confirmed when runMigrationB runs twice (foreign-key pass is re-run safe)', async () => {
       expect(tooljetDbAvailable).toBe(true);
       const organizationId = await newWorkspace('mig-b-fk@tooljet.io');
       const parent = await seedMigrationATable(organizationId, 'fk_parent');
@@ -451,7 +451,7 @@ describe('TjdbRolloutMigrationB', () => {
     // following *non*-`withRealTransactions` test's `afterEach` would then `ROLLBACK TO` a
     // savepoint that no longer exists and abort its transaction. Two `withRealTransactions` tests
     // back-to-back are fine - each resets the transaction itself on the way in and out.
-    it('up(queryRunner): a real migration run moves a licensed workspace, including its FK twins', async () => {
+    it('should move a licensed workspace, including its FK twins, via a real up(queryRunner) migration run', async () => {
       expect(tooljetDbAvailable).toBe(true);
 
       await withRealTransactions(async () => {
@@ -512,7 +512,7 @@ describe('TjdbRolloutMigrationB', () => {
     // Real commit required: `pg_dump` opens its own connection outside any of this suite's
     // transactions, so it can only see rows/tables that were actually committed. MUST STAY LAST -
     // see the comment on the previous test.
-    it('changes nothing about the pre-existing relation: pg_dump --schema-only is byte-identical before and after, filtered to the relation that already existed', async () => {
+    it('should change nothing about the pre-existing relation: pg_dump --schema-only stays byte-identical before and after, filtered to the relation that already existed', async () => {
       expect(tooljetDbAvailable).toBe(true);
 
       await withRealTransactions(async () => {

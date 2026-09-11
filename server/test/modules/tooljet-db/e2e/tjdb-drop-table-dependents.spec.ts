@@ -112,7 +112,7 @@ describe('TooljetDb drop_table dependents', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('blocks the drop when an app query references the table', async () => {
+    it('should block the drop when an app query references the table', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await createTable('query_dep_tbl');
@@ -156,7 +156,7 @@ describe('TooljetDb drop_table dependents', () => {
       expect(stillThere).not.toBeNull();
     });
 
-    it('blocks the drop when another TJDB table holds a foreign key into it', async () => {
+    it('should block the drop when another TJDB table holds a foreign key into it', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await createTable('fk_parent_dep_tbl');
@@ -196,7 +196,7 @@ describe('TooljetDb drop_table dependents', () => {
       expect(stillThere).not.toBeNull();
     });
 
-    it('allows the drop for a table whose only foreign key is self-referencing', async () => {
+    it('should allow the drop for a table whose only foreign key is self-referencing', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await createTable('fk_self_ref_tbl', [
@@ -233,7 +233,7 @@ describe('TooljetDb drop_table dependents', () => {
       expect(gone).toBeNull();
     });
 
-    it('allows the drop for a table with no dependents', async () => {
+    it('should allow the drop for a table with no dependents', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await createTable('no_deps_tbl');

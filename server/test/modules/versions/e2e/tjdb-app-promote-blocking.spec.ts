@@ -7,7 +7,7 @@
  * the manual PUT .../promote route (ee/versions/service.ts) and the External API release
  * route (ee/external-apis/service.ts).
  *
- * @group database
+ * @group platform
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
@@ -141,7 +141,7 @@ describe('An app cannot be promoted past its tables', () => {
         .send({ currentEnvironmentId: envId });
     }
 
-    it('blocks promoting an app whose query references a table absent from the target environment', async () => {
+    it('should block promoting an app whose query references a table absent from the target environment', async () => {
       const { user, organization, cookie, devEnv } = await seedOrg('tjdb-promote-block@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv]); // no relation in staging
 
@@ -160,7 +160,7 @@ describe('An app cannot be promoted past its tables', () => {
       expect(reloaded.currentEnvironmentId).toBe(devEnv.id);
     });
 
-    it('allows the promote once the table has been promoted to the target environment first', async () => {
+    it('should allow the promote once the table has been promoted to the target environment first', async () => {
       const { user, organization, cookie, devEnv, stagingEnv } = await seedOrg('tjdb-promote-allow@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv, stagingEnv]); // promoted already
 
@@ -173,7 +173,7 @@ describe('An app cannot be promoted past its tables', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('warns, but does not block, when the table resolves in the target but is missing migrations there', async () => {
+    it('should warn, but not block, when the table resolves in the target but is missing migrations there', async () => {
       const { user, organization, cookie, devEnv, stagingEnv } = await seedOrg('tjdb-promote-warn@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv, stagingEnv]); // relation exists both places
       const branchId = (await resolveOrSeedDefaultBranch(organization.id)).id;
@@ -205,7 +205,7 @@ describe('An app cannot be promoted past its tables', () => {
       expect(reloaded.currentEnvironmentId).toBe(stagingEnv.id);
     });
 
-    it('does not block on a soft-deleted table', async () => {
+    it('should not block on a soft-deleted table', async () => {
       const { user, organization, cookie, devEnv } = await seedOrg('tjdb-promote-softdel@tooljet.io');
       // Deleted table has a relation in dev only — would block if the soft-delete filter
       // (Task 0's findTooljetDbTables fix) were not in effect.
@@ -222,7 +222,7 @@ describe('An app cannot be promoted past its tables', () => {
 
     // Second call site — the External API release route must apply the same guard, not just
     // the manual UI promote flow. Release promotes straight to the highest-priority environment.
-    it('blocks the External API release route the same way', async () => {
+    it('should block the External API release route the same way', async () => {
       const { user, organization, devEnv } = await seedOrg('tjdb-promote-extapi@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv]); // never reached prod
 
@@ -243,7 +243,7 @@ describe('An app cannot be promoted past its tables', () => {
 
     // The External API release route must surface the same tableWarnings the interactive
     // promote route does — not just log them server-side and drop them from the response.
-    it('surfaces tableWarnings on the External API release route when a table is behind but present', async () => {
+    it('should surface tableWarnings on the External API release route when a table is behind but present', async () => {
       const { user, organization, devEnv, prodEnv } = await seedOrg('tjdb-promote-extapi-warn@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv, prodEnv]); // relation exists both places
       const branchId = (await resolveOrSeedDefaultBranch(organization.id)).id;

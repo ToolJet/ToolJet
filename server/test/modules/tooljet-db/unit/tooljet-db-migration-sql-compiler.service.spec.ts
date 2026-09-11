@@ -9,7 +9,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     // overrides applied by callers via object spread below — kept simple, no builder abstraction for one field set.
   }
 
-  it('returns the stored SQL verbatim for a raw_sql migration', () => {
+  it('should return the stored SQL verbatim for a raw_sql migration', () => {
     const m = {
       ...migration({}),
       kind: 'raw_sql',
@@ -18,7 +18,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe('DELETE FROM users WHERE id = 1;');
   });
 
-  it('returns null for a baseline migration', () => {
+  it('should return null for a baseline migration', () => {
     const m = {
       ...migration({}),
       kind: 'baseline',
@@ -27,7 +27,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBeNull();
   });
 
-  it('compiles create_table with columns and a foreign key', () => {
+  it('should compile create_table with columns and a foreign key', () => {
     const m = {
       ...migration({}),
       kind: 'structured',
@@ -56,7 +56,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     );
   });
 
-  it('compiles drop_table', () => {
+  it('should compile drop_table', () => {
     const m = {
       ...migration({}),
       payload: { action: 'drop_table', request: { table_name: 'orders' } },
@@ -64,7 +64,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe('DROP TABLE orders;');
   });
 
-  it('compiles add_column with a default and NOT NULL, matching the numeric-default-unquoted convention', () => {
+  it('should compile add_column with a default and NOT NULL, matching the numeric-default-unquoted convention', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -83,7 +83,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe('ALTER TABLE test_users\n  ADD COLUMN age int4 DEFAULT 0 NOT NULL;');
   });
 
-  it('quotes a non-numeric default on add_column', () => {
+  it('should quote a non-numeric default on add_column', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -97,7 +97,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe("ALTER TABLE orders\n  ADD COLUMN status text DEFAULT 'pending';");
   });
 
-  it('compiles drop_column', () => {
+  it('should compile drop_column', () => {
     const m = {
       ...migration({}),
       payload: { action: 'drop_column', request: { table_name: 'orders', column: { column_name: 'status' } } },
@@ -105,7 +105,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe('ALTER TABLE orders DROP COLUMN status;');
   });
 
-  it('compiles edit_column covering rename, type change, default, and not-null', () => {
+  it('should compile edit_column covering rename, type change, default, and not-null', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -130,7 +130,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     );
   });
 
-  it('compiles edit_table covering table rename, a renamed column, an added column, and a dropped column', () => {
+  it('should compile edit_table covering table rename, a renamed column, an added column, and a dropped column', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -158,7 +158,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     );
   });
 
-  it('compiles create_foreign_key for one or more foreign keys', () => {
+  it('should compile create_foreign_key for one or more foreign keys', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -174,7 +174,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     expect(service.compile(m)).toBe('ALTER TABLE orders ADD FOREIGN KEY (user_id) REFERENCES users(id);');
   });
 
-  it('compiles update_foreign_key as the replacement definition with an explanatory comment', () => {
+  it('should compile update_foreign_key as the replacement definition with an explanatory comment', () => {
     const m = {
       ...migration({}),
       payload: {
@@ -199,7 +199,7 @@ describe('TooljetDbMigrationSqlCompilerService', () => {
     );
   });
 
-  it('compiles delete_foreign_key as a comment naming the constraint id', () => {
+  it('should compile delete_foreign_key as a comment naming the constraint id', () => {
     const m = {
       ...migration({}),
       payload: { action: 'delete_foreign_key', request: { table_name: 'orders', foreign_key_id: 'fk-1' } },

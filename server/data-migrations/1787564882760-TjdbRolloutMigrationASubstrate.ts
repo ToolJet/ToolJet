@@ -37,6 +37,8 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     }
 
     // Only safe once every internal_tables row has a relation carrying its configurations.
+    // No IF EXISTS: migrationsTransactionMode: 'all' rolls back everything above on any failure,
+    // so a retry always starts with the column still present.
     await queryRunner.query(`ALTER TABLE internal_tables DROP COLUMN configurations`);
   }
 

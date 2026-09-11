@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, LessThan, QueryFailedError } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -12,6 +11,7 @@ import {
 } from 'src/helpers/tooljet_db.helper';
 import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { unsupportedColumnTypes } from '../helpers/column-type-change';
+import { reconcileColumns } from '../helpers/reconcile-columns';
 import { TJDB, TooljetDatabaseError } from '../types';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
@@ -396,33 +396,4 @@ function buildUnsupportedColumnTypeMessage(violations: UnsupportedColumn[]): str
     `Cannot record this migration: ${descriptions.join('; ')}, which ToolJet Database does not support yet. ` +
     `Supported types: ${supportedTypes}. Change the column to a supported type, or remove it from this migration.`
   );
-}
-
-/**
- * A column present in the new snapshot with no prior uuid (`column.uuid` undefined - there is no
- * `normalize*` step for arbitrary SQL to have minted one) is new: mint one now, the one place this
- * standing invariant ("a column uuid is minted only in a normalize* method") deliberately bends. A
- * prior column no longer in the snapshot was dropped by the SQL - its entry is not carried forward.
- * Everything else keeps its existing uuid untouched.
- *
- * Module-level (not a class method): shared verbatim between this service's live-authoring path and
- * `TooljetDbTableOperationsService.replayRawSqlMigration` - both must reconcile identically or replay
- * can drift from what authoring recorded.
- */
-export function reconcileColumns(
-  snapshot: TableSchemaSnapshot,
-  currentConfigurations: { columns?: { configurations?: Record<string, unknown> } }
-): { column_names: Record<string, string>; configurations: Record<string, unknown> } {
-  const priorConfigurations = currentConfigurations?.columns?.configurations || {};
-
-  const column_names: Record<string, string> = {};
-  const configurations: Record<string, unknown> = {};
-
-  for (const column of snapshot.columns) {
-    const uuid = column.uuid || uuidv4();
-    column_names[column.name] = uuid;
-    configurations[uuid] = priorConfigurations[uuid] ?? {};
-  }
-
-  return { column_names, configurations };
 }

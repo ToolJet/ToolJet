@@ -19,13 +19,13 @@ import {
   getDefaultDataSource,
   getTooljetDbDataSource,
   closeTestApp,
-  ensureAppEnvironments,
   withRealTransactions,
+  setUpTjdbWorkspace,
+  cleanupTjdbWorkspace,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { buildTableSchemaSnapshot } from '@modules/tooljet-db/helpers/table-schema-snapshot';
 // EE token: getProviders() registers the edition-resolved class as the DI token, same reason
 // tooljetdb-migration-replay.spec.ts imports it from @ee rather than @modules.
@@ -46,41 +46,6 @@ describe('TooljetDb revert migration', () => {
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
-
-    async function setUpWorkspace() {
-      const email = `revert-${uuidv4()}@tooljet.io`;
-      const { user, organization } = await createUser(app, {
-        email,
-        firstName: 'Revert',
-        lastName: 'Test',
-        groups: ['admin', 'end-user'],
-      });
-      const organizationId = user.defaultOrganizationId;
-      const tenantSchema = `workspace_${organizationId}`;
-      const environments = await ensureAppEnvironments(app, organizationId);
-      const branch = await getDefaultDataSource().manager.findOneOrFail(WorkspaceBranch, {
-        where: { organizationId, isDefault: true },
-      });
-
-      // Real provisioning, not just the schema: recordRawSqlMigration (which revert delegates to)
-      // opens its own connection as the tenant role - createUser() never provisions that.
-      await app
-        .get(TooljetDbTableOperationsService)
-        .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
-
-      const { tokenCookie } = await login(app, email);
-      return { organizationId, tenantSchema, cookie: tokenCookie, environments, branchId: branch.id, organization };
-    }
-
-    // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
-    // withRealTransactions only rolls back this suite's transaction, it never reclaims those.
-    async function cleanupWorkspace(organizationId: string) {
-      try {
-        await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(organizationId);
-      } catch {
-        // best-effort - a failed setup earlier in the test shouldn't mask the real failure
-      }
-    }
 
     function headers(organizationId: string, cookie: string[]) {
       return { Cookie: cookie, 'tj-workspace-id': organizationId };
@@ -138,13 +103,13 @@ describe('TooljetDb revert migration', () => {
         .send({ refs: {}, ...body });
     }
 
-    it('403s a caller without tjdb_crud, and still succeeds for one with it', async () => {
+    it('should 403 a caller without tjdb_crud, and still succeed for one with it', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie, organization } = workspace;
 
@@ -185,17 +150,17 @@ describe('TooljetDb revert migration', () => {
           expect([200, 201]).toContain(allowed.statusCode);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('404s when the migration belongs to a different table', async () => {
+    it('should 404 when the migration belongs to a different table', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
 
@@ -214,11 +179,11 @@ describe('TooljetDb revert migration', () => {
           expect(res.statusCode).toBe(404);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it("404s (without leaking the destructive-column warning) when tableId belongs to a different organization than the caller's own", async () => {
+    it("should 404 (without leaking the destructive-column warning) when tableId belongs to a different organization than the caller's own", async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
@@ -226,7 +191,7 @@ describe('TooljetDb revert migration', () => {
       try {
         await withRealTransactions(async () => {
           // Table + destructive migration live in a different org than the one making the call.
-          const otherWorkspace = await setUpWorkspace();
+          const otherWorkspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           otherOrganizationId = otherWorkspace.organizationId;
           await createTable(otherOrganizationId, otherWorkspace.cookie, 'revert_org_scope_tbl');
           await addColumn(otherOrganizationId, otherWorkspace.cookie, 'revert_org_scope_tbl', 'note');
@@ -236,7 +201,7 @@ describe('TooljetDb revert migration', () => {
             order: { sequence: 'DESC' },
           });
 
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
 
@@ -250,18 +215,18 @@ describe('TooljetDb revert migration', () => {
           expect(JSON.stringify(res.body)).not.toContain('note');
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
-        if (otherOrganizationId) await cleanupWorkspace(otherOrganizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
+        if (otherOrganizationId) await cleanupTjdbWorkspace(app, otherOrganizationId);
       }
     });
 
-    it('requires confirmed:true to revert an add_column migration, with the exact warning text, and succeeds once confirmed', async () => {
+    it('should require confirmed:true to revert an add_column migration, with the exact warning text, and succeed once confirmed', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie, tenantSchema } = workspace;
 
@@ -304,17 +269,17 @@ describe('TooljetDb revert migration', () => {
           expect(column).toBeUndefined();
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('does not require confirmed for a non-add_column structured migration - the discriminator is scoped, not blanket', async () => {
+    it('should not require confirmed for a non-add_column structured migration - the discriminator is scoped, not blanket', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
 
@@ -331,17 +296,17 @@ describe('TooljetDb revert migration', () => {
           expect([200, 201]).toContain(res.statusCode);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('appends a new migration chained via reverts_migration_id, leaving the target migration untouched, and replays through promote', async () => {
+    it('should append a new migration chained via reverts_migration_id, leaving the target migration untouched, and replay through promote', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie, environments, branchId } = workspace;
 
@@ -429,17 +394,17 @@ describe('TooljetDb revert migration', () => {
           }
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('refuses to revert a type change without confirmation', async () => {
+    it('should refuse to revert a type change without confirmation', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
           const manager = getDefaultDataSource().manager;
@@ -486,17 +451,17 @@ describe('TooljetDb revert migration', () => {
           expect(allowed.status).toBe(201);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
 
-    it('still reverts a rename-only edit_column with no confirmation', async () => {
+    it('should still revert a rename-only edit_column with no confirmation', async () => {
       expect(tjdbAvailable).toBe(true);
 
       let organizationId: string | undefined;
       try {
         await withRealTransactions(async () => {
-          const workspace = await setUpWorkspace();
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
           organizationId = workspace.organizationId;
           const { cookie } = workspace;
           const manager = getDefaultDataSource().manager;
@@ -536,7 +501,7 @@ describe('TooljetDb revert migration', () => {
           expect(res.status).toBe(201);
         });
       } finally {
-        if (organizationId) await cleanupWorkspace(organizationId);
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
       }
     });
   });

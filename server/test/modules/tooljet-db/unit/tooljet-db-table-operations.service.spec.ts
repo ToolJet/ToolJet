@@ -7,8 +7,7 @@ import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/to
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
-import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
-import { setupTestTables } from '../../../tooljet-db-test.helper';
+import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments, setupTestTables } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { OrganizationTjdbConfigurations } from '@entities/organization_tjdb_configurations.entity';
@@ -438,7 +437,7 @@ describe('TooljetDbTableOperationsService', () => {
         },
       ];
 
-      it('soft-deletes the internal_tables row and frees its name for reuse, instead of removing it', async () => {
+      it('should soft-delete the internal_tables row and free its name for reuse, instead of removing it', async () => {
         await service.perform(
           organizationId,
           'create_table',

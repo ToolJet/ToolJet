@@ -61,7 +61,7 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { buildTableSchemaSnapshot, fetchForeignKeys, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { assertStructuredTypeChangeAllowed, normalizeRequestedType } from '../helpers/column-type-change';
 import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
-import { reconcileColumns } from './tooljet-db-raw-sql-migration.service';
+import { reconcileColumns } from '../helpers/reconcile-columns';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
 import { InternalTableRepository } from '../repository';
 
@@ -2974,7 +2974,7 @@ export class TooljetDbTableOperationsService {
    * replay path uses. This is the one place replay must not reuse the ambient admin connection every
    * other `apply*`/`replay*` method gets handed, since raw SQL's whole reason for existing is to
    * never run as admin, including on replay. Column reconciliation calls the exact same
-   * `reconcileColumns` Task B1's live-authoring path uses (`tooljet-db-raw-sql-migration.service.ts`),
+   * `reconcileColumns` Task B1's live-authoring path (`tooljet-db-raw-sql-migration.service.ts`) uses,
    * so replay can't drift from what authoring already recorded.
    */
   private async replayRawSqlMigration(

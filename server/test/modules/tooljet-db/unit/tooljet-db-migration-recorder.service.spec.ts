@@ -19,8 +19,8 @@ import {
   closeTestApp,
   ensureAppEnvironments,
   resolveOrSeedDefaultBranch,
+  setupTestTables,
 } from 'test-helper';
-import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
@@ -53,7 +53,7 @@ function column(name: string): TableSchemaSnapshot['columns'][number] {
 
 describe('TooljetDbMigrationRecorderService', () => {
   describe('.ADJUDICATION_PREDICATES | pure predicate logic', () => {
-    it('create_table confirms only when every requested column exists', () => {
+    it('should confirm create_table only when every requested column exists', () => {
       const request = { columns: [{ column_name: 'id' }, { column_name: 'name' }] };
       const matching = emptySnapshot({ columns: [column('id'), column('name')] });
       const partial = emptySnapshot({ columns: [column('id')] });
@@ -62,24 +62,24 @@ describe('TooljetDbMigrationRecorderService', () => {
       expect(ADJUDICATION_PREDICATES.create_table(request, partial)).toBe(false);
     });
 
-    it('drop_table confirms only when the relation has no columns left', () => {
+    it('should confirm drop_table only when the relation has no columns left', () => {
       expect(ADJUDICATION_PREDICATES.drop_table({}, emptySnapshot())).toBe(true);
       expect(ADJUDICATION_PREDICATES.drop_table({}, emptySnapshot({ columns: [column('id')] }))).toBe(false);
     });
 
-    it('add_column confirms only when the new column is present', () => {
+    it('should confirm add_column only when the new column is present', () => {
       const request = { column: { column_name: 'age' } };
       expect(ADJUDICATION_PREDICATES.add_column(request, emptySnapshot({ columns: [column('age')] }))).toBe(true);
       expect(ADJUDICATION_PREDICATES.add_column(request, emptySnapshot())).toBe(false);
     });
 
-    it('drop_column confirms only when the column is gone', () => {
+    it('should confirm drop_column only when the column is gone', () => {
       const request = { column: { column_name: 'age' } };
       expect(ADJUDICATION_PREDICATES.drop_column(request, emptySnapshot())).toBe(true);
       expect(ADJUDICATION_PREDICATES.drop_column(request, emptySnapshot({ columns: [column('age')] }))).toBe(false);
     });
 
-    it('edit_table confirms deletions, renames and insertions together, and rejects a partial result', () => {
+    it("should confirm edit_table's deletions, renames and insertions together, and reject a partial result", () => {
       const request = {
         columns: [
           { old_column: { column_name: 'legacy' }, new_column: {} }, // deleted
@@ -96,13 +96,13 @@ describe('TooljetDbMigrationRecorderService', () => {
       expect(ADJUDICATION_PREDICATES.edit_table(request, deletionNotApplied)).toBe(false);
     });
 
-    it('edit_column confirms a plain type/config edit with no rename', () => {
+    it('should confirm edit_column for a plain type/config edit with no rename', () => {
       const request = { column: { column_name: 'age' } };
       expect(ADJUDICATION_PREDICATES.edit_column(request, emptySnapshot({ columns: [column('age')] }))).toBe(true);
       expect(ADJUDICATION_PREDICATES.edit_column(request, emptySnapshot())).toBe(false);
     });
 
-    it('edit_column confirms a rename only once the old name is gone and the new one exists', () => {
+    it("should confirm edit_column's rename only once the old name is gone and the new one exists", () => {
       const request = { column: { column_name: 'age', new_column_name: 'years' } };
       const renamed = emptySnapshot({ columns: [column('years')] });
       const notYetRenamed = emptySnapshot({ columns: [column('age')] });
@@ -113,7 +113,7 @@ describe('TooljetDbMigrationRecorderService', () => {
       expect(ADJUDICATION_PREDICATES.edit_column(request, bothPresent)).toBe(false);
     });
 
-    it('create_foreign_key confirms only once a matching foreign key exists', () => {
+    it('should confirm create_foreign_key only once a matching foreign key exists', () => {
       const request = { foreign_keys: [{ column_names: ['user_id'], referenced_column_names: ['id'] }] };
       const matching = emptySnapshot({
         foreign_keys: [
@@ -125,7 +125,7 @@ describe('TooljetDbMigrationRecorderService', () => {
       expect(ADJUDICATION_PREDICATES.create_foreign_key(request, emptySnapshot())).toBe(false);
     });
 
-    it('update_foreign_key confirms only once the old constraint is gone and the new one exists', () => {
+    it('should confirm update_foreign_key only once the old constraint is gone and the new one exists', () => {
       const request = {
         foreign_key_id: 'fk_old',
         foreign_keys: [{ column_names: ['user_id'], referenced_column_names: ['id'] }],
@@ -147,7 +147,7 @@ describe('TooljetDbMigrationRecorderService', () => {
       expect(ADJUDICATION_PREDICATES.update_foreign_key(request, emptySnapshot())).toBe(false);
     });
 
-    it('delete_foreign_key confirms only once the named constraint is gone', () => {
+    it('should confirm delete_foreign_key only once the named constraint is gone', () => {
       const request = { foreign_key_id: 'fk_old' };
       const gone = emptySnapshot();
       const stillThere = emptySnapshot({
@@ -284,7 +284,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         }
       }
 
-      it('orders a composite primary key by conkey ordinality, not attnum or column name', async () => {
+      it('should order a composite primary key by conkey ordinality, not attnum or column name', async () => {
         const tableName = `pk_order_${uuidv4().replace(/-/g, '')}`;
         await tjDbManager.query(
           `CREATE TABLE "workspace_${organizationId}"."${tableName}" (
@@ -300,7 +300,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(snapshot.columns.find((c) => c.name === 'col_a').is_primary_key).toBe(true);
       });
 
-      it('captures a multi-column unique constraint in declared order', async () => {
+      it('should capture a multi-column unique constraint in declared order', async () => {
         const tableName = `unique_${uuidv4().replace(/-/g, '')}`;
         await tjDbManager.query(
           `CREATE TABLE "workspace_${organizationId}"."${tableName}" (
@@ -316,7 +316,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(snapshot.unique_constraints).toEqual([{ name: `${tableName}_uq`, column_names: ['col_b', 'col_a'] }]);
       });
 
-      it('captures a standalone index alongside the implicit primary-key index', async () => {
+      it('should capture a standalone index alongside the implicit primary-key index', async () => {
         const tableName = `indexed_${uuidv4().replace(/-/g, '')}`;
         await tjDbManager.query(
           `CREATE TABLE "workspace_${organizationId}"."${tableName}" (id integer PRIMARY KEY, label text NOT NULL)`
@@ -335,7 +335,7 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.record | sequence assignment', () => {
-      it('assigns a clock-derived sequence when the clock is ahead of any recorded migration', async () => {
+      it('should assign a clock-derived sequence when the clock is ahead of any recorded migration', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const before = Date.now();
 
@@ -348,7 +348,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(Number(migration.sequence)).toBeGreaterThanOrEqual(before);
       });
 
-      it('falls back to max + 1 when the clock is behind the table’s highest recorded sequence', async () => {
+      it('should fall back to max + 1 when the clock is behind the table’s highest recorded sequence', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const farFuture = Date.now() + 10_000_000;
         await appManager.query(
@@ -366,7 +366,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(Number(migration.sequence)).toBe(farFuture + 1);
       });
 
-      it('keeps incrementing for several migrations recorded within the same request', async () => {
+      it('should keep incrementing for several migrations recorded within the same request', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const fixedNow = Date.now();
         const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
@@ -392,7 +392,7 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.record | parent chain', () => {
-      it('leaves parent_migration_id null when the table has no migration history yet', async () => {
+      it('should leave parent_migration_id null when the table has no migration history yet', async () => {
         const { relation: usersRelation } = await usersTableAndRelation();
         const internalTable = await appManager.save(
           appManager.create(InternalTable, {
@@ -421,7 +421,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(migration.parentMigrationId).toBeNull();
       });
 
-      it('chains onto whatever migration history already exists for the table (e.g. its create_table baseline)', async () => {
+      it('should chain onto whatever migration history already exists for the table (e.g. its create_table baseline)', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const [{ id: existingTip }] = await appManager.query(
           `SELECT id FROM internal_table_migrations WHERE internal_table_id = $1 ORDER BY sequence DESC, id DESC LIMIT 1`,
@@ -437,7 +437,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(migration.parentMigrationId).toBe(existingTip);
       });
 
-      it('points parent_migration_id at the previous chain tip', async () => {
+      it('should point parent_migration_id at the previous chain tip', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
 
         const first = await service.record(
@@ -454,7 +454,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(second.parentMigrationId).toBe(first.id);
       });
 
-      it('breaks a (sequence) tie by id, the same order replay uses', async () => {
+      it('should break a (sequence) tie by id, the same order replay uses', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const tiedSequence = Date.now() + 10_000_000;
         const [{ id: lowerId }] = await appManager.query(
@@ -478,7 +478,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(migration.parentMigrationId).toBe(tip);
       });
 
-      it('recordRawSql chains onto the prior structured migration too', async () => {
+      it('should have recordRawSql chain onto the prior structured migration too', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const structured = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -497,7 +497,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(rawSql.parentMigrationId).toBe(structured.id);
       });
 
-      it('records the caller-supplied name on a raw SQL migration', async () => {
+      it('should record the caller-supplied name on a raw SQL migration', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
 
         const rawSql = await service.recordRawSql(
@@ -511,7 +511,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(rawSql.name).toBe('Add score column');
       });
 
-      it('falls back to a default name when no name is supplied', async () => {
+      it('should fall back to a default name when no name is supplied', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
 
         const rawSql = await service.recordRawSql(
@@ -527,7 +527,7 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.record | row states', () => {
-      it('inserts a pending migration and a pending application', async () => {
+      it('should insert a pending migration and a pending application', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
 
         const migration = await service.record(
@@ -544,7 +544,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(application.appliedAt).toBeNull();
       });
 
-      it('writes through a given manager instead of opening its own transaction', async () => {
+      it('should write through a given manager instead of opening its own transaction', async () => {
         // The test harness's suite-level transaction proxy no-ops real commit/rollback, so this
         // asserts the routing decision directly rather than through observed rollback behaviour.
         const { internalTable, relation } = await usersTableAndRelation();
@@ -566,7 +566,7 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.confirm and .discard | row states', () => {
-      it('confirm fills resulting_schema and applied_at from live introspection', async () => {
+      it('should have confirm fill resulting_schema and applied_at from live introspection', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -592,7 +592,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(application.appliedAt).not.toBeNull();
       });
 
-      it('confirm records an empty shape once the relation itself has been dropped', async () => {
+      it('should have confirm record an empty shape once the relation itself has been dropped', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(payload('drop_table', {}), internalTable, relation);
         await tjDbManager.query(`DROP TABLE "workspace_${organizationId}"."${relation.id}" CASCADE`);
@@ -609,7 +609,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(confirmed.resultingSchema.columns).toEqual([]);
       });
 
-      it('discard removes both the migration and its application, never touching anything else', async () => {
+      it('should have discard remove both the migration and its application, never touching anything else', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const kept = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -633,7 +633,7 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.recordApplications, .confirmApplications and .discardApplications | replay bookkeeping', () => {
-      it('recordApplications inserts one pending application per migration, minting no migration row', async () => {
+      it('should have recordApplications insert one pending application per migration, minting no migration row', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const first = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -663,7 +663,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         }
       });
 
-      it('recordApplications is a no-op retry-safe insert - a repeat call does not fail or duplicate', async () => {
+      it('should have recordApplications be a no-op retry-safe insert - a repeat call does not fail or duplicate', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -681,7 +681,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(applications).toHaveLength(1);
       });
 
-      it('confirmApplications sets applied_at without touching resulting_schema', async () => {
+      it('should have confirmApplications set applied_at without touching resulting_schema', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -701,7 +701,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(reloadedMigration.resultingSchema).toBeNull();
       });
 
-      it('discardApplications removes the pending rows without deleting the migration', async () => {
+      it('should have discardApplications remove the pending rows without deleting the migration', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -723,12 +723,12 @@ describe('TooljetDbMigrationRecorderService', () => {
     });
 
     describe('.adjudicatePending | crash recovery', () => {
-      it('does nothing when there is nothing pending', async () => {
+      it('should do nothing when there is nothing pending', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         await expect(service.adjudicatePending(internalTable, relation)).resolves.toBeUndefined();
       });
 
-      it('confirms a pending migration whose DDL actually ran, and discards one that never did', async () => {
+      it('should confirm a pending migration whose DDL actually ran, and discard one that never did', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const applied = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -764,7 +764,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         ).toBeNull();
       });
 
-      it('leaves a freshly-recorded migration pending even when its snapshot does not yet match, instead of discarding it', async () => {
+      it('should leave a freshly-recorded migration pending even when its snapshot does not yet match, instead of discarding it', async () => {
         // The cross-request race: this migration's DDL hasn't run yet from adjudicatePending's
         // point of view (created just now, snapshot doesn't show it) - indistinguishable from a
         // migration that will never run without the grace window. Must not be discarded, or the
@@ -787,7 +787,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         ).toBeNull();
       });
 
-      it('discards a migration whose snapshot never came to match once it is older than the grace window', async () => {
+      it('should discard a migration whose snapshot never came to match once it is older than the grace window', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'does_not_exist' } }),
@@ -804,7 +804,7 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(await appManager.findOne(InternalTableMigration, { where: { id: migration.id } })).toBeNull();
       });
 
-      it('leaves already-applied migrations untouched', async () => {
+      it('should leave already-applied migrations untouched', async () => {
         const { internalTable, relation } = await usersTableAndRelation();
         const migration = await service.record(
           payload('add_column', { column: { column_name: 'age' } }),
@@ -829,7 +829,7 @@ describe('TooljetDbMigrationRecorderService', () => {
       // row as a replay application (resulting_schema already non-null) and never fall through to
       // confirm()/discard() against the migration itself - see AGENTS.md gap 2 / task-1 review.
       describe('replay applications - resulting_schema discriminator', () => {
-        it("confirms the application only, never overwriting the migration's own resulting_schema with the target's shape", async () => {
+        it("should confirm the application only, never overwriting the migration's own resulting_schema with the target's shape", async () => {
           const { internalTable, relation } = await usersTableAndRelation();
           const migration = await service.record(
             payload('add_column', { column: { column_name: 'age' } }),
@@ -871,7 +871,7 @@ describe('TooljetDbMigrationRecorderService', () => {
           expect(targetApplication.appliedAt).not.toBeNull();
         });
 
-        it('discards the application only, never deleting a baseline migration or its other applications', async () => {
+        it('should discard the application only, never deleting a baseline migration or its other applications', async () => {
           const { internalTable, relation } = await usersTableAndRelation();
 
           // A baseline row: resultingSchema was set at insert time, never pending, and its payload

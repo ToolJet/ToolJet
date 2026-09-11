@@ -5,7 +5,6 @@
  *
  * @group database
  */
-import { ensureWorkspaceSchema, ensureTenantRole } from '../../../../test/tooljet-db-test.helper';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { In, IsNull } from 'typeorm';
@@ -19,6 +18,8 @@ import {
   getDefaultDataSource,
   closeTestApp,
   ensureAppEnvironments,
+  ensureWorkspaceSchema,
+  ensureTenantRole,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -132,7 +133,7 @@ describe('TooljetDb migration replay', () => {
     }
 
     describe('Structured chain: foreign key, column edit, and rename', () => {
-      it('replays into an empty relation in another environment, reproducing shape and column identity', async function () {
+      it('should replay into an empty relation in another environment, reproducing shape and column identity', async function () {
         expect(tooljetDbAvailable).toBe(true);
 
         const idColumn = {
@@ -319,7 +320,7 @@ describe('TooljetDb migration replay', () => {
     });
 
     describe('Baseline chain (migration A shape)', () => {
-      it('replays a baselined table into a second relation, reproducing shape and column identity', async function () {
+      it('should replay a baselined table into a second relation, reproducing shape and column identity', async function () {
         expect(tooljetDbAvailable).toBe(true);
 
         const appManager = getDefaultDataSource().manager;
@@ -451,7 +452,7 @@ describe('TooljetDb migration replay', () => {
     });
 
     describe('Guards', () => {
-      it('refuses to replay a chain containing an unconfirmed migration, and writes nothing to the target', async function () {
+      it('should refuse to replay a chain containing an unconfirmed migration, and write nothing to the target', async function () {
         expect(tooljetDbAvailable).toBe(true);
         const appManager = getDefaultDataSource().manager;
         const tjDbManager = getTooljetDbDataSource();
@@ -498,7 +499,7 @@ describe('TooljetDb migration replay', () => {
     });
 
     describe('Applications bookkeeping', () => {
-      it('ticks the real source migrations against the target, mints no synthetic migration row, and never touches resulting_schema', async function () {
+      it('should tick the real source migrations against the target, mint no synthetic migration row, and never touch resulting_schema', async function () {
         expect(tooljetDbAvailable).toBe(true);
         const appManager = getDefaultDataSource().manager;
 

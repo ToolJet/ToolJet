@@ -179,7 +179,7 @@ describe('TooljetDb table migrations', () => {
       expect(devState).toMatchObject({ baseline_error: 'could not baseline' });
     });
 
-    it('lets a builder without tjdb_crud read the migration history', async () => {
+    it('should let a builder without tjdb_crud read the migration history', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await createTable(adminCookie, 'migrations_gate_tbl', [idColumn]);
@@ -266,7 +266,7 @@ describe('TooljetDb table migrations', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('lists all three licensed environments, applied set on development, empty and errorless on the never-promoted ones', async () => {
+    it('should list all three licensed environments, applied set on development, empty and errorless on the never-promoted ones', async () => {
       expect(tjdbAvailable).toBe(true);
 
       await request

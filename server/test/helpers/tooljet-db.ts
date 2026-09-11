@@ -1,6 +1,12 @@
+import { INestApplication } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from 'src/modules/tooljet-db/types';
-import { getTooljetDbDataSource } from 'test-helper';
+import { Organization } from '@entities/organization.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
+import { createUser, ensureAppEnvironments, login, getDefaultDataSource, getTooljetDbDataSource } from 'test-helper';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
   {
@@ -183,5 +189,64 @@ export async function ensureTenantRole(orgId: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export interface TjdbWorkspace {
+  organizationId: string;
+  organization: Organization;
+  tenantSchema: string;
+  cookie: string[];
+  environments: AppEnvironment[];
+  productionEnv: AppEnvironment;
+  branchId: string;
+}
+
+/**
+ * Creates a user + workspace and provisions it as a real TJDB tenant (Postgres role + schema),
+ * not just the app-level org row. Several TJDB code paths — raw SQL migration recording,
+ * sql_execution/join_tables — open their own connection as the tenant role, which needs a real
+ * login role and a matching config row that createUser() (unlike the real signup flow) never
+ * provisions.
+ */
+export async function setUpTjdbWorkspace(
+  app: INestApplication,
+  { prefix, groups = ['admin', 'end-user'] }: { prefix: string; groups?: string[] }
+): Promise<TjdbWorkspace> {
+  const email = `${prefix}-${uuidv4()}@tooljet.io`;
+  const { user, organization } = await createUser(app, { email, firstName: 'Tjdb', lastName: 'Test', groups });
+  const organizationId = user.defaultOrganizationId;
+  const tenantSchema = `workspace_${organizationId}`;
+  const environments = await ensureAppEnvironments(app, organizationId);
+  const productionEnv = environments.find((env) => env.name === 'production');
+
+  await app
+    .get(TooljetDbTableOperationsService)
+    .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
+
+  const branch = await getDefaultDataSource().manager.findOneOrFail(WorkspaceBranch, {
+    where: { organizationId, isDefault: true },
+  });
+
+  const { tokenCookie } = await login(app, email);
+  return {
+    organizationId,
+    organization,
+    tenantSchema,
+    cookie: tokenCookie,
+    environments,
+    productionEnv,
+    branchId: branch.id,
+  };
+}
+
+// createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
+// withRealTransactions only rolls back the suite transaction, it never reclaims those. Every
+// test that calls setUpTjdbWorkspace must drop them here, or CI leaks a role+schema per run.
+export async function cleanupTjdbWorkspace(app: INestApplication, organizationId: string): Promise<void> {
+  try {
+    await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(organizationId);
+  } catch {
+    // best-effort - a failed setup earlier in the test shouldn't mask the real failure
   }
 }

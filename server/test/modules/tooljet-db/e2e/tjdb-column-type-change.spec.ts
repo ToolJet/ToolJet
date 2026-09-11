@@ -6,21 +6,18 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { v4 as uuidv4 } from 'uuid';
 import {
-  createUser,
   initTestApp,
-  login,
   getDefaultDataSource,
   getTooljetDbDataSource,
   closeTestApp,
-  ensureAppEnvironments,
   withRealTransactions,
+  setUpTjdbWorkspace,
+  cleanupTjdbWorkspace,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 
 describe('TooljetDb column type change', () => {
   describe('EE (plan: enterprise)', () => {
@@ -35,40 +32,6 @@ describe('TooljetDb column type change', () => {
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
-
-    // ---- helpers copied verbatim from tjdb-raw-sql-migration.spec.ts:47-95 ----
-    async function setUpWorkspace() {
-      const email = `type-change-${uuidv4()}@tooljet.io`;
-      const { user, organization } = await createUser(app, {
-        email,
-        firstName: 'RawSql',
-        lastName: 'Test',
-        groups: ['admin', 'end-user'],
-      });
-      const organizationId = user.defaultOrganizationId;
-      const tenantSchema = `workspace_${organizationId}`;
-      await ensureAppEnvironments(app, organizationId);
-
-      // Real provisioning, not just the schema: recordRawSqlMigration opens its own connection as
-      // the tenant role, which needs a real login role and a matching OrganizationTjdbConfigurations
-      // row - createUser() (unlike the real signup flow) never provisions either.
-      await app
-        .get(TooljetDbTableOperationsService)
-        .createTooljetDbTenantSchemaAndRole(organizationId, getDefaultDataSource().manager);
-
-      const { tokenCookie } = await login(app, email);
-      return { organizationId, tenantSchema, cookie: tokenCookie, organization };
-    }
-
-    // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
-    // withRealTransactions only rolls back this suite's transaction, it never reclaims those.
-    async function cleanupWorkspace(organizationId: string) {
-      try {
-        await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(organizationId);
-      } catch {
-        // best-effort - a failed setup earlier in the test shouldn't mask the real failure
-      }
-    }
 
     function headers(organizationId: string, cookie: string[]) {
       return { Cookie: cookie, 'tj-workspace-id': organizationId };
@@ -97,7 +60,6 @@ describe('TooljetDb column type change', () => {
         });
       expect([200, 201]).toContain(res.statusCode);
     }
-    // ---- end verbatim helpers ----
 
     async function editColumn(organizationId: string, cookie: string[], tableName: string, column: object) {
       return request
@@ -133,10 +95,10 @@ describe('TooljetDb column type change', () => {
       return { internalTableId: internalTable.id, relations };
     }
 
-    it('widens integer to bigint through edit_column', async () => {
+    it('should widen integer to bigint through edit_column', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, tenantSchema, cookie } = await setUpWorkspace();
+        const { organizationId, tenantSchema, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           await createTable(organizationId, cookie, 'inventory');
           await request
@@ -162,15 +124,15 @@ describe('TooljetDb column type change', () => {
           const devType = await introspectType(tenantSchema, relations[0].id, 'qty');
           expect(devType).toBe('bigint');
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
-    it('rejects a row-dependent cast before any DDL runs', async () => {
+    it('should reject a row-dependent cast before any DDL runs', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, tenantSchema, cookie } = await setUpWorkspace();
+        const { organizationId, tenantSchema, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           await createTable(organizationId, cookie, 'customers');
           await request
@@ -191,15 +153,15 @@ describe('TooljetDb column type change', () => {
           const { relations } = await devRelationId(organizationId, 'customers');
           expect(await introspectType(tenantSchema, relations[0].id, 'amount')).toBe('character varying');
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
-    it('refuses to retype a serial column', async () => {
+    it('should refuse to retype a serial column', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, cookie } = await setUpWorkspace();
+        const { organizationId, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           // The shared createTable() helper's `id` column is a plain integer PK, not `serial` (no
           // `nextval` default) - createTable() in tjdb-promote.spec.ts's idColumn is the same shape,
@@ -231,15 +193,15 @@ describe('TooljetDb column type change', () => {
           expect(res.status).toBe(400);
           expect(res.body.message).toMatch(/auto-incrementing/);
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
-    it('refuses to retype a column under a foreign key, and names the constraint', async () => {
+    it('should refuse to retype a column under a foreign key, and name the constraint', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, cookie } = await setUpWorkspace();
+        const { organizationId, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           // `parents` gets an integer primary key; `children.parent_id` points at it. Follow
           // tjdb-promote.spec.ts's `idColumn` shape and this file's createTable helper for the
@@ -280,15 +242,15 @@ describe('TooljetDb column type change', () => {
           expect(res.status).toBe(400);
           expect(res.body.message).toMatch(/foreign key/);
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
-    it('clears the column display settings when the type changes', async () => {
+    it('should clear the column display settings when the type changes', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, cookie } = await setUpWorkspace();
+        const { organizationId, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           await createTable(organizationId, cookie, 'events');
           await request
@@ -316,15 +278,15 @@ describe('TooljetDb column type change', () => {
           expect(reloaded.configurations.columns.configurations[columnUuid]).toEqual({});
           expect(internalTableId).toBeTruthy();
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     });
 
-    it('fails a promote at the offending migration and stays resumable', async () => {
+    it('should fail a promote at the offending migration and stay resumable', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, tenantSchema, cookie } = await setUpWorkspace();
+        const { organizationId, tenantSchema, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           await createTable(organizationId, cookie, 'orders');
           await request
@@ -394,15 +356,15 @@ describe('TooljetDb column type change', () => {
           expect([200, 201]).toContain(retried.status);
           expect(await introspectType(tenantSchema, targetRelation.id, 'amount')).toBe('integer');
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     }, 120_000);
 
-    it('promotes a safe-tier cast using the exact SQL buildTypeChangeSql generates', async () => {
+    it('should promote a safe-tier cast using the exact SQL buildTypeChangeSql generates', async () => {
       await withRealTransactions(async () => {
         if (!tjdbAvailable) return;
-        const { organizationId, tenantSchema, cookie } = await setUpWorkspace();
+        const { organizationId, tenantSchema, cookie } = await setUpTjdbWorkspace(app, { prefix: 'type-change' });
         try {
           await createTable(organizationId, cookie, 'products');
           await request
@@ -440,7 +402,7 @@ describe('TooljetDb column type change', () => {
           expect([200, 201]).toContain(promoted.status);
           expect(await introspectType(tenantSchema, targetRelation.id, 'sku')).toBe('character varying');
         } finally {
-          await cleanupWorkspace(organizationId);
+          await cleanupTjdbWorkspace(app, organizationId);
         }
       });
     }, 120_000);

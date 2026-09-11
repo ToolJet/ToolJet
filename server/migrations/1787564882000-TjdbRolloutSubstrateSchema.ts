@@ -205,6 +205,8 @@ export class TjdbRolloutSubstrateSchema1787564882000 implements MigrationInterfa
     // tables (setting deleted_at), a deleted table's name must be free for reuse. No read site of
     // internal_tables changes here — deleted_at is never set today, so every row's predicate is
     // trivially true and behavior is unchanged.
+    // No IF EXISTS: migrationsTransactionMode: 'all' rolls back everything above on any failure,
+    // so a retry always starts with the original constraint still present.
     await queryRunner.query(`ALTER TABLE internal_tables DROP CONSTRAINT organization_id_table_name_unique`);
     await queryRunner.query(`
       CREATE UNIQUE INDEX organization_id_table_name_unique
