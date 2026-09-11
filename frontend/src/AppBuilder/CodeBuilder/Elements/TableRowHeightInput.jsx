@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { resolveReferences } from '@/_helpers/utils';
 
 const MIN_TABLE_ROW_HEIGHT_CONDENSED = 39;
 const MIN_TABLE_ROW_HEIGHT_DEFAULT = 45;
@@ -6,7 +7,9 @@ const MIN_TABLE_ROW_HEIGHT_DEFAULT = 45;
 const TableRowHeightInput = ({ value, onChange, cyLabel, staticText, styleDefinition }) => {
   const [inputValue, setInputValue] = useState(value);
   const minValue =
-    styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT;
+    resolveReferences(styleDefinition.cellSize?.value) === 'condensed'
+      ? MIN_TABLE_ROW_HEIGHT_CONDENSED
+      : MIN_TABLE_ROW_HEIGHT_DEFAULT;
 
   useEffect(() => {
     setInputValue(value < minValue ? minValue : value);

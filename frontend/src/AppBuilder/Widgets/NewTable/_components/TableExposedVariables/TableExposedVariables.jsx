@@ -8,6 +8,7 @@ import { isArray, debounce } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useTableRefresh } from '../../_hooks/useTableRefresh';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -30,10 +31,13 @@ export const TableExposedVariables = ({
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
+  const defaultSortColumn = useTableStore((state) => state.getTableProperties(id)?.defaultSortColumn, shallow);
+  const defaultSortDirection = useTableStore((state) => state.getTableProperties(id)?.defaultSortDirection, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const { handleRefresh } = useTableRefresh(id, fireEvent);
 
   const mounted = useMounted();
 
@@ -378,8 +382,8 @@ export const TableExposedVariables = ({
   }, [setColumnFilters, setExposedVariables, columns]);
 
   // CSA to set sort programmatically
-  useEffect(() => {
-    function setSort(columnKey, direction) {
+  const setSort = useCallback(
+    (columnKey, direction) => {
       if (columnKey === undefined && direction === undefined) {
         table.setSorting([]);
         return;
@@ -403,9 +407,19 @@ export const TableExposedVariables = ({
         desc = direction === 'desc';
       }
       table.setSorting([{ id: tanstackId, desc }]);
-    }
+    },
+    [columns, table]
+  );
+
+  useEffect(() => {
     setExposedVariables({ setSort });
-  }, [setExposedVariables, columns, table]);
+  }, [setExposedVariables, setSort]);
+
+  useEffect(() => {
+    if (!defaultSortColumn || !defaultSortDirection || defaultSortDirection === 'auto') return;
+    setSort(defaultSortColumn, defaultSortDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSortColumn, defaultSortDirection]);
 
   // CSA to download table data
   useEffect(() => {
@@ -450,6 +464,11 @@ export const TableExposedVariables = ({
     }
     setExposedVariables({ discardChanges });
   }, [clearEditedRows, id, setExposedVariables]);
+
+  // CSA to refresh table data — reruns the query(ies) the table's data depends on
+  useEffect(() => {
+    setExposedVariables({ refreshTable: handleRefresh });
+  }, [handleRefresh, setExposedVariables]);
 
   return null;
 };
