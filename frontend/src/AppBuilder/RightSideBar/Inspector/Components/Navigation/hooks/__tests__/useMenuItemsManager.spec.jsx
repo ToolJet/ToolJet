@@ -154,3 +154,38 @@ describe('useMenuItemsManager: rejects a colliding id', () => {
     expect(paramUpdated).not.toHaveBeenCalled();
   });
 });
+
+describe('useMenuItemsManager: trims a new id', () => {
+  let session;
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  // Validation already judges the trimmed form of a candidate id (validateStaticId),
+  // but the raw, untrimmed value used to be the one actually stored — a value like
+  // "  item2  " could pass validation (no trimmed collision) yet persist with
+  // invisible leading/trailing whitespace baked into the id.
+  test('leading/trailing whitespace is stripped from the stored id', () => {
+    const paramUpdated = jest.fn();
+    const component = {
+      id: 'nav1',
+      component: {
+        definition: {
+          properties: { menuItems: { value: [{ id: 'item1', _key: 'key-1', label: 'Item 1' }] } },
+        },
+      },
+    };
+
+    let api;
+    session.render(<TestHost component={component} paramUpdated={paramUpdated} onReady={(next) => (api = next)} />);
+
+    act(() => {
+      api.handleItemChange('id', '  item1-renamed  ', 'key-1', null);
+    });
+
+    expect(api.menuItems.find((item) => item._key === 'key-1').id).toBe('item1-renamed');
+    const lastPersisted = paramUpdated.mock.calls.at(-1)[2];
+    expect(lastPersisted[0].id).toBe('item1-renamed');
+  });
+});
