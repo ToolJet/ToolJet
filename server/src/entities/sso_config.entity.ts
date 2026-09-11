@@ -95,6 +95,9 @@ export class SSOConfigs {
   @Column({ name: 'enabled' })
   enabled: boolean;
 
+  @Column({ name: 'use_env_config', type: 'boolean', default: false })
+  useEnvConfig: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
