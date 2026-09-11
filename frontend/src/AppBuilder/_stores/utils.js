@@ -279,68 +279,6 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   return transformedInput.join('');
 };
 
-/**
- * Extracts and replaces references in a string with their corresponding IDs.
- *
- * @param {string} str - The string containing references to be replaced.
- * @param {Object} componentIdMap - A map of component IDs to their names.
- * @param {Object} queryIdMap - A map of query IDs to their names.
- * @returns {Object} An object containing the formatted string with IDs, all references, and the original string without brackets.
- */
-export const extractAndReplaceReferencesFromString = (str = '', componentIdMap = {}, queryIdMap = {}) => {
-  // Regex to match the format: components.compId.value or queries.queryId.value[0]
-  const regex = /(components|queries|globals)\.([^.\s|}]+)\.([^\s|},]+)/g;
-  const allRefs = [];
-  let endsWithParenthesis = false;
-
-  let valueWithBrackets = str.replace(regex, (match, entityType, entityName, entityKey) => {
-    let entityId = entityName; // Assume entityName is already an ID
-
-    if (entityType === 'components' && componentIdMap[entityName]) {
-      entityId = componentIdMap[entityName];
-    } else if (entityType === 'queries' && queryIdMap[entityName]) {
-      entityId = queryIdMap[entityName];
-    }
-
-    // Remove leading dot from entityKey if it exists
-    if (entityKey.startsWith('.')) {
-      entityKey = entityKey.substring(1);
-    }
-
-    // Added to support cases like {{JSON.stringify(components.table1.selectedRow)}}
-    if (entityKey.endsWith(')')) {
-      entityKey = entityKey.slice(0, -1);
-      endsWithParenthesis = true;
-    }
-
-    allRefs.push({ entityType, entityNameOrId: entityId, entityKey });
-    return `${entityType}["${entityId}"].${entityKey}`;
-  });
-
-  if (endsWithParenthesis) valueWithBrackets = valueWithBrackets + ')';
-
-  const varRegex = /(variables|constants|page)\.([^\s|})\]]+)/g;
-  if (varRegex.test(valueWithBrackets)) {
-    valueWithBrackets = valueWithBrackets.replace(varRegex, (match, entityType, entityKey) => {
-      allRefs.push({ entityType, entityKey });
-      return `${entityType}.${entityKey}`;
-    });
-  }
-
-  const pageRegex = /(page)\.(variables)\.([^\s|})\]]+)/g;
-  if (pageRegex.test(valueWithBrackets)) {
-    valueWithBrackets = valueWithBrackets.replace(pageRegex, (match, entityType, entityName, entityKey) => {
-      allRefs.push({ entityType, entityNameOrId: entityName, entityKey });
-      return `${entityType}["${entityName}"].${entityKey}`;
-    });
-  }
-
-  // Create the formatted string without square brackets
-  const valueWithId = valueWithBrackets.replace(/\["([^"]+)"\]/g, '.$1');
-
-  return { valueWithId, allRefs, valueWithBrackets: valueWithBrackets };
-};
-
 export const checkSubstringRegex = (mainString, subString) => {
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
