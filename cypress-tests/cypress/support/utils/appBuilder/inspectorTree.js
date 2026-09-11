@@ -136,11 +136,17 @@ export const openSubNodeAndVerify = (
  * @tjDom    widget hover → inspect-button realClick → inspector left sidebar
  */
 export const openStateFromComponent = (widgetName) => {
+  // `.first()` — a widget may stamp `draggable-widget-<name>` on MORE THAN ONE
+  // element (the Table stamps it on both the outer RenderWidget wrapper and its
+  // inner <table>). `realHover` rejects a multi-element subject, which made this
+  // helper unusable for such widgets. No-op for every single-match widget.
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
     .realHover()
     .realHover();
 
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .first()
     .realHover()
     .then(() => {
       cy.get(`[data-cy="${widgetName}-inspect-button"]`)
