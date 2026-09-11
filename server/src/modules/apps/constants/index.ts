@@ -12,6 +12,7 @@ export enum FEATURE_KEY {
   RELEASE = 'release',
   APP_PUBLIC_UPDATE = 'app_public_update',
   GET_APP_AUTHENTICATION_CONFIG = 'get_app_authentication_config',
+  GET_RESTRICTED_ACCESS_INFO = 'get_restricted_access_info',
 }
 
 export enum APP_TYPES {

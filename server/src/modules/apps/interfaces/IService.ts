@@ -20,4 +20,5 @@ export interface IAppsService {
   getOne(app: App, user: User): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;
   getAppAuthenticationConfig(slug: string): Promise<any>;
+  getRestrictedAccessInfo(slug: string, user: User): Promise<any>;
 }
