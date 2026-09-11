@@ -2,7 +2,6 @@ export interface ComponentIdentity {
   libraryId?: string;
   correlationId?: string;
   componentName?: string;
-  revisionId?: string;
 }
 
 export interface InspectorComponent {
