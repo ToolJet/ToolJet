@@ -16,7 +16,7 @@ export class ExternalApisModulesController {
     throw new Error('Method not implemented.');
   }
 
-  importModule(workspaceId: string, importresources: ModuleImportRequestDto): Promise<{ message: string }> {
+  importModule(workspaceId: string, importresources: ModuleImportRequestDto): Promise<{ message: string; warnings?: string[] }> {
     throw new Error('Method not implemented.');
   }
 }
