@@ -134,7 +134,8 @@
     },
     {
       "componentType": "FileInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileInput/TESTING.md"
     },
     {
       "componentType": "TreeSelect",
