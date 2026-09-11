@@ -31,6 +31,7 @@ Backfill can be focused or whole-widget. Bug fixes/features anywhere in App Buil
 changed guarantees and affected interactions; they do not require unrelated widget backfill.
 Entirely new widgets need the full intended surface defined from accepted requirements.
 
+<<<<<<< HEAD
 Widget-specific guarantees and executed evidence live in the manifest-linked canonical
 `frontend/ee/test/app-builder/widgets/<ComponentType>/TESTING.md`, using `TESTING.template.md` there.
 Follow the shared [widget contract reference](../../../ee/.agents/skills/app-builder-testing/widget-contracts.md).
@@ -39,6 +40,17 @@ can contain verified scenarios while both remain `not-started`. New scenarios us
 `ready → implemented → verified`; existing approval records remain historical facts.
 For other App Builder changes, keep durable guarantees in tests and sources, design, scope, and
 executed evidence in the PR or a ready-to-paste PR handoff. No extra contract system is required.
+=======
+1. Classify the work as `existing-widget` or `new-widget` in the contract.
+2. For `existing-widget`, read the widget's official doc page and inspect Git commits from the last
+   2 years for bugs, regressions, fixes, and behavior changes. Doc pages live on the `documentation`
+   branch, mapped per component type in the widget-TDD skill's `widget-docs.json`. If the page
+   cannot be resolved, stop and ask before continuing.
+3. For `new-widget`, use an approved product PRD from GitHub, ClickUp, or Notion. This replaces the
+   doc-page and Git-history prerequisites because no released widget docs or history exists yet.
+4. Record the applicable source and findings in the widget's canonical `TESTING.md` before proposing
+   scenarios.
+>>>>>>> lts-3.16
 
 Record Guarantee, Sources, Public seam, Setup, Action, and Fault before code. Challenge no-ops,
 competing values, and alternate paths; assert counts for “once.” Name each test's break with

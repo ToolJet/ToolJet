@@ -69,8 +69,14 @@ jobs:
           echo "::error title=Frontend tests not run::This PR changes frontend/ but does not carry the 'run-frontend-tests' label, so the suite has not run. Add the label to run it. This check must pass before the PR can be merged."
           exit 1
 
+      # Default GITHUB_TOKEN only authenticates for this repo, not the private
+      # ee-frontend/ee-server submodules — submodule checkout needs a PAT with
+      # cross-repo read access, same as merging-pr.yml and render-preview-deploy-v2.yml.
       - uses: actions/checkout@v4
         if: steps.scope.outputs.frontend == 'true'
+        with:
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.frontend == 'true'

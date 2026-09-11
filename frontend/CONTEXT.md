@@ -2,6 +2,7 @@
 
 ## Testing context
 
+<<<<<<< HEAD
 Before adding or changing App Builder tests, read `src/test/app-builder/README.md` and choose:
 
 - `ee/.agents/skills/app-builder-widget-backfill/SKILL.md` for existing widget coverage (focused or whole-widget).
@@ -22,6 +23,17 @@ Backfill verification is PASS → targeted fault → intended assertion FAIL →
 Bug fixes/features use behavioral FAIL → implementation → PASS. Do not claim sensitivity from
 import/mount errors, invented expectations, comments, or a green suite alone. Use the existing
 App Builder harness and preserve real first-party collaborators. Report QA/browser work separately.
+=======
+Before adding or changing tests for `src/AppBuilder/**`, read
+`src/test/app-builder/README.md`, then use `ee/.agents/skills/app-builder-widget-tdd/SKILL.md`. Registered widget status
+and canonical contract paths live in `widget-testing-manifest.json`; widget-specific facts under
+`ee/test/app-builder/widgets/<ComponentType>/TESTING.md` must not be generalized to other widgets.
+Research is a hard gate. Existing widgets require the widget's official doc page plus the last 2
+years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead. Doc
+pages live on the `documentation` branch and are mapped per component type in that skill's
+`widget-docs.json`. Record the applicable source in the canonical contract; if the doc page cannot
+be resolved, stop and ask before writing tests.
+>>>>>>> lts-3.16
 
 ## Glossary
 

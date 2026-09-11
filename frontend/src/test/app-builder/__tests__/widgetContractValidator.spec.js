@@ -161,19 +161,29 @@ describe('widget testing contract validator', () => {
     expect(result.errors).toEqual([`Cannot map modified widget test ${unmapped} to a registered component type`]);
   });
 
+  test('accepts either research_docs or the retired research_context7', () => {
+    // The fixture above still uses the retired name, so that path is covered by
+    // every other case here. This pins the canonical one, and pins that supplying
+    // NEITHER is what fails — see REQUIRED_RESEARCH_FIELDS.
+    const renamed = validContract().replace('research_context7:', 'research_docs:');
+    expect(run({ contract: renamed }).errors).toEqual([]);
+    expect(run({ contract: validContract() }).errors).toEqual([]);
+  });
+
   test('rejects mismatched or empty approved frontmatter', () => {
     const bad = validContract()
       .replace('component_type: DropdownV2', 'component_type: Nope')
       .replace('baseline: lts-3.16', 'baseline: main')
       .replace('contract_status: approved', 'contract_status: shipped')
       .replace(/research_context7: .*/, 'research_context7:')
+      .replace(/research_docs: .*/, 'research_docs:')
       .replace(/research_git_history: .*/, 'research_git_history:');
     expect(run({ contract: bad }).errors).toEqual(
       expect.arrayContaining([
         'DropdownV2: contract component_type does not match the manifest',
         'DropdownV2: contract baseline does not match the manifest',
         'DropdownV2: unknown contract_status shipped',
-        'DropdownV2: approved contract requires research_context7',
+        'DropdownV2: approved contract requires research_docs',
         'DropdownV2: approved contract requires research_git_history',
       ])
     );
