@@ -714,7 +714,9 @@ const useAppData = (
           );
         }
 
-        if (mode === 'edit' && !moduleMode && setFolders) {
+        const ownsEditableCanvas = !moduleMode || moduleId === 'canvas';
+
+        if (mode === 'edit' && ownsEditableCanvas && setFolders) {
           const versionId = appData.editing_version?.id || appData.current_version_id;
           dataQueryFolderService
             .getAll(versionId)
@@ -724,8 +726,9 @@ const useAppData = (
             })
             .catch(() => {});
         } else if (moduleMode && moduleId === 'canvas' && setFolders) {
-          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
-          // renders the flat query list instead of returning null while waiting for fetch.
+          // View/preview mode inside the module editor: no folder tree needed, just signal
+          // foldersReady so the EE QueryFolderTree renders the flat query list instead of
+          // returning null while it waits.
           setFolders([]);
           setFolderMappings([]);
         }
