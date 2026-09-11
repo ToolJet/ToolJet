@@ -1,17 +1,15 @@
 {
-  "name": "docs",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "npm install && docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
-    "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
-    "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+  "browserslist": {
+    "production": [
+      "\u003e0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "dependencies": {
     "@docusaurus/core": "^3.6.3",
@@ -34,24 +32,30 @@
     "@docusaurus/module-type-aliases": "^3.6.3",
     "@docusaurus/types": "^3.6.3"
   },
-  "overrides": {
-    "got": "^12.1.0",
-    "trim": "^0.0.3"
-  },
-  "browserslist": {
-    "production": [
-      ">0.5%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "engines": {
     "node": "18.18.2",
     "npm": "9.8.1"
-  }
+  },
+  "name": "docs",
+  "overrides": {
+    "fast-uri": "3.1.7",
+    "got": "^12.1.0",
+    "js-yaml": "4.3.2",
+    "nanoid": "3.3.19",
+    "svgo": "3.3.5",
+    "trim": "^0.0.3"
+  },
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "npm install \u0026\u0026 docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids"
+  },
+  "version": "0.0.0"
 }
