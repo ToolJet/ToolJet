@@ -16,7 +16,7 @@
 jest.mock('../Elements/Code', () => ({ Code: () => null }));
 jest.mock('../Components/Form/_components', () => ({ LabeledDivider: () => null }));
 
-import { validateStaticId } from '../Utils';
+import { validateStaticId, isClickInsidePortaledOverlay } from '../Utils';
 
 describe('validateStaticId', () => {
   describe('empty/blank values', () => {
@@ -99,5 +99,33 @@ describe('validateStaticId', () => {
         'ID must be unique. This ID is already used by another item.',
       ]);
     });
+  });
+});
+
+// Regression for: rejecting a Nav item's Id as a duplicate grows CodeHinter's own
+// preview/error popover (an Alert banner, portaled to document.body outside the
+// "Edit menu item" popup's own DOM subtree). A click landing on that portal was
+// misread as "outside" the popup, closing it — and once the popup's DOM disappeared,
+// the same click's mouseup went on to deselect the whole widget on the canvas.
+describe('isClickInsidePortaledOverlay', () => {
+  test('a click inside the codehinter preview/error popover is treated as inside', () => {
+    const popover = document.createElement('div');
+    popover.id = 'codehinter-preview-box-popover';
+    const target = document.createElement('span');
+    popover.appendChild(target);
+    document.body.appendChild(popover);
+
+    expect(isClickInsidePortaledOverlay(target)).toBe(true);
+
+    document.body.removeChild(popover);
+  });
+
+  test('a click on an unrelated element is not treated as inside a known portal', () => {
+    const target = document.createElement('div');
+    document.body.appendChild(target);
+
+    expect(isClickInsidePortaledOverlay(target)).toBe(false);
+
+    document.body.removeChild(target);
   });
 });

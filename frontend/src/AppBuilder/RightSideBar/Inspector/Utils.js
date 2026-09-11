@@ -265,6 +265,7 @@ const PORTALED_OVERLAY_SELECTOR = [
   '[data-radix-popper-content-wrapper]', // Radix Popover/Select content
   '[data-slot="combobox-content"]', // Base UI Combobox content
   '.cm-tooltip-autocomplete', // CodeMirror autocomplete list
+  '#codehinter-preview-box-popover', // CodeHinter's own preview/error popover, portaled to document.body
 ].join(', ');
 
 // Radix Select can also make a click's real target unresolvable: it briefly disables page-wide

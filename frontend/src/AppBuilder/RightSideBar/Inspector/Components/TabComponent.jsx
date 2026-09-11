@@ -44,6 +44,11 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
+  // Bumped per row (by `_key`) to force just that row's Id field to remount on a rejected collision.
+  const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
+  const bumpIdFieldResetKey = (itemKey) => {
+    setIdFieldResetKeys((prev) => ({ ...prev, [itemKey]: (prev[itemKey] || 0) + 1 }));
+  };
   let properties = [];
   let additionalActions = [];
 
@@ -157,6 +162,16 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleValueChange = (item, value, property, index) => {
+    // Reject a colliding id outright, even locally (matches Nav's fix), and bump
+    // the row's reset key so its Id field snaps back to the current id.
+    if (property === 'id') {
+      const [isValid] = validateTabId(value, item?.id);
+      if (!isValid) {
+        bumpIdFieldResetKey(item._key);
+        return;
+      }
+    }
+
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
@@ -175,11 +190,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     setTabItems(updatedTabItems);
 
     if (property === 'id') {
-      const [isValid] = validateTabId(value, item?.id);
-      if (!isValid) {
-        return;
-      }
-
       const tabsComponentId = component.id;
       const oldTabId = item.id;
       const newTabId = value;
@@ -296,6 +306,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               {'Id'}
             </label>
             <CodeHinter
+              key={idFieldResetKeys[item._key] || 0}
               currentState={currentState}
               type={'basic'}
               initialValue={item?.id}

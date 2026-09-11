@@ -179,6 +179,13 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     const currentItems = menuItemsRef.current;
     const oldId = findItemByKey(currentItems, itemKey, parentId)?.id;
 
+    // Reject a colliding id outright, even locally — NavItemPopover already blocks
+    // this, but keep the hook itself safe against any other caller too.
+    if (propertyPath === 'id') {
+      const [isValid] = validateItemId(value, oldId);
+      if (!isValid) return;
+    }
+
     const newItems = currentItems.map((item) => {
       if (parentId && item.id === parentId && item.children) {
         return {
@@ -198,12 +205,6 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     });
 
     if (propertyPath === 'id') {
-      const [isValid] = validateItemId(value, oldId);
-      // Always reflect what the user is typing locally, but only persist + rename event
-      // refs once the new id is valid (non-empty, unique)
-      menuItemsRef.current = newItems;
-      setMenuItems(newItems);
-      if (!isValid) return;
       renameItemEventRefs(oldId, value);
     }
 

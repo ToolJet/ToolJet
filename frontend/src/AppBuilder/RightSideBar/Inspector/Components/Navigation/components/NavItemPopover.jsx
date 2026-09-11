@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useRef } from 'react';
+import React, { forwardRef, useCallback, useRef, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -33,6 +33,9 @@ const NavItemPopover = forwardRef(
     itemRef.current = item;
     const validateIdField = useCallback((value) => validateItemId(value, itemRef.current?.id), [validateItemId]);
 
+    // Bumped to force just the Id field to remount and re-seed from `initialValue` on a rejected collision.
+    const [idFieldResetKey, setIdFieldResetKey] = useState(0);
+
     // Common CodeHinter props
     const commonCodeHinterProps = {
       theme: darkMode ? 'monokai' : 'default',
@@ -55,6 +58,14 @@ const NavItemPopover = forwardRef(
     // another field's change landing in the same tick must still each resolve to the
     // right item rather than one losing track once the id changes underneath it.
     const handleChange = (propertyPath, value) => {
+      if (propertyPath === 'id') {
+        const [isValid] = validateIdField(value);
+        if (!isValid) {
+          // Reject outright — letting a colliding id sit in state, even unpersisted, let two items share one.
+          setIdFieldResetKey((key) => key + 1);
+          return;
+        }
+      }
       onItemChange(propertyPath, value, item._key, parentId);
     };
 
@@ -135,6 +146,7 @@ const NavItemPopover = forwardRef(
                   Id
                 </label>
                 <CodeHinter
+                  key={idFieldResetKey}
                   {...basicCodeHinterProps}
                   data-cy="inspector-nav-item-details-id-input"
                   initialValue={item?.id}
