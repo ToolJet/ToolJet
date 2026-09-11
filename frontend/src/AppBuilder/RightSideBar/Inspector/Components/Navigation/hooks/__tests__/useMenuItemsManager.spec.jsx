@@ -155,6 +155,46 @@ describe('useMenuItemsManager: rejects a colliding id', () => {
   });
 });
 
+describe('useMenuItemsManager: resync preserves row identity', () => {
+  let session;
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  // Regression for: an item's popover (and anything nested inside it, e.g. the
+  // per-item Event Manager) closing on its own mid-edit. Inspector.jsx rebuilds
+  // `component` as a new object on every render, which used to re-key every item
+  // (SortableTree keys rows by `_key`) and remount the row, wiping any open popover.
+  test('an item keeps its `_key` across a resync triggered by an unrelated `component` reference change', () => {
+    const paramUpdated = jest.fn();
+    const buildComponent = () => ({
+      id: 'nav1',
+      component: {
+        definition: {
+          properties: {
+            menuItems: { value: [{ id: 'item1', label: 'Item 1' }] },
+          },
+        },
+      },
+    });
+
+    let api;
+    session.render(
+      <TestHost component={buildComponent()} paramUpdated={paramUpdated} onReady={(next) => (api = next)} />
+    );
+    const firstKey = api.menuItems.find((item) => item.id === 'item1')._key;
+    expect(firstKey).toBeTruthy();
+
+    // New `component` object, same content, no `_key` — as Inspector.jsx re-renders.
+    session.render(
+      <TestHost component={buildComponent()} paramUpdated={paramUpdated} onReady={(next) => (api = next)} />
+    );
+
+    expect(api.menuItems.find((item) => item.id === 'item1')._key).toBe(firstKey);
+  });
+});
+
 describe('useMenuItemsManager: trims a new id', () => {
   let session;
 
