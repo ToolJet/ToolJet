@@ -19,6 +19,7 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
+    "@tooljet-plugins/adanos": "file:packages/adanos",
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/amazonses": "file:packages/amazonses",
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
