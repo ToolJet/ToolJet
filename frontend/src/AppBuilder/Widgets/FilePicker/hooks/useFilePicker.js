@@ -68,6 +68,10 @@ export const useFilePicker = ({
 
   // --- State ---
   const [selectedFiles, setSelectedFiles] = useState([]);
+  // Lets clearFiles read the current selection without depending on
+  // selectedFiles, keeping its identity stable (other effects key off it).
+  const selectedFilesRef = useRef(selectedFiles);
+  selectedFilesRef.current = selectedFiles;
   const [fileErrors, setFileErrors] = useState({});
   const [uploadingStatus, setUploadingStatus] = useState({});
   const [isParsing, setIsParsing] = useState(false);
@@ -464,13 +468,15 @@ export const useFilePicker = ({
 
   // --- Exposed Actions ---
   const clearFiles = useCallback(() => {
-    setSelectedFiles((prevFiles) => {
-      prevFiles.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
-      return [];
-    });
+    const filesBeingCleared = selectedFilesRef.current;
+    if (filesBeingCleared.length > 0) {
+      fireEvent?.('onFileDeselected', { files: filesBeingCleared.map(stripFileId) });
+    }
+    filesBeingCleared.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
+    setSelectedFiles([]);
     setFileErrors({});
     setUploadingStatus({});
-  }, []);
+  }, [fireEvent, stripFileId]);
 
   const setFileName = useCallback(
     (indexOrUpdates, newNameIfSingle) => {
@@ -663,8 +669,6 @@ export const useFilePicker = ({
 
   // Release all registry entries when the widget unmounts — the exposed refs
   // then materialize to '' instead of leaking Blobs/strings in the registry.
-  const selectedFilesRef = useRef(selectedFiles);
-  selectedFilesRef.current = selectedFiles;
   useEffect(() => {
     return () => {
       selectedFilesRef.current.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
