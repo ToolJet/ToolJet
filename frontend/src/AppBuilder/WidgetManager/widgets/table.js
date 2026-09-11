@@ -706,9 +706,9 @@ export const tableConfig = {
       enablePagination: { value: '{{true}}' },
       serverSideSort: { value: '{{false}}' },
       serverSideFilter: { value: '{{false}}' },
-      displaySearchBox: { value: '{{true}}' },
+      displaySearchBox: { value: '{{false}}' },
       showDownloadButton: { value: '{{true}}' },
-      showFilterButton: { value: '{{true}}' },
+      showFilterButton: { value: '{{false}}' },
       autogenerateColumns: { value: true, generateNestedColumns: true },
       isAllColumnsEditable: { value: '{{false}}' },
       columns: {
@@ -781,6 +781,7 @@ export const tableConfig = {
             fxActiveFields: [],
             columnType: 'newMultiSelect',
             columnSize: 300,
+            autoAssignColors: true,
             options: [
               {
                 label: 'Reading',
@@ -857,8 +858,8 @@ export const tableConfig = {
       columnHeaderWrap: { value: 'fixed' },
       headerCasing: { value: 'none' },
       actionButtonRadius: { value: '0' },
-      cellSize: { value: 'regular' },
-      borderRadius: { value: '6' },
+      cellSize: { value: 'condensed' },
+      borderRadius: { value: '10' },
       borderColor: { value: 'var(--cc-weak-border)' },
       tableType: { value: 'table-classic' },
       maxRowHeight: { value: 'auto' },
