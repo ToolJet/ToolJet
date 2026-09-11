@@ -215,12 +215,14 @@ export default class Hubspot implements QueryService {
     const accessTokenUrl = this.getOptionValue(options.access_token_url);
     const scopes = this.getOptionValue(options.scopes);
 
+    let host = process.env.TOOLJET_HOST;
     if (oauthType === 'tooljet_app') {
       clientId = process.env.HUBSPOT_CLIENT_ID;
       clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
+    } else {
+      host = this.getOptionValue(options.tj_redirect_host) || process.env.TOOLJET_HOST;
     }
 
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

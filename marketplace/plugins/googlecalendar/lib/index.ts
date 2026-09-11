@@ -10,16 +10,17 @@ import got, { Headers, OptionsOfTextResponseBody } from 'got';
 
 export default class GoogleCalendar implements QueryService {
   authUrl(source_options: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = source_options.oauth_type.value;
     let clientId: string;
+    let host = process.env.TOOLJET_HOST;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
     } else {
       clientId = source_options?.client_id?.value;
+      host = (source_options as any)?.tj_redirect_host?.value || process.env.TOOLJET_HOST;
     }
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const scope = 'https://www.googleapis.com/auth/calendar';
     if (!clientId) {
       throw new Error(
@@ -199,16 +200,17 @@ export default class GoogleCalendar implements QueryService {
     };
 
     const oauth_type = getOptionValue('oauth_type');
+    let host = process.env.TOOLJET_HOST;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
       clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     } else {
       clientId = getOptionValue('client_id');
       clientSecret = getOptionValue('client_secret');
+      host = getOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
