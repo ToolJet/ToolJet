@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ExternalApiUtilService } from '@ee/external-apis/util.service';
 import { RolesUtilService } from '@ee/roles/util.service';
 import { RolesRepository } from '@modules/roles/repository';
@@ -38,6 +39,7 @@ describe('ExternalApiUtilService.validateResourcesExist — workflow name resolu
         { provide: GranularPermissionsUtilService, useValue: {} },
         { provide: LicenseUserService, useValue: {} },
         { provide: UserDetailsService, useValue: {} },
+        { provide: EventEmitter2, useValue: {} },
       ],
     }).compile();
 
