@@ -137,7 +137,8 @@
     },
     {
       "componentType": "TreeSelect",
-      "status": "not-started"
+      "status": "spec-complete",
+      "contract": "ee/test/app-builder/widgets/TreeSelect/TESTING.md"
     },
     {
       "componentType": "Cascader",
