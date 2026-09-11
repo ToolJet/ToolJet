@@ -252,6 +252,7 @@ function AddEditResourcePermissionsModal({
           <DataSourceFolderPermissionsActions
             updateParentState={updateParentState}
             disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            isBasicPlan={isBasicPlan}
             initialPermissionStateDataSourceFolder={initialPermissionStateDataSourceFolder}
           />
         );

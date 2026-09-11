@@ -499,7 +499,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           dataSourceFolderGranularPermission,
         ];
 
-      case USER_ROLE.END_USER:
+      case USER_ROLE.END_USER: {
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
         appGranularPermission.isAll = true;
         appGranularPermission.type = ResourceType.APP;
@@ -520,7 +520,29 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         workflowFolderGroupPermissions.canEditApps = false;
         workflowFolderGroupPermissions.canViewApps = true;
 
-        return [appGranularPermission, folderGranularPermission, workflowFolderGranularPermission];
+        // Data source folders: end users get a no-access row (canEditFolder/EditApps/ViewApps all
+        // false, all non-editable in the UI) so only the per-group "restrict query run" control
+        // (canRunQuery, default true = open) is meaningful for them. The shared
+        // dataSourceFolderGranularPermission above is builder/admin-facing (canEditFolder = true), so
+        // end users need their own instance.
+        const endUserDataSourceFolderGranularPermission = new GranularPermissions();
+        const endUserDataSourceFolderGroupPermissions = new FoldersGroupPermissions();
+        endUserDataSourceFolderGranularPermission.foldersGroupPermissions = endUserDataSourceFolderGroupPermissions;
+        endUserDataSourceFolderGranularPermission.name =
+          DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.DATA_SOURCE_FOLDER];
+        endUserDataSourceFolderGranularPermission.isAll = true;
+        endUserDataSourceFolderGranularPermission.type = ResourceType.DATA_SOURCE_FOLDER;
+        endUserDataSourceFolderGroupPermissions.canEditFolder = false;
+        endUserDataSourceFolderGroupPermissions.canEditApps = false;
+        endUserDataSourceFolderGroupPermissions.canViewApps = false;
+
+        return [
+          appGranularPermission,
+          folderGranularPermission,
+          workflowFolderGranularPermission,
+          endUserDataSourceFolderGranularPermission,
+        ];
+      }
 
       default:
         return [];

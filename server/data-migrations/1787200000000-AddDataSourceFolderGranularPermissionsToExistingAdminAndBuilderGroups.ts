@@ -1,117 +1,104 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@modules/app/module';
 import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
-import { LicenseInitService } from '@modules/licensing/interfaces/IService';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 const MIGRATION_NAME = 'AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1787200000000';
 
 /**
- * Backward-compatibility rule for existing orgs (identical policy to the module-folder migration
- * 1784551394230, since data-source folders are builder/admin-facing like modules):
- * - Free plan (basic/starter, incl. CE which always resolves to 'basic'): admin AND builder
- *   default groups get dataSourceFolderCreate/Delete + a real DATA_SOURCE_FOLDER granular permission.
- * - Paid plan: admin only — builder/end_user default groups are left untouched.
- * - Custom groups: never touched (queries scoped to type = 'default').
- * - end_user is never touched either way — data sources (and their folders) are not end-user-assignable.
+ * Backfills data-source-folder permissions on the admin, builder AND end-user default groups of
+ * every existing org, on ALL plans (mirrors how new orgs are seeded in
+ * GranularPermissionsUtilService). Role-specific:
+ * - admin / builder: coarse create+delete true + a granular DATA_SOURCE_FOLDER permission with
+ *   canEditFolder true (which the ability layer cascades to configure/build-with on the folder's
+ *   data sources).
+ * - end_user: coarse create+delete false + a granular permission with canEditFolder/canEditApps/
+ *   canViewApps all false (all non-editable in the UI). Only "restrict query run"
+ *   (folders_group_permissions.can_run_query, default true = open, enforced at query-execution time)
+ *   is meaningful/editable for end users.
+ * - custom groups are never touched (queries scoped to type = 'default').
  *
- * Plan resolution mirrors the module-folder migration: data migrations run under
- * migrationsTransactionMode: 'all', so DB work goes through queryRunner.manager (the shared batch
- * transaction). Self-hosted (CE/EE) plan is instance-level; cloud is per-organization.
+ * Idempotent: skips any group that already has a DATA_SOURCE_FOLDER granular permission, and the
+ * coarse-column update is a plain set. Runs under migrationsTransactionMode 'all', so all DB work
+ * goes through queryRunner.manager (the shared batch transaction).
  */
 export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1787200000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const manager = queryRunner.manager;
 
-    try {
-      const licenseInitService = nestApp.get(LicenseInitService);
-      const manager = queryRunner.manager;
-      const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
+    // Role → seed values. Admin/builder manage folders; end-user only carries the query-run control.
+    const ROLE_SEED: Record<string, { coarse: boolean; canEditFolder: boolean }> = {
+      [USER_ROLE.ADMIN]: { coarse: true, canEditFolder: true },
+      [USER_ROLE.BUILDER]: { coarse: true, canEditFolder: true },
+      [USER_ROLE.END_USER]: { coarse: false, canEditFolder: false },
+    };
+    const roleNames = [USER_ROLE.ADMIN, USER_ROLE.BUILDER, USER_ROLE.END_USER];
 
-      const organizationsCount = await manager.count('organizations');
-      if (organizationsCount === 0) {
-        console.log(`${MIGRATION_NAME}: No organizations found, skipping migration.`);
-        return;
-      }
+    const organizations = await manager.query(`SELECT id FROM organizations`);
+    if (organizations.length === 0) {
+      console.log(`${MIGRATION_NAME}: No organizations found, skipping migration.`);
+      return;
+    }
+    console.log(`${MIGRATION_NAME}: [START] Seeding data-source-folder permissions: ${organizations.length}`);
 
-      // Self-hosted plan is instance-level — resolve it once. Cloud is per-org (resolved in the loop).
-      const instancePlan = isCloud ? null : await licenseInitService.getPlanForMigration(manager);
+    let processed = 0;
+    for (const { id: organizationId } of organizations) {
+      const groups = await manager.query(
+        `
+          SELECT id, name
+          FROM permission_groups
+          WHERE organization_id = $1 AND name = ANY($2) AND type = 'default'
+        `,
+        [organizationId, roleNames]
+      );
 
-      const organizations = await manager.query(`SELECT id FROM organizations`);
-      console.log(`${MIGRATION_NAME}: [START] Seeding data-source-folder permissions: ${organizations.length}`);
+      for (const group of groups) {
+        const { id: groupId, name } = group;
+        const seed = ROLE_SEED[name];
+        if (!seed) continue;
 
-      let processed = 0;
-      for (const { id: organizationId } of organizations) {
-        const plan = isCloud
-          ? await licenseInitService.getPlanForMigrationCloud(manager, organizationId)
-          : instancePlan;
-        const isFreePlan = plan === 'basic' || plan === 'starter';
-        const roleNamesToUpdate = isFreePlan ? [USER_ROLE.ADMIN, USER_ROLE.BUILDER] : [USER_ROLE.ADMIN];
-
-        const groups = await manager.query(
+        await manager.query(
           `
-            SELECT id
-            FROM permission_groups
-            WHERE organization_id = $1 AND name = ANY($2) AND type = 'default'
+            UPDATE permission_groups
+            SET data_source_folder_create = $2, data_source_folder_delete = $2
+            WHERE id = $1
           `,
-          [organizationId, roleNamesToUpdate]
+          [groupId, seed.coarse]
         );
 
-        for (const group of groups) {
-          const { id: groupId } = group;
-
-          await manager.query(
-            `
-              UPDATE permission_groups
-              SET data_source_folder_create = true, data_source_folder_delete = true
-              WHERE id = $1
-            `,
-            [groupId]
+        const existingPermission = await manager.find(GranularPermissions, {
+          where: { groupId, type: ResourceType.DATA_SOURCE_FOLDER },
+        });
+        if (existingPermission.length > 0) {
+          console.log(
+            `${MIGRATION_NAME}: Data-source-folder permission already exists for group ${groupId}, skipping.`
           );
-
-          const existingPermission = await manager.find(GranularPermissions, {
-            where: { groupId, type: ResourceType.DATA_SOURCE_FOLDER },
-          });
-
-          if (existingPermission.length > 0) {
-            console.log(
-              `${MIGRATION_NAME}: Data-source-folder permission already exists for group ${groupId}, skipping.`
-            );
-            continue;
-          }
-
-          const granularPermissions = manager.create(GranularPermissions, {
-            name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.DATA_SOURCE_FOLDER],
-            type: ResourceType.DATA_SOURCE_FOLDER,
-            groupId,
-            isAll: true,
-          });
-
-          const savedGranularPermissions = await manager.save(granularPermissions);
-
-          const foldersGroupPermissions = manager.create(FoldersGroupPermissions, {
-            granularPermissionId: savedGranularPermissions.id,
-            canEditFolder: true,
-            canEditApps: false,
-            canViewApps: false,
-          });
-
-          await manager.save(foldersGroupPermissions);
+          continue;
         }
 
-        processed++;
-        console.log(`${MIGRATION_NAME}: [PROGRESS] ${processed}/${organizations.length}`);
+        const granularPermissions = manager.create(GranularPermissions, {
+          name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.DATA_SOURCE_FOLDER],
+          type: ResourceType.DATA_SOURCE_FOLDER,
+          groupId,
+          isAll: true,
+        });
+        const savedGranularPermissions = await manager.save(granularPermissions);
+
+        const foldersGroupPermissions = manager.create(FoldersGroupPermissions, {
+          granularPermissionId: savedGranularPermissions.id,
+          canEditFolder: seed.canEditFolder,
+          canEditApps: false,
+          canViewApps: false,
+        });
+        await manager.save(foldersGroupPermissions);
       }
 
-      console.log(`${MIGRATION_NAME}: [SUCCESS] Seeding data-source-folder permissions finished.`);
-    } finally {
-      await nestApp.close();
+      processed++;
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${processed}/${organizations.length}`);
     }
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Seeding data-source-folder permissions finished.`);
   }
 
   public async down(_queryRunner: QueryRunner): Promise<void> {}
