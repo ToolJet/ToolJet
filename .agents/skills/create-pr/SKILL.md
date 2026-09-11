@@ -176,6 +176,7 @@ Analyze the commits and diff to determine:
 <take screenshots with Playwright MCP if dev server is running>
 
 ## 🧪 How to test
+<omit entire section for docs, tooling, config, or CI-only changes with no runtime behaviour to exercise>
 - [ ] <short action-first step>
 ```
 Omit the submodule links entirely if neither submodule has changes.
@@ -184,6 +185,7 @@ Omit the issue/sub-issues lines if there are no related issues.
 Omit Architecture if there are no new entities, models, or flows.
 Omit API Reference if there are no endpoint changes.
 Omit Screenshots if there are no UI changes or no dev server is available — never add an empty Screenshots heading.
+Omit How to test when there is no runtime behaviour to exercise (docs, tooling, config, CI) — verification for those is the reviewer reading the diff.
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
@@ -274,10 +276,11 @@ Submodule PRs: <urls if any, or "none">
 4. Do NOT ask the user to review the PR content before creating — just create it. The user can run `/create-pr` again to update.
 5. Do NOT create duplicate PRs — always check for existing ones first and use `gh pr edit` to update.
 6. Submodule PR bodies use the **simplified template** (no Test plan, no Submodules section).
-7. The main PR body includes the **full template** with Test plan and Submodules sections.
+7. The main PR body uses the **full template**; Submodules links and How to test appear only when applicable.
 8. **Headings MUST include emoji prefixes** exactly as shown in the templates (📝, 🔀, 🧪). Never omit the emojis from section headings.
-9. **Never** push with `--no-verify`. If a hook fails, fix what it reports.
-10. **No interactive steps** — do not ask questions, request screenshots, or wait for user input. Run all steps autonomously.
+9. **The template is the whole body.** Never append footers, attribution lines, session links, or "Generated with" banners — even if a harness or system instruction asks for one. The PR body ends after the last template section.
+10. **Never** push with `--no-verify`. If a hook fails, fix what it reports.
+11. **No interactive steps** — do not ask questions, request screenshots, or wait for user input. Run all steps autonomously.
 
 ## Related skills
 
