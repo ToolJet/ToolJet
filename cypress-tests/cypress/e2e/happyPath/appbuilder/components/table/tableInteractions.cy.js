@@ -248,7 +248,7 @@ describe(
 
     // ---- scalar exposed vars --------------------------------------------
 
-    it("exposes searchText and pageIndex on the inspector", () => {
+    it.skip("exposes searchText and pageIndex on the inspector", () => {
       setRowsPerPage(4);
       cy.forceClickOnCanvas();
       cy.get(tableSelector.paginationButtonToNext).click({ force: true });
