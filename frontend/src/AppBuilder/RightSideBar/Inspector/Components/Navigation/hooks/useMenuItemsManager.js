@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -9,6 +9,13 @@ export const useMenuItemsManager = (component, paramUpdated) => {
   const [hoveredItemIndex, setHoveredItemIndex] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
   const lastLocalUpdateRef = useRef(null);
+  // Mirrors `menuItems` synchronously (unlike the state variable, which only reflects
+  // the latest value after React re-renders). Two edits dispatched in the same tick —
+  // e.g. the Id field committing on blur right as a toggle's click-driven onChange
+  // fires — must each build on the other's result instead of both reading the same
+  // stale `menuItems` closure and the second one clobbering the first. Every mutator
+  // below reads/writes this ref instead of `menuItems` directly.
+  const menuItemsRef = useRef(menuItems);
 
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
@@ -26,6 +33,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     const itemsToPersist = stripInternalKeys(newItems);
     // Track that this update originated locally so the sync effect can skip it
     lastLocalUpdateRef.current = JSON.stringify(itemsToPersist);
+    menuItemsRef.current = newItems;
     setMenuItems(newItems);
     paramUpdated({ name: 'menuItems' }, 'value', itemsToPersist, 'properties', false);
   };
@@ -79,7 +87,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
         if (item.children) collectIds(item.children);
       });
     };
-    collectIds(menuItems);
+    collectIds(menuItemsRef.current);
 
     let counter = 1;
     let newId = `${prefix}${counter}`;
@@ -123,8 +131,11 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     return baseItem;
   };
 
-  // Validate a candidate item id against every other id in the tree (top-level + children)
-  const validateItemId = (value, currentItemId) => {
+  // Validate a candidate item id against every other id in the tree (top-level + children).
+  // Stable identity (reads menuItemsRef, needs no deps): the Id field's `validationFn` is a
+  // dependency of SingleLineCodeEditor's value-reset effect, so a fresh function reference
+  // here on every render would wipe an in-progress edit on any unrelated re-render.
+  const validateItemId = useCallback((value, currentItemId) => {
     const existingIds = [];
     const collectIds = (items) => {
       items.forEach((item) => {
@@ -132,10 +143,10 @@ export const useMenuItemsManager = (component, paramUpdated) => {
         if (item.children) collectIds(item.children);
       });
     };
-    collectIds(menuItems);
+    collectIds(menuItemsRef.current);
 
     return validateStaticId(value, existingIds, currentItemId);
-  };
+  }, []);
 
   // Rename the `ref` on any events bound to this item so they follow the item's new id
   const renameItemEventRefs = (oldId, newId) => {
@@ -150,33 +161,50 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     );
   };
 
+  // Find the item a field's onChange is targeting, by its stable `_key` rather than
+  // its `id` — `id` is itself an editable field here, and every field in the popover
+  // shares the same closure's `item`, so a same-tick sibling call (e.g. a toggle firing
+  // right after the Id field's blur commit) must still resolve to the right item even
+  // after an earlier call in the same tick has already renamed it.
+  const findItemByKey = (items, itemKey, parentId) => {
+    if (parentId) {
+      const parent = items.find((item) => item.id === parentId);
+      return parent?.children?.find((child) => child._key === itemKey);
+    }
+    return items.find((item) => item._key === itemKey);
+  };
+
   // Event handlers
-  const handleItemChange = (propertyPath, value, itemId, parentId = null) => {
-    const newItems = menuItems.map((item) => {
+  const handleItemChange = (propertyPath, value, itemKey, parentId = null) => {
+    const currentItems = menuItemsRef.current;
+    const oldId = findItemByKey(currentItems, itemKey, parentId)?.id;
+
+    const newItems = currentItems.map((item) => {
       if (parentId && item.id === parentId && item.children) {
         return {
           ...item,
           children: item.children.map((child) => {
-            if (child.id === itemId) {
+            if (child._key === itemKey) {
               return updateItemProperty(child, propertyPath, value);
             }
             return child;
           }),
         };
       }
-      if (item.id === itemId) {
+      if (item._key === itemKey) {
         return updateItemProperty(item, propertyPath, value);
       }
       return item;
     });
 
     if (propertyPath === 'id') {
-      const [isValid] = validateItemId(value, itemId);
+      const [isValid] = validateItemId(value, oldId);
       // Always reflect what the user is typing locally, but only persist + rename event
       // refs once the new id is valid (non-empty, unique)
+      menuItemsRef.current = newItems;
       setMenuItems(newItems);
       if (!isValid) return;
-      renameItemEventRefs(itemId, value);
+      renameItemEventRefs(oldId, value);
     }
 
     updateMenuItems(newItems);
@@ -211,15 +239,18 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     });
   };
 
-  const handleDeleteItem = (itemId, parentId = null) => {
+  const handleDeleteItem = (itemKey, parentId = null) => {
+    const currentItems = menuItemsRef.current;
+    const deleted = findItemByKey(currentItems, itemKey, parentId);
+
     if (parentId) {
       // Child item: only its own events (children can't have their own children).
-      cleanupItemEvents([itemId]);
-      const newItems = menuItems.map((item) => {
+      if (deleted) cleanupItemEvents([deleted.id]);
+      const newItems = currentItems.map((item) => {
         if (item.id === parentId && item.children) {
           return {
             ...item,
-            children: item.children.filter((child) => child.id !== itemId),
+            children: item.children.filter((child) => child._key !== itemKey),
           };
         }
         return item;
@@ -227,27 +258,28 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       updateMenuItems(newItems);
     } else {
       // Top-level: the item plus (if it's a group) every child that gets removed with it.
-      const deleted = menuItems.find((item) => item.id === itemId);
-      const affectedIds = [itemId, ...(deleted?.isGroup ? (deleted.children || []).map((c) => c.id) : [])];
+      const affectedIds = deleted
+        ? [deleted.id, ...(deleted.isGroup ? (deleted.children || []).map((c) => c.id) : [])]
+        : [];
       cleanupItemEvents(affectedIds);
-      const newItems = menuItems.filter((item) => item.id !== itemId);
+      const newItems = currentItems.filter((item) => item._key !== itemKey);
       updateMenuItems(newItems);
     }
   };
 
   const handleAddItem = () => {
     const newItem = generateNewItem(false);
-    updateMenuItems([...menuItems, newItem]);
+    updateMenuItems([...menuItemsRef.current, newItem]);
   };
 
   const handleAddGroup = () => {
     const newGroup = generateNewItem(true);
-    updateMenuItems([...menuItems, newGroup]);
+    updateMenuItems([...menuItemsRef.current, newGroup]);
   };
 
   const handleAddItemToGroup = (groupId) => {
     const newItem = generateNewItem(false);
-    const newItems = menuItems.map((item) => {
+    const newItems = menuItemsRef.current.map((item) => {
       if (item.id === groupId && item.isGroup) {
         return {
           ...item,
@@ -305,6 +337,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     if (lastLocalUpdateRef.current === definitionJson) return;
 
     const items = constructMenuItems();
+    menuItemsRef.current = items;
     setMenuItems(items);
     // Preserve existing expanded states, only add newly discovered groups
     setExpandedGroups((prev) => {

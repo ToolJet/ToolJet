@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useCallback, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -23,6 +23,16 @@ const NavItemPopover = forwardRef(
   ) => {
     const iconVisibility = item?.iconVisibility;
 
+    // Stable identity for the Id field's `validationFn`: it's a dependency of
+    // SingleLineCodeEditor's value-reset effect, so a fresh closure on every render
+    // (as an inline arrow normally would be) re-fires that effect and wipes whatever
+    // the user has typed so far back to `item.id` on any unrelated re-render — not
+    // just an outside click. Reading `item` via a ref keeps this callback's reference
+    // stable across renders while still validating against the current id.
+    const itemRef = useRef(item);
+    itemRef.current = item;
+    const validateIdField = useCallback((value) => validateItemId(value, itemRef.current?.id), [validateItemId]);
+
     // Common CodeHinter props
     const commonCodeHinterProps = {
       theme: darkMode ? 'monokai' : 'default',
@@ -40,16 +50,20 @@ const NavItemPopover = forwardRef(
       type: 'fxEditor',
     };
 
+    // Identify the item by its stable `_key`, not `id` — `id` is itself editable here,
+    // and every field's onChange shares this same closure's `item`, so an id rename and
+    // another field's change landing in the same tick must still each resolve to the
+    // right item rather than one losing track once the id changes underneath it.
     const handleChange = (propertyPath, value) => {
-      onItemChange(propertyPath, value, item.id, parentId);
+      onItemChange(propertyPath, value, item._key, parentId);
     };
 
     const handleDelete = () => {
-      onDeleteItem(item.id, parentId);
+      onDeleteItem(item._key, parentId);
     };
 
     const handleDuplicate = () => {
-      onDuplicateItem?.(item.id, parentId);
+      onDuplicateItem?.(item._key, parentId);
     };
 
     return (
@@ -128,7 +142,7 @@ const NavItemPopover = forwardRef(
                   onChange={(value) => handleChange('id', value)}
                   // Commit synchronously on blur — the popover's rootClose can beat a deferred setTimeout(0) commit.
                   delayOnChange={false}
-                  validationFn={(value) => validateItemId(value, item?.id)}
+                  validationFn={validateIdField}
                   componentId={componentId}
                   paramName="id"
                   fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'itemId' } }}

@@ -31,7 +31,7 @@ export const MenuItem = ({
 
   const handleDelete = () => {
     setShowActionsPopover(false);
-    onDeleteItem?.(item.id, item.parentId);
+    onDeleteItem?.(item._key, item.parentId);
   };
 
   return (

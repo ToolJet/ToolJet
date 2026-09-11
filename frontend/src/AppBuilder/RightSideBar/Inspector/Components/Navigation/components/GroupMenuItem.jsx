@@ -30,7 +30,7 @@ export const GroupMenuItem = ({
 
   const handleDelete = () => {
     setShowActionsPopover(false);
-    onDeleteItem?.(item.id);
+    onDeleteItem?.(item._key);
   };
 
   return (
