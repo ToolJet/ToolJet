@@ -203,7 +203,6 @@ export const FileButton = (props) => {
               'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
               'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
               justifyClass[contentAlignment] ?? 'tw-justify-start',
-              iconVisibility ?? 'tw-justify-center',
               {
                 'tw-flex-row-reverse': iconDirection === 'right',
               },
