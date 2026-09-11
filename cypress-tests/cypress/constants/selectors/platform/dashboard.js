@@ -71,8 +71,24 @@ export const dashboardSelector = {
   widgetCardDescription: '[data-cy="widget-card-description"]',
   homePagePromptTextArea: '[data-cy="prompt-textarea"] .cm-content',
   promptEnterButton: '[data-cy="prompt-enter-button"]',
+  buildAppButton: '[data-cy="build-app-button"]',
   aiIcon: '[data-cy="ai-icon"]',
   homePageIcon: (iconName) => {
     return `[data-cy="${iconName}s-icon"]`;
-  }
+  },
+
+  editorConnectDivider: '[data-cy="editor-connect-divider"]',
+  editorConnectCard: (cardId) => {
+    return `[data-cy="home-editor-card-${cardId}"]`;
+  },
+  buildFromEditorModal: '[data-cy="build-from-editor-modal"]',
+  byoaTab: (tabId) => {
+    return `[data-cy="byoa-tab-${tabId}"]`;
+  },
+  byoaCreateTokenLink: '[data-cy="byoa-create-token-link"]',
+  byoaCopyCommand: (index) => {
+    return `[data-cy="byoa-copy-command-${index}"]`;
+  },
+  byoaDocsLink: '[data-cy="byoa-docs-link"]',
+  byoaNotNowButton: '[data-cy="byoa-not-now"]',
 };
