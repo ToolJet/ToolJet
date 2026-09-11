@@ -94,7 +94,6 @@ Because MCP requests are authenticated through a user-linked PAT, changes made b
 
 Accordingly, MCP-driven changes that generate standard ToolJet platform events can be associated with the authenticated PAT owner in the audit trail. This provides accountability and traceability for changes made through ToolJet MCP.
 
-
 ## Supported MCP Clients
 
 ToolJet MCP works with any MCP-compatible client. The following are supported directly, with a packaged plugin that installs the server and the `tooljet-app-builder` skill together:
