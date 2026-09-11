@@ -1,23 +1,23 @@
 {
   "allowedPaths": [
-    "cypress-tests/package-lock.json",
-    "cypress-tests/package.json"
+    "docs/package-lock.json",
+    "docs/package.json"
   ],
-  "baseSha": "6d2c974057eaa578a7ddc86e7bb600d193d89a6d",
+  "baseSha": "06149429063d656d1fe063d193f53cff36b2f531",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "631132e1e7f578b6",
+    "id": "6e1fdbe0475ff988",
     "lockArtifacts": [
-      "cypress-tests/package-lock.json"
+      "docs/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "cypress-tests/package-lock.json"
+    "rootManifest": "docs/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
     "maxChangedLines": 300
   },
-  "remediationKey": "0366ba4fd168f4df64c4596b9e86f6106750a7414eb114dfd48edb2f8c3a8668",
+  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -26,116 +26,71 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "6d2c974057eaa578a7ddc86e7bb600d193d89a6d",
+  "scanSha": "06149429063d656d1fe063d193f53cff36b2f531",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "yQPD8tRmQ7GaUZFVcY3mfQ",
+  "stoExecutionId": "PvPZQZk7RJyW26z8yQO7aw",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "4.18.1"
+        "3.1.7"
       ],
       "coordinate": {
-        "normalisedName": "lodash",
-        "purl": "pkg:npm/lodash@4.17.23"
+        "normalisedName": "fast-uri",
+        "purl": "pkg:npm/fast-uri@3.1.5"
       },
-      "fromVersion": "4.17.23",
+      "fromVersion": "3.1.5",
       "issueIds": [
-        "H4f0W1xYW2_JgbaXOCtWP8"
+        "xCefVBrGiVVRgv4OjHDNsE"
       ],
-      "minimumFixedVersion": "4.18.0",
-      "package": "lodash"
+      "minimumFixedVersion": "3.1.6",
+      "package": "fast-uri"
     },
     {
       "candidateVersions": [
-        "1.1.18"
+        "3.3.5"
       ],
       "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.11"
+        "normalisedName": "svgo",
+        "purl": "pkg:npm/svgo@3.3.4"
       },
-      "fromVersion": "1.1.11",
+      "fromVersion": "3.3.4",
       "issueIds": [
-        "Hh_ed2SC9IN47CwYYsxbos"
+        "XCDxXI0mO8_gA0_6MZ3Gcd"
       ],
-      "minimumFixedVersion": "1.1.16",
-      "package": "brace-expansion"
+      "minimumFixedVersion": "3.3.5",
+      "package": "svgo"
     },
     {
       "candidateVersions": [
-        "3.1.5"
+        "4.3.2"
       ],
       "coordinate": {
-        "normalisedName": "minimatch",
-        "purl": "pkg:npm/minimatch@3.1.2"
+        "normalisedName": "js-yaml",
+        "purl": "pkg:npm/js-yaml@4.3.1"
       },
-      "fromVersion": "3.1.2",
+      "fromVersion": "4.3.1",
       "issueIds": [
-        "fx-spfAgRUxoSyLUNBgJvR"
+        "4_inHpbI4HdnskvqhhDzOm"
       ],
-      "minimumFixedVersion": "3.1.3",
-      "package": "minimatch"
+      "minimumFixedVersion": "4.3.2",
+      "package": "js-yaml"
     },
     {
       "candidateVersions": [
-        "2.3.2"
+        "3.3.19"
       ],
       "coordinate": {
-        "normalisedName": "picomatch",
-        "purl": "pkg:npm/picomatch@2.3.1"
+        "normalisedName": "nanoid",
+        "purl": "pkg:npm/nanoid@3.3.17"
       },
-      "fromVersion": "2.3.1",
+      "fromVersion": "3.3.17",
       "issueIds": [
-        "iAWBVvyjkAt25S70LGJLCN"
+        "5BGD407e0Fr_MdbWrU4iyC"
       ],
-      "minimumFixedVersion": "2.3.2",
-      "package": "picomatch"
-    },
-    {
-      "candidateVersions": [
-        "5.33.10"
-      ],
-      "coordinate": {
-        "normalisedName": "systeminformation",
-        "purl": "pkg:npm/systeminformation@5.31.3"
-      },
-      "fromVersion": "5.31.3",
-      "issueIds": [
-        "Uxm_PLbS8rN4bCXyPStVf0"
-      ],
-      "minimumFixedVersion": "5.31.7",
-      "package": "systeminformation"
-    },
-    {
-      "candidateVersions": [
-        "7.5.13"
-      ],
-      "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@7.5.10"
-      },
-      "fromVersion": "7.5.10",
-      "issueIds": [
-        "I-dFcLQrlbipZ3ILE0MTIe"
-      ],
-      "minimumFixedVersion": "7.5.11",
-      "package": "ws"
-    },
-    {
-      "candidateVersions": [
-        "0.2.7"
-      ],
-      "coordinate": {
-        "normalisedName": "tmp",
-        "purl": "pkg:npm/tmp@0.2.5"
-      },
-      "fromVersion": "0.2.5",
-      "issueIds": [
-        "gzWr43jd0Z0SaFUk5dlGYr"
-      ],
-      "minimumFixedVersion": "0.2.6",
-      "package": "tmp"
+      "minimumFixedVersion": "3.3.18",
+      "package": "nanoid"
     }
   ]
 }
