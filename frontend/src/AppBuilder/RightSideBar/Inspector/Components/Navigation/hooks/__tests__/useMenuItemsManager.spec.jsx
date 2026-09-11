@@ -111,3 +111,46 @@ describe('useMenuItemsManager: validateItemId identity', () => {
     expect(api.validateItemId).toBe(firstReference);
   });
 });
+
+describe('useMenuItemsManager: rejects a colliding id', () => {
+  let session;
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  // Regression for: renaming an item's id to collide with another item's id showed
+  // the expected validation error, but the colliding value was still applied to local
+  // state (just never persisted) — two items then briefly shared an id, which
+  // SortableTree's own dedup guard (keyed by id) silently rendered as one, dropping
+  // the other from the Properties panel list. The colliding id must never be applied
+  // at all, not even locally — the item keeps its previous id outright.
+  test('an id matching another item is rejected, leaving the original id in place', () => {
+    const paramUpdated = jest.fn();
+    const component = {
+      id: 'nav1',
+      component: {
+        definition: {
+          properties: {
+            menuItems: {
+              value: [
+                { id: 'item1', _key: 'key-1', label: 'Item 1' },
+                { id: 'item2', _key: 'key-2', label: 'Item 2' },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    let api;
+    session.render(<TestHost component={component} paramUpdated={paramUpdated} onReady={(next) => (api = next)} />);
+
+    act(() => {
+      api.handleItemChange('id', 'item2', 'key-1', null);
+    });
+
+    expect(api.menuItems.find((item) => item._key === 'key-1').id).toBe('item1');
+    expect(paramUpdated).not.toHaveBeenCalled();
+  });
+});

@@ -52,3 +52,30 @@ describe('SortableTree row identity (getItemKey)', () => {
     expect(screen.getByTestId('row-stable-key-1')).toHaveTextContent('item1-renamed');
   });
 });
+
+// Regression for: rejecting a duplicate Nav item id (validation correctly flags it,
+// and it's never persisted) still reflects the typed value in local state so the
+// user sees what they typed — which briefly means two distinct items share the same
+// `id`. SortableTree's internal flattening had its own dedup guard keyed by `id`
+// (separate from the React row key above), so the second same-id item silently
+// vanished from the rendered list instead of just failing validation.
+describe('SortableTree flatten dedup (getItemKey)', () => {
+  it('renders two distinct items that temporarily share the same id', () => {
+    const renderItem = (item) => <div data-testid={`row-${item._key}`}>{item.label}</div>;
+
+    render(
+      <SortableTree
+        items={[
+          { id: 'dup', _key: 'key-a', label: 'Item A' },
+          { id: 'dup', _key: 'key-b', label: 'Item B' },
+        ]}
+        propertyNames={PROPERTY_NAMES}
+        renderItem={renderItem}
+        getItemKey={(item) => item._key}
+      />
+    );
+
+    expect(screen.getByTestId('row-key-a')).toHaveTextContent('Item A');
+    expect(screen.getByTestId('row-key-b')).toHaveTextContent('Item B');
+  });
+});
