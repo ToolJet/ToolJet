@@ -16,7 +16,8 @@
     },
     {
       "componentType": "FileButton",
-      "status": "not-started"
+      "status": "spec-complete",
+      "contract": "ee/test/app-builder/widgets/FileButton/TESTING.md"
     },
     {
       "componentType": "Table",
