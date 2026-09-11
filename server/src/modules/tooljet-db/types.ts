@@ -85,7 +85,9 @@ export type TooljetDbActions =
   // Origin tag for applyMigrations' own catch block - not a client-facing action; applyMigrations
   // never writes its own migration row, so there's nothing for ADJUDICATION_PREDICATES to cover
   // here.
-  | 'apply_migrations';
+  | 'apply_migrations'
+  // Origin tag for recordRawSqlMigration's catch block - authoring a raw_sql migration.
+  | 'raw_sql';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
 type ErrorCodeMapping = {
@@ -95,6 +97,10 @@ type ErrorCodeMapping = {
 const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.NotNullViolation]: {
     edit_column: 'Cannot add NOT NULL constraint as this column contains null values',
+    raw_sql:
+      'Cannot add NOT NULL constraint: {{table}} already has rows with a null value in this column. Backfill those rows (e.g. an UPDATE statement) before running this migration.',
+    apply_migrations:
+      'Cannot add NOT NULL constraint: {{table}} already has rows with a null value in this column in the target environment. Backfill those rows there, then promote again.',
     proxy_postgrest: 'Not null constraint violated for {{table}}.{{column}}',
   },
   [PostgresErrorCode.UniqueViolation]: {

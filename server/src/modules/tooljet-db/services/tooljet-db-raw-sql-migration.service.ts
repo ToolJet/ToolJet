@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { EntityManager, LessThan } from 'typeorm';
+import { EntityManager, LessThan, QueryFailedError } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
@@ -12,7 +12,7 @@ import {
 } from 'src/helpers/tooljet_db.helper';
 import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { unsupportedColumnTypes } from '../helpers/column-type-change';
-import { TJDB } from '../types';
+import { TJDB, TooljetDatabaseError } from '../types';
 import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
@@ -148,7 +148,17 @@ export class TooljetDbRawSqlMigrationService {
       return result;
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
-      throw err;
+
+      // Same guard edit_column/apply_migrations use: TooljetDatabaseError's constructor assumes a
+      // QueryFailedError shape (it indexes err.driverError) - a BadRequestException from
+      // substitutePlaceholders/assertNoUnsupportedColumnTypes would crash the wrap instead of
+      // surfacing itself.
+      if (!(err instanceof QueryFailedError)) throw err;
+      throw new TooljetDatabaseError(
+        err.message,
+        { origin: 'raw_sql', internalTables: [{ id: relation.id, tableName: internalTable.tableName }] },
+        err
+      );
     } finally {
       await tjdbQueryRunner.release();
       await tooljetDbTenantConnection.destroy();
