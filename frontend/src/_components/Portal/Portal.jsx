@@ -21,6 +21,7 @@ const Portal = ({ children, ...restProps }) => {
     isCopilotEnabled,
     onPortalDimensionsChange = noop,
     canRefresh = false,
+    paramLabel,
   } = restProps;
 
   const [name, setName] = React.useState(componentName);
@@ -60,6 +61,7 @@ const Portal = ({ children, ...restProps }) => {
           darkMode={darkMode}
           styles={styles}
           componentName={name}
+          paramLabel={paramLabel}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
@@ -83,6 +85,7 @@ const Modal = ({
   portalStyles,
   styles,
   componentName,
+  paramLabel,
   darkMode,
   dragResizePortal,
   callgpt,
@@ -120,7 +123,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {paramLabel || componentName || 'Editor'}
           </span>
         </div>
 
