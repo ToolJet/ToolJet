@@ -28,6 +28,12 @@ const initialState = {
   },
 };
 
+const createExecutionEvent = (event, eventExecutionId) => {
+  if (eventExecutionId === undefined || eventExecutionId === null || !event?.id) return event;
+
+  return { ...event, id: `${event.id}:${eventExecutionId}` };
+};
+
 export const useEvents = (moduleId = 'canvas') => {
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
   return events;
@@ -291,6 +297,7 @@ export const createEventsSlice = (set, get) => ({
     onEvent: async (eventName, events, options = {}, mode = 'edit', moduleId = 'canvas') => {
       const executeActionsForEventId = get().eventsSlice.executeActionsForEventId;
       const customVariables = options?.customVariables ?? {};
+      const eventExecutionId = options?.eventExecutionId;
       const { setExposedValue } = get();
 
       if (eventName === 'onPageLoad') {
@@ -314,7 +321,12 @@ export const createEventsSlice = (set, get) => ({
         if (action && executeableActions) {
           for (const event of executeableActions) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(
+                createExecutionEvent(event, eventExecutionId),
+                mode,
+                customVariables,
+                moduleId
+              );
             }
           }
         } else {
@@ -328,7 +340,12 @@ export const createEventsSlice = (set, get) => ({
         if (column && tableColumnEvents) {
           for (const event of tableColumnEvents) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(
+                createExecutionEvent(event, eventExecutionId),
+                mode,
+                customVariables,
+                moduleId
+              );
             }
           }
         } else {
@@ -342,7 +359,12 @@ export const createEventsSlice = (set, get) => ({
         if (column && tableColumnEvents) {
           for (const event of tableColumnEvents) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(
+                createExecutionEvent(event, eventExecutionId),
+                mode,
+                customVariables,
+                moduleId
+              );
             }
           }
         } else {
@@ -358,7 +380,12 @@ export const createEventsSlice = (set, get) => ({
         const componentEvents = events.filter((e) => !e?.event?.ref).sort(byIndex);
         for (const event of [...itemEvents, ...componentEvents]) {
           if (event?.event?.actionId && !event?.event?.disabled) {
-            await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+            await get().eventsSlice.executeAction(
+              createExecutionEvent(event, eventExecutionId),
+              mode,
+              customVariables,
+              moduleId
+            );
           }
         }
       }
@@ -446,25 +473,37 @@ export const createEventsSlice = (set, get) => ({
           'onRefresh',
         ].includes(eventName)
       ) {
-        executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        executeActionsForEventId(eventName, events, mode, customVariables, moduleId, eventExecutionId);
       }
       if (eventName === 'onBulkUpdate') {
-        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, eventExecutionId);
       }
 
       if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
         if (!events || !Array.isArray(events) || events.length === 0) return;
-        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, eventExecutionId);
       }
     },
-    executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
+    executeActionsForEventId: async (
+      eventId,
+      events = [],
+      mode,
+      customVariables,
+      moduleId = 'canvas',
+      eventExecutionId
+    ) => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
         ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+        await get().eventsSlice.executeAction(
+          createExecutionEvent(event, eventExecutionId),
+          mode,
+          customVariables,
+          moduleId
+        );
       }
     },
     logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error', page) {
