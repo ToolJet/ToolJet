@@ -155,6 +155,177 @@ describeGitLab('GitSyncController — GitLab', () => {
       await closeTestApp(app);
     }, 60000);
 
+    // ────────────────────────────────────────────────────────────────────────────
+    // Data-source FOLDERS round-trip (GitLab). Self-contained: its own org + a seeded
+    // non-main single-branch default, so it never touches the shared orgId. Mirrors the
+    // GitHub single-branch data-source-folder test — a foldered data source must serialize
+    // under data-sources/<folder>/<ds>/data-source.json, its branch-scoped
+    // folder_data_sources membership must survive a pull, and moving it to another folder
+    // must prune the old folder directory. Runs against the real GitLab simulator.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('single-branch data-source folders (GitLab)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const SB_BRANCH = 'single-branch-main-gl-dsf';
+      let sbOrgId: string;
+      let sbCookie: string[];
+      let sbDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', sbCookie).set('tj-workspace-id', sbOrgId);
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+        auth(agent().post('/api/workspace-branches/push'))
+          .query({ branch_id: branchId })
+          .send({ commitMessage, branchId, ...(scope && { scope }) });
+      const dsvName = async (dsId: string, branchId: string): Promise<string> =>
+        (
+          await sbDs.query(`SELECT name FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.name;
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+      const inspectBranch = async (branch: string) => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-gl-dsf-'));
+        const git = simpleGit({
+          baseDir: tmpDir,
+          timeout: { block: 30000 },
+          unsafe: { allowUnsafeCredentialHelper: true },
+        });
+        await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+          '--branch',
+          branch,
+          '--depth',
+          '1',
+          '--single-branch',
+        ]);
+        const hasFile = (rel: string) => fs.existsSync(path.join(tmpDir, rel));
+        const dirHasFiles = (sub: string) => {
+          const root = path.join(tmpDir, sub);
+          if (!fs.existsSync(root)) return false;
+          let found = false;
+          const walk = (d: string) => {
+            for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+              const full = path.join(d, e.name);
+              if (e.isDirectory()) walk(full);
+              else found = true;
+            }
+          };
+          walk(root);
+          return found;
+        };
+        const cleanup = () => fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        return { hasFile, dirHasFiles, cleanup };
+      };
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-gl-dsf@tooljet.io',
+          firstName: 'git',
+          lastName: 'gldsf',
+        });
+        sbOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-gl-dsf@tooljet.io');
+        sbCookie = tokenCookie;
+        await ensureAppEnvironments(app, sbOrgId);
+        sbDs = app.get<DataSource>(getDataSourceToken('default'));
+        await sbDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [sbOrgId, SB_BRANCH]
+        );
+      });
+
+      it('serializes a foldered data source under data-sources/<folder>/<ds>/ and round-trips its branch-scoped membership', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+        // ── 1. reset + configure git (single-branch, non-main default), pull baseline ────
+        step(1, 'reset simulator + configure single-branch GitLab, disable branching, pull baseline');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, branchName: SB_BRANCH, useEnvConfig: false })
+          .expect(201);
+        const orgGitId: string = (await auth(agent().get(`/api/git-sync/${sbOrgId}`)).expect(200)).body.organization_git
+          .id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+        const branchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId;
+        await pull(branchId).expect(201);
+
+        // ── 2. create a data source + two data-source folders, move the DS into "analytics" ──
+        step(2, 'create data source + two data-source folders, move the DS into "analytics"');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${branchId}`))
+            .send({ name: 'glf-ds', kind: 'restapi', options: dsOptions('http://glf-ds.example.com'), scope: 'global' })
+            .expect(201)
+        ).body.id;
+        const analyticsId: string = (
+          await auth(agent().post('/api/folders')).send({ name: 'analytics', type: 'data_source' }).expect(201)
+        ).body.id;
+        const reportingId: string = (
+          await auth(agent().post('/api/folders')).send({ name: 'reporting', type: 'data_source' }).expect(201)
+        ).body.id;
+        await auth(agent().post('/api/folder-data-sources'))
+          .query({ branch_id: branchId })
+          .send({ folder_id: analyticsId, data_source_id: dsId })
+          .expect(201);
+        const dsName = await dsvName(dsId, branchId);
+        const folderedPath = `data-sources/analytics/${dsName}/data-source.json`;
+        const rootPath = `data-sources/${dsName}/data-source.json`;
+
+        // ── 3. push → the DS file lands UNDER its folder directory, not at the root ───────
+        step(3, 'push → data-sources/analytics/<ds>/data-source.json present, root path absent');
+        await pushWorkspace(branchId, 'push foldered data source', 'datasource').expect(201);
+        const afterPush = await inspectBranch(SB_BRANCH);
+        try {
+          expect(afterPush.hasFile(folderedPath)).toBe(true);
+          expect(afterPush.hasFile(rootPath)).toBe(false);
+        } finally {
+          await afterPush.cleanup();
+        }
+
+        // ── 4. pull round-trips: the branch-scoped folder membership survives ────────────
+        step(4, 'pull → folder_data_sources membership row for this branch points at "analytics"');
+        await pull(branchId).expect(201);
+        const membership = await sbDs.query(
+          `SELECT folder_id FROM folder_data_sources WHERE data_source_id = $1 AND branch_id = $2`,
+          [dsId, branchId]
+        );
+        expect(membership[0]?.folder_id).toBe(analyticsId);
+
+        // ── 5. move the DS to a second folder + push → old dir pruned, new dir present ────
+        step(5, 'move to "reporting" + push → analytics dir pruned, reporting dir present');
+        await auth(agent().post('/api/folder-data-sources'))
+          .query({ branch_id: branchId })
+          .send({ folder_id: reportingId, data_source_id: dsId })
+          .expect(201);
+        await pushWorkspace(branchId, 'move data source to reporting', 'datasource').expect(201);
+        const afterMove = await inspectBranch(SB_BRANCH);
+        try {
+          expect(afterMove.hasFile(`data-sources/reporting/${dsName}/data-source.json`)).toBe(true);
+          expect(afterMove.dirHasFiles('data-sources/analytics')).toBe(false);
+        } finally {
+          await afterMove.cleanup();
+        }
+      }, 300000);
+    });
+
     describe('GET /api/git-sync/:id | Get organization git config', () => {
       it('should return 401 if the auth token is missing', async () => {
         await request
