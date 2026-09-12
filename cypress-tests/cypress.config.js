@@ -16,9 +16,13 @@ module.exports = defineConfig({
       require("./cypress/config/browserConfig")(on);
       require("@cypress/code-coverage/task")(on, config);
       require("./cypress/plugins/index.js")(on, config);
-      // live reporting — self-disables (one warning) when CLR_PG_URL /
-      // CLR_WEBHOOK_URL are unset, so this is a no-op for anyone without it
-      return require("./tools/cypress-live-reporter/plugin").livePlugin(on, config);
+      // cypress-live-reporter — self-disables (one warning) when neither
+      // CLR_DB nor CLR_WEBHOOK is set in cypress env, so it's a no-op otherwise.
+      return require("cypress-live-reporter/plugin").livePlugin(on, config);
+    },
+
+    env: {
+      CLR_PROJECT_ID: "happy-path",
     },
 
     baseUrl: "http://localhost:8082",

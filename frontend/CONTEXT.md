@@ -6,10 +6,11 @@ Before adding or changing tests for `src/AppBuilder/**`, read
 `src/test/app-builder/README.md`, then use `ee/.agents/skills/app-builder-widget-tdd/SKILL.md`. Registered widget status
 and canonical contract paths live in `widget-testing-manifest.json`; widget-specific facts under
 `ee/test/app-builder/widgets/<ComponentType>/TESTING.md` must not be generalized to other widgets.
-Research is a hard gate. Existing widgets require Context7 official ToolJet documentation plus the
-last 2 years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead.
-Record the applicable source in the canonical contract; if Context7 is required but unavailable,
-stop and request installation/configuration before writing tests.
+Research is a hard gate. Existing widgets require the widget's official doc page plus the last 2
+years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead. Doc
+pages live on the `documentation` branch and are mapped per component type in that skill's
+`widget-docs.json`. Record the applicable source in the canonical contract; if the doc page cannot
+be resolved, stop and ask before writing tests.
 
 ## Glossary
 
