@@ -8,13 +8,11 @@ title: "Create App from GitHub"
 <ApiColumns>
 <ApiLeft>
 
-Creates a new ToolJet app from a GitHub repository.
-
-
+Creates a new ToolJet app from a GitHub repository. ToolJet clones the repository and imports the first app it finds, unless you narrow it down with `gitAppName` and `gitBranchName`.
 
 <ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"Must be set to git to create an app from a GitHub repository.","in":"query"}]} />
 
-<ParamsTable title="Request Body" params={[{"name":"gitAppId","type":"string","required":true,"description":"Git App ID.","in":"body"},{"name":"gitVersionId","type":"string","required":true,"description":"Git version ID (branch or tag).","in":"body"},{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"},{"name":"gitAppName","type":"string","required":false,"description":"Name of the app folder to import from the repo. If omitted, ToolJet picks the first app it finds.","in":"body"},{"name":"gitBranchName","type":"string","required":false,"description":"Git branch to clone from. Defaults to the organization's configured default branch.","in":"body"},{"name":"gitAppId","type":"string","required":false,"description":"The app's own ID as recorded in the repo, if you already know it. Used to check the app hasn't already been imported.","in":"body"}]} />
 
 <ErrorsTable errors={[
   {"status":"400","description":"App name already exists, no git provider enabled, repository clone failed, or import error."},
@@ -31,9 +29,9 @@ Creates a new ToolJet app from a GitHub repository.
     -H "Authorization: Basic <access_token>" \\
     -H "Content-Type: application/json" \\
     -d '{
-      "gitAppId": "app-123456",
-      "gitVersionId": "main",
-      "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+      "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8",
+      "gitAppName": "My Git App",
+      "gitBranchName": "main"
     }'`} />
 
 <ResponseExample statusCode="201" body={`{

@@ -52,7 +52,6 @@ const SPECS = [
       pushAppVersion:    'push-app-version',
       createAppFromGit:  'create-app-from-git',
       syncPullApp:       'sync-pull-app',
-      autoPromoteApp:    'auto-promote-app',
     },
   },
   {
