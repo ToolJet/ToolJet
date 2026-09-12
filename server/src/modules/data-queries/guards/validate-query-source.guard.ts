@@ -37,7 +37,23 @@ export class ValidateQuerySourceGuard implements CanActivate {
 
       let dataSource: DataSource;
 
-      if (id) {
+      // Support dynamic data source override via request body (fx mode)
+      const bodyDataSourceId = request.body?.data_source_id;
+
+      if (bodyDataSourceId) {
+        // When a dynamic data source ID is provided, resolve by that ID
+        // Security: validates the DS belongs to the same organization
+        dataSource = await this.dataSourceRepository.findById(bodyDataSourceId, user.organizationId);
+
+        // For preview endpoints, we still need the dataQueries relation from the original source
+        // so that the controller can access the query entity via dataSource.dataQueries[0]
+        if (id && dataSource) {
+          const originalSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
+          if (originalSource?.dataQueries) {
+            dataSource.dataQueries = originalSource.dataQueries;
+          }
+        }
+      } else if (id) {
         dataSource = await this.dataSourceRepository.findByQuery(id, user.organizationId, dataSourceId);
       } else {
         dataSource = await this.dataSourceRepository.findById(dataSourceId, user.organizationId);

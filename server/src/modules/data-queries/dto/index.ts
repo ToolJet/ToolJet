@@ -39,7 +39,11 @@ export class CreateDataQueryDto {
   folder_id: string;
 }
 
-export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
+export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {
+  @IsUUID()
+  @IsOptional()
+  data_source_id?: string;
+}
 
 export interface IUpdatingReferencesOptions {
   id: string;
