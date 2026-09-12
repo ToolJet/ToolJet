@@ -287,10 +287,7 @@ export class ComponentsService implements IComponentsService {
    * For module-type apps, resolves the ModuleContainer component id for the given version.
    * Returns null for non-module apps or if no ModuleContainer exists.
    */
-  protected async resolveModuleContainerId(
-    appVersionId: string,
-    manager: EntityManager
-  ): Promise<string | null> {
+  protected async resolveModuleContainerId(appVersionId: string, manager: EntityManager): Promise<string | null> {
     const appVersion = await manager.findOne(AppVersion, {
       where: { id: appVersionId },
       select: ['id', 'appId', 'homePageId'],
@@ -611,15 +608,19 @@ export class ComponentsService implements IComponentsService {
           where: { componentId, type: layout.type },
         });
         if (existing) {
-          await manager.update(Layout, { id: existing.id }, {
-            top: layout.top,
-            left: layout.left,
-            width: layout.width,
-            height: layout.height,
-            widthPx: layout.widthPx,
-            fillWidth: layout.fillWidth,
-            dimensionUnit: layout.dimensionUnit,
-          });
+          await manager.update(
+            Layout,
+            { id: existing.id },
+            {
+              top: layout.top,
+              left: layout.left,
+              width: layout.width,
+              height: layout.height,
+              widthPx: layout.widthPx,
+              fillWidth: layout.fillWidth,
+              dimensionUnit: layout.dimensionUnit,
+            }
+          );
         } else {
           layoutsToInsert.push(layout);
         }
@@ -737,6 +738,11 @@ export class ComponentsService implements IComponentsService {
           message: `Components with ids ${componentIds} do not exist`,
         },
       };
+    }
+
+    const moduleContainers = components.filter((c) => c.type === 'ModuleContainer');
+    if (moduleContainers.length) {
+      throw new BadRequestException('ModuleContainer cannot be deleted');
     }
 
     if (!isComponentCut) {

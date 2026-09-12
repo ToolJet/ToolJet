@@ -302,18 +302,20 @@ export const ConfigHandle = ({
           <MentionComponentInChat componentName={componentName} />
         </Suspense>
       )}
-      <ConfigHandleButton
-        customStyles={iconOnlyButtonStyle}
-        onClick={() => {
-          !shouldFreeze && deleteComponents();
-        }}
-        message="Delete component"
-        show={true}
-        dataCy={`${componentName.toLowerCase()}-delete-component-button`}
-        shouldHide={shouldFreeze}
-      >
-        <Trash size={14} color="var(--icon-strong)" />
-      </ConfigHandleButton>
+      {componentType !== 'ModuleContainer' && (
+        <ConfigHandleButton
+          customStyles={iconOnlyButtonStyle}
+          onClick={() => {
+            !shouldFreeze && deleteComponents();
+          }}
+          message="Delete component"
+          show={true}
+          dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+          shouldHide={shouldFreeze}
+        >
+          <Trash size={14} color="var(--icon-strong)" />
+        </ConfigHandleButton>
+      )}
       {/* Tooltip for invalid license on ModuleViewer */}
       {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') &&
         !isModulesEnabled &&
