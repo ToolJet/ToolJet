@@ -60,7 +60,8 @@
     },
     {
       "componentType": "Calendar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Calendar/TESTING.md"
     },
     {
       "componentType": "Kanban",
