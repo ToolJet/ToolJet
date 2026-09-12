@@ -91,6 +91,12 @@ module.exports = {
     // own onRecordingStart/onStop logic through the stub's status transitions and
     // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
     '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
+    // STUB, not transform: AudioRecorder.jsx dynamically imports a single icon from
+    // `@tabler/icons-react/dist/esm/icons/<name>.js`, an ESM-only path outside jest's
+    // transform allowlist, so the real import throws "Cannot use import statement
+    // outside a module" on every render. The glyph is cosmetic; a pass-through icon
+    // is the cheap equivalent. See ee/test/app-builder/widgets/AudioRecorder/TESTING.md.
+    '^@tabler/icons-react/dist/esm/icons/.*$': '<rootDir>/__mocks__/tablerDynamicIcon.jsx',
     // STUB, not transform: @react-google-maps/api wraps the Google Maps JS SDK
     // (window.google, an external script, an API key), none of which jsdom has, so
     // a real map never renders under jest. Real tiles/pan/zoom/drag geometry and the
