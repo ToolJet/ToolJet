@@ -185,14 +185,14 @@ describe('LoginConfigsController', () => {
         expect((row?.configs as Record<string, unknown>)?.clientId).toBe('legacy-client-id');
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         const savedWellKnownUrl = process.env.OIDC_WELL_KNOWN_URL;
         delete process.env.OIDC_WELL_KNOWN_URL;
         try {
           await app.get(OrganizationEnvUtilService).initialize();
           await expect(
             app.get(LoginConfigsService).toggleInstanceOidcEnvConfig({ useEnvConfig: true }, 'a-human-user-id')
-          ).rejects.toThrow(/OIDC_WELL_KNOWN_URL/);
+          ).rejects.toThrow(/Environment variable is not configured for SSO/);
         } finally {
           process.env.OIDC_WELL_KNOWN_URL = savedWellKnownUrl;
           await app.get(OrganizationEnvUtilService).initialize();
@@ -240,7 +240,7 @@ describe('LoginConfigsController', () => {
         expect(rows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: [{ OIDC_CLIENT_ID: 'id-1', OIDC_NAME: 'first' }],
         });
@@ -248,16 +248,16 @@ describe('LoginConfigsController', () => {
 
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/OIDC_WELL_KNOWN_URL/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
 
-      it('should throw the specific missing keys, not "already in use", when the workspace has no config entry at all', async () => {
+      it('should throw the generic env-config message, not "already in use", when the workspace has no config entry at all', async () => {
         delete process.env.WORKSPACE_OIDC_CONFIG;
         await app.get(OrganizationEnvUtilService).initialize();
 
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/OIDC_CLIENT_ID is required/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
 
       it('should still report "already in use" when every real slot is genuinely claimed', async () => {
@@ -314,13 +314,13 @@ describe('LoginConfigsController', () => {
         expect(row?.enabled).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_SAML_CONFIG = JSON.stringify({ [TEST_ORG_SLUG]: { SAML_NAME: 'Test SAML' } });
         await app.get(OrganizationEnvUtilService).initialize();
 
         await expect(
           app.get(LoginConfigsService).toggleSamlEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/SAML_IDP_METADATA/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
     });
 
@@ -338,7 +338,7 @@ describe('LoginConfigsController', () => {
         expect(row?.enabled).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: { LDAP_HOST_NAME: 'localhost', LDAP_PORT: '389' },
         });
@@ -346,7 +346,7 @@ describe('LoginConfigsController', () => {
 
         await expect(
           app.get(LoginConfigsService).toggleLdapEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/LDAP_BASE_DN/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
 
       it('should replace a stale real basedns array with the env-key token once env-config is applied', async () => {
