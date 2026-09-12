@@ -32,8 +32,27 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not plan to support other databases such as MySQL.
     :::
 
+    :::caution
+    `postgresql@13` was disabled in Homebrew on 2026-03-01 as it reached end-of-life upstream. Use one of the options below instead.
+    :::
+
+    **Option A – Docker (recommended):** Run a PostgreSQL 13 container without installing it locally:
     ```bash
-    brew install postgresql@13
+    docker run -d \
+      --name tooljet-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=tooljet_development \
+      -p 5432:5432 \
+      postgres:13
+    ```
+
+    **Option B – Homebrew with a supported version:** PostgreSQL 14, 15, or 16 are compatible with ToolJet:
+    ```bash
+    brew install postgresql@16
+    brew services start postgresql@16
+    echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zshrc
+    source ~/.zshrc
     ```
     
     1.4 Install PostgREST
