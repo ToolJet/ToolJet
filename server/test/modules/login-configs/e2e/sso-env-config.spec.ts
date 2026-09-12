@@ -14,6 +14,7 @@ import {
 import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
 import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
+import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 
@@ -197,6 +198,34 @@ describe('LoginConfigsController', () => {
           process.env.OIDC_WELL_KNOWN_URL = savedWellKnownUrl;
           await app.get(OrganizationEnvUtilService).initialize();
         }
+      });
+
+      it('should keep showing a GUI-saved group-sync mapping once env-config is on, when no OIDC_GROUP_SYNC_* override exists', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+          enableGroupSync: true,
+        });
+
+        const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+        const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+        expect(openidConfig?.oidcGroupSyncs).toHaveLength(1);
+        expect(openidConfig?.oidcGroupSyncs[0]).toMatchObject({
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+        });
+
+        await groupSyncRepository.delete({ ssoConfigId: row.id });
       });
     });
 
