@@ -1,7 +1,4 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.7.3",
     "@base-ui/react": "^1.3.0",
@@ -236,83 +233,18 @@
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^5.2.2"
   },
-  "overrides": {
-    "react-dates": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-google-login": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-json-view": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-lazyload": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-qr-reader": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-table-plugins": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-image-annotation": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "react-mentions": {
-      "@babel/runtime": "^7.28.4"
-    },
-    "jspdf": {
-      "@babel/runtime": ">=7.26.10",
-      "dompurify": "^3.2.5"
-    },
-    "refractor": {
-      "prismjs": "1.30.0"
-    },
-    "isomorphic-fetch@2.x": {
-      "node-fetch": "^2.6.13"
-    },
-    "esbuild": "0.25.9",
-    "on-headers": "1.1.0",
-    "tar-fs": "^3.1.0",
-    "minimatch@3": {
-      "brace-expansion": "^1.1.11"
-    }
-  },
-  "scripts": {
-    "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
-    "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
-    "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
-    "analyze": "ANALYZE=true webpack --mode=production",
-    "analyze:dev": "ANALYZE=true webpack --mode=development",
-    "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
-    "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
-    "lint": "eslint --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
-    "lint-quiet": "eslint --quiet --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
-    "format": "eslint --fix --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
-    "typecheck": "tsc --noEmit",
-    "test": "jest",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "npx storybook build"
-  },
   "jest": {
     "transform": {
       "^.+\\.js?$": "babel-jest",
       "^.+\\.jsx?$": "babel-jest",
       "^.+\\.tsx?$": "babel-jest",
-      "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
+      "^.+\\.svg$": "\u003crootDir\u003e/__mocks__/svg.js"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!(react|mpx-error-boundary)/)"
     ],
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
+      "@/(.*)": "\u003crootDir\u003e/src/$1"
     },
     "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [
@@ -326,5 +258,228 @@
       "json",
       "jsx"
     ]
-  }
+  },
+  "name": "frontend",
+  "overrides": {
+    "@apidevtools/json-schema-ref-parser": {
+      "js-yaml": "4.3.2"
+    },
+    "@azure/core-http": {
+      "form-data": "4.0.6"
+    },
+    "@babel/helper-compilation-targets": {
+      "browserslist": "4.28.9"
+    },
+    "@eslint/eslintrc": {
+      "js-yaml": "3.15.2"
+    },
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "3.15.2"
+    },
+    "@mdxeditor/editor": {
+      "js-yaml": "4.3.2"
+    },
+    "@react-native/dev-middleware": {
+      "ws": "6.2.6"
+    },
+    "@types/node-fetch": {
+      "form-data": "4.0.6"
+    },
+    "@yarnpkg/parsers": {
+      "js-yaml": "3.15.2"
+    },
+    "ajv": {
+      "fast-uri": "3.1.7"
+    },
+    "anymatch": {
+      "picomatch": "2.3.2"
+    },
+    "autoprefixer": {
+      "browserslist": "4.28.9"
+    },
+    "axios": {
+      "form-data": "4.0.6"
+    },
+    "caniuse-api": {
+      "browserslist": "4.28.9"
+    },
+    "core-js-compat": {
+      "browserslist": "4.28.9"
+    },
+    "cosmiconfig": {
+      "js-yaml": "4.3.2"
+    },
+    "cssnano-preset-default": {
+      "browserslist": "4.28.9"
+    },
+    "draft-js": {
+      "immutable": "3.8.4"
+    },
+    "esbuild": "0.25.9",
+    "eslint": {
+      "js-yaml": "3.15.2"
+    },
+    "faye-websocket": {
+      "websocket-driver": "0.7.5"
+    },
+    "front-matter": {
+      "js-yaml": "3.15.2"
+    },
+    "isomorphic-fetch@2.x": {
+      "node-fetch": "^2.6.13"
+    },
+    "jest-util": {
+      "picomatch": "2.3.2"
+    },
+    "jsdom": {
+      "ws": "7.5.13"
+    },
+    "jspdf": {
+      "@babel/runtime": "\u003e=7.26.10",
+      "dompurify": "^3.2.5"
+    },
+    "launch-editor": {
+      "shell-quote": "1.10.0"
+    },
+    "lerna": {
+      "js-yaml": "4.3.2"
+    },
+    "metro": {
+      "ws": "7.5.13"
+    },
+    "micromatch": {
+      "picomatch": "2.3.2"
+    },
+    "minimatch": {
+      "brace-expansion": "2.1.4"
+    },
+    "minimatch@3": {
+      "brace-expansion": "1.1.18"
+    },
+    "on-headers": "1.1.0",
+    "postcss": {
+      "nanoid": "3.3.19"
+    },
+    "postcss-colormin": {
+      "browserslist": "4.28.9"
+    },
+    "postcss-convert-values": {
+      "browserslist": "4.28.9"
+    },
+    "postcss-merge-rules": {
+      "browserslist": "4.28.9"
+    },
+    "postcss-minify-params": {
+      "browserslist": "4.28.9"
+    },
+    "postcss-normalize-unicode": {
+      "browserslist": "4.28.9"
+    },
+    "postcss-reduce-initial": {
+      "browserslist": "4.28.9"
+    },
+    "posthog-js": {
+      "fflate": "0.8.3"
+    },
+    "react-big-calendar": {
+      "lodash-es": "4.18.1"
+    },
+    "react-checkbox-tree": {
+      "nanoid": "3.3.19"
+    },
+    "react-color": {
+      "lodash-es": "4.18.1"
+    },
+    "react-dates": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-devtools-core": {
+      "shell-quote": "1.10.0",
+      "ws": "7.5.13"
+    },
+    "react-google-login": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-image-annotation": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-json-view": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-lazyload": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-mentions": {
+      "@babel/runtime": "^7.28.4"
+    },
+    "react-native": {
+      "ws": "6.2.6"
+    },
+    "react-qr-reader": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "react-table-plugins": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "read-excel-file": {
+      "@xmldom/xmldom": "0.9.12",
+      "fflate": "0.8.3"
+    },
+    "readdirp": {
+      "picomatch": "2.3.2"
+    },
+    "refractor": {
+      "prismjs": "1.30.0"
+    },
+    "sockjs": {
+      "websocket-driver": "0.7.5"
+    },
+    "storybook": {
+      "ws": "8.21.3"
+    },
+    "stylehacks": {
+      "browserslist": "4.28.9"
+    },
+    "tar-fs": "^3.1.0",
+    "webpack": {
+      "browserslist": "4.28.9"
+    },
+    "webpack-bundle-analyzer": {
+      "ws": "7.5.13"
+    },
+    "webpack-dev-server": {
+      "ws": "8.21.3"
+    },
+    "y-webrtc": {
+      "ws": "8.21.3"
+    },
+    "y-websocket": {
+      "ws": "6.2.6"
+    }
+  },
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
+    "build": "webpack --mode=production \u0026\u0026 cp -a ./assets/. ./build/assets/",
+    "build:cloud": "webpack --mode=production \u0026\u0026 cp -a ./assets/. ./build/assets/ \u0026\u0026 rm -rf ./build/assets/libs/pyodide-0.23.2",
+    "analyze": "ANALYZE=true webpack --mode=production",
+    "analyze:dev": "ANALYZE=true webpack --mode=development",
+    "analyze:stats": "webpack --mode=production --json \u003e bundle-stats.json \u0026\u0026 webpack-bundle-analyzer bundle-stats.json",
+    "build:analyze": "ANALYZE=true NODE_ENV=production webpack --mode=production",
+    "lint": "eslint --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
+    "lint-quiet": "eslint --quiet --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
+    "format": "eslint --fix --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx}' 'ee/**/*.{js,jsx,ts,tsx}'",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "npx storybook build"
+  },
+  "version": "0.1.0"
 }
