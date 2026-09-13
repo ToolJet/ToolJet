@@ -14,6 +14,7 @@ import {
 import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
 import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
+import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 
@@ -167,18 +168,64 @@ describe('LoginConfigsController', () => {
         expect((await getInstanceOidcRow())?.useEnvConfig).toBe(false);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should never take over a row already enabled outside auto-enable, e.g. by the legacy SSO_OPENID_* migration', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await ssoConfigsRepository.update(
+          { sso: SSOType.OPENID, organizationId: IsNull() },
+          {
+            useEnvConfig: false,
+            enabled: true,
+            configs: { clientId: 'legacy-client-id', name: 'legacy-name', wellKnownUrl: 'https://legacy.example.com' },
+          }
+        );
+
+        await runBootSequence();
+
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.clientId).toBe('legacy-client-id');
+      });
+
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         const savedWellKnownUrl = process.env.OIDC_WELL_KNOWN_URL;
         delete process.env.OIDC_WELL_KNOWN_URL;
         try {
           await app.get(OrganizationEnvUtilService).initialize();
           await expect(
             app.get(LoginConfigsService).toggleInstanceOidcEnvConfig({ useEnvConfig: true }, 'a-human-user-id')
-          ).rejects.toThrow(/OIDC_WELL_KNOWN_URL/);
+          ).rejects.toThrow(/Environment variable is not configured for SSO/);
         } finally {
           process.env.OIDC_WELL_KNOWN_URL = savedWellKnownUrl;
           await app.get(OrganizationEnvUtilService).initialize();
         }
+      });
+
+      it('should keep showing a GUI-saved group-sync mapping once env-config is on, when no OIDC_GROUP_SYNC_* override exists', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+          enableGroupSync: true,
+        });
+
+        const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+        const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+        expect(openidConfig?.oidcGroupSyncs).toHaveLength(1);
+        expect(openidConfig?.oidcGroupSyncs[0]).toMatchObject({
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+        });
+
+        await groupSyncRepository.delete({ ssoConfigId: row.id });
       });
     });
 
@@ -222,7 +269,7 @@ describe('LoginConfigsController', () => {
         expect(rows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: [{ OIDC_CLIENT_ID: 'id-1', OIDC_NAME: 'first' }],
         });
@@ -230,7 +277,36 @@ describe('LoginConfigsController', () => {
 
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/OIDC_WELL_KNOWN_URL/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
+      });
+
+      it('should throw the generic env-config message, not "already in use", when the workspace has no config entry at all', async () => {
+        delete process.env.WORKSPACE_OIDC_CONFIG;
+        await app.get(OrganizationEnvUtilService).initialize();
+
+        await expect(
+          app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
+      });
+
+      it('should still report "already in use" when every real slot is genuinely claimed', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [TEST_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'id-1',
+              OIDC_CLIENT_SECRET: 'secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        await runBootSequence();
+
+        await expect(
+          app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
+        ).rejects.toThrow(/already being used/);
       });
     });
 
@@ -267,13 +343,13 @@ describe('LoginConfigsController', () => {
         expect(row?.enabled).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_SAML_CONFIG = JSON.stringify({ [TEST_ORG_SLUG]: { SAML_NAME: 'Test SAML' } });
         await app.get(OrganizationEnvUtilService).initialize();
 
         await expect(
           app.get(LoginConfigsService).toggleSamlEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/SAML_IDP_METADATA/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
     });
 
@@ -291,7 +367,7 @@ describe('LoginConfigsController', () => {
         expect(row?.enabled).toBe(true);
       });
 
-      it('should throw the specific missing keys on a manual toggle attempt with an incomplete config', async () => {
+      it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: { LDAP_HOST_NAME: 'localhost', LDAP_PORT: '389' },
         });
@@ -299,7 +375,21 @@ describe('LoginConfigsController', () => {
 
         await expect(
           app.get(LoginConfigsService).toggleLdapEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
-        ).rejects.toThrow(/LDAP_BASE_DN/);
+        ).rejects.toThrow(/Environment variable is not configured for SSO/);
+      });
+
+      it('should replace a stale real basedns array with the env-key token once env-config is applied', async () => {
+        await app.get(OrganizationEnvUtilService).initialize();
+        await app.get(LoginConfigsService).toggleLdapEnvConfig('a-human-user-id', orgId, { useEnvConfig: true });
+        const row = await getOrgRow(SSOType.LDAP);
+        await ssoConfigsRepository.update(row.id, {
+          configs: { ...(row.configs as Record<string, unknown>), basedns: ['dc=stale,dc=example,dc=com'] } as any,
+        });
+
+        const result = await app.get(LoginConfigsService).getProcessedOrganizationConfigs(orgId);
+        const ldapEntry = (result?.organization_details?.sso_configs || []).find((c: any) => c.sso === SSOType.LDAP);
+
+        expect(ldapEntry?.configs?.basedns).toEqual(['LDAP_BASE_DN']);
       });
     });
 
