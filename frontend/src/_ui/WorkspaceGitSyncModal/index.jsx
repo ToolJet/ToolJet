@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import Dropdown from '@/components/ui/Dropdown/Index.jsx';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { UncommittedChangesPullModal } from './UncommittedChangesPullModal';
 import './WorkspaceGitSyncModal.scss';
 
 const UPDATE_STATUS = {
@@ -19,6 +20,18 @@ const UPDATE_STATUS = {
   FETCHING: 'FETCHING',
   NONE: 'NONE',
 };
+
+// pullWorkspace's assertNoUncommittedChangesForPull (server/ee/workspace-branches/service.ts)
+// throws this 409 shape when any app/module/datasource on the branch would be overwritten by
+// the pull while still having local, unpushed edits.
+function parseUncommittedChangesConflict(error) {
+  try {
+    const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+    return parsed?.code === 'UNCOMMITTED_CHANGES' ? parsed.resources || [] : null;
+  } catch {
+    return null;
+  }
+}
 
 export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, pushOnly = false, onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -39,6 +52,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
   const [multiDraftResources, setMultiDraftResources] = useState([]);
+  const [uncommittedChangesResources, setUncommittedChangesResources] = useState(null);
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
     (state) => ({
@@ -197,6 +211,11 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       }
     } catch (error) {
       if (error?.statusCode === 409) {
+        const uncommittedResources = parseUncommittedChangesConflict(error);
+        if (uncommittedResources) {
+          setUncommittedChangesResources(uncommittedResources);
+          return;
+        }
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
           if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
@@ -270,6 +289,11 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       onClose();
     } catch (error) {
       if (error?.statusCode === 409) {
+        const uncommittedResources = parseUncommittedChangesConflict(error);
+        if (uncommittedResources) {
+          setUncommittedChangesResources(uncommittedResources);
+          return;
+        }
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
           if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
@@ -751,6 +775,12 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
           setMultiDraftResources([]);
         }}
         onResolve={handleResolveConflicts}
+      />
+
+      <UncommittedChangesPullModal
+        show={!!uncommittedChangesResources?.length}
+        resources={uncommittedChangesResources || []}
+        onClose={() => setUncommittedChangesResources(null)}
       />
     </>
   );
