@@ -243,7 +243,15 @@ export const useWorkspaceBranchesStore = create(
               ...options,
               ...(scope && { scope }),
             });
-            set({ isPushing: false });
+            // Clear immediately so the "Uncommitted changes" tag disappears without a hard
+            // reload — scope is 'datasource' (data-sources page) or 'app' (applications/modules
+            // page; the caller doesn't yet distinguish modules from apps here, so clear both).
+            set({
+              isPushing: false,
+              ...(scope === 'datasource'
+                ? { hasUncommittedDatasources: false }
+                : { hasUncommittedApps: false, hasUncommittedModules: false }),
+            });
             return result;
           } catch (error) {
             set({ isPushing: false });
