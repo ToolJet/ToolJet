@@ -1,10 +1,4 @@
 {
-  "name": "tooljet-marketplace",
-  "type": "module",
-  "workspaces": [
-    "plugins/*"
-  ],
-  "version": "1.0.0",
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
@@ -19,8 +13,18 @@
     "recursive-readdir": "^2.2.3",
     "ts-jest": "^29.0.5"
   },
+  "name": "tooljet-marketplace",
   "overrides": {
-    "axios": "^1.16.1"
+    "@qdrant/js-client-rest": {
+      "undici": "6.28.1"
+    },
+    "axios": "^1.16.1",
+    "minimatch": {
+      "brace-expansion": "1.1.18"
+    },
+    "node-gyp": {
+      "undici": "6.28.1"
+    }
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
@@ -28,9 +32,14 @@
   "scripts": {
     "start:watch": "lerna run watch --stream --parallel",
     "build": "npm run build --workspaces",
-    "start:dev": "npm run build && npm run start:watch",
+    "start:dev": "npm run build \u0026\u0026 npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
-  }
+  },
+  "type": "module",
+  "version": "1.0.0",
+  "workspaces": [
+    "plugins/*"
+  ]
 }

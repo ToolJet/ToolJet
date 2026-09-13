@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "frontend/package-lock.json",
-    "frontend/package.json"
+    "marketplace/package-lock.json",
+    "marketplace/package.json"
   ],
-  "baseSha": "06427a80c43bbfc0e9baf4372ebfd1cb3d1ed654",
+  "baseSha": "c5e8507eb63b2986a81e06642fb01c4e87b895c1",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "d147bff0bfd35332",
+    "id": "2341f09ad5001227",
     "lockArtifacts": [
-      "frontend/package-lock.json"
+      "marketplace/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "frontend/package-lock.json"
+    "rootManifest": "marketplace/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "1b46937957797102f43e1a1ac3da74822b955697259d9f1f1af395532b77752f",
+  "remediationKey": "b16065c5499fcb676c93c42807a1bf88f685ad6b221cd13ebe7e2d055766861b",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,116 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "06427a80c43bbfc0e9baf4372ebfd1cb3d1ed654",
+  "scanSha": "c5e8507eb63b2986a81e06642fb01c4e87b895c1",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "3zDD0d9FQTOu_9Ozge2i5g",
+  "stoExecutionId": "5p33TL8AQT2rxJcTxwp6KA",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "1.20.0"
+        "6.28.1"
       ],
       "coordinate": {
-        "normalisedName": "axios",
-        "purl": "pkg:npm/axios@1.13.6"
+        "normalisedName": "undici",
+        "purl": "pkg:npm/undici@6.25.0"
       },
-      "fromVersion": "1.13.6",
+      "fromVersion": "6.25.0",
       "issueIds": [
-        "aDTYGoospnYke4yq_uNpCP"
+        "VIsDP-EFP8pSXhcPicVtBX"
       ],
-      "minimumFixedVersion": "1.15.1",
-      "package": "axios"
-    },
-    {
-      "candidateVersions": [
-        "3.8.4"
-      ],
-      "coordinate": {
-        "normalisedName": "immutable",
-        "purl": "pkg:npm/immutable@3.7.6"
-      },
-      "fromVersion": "3.7.6",
-      "issueIds": [
-        "28tcpY_7VsVo_TZkHMuVaV"
-      ],
-      "minimumFixedVersion": "3.8.3",
-      "package": "immutable"
-    },
-    {
-      "candidateVersions": [
-        "4.18.1"
-      ],
-      "coordinate": {
-        "normalisedName": "lodash",
-        "purl": "pkg:npm/lodash@4.17.23"
-      },
-      "fromVersion": "4.17.23",
-      "issueIds": [
-        "H4f0W1xYW2_JgbaXOCtWP8"
-      ],
-      "minimumFixedVersion": "4.18.0",
-      "package": "lodash"
-    },
-    {
-      "candidateVersions": [
-        "4.18.1"
-      ],
-      "coordinate": {
-        "normalisedName": "lodash-es",
-        "purl": "pkg:npm/lodash-es@4.17.23"
-      },
-      "fromVersion": "4.17.23",
-      "issueIds": [
-        "7a3adFALkdtpZg1oSLKn_5"
-      ],
-      "minimumFixedVersion": "4.18.0",
-      "package": "lodash-es"
-    },
-    {
-      "candidateVersions": [
-        "1.10.0"
-      ],
-      "coordinate": {
-        "normalisedName": "shell-quote",
-        "purl": "pkg:npm/shell-quote@1.8.3"
-      },
-      "fromVersion": "1.8.3",
-      "issueIds": [
-        "yrQ2rkzPuHPTaL_eiukKcW"
-      ],
-      "minimumFixedVersion": "1.8.4",
-      "package": "shell-quote"
-    },
-    {
-      "candidateVersions": [
-        "3.4.4"
-      ],
-      "coordinate": {
-        "normalisedName": "flatted",
-        "purl": "pkg:npm/flatted@3.4.1"
-      },
-      "fromVersion": "3.4.1",
-      "issueIds": [
-        "hYHnG4HTn0aDM68TeolMS6"
-      ],
-      "minimumFixedVersion": "3.4.2",
-      "package": "flatted"
-    },
-    {
-      "candidateVersions": [
-        "0.9.12"
-      ],
-      "coordinate": {
-        "normalisedName": "@xmldom/xmldom",
-        "purl": "pkg:npm/xmldom/xmldom@0.8.11"
-      },
-      "fromVersion": "0.8.11",
-      "issueIds": [
-        "NjFTX9Df4I4yBGATYBALo-"
-      ],
-      "minimumFixedVersion": "0.8.12",
-      "package": "@xmldom/xmldom"
+      "minimumFixedVersion": "6.27.0",
+      "package": "undici"
     },
     {
       "candidateVersions": [
@@ -155,239 +65,14 @@
       ],
       "coordinate": {
         "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.12"
+        "purl": "pkg:npm/brace-expansion@1.1.14"
       },
-      "fromVersion": "1.1.12",
+      "fromVersion": "1.1.14",
       "issueIds": [
-        "LLbhIsB83Y_NGTwsjUi2jC"
+        "W9DFbUgctTpftQgQdPC_sa"
       ],
       "minimumFixedVersion": "1.1.16",
       "package": "brace-expansion"
-    },
-    {
-      "candidateVersions": [
-        "4.3.2"
-      ],
-      "coordinate": {
-        "normalisedName": "js-yaml",
-        "purl": "pkg:npm/js-yaml@4.1.1"
-      },
-      "fromVersion": "4.1.1",
-      "issueIds": [
-        "G-RiI8KyGjm3OpmLgYfXoR"
-      ],
-      "minimumFixedVersion": "4.3.0",
-      "package": "js-yaml"
-    },
-    {
-      "candidateVersions": [
-        "3.1.7"
-      ],
-      "coordinate": {
-        "normalisedName": "fast-uri",
-        "purl": "pkg:npm/fast-uri@3.1.0"
-      },
-      "fromVersion": "3.1.0",
-      "issueIds": [
-        "SF78Ys-e28x4EfAX_i_HY3"
-      ],
-      "minimumFixedVersion": "3.1.3",
-      "package": "fast-uri"
-    },
-    {
-      "candidateVersions": [
-        "2.1.4"
-      ],
-      "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@2.0.2"
-      },
-      "fromVersion": "2.0.2",
-      "issueIds": [
-        "ndPc-2dqreON1RTK8snOMB"
-      ],
-      "minimumFixedVersion": "2.1.2",
-      "package": "brace-expansion"
-    },
-    {
-      "candidateVersions": [
-        "4.28.9"
-      ],
-      "coordinate": {
-        "normalisedName": "browserslist",
-        "purl": "pkg:npm/browserslist@4.28.1"
-      },
-      "fromVersion": "4.28.1",
-      "issueIds": [
-        "GkwK2CtFOGPgICurdMMZNL"
-      ],
-      "minimumFixedVersion": "4.28.7",
-      "package": "browserslist"
-    },
-    {
-      "candidateVersions": [
-        "4.0.6"
-      ],
-      "coordinate": {
-        "normalisedName": "form-data",
-        "purl": "pkg:npm/form-data@4.0.5"
-      },
-      "fromVersion": "4.0.5",
-      "issueIds": [
-        "qW-9gMwTYtzIltk3JvjyS7"
-      ],
-      "minimumFixedVersion": "4.0.6",
-      "package": "form-data"
-    },
-    {
-      "candidateVersions": [
-        "3.15.2"
-      ],
-      "coordinate": {
-        "normalisedName": "js-yaml",
-        "purl": "pkg:npm/js-yaml@3.14.2"
-      },
-      "fromVersion": "3.14.2",
-      "issueIds": [
-        "gs7XZGgSq4Bd8tJ6b5eNuy"
-      ],
-      "minimumFixedVersion": "3.15.0",
-      "package": "js-yaml"
-    },
-    {
-      "candidateVersions": [
-        "3.3.19"
-      ],
-      "coordinate": {
-        "normalisedName": "nanoid",
-        "purl": "pkg:npm/nanoid@3.3.11"
-      },
-      "fromVersion": "3.3.11",
-      "issueIds": [
-        "B84l7pUwnM8tDb0KvAom7f"
-      ],
-      "minimumFixedVersion": "3.3.12",
-      "package": "nanoid"
-    },
-    {
-      "candidateVersions": [
-        "2.3.2"
-      ],
-      "coordinate": {
-        "normalisedName": "picomatch",
-        "purl": "pkg:npm/picomatch@2.3.1"
-      },
-      "fromVersion": "2.3.1",
-      "issueIds": [
-        "iAWBVvyjkAt25S70LGJLCN"
-      ],
-      "minimumFixedVersion": "2.3.2",
-      "package": "picomatch"
-    },
-    {
-      "candidateVersions": [
-        "0.7.5"
-      ],
-      "coordinate": {
-        "normalisedName": "websocket-driver",
-        "purl": "pkg:npm/websocket-driver@0.7.4"
-      },
-      "fromVersion": "0.7.4",
-      "issueIds": [
-        "lRcydxBF_vV68n49NIsMMP"
-      ],
-      "minimumFixedVersion": "0.7.5",
-      "package": "websocket-driver"
-    },
-    {
-      "candidateVersions": [
-        "6.2.6"
-      ],
-      "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@6.2.3"
-      },
-      "fromVersion": "6.2.3",
-      "issueIds": [
-        "iVHs1UZxKuEzUuDrP1TKhw"
-      ],
-      "minimumFixedVersion": "6.2.4",
-      "package": "ws"
-    },
-    {
-      "candidateVersions": [
-        "7.5.13"
-      ],
-      "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@7.5.10"
-      },
-      "fromVersion": "7.5.10",
-      "issueIds": [
-        "I-dFcLQrlbipZ3ILE0MTIe"
-      ],
-      "minimumFixedVersion": "7.5.11",
-      "package": "ws"
-    },
-    {
-      "candidateVersions": [
-        "8.21.3"
-      ],
-      "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@8.18.3"
-      },
-      "fromVersion": "8.18.3",
-      "issueIds": [
-        "hQN9KfCFpFcTPAqggnMgiN"
-      ],
-      "minimumFixedVersion": "8.21.0",
-      "package": "ws"
-    },
-    {
-      "candidateVersions": [
-        "0.8.3"
-      ],
-      "coordinate": {
-        "normalisedName": "fflate",
-        "purl": "pkg:npm/fflate@0.4.8"
-      },
-      "fromVersion": "0.4.8",
-      "issueIds": [
-        "Fxl8VCXul92XErscdVKTaV"
-      ],
-      "minimumFixedVersion": "0.4.9",
-      "package": "fflate"
-    },
-    {
-      "candidateVersions": [
-        "0.8.3"
-      ],
-      "coordinate": {
-        "normalisedName": "fflate",
-        "purl": "pkg:npm/fflate@0.7.4"
-      },
-      "fromVersion": "0.7.4",
-      "issueIds": [
-        "R9fw1fJmUZCpKys4dRdN7g"
-      ],
-      "minimumFixedVersion": "0.7.5",
-      "package": "fflate"
-    },
-    {
-      "candidateVersions": [
-        "0.8.3"
-      ],
-      "coordinate": {
-        "normalisedName": "fflate",
-        "purl": "pkg:npm/fflate@0.8.2"
-      },
-      "fromVersion": "0.8.2",
-      "issueIds": [
-        "JRGjgSp8eIzkZ_lJae9pxK"
-      ],
-      "minimumFixedVersion": "0.8.3",
-      "package": "fflate"
     }
   ]
 }
