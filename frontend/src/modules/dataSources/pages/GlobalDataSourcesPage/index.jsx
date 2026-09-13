@@ -42,6 +42,7 @@ export const GlobalDataSourcesPage = (props) => {
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
+  const setHasUncommittedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUncommittedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
 
   // Refetch datasources when the active branch changes (without hard reload)
@@ -216,6 +217,9 @@ export const GlobalDataSourcesPage = (props) => {
           });
         setDataSources([...(orderedDataSources ?? [])]);
         setHasUnsyncedDatasources(orderedDataSources.some((ds) => ds?.is_synced === false || ds?.isSynced === false));
+        setHasUncommittedDatasources(
+          orderedDataSources.some((ds) => ds?.has_uncommitted_changes === true || ds?.hasUncommittedChanges === true)
+        );
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {
           setEditing(true);

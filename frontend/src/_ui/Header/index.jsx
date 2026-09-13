@@ -11,6 +11,7 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { AlertCircle } from 'lucide-react';
 
 function Header({
   featureAccess,
@@ -21,6 +22,9 @@ function Header({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
   const isGitSyncConfigured = useWorkspaceBranchesStore((s) => s.isGitSyncConfigured);
+  const hasUncommittedDatasources = useWorkspaceBranchesStore((s) => s.hasUncommittedDatasources);
+  const hasUncommittedApps = useWorkspaceBranchesStore((s) => s.hasUncommittedApps);
+  const hasUncommittedModules = useWorkspaceBranchesStore((s) => s.hasUncommittedModules);
   // Git set up but the license is expired/invalid → keep the git-sync UI visible but frozen.
   const gitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const currentSession = authenticationService.currentSessionValue;
@@ -85,6 +89,10 @@ function Header({
     return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+  const isDataSourcesPage = location.pathname.split('/').includes('data-sources');
+  const isModulesPage = location.pathname.split('/').includes('modules');
+  // Everything isGitSupportedPage covers besides data-sources/modules is the Applications root.
+  const isApplicationsPage = isGitSupportedPage && !isDataSourcesPage && !isModulesPage;
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -188,11 +196,27 @@ function Header({
                     })}
                     aria-disabled={gitLicenseLocked || undefined}
                   >
+                    {/* Aggregate signal, not per-resource — and kept separate per page/resource
+                        type: datasources, apps, and modules each get their own flag rather than
+                        one combined signal. See gitsync/uncomitted-cahnge-detection.md. */}
+                    {((isDataSourcesPage && hasUncommittedDatasources) ||
+                      (isApplicationsPage && hasUncommittedApps) ||
+                      (isModulesPage && hasUncommittedModules)) && (
+                      <div
+                        className="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-shrink-0"
+                        data-cy="uncommitted-changes-tag"
+                      >
+                        <AlertCircle size={14} className="tw-text-icon-warning tw-shrink-0" />
+                        <span className="tw-text-text-warning tw-text-sm tw-font-medium tw-whitespace-nowrap">
+                          Uncommitted changes
+                        </span>
+                      </div>
+                    )}
                     <WorkspaceBranchDropdown />
                     {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
                         offers push based on the page + branch state (push only on the data-sources
                         page, and never on the multi-branch default branch). */}
-                    <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
+                    <WorkspaceGitCTA isDataSourcesPage={isDataSourcesPage} />
                   </div>
                 )}
               {Object.keys(featureAccess).length > 0 && (
