@@ -4,6 +4,7 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat, QueryResult } from './types';
 import got, { Headers, OptionsOfTextResponseBody } from 'got';
@@ -13,12 +14,23 @@ export default class GoogleCalendar implements QueryService {
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const oauth_type = source_options.oauth_type.value;
+    // source_options arrives in two different shapes depending on the caller: the initial
+    // "fetch-oauth2-base-url" call sends raw {value: ...}-wrapped fields straight from the
+    // frontend form, but the needs_oauth reconnect fallback (server/.../data-queries/util.service.ts,
+    // triggered when a query fails with an expired/invalid token) passes already-resolved flat
+    // values from parseSourceOptions. Reading `.value` unconditionally silently returns undefined
+    // for the flat shape (property access on a string primitive), not a crash — which is why this
+    // only ever surfaced once the reconnect fallback started actually reaching this plugin.
+    const getValue = (key: string) => {
+      const opt = (source_options as any)?.[key];
+      return opt && typeof opt === 'object' && 'value' in opt ? opt.value : opt;
+    };
+    const oauth_type = getValue('oauth_type');
     let clientId: string;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
     } else {
-      clientId = source_options?.client_id?.value;
+      clientId = getValue('client_id');
     }
     const scope = 'https://www.googleapis.com/auth/calendar';
     if (!clientId) {
@@ -106,6 +118,13 @@ export default class GoogleCalendar implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
+      // A 401 from Google means the access token is missing/expired/invalid — throwing
+      // OAuthUnauthorizedClientError (instead of a generic QueryError) is what lets the
+      // server's query-execution flow attempt a token refresh or redirect to reconnect,
+      // rather than surfacing this as a raw failed-query error.
+      if (error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Authentication required', 'Access token invalid or expired.', {});
+      }
       const errorMessage = error?.message === 'Query could not be completed' ? error?.description : error?.message;
       throw new QueryError('Query could not be completed', errorMessage, error?.data || {});
     }
@@ -310,6 +329,17 @@ export default class GoogleCalendar implements QueryService {
         );
       }
     } catch (error) {
+      // A 4xx here means Google rejected the refresh_token itself (expired/revoked) — throw
+      // OAuthUnauthorizedClientError so the caller redirects to reconnect instead of showing
+      // a raw connection error.
+      const statusCode = error?.response?.statusCode;
+      if (statusCode >= 400 && statusCode < 500) {
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from Oauth server',
+          JSON.stringify({ statusCode, message: error.response?.body }),
+          {}
+        );
+      }
       throw new QueryError(
         'Could not connect to Googles Calendar',
         JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
