@@ -1,4 +1,17 @@
-import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Body,
+  Post,
+  Patch,
+  Delete,
+  UseGuards,
+  Put,
+  Res,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { DataQueriesService } from './service';
@@ -29,6 +42,8 @@ import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
 import { GitSyncQueryEditGuard } from './guards/git-sync-query-edit.guard';
+import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
+import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -56,6 +71,8 @@ export class DataQueriesController implements IDataQueriesController {
     DataSourceFeatureAbilityGuard,
     GitSyncQueryEditGuard
   )
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
     @User() user: UserEntity,
@@ -76,6 +93,8 @@ export class DataQueriesController implements IDataQueriesController {
     DataSourceFeatureAbilityGuard,
     GitSyncQueryEditGuard
   )
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Patch(':id/versions/:versionId')
   async updateDataQuery(
     @User() user: UserEntity,
@@ -91,6 +110,8 @@ export class DataQueriesController implements IDataQueriesController {
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
@@ -105,6 +126,8 @@ export class DataQueriesController implements IDataQueriesController {
     DataSourceFeatureAbilityGuard,
     GitSyncQueryEditGuard
   )
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Delete(':id/versions/:versionId')
   async delete(@Param('id') dataQueryId) {
     await this.dataQueriesService.delete(dataQueryId);
@@ -211,6 +234,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard
   )
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/data-source')
   async changeQueryDataSource(
     @User() user: UserEntity,
