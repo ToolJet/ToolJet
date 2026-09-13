@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "plugins/package-lock.json",
-    "plugins/package.json"
+    "plugins/packages/googlesheetsv2/package-lock.json",
+    "plugins/packages/googlesheetsv2/package.json"
   ],
-  "baseSha": "6dc90dadc487c52c36fb2075ff9eb890a163ecb4",
+  "baseSha": "ff505649feb789b82266e32139489169e1a32469",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "e018aca9b9bf4299",
+    "id": "bc3b009646f74835",
     "lockArtifacts": [
-      "plugins/package-lock.json"
+      "plugins/packages/googlesheetsv2/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "plugins/package-lock.json"
+    "rootManifest": "plugins/packages/googlesheetsv2/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
+  "remediationKey": "3ffbeee7edfa17ce5df7dceaf720d31d25e3211b530e2915e2db253952792957",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,41 +38,41 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "6dc90dadc487c52c36fb2075ff9eb890a163ecb4",
+  "scanSha": "ff505649feb789b82266e32139489169e1a32469",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "LklmevTSTie2QVDrtqlV9Q",
+  "stoExecutionId": "EEzZgJNXRvmu3cVvwN9O_w",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "1.1.18"
+        "6.16.0"
       ],
       "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.15"
+        "normalisedName": "qs",
+        "purl": "pkg:npm/qs@6.14.0"
       },
-      "fromVersion": "1.1.15",
+      "fromVersion": "6.14.0",
       "issueIds": [
-        "Na2KXe3BiE9ADPZoKJYCMd"
+        "8Jkey5Q7Xma2rDxJb84W2E"
       ],
-      "minimumFixedVersion": "1.1.16",
-      "package": "brace-expansion"
+      "minimumFixedVersion": "6.14.2",
+      "package": "qs"
     },
     {
       "candidateVersions": [
-        "7.5.13"
+        "4.0.1"
       ],
       "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@7.5.10"
+        "normalisedName": "jws",
+        "purl": "pkg:npm/jws@4.0.0"
       },
-      "fromVersion": "7.5.10",
+      "fromVersion": "4.0.0",
       "issueIds": [
-        "I-dFcLQrlbipZ3ILE0MTIe"
+        "MI0S3OikNogfCUCz1dLJb5"
       ],
-      "minimumFixedVersion": "7.5.11",
-      "package": "ws"
+      "minimumFixedVersion": "4.0.1",
+      "package": "jws"
     }
   ]
 }
