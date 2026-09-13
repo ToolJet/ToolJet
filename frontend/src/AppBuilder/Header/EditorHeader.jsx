@@ -11,6 +11,7 @@ import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { AlertCircle } from 'lucide-react';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
@@ -80,6 +81,16 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const showSyncButton =
     featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
+  // Shown only for an already-synced app whose draft has been edited since its last push —
+  // isSynced stays true, hasUncommittedChanges flips true on the next edit (see
+  // gitsync/uncomitted-cahnge-detection.md). Purely informational, rendered as the first item
+  // in this header row.
+  const draftVersion = developmentVersions?.find(
+    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
+  const showUncommittedChangesTag =
+    featureAccess?.gitSync && isGitSyncConfigured && draftVersion?.hasUncommittedChanges === true;
+
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
@@ -138,6 +149,17 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
+                  {showUncommittedChangesTag && (
+                    <div
+                      className="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-shrink-0"
+                      data-cy="uncommitted-changes-tag"
+                    >
+                      <AlertCircle size={14} className="tw-text-icon-warning tw-shrink-0" />
+                      <span className="tw-text-text-warning tw-text-sm tw-font-medium tw-whitespace-nowrap">
+                        Uncommitted changes
+                      </span>
+                    </div>
+                  )}
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
