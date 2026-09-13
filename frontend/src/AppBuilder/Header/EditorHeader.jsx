@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
@@ -48,6 +48,21 @@ export const EditorHeader = ({ darkMode, appType }) => {
     }),
     shallow
   );
+  const fetchDevelopmentVersions = useStore((state) => state.fetchDevelopmentVersions);
+
+  // Refetch after a save completes so the "Uncommitted changes" tag updates without a hard
+  // refresh. Debounced so a burst of quick saves triggers one refetch, not one per save.
+  const wasSavingRef = useRef(isSaving);
+  const refreshTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (wasSavingRef.current && !isSaving && appId) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => fetchDevelopmentVersions(appId), 400);
+    }
+    wasSavingRef.current = isSaving;
+    return () => clearTimeout(refreshTimeoutRef.current);
+  }, [isSaving, appId, fetchDevelopmentVersions]);
+
   // Git configured but unlicensed → freeze every header action (undo/redo, preview/share,
   // branch, version, release/commit). The logo/app-name nav stays clickable so the user can
   // still navigate to workspace settings and turn git off.
