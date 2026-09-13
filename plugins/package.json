@@ -1,23 +1,4 @@
 {
-  "name": "@tooljet/plugins",
-  "version": "0.0.1",
-  "source": "server.ts",
-  "types": "dist/server.d.ts",
-  "main": "dist/server.js",
-  "scripts": {
-    "create:client": "node create-client-entry",
-    "create:server": "node create-server-entry",
-    "create:operations": "node create-operations-file",
-    "build:server": "rimraf dist/ && tsc -b",
-    "start": "tsc -b --watch",
-    "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server && npm run create:operations",
-    "prebuild:packages": "npm run clean:packages",
-    "build:packages": "node build-packages.js",
-    "clean:packages": "node clean-packages.js",
-    "lint": "eslint .  '**/*.ts'",
-    "format": "eslint . --fix '**/*.ts'",
-    "test": "NODE_ENV=test jest"
-  },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/amazonses": "file:packages/amazonses",
@@ -69,13 +50,6 @@
     "@tooljet-plugins/zendesk": "file:packages/zendesk",
     "snowflake-sdk": "^2.4.0"
   },
-  "peerDependencies": {
-    "form-data": "^4.0.0",
-    "typescript": "^4.9.5"
-  },
-  "overrides": {
-    "tar": "^7.5.3"
-  },
   "devDependencies": {
     "@types/jest": "^27.5.2",
     "@types/node-int64": "^0.4.32",
@@ -92,5 +66,37 @@
     "prettier": "^2.8.3",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.5"
-  }
+  },
+  "main": "dist/server.js",
+  "name": "@tooljet/plugins",
+  "overrides": {
+    "jsdom": {
+      "ws": "7.5.13"
+    },
+    "minimatch": {
+      "brace-expansion": "1.1.18"
+    },
+    "tar": "^7.5.3"
+  },
+  "peerDependencies": {
+    "form-data": "^4.0.0",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "create:client": "node create-client-entry",
+    "create:server": "node create-server-entry",
+    "create:operations": "node create-operations-file",
+    "build:server": "rimraf dist/ \u0026\u0026 tsc -b",
+    "start": "tsc -b --watch",
+    "build": "npm run create:client \u0026\u0026 npm run create:server \u0026\u0026 npm run build:packages \u0026\u0026 npm run build:server \u0026\u0026 npm run create:operations",
+    "prebuild:packages": "npm run clean:packages",
+    "build:packages": "node build-packages.js",
+    "clean:packages": "node clean-packages.js",
+    "lint": "eslint .  '**/*.ts'",
+    "format": "eslint . --fix '**/*.ts'",
+    "test": "NODE_ENV=test jest"
+  },
+  "source": "server.ts",
+  "types": "dist/server.d.ts",
+  "version": "0.0.1"
 }

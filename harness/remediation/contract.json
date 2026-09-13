@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "marketplace/package-lock.json",
-    "marketplace/package.json"
+    "plugins/package-lock.json",
+    "plugins/package.json"
   ],
-  "baseSha": "c5e8507eb63b2986a81e06642fb01c4e87b895c1",
+  "baseSha": "6dc90dadc487c52c36fb2075ff9eb890a163ecb4",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "2341f09ad5001227",
+    "id": "e018aca9b9bf4299",
     "lockArtifacts": [
-      "marketplace/package-lock.json"
+      "plugins/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "marketplace/package-lock.json"
+    "rootManifest": "plugins/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "b16065c5499fcb676c93c42807a1bf88f685ad6b221cd13ebe7e2d055766861b",
+  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,41 +38,41 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "c5e8507eb63b2986a81e06642fb01c4e87b895c1",
+  "scanSha": "6dc90dadc487c52c36fb2075ff9eb890a163ecb4",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "5p33TL8AQT2rxJcTxwp6KA",
+  "stoExecutionId": "LklmevTSTie2QVDrtqlV9Q",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
-    {
-      "candidateVersions": [
-        "6.28.1"
-      ],
-      "coordinate": {
-        "normalisedName": "undici",
-        "purl": "pkg:npm/undici@6.25.0"
-      },
-      "fromVersion": "6.25.0",
-      "issueIds": [
-        "VIsDP-EFP8pSXhcPicVtBX"
-      ],
-      "minimumFixedVersion": "6.27.0",
-      "package": "undici"
-    },
     {
       "candidateVersions": [
         "1.1.18"
       ],
       "coordinate": {
         "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.14"
+        "purl": "pkg:npm/brace-expansion@1.1.15"
       },
-      "fromVersion": "1.1.14",
+      "fromVersion": "1.1.15",
       "issueIds": [
-        "W9DFbUgctTpftQgQdPC_sa"
+        "Na2KXe3BiE9ADPZoKJYCMd"
       ],
       "minimumFixedVersion": "1.1.16",
       "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "7.5.13"
+      ],
+      "coordinate": {
+        "normalisedName": "ws",
+        "purl": "pkg:npm/ws@7.5.10"
+      },
+      "fromVersion": "7.5.10",
+      "issueIds": [
+        "I-dFcLQrlbipZ3ILE0MTIe"
+      ],
+      "minimumFixedVersion": "7.5.11",
+      "package": "ws"
     }
   ]
 }
