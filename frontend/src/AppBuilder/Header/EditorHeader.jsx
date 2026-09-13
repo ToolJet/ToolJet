@@ -81,13 +81,16 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const showSyncButton =
     featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
-  // Shown only for an already-synced app whose draft has been edited since its last push —
-  // isSynced stays true, hasUncommittedChanges flips true on the next edit (see
-  // gitsync/uncomitted-cahnge-detection.md). Purely informational, rendered as the first item
-  // in this header row.
-  const draftVersion = developmentVersions?.find(
-    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
-  );
+  // Shown when the current branch's draft has been edited since its last push. Unlike
+  // isAppSyncedToGit above (default-branch only), this must also resolve on feature branches,
+  // where versionType is 'branch' not 'version' — and since developmentVersions isn't
+  // branch-scoped, narrow to the active branch by id too.
+  const draftVersion = developmentVersions?.find((v) => {
+    if (!(v.status === 'DRAFT' || v.status === 'draft')) return false;
+    if (isOnDefaultBranch) return v.versionType === 'version' || v.version_type === 'version';
+    const versionBranchId = v.branchId || v.branch_id;
+    return (v.versionType === 'branch' || v.version_type === 'branch') && versionBranchId === workspaceActiveBranch?.id;
+  });
   const showUncommittedChangesTag =
     featureAccess?.gitSync && isGitSyncConfigured && draftVersion?.hasUncommittedChanges === true;
 
