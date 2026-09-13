@@ -989,7 +989,8 @@ export class VersionUtilService implements IVersionUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
       const versionId = versionToDelete.id;
-      const resourceLabel = app.type === 'module' ? 'module' : 'app';
+      const resourceLabel =
+        app.type === APP_TYPES.MODULE ? 'module' : app.type === APP_TYPES.WORKFLOW ? 'workflow' : 'app';
 
       // A released/current version can never be deleted, regardless of git state.
       if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
@@ -1013,7 +1014,7 @@ export class VersionUtilService implements IVersionUtilService {
             `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
           );
         }
-        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
+        throw new ForbiddenException(`Cannot delete only version of ${resourceLabel}`);
       }
 
       // getDetails().isEnabled = git sync configured AND licensed. options.defaultBranch is always

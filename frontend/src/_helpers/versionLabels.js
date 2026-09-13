@@ -29,11 +29,11 @@ export const isCurrentBranchRow = (v, activeBranchId) => versionType(v) === 'bra
 
 export const isDefaultBranchDraft = (v) => versionType(v) === 'version' && v.status === 'DRAFT';
 
-export function versionLabel(v, { activeBranchId, isOnMain, defaultBranchName }) {
+export function versionLabel(v, { activeBranchId, isOnMain, defaultBranchName, isGitSyncEnabled }) {
   if (isCurrentBranchRow(v, activeBranchId)) {
     return isOnMain ? defaultBranchName : 'Current branch';
   }
-  if (isDefaultBranchDraft(v)) return defaultBranchName;
+  if (isGitSyncEnabled && isDefaultBranchDraft(v)) return defaultBranchName;
   return v.displayName ?? v.name;
 }
 

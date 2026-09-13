@@ -108,7 +108,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           // sentinel, and that row is new.
           const rowEntries = scopeVersionsForPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
             value: isCurrentBranchRow(v, activeBranchId) ? WORKFLOW_CURRENT_BRANCH_SENTINEL : v.name,
-            label: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName }),
+            label: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName, isGitSyncEnabled }),
             badge: versionBadge(v),
           }));
 
