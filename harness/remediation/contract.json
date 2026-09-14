@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "server/package-lock.json",
-    "server/package.json"
+    "frontend/package-lock.json",
+    "frontend/package.json"
   ],
-  "baseSha": "871cb7e60a5538e75d38afc3c72a23570ca890a8",
+  "baseSha": "627b1d70dbd157c52840bf2daf089524774afa71",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "7acdd6bfd82d3c20",
+    "id": "d147bff0bfd35332-major-92c8e309",
     "lockArtifacts": [
-      "server/package-lock.json"
+      "frontend/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "server/package-lock.json"
+    "rootManifest": "frontend/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
+  "remediationKey": "293de05e8a5cde8289594e310642cc0829e1ae9e530d86357881db27b3497b52",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,161 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "871cb7e60a5538e75d38afc3c72a23570ca890a8",
+  "scanSha": "627b1d70dbd157c52840bf2daf089524774afa71",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "lhYvYiueSQGQ23lNvstv5Q",
+  "stoExecutionId": "p1SlWmArSbCk2oPqIiFlCA",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "7.29.1"
+        "3.0.6"
       ],
       "coordinate": {
-        "normalisedName": "undici",
-        "purl": "pkg:npm/undici@7.24.4"
+        "normalisedName": "i18next-http-backend",
+        "purl": "pkg:npm/i18next-http-backend@2.7.3"
       },
-      "fromVersion": "7.24.4",
+      "fromVersion": "2.7.3",
       "issueIds": [
-        "j-oqNUzn--zB8tcebRZfhp"
+        "3oo-oqfKwMkwzlzKE0GQUT"
       ],
-      "minimumFixedVersion": "7.29.0",
-      "package": "undici"
-    },
-    {
-      "candidateVersions": [
-        "0.9.12"
-      ],
-      "coordinate": {
-        "normalisedName": "@xmldom/xmldom",
-        "purl": "pkg:npm/xmldom/xmldom@0.8.13"
-      },
-      "fromVersion": "0.8.13",
-      "issueIds": [
-        "1o2ThM1TC-QuUg3sgY5iV_"
-      ],
-      "minimumFixedVersion": "0.8.14",
-      "package": "@xmldom/xmldom"
-    },
-    {
-      "candidateVersions": [
-        "2.3.0"
-      ],
-      "coordinate": {
-        "normalisedName": "multer",
-        "purl": "pkg:npm/multer@2.1.1"
-      },
-      "fromVersion": "2.1.1",
-      "issueIds": [
-        "ewGv7erMv8_PRbkXWW_HS0"
-      ],
-      "minimumFixedVersion": "2.2.0",
-      "package": "multer"
-    },
-    {
-      "candidateVersions": [
-        "5.0.9"
-      ],
-      "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@5.0.6"
-      },
-      "fromVersion": "5.0.6",
-      "issueIds": [
-        "wSKAxSHSURNok8NpyB7L5_"
-      ],
-      "minimumFixedVersion": "5.0.7",
-      "package": "brace-expansion"
-    },
-    {
-      "candidateVersions": [
-        "0.7.6"
-      ],
-      "coordinate": {
-        "normalisedName": "jsondiffpatch",
-        "purl": "pkg:npm/jsondiffpatch@0.6.0"
-      },
-      "fromVersion": "0.6.0",
-      "issueIds": [
-        "ivaWgA6nR9sgbgy0oujD82"
-      ],
-      "minimumFixedVersion": "0.7.6",
-      "package": "jsondiffpatch"
-    },
-    {
-      "candidateVersions": [
-        "3.3.19"
-      ],
-      "coordinate": {
-        "normalisedName": "nanoid",
-        "purl": "pkg:npm/nanoid@3.3.12"
-      },
-      "fromVersion": "3.3.12",
-      "issueIds": [
-        "rxDT__oRGtzWB-7qJEedFW"
-      ],
-      "minimumFixedVersion": "3.3.18",
-      "package": "nanoid"
-    },
-    {
-      "candidateVersions": [
-        "8.5.28"
-      ],
-      "coordinate": {
-        "normalisedName": "postcss",
-        "purl": "pkg:npm/postcss@8.5.15"
-      },
-      "fromVersion": "8.5.15",
-      "issueIds": [
-        "3MZoOVJi1IXXHi1Mvuumv0"
-      ],
-      "minimumFixedVersion": "8.5.18",
-      "package": "postcss"
-    },
-    {
-      "candidateVersions": [
-        "2.11.0"
-      ],
-      "coordinate": {
-        "normalisedName": "@opentelemetry/propagator-jaeger",
-        "purl": "pkg:npm/opentelemetry/propagator-jaeger@2.7.1"
-      },
-      "fromVersion": "2.7.1",
-      "issueIds": [
-        "RPYY2cb4VM-TLZ-TuOCF4D"
-      ],
-      "minimumFixedVersion": "2.9.0",
-      "package": "@opentelemetry/propagator-jaeger"
-    },
-    {
-      "candidateVersions": [
-        "4.2.7"
-      ],
-      "coordinate": {
-        "normalisedName": "socket.io-parser",
-        "purl": "pkg:npm/socket.io-parser@4.2.6"
-      },
-      "fromVersion": "4.2.6",
-      "issueIds": [
-        "gQalu9cC0g6iqn_GH-6k7S"
-      ],
-      "minimumFixedVersion": "4.2.7",
-      "package": "socket.io-parser"
-    },
-    {
-      "candidateVersions": [
-        "8.21.3"
-      ],
-      "coordinate": {
-        "normalisedName": "ws",
-        "purl": "pkg:npm/ws@8.20.1"
-      },
-      "fromVersion": "8.20.1",
-      "issueIds": [
-        "CMqYpL8Sk7_4EkzYMzlYE8"
-      ],
-      "minimumFixedVersion": "8.21.0",
-      "package": "ws"
+      "minimumFixedVersion": "3.0.5",
+      "package": "i18next-http-backend"
     }
   ]
 }
