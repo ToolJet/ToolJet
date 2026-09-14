@@ -76,7 +76,10 @@
     "minimatch": {
       "brace-expansion": "1.1.18"
     },
-    "tar": "^7.5.3"
+    "tar": "^7.5.3",
+    "thrift": {
+      "ws": "5.2.7"
+    }
   },
   "peerDependencies": {
     "form-data": "^4.0.0",
