@@ -88,8 +88,24 @@
         {
           "name": "Bulk Operations",
           "value": "bulk_write"
+        },
+        {
+          "name": "Create ObjectId",
+          "value": "create_objectid"
         }
       ]
+    },
+    "create_objectid": {
+      "id": {
+        "label": "Hex String (optional)",
+        "key": "id",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "\"507f1f77bcf86cd799439011\"",
+        "description": "Enter a 24-character hex string to create ObjectId. Leave empty to auto-generate.",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
     },
     "insert_one": {
       "collection": {
