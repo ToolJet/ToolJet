@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "plugins/packages/googlesheetsv2/package-lock.json",
-    "plugins/packages/googlesheetsv2/package.json"
+    "server/package-lock.json",
+    "server/package.json"
   ],
-  "baseSha": "ff505649feb789b82266e32139489169e1a32469",
+  "baseSha": "871cb7e60a5538e75d38afc3c72a23570ca890a8",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "bc3b009646f74835",
+    "id": "7acdd6bfd82d3c20",
     "lockArtifacts": [
-      "plugins/packages/googlesheetsv2/package-lock.json"
+      "server/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "plugins/packages/googlesheetsv2/package-lock.json"
+    "rootManifest": "server/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3ffbeee7edfa17ce5df7dceaf720d31d25e3211b530e2915e2db253952792957",
+  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,41 +38,161 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "ff505649feb789b82266e32139489169e1a32469",
+  "scanSha": "871cb7e60a5538e75d38afc3c72a23570ca890a8",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "EEzZgJNXRvmu3cVvwN9O_w",
+  "stoExecutionId": "lhYvYiueSQGQ23lNvstv5Q",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "6.16.0"
+        "7.29.1"
       ],
       "coordinate": {
-        "normalisedName": "qs",
-        "purl": "pkg:npm/qs@6.14.0"
+        "normalisedName": "undici",
+        "purl": "pkg:npm/undici@7.24.4"
       },
-      "fromVersion": "6.14.0",
+      "fromVersion": "7.24.4",
       "issueIds": [
-        "8Jkey5Q7Xma2rDxJb84W2E"
+        "j-oqNUzn--zB8tcebRZfhp"
       ],
-      "minimumFixedVersion": "6.14.2",
-      "package": "qs"
+      "minimumFixedVersion": "7.29.0",
+      "package": "undici"
     },
     {
       "candidateVersions": [
-        "4.0.1"
+        "0.9.12"
       ],
       "coordinate": {
-        "normalisedName": "jws",
-        "purl": "pkg:npm/jws@4.0.0"
+        "normalisedName": "@xmldom/xmldom",
+        "purl": "pkg:npm/xmldom/xmldom@0.8.13"
       },
-      "fromVersion": "4.0.0",
+      "fromVersion": "0.8.13",
       "issueIds": [
-        "MI0S3OikNogfCUCz1dLJb5"
+        "1o2ThM1TC-QuUg3sgY5iV_"
       ],
-      "minimumFixedVersion": "4.0.1",
-      "package": "jws"
+      "minimumFixedVersion": "0.8.14",
+      "package": "@xmldom/xmldom"
+    },
+    {
+      "candidateVersions": [
+        "2.3.0"
+      ],
+      "coordinate": {
+        "normalisedName": "multer",
+        "purl": "pkg:npm/multer@2.1.1"
+      },
+      "fromVersion": "2.1.1",
+      "issueIds": [
+        "ewGv7erMv8_PRbkXWW_HS0"
+      ],
+      "minimumFixedVersion": "2.2.0",
+      "package": "multer"
+    },
+    {
+      "candidateVersions": [
+        "5.0.9"
+      ],
+      "coordinate": {
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@5.0.6"
+      },
+      "fromVersion": "5.0.6",
+      "issueIds": [
+        "wSKAxSHSURNok8NpyB7L5_"
+      ],
+      "minimumFixedVersion": "5.0.7",
+      "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "0.7.6"
+      ],
+      "coordinate": {
+        "normalisedName": "jsondiffpatch",
+        "purl": "pkg:npm/jsondiffpatch@0.6.0"
+      },
+      "fromVersion": "0.6.0",
+      "issueIds": [
+        "ivaWgA6nR9sgbgy0oujD82"
+      ],
+      "minimumFixedVersion": "0.7.6",
+      "package": "jsondiffpatch"
+    },
+    {
+      "candidateVersions": [
+        "3.3.19"
+      ],
+      "coordinate": {
+        "normalisedName": "nanoid",
+        "purl": "pkg:npm/nanoid@3.3.12"
+      },
+      "fromVersion": "3.3.12",
+      "issueIds": [
+        "rxDT__oRGtzWB-7qJEedFW"
+      ],
+      "minimumFixedVersion": "3.3.18",
+      "package": "nanoid"
+    },
+    {
+      "candidateVersions": [
+        "8.5.28"
+      ],
+      "coordinate": {
+        "normalisedName": "postcss",
+        "purl": "pkg:npm/postcss@8.5.15"
+      },
+      "fromVersion": "8.5.15",
+      "issueIds": [
+        "3MZoOVJi1IXXHi1Mvuumv0"
+      ],
+      "minimumFixedVersion": "8.5.18",
+      "package": "postcss"
+    },
+    {
+      "candidateVersions": [
+        "2.11.0"
+      ],
+      "coordinate": {
+        "normalisedName": "@opentelemetry/propagator-jaeger",
+        "purl": "pkg:npm/opentelemetry/propagator-jaeger@2.7.1"
+      },
+      "fromVersion": "2.7.1",
+      "issueIds": [
+        "RPYY2cb4VM-TLZ-TuOCF4D"
+      ],
+      "minimumFixedVersion": "2.9.0",
+      "package": "@opentelemetry/propagator-jaeger"
+    },
+    {
+      "candidateVersions": [
+        "4.2.7"
+      ],
+      "coordinate": {
+        "normalisedName": "socket.io-parser",
+        "purl": "pkg:npm/socket.io-parser@4.2.6"
+      },
+      "fromVersion": "4.2.6",
+      "issueIds": [
+        "gQalu9cC0g6iqn_GH-6k7S"
+      ],
+      "minimumFixedVersion": "4.2.7",
+      "package": "socket.io-parser"
+    },
+    {
+      "candidateVersions": [
+        "8.21.3"
+      ],
+      "coordinate": {
+        "normalisedName": "ws",
+        "purl": "pkg:npm/ws@8.20.1"
+      },
+      "fromVersion": "8.20.1",
+      "issueIds": [
+        "CMqYpL8Sk7_4EkzYMzlYE8"
+      ],
+      "minimumFixedVersion": "8.21.0",
+      "package": "ws"
     }
   ]
 }
