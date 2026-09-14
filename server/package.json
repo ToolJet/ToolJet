@@ -219,6 +219,9 @@
     },
     "xml-encryption": {
       "@xmldom/xmldom": "0.9.12"
+    },
+    "y-websocket": {
+      "ws": "6.2.6"
     }
   },
   "peerDependencies": {

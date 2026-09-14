@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "frontend/package-lock.json",
-    "frontend/package.json"
+    "server/package-lock.json",
+    "server/package.json"
   ],
-  "baseSha": "627b1d70dbd157c52840bf2daf089524774afa71",
+  "baseSha": "fba91c8ff93f302b5403d0170f4b335386230663",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "d147bff0bfd35332-major-92c8e309",
+    "id": "7acdd6bfd82d3c20",
     "lockArtifacts": [
-      "frontend/package-lock.json"
+      "server/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "frontend/package-lock.json"
+    "rootManifest": "server/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "293de05e8a5cde8289594e310642cc0829e1ae9e530d86357881db27b3497b52",
+  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,26 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "627b1d70dbd157c52840bf2daf089524774afa71",
+  "scanSha": "fba91c8ff93f302b5403d0170f4b335386230663",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "p1SlWmArSbCk2oPqIiFlCA",
+  "stoExecutionId": "zGBEOArvSt2NVXBwVXol2g",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "3.0.6"
+        "6.2.6"
       ],
       "coordinate": {
-        "normalisedName": "i18next-http-backend",
-        "purl": "pkg:npm/i18next-http-backend@2.7.3"
+        "normalisedName": "ws",
+        "purl": "pkg:npm/ws@6.2.3"
       },
-      "fromVersion": "2.7.3",
+      "fromVersion": "6.2.3",
       "issueIds": [
-        "3oo-oqfKwMkwzlzKE0GQUT"
+        "iVHs1UZxKuEzUuDrP1TKhw"
       ],
-      "minimumFixedVersion": "3.0.5",
-      "package": "i18next-http-backend"
+      "minimumFixedVersion": "6.2.4",
+      "package": "ws"
     }
   ]
 }
