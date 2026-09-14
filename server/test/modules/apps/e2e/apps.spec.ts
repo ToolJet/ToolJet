@@ -2312,6 +2312,99 @@ describe('AppsController', () => {
       });
     });
 
+    describe('GET /api/apps/restricted-access-info/:slug | Get restricted access info', () => {
+      it('should not allow unauthenticated requests', async () => {
+        const response = await request(app.getHttpServer()).get('/api/apps/restricted-access-info/foo');
+
+        expect(response.statusCode).toBe(401);
+      });
+
+      it('should return the app name and folder name for a user in the same organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          groups: ['all_users', 'viewer'],
+          organization: adminUserData.organization,
+        });
+        const loggedUser = await login(app, 'viewer@tooljet.io');
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(
+          app,
+          { name: 'Marketing Dashboard', user: adminUserData.user, slug: 'restricted-app-with-folder' },
+          false
+        );
+        const folder = await createFolder(app, { name: 'Analytics', organizationId: adminUserData.organization.id });
+        await addAppToFolder(app, application, folder);
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-with-folder')
+          .set('Cookie', viewerUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.appName).toBe('Marketing Dashboard');
+        expect(response.body.folderName).toBe('Analytics');
+      });
+
+      it('should return a null folder name when the app is not in any folder', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          groups: ['all_users', 'viewer'],
+          organization: adminUserData.organization,
+        });
+        const loggedUser = await login(app, 'viewer@tooljet.io');
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createApplication(
+          app,
+          { name: 'All Apps Dashboard', user: adminUserData.user, slug: 'restricted-app-no-folder' },
+          false
+        );
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-no-folder')
+          .set('Cookie', viewerUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.appName).toBe('All Apps Dashboard');
+        expect(response.body.folderName).toBeNull();
+      });
+
+      it('should not resolve app details for a user in another organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app, 'another@tooljet.io');
+        anotherOrgUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createApplication(
+          app,
+          { name: 'name', user: adminUserData.user, slug: 'restricted-app-cross-org' },
+          false
+        );
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-cross-org')
+          .set('Cookie', anotherOrgUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(404);
+
+        await logout(app, anotherOrgUserData['tokenCookie'], anotherOrgUserData.user.defaultOrganizationId);
+      });
+    });
+
     describe('POST /api/v2/resources/export | Export resources', () => {
       it('should be able to export app if user has create permission within an organization', async () => {
         const adminUserData = await createUser(app, {
