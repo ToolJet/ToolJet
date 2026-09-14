@@ -1,17 +1,65 @@
 {
   "allowedPaths": [
-    "server/package-lock.json",
-    "server/package.json"
+    "plugins/package-lock.json",
+    "plugins/package.json",
+    "plugins/packages/airtable/package.json",
+    "plugins/packages/amazonses/package.json",
+    "plugins/packages/appwrite/package.json",
+    "plugins/packages/athena/package.json",
+    "plugins/packages/azureblobstorage/package.json",
+    "plugins/packages/baserow/package.json",
+    "plugins/packages/bigquery/package.json",
+    "plugins/packages/clickhouse/package.json",
+    "plugins/packages/common/package.json",
+    "plugins/packages/cosmosdb/package.json",
+    "plugins/packages/couchdb/package.json",
+    "plugins/packages/databricks/package.json",
+    "plugins/packages/dynamodb/package.json",
+    "plugins/packages/elasticsearch/package.json",
+    "plugins/packages/firestore/package.json",
+    "plugins/packages/gcs/package.json",
+    "plugins/packages/googlesheets/package.json",
+    "plugins/packages/graphql/package.json",
+    "plugins/packages/grpc/package.json",
+    "plugins/packages/grpcv2/package.json",
+    "plugins/packages/ibmdb/package.json",
+    "plugins/packages/influxdb/package.json",
+    "plugins/packages/mailgun/package.json",
+    "plugins/packages/mariadb/package.json",
+    "plugins/packages/minio/package.json",
+    "plugins/packages/mongodb/package.json",
+    "plugins/packages/mssql/package.json",
+    "plugins/packages/mysql/package.json",
+    "plugins/packages/n8n/package.json",
+    "plugins/packages/nocodb/package.json",
+    "plugins/packages/notion/package.json",
+    "plugins/packages/openapi/package.json",
+    "plugins/packages/oracledb/package.json",
+    "plugins/packages/postgresql/package.json",
+    "plugins/packages/redis/package.json",
+    "plugins/packages/restapi/package.json",
+    "plugins/packages/rethinkdb/package.json",
+    "plugins/packages/s3/package.json",
+    "plugins/packages/saphana/package.json",
+    "plugins/packages/sendgrid/package.json",
+    "plugins/packages/slack/package.json",
+    "plugins/packages/smtp/package.json",
+    "plugins/packages/snowflake/package.json",
+    "plugins/packages/stripe/package.json",
+    "plugins/packages/twilio/package.json",
+    "plugins/packages/typesense/package.json",
+    "plugins/packages/woocommerce/package.json",
+    "plugins/packages/zendesk/package.json"
   ],
-  "baseSha": "fba91c8ff93f302b5403d0170f4b335386230663",
+  "baseSha": "4d9260d8e5c3bf1bd05f6a7d5735e41932c24df7",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "7acdd6bfd82d3c20",
+    "id": "e018aca9b9bf4299",
     "lockArtifacts": [
-      "server/package-lock.json"
+      "plugins/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "server/package-lock.json"
+    "rootManifest": "plugins/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +77,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
+  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,25 +86,55 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "fba91c8ff93f302b5403d0170f4b335386230663",
+  "scanSha": "4d9260d8e5c3bf1bd05f6a7d5735e41932c24df7",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "zGBEOArvSt2NVXBwVXol2g",
+  "stoExecutionId": "375HYLyoTECnhEwPOmcrbg",
   "stoTargetId": "Rvn5aK8mipEpbjh3l1q43L",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "6.2.6"
+        "3.5.4"
+      ],
+      "coordinate": {
+        "normalisedName": "mariadb",
+        "purl": "pkg:npm/mariadb@3.5.2"
+      },
+      "fromVersion": "3.5.2",
+      "issueIds": [
+        "ukBuIGhQ7iN8QLPVViRHQ6"
+      ],
+      "minimumFixedVersion": "3.5.3",
+      "package": "mariadb"
+    },
+    {
+      "candidateVersions": [
+        "3.24.4"
+      ],
+      "coordinate": {
+        "normalisedName": "mysql2",
+        "purl": "pkg:npm/mysql2@3.20.0"
+      },
+      "fromVersion": "3.20.0",
+      "issueIds": [
+        "lsCYJlrgYnxDJnfJk2CO60"
+      ],
+      "minimumFixedVersion": "3.22.0",
+      "package": "mysql2"
+    },
+    {
+      "candidateVersions": [
+        "5.2.7"
       ],
       "coordinate": {
         "normalisedName": "ws",
-        "purl": "pkg:npm/ws@6.2.3"
+        "purl": "pkg:npm/ws@5.2.4"
       },
-      "fromVersion": "6.2.3",
+      "fromVersion": "5.2.4",
       "issueIds": [
-        "iVHs1UZxKuEzUuDrP1TKhw"
+        "uEKenH6m2Bw3kcDzvt-sdi"
       ],
-      "minimumFixedVersion": "6.2.4",
+      "minimumFixedVersion": "5.2.5",
       "package": "ws"
     }
   ]
