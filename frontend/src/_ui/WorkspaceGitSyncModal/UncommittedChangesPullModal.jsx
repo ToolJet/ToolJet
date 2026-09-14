@@ -1,13 +1,15 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
-import { AlertCircle, LayoutGrid, Puzzle, Database, ExternalLink } from 'lucide-react';
+import { AlertCircle, ExternalLink } from 'lucide-react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getWorkspaceId } from '@/_helpers/utils';
 
-const TYPE_ICON = {
-  app: LayoutGrid,
-  module: Puzzle,
-  datasource: Database,
+// Same icon set WorkspacePullConflictModal uses for the same resource types.
+const TYPE_ICON_MAP = {
+  app: 'apps',
+  module: 'module',
+  datasource: 'datasource',
 };
 
 // Apps and modules share the editor route (slug-based); datasources have their own page.
@@ -47,7 +49,6 @@ export function UncommittedChangesPullModal({ show, resources, onClose }) {
           </div>
           <div className="d-flex flex-column" style={{ gap: '4px', maxHeight: '220px', overflowY: 'auto' }}>
             {resources.map((resource) => {
-              const Icon = TYPE_ICON[resource.type] || LayoutGrid;
               return (
                 <div
                   key={`${resource.type}-${resource.id}`}
@@ -55,7 +56,12 @@ export function UncommittedChangesPullModal({ show, resources, onClose }) {
                   style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--border-weak)' }}
                 >
                   <div className="d-flex align-items-center" style={{ gap: '8px', minWidth: 0 }}>
-                    <Icon size={14} className="tw-text-icon-default" style={{ flexShrink: 0 }} />
+                    <SolidIcon
+                      name={TYPE_ICON_MAP[resource.type] || 'apps'}
+                      width="16"
+                      fill="var(--slate9)"
+                      style={{ flexShrink: 0 }}
+                    />
                     <span
                       className="tj-text-sm"
                       style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}

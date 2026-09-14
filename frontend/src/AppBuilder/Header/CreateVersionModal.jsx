@@ -357,7 +357,9 @@ const CreateVersionModal = ({
   return (
     <>
       <AlertDialog
-        show={showCreateAppVersion}
+        // Hidden (not unmounted — this component still owns the conflict state) while the
+        // uncommitted-changes conflict modal is up, so this dialog doesn't linger visible behind it.
+        show={showCreateAppVersion && !showUncommittedChangesModal}
         closeModal={() => {
           setVersionName('');
           setVersionDescription('');
@@ -544,10 +546,11 @@ const CreateVersionModal = ({
       <AlertDialog
         show={showUncommittedChangesModal}
         closeModal={() => setShowUncommittedChangesModal(false)}
-        size="sm"
+        size={null}
+        dialogClassName="tw-max-w-[420px]"
         customClassName="uncommitted-changes-conflict-modal"
       >
-        <div className="d-flex flex-column" style={{ gap: '8px', width: '100%', position: 'relative' }}>
+        <div className="d-flex flex-column" style={{ padding: '20px', gap: '8px', position: 'relative' }}>
           <button
             className="btn-close"
             aria-label="Close"

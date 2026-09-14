@@ -722,7 +722,10 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
     <>
       <Modal
         backdrop="static"
-        show={true}
+        // Hidden (not unmounted — this component still owns the conflict state) while a
+        // blocking conflict modal is up, so the Pull/Commit dialog doesn't linger visible
+        // behind it.
+        show={!pullConflictGroups?.length && !multiDraftResources?.length && !uncommittedChangesResources?.length}
         onHide={onClose}
         size="sm"
         centered={true}
