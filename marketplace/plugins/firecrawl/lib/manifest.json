@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Firecrawl datasource",
+  "description": "A schema defining Firecrawl datasource",
+  "type": "api",
+  "source": {
+    "name": "Firecrawl",
+    "kind": "firecrawl",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "apiUrl": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Firecrawl API key",
+      "helpText": "An <a href='https://www.firecrawl.dev/app/api-keys' target='_blank' rel='noreferrer'>API key</a> to authenticate the requests. Required for Firecrawl Cloud, and optional for a self-hosted instance that runs without authentication.",
+      "encrypted": true
+    },
+    "apiUrl": {
+      "label": "API URL",
+      "key": "apiUrl",
+      "type": "text",
+      "description": "Enter your Firecrawl API URL (optional)",
+      "helpText": "Defaults to https://api.firecrawl.dev. Set this only to point at a <a href='https://docs.firecrawl.dev/contributing/self-host' target='_blank' rel='noreferrer'>self-hosted Firecrawl</a> instance. Not available on ToolJet Cloud."
+    }
+  },
+  "required": []
+}

@@ -393,6 +393,7 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-textract',
                 'marketplace/plugins/marketplace-plugin-aws-lambda',
                 'marketplace/plugins/marketplace-plugin-engagespot',
+                'marketplace/plugins/marketplace-plugin-firecrawl',
                 'marketplace/plugins/marketplace-plugin-github',
                 'marketplace/plugins/marketplace-plugin-harperdb',
                 'marketplace/plugins/marketplace-plugin-openai',
