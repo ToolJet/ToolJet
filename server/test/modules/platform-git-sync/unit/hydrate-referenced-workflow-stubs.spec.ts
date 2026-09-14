@@ -27,6 +27,7 @@
  * @group gitsync
  */
 import { Test } from '@nestjs/testing';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PlatformGitPullService } from '@ee/platform-git-sync/pull.service';
 import { GitSyncAdapter } from '@ee/git-sync/git-sync-adapter';
 import { WorkspaceGitSyncAdapter } from '@ee/git-sync/workspace-git-sync-adapter';
@@ -126,6 +127,7 @@ describe('PlatformGitPullService.hydrateReferencedWorkflowStubs', () => {
         { provide: GitSyncConfigsUtilService, useValue: {} },
         { provide: GitObjectCacheService, useValue: {} },
         { provide: SourceControlProviderService, useValue: {} },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 
