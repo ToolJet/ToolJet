@@ -67,6 +67,16 @@ describe('PAT scope definition', () => {
     const allowed = new Set([
       GROUP_FEATURE.GET_ALL, GROUP_FEATURE.GET_ONE, GROUP_FEATURE.GET_ALL_GROUP_USER,
       GROUP_FEATURE.CREATE, GROUP_FEATURE.UPDATE, GROUP_FEATURE.DELETE, GROUP_FEATURE.DELETE_GROUP_USER,
+      GROUP_FEATURE.DUPLICATE,
+      GROUP_FEATURE.GET_ADDABLE_APPS,
+      GROUP_FEATURE.GET_ADDABLE_DS,
+      GROUP_FEATURE.GET_ALL_GRANULAR_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_DATA_PERMISSIONS,
     ]);
     for (const feature of Object.values(GROUP_FEATURE)) {
       expect(patCanAccess(MODULES.GROUP_PERMISSIONS, feature)).toBe(allowed.has(feature));
@@ -152,12 +162,12 @@ describe('PatScopeInterceptor', () => {
   });
 
   it('enforces group feature limits for workspace PAT sessions', () => {
-    for (const feature of [GROUP_FEATURE.CREATE, GROUP_FEATURE.DELETE_GROUP_USER, GROUP_FEATURE.DUPLICATE]) {
+    for (const feature of [GROUP_FEATURE.CREATE, GROUP_FEATURE.DELETE_GROUP_USER, GROUP_FEATURE.DUPLICATE, GROUP_FEATURE.USER_ROLE_CHANGE]) {
       const interceptor = new PatScopeInterceptor({
         get: (key: string) => key === 'tjModuleId' ? MODULES.GROUP_PERMISSIONS : feature,
       } as any);
       const invoke = () => interceptor.intercept(contextFor({ isPATLogin: true }), nextHandler);
-      if (feature === GROUP_FEATURE.DUPLICATE) expect(invoke).toThrow(ForbiddenException);
+      if (feature === GROUP_FEATURE.USER_ROLE_CHANGE) expect(invoke).toThrow(ForbiddenException);
       else expect(invoke()).toBe('HANDLED');
     }
   });
