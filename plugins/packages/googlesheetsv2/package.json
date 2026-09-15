@@ -17,6 +17,9 @@
   "main": "dist/index.js",
   "name": "@tooljet-plugins/googlesheetsv2",
   "overrides": {
+    "glob": {
+      "minimatch": "3.1.5"
+    },
     "google-auth-library": {
       "jws": "4.0.1"
     },
