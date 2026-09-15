@@ -598,11 +598,13 @@ export class CreateAppV2Dto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(50)
+  @Transform(({ value }) => sanitizeInput(value))
   slug?: string;
 
   // accepts either the folder's id or its name
@@ -656,8 +658,7 @@ export class ListAppsV2QueryDto {
 }
 
 export class ImportAppV2Dto {
-  // Matches the shape Export App v2 returns ({ definition: {...} }), so an export
-  // can be re-imported directly without any reshaping by the caller.
+  // Matches Export v2's { definition } so an export re-imports unchanged
   @IsDefined()
   @IsObject()
   definition: Record<string, any>;
@@ -698,8 +699,7 @@ export class ListModulesV2QueryDto {
 }
 
 export class ImportModuleV2Dto {
-  // Matches the shape Export Module v2 returns ({ definition: {...} }), so an export
-  // can be re-imported directly without any reshaping by the caller.
+  // Matches Export v2's { definition } so an export re-imports unchanged
   @IsDefined()
   @IsObject()
   definition: Record<string, any>;
@@ -758,19 +758,16 @@ export class ListWorkflowsV2QueryDto {
 }
 
 export class ImportWorkflowV2Dto {
-  // Matches the shape Export Workflow v2 returns ({ definition: {...} }), so an export
-  // can be re-imported directly without any reshaping by the caller.
+  // Matches Export v2's { definition } so an export re-imports unchanged
   @IsDefined()
   @IsObject()
   definition: Record<string, any>;
 }
 
-// Shared across App/Module/Workflow Folders — same validators as the internal
-// CreateFolderDto/UpdateFolderDto (server/src/modules/folders/dto/index.ts).
 export class CreateFolderV2Dto {
   @IsString()
   @IsNotEmpty({ message: "Folder name can't be empty" })
-  @Transform(({ value }) => sanitizeInput(value).trim())
+  @Transform(({ value }) => sanitizeInput(value ?? '').trim())
   @Validate(AllowedCharactersValidator)
   @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;

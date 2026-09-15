@@ -10,32 +10,24 @@
  * (no slug in request or response anywhere), otherwise identical: folder_id support, same
  * 422/404/409 semantics, same import/export shape. Delete has no extra guard (unlike Modules'
  * ModuleViewer-in-use check). Edition/plan gating (CE 404s, starter 451s) is shared guard
- * infrastructure identical across every v2 route, not per-resource behavior, so it isn't
- * covered here — see apps-v2.e2e-spec.ts's header for the full rationale.
+ * infrastructure identical across every v2 route — see apps-v2.e2e-spec.ts, which is the only
+ * one of the four suites that exercises it.
  *
  * Known, deliberate spec deviations — same as apps-v2.e2e-spec.ts:
  *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
  *   2. workspaceIdentifier/workflowIdentifier are never format-validated.
- *
- * Fixed since these tests were first written (see apps-v2.e2e-spec.ts for full root-cause
- * notes — same shared code paths): Create/Import Workflow v2 used to return/persist name: null,
- * resolving by name used to 404, and List's ?search= used to be dead. createWorkflowV2/
- * importWorkflowV2 now patch the in-memory name; resolveAppByIdentifier/
- * listWorkspaceResourcesV2 are shared with Apps v2, so their fixes apply here automatically.
- * Create with duplicate name -> 400 not 409; rename to duplicate -> 409 (correct) is unchanged.
  */
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  createUser as createUserBase,
+  createUser,
   initTestApp,
   closeTestApp,
   createApplication,
   createApplicationVersion,
   createFolder,
-  ensureAppEnvironments,
   NONEXISTENT_UUID,
 } from 'test-helper';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -49,12 +41,6 @@ function base(workspaceId: string) {
   return `/api/v2/ext/workspaces/${workspaceId}/workflows`;
 }
 
-async function createUser(app: INestApplication, opts: Parameters<typeof createUserBase>[1]) {
-  const result = await createUserBase(app, opts);
-  await ensureAppEnvironments(app, result.organization.id);
-  return result;
-}
-
 describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
   let app: INestApplication;
 
@@ -66,14 +52,21 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
   afterEach(() => jest.resetAllMocks());
   afterAll(async () => closeTestApp(app), 60000);
 
-  it('enforces the ExternalApiSecurityGuard and resolveWorkspaceByIdentifier', async () => {
+  it('should reject a request with no token', async () => {
     const { user } = await createUser(app, { email: `wv2-auth-${Date.now()}@tooljet.io` });
     await request(app.getHttpServer()).post(base(user.defaultOrganizationId)).send({ name: 'X' }).expect(403);
+  });
+
+  it('should reject a request with an invalid token', async () => {
+    const { user } = await createUser(app, { email: `wv2-auth2-${Date.now()}@tooljet.io` });
     await request(app.getHttpServer())
       .post(base(user.defaultOrganizationId))
       .set('Authorization', 'Basic wrong-token')
       .send({ name: 'X' })
       .expect(403);
+  });
+
+  it('should 404 when the workspace identifier matches nothing', async () => {
     await request(app.getHttpServer())
       .post(base('not-a-real-workspace'))
       .set('Authorization', getExtAuth())
@@ -81,12 +74,8 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
       .expect(404);
   });
 
-  // ---------------------------------------------------------------------------
-  // POST /workflows — Create
-  // ---------------------------------------------------------------------------
-
   describe('POST /api/v2/ext/workspaces/:workspaceIdentifier/workflows', () => {
-    it('returns 400 when name is missing', async () => {
+    it('should return 400 when name is missing', async () => {
       const { user } = await createUser(app, { email: `wv2-c1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
@@ -95,7 +84,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(400);
     });
 
-    it('creates a workflow and returns {id, name, folder_id} with no slug', async () => {
+    it('should create a workflow and return {id, name, folder_id} with no slug', async () => {
       const { user } = await createUser(app, { email: `wv2-c2-${Date.now()}@tooljet.io` });
       const res = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
@@ -107,7 +96,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
       expect(res.body).not.toHaveProperty('slug');
     });
 
-    it('creates a workflow inside a folder by id, but not across folder types', async () => {
+    it('should create a workflow inside a folder by id', async () => {
       const { user } = await createUser(app, { email: `wv2-c3-${Date.now()}@tooljet.io` });
       const folder = await createFolder(app, {
         name: 'Sync Jobs',
@@ -121,7 +110,10 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .send({ name: 'Foldered Workflow', folder_id: folder.id })
         .expect(201);
       expect(res.body.folder_id).toBe(folder.id);
+    });
 
+    it('should reject a folder_id belonging to a folder of a different resource type', async () => {
+      const { user } = await createUser(app, { email: `wv2-c3b-${Date.now()}@tooljet.io` });
       const appFolder = await createFolder(app, {
         name: 'App Folder Only',
         type: APP_TYPES.FRONT_END,
@@ -132,6 +124,10 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .set('Authorization', getExtAuth())
         .send({ name: 'Cross Type Workflow', folder_id: appFolder.id })
         .expect(422);
+    });
+
+    it('should reject a nonexistent folder_id', async () => {
+      const { user } = await createUser(app, { email: `wv2-c3c-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
@@ -139,7 +135,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(422);
     });
 
-    it('rejects a duplicate workflow name in the workspace (FINDING: 400, not the spec-mandated 409)', async () => {
+    it('should 409 on a duplicate workflow name in the workspace', async () => {
       const { user } = await createUser(app, { email: `wv2-c4-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
@@ -150,23 +146,22 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Dup Workflow' })
-        .expect(400);
+        .expect(409);
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // PATCH /workflows/:workflowIdentifier — Rename / move
-  // ---------------------------------------------------------------------------
-
   describe('PATCH /api/v2/ext/workspaces/:workspaceIdentifier/workflows/:workflowIdentifier', () => {
-    it('returns 404 for a nonexistent workflow and 400 when the body has neither name nor folder_id', async () => {
+    it('should 404 for a nonexistent workflow', async () => {
       const { user } = await createUser(app, { email: `wv2-r1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Renamed' })
         .expect(404);
+    });
 
+    it('should 400 when the body has neither name nor folder_id', async () => {
+      const { user } = await createUser(app, { email: `wv2-r1b-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'R3', user, type: APP_TYPES.WORKFLOW });
       await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
@@ -175,21 +170,25 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(400);
     });
 
-    it('renames the workflow, moves it into a folder, and clears the folder', async () => {
+    it('should rename the workflow', async () => {
       const { user } = await createUser(app, { email: `wv2-r2-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Old Name', user, type: APP_TYPES.WORKFLOW });
-      const folder = await createFolder(app, {
-        name: 'Destination Folder',
-        type: APP_TYPES.WORKFLOW,
-        organizationId: user.defaultOrganizationId,
-      });
-
       const renamed = await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
         .send({ name: 'New Name' })
         .expect(200);
       expect(renamed.body).toMatchObject({ id: seeded.id, name: 'New Name' });
+    });
+
+    it('should move the workflow into a folder and clear it', async () => {
+      const { user } = await createUser(app, { email: `wv2-r2b-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Old Name', user, type: APP_TYPES.WORKFLOW });
+      const folder = await createFolder(app, {
+        name: 'Destination Folder',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: user.defaultOrganizationId,
+      });
 
       const moved = await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
@@ -204,7 +203,38 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .send({ folder_id: null })
         .expect(200);
       expect(cleared.body.folder_id).toBeNull();
+    });
 
+    it('should move the workflow from one folder to another', async () => {
+      const { user } = await createUser(app, { email: `wv2-r2c-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Old Name', user, type: APP_TYPES.WORKFLOW });
+      const folderA = await createFolder(app, {
+        name: 'Folder A',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: user.defaultOrganizationId,
+      });
+      const folderB = await createFolder(app, {
+        name: 'Folder B',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: user.defaultOrganizationId,
+      });
+      await request(app.getHttpServer())
+        .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ folder_id: folderA.id })
+        .expect(200);
+
+      const moved = await request(app.getHttpServer())
+        .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ folder_id: folderB.id })
+        .expect(200);
+      expect(moved.body.folder_id).toBe(folderB.id);
+    });
+
+    it('should reject a nonexistent folder_id', async () => {
+      const { user } = await createUser(app, { email: `wv2-r2d-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Old Name', user, type: APP_TYPES.WORKFLOW });
       await request(app.getHttpServer())
         .patch(`${base(user.defaultOrganizationId)}/${seeded.id}`)
         .set('Authorization', getExtAuth())
@@ -212,7 +242,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(422);
     });
 
-    it('returns 409 when renaming to a name that already exists in the workspace', async () => {
+    it('should 409 when renaming to a name that already exists in the workspace', async () => {
       const { user } = await createUser(app, { email: `wv2-r3-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
@@ -231,22 +261,31 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .send({ name: 'Taken Name' })
         .expect(409);
     });
+
+    it('should 404 for a workflow in another workspace', async () => {
+      const { user } = await createUser(app, { email: `wv2-r4-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-r4-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Owned Elsewhere', user, type: APP_TYPES.WORKFLOW });
+      await request(app.getHttpServer())
+        .patch(`${base(otherOrg.id)}/${seeded.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Renamed' })
+        .expect(404);
+    });
   });
 
-  // ---------------------------------------------------------------------------
-  // GET /workflows — List
-  // ---------------------------------------------------------------------------
-
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/workflows', () => {
-    it('returns an empty list, then lists only workflow-type apps with correct shape', async () => {
+    it('should return an empty list for a workspace with no workflows', async () => {
       const { user } = await createUser(app, { email: `wv2-l1-${Date.now()}@tooljet.io` });
-
       const empty = await request(app.getHttpServer())
         .get(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .expect(200);
       expect(empty.body).toMatchObject({ data: [], pagination: { page: 1, per_page: 20, total_count: 0 } });
+    });
 
+    it('should list only workflow-type apps with the correct shape', async () => {
+      const { user } = await createUser(app, { email: `wv2-l1b-${Date.now()}@tooljet.io` });
       await createApplication(app, { name: 'A Front-end App', user, type: APP_TYPES.FRONT_END });
       await createApplication(app, { name: 'A Module', user, type: APP_TYPES.MODULE }, false);
       const wf = await request(app.getHttpServer())
@@ -265,12 +304,17 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
       expect(res.body.data[0]).toHaveProperty('folder_id');
     });
 
-    it('filters by ?search= and ?folder_id=null, and paginates', async () => {
+    it('should match workflows by name when search is given', async () => {
       const { user } = await createUser(app, { email: `wv2-l2-${Date.now()}@tooljet.io` });
       const findable = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
         .set('Authorization', getExtAuth())
         .send({ name: 'Findable Workflow' })
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Something Else' })
         .expect(201);
 
       const searched = await request(app.getHttpServer())
@@ -279,7 +323,10 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(200);
       expect(searched.body.pagination.total_count).toBe(1);
       expect(searched.body.data[0].id).toBe(findable.body.id);
+    });
 
+    it('should list only workflows outside any folder when folder_id is null', async () => {
+      const { user } = await createUser(app, { email: `wv2-l3-${Date.now()}@tooljet.io` });
       const folder = await createFolder(app, {
         name: 'Filter Folder',
         type: APP_TYPES.WORKFLOW,
@@ -290,7 +337,49 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .set('Authorization', getExtAuth())
         .send({ name: 'In Folder', folder_id: folder.id })
         .expect(201);
-      for (let i = 0; i < 2; i++) {
+      const notInFolder = await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Not In Folder' })
+        .expect(201);
+
+      const unfoldered = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}?folder_id=null`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(unfoldered.body.pagination.total_count).toBe(1);
+      expect(unfoldered.body.data.map((w: { id: string }) => w.id)).toContain(notInFolder.body.id);
+    });
+
+    it('should list only workflows in the named folder', async () => {
+      const { user } = await createUser(app, { email: `wv2-l3b-${Date.now()}@tooljet.io` });
+      const folder = await createFolder(app, {
+        name: 'Filter Folder',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: user.defaultOrganizationId,
+      });
+      const inFolder = await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'In Folder', folder_id: folder.id })
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Not In Folder' })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}?folder_id=${folder.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(res.body.pagination.total_count).toBe(1);
+      expect(res.body.data[0].id).toBe(inFolder.body.id);
+    });
+
+    it('should page results with page and per_page', async () => {
+      const { user } = await createUser(app, { email: `wv2-l3c-${Date.now()}@tooljet.io` });
+      for (let i = 0; i < 3; i++) {
         await request(app.getHttpServer())
           .post(base(user.defaultOrganizationId))
           .set('Authorization', getExtAuth())
@@ -298,33 +387,45 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
           .expect(201);
       }
 
-      const unfoldered = await request(app.getHttpServer())
-        .get(`${base(user.defaultOrganizationId)}?folder_id=null`)
-        .set('Authorization', getExtAuth())
-        .expect(200);
-      expect(unfoldered.body.pagination.total_count).toBe(3); // findable + 2 page workflows
-
       const paged = await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}?page=1&per_page=2`)
         .set('Authorization', getExtAuth())
         .expect(200);
       expect(paged.body.data).toHaveLength(2);
-      expect(paged.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 4 });
+      expect(paged.body.pagination).toMatchObject({ page: 1, per_page: 2, total_count: 3 });
+    });
+
+    it('should reject a per_page above 100', async () => {
+      const { user } = await createUser(app, { email: `wv2-l3d-${Date.now()}@tooljet.io` });
+      await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}?per_page=101`)
+        .set('Authorization', getExtAuth())
+        .expect(400);
+    });
+
+    it('should 404 for a workflow in another workspace', async () => {
+      const { user } = await createUser(app, { email: `wv2-l4-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-l4-other-${Date.now()}@tooljet.io` });
+      await createApplication(app, { name: 'Owned Elsewhere', user, type: APP_TYPES.WORKFLOW });
+      const res = await request(app.getHttpServer())
+        .get(base(otherOrg.id))
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(res.body.pagination.total_count).toBe(0);
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // GET /workflows/:workflowIdentifier — Detail
-  // ---------------------------------------------------------------------------
-
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/workflows/:workflowIdentifier', () => {
-    it('returns 404 for a nonexistent workflow, and resolves by id and by name', async () => {
+    it('should 404 for a nonexistent workflow', async () => {
       const { user } = await createUser(app, { email: `wv2-g1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
 
+    it('should resolve by id and by name', async () => {
+      const { user } = await createUser(app, { email: `wv2-g2-${Date.now()}@tooljet.io` });
       const uniqueName = `Resolve Me ${Date.now()}`;
       const created = await request(app.getHttpServer())
         .post(base(user.defaultOrganizationId))
@@ -344,20 +445,29 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(200);
       expect(byName.body.id).toBe(created.body.id);
     });
+
+    it('should 404 for a workflow in another workspace', async () => {
+      const { user } = await createUser(app, { email: `wv2-g3-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-g3-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Owned Elsewhere', user, type: APP_TYPES.WORKFLOW });
+      await request(app.getHttpServer())
+        .get(`${base(otherOrg.id)}/${seeded.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(404);
+    });
   });
 
-  // ---------------------------------------------------------------------------
-  // DELETE /workflows/:workflowIdentifier
-  // ---------------------------------------------------------------------------
-
   describe('DELETE /api/v2/ext/workspaces/:workspaceIdentifier/workflows/:workflowIdentifier', () => {
-    it('returns 404 for a nonexistent workflow, and 204 + no-longer-resolvable on delete', async () => {
+    it('should 404 for a nonexistent workflow', async () => {
       const { user } = await createUser(app, { email: `wv2-d1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .delete(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
 
+    it('should delete the workflow', async () => {
+      const { user } = await createUser(app, { email: `wv2-d1b-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'To Delete', user, type: APP_TYPES.WORKFLOW });
       await request(app.getHttpServer())
         .delete(`${base(user.defaultOrganizationId)}/${seeded.id}`)
@@ -368,14 +478,20 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .set('Authorization', getExtAuth())
         .expect(404);
     });
+
+    it('should 404 for a workflow in another workspace', async () => {
+      const { user } = await createUser(app, { email: `wv2-d2-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-d2-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Owned Elsewhere', user, type: APP_TYPES.WORKFLOW });
+      await request(app.getHttpServer())
+        .delete(`${base(otherOrg.id)}/${seeded.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(404);
+    });
   });
 
-  // ---------------------------------------------------------------------------
-  // POST /workflows/import — Import
-  // ---------------------------------------------------------------------------
-
   describe('POST /api/v2/ext/workspaces/:workspaceIdentifier/workflows/import', () => {
-    it('returns 400 when definition is missing', async () => {
+    it('should return 400 when definition is missing', async () => {
       const { user } = await createUser(app, { email: `wv2-i1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .post(`${base(user.defaultOrganizationId)}/import`)
@@ -384,8 +500,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .expect(400);
     });
 
-    it('imports an exported workflow and it appears in the workspace listing', async () => {
-      // Unlike Apps v2, importWorkflowV2 doesn't call generateWorkspaceSlug (no slug on workflows).
+    it('should import an exported workflow and have it appear in the workspace listing', async () => {
       const { user } = await createUser(app, { email: `wv2-i2-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Export Source Workflow', user, type: APP_TYPES.WORKFLOW });
       await createApplicationVersion(app, seeded);
@@ -411,7 +526,7 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
       expect(listRes.body.pagination.total_count).toBe(1);
     });
 
-    it('rejects a front-end app definition, and 422s on a newer tooljet_version (FINDING: code field not delivered)', async () => {
+    it('should reject a front-end app definition', async () => {
       const { user } = await createUser(app, { email: `wv2-i3-${Date.now()}@tooljet.io` });
       const seededApp = await createApplication(app, { name: 'App To Reject', user, type: APP_TYPES.FRONT_END });
       await createApplicationVersion(app, seededApp);
@@ -424,7 +539,25 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .set('Authorization', getExtAuth())
         .send({ definition: exportRes.body.definition })
         .expect(400);
+    });
 
+    it('should 409 on a duplicate name/slug on import', async () => {
+      const { user } = await createUser(app, { email: `wv2-i3b-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Reimport Me', user, type: APP_TYPES.WORKFLOW });
+      await createApplicationVersion(app, seeded);
+      const selfExport = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}/${seeded.id}/export`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      await request(app.getHttpServer())
+        .post(`${base(user.defaultOrganizationId)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition: selfExport.body.definition })
+        .expect(409);
+    });
+
+    it('should return 422 (without a machine-readable code) when tooljet_version is newer than the server', async () => {
+      const { user } = await createUser(app, { email: `wv2-i4-${Date.now()}@tooljet.io` });
       const versionRes = await request(app.getHttpServer())
         .post(`${base(user.defaultOrganizationId)}/import`)
         .set('Authorization', getExtAuth())
@@ -435,18 +568,17 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // GET /workflows/:workflowIdentifier/export — Export
-  // ---------------------------------------------------------------------------
-
   describe('GET /api/v2/ext/workspaces/:workspaceIdentifier/workflows/:workflowIdentifier/export', () => {
-    it('returns 404 for a nonexistent workflow, and {definition} on success', async () => {
+    it('should 404 for a nonexistent workflow', async () => {
       const { user } = await createUser(app, { email: `wv2-e1-${Date.now()}@tooljet.io` });
       await request(app.getHttpServer())
         .get(`${base(user.defaultOrganizationId)}/${NONEXISTENT_UUID}/export`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
 
+    it('should return {definition} on success', async () => {
+      const { user } = await createUser(app, { email: `wv2-e1b-${Date.now()}@tooljet.io` });
       const seeded = await createApplication(app, { name: 'Export Shape Workflow', user, type: APP_TYPES.WORKFLOW });
       await createApplicationVersion(app, seeded);
       const res = await request(app.getHttpServer())
@@ -456,6 +588,16 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
 
       expect(Object.keys(res.body)).toEqual(['definition']);
       expect(res.body.definition).toHaveProperty('tooljet_version');
+    });
+
+    it('should 404 for a workflow in another workspace', async () => {
+      const { user } = await createUser(app, { email: `wv2-e2-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-e2-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Owned Elsewhere', user, type: APP_TYPES.WORKFLOW });
+      await request(app.getHttpServer())
+        .get(`${base(otherOrg.id)}/${seeded.id}/export`)
+        .set('Authorization', getExtAuth())
+        .expect(404);
     });
   });
 });
