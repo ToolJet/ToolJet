@@ -57,11 +57,11 @@ const Container = React.memo(
     flexEffectiveDirection,
     flexShouldStack = false,
   }) => {
-    const { moduleId, isModuleEditor } = useModuleContext();
+    const { moduleId, isModuleEditor, isModuleMode } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
-    const isEmbeddedModule = appType === 'module' && !isModuleEditor;
+    const isEmbeddedModule = appType === 'module' && isModuleMode;
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow

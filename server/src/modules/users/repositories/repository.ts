@@ -79,6 +79,7 @@ export class UserRepository extends Repository<User> {
         status: true,
         userType: true,
         createdAt: true,
+        mfaEnabled: true,
         organizationUsers: {
           id: true,
           status: true,
@@ -286,6 +287,9 @@ export class UserRepository extends Repository<User> {
           role: null,
           invitationToken: null,
           invitationTokenExpiry: null,
+          llmProvider: null,
+          llmModel: null,
+          llmModelContextWindow: null,
           createdAt: null,
           updatedAt: null,
           user,

@@ -1,11 +1,14 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
 import { AuditLogsModule } from '@ee/audit-logs/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
+import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
@@ -504,6 +507,11 @@ export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): 
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  // Mirrors main.ts's interceptor setup — without it, RequestContext.setLocals(...) never
+  // becomes an emitted 'auditLogEntry' event, so audit-log e2e assertions can't pass.
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(moduleRef.get(Reflector), moduleRef.get(Logger), moduleRef.get(EventEmitter2))
+  );
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
