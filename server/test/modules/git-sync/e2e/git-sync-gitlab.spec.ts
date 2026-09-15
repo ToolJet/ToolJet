@@ -2126,8 +2126,8 @@ describeGitLab('GitSyncController — GitLab', () => {
         folderOnMain.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
 
         step(49, 'hydration failure: invalid repo URL surfaces hydration_error on GET /apps/:id');
-        // 47. Force the re-hydration path (a non-stub draft whose stored
-        //     git_tree_sha no longer matches git's current tree SHA), repoint the workspace
+        // 47. Force the hydration path (flip the materialized draft back to a stub —
+        //     the only remaining on-open hydration trigger), repoint the workspace
         //     git config at a non-existent repo, and confirm GET /apps/:id stays
         //     200 while surfacing is_hydration_tried=true, hydration_status='failed'
         //     and a client-safe hydration_error. DB state is restored afterwards.
@@ -2146,19 +2146,13 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(app4HydrateResp.body.is_hydration_tried).toBe(true);
         expect(app4HydrateResp.body.hydration_status).toBe('success');
 
-        // Capture the materialized tree SHA so we can restore it after the failure test.
-        const [{ git_tree_sha: app4OriginalTreeSha }] = await dataSource.query(
-          `SELECT git_tree_sha FROM app_versions
-           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
-          [mainApp4.id, mainBranchId]
-        );
-
-        // Trigger the re-hydration check: force git_tree_sha to a value that can't match
-        // git's current tree SHA, so the open path re-clones and re-imports.
+        // Trigger hydration: flip the materialized draft back to a stub. Opening an app no
+        // longer re-checks git for a non-stub draft (that cost one clone per open), so is_stub
+        // is the only on-open hydration trigger left.
         await dataSource.query(
           `UPDATE app_versions
-             SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
-           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
+             SET is_stub = true
+           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false AND status = 'DRAFT'`,
           [mainApp4.id, mainBranchId]
         );
 
@@ -2176,8 +2170,8 @@ describeGitLab('GitSyncController — GitLab', () => {
           [INVALID_GIT_URL, orgId]
         );
 
-        // GET the app — hydration is attempted and fails, but the existing non-stub
-        // draft keeps the response a 200 carrying the failure diagnostics.
+        // GET the app — hydration is attempted and fails, and the response stays a 200
+        // carrying the failure diagnostics instead of erroring out.
         const failResp = await request
           .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp4.id}`)
@@ -2192,7 +2186,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(typeof failResp.body.hydration_error.message).toBe('string');
         expect(failResp.body.hydration_error.message.length).toBeGreaterThan(0);
 
-        // Revert DB changes: restore the real repo URL and clear the forced timestamp.
+        // Revert DB changes: restore the real repo URL and un-stub the draft.
         await dataSource.query(
           `UPDATE organization_gitlab
              SET gitlab_url = $1
@@ -2201,9 +2195,9 @@ describeGitLab('GitSyncController — GitLab', () => {
         );
         await dataSource.query(
           `UPDATE app_versions
-             SET git_tree_sha = $3
-           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
-          [mainApp4.id, mainBranchId, app4OriginalTreeSha]
+             SET is_stub = false
+           WHERE app_id = $1 AND branch_id = $2 AND is_stub = true AND status = 'DRAFT'`,
+          [mainApp4.id, mainBranchId]
         );
 
         // Sanity: with state restored, the next open skips hydration cleanly.
@@ -6047,10 +6041,11 @@ describeGitLab('GitSyncController — GitLab', () => {
         ]);
         expect(await dsvCount(dsId, featBranchId)).toBe(0);
 
-        // Force the open-path re-hydrate: a git_tree_sha mismatch makes GET /apps/:id re-import.
+        // Force the open-path hydrate: flip the materialized draft back to a stub. A non-stub
+        // draft is served straight from the DB — app open no longer re-checks git for it.
         await depDs.query(
-          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
-             WHERE app_id = $1 AND branch_id = $2`,
+          `UPDATE app_versions SET is_stub = true
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT'`,
           [appId, featBranchId]
         );
 
@@ -6152,8 +6147,8 @@ describeGitLab('GitSyncController — GitLab', () => {
         // app_name-on-branch collision between the stale row and the re-created stub.
         await depDs.query(`DELETE FROM apps WHERE id = $1`, [moduleAppId]);
         await depDs.query(
-          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
-             WHERE app_id = $1 AND branch_id = $2`,
+          `UPDATE app_versions SET is_stub = true
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT'`,
           [hostAppId, featBranchId]
         );
 
@@ -6240,10 +6235,11 @@ describeGitLab('GitSyncController — GitLab', () => {
         ]);
         expect(await dsvCount(dsId, featBranchId)).toBe(0);
 
-        // Force the open-path re-hydrate: a git_tree_sha mismatch makes GET /apps/:id re-import.
+        // Force the open-path hydrate: flip the materialized draft back to a stub. A non-stub
+        // draft is served straight from the DB — app open no longer re-checks git for it.
         await depDs.query(
-          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
-             WHERE app_id = $1 AND branch_id = $2`,
+          `UPDATE app_versions SET is_stub = true
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT'`,
           [moduleAppId, featBranchId]
         );
 
@@ -8121,6 +8117,280 @@ describeGitLab('GitSyncController — GitLab', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // App open never pulls from git (regression).
+    //
+    // GET /apps/:id used to re-clone the repo on EVERY open of a materialized
+    // (non-stub) draft, purely to compare git's current tree SHA against the draft's
+    // stored git_tree_sha — one clone per app open, plus one more per referenced
+    // module via hydrateStaleReferencedModules. That is gone: on-open hydration now
+    // fires ONLY for an is_stub version.
+    //
+    // Pins three things:
+    //   1. A materialized draft is served straight from the DB — no git call and no
+    //      re-import, even when its git_tree_sha cannot match git (NULL / sentinel),
+    //      which is exactly the "outdated" marker a workspace pull leaves behind.
+    //   2. A referenced module that is already materialized is NOT re-hydrated when
+    //      its host app opens.
+    //   3. is_stub is the one remaining on-open hydration trigger, and it still works.
+    //
+    // Guard rail: if a future change re-introduces a git call on the open path, the
+    // sentinel SHAs below get overwritten and this fails. Refreshing an outdated draft
+    // belongs to the pull path (give it a cheap DB staleness signal), not to app open.
+    // Against the real GitLab simulator (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('app open never pulls from git', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const MERGE_URL = `${GIT_BASE_URL}/admin/merge`;
+      // Can never equal a real git tree SHA — if an open re-imported, hydration would
+      // overwrite it with git's actual SHA.
+      const SENTINEL_SHA = 'sentinel-tree-sha-0000000000000000000000000000';
+
+      let oncOrgId: string;
+      let oncCookie: string[];
+      let oncDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', oncCookie).set('tj-workspace-id', oncOrgId);
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+        (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === name)?.id;
+      const editingVersionOf = async (appId: string, branchId: string) => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+        return { versionId: ev.id as string, pageId: pageId as string };
+      };
+      const gitpush = (appId: string, versionId: string, gitAppName: string, branchName: string, branchId: string) =>
+        auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            gitAppName,
+            versionId,
+            lastCommitMessage: `push ${gitAppName}`,
+            gitVersionName: branchName,
+            sourceBranch: branchName,
+          });
+      const mergeToMain = async (sourceBranch: string) => {
+        const resp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: sourceBranch,
+            target: 'main',
+            message: `Land ${sourceBranch}`,
+          }),
+        });
+        expect((await resp.json().catch(() => ({}))).ok).toBe(true);
+      };
+      const listByType = async (type: string, branchId: string) =>
+        (
+          await auth(agent().get('/api/apps'))
+            .query({ page: 1, folder: '', searchKey: '', type, branch_id: branchId })
+            .expect(200)
+        ).body.apps || [];
+      // Latest version row for an app on a branch, filtered by stub-ness.
+      const versionRow = async (appId: string, branchId: string, isStub = false) =>
+        (
+          await oncDs.query(
+            `SELECT id, is_stub, git_tree_sha FROM app_versions
+              WHERE app_id = $1 AND branch_id = $2 AND is_stub = $3
+              ORDER BY updated_at DESC LIMIT 1`,
+            [appId, branchId, isStub]
+          )
+        )[0];
+      const setTreeSha = (versionId: string, sha: string | null) =>
+        oncDs.query(`UPDATE app_versions SET git_tree_sha = $2 WHERE id = $1`, [versionId, sha]);
+      const openApp = (appId: string, branchId: string) =>
+        auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-open-no-clone.gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'opennoclone',
+        });
+        oncOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-open-no-clone.gl@tooljet.io');
+        oncCookie = tokenCookie;
+        await ensureAppEnvironments(app, oncOrgId);
+        oncDs = app.get<DataSource>(getDataSourceToken('default'));
+        await oncDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [oncOrgId]
+        );
+      });
+
+      it('serves a materialized draft (and its referenced module) from the DB, and hydrates only on is_stub', async () => {
+        const { randomUUID } = await import('crypto');
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-open-no-clone';
+
+        // ── 1. enable git + branching, pull main, create feature branch ──────────────────
+        step(1, 'configure git + branching, pull main, create feature branch');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${oncOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: FEAT, sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await branchIdByName(FEAT, mainBranchId);
+        expect(featBranchId).toBeDefined();
+
+        // ── 2. create a module + a host app that references it via a ModuleViewer ─────────
+        step(2, 'create module + host app; wire a ModuleViewer on the host → module co_relation_id');
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'onc-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleCtx = await editingVersionOf(moduleId, featBranchId);
+        const moduleInList = (await listByType('module', featBranchId)).find((m: any) => m.id === moduleId);
+        const moduleCoRel: string = moduleInList?.co_relation_id || moduleInList?.coRelationId;
+        expect(moduleCoRel).toBeDefined();
+
+        const hostAppId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'onc-host-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const hostCtx = await editingVersionOf(hostAppId, featBranchId);
+        const moduleViewerId = randomUUID();
+        await auth(agent().post(`/api/v2/apps/${hostAppId}/versions/${hostCtx.versionId}/components`))
+          .query({ branch_id: featBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: hostCtx.pageId,
+            diff: {
+              [moduleViewerId]: {
+                name: 'moduleviewer1',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          })
+          .expect(201);
+
+        // ── 3. gitpush module + host app to the feature branch ───────────────────────────
+        step(3, 'gitpush the module and the host app');
+        await gitpush(moduleId, moduleCtx.versionId, 'onc-module', FEAT, featBranchId).expect(201);
+        await gitpush(hostAppId, hostCtx.versionId, 'onc-host-app', FEAT, featBranchId).expect(201);
+
+        // ── 4. merge feature → main, pull main → host + module land as stubs ─────────────
+        step(4, 'merge feature → main, pull main (host + module become stubs)');
+        await mergeToMain(FEAT);
+        await pull(mainBranchId).expect(201);
+        const mainHost = (await listByType('front-end', mainBranchId)).find((a: any) => a.name === 'onc-host-app');
+        const mainModule = (await listByType('module', mainBranchId)).find((m: any) => m.name === 'onc-module');
+        expect(mainHost?.is_stub).toBe(true);
+        expect(mainModule?.is_stub).toBe(true);
+
+        // ── 5. first open materializes host + cascaded module (the stub path) ────────────
+        step(5, 'first open of the host hydrates it and cascade-materializes the module');
+        const firstOpen = await openApp(mainHost.id, mainBranchId);
+        expect(firstOpen.body.is_hydration_tried).toBe(true);
+        expect(firstOpen.body.hydration_status).toBe('success');
+        const hostDraft = await versionRow(mainHost.id, mainBranchId);
+        const moduleDraft = await versionRow(mainModule.id, mainBranchId);
+        expect(hostDraft).toBeDefined();
+        expect(moduleDraft).toBeDefined();
+
+        // ── 6. re-open: no git call, no re-import — sentinel SHAs survive ────────────────
+        step(6, 're-open the host: no hydration, and neither the app nor the module is re-imported');
+        await setTreeSha(hostDraft.id, SENTINEL_SHA);
+        await setTreeSha(moduleDraft.id, SENTINEL_SHA);
+        const reopen = await openApp(mainHost.id, mainBranchId);
+        expect(reopen.body.is_hydration_tried).toBe(false);
+        expect(reopen.body.not_hydrated_reason).toBe('already-up-to-date');
+        expect(reopen.body.editing_version).toBeDefined();
+        expect(reopen.body.editing_version_unresolved).toBeUndefined();
+        // A re-import would have replaced the sentinel with git's real tree SHA.
+        expect((await versionRow(mainHost.id, mainBranchId)).git_tree_sha).toBe(SENTINEL_SHA);
+        // …and the module cascade must not have re-cloned it either.
+        expect((await versionRow(mainModule.id, mainBranchId)).git_tree_sha).toBe(SENTINEL_SHA);
+        // Opening the module directly is likewise a DB-only read.
+        const moduleOpen = await openApp(mainModule.id, mainBranchId);
+        expect(moduleOpen.body.is_hydration_tried).toBe(false);
+        expect(moduleOpen.body.not_hydrated_reason).toBe('already-up-to-date');
+        expect((await versionRow(mainModule.id, mainBranchId)).git_tree_sha).toBe(SENTINEL_SHA);
+
+        // ── 7. an "outdated" draft (pull-style stale SHA) still does not pull on open ────
+        step(7, 'a draft flagged outdated by a pull is NOT refreshed on open (accepted trade-off)');
+        // A workspace pull that finds newer content for a materialized draft leaves
+        // git_tree_sha at its last-materialized value (NULL for a normalized row) as an
+        // "outdated" marker — see classifyEntry in ee/platform-git-sync/pull.service.ts.
+        // Nothing acts on that marker at open time any more; re-materializing is the pull
+        // path's job. This asserts the documented gap so it can't regress silently.
+        await setTreeSha(hostDraft.id, null);
+        const outdatedOpen = await openApp(mainHost.id, mainBranchId);
+        expect(outdatedOpen.body.is_hydration_tried).toBe(false);
+        expect(outdatedOpen.body.not_hydrated_reason).toBe('already-up-to-date');
+        expect((await versionRow(mainHost.id, mainBranchId)).git_tree_sha).toBeNull();
+        // Same for a module — it opens through GET /apps/:id and the same gate.
+        await setTreeSha(moduleDraft.id, null);
+        const outdatedModuleOpen = await openApp(mainModule.id, mainBranchId);
+        expect(outdatedModuleOpen.body.is_hydration_tried).toBe(false);
+        expect(outdatedModuleOpen.body.not_hydrated_reason).toBe('already-up-to-date');
+        expect((await versionRow(mainModule.id, mainBranchId)).git_tree_sha).toBeNull();
+        // …and the host's open must not refresh the outdated module through the cascade either.
+        await openApp(mainHost.id, mainBranchId);
+        expect((await versionRow(mainModule.id, mainBranchId)).git_tree_sha).toBeNull();
+
+        // ── 8. is_stub is still a live trigger — flipping it re-hydrates from git ────────
+        step(8, 'flipping the draft back to a stub makes the next open hydrate from git');
+        await oncDs.query(`UPDATE app_versions SET is_stub = true WHERE id = $1`, [hostDraft.id]);
+        const stubOpen = await openApp(mainHost.id, mainBranchId);
+        expect(stubOpen.body.is_hydration_tried).toBe(true);
+        expect(stubOpen.body.hydration_status).toBe('success');
+        const rehydrated = await versionRow(mainHost.id, mainBranchId);
+        expect(rehydrated).toBeDefined();
+        expect(rehydrated.is_stub).toBe(false);
+        // Hydration stamps git's real tree SHA — proof this open actually went to git.
+        expect(rehydrated.git_tree_sha).toBeTruthy();
+        expect(rehydrated.git_tree_sha).not.toBe(SENTINEL_SHA);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Edit restrictions across git off / on and branching states.
     //
     // Exercises the git-sync edit guards end-to-end on a dedicated org (isolated from
@@ -9008,7 +9278,7 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         // Stamp a non-null git_tree_sha on BOTH the draft being replaced (d2) and the source
         // saved version (v1). The replaced draft must come out never-pulled (git_tree_sha = NULL)
-        // so both a later `pull latest` and the next app open treat it as outdated and refresh it:
+        // so a later `pull latest` treats it as outdated and refreshes it:
         // change detection compares git_tree_sha against git's tree SHA, so a stale non-null value
         // inherited from the replaced draft or the source version would make pull/open wrongly skip.
         await patchDataSource.query(
@@ -9020,7 +9290,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         const d3Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
         const d3Id: string = d3Resp.body.id;
         expect(d3Id).not.toBe(d2Id);
-        // The replaced draft is never-pulled: git_tree_sha is NULL so `pull latest` / the next open
+        // The replaced draft is never-pulled: git_tree_sha is NULL so `pull latest`
         // will refresh it rather than skip.
         const d3Staleness = await patchDataSource.query(`SELECT git_tree_sha FROM app_versions WHERE id = $1`, [d3Id]);
         expect(d3Staleness[0].git_tree_sha).toBeNull();
@@ -10393,8 +10663,14 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         // Per-app tree SHA is stamped on MATERIALIZATION, not on the pull that merely flags an
         // app 'outdated'. skipAppId was normalized onto main as a stale non-stub, so the pull
-        // leaves its git_tree_sha null (the "needs re-hydration" signal); opening the app hydrates
-        // it from git and stamps the app-folder tree SHA. Open it, then assert.
+        // leaves its git_tree_sha null. Opening a non-stub draft no longer re-checks git, so
+        // flip it to a stub first — that is the only on-open hydration trigger now. Hydration
+        // then materializes it from git and stamps the app-folder tree SHA.
+        await psDataSource.query(
+          `UPDATE app_versions SET is_stub = true
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT'`,
+          [skipAppId, mainBranchId]
+        );
         await auth(agent().get(`/api/apps/${skipAppId}`))
           .query({ branch_id: mainBranchId })
           .expect(200);
