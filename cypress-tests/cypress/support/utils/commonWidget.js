@@ -73,6 +73,7 @@ export {
   verifyWidgetColorCss,
   verifyLoaderColor,
   verifyAndModifyStylePickerFx,
+  verifyAndModifyStyleNumberFx,
   verifyStylesGeneralAccordion,
   checkPaddingOfContainer,
 } from "./appBuilder/styles";
