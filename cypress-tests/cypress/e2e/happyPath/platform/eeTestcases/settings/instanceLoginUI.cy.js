@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
+import { ssoSelector } from "Selectors/platform/manageSSO";
 import {
     InstanceSSO,
     instanceSSOConfig,

@@ -1,5 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { resolveHost } from "Support/utils/apps";
 
 import { fake } from "Fixtures/fake";

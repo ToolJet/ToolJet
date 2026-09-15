@@ -1,12 +1,12 @@
 import { commonSelectors } from 'Selectors/common';
-import { dashboardSelector } from 'Selectors/dashboard';
-import { versionModalSelector } from 'Selectors/eeCommon';
+import { dashboardSelector } from 'Selectors/platform/dashboard';
+import { versionModalSelector } from 'Selectors/platform/eeCommon';
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
 import { commonText } from 'Texts/common';
-import { dashboardText } from 'Texts/dashboard';
+import { dashboardText } from 'Texts/platform/dashboard';
 
 describe('Modules — Moving Modules Between Folders', () => {
   let workspaceId, wsName, wsSlug;

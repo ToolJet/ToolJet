@@ -27,10 +27,17 @@ export class AiConversationRepository extends Repository<AiConversation> {
     });
   }
 
+  /**
+   * `defaults` carries the LLM selection the new chat is pinned to — the builder's workspace
+   * default, or the source chat's selection on a handoff. Merged into the insert rather than
+   * written afterwards so a chat is never briefly unpinned, which would let it resolve against
+   * a default that moves out from under it.
+   */
   async createNewConversation(
     userId: string,
     appId: string,
     conversationType: 'generate' | 'learn',
+    defaults?: Partial<AiConversation>,
     manager?: EntityManager
   ): Promise<AiConversation> {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -38,6 +45,7 @@ export class AiConversationRepository extends Repository<AiConversation> {
       await manager.update(AiConversation, { appId, userId, conversationType }, { active: false });
 
       const conversation = manager.create(AiConversation, {
+        ...defaults,
         userId,
         appId,
         conversationType,
