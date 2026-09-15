@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { fetchEventSource, type EventSourceMessage } from '@microsoft/fetch-event-source';
+import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
 
 interface StreamDevBundleUpdatesOptions {
   onMessage?: (event: EventSourceMessage) => void;
@@ -24,6 +25,7 @@ export interface CustomComponentLibrary {
   correlationId?: string;
   revisions: CustomComponentLibraryRevision[];
   devBundles?: CustomComponentLibraryDevBundle[];
+  manifest?: LibraryManifest; // the latest revision's manifest, embedded so callers can skip a fetch for the common case
 }
 
 function list(): Promise<CustomComponentLibrary[]> {

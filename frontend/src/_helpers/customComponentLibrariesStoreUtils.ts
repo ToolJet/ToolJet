@@ -1,8 +1,25 @@
-// Pure helpers for customComponentLibrariesStore.syncDevPinStreams - no store/SSE/fetch
-// access here, so these are unit-testable without mocking any of that.
+// Pure helpers for customComponentLibrariesStore - no store/SSE/fetch access here, so
+// these are unit-testable without mocking any of that.
 
+import config from 'config';
 import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import type { CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
+
+// Builds bundle/css/manifest URLs for either a published revision ('v2') or a
+// dev slot ('dev:{userId}' → the per-developer no-store endpoint). Lives in this leaf
+// helpers file (rather than libraryComponentRevision.ts) so customComponentLibrariesStore
+// can import it without a store <-> libraryComponentRevision import cycle.
+export const libraryFileUrl = (libraryId: string, revision: string | undefined, file: string): string =>
+  revision?.startsWith?.('dev:')
+    ? `${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${revision.slice(4)}/files/${file}`
+    : `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revision}/files/${file}`;
+
+// Manifests are cached by (libraryId, revision) — published revisions are immutable, so
+// that pair alone is a stable key. A dev slot's content can change without the revision
+// string changing, so devNonce (customComponentLibrariesStore's devBundleUpdatedAt) is
+// folded in to bust the cache on each live-reload push.
+export const buildManifestCacheKey = (libraryId: string, revision: string, devNonce?: number): string =>
+  devNonce ? `${libraryId}@${revision}@${devNonce}` : `${libraryId}@${revision}`;
 
 // devPinKeys: { [dashlessCorrelationId]: 'dev:{userId}' }, exactly as stored in
 // globalSettings.customComponentLibraries.
@@ -13,17 +30,25 @@ type OwnPins = Record<string, string>;
 
 export const streamKey = (libraryId: string, userId: string): string => `${libraryId}:${userId}`;
 
-// Resolves devPinKeys (keyed by the library's stable correlationId, dashless or dashed —
-// not its workspace-scoped id, so pins keep resolving across import/export) against the
-// library list (correlationId -> real libraryId), returning:
-// - emails: { libraryId -> uploader email }, for every dev-pinned library (canvas badge)
-// - ownPins: { libraryId -> userId }, only pins where userId === currentUserId (streams)
-export function resolveDevPins(
+// A user's email doesn't vary by library, so this flattens every library's devBundles
+// into one userId -> email map instead of resolving it per pin/library.
+export function buildDevPreviewEmailsByUserId(libraries: CustomComponentLibrary[]): Record<string, string> {
+  const emailsByUserId: Record<string, string> = {};
+  libraries.forEach((lib) => {
+    lib.devBundles?.forEach((bundle) => {
+      if (bundle.userEmail) emailsByUserId[bundle.userId] = bundle.userEmail;
+    });
+  });
+  return emailsByUserId;
+}
+
+// Resolves devPinKeys (keyed by correlationId) against the library list, returning only
+// the pins owned by currentUserId — the ones a live-reload stream can open for.
+export function resolveOwnDevPins(
   libraries: CustomComponentLibrary[],
   devPinKeys: DevPinKeys,
   currentUserId: string | undefined
-): { emails: Record<string, string | null>; ownPins: OwnPins } {
-  const emails: Record<string, string | null> = {};
+): OwnPins {
   const ownPins: OwnPins = {};
 
   libraries.forEach((lib) => {
@@ -33,12 +58,10 @@ export function resolveDevPins(
     if (typeof value !== 'string' || !value.startsWith('dev:')) return;
 
     const userId = value.slice(4);
-    const bundle = lib.devBundles?.find((d) => d.userId === userId);
-    emails[lib.id] = bundle?.userEmail ?? null;
     if (userId === currentUserId) ownPins[lib.id] = userId;
   });
 
-  return { emails, ownPins };
+  return ownPins;
 }
 
 // Given the currently-open stream keys and the pins that should be streaming for this

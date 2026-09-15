@@ -424,6 +424,18 @@ describe('CustomComponentLibrariesController', () => {
     });
 
     describe('GET /api/custom-component-libraries/:id/dev/:userId/stream | SSE (minimal)', () => {
+      it('rejects a non-builder end user (403)', async () => {
+        const admin = await createAdmin(app, 'ccl-sse-enduser-admin@tooljet.io');
+        const endUser = await createEndUser(app, 'ccl-sse-enduser@tooljet.io', { workspace: admin.workspace });
+        const library = await createLibrary(admin.workspace.id);
+
+        await api()
+          .get(`/api/custom-component-libraries/${library.id}/dev/${endUser.user.id}/stream`)
+          .set('Cookie', endUser.cookie)
+          .set('tj-workspace-id', admin.workspace.id)
+          .expect(403);
+      });
+
       it('returns 404 when the library is not in the caller workspace (guard runs before subscribing)', async () => {
         const admin = await createAdmin(app, 'ccl-sse-404@tooljet.io');
         await api()

@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useEffectiveLibraryRevision, libraryFileUrl, setLibraryComponentActions } from './libraryComponentRevision';
+
+import useStore from '@/AppBuilder/_stores/store';
+import { cn } from '@/lib/utils';
+import { libraryFileUrl } from '@/_helpers/customComponentLibrariesStoreUtils';
+import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision';
+import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 
 const DevBadge = ({ label }) => (
@@ -34,7 +39,6 @@ const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'compone
    shell → stateChange/event → setExposedVariable / fireEvent
 */
 const LibraryComponent = ({
-  id,
   properties = {},
   styles = {},
   height,
@@ -46,15 +50,21 @@ const LibraryComponent = ({
   const { libraryId, correlationId, componentName } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
 
+  const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
+  );
+
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
+  const devUserId = isDevPin ? effectiveRevision.slice(4) : undefined;
 
-  const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmails?.[libraryId]);
+  const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmailsByUserId?.[devUserId]);
   const devNonce = useCustomComponentLibrariesStore((state) =>
     isDevPin ? state.devBundleUpdatedAt?.[libraryId] : undefined
   );
 
-  const devBadge = isDevPin ? <DevBadge label={devEmail ?? effectiveRevision.slice(4)} /> : null;
+  const devBadge = isDevPin && currentMode === 'edit' ? <DevBadge label={devEmail ?? devUserId} /> : null;
 
   // A dev-bundle push, or switching to a different published revision/component export,
   // can remove/rename a `useStateX` variable or an action; setExposedVariable is
@@ -149,38 +159,31 @@ const LibraryComponent = ({
     setShellReady(false);
   }, [libraryId, effectiveRevision, componentName]);
 
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  const manifestActions = manifest?.components?.[componentName]?.actions;
+
   useEffect(() => {
-    if (!configured) return;
-    let cancelled = false;
-    fetch(libraryFileUrl(libraryId, effectiveRevision, 'manifest.json'))
-      .then((r) => (r.ok ? r.json() : null))
-      .then((manifest) => {
-        if (cancelled) return;
-        const actions = manifest?.components?.[componentName]?.actions ?? [];
-        actions.forEach((a) =>
-          setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
-        );
-        setLibraryComponentActions(id, actions);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [configured, libraryId, effectiveRevision, componentName, id, setExposedVariable]);
+    if (!configured || !manifestActions?.length) return;
+    manifestActions.forEach((a) =>
+      setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
+    );
+  }, [configured, manifestActions, setExposedVariable]);
 
   useEffect(
     () => () => {
-      setLibraryComponentActions(id, null);
       rejectAllPending('component was removed before the action completed');
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id]
+    []
   );
 
   useEffect(() => {
     if (!shellReady) return;
     postToShell({ type: 'props', data: componentProps });
   }, [shellReady, componentProps]);
+
+  if (!hasCustomComponentLibrariesAccess && currentMode === 'view') {
+    return <></>;
+  }
 
   if (!configured) {
     return (
@@ -206,7 +209,12 @@ const LibraryComponent = ({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: safeHeight }}>
+    <div
+      className={cn('tw-relative tw-w-full', {
+        'tw-opacity-50 tw-pointer-events-none': !hasCustomComponentLibrariesAccess && currentMode === 'edit',
+      })}
+      style={{ height: safeHeight }}
+    >
       <iframe
         key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
         ref={iframeRef}

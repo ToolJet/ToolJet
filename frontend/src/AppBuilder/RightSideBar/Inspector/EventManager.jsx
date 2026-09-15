@@ -3,7 +3,8 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import { getLibraryComponentActions } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { resolveLibraryComponentActions } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import {
   Popover,
   PopoverTrigger,
@@ -72,6 +73,9 @@ export const EventManager = ({
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const components = useStore((state) => state.getCurrentPageComponents());
+  const libraryPins = useStore((state) => state.globalSettings?.customComponentLibraries);
+  const libraryManifests = useCustomComponentLibrariesStore((state) => state.manifests);
+  const devBundleUpdatedAt = useCustomComponentLibrariesStore((state) => state.devBundleUpdatedAt);
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
@@ -232,7 +236,9 @@ export const EventManager = ({
 
   function resolveComponentActions(componentId, componentDef) {
     if (componentDef?.component?.component === 'LibraryComponent') {
-      return getLibraryComponentActions(componentId);
+      // libraryManifests is real Zustand state, so this re-evaluates (and the open action
+      // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
+      return resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins, devBundleUpdatedAt);
     }
     const targetComponentMeta = componentTypes.find(
       (componentType) => componentDef?.component?.component === componentType.component
