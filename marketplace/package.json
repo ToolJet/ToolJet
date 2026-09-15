@@ -15,15 +15,36 @@
   },
   "name": "tooljet-marketplace",
   "overrides": {
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.2"
+    },
     "@qdrant/js-client-rest": {
       "undici": "6.28.1"
     },
-    "axios": "^1.16.1",
+    "axios": {
+      ".": "^1.16.1",
+      "form-data": "4.0.6"
+    },
+    "cosmiconfig": {
+      "js-yaml": "4.3.2"
+    },
+    "eslint": {
+      "js-yaml": "4.3.2"
+    },
+    "lerna": {
+      "js-yaml": "4.3.2"
+    },
     "minimatch": {
       "brace-expansion": "1.1.18"
     },
     "node-gyp": {
       "undici": "6.28.1"
+    },
+    "nx": {
+      "form-data": "4.0.6"
+    },
+    "socks": {
+      "ip-address": "10.7.1"
     }
   },
   "peerDependencies": {
