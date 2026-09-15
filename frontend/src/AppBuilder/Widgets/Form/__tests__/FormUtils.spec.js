@@ -171,3 +171,78 @@ describe('data-source field hints', () => {
     }
   );
 });
+
+describe('schema-driven visibility and disabled', () => {
+  // Both flags are read from a bucket that depends on the widget:
+  // STATE_READ_FROM_PROPERTIES widgets read them from
+  // `properties` — useInput.js:56 destructures `{ disabledState, visibility } = properties` — and
+  // every other widget reads them from `styles`. `resolveDefinition` already seeds the defaults into
+  // the right bucket; generation has to write the schema's values into the same one.
+  const fieldOf = (schema) => generateUIComponents(schema, true)[1];
+
+  const withStyles = (type, styles) => ({ properties: { f: { type, label: 'F', styles } } });
+
+  test('[Form-SCHEMA-009] a hidden field is hidden, for a widget that reads visibility from properties', () => {
+    // Break this catches: writing visibility to `styles` for a TextInput puts it where nothing reads,
+    // so `visibility: false` in a schema renders a fully visible field.
+    const field = fieldOf(withStyles('textinput', { visibility: false }));
+
+    expect(field.component).toBe('TextInput');
+    expect(field.definition.properties.visibility).toBe(false);
+  });
+
+  test('[Form-SCHEMA-009] `false` is honoured, not skipped as falsy', () => {
+    // Break this catches: `if (value?.styles?.visibility)` never sees `false`, so a bound
+    // `{{components.toggle1.value}}` can only ever show a field and never hide one.
+    const shown = fieldOf(withStyles('textinput', { visibility: true }));
+    const hidden = fieldOf(withStyles('textinput', { visibility: false }));
+
+    expect(shown.definition.properties.visibility).toBe(true);
+    expect(hidden.definition.properties.visibility).toBe(false);
+  });
+
+  test('[Form-SCHEMA-009] a widget that reads visibility from styles still gets it there', () => {
+    // Break this catches: routing every widget to `properties` would break the ones that were
+    // working — DropDown is not in STATE_READ_FROM_PROPERTIES and reads from styles.
+    const field = fieldOf(withStyles('dropdown', { visibility: false }));
+
+    expect(field.component).toBe('DropDown');
+    expect(field.definition.styles.visibility).toBe(false);
+  });
+
+  // The properties-reading set is wider than the original four-name list, and is NOT predicted by
+  // NEW_REVAMPED_COMPONENTS either — DaterangePicker is in that list yet reads from styles
+  // (DaterangePicker.jsx:23). Verified per widget instead of inferred from a list.
+  test.each([['emailinput'], ['currencyinput'], ['textarea'], ['checkbox'], ['starrating']])(
+    '[Form-SCHEMA-009] %s honours visibility where it reads it',
+    (type) => {
+      // Break this catches: predicating the bucket on the 4-name
+      // original four-name list leaves these widgets writing to styles, which they
+      // never read — the original bug, just narrower.
+      const field = fieldOf(withStyles(type, { visibility: false }));
+
+      expect(field.definition.properties.visibility).toBe(false);
+    }
+  );
+
+  test('[Form-SCHEMA-010] a disabled field is disabled, in the bucket its widget reads', () => {
+    // Break this catches: same wrong-bucket write for `disabled` — useInput.js:56 reads
+    // `disabledState` from properties, while generation writes it to styles.
+    const field = fieldOf(withStyles('textinput', { disabled: true }));
+
+    expect(field.definition.properties.disabledState).toBe(true);
+  });
+
+  test('[Form-SCHEMA-010] a widget that reads disabled from styles still gets it there', () => {
+    // Break this catches: routing every widget's `disabled` to properties would break DropDown,
+    // which is not in STATE_READ_FROM_PROPERTIES and reads it from styles.
+    //
+    // There is deliberately no `disabled: false` case here. `disabledState` already defaults to
+    // false, so a skipped write and an honoured one are indistinguishable — such a test would pass
+    // against the bug. For `disabled` only the bucket is observable; the falsy guard is not.
+    const field = fieldOf(withStyles('dropdown', { disabled: true }));
+
+    expect(field.component).toBe('DropDown');
+    expect(field.definition.styles.disabledState).toBe(true);
+  });
+});
