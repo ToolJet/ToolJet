@@ -176,7 +176,20 @@ export function createWidgetHarness({
       { styles: { ...defaultStyles, ...styles }, validation: { ...defaultValidation, ...validation } }
     );
 
-    seedApp({ [componentId]: definition, ...defaultExtraComponents, ...extraComponents }, { moduleId: MODULE_ID });
+    const seeded = { [componentId]: definition, ...defaultExtraComponents, ...extraComponents };
+    // `also` only mounts a RenderWidget; it does not seed. A RenderWidget for an
+    // id the store has never heard of renders nothing at all, which quietly turns
+    // any "two instances on a page" assertion into a one-instance no-op. Fail here
+    // instead, so the sibling must be seeded through `extraComponents`.
+    const unseeded = also.map(({ id: siblingId }) => siblingId).filter((siblingId) => !(siblingId in seeded));
+    if (unseeded.length) {
+      throw new Error(
+        `widgetHarness.render(): also[] names unseeded component id(s) ${unseeded.join(', ')}. ` +
+          `Seed them via extraComponents (componentDefinition from '@/test/app-builder') — ` +
+          `an unseeded sibling renders nothing and makes multi-instance assertions vacuous.`
+      );
+    }
+    seedApp(seeded, { moduleId: MODULE_ID });
     // Escape hatch for store mutations that must land between seeding and
     // mount, e.g. properties (like `validation.mandatory`) with no seed-time
     // argument — see componentDefinition() in test/app-builder/seed.js.

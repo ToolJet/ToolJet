@@ -17,6 +17,7 @@ import {
   countInvocationsOn,
   drain,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
 import {
   getLabelFontSize,
   getLabelHeight,
@@ -601,19 +602,32 @@ describe('autofill hint and instance identity', () => {
   // it — so this is characterization of a known, accepted quirk, paired with proof
   // that the shared name does NOT leak state between instances.
   test('[EmailInput-TYPE-003] every instance renders the fixed control name and stays independent', async () => {
+    // The sibling is BOTH seeded (extraComponents) and rendered (also): `also` alone
+    // mounts a RenderWidget for an id the store has never heard of, which renders
+    // nothing and would make every two-instance assertion below vacuous.
     harness.render({
       properties: { value: binding('first@tooljet.com') },
-      extraComponents: {},
+      extraComponents: {
+        ei2: componentDefinition('ei2', 'emailinput2', 'EmailInput', { value: binding('second@tooljet.com') }),
+      },
       also: [{ id: 'ei2', componentType: 'EmailInput' }],
-      afterSeed: undefined,
     });
-    await waitFor(() => expect(input()).toBeTruthy());
+    await waitFor(() => expect(document.querySelectorAll('input')).toHaveLength(2));
 
-    expect(input()).toHaveAttribute('name', 'email');
+    const inputs = [...document.querySelectorAll('input')];
+    expect(inputs.every((i) => i.getAttribute('name') === 'email')).toBe(true);
 
     // Acting on one instance leaves the other's public state alone.
     await harness.act('setText', 'changed@tooljet.com');
+    // Both the rendered field and the published variable, because they can diverge:
+    // hoisting the hook's value state out of the component updates every field on
+    // screen while each id's exposed `value` still looks untouched.
+    expect([...document.querySelectorAll('input')].map((i) => i.value)).toEqual([
+      'changed@tooljet.com',
+      'second@tooljet.com',
+    ]);
     expect(harness.exposed('ei1').value).toBe('changed@tooljet.com');
+    expect(harness.exposed('ei2').value).toBe('second@tooljet.com');
   });
 });
 
