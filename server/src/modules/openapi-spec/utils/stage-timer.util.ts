@@ -19,16 +19,11 @@ export interface TimerSummary {
   totalMs: number;
   peakHeapUsedMB: number;
   peakRssMB: number;
-  // V8's configured ceiling (v8.getHeapStatistics().heap_size_limit), captured once up front,
-  // so peakHeapUsedMB can be read against "how close did this job get to the ceiling" rather
-  // than compared across jobs in isolation.
   defaultHeapLimitMB: number;
   stages: StageSummary[];
 }
 
-// Ops visibility into large-spec processing - marks wall-clock time and memory usage
-// (process.memoryUsage()) at each named stage, so a slow/large job can be diagnosed after the
-// fact from logs instead of guessing where time/memory went.
+// Logs elapsed time and memory per named stage, to diagnose slow or large jobs.
 export class StageTimer {
   private readonly marks: Mark[] = [];
   readonly defaultHeapLimitMB: number;

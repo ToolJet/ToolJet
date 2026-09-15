@@ -1,14 +1,11 @@
-// The new plugin's own kind, mirroring how grpc/grpcv2 coexist as distinct plugin kinds -
-// this is a separate connector from the legacy 'openapi' plugin, not a version flag on it.
+// Separate plugin from legacy 'openapi' (like grpc/grpcv2).
 export const OPENAPI_V2_DATASOURCE_KIND = 'openapiv2';
 
 export const OPENAPI_SPEC_PROCESSING_QUEUE = 'openapi-spec-processing';
 export const PROCESS_OPENAPI_SPEC_JOB = 'process-openapi-spec';
 
-// Governs both the per-batch dereference step and the persistence batch size (same number, not
-// two separate configs) - keeps peak per-step work/memory bounded to one batch's worth of
-// operations rather than the whole spec's, and keeps each persistence batch's bound-parameter
-// count safely under Postgres's 65,535-per-query limit.
+// Operations per dereference/insert batch (OPENAPI_SPEC_BATCH_SIZE). Keep rows x columns under
+// Postgres's 65,535 bind-parameter limit.
 export const DEFAULT_OPENAPI_SPEC_BATCH_SIZE = parseInt(process.env.OPENAPI_SPEC_BATCH_SIZE) || 50;
 
 export enum OpenApiSpecStatus {
@@ -24,9 +21,7 @@ export enum OpenApiSpecSourceType {
   DEFINITION = 'definition',
 }
 
-// Keys written into data_source_options.options for kind === 'openapi' (v2) datasources.
-// These are worker-managed bookkeeping - never user-editable, never read by a query run
-// (see RUNTIME_EXCLUDED_OPTION_KEYS in @modules/data-sources/constants).
+// Worker-managed keys in data_source_options.options for openapiv2 datasources.
 export const OPENAPI_SPEC_OPTION_KEYS = {
   SOURCE_TYPE: 'spec_source_type',
   URL: 'spec_url',

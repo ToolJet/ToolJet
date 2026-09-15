@@ -89,9 +89,8 @@ export default class DataSourceSchemaManager {
       name,
       kind,
       type,
-      // Plugins that render their own connection-testing affordance (e.g. openapiv2) set this
-      // in tj:source to suppress DataSourceManager's generic <TestConnection> footer button -
-      // same flag the old schema format calls `source.customTesting`.
+      // Plugins that render their own connection-testing UI (e.g. openapiv2) set this in
+      // tj:source to suppress DataSourceManager's generic <TestConnection> footer button.
       customTesting: !!customTesting,
       options: this._getOptionsMetadata(),
       // Can remove exposed variables?

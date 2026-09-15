@@ -1,9 +1,6 @@
 import OpenApiV2 from '../lib';
 
-// Mock 'got' completely. We keep our own minimal HTTPError so the plugin's
-// `error instanceof HTTPError` check in the catch block still works, without
-// depending on got's real HTTPError construction (which needs a full request/
-// response object graph we don't want to build here).
+// Local stand-in for got's HTTPError, so `error instanceof HTTPError` in the plugin's catch block still works.
 jest.mock('got', () => {
   class MockHTTPError extends Error {
     response: any;
@@ -22,10 +19,7 @@ jest.mock('got', () => {
   };
 });
 
-// Mock the common package. run() delegates auth-header building and SSRF
-// protection to it; we stub those to pass-through so this spec only exercises
-// openapiv2's own request-building logic (host/path/params/body), not the
-// shared auth/SSRF library (which has its own tests).
+// Partially mocked: auth-header/SSRF helpers stubbed to pass-through so this spec only exercises openapiv2's own request-building.
 jest.mock('@tooljet-plugins/common', () => {
   const actual = jest.requireActual('@tooljet-plugins/common');
   return {
@@ -86,7 +80,10 @@ describe('openapiv2 - run()', () => {
 
     await plugin.run(
       { host: 'https://api.example.com' } as any,
-      baseQueryOptions({ path: '/users/{id}/posts/{postId}', params: { request: {}, query: {}, header: {}, path: { id: '42', postId: '7' } } }),
+      baseQueryOptions({
+        path: '/users/{id}/posts/{postId}',
+        params: { request: {}, query: {}, header: {}, path: { id: '42', postId: '7' } },
+      }),
       'ds-1',
       '2024-01-01T00:00:00Z'
     );
@@ -110,7 +107,12 @@ describe('openapiv2 - run()', () => {
     await plugin.run(
       { host: 'https://api.example.com' } as any,
       baseQueryOptions({
-        params: { request: {}, query: { filter: 'active', page: '2' }, header: { Authorization: 'Bearer t' }, path: {} },
+        params: {
+          request: {},
+          query: { filter: 'active', page: '2' },
+          header: { Authorization: 'Bearer t' },
+          path: {},
+        },
       }),
       'ds-1',
       '2024-01-01T00:00:00Z'
@@ -142,7 +144,6 @@ describe('openapiv2 - run()', () => {
   });
 
   it('should send the request body as JSON only for non-GET operations, and no body for GET', async () => {
-    // GET: body params present but must not be sent.
     mockGotSuccess();
     await plugin.run(
       { host: 'https://api.example.com' } as any,
@@ -155,7 +156,6 @@ describe('openapiv2 - run()', () => {
     );
     expect(mockGot.mock.calls[0][1]).not.toHaveProperty('json');
 
-    // POST: body params present and must be sent as json.
     mockGotSuccess();
     await plugin.run(
       { host: 'https://api.example.com' } as any,
@@ -227,9 +227,7 @@ describe('openapiv2 - run()', () => {
       )
     ).rejects.toBeInstanceOf(OAuthUnauthorizedClientError);
 
-    // Note: run() only throws OAuthUnauthorizedClientError here - the actual token
-    // refresh (getRefreshedToken) is invoked by the caller via plugin.refreshToken(),
-    // not from inside run() itself. Follow-up: cover that orchestration where it lives.
+    // Token refresh (getRefreshedToken) is invoked by the caller via plugin.refreshToken(), not from inside run().
   });
 
   it('should forward authUrl() and refreshToken() to the common package helpers', async () => {
@@ -245,8 +243,6 @@ describe('openapiv2 - run()', () => {
   it('should not read the spec from sourceOptions - only host/path/operation/params drive the request', async () => {
     mockGotSuccess();
 
-    // No spec/raw_spec/spec_metadata keys at all - run() must still build the
-    // request purely from queryOptions (host/path/operation/params).
     const sourceOptions = { host: 'https://api.example.com', bearer_token: '' } as any;
 
     await plugin.run(sourceOptions, baseQueryOptions({ path: '/health' }), 'ds-1', '2024-01-01T00:00:00Z');

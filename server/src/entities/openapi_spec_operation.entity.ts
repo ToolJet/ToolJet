@@ -13,10 +13,7 @@ import {
 import { DataSource } from './data_source.entity';
 import { AppEnvironment } from './app_environments.entity';
 
-// operationId is optional in the OpenAPI 3.0/2.0 spec (and even when present, a malformed spec
-// could technically reuse it across operations), so it is NOT part of the unique constraint -
-// this row's own generated `id`, scoped to (dataSourceId, environmentId), is the identity used
-// for lookups/references instead.
+// No unique constraint on operationId: it is optional in the spec and may repeat; `id` is the key.
 @Entity({ name: 'openapi_spec_operations' })
 @Unique('UQ_OPENAPI_SPEC_OPERATION', ['dataSourceId', 'environmentId', 'id'])
 @Index('IDX_OPENAPI_SPEC_OPERATION_SERVICE', ['dataSourceId', 'environmentId', 'serviceId'])

@@ -4,9 +4,8 @@ import { openApiSpecService } from '@/_services';
 const POLL_INTERVAL_MS = 3000;
 const PENDING_STATUSES = ['pending', 'processing'];
 
-// Shared by the datasource config UI (upload widget) and the query editor (to gate the
-// operation picker) - polls GET .../openapi-spec/status while a job is pending/processing,
-// stops once it settles into ready/failed/cancelled.
+// Shared by the datasource config UI and the query editor's operation picker gate. Polls spec
+// status while pending/processing, stops once it settles into ready/failed/cancelled.
 export function useOpenApiSpecStatus(dataSourceId, environmentId) {
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);

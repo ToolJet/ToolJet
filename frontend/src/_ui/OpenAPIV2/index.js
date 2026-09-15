@@ -18,8 +18,7 @@ const STATUS_BADGE_CONFIG = {
   cancelled: { label: 'Cancelled', className: 'bg-secondary' },
 };
 
-// Status chip reflecting the background job's current state - there's no process/cancel action
-// anymore (saving the datasource is what starts the job), so this is purely informational.
+// Purely informational status chip - saving the datasource is what starts the background job.
 const StatusBadge = ({ status, isPending }) => {
   const config = STATUS_BADGE_CONFIG[status] || { label: 'Not processed', className: 'bg-secondary' };
   return (
@@ -32,12 +31,9 @@ const StatusBadge = ({ status, isPending }) => {
   );
 };
 
-// Datasource-config UI for the OpenAPI 2.0 plugin. Unlike the legacy plugin's OpenAPI
-// component, this never dereferences anything in the browser - it posts the raw spec text/URL
-// as part of the normal datasource Save (DataSourceManager.jsx's createDataSource starts the
-// background processing job right after saving), and this component just polls/reflects that
-// job's status. Authentication is the same always-visible, static auth_type selector as the
-// REST API plugin (@/_ui/OAuth) - not derived from the parsed spec's securitySchemes.
+// Datasource-config UI for the OpenAPI 2.0 plugin. Saving posts the raw spec text/URL and starts
+// background processing; this component only polls/reflects that job's status. Auth uses the
+// same static auth_type selector as REST API (@/_ui/OAuth), not the spec's securitySchemes.
 const OpenApiV2Config = ({
   optionchanged,
   auth_type,
@@ -64,9 +60,8 @@ const OpenApiV2Config = ({
   optionsChanged,
   audience,
   options,
-  // Form-tracked (spec_source_type/spec_url/raw_spec), same as host/auth_type above - this is
-  // what makes them persist on the generic Save button and get validated like any other
-  // option, instead of living only in local component state.
+  // Form-tracked (spec_source_type/spec_url/raw_spec) so they persist via the generic Save
+  // button and validate like any other option, instead of living only in local component state.
   sourceType,
   url,
   definition,

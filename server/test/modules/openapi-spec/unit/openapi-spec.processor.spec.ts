@@ -7,8 +7,6 @@ import * as yaml from 'js-yaml';
 import type { OpenApiSpecProcessor as OpenApiSpecProcessorType } from '../../../../src/modules/openapi-spec/processors/openapi-spec.processor';
 import { OpenApiSpecSourceType, OpenApiSpecStatus } from '../../../../src/modules/openapi-spec/constants';
 
-// ── Mocks ────────────────────────────────────────────────────────────────────
-
 let mockManager: any;
 
 jest.mock('../../../../src/helpers/database.helper', () => ({
@@ -55,8 +53,6 @@ beforeAll(async () => {
   ({ OpenApiSpecProcessor } = await import('../../../../src/modules/openapi-spec/processors/openapi-spec.processor'));
   got = (await import('got')).default as unknown as jest.Mock;
 });
-
-// ── Harness ──────────────────────────────────────────────────────────────────
 
 const DATA_SOURCE_ID = 'ds-1';
 
@@ -107,8 +103,6 @@ const rowsFor = (saved: Record<string, any>[], environmentId: string) =>
 
 const byOperationId = (rows: Record<string, any>[], operationId: string) =>
   rows.find((row) => row.operationId === operationId);
-
-// ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const ok = { 200: { description: 'ok' } };
 
@@ -181,9 +175,8 @@ function petStoreSwagger2(): Record<string, any> {
   };
 }
 
-// A response schema that expands to hundreds of distinct objects (200 properties, each a distinct
-// component with its own nested properties) next to two tiny parameters - the shape of a
-// Microsoft Graph operation, where responses are ~99.9% of the expanded bytes.
+// Heavy responses next to tiny parameters, like a Microsoft Graph operation. 200 separate Leaf
+// components, because one shared $ref resolves to a single object and would not add weight.
 function heavyResponsesOpenApi3(): Record<string, any> {
   const leaves: Record<string, any> = {};
   const bigProperties: Record<string, any> = {};
@@ -213,6 +206,15 @@ function heavyResponsesOpenApi3(): Record<string, any> {
       },
     },
   };
+}
+
+// 60 operations: more than one batch at the default batch size of 50.
+function manyOperationsOpenApi3(count = 60): Record<string, any> {
+  const paths: Record<string, any> = {};
+  for (let i = 0; i < count; i++) {
+    paths[`/items/${i}`] = { get: { operationId: `getItem${i}`, responses: ok } };
+  }
+  return { openapi: '3.0.0', info: { title: 'Many', version: '1.0.0' }, paths };
 }
 
 /** @group marketplace */
@@ -341,9 +343,32 @@ describe('OpenApiSpecProcessor', () => {
         { where: { dataSourceId: DATA_SOURCE_ID, environmentId: 'env-2' }, options: expectedOptions },
       ]);
     });
+
+    it('should write status ready only after every batch is saved', async () => {
+      await makeProcessor().processor.process(definitionJob(JSON.stringify(manyOperationsOpenApi3())));
+
+      const saveOrder = harness.manager.save.mock.invocationCallOrder;
+      const [readyUpdateOrder] = harness.manager.update.mock.invocationCallOrder;
+      expect(saveOrder).toHaveLength(2);
+      expect(harness.saved).toHaveLength(60);
+      expect(harness.updates).toMatchObject([{ options: { spec_status: { value: OpenApiSpecStatus.READY } } }]);
+      expect(Math.max(...saveOrder)).toBeLessThan(readyUpdateOrder);
+    });
   });
 
   describe('termination and failure', () => {
+    it('should mark the spec cancelled when termination is requested between batches', async () => {
+      const { processor, terminationRegistry } = makeProcessor();
+      terminationRegistry.isTerminated.mockImplementation(async () => harness.saved.length > 0);
+
+      await expect(processor.process(definitionJob(JSON.stringify(manyOperationsOpenApi3())))).resolves.toBeUndefined();
+
+      expect(harness.saved).toHaveLength(50);
+      expect(harness.updates).toMatchObject([{ options: { spec_status: { value: OpenApiSpecStatus.CANCELLED } } }]);
+      expect(harness.updates).toHaveLength(1);
+      expect(terminationRegistry.clear).toHaveBeenCalledWith(DATA_SOURCE_ID, 'env-1');
+    });
+
     it('should mark the spec cancelled without throwing when termination was requested', async () => {
       const { processor, terminationRegistry } = makeProcessor({ terminated: true });
 
@@ -432,8 +457,6 @@ describe('OpenApiSpecProcessor', () => {
     });
   });
 
-  // Replicates the Microsoft Graph stall: the whole operation (responses included) was cloned and
-  // dereferenced, then everything but parameters/requestBody was thrown away.
   describe('dereference scope', () => {
     it('should hand the dereferencer only parameters and requestBody, never responses', async () => {
       await makeProcessor().processor.process(definitionJob(JSON.stringify(heavyResponsesOpenApi3())));
@@ -486,7 +509,6 @@ describe('OpenApiSpecProcessor', () => {
       await makeProcessor().processor.process(definitionJob(definition));
       const elapsedSeconds = (Date.now() - startedAt) / 1000;
 
-      // Surfaced even with the console silenced by jest-setup.
       process.stdout.write(
         `[graph] rows=${savedRows} peakHeapUsedMB=${peakHeapUsedMB.toFixed(0)} seconds=${elapsedSeconds.toFixed(1)}\n`
       );

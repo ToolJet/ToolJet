@@ -16,8 +16,7 @@ const operationColorMapping = {
   head: 'blue',
 };
 
-// Mirrors the same pattern used by GRPCv2.jsx's operation dropdown - debounces the raw input
-// so a server round-trip isn't fired on every keystroke.
+// Debounces so typing doesn't fire a server round-trip per keystroke.
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -42,9 +41,7 @@ const DeleteIcon = ({ onClick }) => (
   </span>
 );
 
-// One labelled group of param rows (HEADER / PATH / QUERY / REQUEST BODY), mirroring the
-// legacy Openapi.jsx layout so this reads consistently in the query editor, but sourced from
-// the fetched operation detail instead of a client-side walk of the whole spec.
+// One labelled group of param rows (HEADER / PATH / QUERY / REQUEST BODY) for the fetched operation.
 const ParamFieldGroup = ({ title, paramNames, values, onChange, onRemove }) => {
   if (!paramNames.length) return null;
   return (
@@ -93,9 +90,8 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
     path: options?.path,
     operation: options?.operation,
     host: options?.host,
-    // References the openapi_spec_operation row's own `id`, not the spec's operationId -
-    // operationId is optional in the spec (and not unique-constrained even when present), so
-    // the backend uses the row id as the identity for the metadata index and the detail fetch.
+    // The openapi_spec_operation row id, not the spec's operationId - operationId is optional
+    // and not guaranteed unique in an OpenAPI spec, so the row id is the stable identity.
     operationRecordId: options?.operationRecordId,
     params: {
       path: options?.params?.path || {},
@@ -114,12 +110,8 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
       .catch(() => setMetadata(null));
   }, [isReady, dataSourceId, environmentId]);
 
-  // Tier 2: operations for the selected (or default) service - lightweight, no schema yet.
-  // Search is server-side: typing in the dropdown updates operationSearchInput, debounced here,
-  // and re-fetches against the backend's search param (path/name/tag - see
-  // listOpenApiSpecOperations) rather than filtering a client-side list. perPage is generous
-  // (1000) for the common no-search case, but the search itself is what keeps a spec with more
-  // operations than that usable, not the page size.
+  // Tier 2: operations for the selected service - search is server-side (debounced) via the
+  // backend's search param; perPage 1000 covers the common no-search case.
   useEffect(() => {
     if (!isReady || !dataSourceId || !environmentId) return;
     setLoadingOperations(true);
@@ -161,11 +153,8 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
     () =>
       operations.map((operation) => ({
         value: operation.id,
-        // SelectComponent collapses every non-`value` key into a single `label` UNLESS one is
-        // already present - explicitly setting `label` here is what lets method/path/summary
-        // survive as separate fields for renderOperationOption below, instead of being
-        // silently discarded. `label` itself doubles as the default search text (method + path
-        // + human-readable summary), so typing either the path or the summary words filters it.
+        // Select collapses non-`value` keys into `label` unless one is set explicitly; setting it
+        // here keeps method/path/summary as separate fields for renderOperationOption below.
         label: `${operation.method.toUpperCase()} ${operation.path} ${operation.name || ''}`.trim(),
         method: operation.method,
         path: operation.path,
@@ -315,10 +304,7 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
             styles={queryManagerSelectComponentStyle(darkMode, '100%')}
             useCustomStyles={true}
             isDisabled={loadingOperations}
-            // Search is server-side (path/name/tag - see the Tier 2 effect above) - the options
-            // list is already filtered by the time it gets here, so react-select's own default
-            // client-side filterOption is disabled to avoid re-filtering an already-filtered,
-            // server-matched list against just the label text.
+            // Options are already server-filtered (Tier 2), so client-side filtering is disabled.
             onInputChange={(inputValue, meta) => {
               if (meta.action === 'input-change') setOperationSearchInput(inputValue);
             }}
