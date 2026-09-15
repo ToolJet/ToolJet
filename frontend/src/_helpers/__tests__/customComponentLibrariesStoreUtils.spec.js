@@ -5,14 +5,9 @@ describe('buildManifestCacheKey', () => {
     expect(buildManifestCacheKey('lib-1', 'v2')).toBe('lib-1@v2');
   });
 
-  it('[ManifestCache-002] folds devNonce in when present, so a live-reload push changes the key', () => {
-    // Break this catches: dropping devNonce from the key, which would keep serving a
-    // dev bundle's stale manifest (actions/props) after a live-reload push.
-    expect(buildManifestCacheKey('lib-1', 'dev:user-1', 42)).toBe('lib-1@dev:user-1@42');
-    expect(buildManifestCacheKey('lib-1', 'dev:user-1', 43)).not.toBe(buildManifestCacheKey('lib-1', 'dev:user-1', 42));
-  });
-
-  it('[ManifestCache-003] ignores a devNonce of 0 the same as undefined', () => {
-    expect(buildManifestCacheKey('lib-1', 'v2', 0)).toBe('lib-1@v2');
+  it('[ManifestCache-002] keys a dev revision the same stable way — no nonce folded in', () => {
+    // Break this catches: reintroducing a nonce into the key, which grows the cache
+    // with a stale entry per push instead of relying on invalidateManifest.
+    expect(buildManifestCacheKey('lib-1', 'dev:user-1')).toBe('lib-1@dev:user-1');
   });
 });

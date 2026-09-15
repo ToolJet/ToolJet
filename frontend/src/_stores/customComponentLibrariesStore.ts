@@ -16,11 +16,12 @@ interface CustomComponentLibrariesState {
   loadFailed: boolean;
   devPreviewEmailsByUserId: Record<string, string>; // { [userId]: email } — feeds the canvas "dev: email" badge
   devBundleUpdatedAt: Record<string, number>; // { [libraryId]: number } — nonce bumped on each live-reload push
-  manifests: Record<string, LibraryManifest>; // keyed by buildManifestCacheKey(libraryId, revision, devNonce)
+  manifests: Record<string, LibraryManifest>; // keyed by buildManifestCacheKey(libraryId, revision)
   fetchLibraries: (options?: { force?: boolean }) => Promise<CustomComponentLibrary[]>;
   invalidate: () => void;
   syncDevPinStreams: (devPinKeys: Record<string, string>) => void;
-  fetchManifest: (libraryId: string, revision: string, devNonce?: number) => Promise<void>;
+  fetchManifest: (libraryId: string, revision: string) => Promise<void>;
+  invalidateManifest: (libraryId: string, revision: string) => void;
   resetAll: () => void;
 }
 
@@ -136,25 +137,29 @@ export const useCustomComponentLibrariesStore = create(
 
         toClose.forEach(closeStream);
         toOpen.forEach(([libraryId, userId]) =>
-          openStream(libraryId, userId, () =>
+          openStream(libraryId, userId, () => {
+            // A live push means this library's cached dev manifest is stale — drop it.
+            const devKey = buildManifestCacheKey(libraryId, `dev:${userId}`);
             set(
-              (state: CustomComponentLibrariesState) => ({
-                devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() },
-              }),
+              (state: CustomComponentLibrariesState) => {
+                const { [devKey]: _removed, ...manifests } = state.manifests;
+                return {
+                  devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() },
+                  manifests,
+                };
+              },
               false,
               'devBundleUpdated'
-            )
-          )
+            );
+          })
         );
       },
 
-      // Fetches manifest.json for (libraryId, revision), caching by
-      // buildManifestCacheKey(libraryId, revision, devNonce) — published revisions are
-      // immutable so a cache hit never needs to re-fetch; dev slots bust automatically
-      // as devNonce changes. Shared by the widget runtime, the Inspector, and the
-      // component-manager palette (useLibraryManifest) so a manifest is ever fetched once.
-      fetchManifest: async (libraryId, revision, devNonce) => {
-        const key = buildManifestCacheKey(libraryId, revision, devNonce);
+      // Fetches manifest.json for (libraryId, revision), cached by that pair — a cache hit
+      // never re-fetches. Dev slots rely on invalidateManifest for freshness instead.
+      // Shared by the widget runtime, Inspector, and palette so it's fetched once.
+      fetchManifest: async (libraryId, revision) => {
+        const key = buildManifestCacheKey(libraryId, revision);
         if (get().manifests[key]) return;
         if (manifestInFlight.has(key)) return manifestInFlight.get(key);
 
@@ -168,6 +173,21 @@ export const useCustomComponentLibrariesStore = create(
 
         manifestInFlight.set(key, promise);
         return promise;
+      },
+
+      // Evicts one manifest cache entry — used for dev slots whenever content may have
+      // changed (a live push, or switching a pin to dev).
+      invalidateManifest: (libraryId, revision) => {
+        const key = buildManifestCacheKey(libraryId, revision);
+        set(
+          (state: CustomComponentLibrariesState) => {
+            if (!(key in state.manifests)) return state;
+            const { [key]: _removed, ...manifests } = state.manifests;
+            return { manifests };
+          },
+          false,
+          'invalidateManifest'
+        );
       },
 
       // Closes every stream and clears all dev-preview + library-list state — call on app

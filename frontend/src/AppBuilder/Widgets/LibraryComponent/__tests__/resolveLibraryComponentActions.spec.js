@@ -89,7 +89,7 @@ describe('resolveLibraryComponentActions', () => {
   // makes the picker reactive to an in-flight fetch resolving elsewhere.
   const manifests = {
     [buildManifestCacheKey(LIBRARY_ID, 'v2')]: { components: { Widget: { actions: [{ name: 'reset' }] } } },
-    [buildManifestCacheKey(LIBRARY_ID, 'dev:user-1', 42)]: {
+    [buildManifestCacheKey(LIBRARY_ID, 'dev:user-1')]: {
       components: { Widget: { actions: [{ name: 'devOnlyAction' }] } },
     },
   };
@@ -98,7 +98,7 @@ describe('resolveLibraryComponentActions', () => {
     // Break this catches: EventManager crashing or returning stale data instead of an
     // empty list while a manifest fetch is still in flight (the pre-fetch/loading state).
     const pins = { [DASHLESS]: 'v3' }; // pinned to a revision not yet in `manifests`
-    expect(resolveLibraryComponentActions(componentDef(), manifests, pins, {})).toEqual([]);
+    expect(resolveLibraryComponentActions(componentDef(), manifests, pins)).toEqual([]);
   });
 
   it("[LibraryComponent-RESOLVE-002] returns the pinned revision's actions once its manifest is in the cache", () => {
@@ -106,24 +106,20 @@ describe('resolveLibraryComponentActions', () => {
     // revision lands in `manifests` (e.g. an async fetch resolving), this must reflect
     // it immediately — this is what EventManager subscribing to `manifests` fixes.
     const pins = { [DASHLESS]: 'v2' };
-    expect(resolveLibraryComponentActions(componentDef(), manifests, pins, {})).toEqual([
+    expect(resolveLibraryComponentActions(componentDef(), manifests, pins)).toEqual([
       { handle: 'reset', displayName: 'reset', params: [] },
     ]);
   });
 
-  it('[LibraryComponent-RESOLVE-003] folds devBundleUpdatedAt into the cache key for a dev-pinned library', () => {
-    // Break this catches: looking up a dev pin's manifest by (libraryId, revision) alone,
-    // which would keep serving a stale dev bundle's actions after a live-reload push
-    // bumps devBundleUpdatedAt but the revision string ('dev:user-1') stays the same.
+  it('[LibraryComponent-RESOLVE-003] looks up a dev-pinned library by (libraryId, revision) alone', () => {
+    // Break this catches: reintroducing a devNonce param — freshness is the store's job now.
     const pins = { [DASHLESS]: 'dev:user-1' };
-    expect(resolveLibraryComponentActions(componentDef(), manifests, pins, { [LIBRARY_ID]: 42 })).toEqual([
+    expect(resolveLibraryComponentActions(componentDef(), manifests, pins)).toEqual([
       { handle: 'devOnlyAction', displayName: 'devOnlyAction', params: [] },
     ]);
-    // A stale/missing nonce misses the cache entirely rather than serving the wrong bundle.
-    expect(resolveLibraryComponentActions(componentDef(), manifests, pins, { [LIBRARY_ID]: 99 })).toEqual([]);
   });
 
   it('[LibraryComponent-RESOLVE-004] returns [] when there is no pin for the library at all', () => {
-    expect(resolveLibraryComponentActions(componentDef(), manifests, {}, {})).toEqual([]);
+    expect(resolveLibraryComponentActions(componentDef(), manifests, {})).toEqual([]);
   });
 });

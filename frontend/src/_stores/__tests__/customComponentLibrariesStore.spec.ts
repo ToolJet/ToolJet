@@ -38,6 +38,7 @@ describe('customComponentLibrariesStore', () => {
       loadFailed: false,
       devPreviewEmailsByUserId: {},
       devBundleUpdatedAt: {},
+      manifests: {},
     });
   });
 
@@ -110,6 +111,45 @@ describe('customComponentLibrariesStore', () => {
       useCustomComponentLibrariesStore.getState().syncDevPinStreams({ [DASHLESS]: 'dev:someone-else' });
 
       expect(customComponentLibrariesService.streamDevBundleUpdates).not.toHaveBeenCalled();
+    });
+
+    it('[SyncDevPinStreams-004] a live push invalidates that library\'s dev manifest cache entry', () => {
+      // Break this catches: a push not evicting the cached manifest, since the key has
+      // no nonce to bust it automatically.
+      useCustomComponentLibrariesStore.setState({
+        manifests: { [`${LIBRARY_ID}@dev:user-1`]: { components: { Old: {} } } },
+      });
+
+      useCustomComponentLibrariesStore.getState().syncDevPinStreams({ [DASHLESS]: 'dev:user-1' });
+      const onMessage = (customComponentLibrariesService.streamDevBundleUpdates as jest.Mock).mock.calls[0][2].onMessage;
+      onMessage();
+
+      expect(useCustomComponentLibrariesStore.getState().manifests[`${LIBRARY_ID}@dev:user-1`]).toBeUndefined();
+      expect(useCustomComponentLibrariesStore.getState().devBundleUpdatedAt[LIBRARY_ID]).toEqual(expect.any(Number));
+    });
+  });
+
+  describe('invalidateManifest', () => {
+    it('[InvalidateManifest-001] removes only the targeted (libraryId, revision) entry', () => {
+      useCustomComponentLibrariesStore.setState({
+        manifests: {
+          [`${LIBRARY_ID}@dev:user-1`]: { components: { Old: {} } },
+          [`${LIBRARY_ID}@v2`]: { components: { Kept: {} } },
+        },
+      });
+
+      useCustomComponentLibrariesStore.getState().invalidateManifest(LIBRARY_ID, 'dev:user-1');
+
+      expect(useCustomComponentLibrariesStore.getState().manifests).toEqual({
+        [`${LIBRARY_ID}@v2`]: { components: { Kept: {} } },
+      });
+    });
+
+    it('[InvalidateManifest-002] is a no-op when there is nothing cached for that key', () => {
+      useCustomComponentLibrariesStore.setState({ manifests: {} });
+
+      expect(() => useCustomComponentLibrariesStore.getState().invalidateManifest(LIBRARY_ID, 'dev:user-1')).not.toThrow();
+      expect(useCustomComponentLibrariesStore.getState().manifests).toEqual({});
     });
   });
 });
