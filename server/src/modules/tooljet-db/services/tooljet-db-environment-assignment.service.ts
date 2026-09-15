@@ -34,6 +34,9 @@ export type TableMigrationChainEntry = {
   kind: InternalTableMigrationKind;
   name: string | null;
   sequence: string;
+  // 1-based position in this table's ordered chain - display-only, computed on read so the
+  // frontend never has to re-derive it (and disagree with itself) from array position.
+  migrationNumber: number;
   createdAt: Date;
   createdBy: string | null;
   sql: string | null;
@@ -251,11 +254,12 @@ export class TooljetDbEnvironmentAssignmentService {
     );
 
     return {
-      migrations: migrations.map((migration) => ({
+      migrations: migrations.map((migration, index) => ({
         id: migration.id,
         kind: migration.kind,
         name: migration.name,
         sequence: migration.sequence,
+        migrationNumber: index + 1,
         createdAt: migration.createdAt,
         createdBy: migration.createdBy,
         sql: this.migrationSqlCompilerService.compile(migration),

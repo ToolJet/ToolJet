@@ -500,6 +500,7 @@ describe('TooljetDb promote', () => {
         expect(res.body.result.target_relation_exists).toBe(false);
         expect(res.body.result.missing_migrations).toHaveLength(2);
         expect(res.body.result.missing_migrations.map((m) => m.action)).toEqual(['create_table', 'add_column']);
+        expect(res.body.result.missing_migrations.map((m) => m.migration_number)).toEqual([1, 2]);
         expect(res.body.result.missing_migrations[1].sql).toBe(
           'ALTER TABLE preview_me\n  ADD COLUMN title character varying;'
         );
@@ -534,6 +535,10 @@ describe('TooljetDb promote', () => {
         expect(res.body.result.target_relation_exists).toBe(true);
         expect(res.body.result.missing_migrations).toHaveLength(1);
         expect(res.body.result.missing_migrations[0].action).toBe('add_column');
+        // Second migration in the full chain (create_table + add_column) even though it's the
+        // only entry in this missing subset - migration_number must not fall back to the
+        // subset's own array index.
+        expect(res.body.result.missing_migrations[0].migration_number).toBe(2);
       });
 
       it('should 403 when environmentAccess denies the target environment, same as promote', async () => {

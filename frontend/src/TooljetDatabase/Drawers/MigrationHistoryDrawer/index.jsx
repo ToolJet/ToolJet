@@ -12,7 +12,7 @@ import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
-import { envHasRelation, findHeadMigrationId, TABLE_ABSENT_TOOLTIP } from '../../constants';
+import { envHasRelation, findHeadMigrationId, formatMigrationNumber, TABLE_ABSENT_TOOLTIP } from '../../constants';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -110,7 +110,6 @@ const MigrationHistoryDrawer = ({
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
           refetchTables={refetchTables}
-          migrations={migrations}
         />
       </Drawer>
     );
@@ -175,7 +174,7 @@ const MigrationHistoryDrawer = ({
                 <div className={cx('migration-history-drawer__row-marker', { pending: !isApplied })} />
                 <div className="migration-history-drawer__row-content">
                   <div className="migration-history-drawer__row-title">
-                    <span>m{migrations.findIndex((m) => m.id === migration.id) + 1}</span>
+                    <span>{formatMigrationNumber(migration.migration_number)}</span>
                     {migration.id === latestMigrationId && (
                       <span className="migration-history-drawer__badge latest">Latest</span>
                     )}
@@ -259,7 +258,6 @@ const PromotePreviewView = ({
   onClose,
   refetchMigrations,
   refetchTables,
-  migrations,
 }) => {
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
@@ -325,7 +323,7 @@ const PromotePreviewView = ({
             {pendingMigrations.map((migration) => (
               <div key={migration.id} className="migration-history-drawer__preview-item">
                 <div className="migration-history-drawer__row-title">
-                  <span>{migration.name || `m${migrations.findIndex((m) => m.id === migration.id) + 1}`}</span>
+                  <span>{migration.name || formatMigrationNumber(migration.migration_number)}</span>
                 </div>
                 <div className="migration-history-drawer__row-timestamp">{formatTimestamp(migration.created_at)}</div>
                 <ReadOnlySqlView sql={migration.sql} />

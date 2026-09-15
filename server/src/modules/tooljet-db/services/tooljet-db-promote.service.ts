@@ -19,6 +19,9 @@ export type PreviewResult = {
     kind: string;
     action?: string;
     name: string | null;
+    // Position in the table's full migration chain, not the index of this missing subset -
+    // see getMigrationNumbers.
+    migrationNumber: number;
     created_at: Date;
     created_by: string | null;
     sql: string | null;
@@ -70,6 +73,25 @@ export async function computeMissingMigrations(
   }
 
   return query.getMany();
+}
+
+/**
+ * `id -> 1-based position` over a table's full migration chain (`sequence` ASC, `id` ASC - the
+ * same order `getTableMigrations` uses). Exists because `computeMissingMigrations` only returns a
+ * subset (what's missing in the target) - its subset's array index is not this migration's real
+ * position in the chain, which is what the frontend needs to label it consistently with the full
+ * history view.
+ */
+export async function getMigrationNumbers(
+  manager: EntityManager,
+  internalTableId: string
+): Promise<Map<string, number>> {
+  const chain = await manager.find(InternalTableMigration, {
+    where: { internalTableId },
+    order: { sequence: 'ASC', id: 'ASC' },
+    select: ['id'],
+  });
+  return new Map(chain.map((migration, index) => [migration.id, index + 1]));
 }
 
 /**

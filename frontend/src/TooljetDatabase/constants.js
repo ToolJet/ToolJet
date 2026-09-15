@@ -372,14 +372,18 @@ export const renderDatatypeIcon = (type) => {
 export const findHeadMigrationId = (migrations = [], appliedMigrationIds = []) =>
   [...appliedMigrationIds].reverse().find((id) => migrations.some((m) => m.id === id)) ?? null;
 
-// `m<index+1>` label for the environment's head migration, or null when nothing has been applied
-// yet / the head migration has since been dropped from the chain.
+// Zero-pads the backend-computed `migration_number` (this table's chain position) to 4 digits -
+// the fallback label everywhere a migration has no user-given name.
+export const formatMigrationNumber = (migrationNumber) => String(migrationNumber).padStart(4, '0');
+
+// Fallback label for the environment's head migration, or null when nothing has been applied yet
+// / the head migration has since been dropped from the chain.
 export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) => {
   const headId = findHeadMigrationId(migrations, appliedMigrationIds);
   if (headId == null) return null;
-  const index = migrations.findIndex((m) => m.id === headId);
-  if (index < 0) return null;
-  return migrations[index].name || `m${index + 1}`;
+  const head = migrations.find((m) => m.id === headId);
+  if (!head) return null;
+  return head.name || formatMigrationNumber(head.migration_number);
 };
 
 export const envHasRelation = (relationsByEnvironment = [], environmentId) =>

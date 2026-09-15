@@ -11,7 +11,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
 import { History } from 'lucide-react';
 import MigrationHistoryDrawer from '../Drawers/MigrationHistoryDrawer';
-import { envHasRelation, TABLE_ABSENT_TOOLTIP } from '../constants';
+import { envHasRelation, formatMigrationNumber, TABLE_ABSENT_TOOLTIP } from '../constants';
 
 /**
  * Per-environment status for the currently open table, derived from two backend shapes:
@@ -33,7 +33,7 @@ const lastAppliedMigrationName = (migrations, appliedMigrationIds) => {
   // entry whose id is in the applied set is the most recently applied one.
   for (let i = migrations.length - 1; i >= 0; i--) {
     if (appliedMigrationIds.includes(migrations[i].id)) {
-      return migrations[i].name || `m${i + 1}`;
+      return migrations[i].name || formatMigrationNumber(migrations[i].migration_number);
     }
   }
   return null;
