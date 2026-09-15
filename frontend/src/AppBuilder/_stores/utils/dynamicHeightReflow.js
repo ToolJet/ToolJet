@@ -641,7 +641,10 @@ export const resolveContainerHeight = ({
     return 0;
   }
 
-  if (!visibility) {
+  // A ModalV2's `visibility` property ("Modal trigger visibility") controls the trigger BUTTON, not the modal body.
+  // The modal can be opened programmatically while its trigger is hidden, so its body height must still be derived from children.
+  // Every other container is genuinely hidden when `visibility` is false and keeps its static height.
+  if (!visibility && componentType !== 'ModalV2') {
     return containerHeight;
   }
 
@@ -689,7 +692,7 @@ export const resolveContainerHeight = ({
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
     const firstVisibleTabId = Array.isArray(configuredTabs)
-      ? configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id
+      ? (configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id)
       : null;
     const activeTab =
       activeTabFromElement ?? activeTabFromExposedState ?? component?.properties?.defaultTab ?? firstVisibleTabId;
@@ -1396,7 +1399,7 @@ export const buildReflowPatch = ({
     let nextHeight =
       componentId === changedComponentId
         ? changedNewHeight
-        : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
+        : (resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0);
 
     // Floor a non-changed sibling at its calc-bumped canonical so a stale/raw temp can't pin a top-label input below its rendered label row.
     if (componentId !== changedComponentId) {

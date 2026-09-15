@@ -31,8 +31,8 @@ export const Pagination = function Pagination({
   const effectivePageCount = knowTotalPages
     ? Math.ceil(parsedTotalRecords / parsedServerSideRowsPerPage)
     : serverSidePagination
-    ? 0
-    : pageCount;
+      ? 0
+      : pageCount;
 
   const canGoToNextPage = serverSidePagination ? enableNextButton : table.getCanNextPage();
   const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();

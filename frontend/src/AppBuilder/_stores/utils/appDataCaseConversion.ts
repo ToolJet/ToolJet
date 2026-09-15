@@ -37,9 +37,8 @@ const OPAQUE_VALUE_KEYS: readonly string[] = ['pages', 'events', 'dataQueries', 
 
 export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
   if (Array.isArray(o)) {
-    return o.map(
-      (value: JsonValue): JsonValue =>
-        typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
+    return o.map((value: JsonValue): JsonValue =>
+      typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
     );
   } else if (typeof o === 'object' && o !== null) {
     const source = o as JsonObject;

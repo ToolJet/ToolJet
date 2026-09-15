@@ -400,12 +400,12 @@ function DataSourceSelect({
             isForeignKeyInEditCell
               ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
               : foreignKeyAccess
-              ? 'tj-scrollbar tjdb-dashboard-scrollbar'
-              : foreignKeyAccessInRowForm
-              ? 'tj-scrollbar tjdb-rowForm-scrollbar'
-              : isCellEdit
-              ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
-              : 'tj-scrollbar',
+                ? 'tj-scrollbar tjdb-dashboard-scrollbar'
+                : foreignKeyAccessInRowForm
+                  ? 'tj-scrollbar tjdb-rowForm-scrollbar'
+                  : isCellEdit
+                    ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
+                    : 'tj-scrollbar',
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
@@ -632,12 +632,12 @@ function DataSourceSelect({
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
                 : isFocused && !isNested
-                ? 'var(--slate4)'
-                : isDisabled
-                ? 'transparent'
-                : isDisabled && isFocused
-                ? 'var(--slate3, #f1f3f5)'
-                : 'transparent',
+                  ? 'var(--slate4)'
+                  : isDisabled
+                    ? 'transparent'
+                    : isDisabled && isFocused
+                      ? 'var(--slate3, #f1f3f5)'
+                      : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),

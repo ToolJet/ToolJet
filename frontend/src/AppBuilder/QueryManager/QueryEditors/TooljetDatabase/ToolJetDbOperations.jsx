@@ -571,14 +571,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'GUI mode' && !darkMode
                     ? 'white'
                     : activeTab === 'GUI mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'GUI mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'GUI mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-gui-mode-tab"
@@ -593,14 +593,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'SQL mode' && !darkMode
                     ? 'white'
                     : activeTab === 'SQL mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'SQL mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'SQL mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-sql-mode-tab"

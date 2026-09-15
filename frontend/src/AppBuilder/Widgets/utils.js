@@ -40,7 +40,7 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
   const modificationAmount =
     typeof stateOrModificationAmount === 'number'
       ? stateOrModificationAmount
-      : defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0;
+      : (defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0);
 
   const colorValue = color?.startsWith('var(') ? getCssVarValue(options?.element, color) : color;
 

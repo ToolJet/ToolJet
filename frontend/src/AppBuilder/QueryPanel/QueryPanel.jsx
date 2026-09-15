@@ -12,6 +12,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -27,6 +28,7 @@ export const QueryPanel = ({ darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   // On mobile the query panel overlays the canvas via a higher z-index.
   const isMobileLayout = useStore((state) => state.currentLayout === 'mobile', shallow);
+  const selectedQueryId = useStore((state) => state.queryPanel?.selectedQuery?.id, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -38,7 +40,7 @@ export const QueryPanel = ({ darkMode }) => {
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight >= 95
       ? 50
-      : queryManagerPreferences.current?.queryPanelHeight ?? 70
+      : (queryManagerPreferences.current?.queryPanelHeight ?? 70)
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
@@ -151,7 +153,10 @@ export const QueryPanel = ({ darkMode }) => {
     setIsQueryPaneExpanded(newIsExpanded);
     localStorage.setItem(
       'queryManagerPreferences',
-      JSON.stringify({ isExpanded: newIsExpanded, queryPanelHeight: newIsExpanded ? height : 95 })
+      JSON.stringify({
+        isExpanded: newIsExpanded,
+        queryPanelHeight: newIsExpanded ? height : 95,
+      })
     );
     setQueryPanelHeight(newIsExpanded ? height : 95);
   }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
@@ -216,21 +221,34 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
-          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && {
+            borderColor: 'var(--border-accent-weak, #97AEFC)',
+          }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),
         }}
       >
         {isQueryPaneExpanded && (
-          <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
-            <MemoizedQueryDataPane darkMode={darkMode} />
-            <div className="query-definition-pane-wrapper">
-              <div className="query-definition-pane">
-                <MemoizedQueryManager darkMode={darkMode} />
+          <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
+            <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
+              <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
+                <MemoizedQueryDataPane darkMode={darkMode} />
+              </FallbackBoundary>
+              <div className="query-definition-pane-wrapper">
+                <div className="query-definition-pane">
+                  <FallbackBoundary
+                    label="Query manager"
+                    location="Query Panel Query manager"
+                    darkMode={darkMode}
+                    resetKeys={[selectedQueryId]}
+                  >
+                    <MemoizedQueryManager darkMode={darkMode} />
+                  </FallbackBoundary>
+                </div>
               </div>
-            </div>
-          </QueryKeyHooks>
+            </QueryKeyHooks>
+          </FallbackBoundary>
         )}
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />

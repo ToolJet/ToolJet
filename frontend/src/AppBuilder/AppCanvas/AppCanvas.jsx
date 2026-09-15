@@ -5,6 +5,7 @@ import './appCanvas.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
+import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
@@ -18,7 +19,7 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
-import { SuspenseCountProvider } from './SuspenseTracker';
+import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
 import { MobileLayout } from './MobileLayout';
 import { DesktopLayout } from './DesktopLayout';
 // Lazy load editor-only component to reduce viewer bundle size
@@ -67,6 +68,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   const isMobileLayout = currentLayout === 'mobile';
   const pageLoader = useStore((state) => state.pageLoader, shallow);
+  const isCanvasReloading = useStore((state) => state.loaderStore.modules[moduleId].isCanvasReloading, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -140,7 +142,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   // (only the inner layout is re-keyed by pageKey), so scrollTop carries over.
   // Reset to top whenever the page changes so every page starts at the top
   useEffect(() => {
-    canvasContentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    canvasContentRef.current?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    });
   }, [currentPageId]);
 
   useCanvasResizing({
@@ -159,8 +165,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -221,12 +227,16 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         id="main-editor-canvas"
         onMouseUp={handleCanvasContainerMouseUp}
       >
+        <AgentBuildingOverlay />
         <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
             ref={canvasContainerRef}
             className={cx(
               'canvas-container page-container',
-              { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
+              {
+                'dark-theme theme-dark': isAppDarkMode,
+                close: !isViewerSidebarPinned,
+              },
               { 'overflow-x-auto': currentMode === 'edit' },
               { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
             )}
@@ -257,6 +267,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               {currentMode === 'edit' && (
                 <MobileAutoLayoutToolbar currentLayout={currentLayout} darkMode={isAppDarkMode} moduleId={moduleId} />
               )}
+              {/* The same overlay the viewer uses for lazy-loading. It has to sit here rather than
+                  deeper in the canvas: the wrappers below collapse to zero height while the widget
+                  tree is unmounted, and this is the nearest full-height positioned ancestor. */}
+              {isCanvasReloading && <SuspenseLoadingOverlay darkMode={isAppDarkMode} pageLoader />}
               <div
                 ref={canvasContentRef}
                 className={cx(
@@ -284,7 +298,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   currentLayout={currentLayout}
                   isModuleMode={isModuleMode}
                 >
-                  {environmentLoadingState !== 'loading' && (
+                  {environmentLoadingState !== 'loading' && !isCanvasReloading && (
                     <SuspenseCountProvider
                       key={currentPageId}
                       disabled={pageLoader}

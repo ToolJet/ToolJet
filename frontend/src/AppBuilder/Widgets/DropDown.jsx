@@ -246,11 +246,11 @@ export const DropDown = function DropDown({
               backgroundColor: state.isDisabled
                 ? 'transparent'
                 : state.value === currentValue
-                ? hoverBgColorValue
-                : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
+                  ? hoverBgColorValue
+                  : getModifiedColor(
+                      state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                      'hover'
+                    ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
@@ -262,11 +262,11 @@ export const DropDown = function DropDown({
               backgroundColor: state.isDisabled
                 ? 'transparent'
                 : state.value === currentValue
-                ? hoverBgColorValue
-                : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
+                  ? hoverBgColorValue
+                  : getModifiedColor(
+                      state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                      'hover'
+                    ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
