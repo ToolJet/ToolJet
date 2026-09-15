@@ -208,10 +208,11 @@ export function initSentry(logger: any, configService: ConfigService) {
   try {
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DNS'),
-      tracesSampleRate: 1.0,
       environment: configService.get<string>('NODE_ENV') || 'development',
       debug: !!configService.get<string>('SENTRY_DEBUG'),
       sendDefaultPii: true,
+      // OTel SDK (otel/tracing.ts) owns tracing; else Sentry double-registers spans, splits every trace in two.
+      skipOpenTelemetrySetup: true,
     });
   } catch (error) {
     logger.error('❌ Failed to set Sentry options:', error);
