@@ -102,10 +102,6 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
       ]);
       const nameUnchanged = request.body?.name === undefined || request.body.name === dataSource?.name;
       secretsOnly = nameUnchanged && isSecretsOnlyEdit(request.body.options, storedOptions?.options);
-
-      console.log(secretsOnly, 'secretsOnly');
-      console.log(request.body?.options, 'request.body?.options');
-      console.log(storedOptions?.options, 'storedOptions?.options');
     }
 
     await assertGitSyncEditAllowedForOrg(
