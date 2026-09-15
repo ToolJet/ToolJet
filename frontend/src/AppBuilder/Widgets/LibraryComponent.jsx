@@ -57,13 +57,14 @@ const LibraryComponent = ({
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
+  const devUserId = isDevPin ? effectiveRevision.slice(4) : undefined;
 
-  const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmails?.[libraryId]);
+  const devEmail = useCustomComponentLibrariesStore((state) => state.devPreviewEmailsByUserId?.[devUserId]);
   const devNonce = useCustomComponentLibrariesStore((state) =>
     isDevPin ? state.devBundleUpdatedAt?.[libraryId] : undefined
   );
 
-  const devBadge = isDevPin ? <DevBadge label={devEmail ?? effectiveRevision.slice(4)} /> : null;
+  const devBadge = isDevPin && currentMode === 'edit' ? <DevBadge label={devEmail ?? devUserId} /> : null;
 
   // A dev-bundle push, or switching to a different published revision/component export,
   // can remove/rename a `useStateX` variable or an action; setExposedVariable is

@@ -30,17 +30,25 @@ type OwnPins = Record<string, string>;
 
 export const streamKey = (libraryId: string, userId: string): string => `${libraryId}:${userId}`;
 
-// Resolves devPinKeys (keyed by the library's stable correlationId, dashless or dashed —
-// not its workspace-scoped id, so pins keep resolving across import/export) against the
-// library list (correlationId -> real libraryId), returning:
-// - emails: { libraryId -> uploader email }, for every dev-pinned library (canvas badge)
-// - ownPins: { libraryId -> userId }, only pins where userId === currentUserId (streams)
-export function resolveDevPins(
+// A user's email doesn't vary by library, so this flattens every library's devBundles
+// into one userId -> email map instead of resolving it per pin/library.
+export function buildDevPreviewEmailsByUserId(libraries: CustomComponentLibrary[]): Record<string, string> {
+  const emailsByUserId: Record<string, string> = {};
+  libraries.forEach((lib) => {
+    lib.devBundles?.forEach((bundle) => {
+      if (bundle.userEmail) emailsByUserId[bundle.userId] = bundle.userEmail;
+    });
+  });
+  return emailsByUserId;
+}
+
+// Resolves devPinKeys (keyed by correlationId) against the library list, returning only
+// the pins owned by currentUserId — the ones a live-reload stream can open for.
+export function resolveOwnDevPins(
   libraries: CustomComponentLibrary[],
   devPinKeys: DevPinKeys,
   currentUserId: string | undefined
-): { emails: Record<string, string | null>; ownPins: OwnPins } {
-  const emails: Record<string, string | null> = {};
+): OwnPins {
   const ownPins: OwnPins = {};
 
   libraries.forEach((lib) => {
@@ -50,12 +58,10 @@ export function resolveDevPins(
     if (typeof value !== 'string' || !value.startsWith('dev:')) return;
 
     const userId = value.slice(4);
-    const bundle = lib.devBundles?.find((d) => d.userId === userId);
-    emails[lib.id] = bundle?.userEmail ?? null;
     if (userId === currentUserId) ownPins[lib.id] = userId;
   });
 
-  return { emails, ownPins };
+  return ownPins;
 }
 
 // Given the currently-open stream keys and the pins that should be streaming for this
