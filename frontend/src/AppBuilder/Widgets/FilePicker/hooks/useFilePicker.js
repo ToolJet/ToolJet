@@ -253,13 +253,8 @@ export const useFilePicker = ({
       }
       // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
       setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
-
-      // Clear setUiErrorMessage afgter 5 seconds
-      setTimeout(() => {
-        clearErrorStates();
-      }, 10000);
     },
-    [fileTypeCategory, minSize, maxSize, maxFileCount, clearErrorStates]
+    [fileTypeCategory, minSize, maxSize, maxFileCount]
   );
 
   // Custom validator
@@ -425,9 +420,6 @@ export const useFilePicker = ({
       // After files are accepted, check if minFileCount is met
       if (selectedFiles.length + acceptedFiles.length < minFileCount) {
         setUiErrorMessage(`Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`);
-        setTimeout(() => {
-          clearErrorStates();
-        }, 5000);
       } else {
         setUiErrorMessage('');
       }
