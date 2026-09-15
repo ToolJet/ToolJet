@@ -312,6 +312,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         // New path: save tokens directly to datasource_user_token_data
         let access_token: string | null = null;
         let refresh_token: string | null = null;
+        // Single-auth rows are always stored under user_id IS NULL (see getUserTokenData) — must
+        // stay null here too, or a propagated row lands under a real user_id and the single-auth
+        // read path (which queries user_id IS NULL) never finds it on sibling branches.
+        const tokenUserId = isMultiAuthEnabled ? userId : null;
 
         if (isMultiAuthEnabled) {
           const tokenObj: Record<string, any> = { user_id: userId };
@@ -320,7 +324,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           }
           access_token = tokenObj['access_token'] ?? null;
           refresh_token = tokenObj['refresh_token'] ?? null;
-          await this.upsertUserTokenData(dataSourceOptionId, userId, access_token, refresh_token, manager);
+          await this.upsertUserTokenData(dataSourceOptionId, tokenUserId, access_token, refresh_token, manager);
         } else {
           // Some plugins (e.g. salesforce) return extra fields alongside access_token/refresh_token
           // (e.g. instance_url) that the plugin's run()/testConnection() also needs. Those aren't
@@ -332,7 +336,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             else if (key === 'refresh_token') refresh_token = value;
             else options.push({ key, value, encrypted: true });
           }
-          await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
+          await this.upsertUserTokenData(dataSourceOptionId, tokenUserId, access_token, refresh_token, manager);
         }
 
         // Propagate token to all branches since tokens are branch-invariant. dataSourceId is the
@@ -343,7 +347,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.propagateTokenToAllBranches(
             dataSourceId,
             environmentId,
-            userId,
+            tokenUserId,
             access_token,
             refresh_token,
             manager
