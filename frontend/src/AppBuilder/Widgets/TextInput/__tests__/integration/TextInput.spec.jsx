@@ -4,14 +4,20 @@
  */
 import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createWidgetHarness, binding, setVariableOn, countInvocationsOn, drain } from '../widgetHarness';
+import {
+  createWidgetHarness,
+  binding,
+  setVariableOn,
+  countInvocationsOn,
+  drain,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import {
   getLabelFontSize,
   getLabelHeight,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
   checkIfInputWidgetTypeIsDeprecated,
-} from '../BaseComponents/hooks/useInput';
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 // No default properties/styles are passed: componentDefinition() seeds the
 // widget's own registered `definition` (textinput.js), so every test below
