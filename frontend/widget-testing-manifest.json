@@ -73,7 +73,8 @@
     },
     {
       "componentType": "EmailInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/EmailInput/TESTING.md"
     },
     {
       "componentType": "PasswordInput",

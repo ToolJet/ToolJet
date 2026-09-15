@@ -267,7 +267,9 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: true, validationError: null });
   });
 
-  test('EmailInput: a malformed address is rejected without any regex configured', () => {
+  // Break this catches: removing the EmailInput branch from validateWidget, so a
+  // malformed address passes with no regex configured.
+  test('[EmailInput-VAL-003] EmailInput: a malformed address is rejected without any regex configured', () => {
     expect(validate({ componentType: 'EmailInput', widgetValue: 'not-an-email' })).toEqual({
       isValid: false,
       validationError: 'Input should be a valid email',
@@ -275,7 +277,9 @@ describe('the other validators that actually exist', () => {
     expect(validate({ componentType: 'EmailInput', widgetValue: 'kavin@tooljet.com' }).isValid).toBe(true);
   });
 
-  test('EmailInput: an empty value skips the email check and is left to `mandatory`', () => {
+  // Break this catches: dropping the `&& widgetValue` guard on the EmailInput branch,
+  // so an untouched empty field reports "invalid email" instead of "cannot be empty".
+  test('[EmailInput-VAL-003] EmailInput: an empty value skips the email check and is left to `mandatory`', () => {
     // `componentType === 'EmailInput' && widgetValue` gates the check, so an
     // untouched email field reports "cannot be empty", not "invalid email".
     expect(validate({ componentType: 'EmailInput', widgetValue: '' })).toEqual({
@@ -285,6 +289,37 @@ describe('the other validators that actually exist', () => {
     expect(
       validate({ componentType: 'EmailInput', widgetValue: '', validationObject: { mandatory: { value: true } } })
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
+  });
+
+  // Break this catches: moving the EmailInput branch below the regex/length branches,
+  // or making it fall through instead of returning. D-01 pinned this order: the
+  // built-in check short-circuits, so a builder's own rules are unreachable for a
+  // value that is not already a valid email.
+  test('[EmailInput-VAL-007] the built-in email check short-circuits the builder’s own rules', () => {
+    const forEmail = (validationObject, widgetValue) =>
+      validate({ componentType: 'EmailInput', widgetValue, validationObject });
+
+    // A regex the builder wrote to ACCEPT this value never runs.
+    expect(forEmail({ regex: { value: '^internal-.*$' } }, 'internal-ada')).toEqual({
+      isValid: false,
+      validationError: 'Input should be a valid email',
+    });
+    // A length violation is masked by the email message too.
+    expect(forEmail({ minLength: { value: 50 } }, 'not-an-email').validationError).toBe(
+      'Input should be a valid email'
+    );
+
+    // A valid address falls through to the builder's rules normally.
+    expect(forEmail({ minLength: { value: 50 } }, 'ada@tooljet.com').validationError).toBe(
+      'Minimum 50 characters is needed'
+    );
+    expect(forEmail({ regex: { value: '^.*@tooljet\\.com$' } }, 'ada@example.com').validationError).toBe(
+      'The input should match pattern'
+    );
+    expect(forEmail({ regex: { value: '^.*@tooljet\\.com$' } }, 'ada@tooljet.com')).toEqual({
+      isValid: true,
+      validationError: null,
+    });
   });
 
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
