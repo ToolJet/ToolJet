@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "server/package-lock.json",
-    "server/package.json"
+    "package-lock.json",
+    "package.json"
   ],
-  "baseSha": "9013cefa493d123a86e5db58792443929580fc08",
+  "baseSha": "074b86c9c07db5bcddcde47b24ffcd967358cd54",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "7acdd6bfd82d3c20",
+    "id": "71a33e13f0396e52",
     "lockArtifacts": [
-      "server/package-lock.json"
+      "package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "server/package-lock.json"
+    "rootManifest": "package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
+  "remediationKey": "c4122e26247ea3f3d72c80156d9acf6b4f0b20f4bde11ec27d244c4b6cd30cd8",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,26 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "9013cefa493d123a86e5db58792443929580fc08",
+  "scanSha": "074b86c9c07db5bcddcde47b24ffcd967358cd54",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "oEgxOnynTOqPzf25ANL32A",
-  "stoTargetId": "2jnHr58fX7ty9mXkJorGD_",
+  "stoExecutionId": "yfDVyPyRSVCELdmAAONl1A",
+  "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "2.5.6"
+        "3.1.5"
       ],
       "coordinate": {
-        "normalisedName": "form-data",
-        "purl": "pkg:npm/form-data@2.5.5"
+        "normalisedName": "minimatch",
+        "purl": "pkg:npm/minimatch@3.1.2"
       },
-      "fromVersion": "2.5.5",
+      "fromVersion": "3.1.2",
       "issueIds": [
-        "p5Qj48q7JyF6ipQWbz3Gt7"
+        "fx-spfAgRUxoSyLUNBgJvR"
       ],
-      "minimumFixedVersion": "2.5.6",
-      "package": "form-data"
+      "minimumFixedVersion": "3.1.3",
+      "package": "minimatch"
     }
   ]
 }
