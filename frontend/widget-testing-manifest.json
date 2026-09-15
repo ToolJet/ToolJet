@@ -269,7 +269,8 @@
     },
     {
       "componentType": "ColorPicker",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/ColorPicker/TESTING.md"
     },
     {
       "componentType": "BoundedBox",
