@@ -213,50 +213,83 @@ export class ComponentsService implements IComponentsService {
 
   async getAllComponents(pageId: string, externalManager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const rawComponents = await manager
-        .createQueryBuilder(Component, 'component')
-        .leftJoinAndSelect('component.layouts', 'layout')
-        .where('component.pageId = :pageId', { pageId })
-        .andWhere('layout.type IN (:...types)', {
-          types: ['desktop', 'mobile'],
-        })
-        .orderBy('component.id', 'ASC')
-        .addOrderBy('layout.updatedAt', 'DESC')
-        .getMany();
-
-      const result: Record<string, any> = {};
-      const layoutsToUpdate: Layout[] = [];
-
-      for (const component of rawComponents) {
-        const processedLayoutsForComponent: Layout[] = [];
-
-        (component.layouts || []).forEach((layout) => {
-          if (layout && layout.type) {
-            const currentLayout = { ...layout };
-
-            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
-              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
-              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              layoutsToUpdate.push(currentLayout);
-            }
-            processedLayoutsForComponent.push(currentLayout);
-          }
-        });
-
-        const relevantLayouts = processedLayoutsForComponent
-          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
-          .slice(0, 2);
-
-        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
-        result[component.id] = transformedData[component.id];
-      }
-
-      if (layoutsToUpdate.length > 0) {
-        await manager.save(Layout, layoutsToUpdate);
-      }
-
-      return result;
+      const componentsByPage = await this.fetchComponentsForPages([pageId], manager);
+      return componentsByPage[pageId] ?? {};
     }, externalManager);
+  }
+
+  /**
+   * Batched counterpart of getAllComponents: loads the components of every given page in a
+   * SINGLE query and transaction, keyed by pageId.
+   *
+   * Callers that need components for many pages (app load) must use this instead of mapping
+   * getAllComponents over the pages. Each getAllComponents call opens its own transaction,
+   * which checks out a dedicated pooled connection for its whole duration — so an app with
+   * more pages than the pool size (ormconfig `extra.max`) starves its own pool and every
+   * waiter fails with "timeout exceeded when trying to connect".
+   */
+  async getAllComponentsForPages(
+    pageIds: string[],
+    externalManager?: EntityManager
+  ): Promise<Record<string, Record<string, any>>> {
+    if (!pageIds.length) return {};
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return this.fetchComponentsForPages(pageIds, manager);
+    }, externalManager);
+  }
+
+  protected async fetchComponentsForPages(
+    pageIds: string[],
+    manager: EntityManager
+  ): Promise<Record<string, Record<string, any>>> {
+    const result: Record<string, Record<string, any>> = {};
+    // Pages with no components must still resolve to {} rather than undefined.
+    for (const pageId of pageIds) result[pageId] = {};
+    if (!pageIds.length) return result;
+
+    const rawComponents = await manager
+      .createQueryBuilder(Component, 'component')
+      .leftJoinAndSelect('component.layouts', 'layout')
+      .where('component.pageId IN (:...pageIds)', { pageIds })
+      .andWhere('layout.type IN (:...types)', {
+        types: ['desktop', 'mobile'],
+      })
+      .orderBy('component.id', 'ASC')
+      .addOrderBy('layout.updatedAt', 'DESC')
+      .getMany();
+
+    const layoutsToUpdate: Layout[] = [];
+
+    for (const component of rawComponents) {
+      const processedLayoutsForComponent: Layout[] = [];
+
+      (component.layouts || []).forEach((layout) => {
+        if (layout && layout.type) {
+          const currentLayout = { ...layout };
+
+          if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+            currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
+            currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+            layoutsToUpdate.push(currentLayout);
+          }
+          processedLayoutsForComponent.push(currentLayout);
+        }
+      });
+
+      const relevantLayouts = processedLayoutsForComponent
+        .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+        .slice(0, 2);
+
+      const transformedData = this.createComponentWithLayout(component, relevantLayouts);
+      (result[component.pageId] ??= {})[component.id] = transformedData[component.id];
+    }
+
+    // One batched write for the whole set instead of one per page.
+    if (layoutsToUpdate.length > 0) {
+      await manager.save(Layout, layoutsToUpdate);
+    }
+
+    return result;
   }
 
   transformComponentData(data: object): Component[] {
