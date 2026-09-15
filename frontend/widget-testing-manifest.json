@@ -60,7 +60,8 @@
     },
     {
       "componentType": "Calendar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Calendar/TESTING.md"
     },
     {
       "componentType": "Kanban",
@@ -84,7 +85,8 @@
     },
     {
       "componentType": "RichTextEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RichTextEditor/TESTING.md"
     },
     {
       "componentType": "NumberInput",
@@ -145,19 +147,23 @@
     },
     {
       "componentType": "DatePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatePickerV2/TESTING.md"
     },
     {
       "componentType": "TimePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TimePicker/TESTING.md"
     },
     {
       "componentType": "DatetimePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatetimePickerV2/TESTING.md"
     },
     {
       "componentType": "DaterangePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DaterangePicker/TESTING.md"
     },
     {
       "componentType": "Navigation",
@@ -189,19 +195,23 @@
     },
     {
       "componentType": "PDF",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PDF/TESTING.md"
     },
     {
       "componentType": "Map",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Map/TESTING.md"
     },
     {
       "componentType": "AudioRecorder",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/AudioRecorder/TESTING.md"
     },
     {
       "componentType": "Camera",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Camera/TESTING.md"
     },
     {
       "componentType": "Text",
@@ -277,7 +287,8 @@
     },
     {
       "componentType": "QrScanner",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/QrScanner/TESTING.md"
     },
     {
       "componentType": "Chat",

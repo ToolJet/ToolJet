@@ -49,6 +49,12 @@ module.exports = {
         babelrc: false,
         configFile: false,
         presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+        // PDF.jsx sets the pdfjs worker via `new URL(..., import.meta.url)` at
+        // module scope. @babel/preset-env rewrites ESM->CJS, where `import.meta`
+        // has no equivalent and throws "Cannot use 'import.meta' outside a
+        // module". This plugin rewrites import.meta to a CJS-safe file URL so the
+        // module loads under jest. PDF is the only frontend/src widget using it.
+        plugins: ['babel-plugin-transform-import-meta'],
       },
     ],
     '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
@@ -66,6 +72,38 @@ module.exports = {
     // markdown *parsing* — only that the widget renders its text — so a
     // renderable pass-through component is the cheap equivalent.
     '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // STUB, not transform: react-pdf's dist is ESM-only and drags in the whole
+    // pdfjs-dist tree + a web worker jsdom can't run, so a real PDF never renders
+    // under jest anyway. Real rendering is QA-owned per the PDF contract; the
+    // engineering layer only needs the empty-url placeholder + container styles.
+    // See ee/test/app-builder/widgets/PDF/TESTING.md (D-10).
+    '^react-pdf$': '<rootDir>/__mocks__/reactPdf.jsx',
+    // STUB, not transform: react-qr-reader@2.2.1 calls getUserMedia at mount,
+    // which jsdom has no camera for, so a real scan never happens under jest.
+    // Real camera scanning is QA-owned per the QrScanner contract; the engineering
+    // layer drives the widget's own onScan/onError handlers through the mock's
+    // captured props. See ee/test/app-builder/widgets/QrScanner/TESTING.md (D-01/D-02).
+    '^react-qr-reader$': '<rootDir>/__mocks__/reactQrReader.jsx',
+    // STUB, not transform: react-media-recorder wraps MediaRecorder +
+    // getUserMedia, neither of which jsdom implements, so a real recording never
+    // happens under jest. Real photo capture (canvas) and live recording are
+    // QA-owned per the Camera contract; the engineering layer drives the widget's
+    // own onRecordingStart/onStop logic through the stub's status transitions and
+    // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
+    '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
+    // STUB, not transform: AudioRecorder.jsx dynamically imports a single icon from
+    // `@tabler/icons-react/dist/esm/icons/<name>.js`, an ESM-only path outside jest's
+    // transform allowlist, so the real import throws "Cannot use import statement
+    // outside a module" on every render. The glyph is cosmetic; a pass-through icon
+    // is the cheap equivalent. See ee/test/app-builder/widgets/AudioRecorder/TESTING.md.
+    '^@tabler/icons-react/dist/esm/icons/.*$': '<rootDir>/__mocks__/tablerDynamicIcon.jsx',
+    // STUB, not transform: @react-google-maps/api wraps the Google Maps JS SDK
+    // (window.google, an external script, an API key), none of which jsdom has, so
+    // a real map never renders under jest. Real tiles/pan/zoom/drag geometry and the
+    // Places service are QA-owned per the Map contract; the engineering layer drives
+    // the widget's own onLoad/marker/polygon/map-click/drag/search handlers through
+    // the mock's captured props. See ee/test/app-builder/widgets/Map/TESTING.md (D-01/D-03).
+    '^@react-google-maps/api$': '<rootDir>/__mocks__/reactGoogleMapsApi.jsx',
     // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
     // carries the whole Lexical stack. It is only reached because the EE
     // AiBuilder doc previewer sits on an import chain that rendering a
