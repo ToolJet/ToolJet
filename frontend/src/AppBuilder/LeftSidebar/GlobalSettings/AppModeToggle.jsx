@@ -12,7 +12,7 @@ export const APP_MODES = [
   { label: 'Dark', value: 'dark' },
 ];
 
-const AppModeToggle = ({ darkMode }) => {
+const AppModeToggle = ({ darkMode, isModuleEditor = false }) => {
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
 
@@ -21,7 +21,9 @@ const AppModeToggle = ({ darkMode }) => {
   return (
     <div className="canvas-settings-row">
       <span className="canvas-settings-label" data-cy={`label-padding-mode`}>
-        {t('leftSidebar.Settings.appMode', 'Padding')}
+        {isModuleEditor
+          ? t('leftSidebar.Settings.moduleMode', 'Module mode')
+          : t('leftSidebar.Settings.appMode', 'Padding')}
       </span>
       <div className="canvas-settings-input-wrapper">
         <div className="canvas-toggle-container">
