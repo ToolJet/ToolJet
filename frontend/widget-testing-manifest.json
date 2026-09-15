@@ -181,7 +181,8 @@
     },
     {
       "componentType": "Image",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Image/TESTING.md"
     },
     {
       "componentType": "SvgImage",
