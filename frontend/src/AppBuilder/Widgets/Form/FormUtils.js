@@ -6,7 +6,24 @@ import {
   resolveStyles,
 } from '@/AppBuilder/_utils/component-properties-resolution';
 import { validateProperties } from '@/AppBuilder/_utils/component-properties-validation';
-const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];
+
+/* Widgets that keep `visibility` / `disabledState` in `properties`;
+ * every other widget reads them from `styles`.
+ * Add a widget here when its state moves to `properties`, or its schema-set visibility silently stops working.
+ */
+const STATE_READ_FROM_PROPERTIES = [
+  'TextInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'PasswordInput',
+  'TextArea',
+  'Text',
+  'Button',
+  'Checkbox',
+  'StarRating',
+];
 
 const resolvedComponentTypes = {};
 
@@ -25,7 +42,7 @@ const resolveDefinition = (component) => {
     ? validateProperties(resolvedProperties, componentMeta.properties)
     : [resolvedProperties, []];
 
-  if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
+  if (STATE_READ_FROM_PROPERTIES.includes(component.component)) {
     validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
   }
 
@@ -33,7 +50,7 @@ const resolveDefinition = (component) => {
     ? validateProperties(resolvedStyles, componentMeta.styles)
     : [resolvedStyles, []];
 
-  if (!shouldAddBoxShadowAndVisibility.includes(component.component)) {
+  if (!STATE_READ_FROM_PROPERTIES.includes(component.component)) {
     validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
   }
 
@@ -64,6 +81,32 @@ const getComponentDefinition = (componentType) => {
     data.definition = structuredClone(resolvedComponentTypes[componentType]);
   }
   return data;
+};
+
+/**
+ * Writes a schema's `visibility` / `disabled` onto a generated component,
+ * in the bucket that widget actually reads from — see STATE_READ_FROM_PROPERTIES.
+ *
+ * The `undefined` check matters as much as the bucket: a truthiness guard can never see `false`, so
+ * a bound `{{components.toggle1.value}}` could only ever show a field and never hide one.
+ */
+const setSchemaStateFlag = (component, key, rawValue) => {
+  if (rawValue === undefined || rawValue === null) return;
+  const bucket = STATE_READ_FROM_PROPERTIES.includes(component.component) ? 'properties' : 'styles';
+  component.definition[bucket][key] = key === 'visibility' ? validBooleanChecker(rawValue) : rawValue;
+};
+
+/**
+ * Writes a schema field's `validation.mandatory` onto the generated component.
+ *
+ * Only for types whose registration declares it. This is not a tidiness guard:
+ * `validateWidget` never consults the registration so `mandatory` written onto a type that
+ * has no such validation is still enforced.
+ */
+const setSchemaMandatory = (component, rawValue) => {
+  if (rawValue === undefined || rawValue === null) return;
+  if (!component.definition.validation || !('mandatory' in component.definition.validation)) return;
+  component.definition.validation.mandatory = rawValue;
 };
 
 export function generateUIComponents(JSONSchema, advanced, componentName = '') {
@@ -111,13 +154,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['errTextColor'] = value?.styles?.errorTextColor;
             if (value?.styles?.borderColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderColor'] = value?.styles?.borderColor;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule'] =
                 value?.validation?.customRule;
@@ -143,13 +181,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = '';
             break;
           case 'DropDown':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility) {
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-            }
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
             if (value?.styles?.justifyContent)
@@ -177,13 +210,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderColor'] = value?.styles?.borderColor;
             if (value?.styles?.loaderColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['loaderColor'] = value?.styles?.loaderColor;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['text'] = value?.value;
             break;
           case 'Text':
@@ -208,13 +236,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor'] = value?.styles?.textColor;
             if (value?.styles?.borderColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderColor'] = value?.styles?.borderColor;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
             else uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = null;
 
@@ -233,13 +256,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
                 value?.styles?.backgroundColor;
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule'] =
                 value?.validation?.customRule;
@@ -257,12 +275,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           case 'Datepicker':
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule'] =
                 value?.validation?.customRule;
@@ -279,15 +293,10 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           case 'Checkbox':
             if (value?.styles?.checkboxColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['checkboxColor'] = value?.styles?.checkboxColor;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor'] = value?.styles?.textColor;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue'] = value?.value;
             if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = value?.label;
@@ -296,13 +305,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           case 'RadioButton':
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor'] = value?.styles?.textColor;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values'] = value?.displayValues;
             if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = value?.label;
@@ -312,13 +316,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           case 'ToggleSwitch':
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor'] = value?.styles?.textColor;
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.toggleSwitchColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['toggleSwitchColor'] =
                 value?.styles?.toggleSwitchColor;
@@ -329,13 +328,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
             break;
 
           case 'TextArea':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
@@ -345,13 +339,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder'] = value?.placeholder;
             break;
           case 'DaterangePicker':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
             if (value?.defaultEndDate)
@@ -362,13 +351,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
             if (value?.format) uiComponentsDraft[index * 2 + 1]['definition']['properties']['format'] = value?.format;
             break;
           case 'Multiselect':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
             if (value?.displayValues)
@@ -380,13 +364,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['showAllOption'] = value?.showAllOption;
             break;
           case 'StarRating':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor'] = value?.styles?.textColor;
             if (value?.styles?.labelColor)
@@ -402,13 +381,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['tooltips'] = value?.tooltips;
             break;
           case 'FilePicker':
-            if (value?.styles?.disabled)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState'] = value?.styles?.disabled;
-            if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility'] = validBooleanChecker(
-                value?.styles?.visibility
-              );
-
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'disabledState', value?.styles?.disabled);
+            setSchemaStateFlag(uiComponentsDraft[index * 2 + 1], 'visibility', value?.styles?.visibility);
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius'] = value?.styles?.borderRadius;
             if (value?.enableDropzone)
@@ -435,6 +409,7 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           default:
             return;
         }
+        setSchemaMandatory(uiComponentsDraft[index * 2 + 1], value?.validation?.mandatory);
         // converting label/key as text ui element/component
         uiComponentsDraft[index * 2]['definition']['properties']['text'] = value?.label ?? key;
         uiComponentsDraft[index * 2]['formKey'] = key;
