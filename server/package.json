@@ -187,6 +187,9 @@
     "@ai-sdk/provider-utils": {
       "nanoid": "3.3.19"
     },
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.2"
+    },
     "@nestjs/platform-express": {
       "multer": "2.3.0"
     },
@@ -201,6 +204,12 @@
     },
     "ai": {
       "jsondiffpatch": "0.7.6"
+    },
+    "ajv": {
+      "fast-uri": "3.1.7"
+    },
+    "cosmiconfig": {
+      "js-yaml": "4.3.2"
     },
     "engine.io-client": {
       "ws": "8.21.3"
