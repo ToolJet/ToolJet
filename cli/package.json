@@ -78,5 +78,11 @@
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "overrides": {
+    "js-yaml": "^3.15.2",
+    "mocha": {
+      "js-yaml": "^4.3.2"
+    }
+  }
 }

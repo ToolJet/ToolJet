@@ -67,5 +67,11 @@
     "prepare": "husky install",
     "update-version": "node update-version.js"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "overrides": {
+    "js-yaml": "^3.15.2",
+    "@eslint/eslintrc": {
+      "js-yaml": "^4.3.2"
+    }
+  }
 }
