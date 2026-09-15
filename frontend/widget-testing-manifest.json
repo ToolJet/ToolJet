@@ -88,7 +88,7 @@
     },
     {
       "componentType": "NumberInput",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/NumberInput/TESTING.md"
     },
     {
