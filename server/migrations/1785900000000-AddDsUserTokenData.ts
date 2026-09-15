@@ -56,7 +56,7 @@ export class AddDsUserTokenData1785900000000 implements MigrationInterface {
           },
         ],
       }),
-      true, // ifNotExists
+      true // ifNotExists
     );
 
     await queryRunner.createForeignKey(
@@ -67,7 +67,7 @@ export class AddDsUserTokenData1785900000000 implements MigrationInterface {
         referencedTableName: 'data_source_version_options',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     // Partial unique index: one row per (option + user) for multi-auth rows

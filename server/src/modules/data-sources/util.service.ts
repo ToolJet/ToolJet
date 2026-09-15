@@ -272,7 +272,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId?: string,
     organizationId?: string,
     environmentId?: string,
-    dataSourceOptionId?: string
+    dataSourceOptionId?: string,
+    dataSourceId?: string
   ) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
@@ -311,6 +312,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         // New path: save tokens directly to datasource_user_token_data
         let access_token: string | null = null;
         let refresh_token: string | null = null;
+        // Single-auth rows are always stored under user_id IS NULL (see getUserTokenData) — must
+        // stay null here too, or a propagated row lands under a real user_id and the single-auth
+        // read path (which queries user_id IS NULL) never finds it on sibling branches.
+        const tokenUserId = isMultiAuthEnabled ? userId : null;
 
         if (isMultiAuthEnabled) {
           const tokenObj: Record<string, any> = { user_id: userId };
@@ -319,7 +324,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           }
           access_token = tokenObj['access_token'] ?? null;
           refresh_token = tokenObj['refresh_token'] ?? null;
-          await this.upsertUserTokenData(dataSourceOptionId, userId, access_token, refresh_token, manager);
+          await this.upsertUserTokenData(dataSourceOptionId, tokenUserId, access_token, refresh_token, manager);
         } else {
           // Some plugins (e.g. salesforce) return extra fields alongside access_token/refresh_token
           // (e.g. instance_url) that the plugin's run()/testConnection() also needs. Those aren't
@@ -331,18 +336,23 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             else if (key === 'refresh_token') refresh_token = value;
             else options.push({ key, value, encrypted: true });
           }
-          await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
+          await this.upsertUserTokenData(dataSourceOptionId, tokenUserId, access_token, refresh_token, manager);
         }
 
-        //Propagate token to all branches since tokens are branch-invariant
-        this.propagateTokenToAllBranches(
-          dataSourceOptionId,
-          environmentId,
-          userId,
-          access_token,
-          refresh_token,
-          manager
-        );
+        // Propagate token to all branches since tokens are branch-invariant. dataSourceId is the
+        // data_sources.id (not dataSourceOptionId, which is the DSVO id upsertUserTokenData just
+        // wrote directly above) — propagateTokenToAllBranches looks up DataSourceVersion rows by
+        // data_source_id, so passing the DSVO id here would silently match zero branches.
+        if (dataSourceId) {
+          await this.propagateTokenToAllBranches(
+            dataSourceId,
+            environmentId,
+            tokenUserId,
+            access_token,
+            refresh_token,
+            manager
+          );
+        }
 
         // Strip OAuth flow keys and token keys from options (any extra non-token fields pushed
         // above, e.g. instance_url, are intentionally kept)
@@ -853,7 +863,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       userId,
       organizationId,
       environmentId,
-      dataSourceOptionId
+      dataSourceOptionId,
+      dataSource?.id
     );
     const parsedOptions = {};
 
@@ -1525,8 +1536,19 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (dataSourceOptionId) {
       const isMultiAuth = parsedOptions['multiple_auth_enabled'] === true;
       if (isMultiAuth) {
+        // Capture the legacy in-options array (set by the generic per-key loop above from
+        // options.tokenData.value) before it gets overwritten below — rows the backfill hasn't
+        // migrated to datasource_user_token_data yet still carry their tokens here.
+        const legacyTokenData = parsedOptions['tokenData'];
         const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id ?? null);
-        parsedOptions['tokenData'] = tokenRow ? [{ user_id: user?.id, ...tokenRow }] : [];
+        if (tokenRow) {
+          parsedOptions['tokenData'] = [{ user_id: user?.id, ...tokenRow }];
+        } else if (Array.isArray(legacyTokenData)) {
+          const legacyEntry = legacyTokenData.find((entry) => entry?.user_id === user?.id);
+          parsedOptions['tokenData'] = legacyEntry ? [legacyEntry] : [];
+        } else {
+          parsedOptions['tokenData'] = [];
+        }
       } else {
         const tokenRow = await this.getUserTokenData(dataSourceOptionId, null);
         if (tokenRow) {
@@ -1655,6 +1677,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     refreshToken: string | null,
     manager: EntityManager
   ): Promise<void> {
+    console.log('Called');
     const encryptedAccessToken = accessToken
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', accessToken)
       : null;
