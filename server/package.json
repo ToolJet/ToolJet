@@ -187,6 +187,9 @@
     "@ai-sdk/provider-utils": {
       "nanoid": "3.3.19"
     },
+    "@babel/helper-compilation-targets": {
+      "browserslist": "4.28.9"
+    },
     "@eslint/eslintrc": {
       "js-yaml": "4.3.2"
     },
@@ -222,6 +225,12 @@
     },
     "socket.io-client": {
       "socket.io-parser": "4.2.7"
+    },
+    "update-browserslist-db": {
+      "browserslist": "4.28.9"
+    },
+    "webpack": {
+      "browserslist": "4.28.9"
     },
     "xml-crypto": {
       "@xmldom/xmldom": "0.9.12"
