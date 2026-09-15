@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useEffectiveLibraryRevision, libraryFileUrl, setLibraryComponentActions } from './libraryComponentRevision';
+
+import useStore from '@/AppBuilder/_stores/store';
+import { libraryFileUrl } from '@/_helpers/customComponentLibrariesStoreUtils';
+import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision';
+import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 
 const DevBadge = ({ label }) => (
@@ -34,7 +38,6 @@ const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'compone
    shell → stateChange/event → setExposedVariable / fireEvent
 */
 const LibraryComponent = ({
-  id,
   properties = {},
   styles = {},
   height,
@@ -149,32 +152,21 @@ const LibraryComponent = ({
     setShellReady(false);
   }, [libraryId, effectiveRevision, componentName]);
 
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
+  const manifestActions = manifest?.components?.[componentName]?.actions;
+
   useEffect(() => {
-    if (!configured) return;
-    let cancelled = false;
-    fetch(libraryFileUrl(libraryId, effectiveRevision, 'manifest.json'))
-      .then((r) => (r.ok ? r.json() : null))
-      .then((manifest) => {
-        if (cancelled) return;
-        const actions = manifest?.components?.[componentName]?.actions ?? [];
-        actions.forEach((a) =>
-          setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
-        );
-        setLibraryComponentActions(id, actions);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [configured, libraryId, effectiveRevision, componentName, id, setExposedVariable]);
+    if (!configured || !manifestActions?.length) return;
+    manifestActions.forEach((a) =>
+      setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
+    );
+  }, [configured, manifestActions, setExposedVariable]);
 
   useEffect(
     () => () => {
-      setLibraryComponentActions(id, null);
       rejectAllPending('component was removed before the action completed');
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id]
+    []
   );
 
   useEffect(() => {

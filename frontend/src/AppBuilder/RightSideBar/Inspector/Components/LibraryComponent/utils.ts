@@ -1,15 +1,5 @@
-import type { ComponentIdentity, FieldMeta, InspectorComponent } from './types';
+import type { FieldMeta } from './types';
 import type { ManifestEvent, ManifestProp } from '@/AppBuilder/types/libraryComponent.types';
-
-export const getComponentIdentity = (component: InspectorComponent): ComponentIdentity => {
-  const definitionProps = component.component?.definition?.properties ?? {};
-
-  return {
-    libraryId: definitionProps.libraryId?.value,
-    correlationId: definitionProps.correlationId?.value,
-    componentName: definitionProps.componentName?.value,
-  };
-};
 
 export const filterVisibleProps = (props: ManifestProp[]): ManifestProp[] =>
   props.filter((prop) => prop.inspector !== 'hidden');

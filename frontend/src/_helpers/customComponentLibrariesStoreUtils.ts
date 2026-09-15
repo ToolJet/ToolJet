@@ -1,8 +1,25 @@
-// Pure helpers for customComponentLibrariesStore.syncDevPinStreams - no store/SSE/fetch
-// access here, so these are unit-testable without mocking any of that.
+// Pure helpers for customComponentLibrariesStore - no store/SSE/fetch access here, so
+// these are unit-testable without mocking any of that.
 
+import config from 'config';
 import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import type { CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
+
+// Builds bundle/css/manifest URLs for either a published revision ('v2') or a
+// dev slot ('dev:{userId}' → the per-developer no-store endpoint). Lives in this leaf
+// helpers file (rather than libraryComponentRevision.ts) so customComponentLibrariesStore
+// can import it without a store <-> libraryComponentRevision import cycle.
+export const libraryFileUrl = (libraryId: string, revision: string | undefined, file: string): string =>
+  revision?.startsWith?.('dev:')
+    ? `${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${revision.slice(4)}/files/${file}`
+    : `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revision}/files/${file}`;
+
+// Manifests are cached by (libraryId, revision) — published revisions are immutable, so
+// that pair alone is a stable key. A dev slot's content can change without the revision
+// string changing, so devNonce (customComponentLibrariesStore's devBundleUpdatedAt) is
+// folded in to bust the cache on each live-reload push.
+export const buildManifestCacheKey = (libraryId: string, revision: string, devNonce?: number): string =>
+  devNonce ? `${libraryId}@${revision}@${devNonce}` : `${libraryId}@${revision}`;
 
 // devPinKeys: { [dashlessCorrelationId]: 'dev:{userId}' }, exactly as stored in
 // globalSettings.customComponentLibraries.

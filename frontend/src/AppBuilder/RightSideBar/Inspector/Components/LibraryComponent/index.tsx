@@ -1,14 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
-import { useEffectiveLibraryRevision, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
-import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
-import { buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel, getComponentIdentity } from './utils';
+import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
+import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
+import { buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel } from './utils';
 
 import type { LibraryComponentPropertiesProps } from './types';
-import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
 
 const AccordionComponent = Accordion as React.ComponentType<any>;
 const EventManagerComponent = EventManager as React.ComponentType<any>;
@@ -31,27 +31,13 @@ export const LibraryComponentProperties = ({
   allComponents,
   pages,
 }: LibraryComponentPropertiesProps) => {
-  const { libraryId, correlationId, componentName } = getComponentIdentity(component);
+  const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(component);
 
   // F5: same resolution as the runner — the library-level pin only, no per-instance
   // fallback — so the Inspector always describes the revision that's actually rendering.
   const effectiveRevision: string | undefined = useEffectiveLibraryRevision(correlationId);
 
-  const [manifest, setManifest] = useState<LibraryManifest | null>(null);
-
-  // Live-reload: a dev-preview push bumps this nonce
-  const devNonce = useCustomComponentLibrariesStore((state: any) =>
-    effectiveRevision?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[libraryId ?? ''] : undefined
-  );
-
-  useEffect(() => {
-    if (!libraryId || !effectiveRevision) return;
-    // Published revisions: immutable-cached. Dev slots: no-store — always fresh.
-    fetch(libraryFileUrl(libraryId, effectiveRevision, 'manifest.json'))
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setManifest)
-      .catch(() => setManifest(null));
-  }, [libraryId, effectiveRevision, devNonce]);
+  const manifest = useLibraryManifest(libraryId, effectiveRevision);
 
   const componentManifest = componentName ? manifest?.components?.[componentName] : undefined;
   const props = componentManifest?.props ?? [];
