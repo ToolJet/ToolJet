@@ -44,6 +44,7 @@ export class AppBuilderTestSession {
     if (capabilities.time) this.#controls.time.freeze(capabilities.time.at);
     if (capabilities.ids) this.#controls.ids.sequence(capabilities.ids.values);
     if (capabilities.observers) this.#controls.observers.install();
+    if (capabilities.scrolling) this.#controls.scrolling.install();
     if (capabilities.media) this.#controls.media.match(capabilities.media.matches);
     if (capabilities.storage?.clear) this.#controls.storage.clear();
     this.store = Object.freeze({
