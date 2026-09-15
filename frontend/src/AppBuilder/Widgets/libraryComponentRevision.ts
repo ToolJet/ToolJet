@@ -86,18 +86,15 @@ export const resolveManifestActions = (
 // Resolves a LibraryComponent's actions from the shared manifest cache for an arbitrary
 // component definition — e.g. EventManager, which needs this for whatever component an
 // event targets, not just the one it's currently rendering. Read-only: the manifest must
-// already be in `manifests` (typically fetched by the mounted widget via useLibraryManifest);
-// this returns [] rather than triggering a fetch itself.
+// already be in `manifests`; this returns [] rather than triggering a fetch itself.
 export const resolveLibraryComponentActions = (
   componentDef: ComponentDefinitionLike,
   manifests: Record<string, LibraryManifest>,
-  pins: Record<string, Pin> | undefined,
-  devBundleUpdatedAt: Record<string, number> | undefined
+  pins: Record<string, Pin> | undefined
 ): ResolvedAction[] => {
   const { libraryId, correlationId, componentName } = getLibraryComponentIdentity(componentDef);
   const revision = resolveEffectiveRevision(pins, correlationId);
   if (!libraryId || !revision) return [];
-  const devNonce = revision.startsWith?.('dev:') ? devBundleUpdatedAt?.[libraryId] : undefined;
-  const key = buildManifestCacheKey(libraryId, revision, devNonce);
+  const key = buildManifestCacheKey(libraryId, revision);
   return resolveManifestActions(manifests[key], componentName);
 };

@@ -14,12 +14,10 @@ export const libraryFileUrl = (libraryId: string, revision: string | undefined, 
     ? `${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${revision.slice(4)}/files/${file}`
     : `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revision}/files/${file}`;
 
-// Manifests are cached by (libraryId, revision) — published revisions are immutable, so
-// that pair alone is a stable key. A dev slot's content can change without the revision
-// string changing, so devNonce (customComponentLibrariesStore's devBundleUpdatedAt) is
-// folded in to bust the cache on each live-reload push.
-export const buildManifestCacheKey = (libraryId: string, revision: string, devNonce?: number): string =>
-  devNonce ? `${libraryId}@${revision}@${devNonce}` : `${libraryId}@${revision}`;
+// Stable key by (libraryId, revision) — no devNonce. Dev-slot staleness is handled by
+// explicitly invalidating this key (see customComponentLibrariesStore's invalidateManifest)
+// instead of growing the key space on every push.
+export const buildManifestCacheKey = (libraryId: string, revision: string): string => `${libraryId}@${revision}`;
 
 // devPinKeys: { [dashlessCorrelationId]: 'dev:{userId}' }, exactly as stored in
 // globalSettings.customComponentLibraries.

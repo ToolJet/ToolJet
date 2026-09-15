@@ -155,7 +155,11 @@ const VersionPicker = ({ library }) => {
 
   // Selecting a dev bundle pins it immediately, same as a revision — no separate
   // private-preview step (see invariant #14, HANDOFF-NISHIDH.md).
-  const selectDevPreview = (userId) => globalSettingsChanged(pinFor(`dev:${userId}`));
+  // Clear the cached manifest first in case it went stale while no stream was open.
+  const selectDevPreview = (userId) => {
+    useCustomComponentLibrariesStore.getState().invalidateManifest(library.id, `dev:${userId}`);
+    globalSettingsChanged(pinFor(`dev:${userId}`));
+  };
 
   return (
     <div className="custom-library-version-picker" onClick={(e) => e.stopPropagation()}>

@@ -9,6 +9,7 @@ export interface ManifestProp {
   inspector?: string;
   enumValues?: string[];
   enumLabels?: Record<string, string>;
+  default?: unknown;
 }
 
 export interface ManifestEvent {
