@@ -1,65 +1,17 @@
 {
   "allowedPaths": [
-    "plugins/package-lock.json",
-    "plugins/package.json",
-    "plugins/packages/airtable/package.json",
-    "plugins/packages/amazonses/package.json",
-    "plugins/packages/appwrite/package.json",
-    "plugins/packages/athena/package.json",
-    "plugins/packages/azureblobstorage/package.json",
-    "plugins/packages/baserow/package.json",
-    "plugins/packages/bigquery/package.json",
-    "plugins/packages/clickhouse/package.json",
-    "plugins/packages/common/package.json",
-    "plugins/packages/cosmosdb/package.json",
-    "plugins/packages/couchdb/package.json",
-    "plugins/packages/databricks/package.json",
-    "plugins/packages/dynamodb/package.json",
-    "plugins/packages/elasticsearch/package.json",
-    "plugins/packages/firestore/package.json",
-    "plugins/packages/gcs/package.json",
-    "plugins/packages/googlesheets/package.json",
-    "plugins/packages/graphql/package.json",
-    "plugins/packages/grpc/package.json",
-    "plugins/packages/grpcv2/package.json",
-    "plugins/packages/ibmdb/package.json",
-    "plugins/packages/influxdb/package.json",
-    "plugins/packages/mailgun/package.json",
-    "plugins/packages/mariadb/package.json",
-    "plugins/packages/minio/package.json",
-    "plugins/packages/mongodb/package.json",
-    "plugins/packages/mssql/package.json",
-    "plugins/packages/mysql/package.json",
-    "plugins/packages/n8n/package.json",
-    "plugins/packages/nocodb/package.json",
-    "plugins/packages/notion/package.json",
-    "plugins/packages/openapi/package.json",
-    "plugins/packages/oracledb/package.json",
-    "plugins/packages/postgresql/package.json",
-    "plugins/packages/redis/package.json",
-    "plugins/packages/restapi/package.json",
-    "plugins/packages/rethinkdb/package.json",
-    "plugins/packages/s3/package.json",
-    "plugins/packages/saphana/package.json",
-    "plugins/packages/sendgrid/package.json",
-    "plugins/packages/slack/package.json",
-    "plugins/packages/smtp/package.json",
-    "plugins/packages/snowflake/package.json",
-    "plugins/packages/stripe/package.json",
-    "plugins/packages/twilio/package.json",
-    "plugins/packages/typesense/package.json",
-    "plugins/packages/woocommerce/package.json",
-    "plugins/packages/zendesk/package.json"
+    "server/package-lock.json",
+    "server/package.json"
   ],
-  "baseSha": "4e83e933bd71c238f28e9c8bdc5e58ae262d2ff1",
+  "baseSha": "97fb57eae1640900bf35ab84ace46988cebe1c0a",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "e018aca9b9bf4299",
+    "id": "7acdd6bfd82d3c20",
     "lockArtifacts": [
-      "plugins/package-lock.json"
+      "server/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "plugins/package-lock.json"
+    "rootManifest": "server/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -77,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
+  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -86,9 +38,9 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "4e83e933bd71c238f28e9c8bdc5e58ae262d2ff1",
+  "scanSha": "97fb57eae1640900bf35ab84ace46988cebe1c0a",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "Lcc_U1KCQbq8LBWU4wgU4Q",
+  "stoExecutionId": "ryFdPr7GR4e6s9x27YAC1w",
   "stoTargetId": "2jnHr58fX7ty9mXkJorGD_",
   "targetBranch": "main",
   "units": [
@@ -121,36 +73,6 @@
       ],
       "minimumFixedVersion": "4.3.0",
       "package": "js-yaml"
-    },
-    {
-      "candidateVersions": [
-        "2.5.6"
-      ],
-      "coordinate": {
-        "normalisedName": "form-data",
-        "purl": "pkg:npm/form-data@2.5.5"
-      },
-      "fromVersion": "2.5.5",
-      "issueIds": [
-        "p5Qj48q7JyF6ipQWbz3Gt7"
-      ],
-      "minimumFixedVersion": "2.5.6",
-      "package": "form-data"
-    },
-    {
-      "candidateVersions": [
-        "10.7.1"
-      ],
-      "coordinate": {
-        "normalisedName": "ip-address",
-        "purl": "pkg:npm/ip-address@10.2.0"
-      },
-      "fromVersion": "10.2.0",
-      "issueIds": [
-        "keIBG2NP_ZXu6fw8k7QWsq"
-      ],
-      "minimumFixedVersion": "10.3.1",
-      "package": "ip-address"
     }
   ]
 }
