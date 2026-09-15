@@ -1209,7 +1209,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   // openapi_spec_operations is the sole source of truth for per-operation data - the processor
   // no longer builds/stores a duplicate lightweight index in spec_metadata, so this queries the
   // table directly instead of reading a JSON blob off DataSourceOptions. Only lightweight
-  // columns are selected (parameters/requestBodySchema/responseSchemas stay off this list,
+  // columns are selected (parameters/requestBodySchema stay off this list,
   // fetched only via getOpenApiSpecOperation's single-record lookup below).
   async listOpenApiSpecOperations(
     dataSourceId: string,

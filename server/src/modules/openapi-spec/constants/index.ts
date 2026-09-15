@@ -11,14 +11,6 @@ export const PROCESS_OPENAPI_SPEC_JOB = 'process-openapi-spec';
 // count safely under Postgres's 65,535-per-query limit.
 export const DEFAULT_OPENAPI_SPEC_BATCH_SIZE = parseInt(process.env.OPENAPI_SPEC_BATCH_SIZE) || 50;
 
-// Ceiling on the single transaction spanning the whole job (clear + dereference + persist every
-// batch for every environment) - checked once per batch, same synchronization point as the
-// termination/memory checks, since there's no way to abort a transaction mid-query without
-// racing the connection itself. Guards against a transaction (and the row locks/replication slot
-// it holds open) running unbounded on a pathologically large spec.
-export const OPENAPI_SPEC_JOB_TRANSACTION_TIMEOUT_MS =
-  parseInt(process.env.OPENAPI_SPEC_JOB_TRANSACTION_TIMEOUT_MS) || 5 * 60 * 1000;
-
 export enum OpenApiSpecStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',

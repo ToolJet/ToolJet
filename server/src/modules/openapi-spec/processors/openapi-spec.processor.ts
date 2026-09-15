@@ -11,22 +11,18 @@ import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { OpenApiSpecTerminationRegistry } from '../services/openapi-spec-termination-registry';
-import { MemoryGuard } from '../utils/memory-guard.util';
 import { StageTimer } from '../utils/stage-timer.util';
-// markCircularRefs/buildRefPathIndex are currently unused - see the commented-out _raw column
-// logic in buildExtractedOperation below.
 import { pruneCircularRefs } from '../utils/circular-ref.util';
 import { chunkArray } from '../utils/chunk.util';
 import { sleep } from '../utils/sleep.util';
 import {
   DEFAULT_OPENAPI_SPEC_BATCH_SIZE,
-  OPENAPI_SPEC_JOB_TRANSACTION_TIMEOUT_MS,
   OPENAPI_SPEC_OPTION_KEYS,
   OPENAPI_SPEC_PROCESSING_QUEUE,
   OpenApiSpecSourceType,
   OpenApiSpecStatus,
 } from '../constants';
-import { OPENAPI_SPEC_CONCURRENCY, OPENAPI_SPEC_STALLED_CHECK_INTERVAL_MS } from '../constants/queue-config';
+import { OPENAPI_SPEC_CONCURRENCY } from '../constants/queue-config';
 
 export interface OpenApiSpecJobData {
   dataSourceId: string;
@@ -49,9 +45,6 @@ interface ExtractedOperation {
   hasRequestBody: boolean;
   parameters: Record<string, any>[];
   requestBodySchema: Record<string, any> | null;
-  responseSchemas: Record<string, any> | null;
-  requestBodySchemaRaw: string | null;
-  responseSchemasRaw: string | null;
 }
 
 interface PathItemEntry {
@@ -71,14 +64,13 @@ class OpenApiSpecCancelledError extends Error {}
 
 @Processor(OPENAPI_SPEC_PROCESSING_QUEUE, {
   concurrency: OPENAPI_SPEC_CONCURRENCY,
-  lockDuration: OPENAPI_SPEC_STALLED_CHECK_INTERVAL_MS,
-  stalledInterval: OPENAPI_SPEC_STALLED_CHECK_INTERVAL_MS,
 })
 export class OpenApiSpecProcessor extends WorkerHost {
   // dereferenceInternal is the same low-level crawl SwaggerParser.validate()/.dereference() use
   // internally - a real public export, not a private reach-in - which gives correct
-  // circular-reference detection and extended-$ref (sibling-key) merging for free. Built once
-  // and reused across every call; it only carries dereference behavior flags, no per-call state.
+  // circular-reference detection and extended-$ref (sibling-key) merging for free. These are
+  // behavior flags only - dereferenceInternal starts a fresh $ref cache on every call, so nothing
+  // resolved for one operation is reused by the next.
   private readonly dereferenceOptions = getJsonSchemaRefParserDefaultOptions();
 
   constructor(
@@ -110,8 +102,8 @@ export class OpenApiSpecProcessor extends WorkerHost {
       // does NOT deep-expand every $ref into the document the way validate()/dereference() do -
       // much cheaper up front. Each operation's own subtree is dereferenced lazily, per batch,
       // below - bounding peak per-step work/memory to one batch's worth of operations rather
-      // than the whole spec's, and giving a safe point (between batches) to check memory and
-      // yield the event loop, unlike validate()'s single opaque whole-document call.
+      // than the whole spec's, and giving a safe point (between batches) to yield the event loop,
+      // unlike validate()'s single opaque whole-document call.
       const $refs = await SwaggerParser.resolve(parsedInput as any);
       timer.mark('resolve');
 
@@ -123,13 +115,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
       const metadata = this.extractMetadata(parsedInput, version);
       const checksum = this.checksum(rawSpec);
       const specSecurity = parsedInput.security || [];
-      // refPathIndex was built here (buildRefPathIndex(parsedInput, version)) so markCircularRefs
-      // could recover a meaningful $ref (e.g. "#/components/schemas/UserRequest") for a circular
-      // node instead of a locally-invented, context-free path - see circular-ref.util.ts. Disabled
-      // along with markCircularRefs/the _raw columns below - re-enable together if those return.
-
-      const memoryGuard = new MemoryGuard();
-      this.logger.log(`[openapi-spec:${job.id}] memory guard: ${JSON.stringify(memoryGuard.describe())}`);
 
       // chunkArray(this.extractPathItems(...)) is intentionally not bound to its own variable -
       // extractPathItems' flat array is only ever needed to build `batches`; keeping a second,
@@ -150,17 +135,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
       // the actual, potentially large, expanded schema objects) reachable for the rest of the
       // job, growing roughly linearly with batches processed instead of staying flat.
       await dbTransactionWrap(async (manager) => {
-        // Bounds this transaction at the database level rather than polling elapsed time from
-        // JS: statement_timeout aborts any single statement (delete/save) that runs past the
-        // limit, idle_in_transaction_session_timeout aborts the session if it sits open-but-idle
-        // (e.g. mid-batch dereferencing, which is pure JS with no query in flight) past the
-        // limit. SET LOCAL scopes both to this transaction only and resets automatically on
-        // commit/rollback - it never leaks into the connection-pool's other sessions.
-        await manager.query(`SET LOCAL statement_timeout = ${OPENAPI_SPEC_JOB_TRANSACTION_TIMEOUT_MS}`);
-        await manager.query(
-          `SET LOCAL idle_in_transaction_session_timeout = ${OPENAPI_SPEC_JOB_TRANSACTION_TIMEOUT_MS}`
-        );
-
         for (const environmentId of environmentIds) {
           await manager.delete(OpenApiSpecOperation, {
             dataSourceId,
@@ -198,8 +172,8 @@ export class OpenApiSpecProcessor extends WorkerHost {
 
           // Drop the only remaining reference to this batch's (now dereferenced-in-place, fully
           // expanded) pathItem/operation objects - batchOperations above already captured
-          // everything needed as fresh, self-contained clones (pruneCircularRefs/markCircularRefs
-          // never reference the original mutated subtree), so nothing is lost. Without this,
+          // everything needed as fresh, self-contained clones (pruneCircularRefs never
+          // references the original mutated subtree), so nothing is lost. Without this,
           // `batches` - which lives for the entire job, not just this iteration - would keep
           // every already-processed operation's expanded schema reachable indefinitely.
           batches[i] = [];
@@ -219,7 +193,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
             `[openapi-spec:${job.id}] batch ${i + 1}/${batches.length} dereferenced + persisted ` +
               `(${batchOperations.length} operations x ${environmentIds.length} environments)`
           );
-          memoryGuard.assertWithinCeiling(`batch ${i + 1}/${batches.length}`);
           await sleep(0);
         }
 
@@ -371,7 +344,15 @@ export class OpenApiSpecProcessor extends WorkerHost {
     // so cloning here is what keeps that mutation off parsedInput. Cheap: at this point the
     // subtree is still its small, pre-dereference form (plain properties + {$ref} placeholders),
     // not yet expanded.
-    const operation = this.dereferenceSubtree(structuredClone(rawOperation), $refs);
+    // Only parameters/requestBody are ever read (plugin run() uses {host,path,operation,params});
+    // responses are ~99.9% of an expanded Graph operation and were never consumed.
+    const operation = {
+      ...rawOperation,
+      ...this.dereferenceSubtree(
+        structuredClone({ parameters: rawOperation.parameters, requestBody: rawOperation.requestBody }),
+        $refs
+      ),
+    };
 
     // Path-item-level parameters (a sibling of get/post/etc on the Path Item Object, per the
     // OpenAPI/Swagger spec) apply to every operation under this path unless an operation-level
@@ -390,7 +371,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
     const operationId = operation.operationId || `${method}_${path}`;
     const security = (operation.security || specSecurity || []).flatMap((s: Record<string, any>) => Object.keys(s));
     const requestBodySchema = this.extractRequestBodySchema(operation, version);
-    // const responseSchemas = this.extractResponseSchemas(operation, version);
 
     return {
       operationId,
@@ -411,18 +391,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
         }))
       ),
       requestBodySchema: pruneCircularRefs(requestBodySchema),
-      // responseSchemas: pruneCircularRefs(responseSchemas),
-      responseSchemas: null,
-      // _raw counterparts preserve the reference expression instead of truncating a cycle to
-      // {} - stored pre-stringified as text (see the entity/migration) rather than jsonb, since
-      // the point is preserving the exact structure as written, not letting the pg driver
-      // re-serialize it.
-      // requestBodySchemaRaw: requestBodySchema
-      //   ? JSON.stringify(markCircularRefs(requestBodySchema, refPathIndex))
-      //   : null,
-      // responseSchemasRaw: responseSchemas ? JSON.stringify(markCircularRefs(responseSchemas, refPathIndex)) : null,
-      requestBodySchemaRaw: null,
-      responseSchemasRaw: null,
     };
   }
 
@@ -447,19 +415,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
     }
     const bodyParam = (operation.parameters || []).find((p: Record<string, any>) => p.in === 'body');
     return bodyParam?.schema || null;
-  }
-
-  private extractResponseSchemas(operation: Record<string, any>, version: string): Record<string, any> | null {
-    const responses = operation.responses || {};
-    const schemas: Record<string, any> = {};
-
-    for (const status of Object.keys(responses)) {
-      const schema =
-        version === '3.0' ? responses[status]?.content?.['application/json']?.schema : responses[status]?.schema;
-      if (schema) schemas[status] = schema;
-    }
-
-    return Object.keys(schemas).length ? schemas : null;
   }
 
   // Batches are persisted inside ONE transaction spanning the whole job (not one per batch) -
