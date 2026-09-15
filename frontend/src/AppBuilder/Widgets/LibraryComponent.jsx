@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { cn } from '@/lib/utils';
 import { libraryFileUrl } from '@/_helpers/customComponentLibrariesStoreUtils';
 import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from './hooks/useLibraryManifest';
@@ -48,6 +49,11 @@ const LibraryComponent = ({
 }) => {
   const { libraryId, correlationId, componentName } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
+
+  const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
+  );
 
   const effectiveRevision = useEffectiveLibraryRevision(correlationId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
@@ -174,6 +180,10 @@ const LibraryComponent = ({
     postToShell({ type: 'props', data: componentProps });
   }, [shellReady, componentProps]);
 
+  if (!hasCustomComponentLibrariesAccess && currentMode === 'view') {
+    return <></>;
+  }
+
   if (!configured) {
     return (
       <div
@@ -198,7 +208,12 @@ const LibraryComponent = ({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: safeHeight }}>
+    <div
+      className={cn('tw-relative tw-w-full', {
+        'tw-opacity-50 tw-pointer-events-none': !hasCustomComponentLibrariesAccess && currentMode === 'edit',
+      })}
+      style={{ height: safeHeight }}
+    >
       <iframe
         key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
         ref={iframeRef}

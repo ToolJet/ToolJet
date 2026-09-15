@@ -9,6 +9,7 @@ import {
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { seedApp, componentDefinition } from '@/test/app-builder';
 import WidgetWrapper from '@/AppBuilder/AppCanvas/WidgetWrapper';
+import useStore from '@/AppBuilder/_stores/store';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 
@@ -387,6 +388,56 @@ describe('LibraryComponent integration', () => {
     });
 
     await waitFor(() => expect(resetSpy).toHaveBeenCalledWith(ID, MODULE_ID));
+  });
+});
+
+describe('LibraryComponent license gating', () => {
+  const setLicenseAccess = (hasAccess) =>
+    act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: hasAccess } } }));
+
+  beforeEach(() => {
+    widget.setup();
+    setPin('v1');
+  });
+  afterEach(() => {
+    widget.teardown();
+    setLicenseAccess(false);
+  });
+
+  test('[LibraryComponent-LICENSE-001] a configured instance renders nothing in view mode without CCL license access', () => {
+    // Break this catches: an app viewer seeing a live CCL component (or its Slot
+    // placeholder) despite the workspace not being licensed for the feature at all.
+    setLicenseAccess(false);
+    widget.render({ currentMode: 'view' });
+
+    expect(getIframe()).toBeNull();
+    expect(screen.queryByText('Slot')).not.toBeInTheDocument();
+  });
+
+  test('[LibraryComponent-LICENSE-002] a configured instance still renders in view mode with CCL license access', () => {
+    setLicenseAccess(true);
+    widget.render({ currentMode: 'view' });
+
+    expect(getIframe()).toBeInTheDocument();
+  });
+
+  test('[LibraryComponent-LICENSE-003] in edit mode without access, the instance still renders but is dimmed and inert', () => {
+    // Break this catches: hiding the widget in the builder canvas the same as at
+    // runtime, which would leave a builder unable to even see/select/delete it —
+    // edit mode must show a dimmed, non-interactive instance instead of nothing.
+    setLicenseAccess(false);
+    widget.render({ currentMode: 'edit' });
+
+    expect(getIframe()).toBeInTheDocument();
+    expect(getIframe().parentElement).toHaveClass('tw-opacity-50', 'tw-pointer-events-none');
+  });
+
+  test('[LibraryComponent-LICENSE-004] in edit mode with access, the instance renders without the dimmed styling', () => {
+    setLicenseAccess(true);
+    widget.render({ currentMode: 'edit' });
+
+    expect(getIframe()).toBeInTheDocument();
+    expect(getIframe().parentElement).not.toHaveClass('tw-opacity-50');
   });
 });
 
