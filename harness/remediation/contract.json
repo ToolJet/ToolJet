@@ -1,17 +1,65 @@
 {
   "allowedPaths": [
-    "package-lock.json",
-    "package.json"
+    "plugins/package-lock.json",
+    "plugins/package.json",
+    "plugins/packages/airtable/package.json",
+    "plugins/packages/amazonses/package.json",
+    "plugins/packages/appwrite/package.json",
+    "plugins/packages/athena/package.json",
+    "plugins/packages/azureblobstorage/package.json",
+    "plugins/packages/baserow/package.json",
+    "plugins/packages/bigquery/package.json",
+    "plugins/packages/clickhouse/package.json",
+    "plugins/packages/common/package.json",
+    "plugins/packages/cosmosdb/package.json",
+    "plugins/packages/couchdb/package.json",
+    "plugins/packages/databricks/package.json",
+    "plugins/packages/dynamodb/package.json",
+    "plugins/packages/elasticsearch/package.json",
+    "plugins/packages/firestore/package.json",
+    "plugins/packages/gcs/package.json",
+    "plugins/packages/googlesheets/package.json",
+    "plugins/packages/graphql/package.json",
+    "plugins/packages/grpc/package.json",
+    "plugins/packages/grpcv2/package.json",
+    "plugins/packages/ibmdb/package.json",
+    "plugins/packages/influxdb/package.json",
+    "plugins/packages/mailgun/package.json",
+    "plugins/packages/mariadb/package.json",
+    "plugins/packages/minio/package.json",
+    "plugins/packages/mongodb/package.json",
+    "plugins/packages/mssql/package.json",
+    "plugins/packages/mysql/package.json",
+    "plugins/packages/n8n/package.json",
+    "plugins/packages/nocodb/package.json",
+    "plugins/packages/notion/package.json",
+    "plugins/packages/openapi/package.json",
+    "plugins/packages/oracledb/package.json",
+    "plugins/packages/postgresql/package.json",
+    "plugins/packages/redis/package.json",
+    "plugins/packages/restapi/package.json",
+    "plugins/packages/rethinkdb/package.json",
+    "plugins/packages/s3/package.json",
+    "plugins/packages/saphana/package.json",
+    "plugins/packages/sendgrid/package.json",
+    "plugins/packages/slack/package.json",
+    "plugins/packages/smtp/package.json",
+    "plugins/packages/snowflake/package.json",
+    "plugins/packages/stripe/package.json",
+    "plugins/packages/twilio/package.json",
+    "plugins/packages/typesense/package.json",
+    "plugins/packages/woocommerce/package.json",
+    "plugins/packages/zendesk/package.json"
   ],
-  "baseSha": "df43d2ef2cbca514c6723d87961d96acadbfb298",
+  "baseSha": "4e83e933bd71c238f28e9c8bdc5e58ae262d2ff1",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "71a33e13f0396e52",
+    "id": "e018aca9b9bf4299",
     "lockArtifacts": [
-      "package-lock.json"
+      "plugins/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "package-lock.json"
+    "rootManifest": "plugins/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +77,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "c4122e26247ea3f3d72c80156d9acf6b4f0b20f4bde11ec27d244c4b6cd30cd8",
+  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,12 +86,27 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "df43d2ef2cbca514c6723d87961d96acadbfb298",
+  "scanSha": "4e83e933bd71c238f28e9c8bdc5e58ae262d2ff1",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "6kNXbwICQCCMkHJFKopnHA",
+  "stoExecutionId": "Lcc_U1KCQbq8LBWU4wgU4Q",
   "stoTargetId": "2jnHr58fX7ty9mXkJorGD_",
   "targetBranch": "main",
   "units": [
+    {
+      "candidateVersions": [
+        "3.1.7"
+      ],
+      "coordinate": {
+        "normalisedName": "fast-uri",
+        "purl": "pkg:npm/fast-uri@3.1.2"
+      },
+      "fromVersion": "3.1.2",
+      "issueIds": [
+        "4PQShGvFQfTJYEEhjB_a-l"
+      ],
+      "minimumFixedVersion": "3.1.3",
+      "package": "fast-uri"
+    },
     {
       "candidateVersions": [
         "4.3.2"
@@ -58,6 +121,36 @@
       ],
       "minimumFixedVersion": "4.3.0",
       "package": "js-yaml"
+    },
+    {
+      "candidateVersions": [
+        "2.5.6"
+      ],
+      "coordinate": {
+        "normalisedName": "form-data",
+        "purl": "pkg:npm/form-data@2.5.5"
+      },
+      "fromVersion": "2.5.5",
+      "issueIds": [
+        "p5Qj48q7JyF6ipQWbz3Gt7"
+      ],
+      "minimumFixedVersion": "2.5.6",
+      "package": "form-data"
+    },
+    {
+      "candidateVersions": [
+        "10.7.1"
+      ],
+      "coordinate": {
+        "normalisedName": "ip-address",
+        "purl": "pkg:npm/ip-address@10.2.0"
+      },
+      "fromVersion": "10.2.0",
+      "issueIds": [
+        "keIBG2NP_ZXu6fw8k7QWsq"
+      ],
+      "minimumFixedVersion": "10.3.1",
+      "package": "ip-address"
     }
   ]
 }

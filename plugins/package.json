@@ -70,11 +70,26 @@
   "main": "dist/server.js",
   "name": "@tooljet/plugins",
   "overrides": {
+    "@types/request": {
+      "form-data": "2.5.6"
+    },
+    "ajv": {
+      "fast-uri": "3.1.7"
+    },
+    "cosmiconfig": {
+      "js-yaml": "4.3.2"
+    },
     "jsdom": {
       "ws": "7.5.13"
     },
+    "lerna": {
+      "js-yaml": "4.3.2"
+    },
     "minimatch": {
       "brace-expansion": "1.1.18"
+    },
+    "socks": {
+      "ip-address": "10.7.1"
     },
     "tar": "^7.5.3",
     "thrift": {
