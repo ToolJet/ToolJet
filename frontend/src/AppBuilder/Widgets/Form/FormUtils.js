@@ -96,6 +96,19 @@ const setSchemaStateFlag = (component, key, rawValue) => {
   component.definition[bucket][key] = key === 'visibility' ? validBooleanChecker(rawValue) : rawValue;
 };
 
+/**
+ * Writes a schema field's `validation.mandatory` onto the generated component.
+ *
+ * Only for types whose registration declares it. This is not a tidiness guard:
+ * `validateWidget` never consults the registration so `mandatory` written onto a type that
+ * has no such validation is still enforced.
+ */
+const setSchemaMandatory = (component, rawValue) => {
+  if (rawValue === undefined || rawValue === null) return;
+  if (!component.definition.validation || !('mandatory' in component.definition.validation)) return;
+  component.definition.validation.mandatory = rawValue;
+};
+
 export function generateUIComponents(JSONSchema, advanced, componentName = '') {
   if (advanced) {
     if (typeof JSONSchema?.properties !== 'object' || JSONSchema?.properties == null) {
@@ -396,6 +409,7 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
           default:
             return;
         }
+        setSchemaMandatory(uiComponentsDraft[index * 2 + 1], value?.validation?.mandatory);
         // converting label/key as text ui element/component
         uiComponentsDraft[index * 2]['definition']['properties']['text'] = value?.label ?? key;
         uiComponentsDraft[index * 2]['formKey'] = key;

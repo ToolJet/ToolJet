@@ -246,3 +246,41 @@ describe('schema-driven visibility and disabled', () => {
     expect(field.definition.styles.disabledState).toBe(true);
   });
 });
+
+describe('schema-driven mandatory', () => {
+  // `mandatory` was the one validation the schema path never copied, so a JSON-schema form could not
+  // have a required field at all. The widget side was already complete — the types below declare it
+  // and componentsSlice.js:773 unwraps both the bare and `{value}` shapes.
+  const fieldOf = (type, validation) =>
+    generateUIComponents({ properties: { f: { type, label: 'F', validation } } }, true)[1];
+
+  test.each([
+    ['textinput'],
+    ['emailinput'],
+    ['phoneinput'],
+    ['currencyinput'],
+    ['number'],
+    ['password'],
+    ['textarea'],
+    ['checkbox'],
+    ['daterangepicker'],
+  ])('[Form-SCHEMA-011] %s honours validation.mandatory', (type) => {
+    // Break this catches: with no `mandatory` branch the field keeps its registered default of
+    // `{{false}}`, so every schema-generated form submits with its required fields empty.
+    expect(fieldOf(type, { mandatory: true }).definition.validation.mandatory).toBe(true);
+  });
+
+  test('[Form-SCHEMA-011] a type that does not register mandatory is left untouched', () => {
+    // Break this catches: writing `mandatory` onto every type is NOT harmless — validateWidget
+    // never consults the registration (componentsSlice.js:773), so `mandatory` on a `text` field
+    // returns "Field cannot be empty" for a label the user can never fill, and the form can never
+    // be submitted. Verified for Text, RadioButton, StarRating, ToggleSwitch, Multiselect, DropDown.
+    const text = generateUIComponents(
+      { properties: { f: { type: 'text', label: 'F', validation: { mandatory: true } } } },
+      true
+    )[1];
+
+    expect(text.component).toBe('Text');
+    expect(text.definition.validation?.mandatory).toBeUndefined();
+  });
+});
