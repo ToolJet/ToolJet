@@ -98,7 +98,7 @@ export const modalV2Config = {
         { name: 'fullscreen', value: 'fullscreen' },
       ],
       validation: {
-        schema: { type: 'string' },
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'lg',
       },
     },
