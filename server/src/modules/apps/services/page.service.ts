@@ -149,15 +149,22 @@ export class PageService implements IPageService {
   }
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
-    const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
+    return dbTransactionWrap(async (entityManager: EntityManager) => {
+      const allPages = await this.pageHelperService.fetchPages(appVersionId, entityManager);
+      // Single query for every page's components. Previously this mapped getAllComponents over
+      // the pages, opening one transaction — and therefore holding one pooled connection — per
+      // page, which exhausts the pool on apps with more pages than ormconfig `extra.max`.
+      const componentsByPage = await this.componentsService.getAllComponentsForPages(
+        allPages.map((page) => page.id),
+        entityManager
+      );
+
+      return allPages.map((page) => {
+        const components = componentsByPage[page.id] ?? {};
         delete page.appVersionId;
         return { ...page, components, restricted: false };
-      })
-    );
-    return pagesWithComponents;
+      });
+    }, manager);
   }
 
   async findOne(id: string): Promise<Page> {
