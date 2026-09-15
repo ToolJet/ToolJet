@@ -34,7 +34,7 @@ describe('ModalWidget - static height application', () => {
   // Break this catches: reverting `max-height` back to the raw `modalHeight`
   // value (no unit) makes this assert '' instead of '1000px', reproducing
   // the "modal renders far smaller than configured" bug.
-  it('applies max-height with the same unit-suffixed value as height', async () => {
+  it('[ModalV2-HEIGHT-001] applies max-height with the same unit-suffixed value as height', async () => {
     render(<ModalWidget show={true} modalProps={buildModalProps()} />);
 
     await waitFor(() => {
