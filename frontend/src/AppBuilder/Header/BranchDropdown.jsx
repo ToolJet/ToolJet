@@ -15,6 +15,21 @@ import { getSubpath } from '@/_helpers/routes';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { AlertTriangle, Tag, Info, ExternalLink } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
+
+// Provider-neutral git config reads. orgGit carries whichever provider is active — git_https for
+// GitHub, git_lab for GitLab — so reading only git_https broke Create PR / default-branch detection
+// on GitLab workspaces (repoUrl came back empty → "Unable to determine repository URL").
+const resolveRepoUrl = (orgGit) =>
+  orgGit?.git_https?.https_url || orgGit?.git_https?.repository || orgGit?.git_lab?.gitlab_url || '';
+const resolveDefaultBranchName = (orgGit) =>
+  orgGit?.git_https?.github_branch || orgGit?.git_lab?.gitlab_branch || 'main';
+// Only assert a provider when one is actually known/enabled; otherwise leave it undefined so
+// buildGitPrUrl falls back to host detection instead of mislabeling the repo as GitHub.
+const resolveGitType = (orgGit) =>
+  orgGit?.git_type ||
+  orgGit?.gitType ||
+  (orgGit?.git_lab?.is_enabled ? 'gitlab' : orgGit?.git_https?.is_enabled ? 'github_https' : undefined);
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -68,39 +83,13 @@ export function BranchDropdown({ appId, organizationId }) {
   };
 
   // Helper function to build PR creation URL
-  const buildPRCreationURL = () => {
-    const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
-    const sourceBranch = currentBranchName;
-
-    // Get repository URL from orgGit (check https_url, ssh_url, or repository fields)
-    const repoUrl = orgGit?.git_https?.https_url || orgGit?.git_https?.repository;
-
-    if (!repoUrl) {
-      console.error('No repository URL found in orgGit:', orgGit);
-      return null;
-    }
-
-    // Extract owner and repo name from URL
-    // Handles: https://github.com/owner/repo.git, git@github.com:owner/repo.git, etc.
-    // Updated regex to handle dots in repo names (e.g., git-sync-2.0-repo.git)
-    const githubMatch = repoUrl.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
-    const gitlabMatch = repoUrl.match(/gitlab\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
-    const bitbucketMatch = repoUrl.match(/bitbucket\.org[:/]([^/]+)\/(.+?)(\.git)?$/);
-
-    if (githubMatch) {
-      const [, owner, repo] = githubMatch;
-      return `https://github.com/${owner}/${repo}/compare/${defaultBranchName}...${sourceBranch}?expand=1`;
-    } else if (gitlabMatch) {
-      const [, owner, repo] = gitlabMatch;
-      return `https://gitlab.com/${owner}/${repo}/-/merge_requests/new?merge_request[source_branch]=${sourceBranch}&merge_request[target_branch]=${defaultBranchName}`;
-    } else if (bitbucketMatch) {
-      const [, owner, repo] = bitbucketMatch;
-      return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${defaultBranchName}`;
-    }
-
-    console.error('Could not parse repository URL:', repoUrl);
-    return null;
-  };
+  const buildPRCreationURL = () =>
+    buildGitPrUrl({
+      repoUrl: resolveRepoUrl(orgGit),
+      gitType: resolveGitType(orgGit),
+      sourceBranch: currentBranchName,
+      defaultBranch: resolveDefaultBranchName(orgGit),
+    });
 
   // Handle Create PR action
   const _handleCreatePR = () => {
@@ -231,7 +220,7 @@ export function BranchDropdown({ appId, organizationId }) {
       return;
     }
 
-    const defaultBranch = orgGit?.git_https?.github_branch || 'main';
+    const defaultBranch = resolveDefaultBranchName(orgGit);
     const currentVersionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
 
     // Get all branch-type versions
@@ -291,7 +280,7 @@ export function BranchDropdown({ appId, organizationId }) {
   // Manual fetch last commit function
   const fetchLastCommit = async () => {
     const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
-    const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
+    const defaultBranchName = resolveDefaultBranchName(orgGit);
     const isOnDefaultBranch = currentBranchName === defaultBranchName;
 
     // Only fetch commit if on non-default branch
@@ -354,7 +343,7 @@ export function BranchDropdown({ appId, organizationId }) {
 
     try {
       // Check if this is the default branch (main/master/etc from config)
-      const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
+      const defaultBranchName = resolveDefaultBranchName(orgGit);
       const isDefaultBranch = branch.name === defaultBranchName;
 
       if (isDefaultBranch) {
@@ -402,7 +391,7 @@ export function BranchDropdown({ appId, organizationId }) {
   };
 
   // Check if current branch is the default branch
-  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
+  const defaultBranchName = resolveDefaultBranchName(orgGit);
   // Branch-type versions have UUID names (intentional) — never use them as branch display name.
   // Use workspace branch name first, then AppBuilder currentBranch, then version name only for non-branch versions.
   const isBranchTypeVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';

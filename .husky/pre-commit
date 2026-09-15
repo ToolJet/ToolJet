@@ -7,7 +7,7 @@ if [ "$PWD" != "$ROOT" ]; then
   # Running inside a submodule
   SUB_PATH="${PWD#$ROOT/}"
   STAGED=$(git diff --staged --name-only --diff-filter=ACM 2>/dev/null | grep -E '\.(js|jsx|ts|tsx)$' || true)
-  
+
   if [ -n "$STAGED" ]; then
     echo "🔍 Linting staged files in submodule $SUB_PATH..."
     if [ "$SUB_PATH" = "server/ee" ]; then
@@ -23,4 +23,5 @@ if [ "$PWD" != "$ROOT" ]; then
 else
   # Running in root repo
   npx lint-staged
+  bash scripts/sync-skills.sh --check
 fi

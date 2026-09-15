@@ -14,7 +14,6 @@ import { AppsModule } from '@modules/apps/module';
 import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { NotificationsModule } from '@modules/notifications/module';
-import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
@@ -66,7 +65,6 @@ export class WorkspaceBranchesModule extends SubModule {
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await WebhookSkipFlagModule.register(configs),
-        await BackgroundProcessorModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await NotificationsModule.register(configs),
       ],
