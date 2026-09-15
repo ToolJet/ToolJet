@@ -1,7 +1,12 @@
 {
-  "name": "tooljet",
-  "version": "1.18.0",
+  "dependencies": {},
   "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
+  "devDependencies": {
+    "@tooljet/cli": "^0.0.13",
+    "eslint": "^9.26.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0"
+  },
   "engines": {
     "node": "22.15.1",
     "npm": "10.9.2"
@@ -14,11 +19,11 @@
       "eslint --fix --config server/eslint.config.js"
     ]
   },
-  "devDependencies": {
-    "@tooljet/cli": "^0.0.13",
-    "eslint": "^9.26.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.0"
+  "name": "tooljet",
+  "overrides": {
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.2"
+    }
   },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
@@ -37,10 +42,10 @@
     "prebuild:server": "npm --prefix server install --production=false",
     "build:server": "NODE_ENV=production npm --prefix server run build",
     "postbuild:server": "npm --prefix server prune --production",
-    "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
+    "build": "npm run build:plugins:prod \u0026\u0026 npm run build:frontend \u0026\u0026 npm run build:server",
     "start:prod": "npm --prefix server run start:prod",
-    "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall && npm run plugins:reload",
-    "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod && npm run plugins:reload:prod",
+    "cloud:setup": "npm run db:setup \u0026\u0026 npm run plugins:install \u0026\u0026 npm run plugins:uninstall \u0026\u0026 npm run plugins:reload",
+    "cloud:setup:prod": "npm run db:setup:prod \u0026\u0026 npm run plugins:install:prod \u0026\u0026 npm run plugins:uninstall:prod \u0026\u0026 npm run plugins:reload:prod",
     "db:create": "npm --prefix server run db:create",
     "db:create:prod": "npm --prefix server run db:create:prod",
     "db:migrate": "npm --prefix server run db:migrate",
@@ -65,5 +70,5 @@
     "prepare": "husky install",
     "update-version": "node update-version.js"
   },
-  "dependencies": {}
+  "version": "1.18.0"
 }

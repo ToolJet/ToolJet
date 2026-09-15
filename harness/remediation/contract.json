@@ -1,62 +1,17 @@
 {
   "allowedPaths": [
-    "marketplace/package-lock.json",
-    "marketplace/package.json",
-    "marketplace/plugins/aftership/package.json",
-    "marketplace/plugins/anthropic/package.json",
-    "marketplace/plugins/asana/package.json",
-    "marketplace/plugins/authorizenet/package.json",
-    "marketplace/plugins/aws-bedrock/package.json",
-    "marketplace/plugins/aws-lambda/package.json",
-    "marketplace/plugins/awsredshift/package.json",
-    "marketplace/plugins/azurerepos/package.json",
-    "marketplace/plugins/clickup/package.json",
-    "marketplace/plugins/cohere/package.json",
-    "marketplace/plugins/common/package.json",
-    "marketplace/plugins/couchbase/package.json",
-    "marketplace/plugins/easypost/package.json",
-    "marketplace/plugins/engagespot/package.json",
-    "marketplace/plugins/fedex/package.json",
-    "marketplace/plugins/gemini/package.json",
-    "marketplace/plugins/github/package.json",
-    "marketplace/plugins/gmail/package.json",
-    "marketplace/plugins/googlecalendar/package.json",
-    "marketplace/plugins/harperdb/package.json",
-    "marketplace/plugins/hubspot/package.json",
-    "marketplace/plugins/hugging_face/package.json",
-    "marketplace/plugins/intercom/package.json",
-    "marketplace/plugins/jira/package.json",
-    "marketplace/plugins/microsoft_graph/package.json",
-    "marketplace/plugins/mistral_ai/package.json",
-    "marketplace/plugins/openai/package.json",
-    "marketplace/plugins/pinecone/package.json",
-    "marketplace/plugins/plivo/package.json",
-    "marketplace/plugins/pocketbase/package.json",
-    "marketplace/plugins/portkey/package.json",
-    "marketplace/plugins/presto/package.json",
-    "marketplace/plugins/prometheus/package.json",
-    "marketplace/plugins/qdrant/package.json",
-    "marketplace/plugins/quickbooks/package.json",
-    "marketplace/plugins/s3/package.json",
-    "marketplace/plugins/salesforce/package.json",
-    "marketplace/plugins/servicenow/package.json",
-    "marketplace/plugins/sharepoint/package.json",
-    "marketplace/plugins/spanner/package.json",
-    "marketplace/plugins/supabase/package.json",
-    "marketplace/plugins/textract/package.json",
-    "marketplace/plugins/ups/package.json",
-    "marketplace/plugins/weaviate/package.json",
-    "marketplace/plugins/xero/package.json"
+    "package-lock.json",
+    "package.json"
   ],
-  "baseSha": "882c443073ee25bd98913fea98b373eb94ee0fa2",
+  "baseSha": "df43d2ef2cbca514c6723d87961d96acadbfb298",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "2341f09ad5001227",
+    "id": "71a33e13f0396e52",
     "lockArtifacts": [
-      "marketplace/package-lock.json"
+      "package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "marketplace/package-lock.json"
+    "rootManifest": "package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -74,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "b16065c5499fcb676c93c42807a1bf88f685ad6b221cd13ebe7e2d055766861b",
+  "remediationKey": "c4122e26247ea3f3d72c80156d9acf6b4f0b20f4bde11ec27d244c4b6cd30cd8",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -83,9 +38,9 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "882c443073ee25bd98913fea98b373eb94ee0fa2",
+  "scanSha": "df43d2ef2cbca514c6723d87961d96acadbfb298",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "kcEmAkNrQ6eSpRD_EytFCA",
+  "stoExecutionId": "6kNXbwICQCCMkHJFKopnHA",
   "stoTargetId": "2jnHr58fX7ty9mXkJorGD_",
   "targetBranch": "main",
   "units": [
@@ -103,36 +58,6 @@
       ],
       "minimumFixedVersion": "4.3.0",
       "package": "js-yaml"
-    },
-    {
-      "candidateVersions": [
-        "4.0.6"
-      ],
-      "coordinate": {
-        "normalisedName": "form-data",
-        "purl": "pkg:npm/form-data@4.0.5"
-      },
-      "fromVersion": "4.0.5",
-      "issueIds": [
-        "qW-9gMwTYtzIltk3JvjyS7"
-      ],
-      "minimumFixedVersion": "4.0.6",
-      "package": "form-data"
-    },
-    {
-      "candidateVersions": [
-        "10.7.1"
-      ],
-      "coordinate": {
-        "normalisedName": "ip-address",
-        "purl": "pkg:npm/ip-address@10.2.0"
-      },
-      "fromVersion": "10.2.0",
-      "issueIds": [
-        "keIBG2NP_ZXu6fw8k7QWsq"
-      ],
-      "minimumFixedVersion": "10.3.1",
-      "package": "ip-address"
     }
   ]
 }
