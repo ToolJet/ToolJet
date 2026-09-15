@@ -10,7 +10,7 @@
  * (frontend/ee/test/app-builder/widgets/FilePicker/TESTING.md) as a
  * `[FilePicker-FAMILY-NNN]` prefix, per the widget-testing-contract validator.
  */
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent, act } from '@testing-library/react';
 // eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx';
 import {
@@ -303,6 +303,33 @@ describe('FilePicker: selecting files and reaching limits', () => {
 
     await waitFor(() => expect(maxMessageEl(container)).toBeInTheDocument());
   });
+
+  test('[FilePicker-SEL-011] A dropzone-rejection error message persists until the user interacts with the widget again, instead of auto-clearing on a timer', async () => {
+    // Break this catches: a setTimeout(() => clearErrorStates(), ...) reintroduced inside
+    // onDropRejected that wipes the message on its own, independent of the user's next action.
+    const { container } = widget.render({ validation: { fileType: binding('image/png') } });
+    await screen.findByText('Label', { exact: false });
+    const badFile = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+    jest.useFakeTimers();
+    dropFiles(hiddenInput(container), badFile);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    expect(errorMessageEl(container)).toHaveTextContent(/unsupported file type/);
+
+    // Past the previously-hardcoded 10s auto-clear window — the message must still be there.
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(15000);
+    });
+    expect(errorMessageEl(container)).toHaveTextContent(/unsupported file type/);
+
+    jest.useRealTimers();
+    const goodFile = new File(['png'], 'good.png', { type: 'image/png' });
+    dropFiles(hiddenInput(container), goodFile);
+
+    await waitFor(() => expect(errorMessageEl(container)).not.toBeInTheDocument());
+  });
 });
 
 describe('FilePicker: parsing file content', () => {
@@ -425,6 +452,36 @@ describe('FilePicker: validation', () => {
 
     widget.render({ validation: { enableValidation: binding('{{false}}') } });
     await waitFor(() => expect(widget.exposed().isMandatory).toBe(false));
+  });
+
+  test('[FilePicker-VAL-006] The minFileCount error message persists until the user interacts with the widget again, instead of auto-clearing on a timer', async () => {
+    // Break this catches: a setTimeout(() => clearErrorStates(), ...) reintroduced inside
+    // onDropAccepted that wipes the message on its own, independent of the user's next action.
+    const { container } = widget.render({
+      properties: { enableMultiple: binding('{{true}}') },
+      validation: { minFileCount: binding('{{2}}') },
+    });
+    await screen.findByText('Label', { exact: false });
+    const first = new File(['a'], 'first.txt', { type: 'text/plain' });
+
+    jest.useFakeTimers();
+    dropFiles(hiddenInput(container), first);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    expect(errorMessageEl(container)).toHaveTextContent('Please select at least 2 files.');
+
+    // Past the previously-hardcoded 5s auto-clear window — the message must still be there.
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(15000);
+    });
+    expect(errorMessageEl(container)).toHaveTextContent('Please select at least 2 files.');
+
+    jest.useRealTimers();
+    const second = new File(['b'], 'second.txt', { type: 'text/plain' });
+    dropFiles(hiddenInput(container), second);
+
+    await waitFor(() => expect(errorMessageEl(container)).not.toBeInTheDocument());
   });
 });
 
