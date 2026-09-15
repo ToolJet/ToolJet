@@ -85,6 +85,7 @@ export const DatetimePickerV2 = ({
     timeFormat,
     placeholder: placeholderProp,
     isTimezoneEnabled,
+    enableUtcFormat,
     showClearBtn,
   } = properties;
   const placeholder = placeholderProp ?? 'Select date and time';
@@ -195,11 +196,18 @@ export const DatetimePickerV2 = ({
     fireEvent('onSelect');
   };
 
+  const computeExposedValue = (ts) =>
+    enableUtcFormat
+      ? Number.isFinite(ts)
+        ? new Date(ts).toISOString()
+        : null
+      : convertToIsoWithTimezoneOffset(ts, storeTimezone);
+
   const setExposedDateVariables = (unixTimestamp, selectedTimestamp) => {
     const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
     const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
     const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
-    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    const value = computeExposedValue(unixTimestamp);
     setExposedVariables({
       selectedTime: selectedTime,
       selectedDate: selectedDate,
@@ -274,15 +282,15 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    const value = computeExposedValue(unixTimestamp);
     setExposedVariable('value', value);
-  }, [isTimezoneEnabled, storeTimezone]);
+  }, [isTimezoneEnabled, storeTimezone, enableUtcFormat]);
 
   useEffect(() => {
     const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
     const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
     const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
-    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    const value = computeExposedValue(unixTimestamp);
     const exposedVariables = {
       value: value,
       selectedTime: selectedTime,
