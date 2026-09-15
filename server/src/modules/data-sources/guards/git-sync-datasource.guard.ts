@@ -22,6 +22,13 @@ const OAUTH_FLOW_KEYS = new Set(['code', 'oauth2', 'provider', 'plugin_id']);
  * (sanitizeOptionsForGit drops any encrypted value without a workspace_constant), so allowing
  * their edit on a synced default branch doesn't let anything git-tracked drift — it just lets
  * users complete setup for a data source git sync could never fully carry.
+ *
+ * Only scalar (string/number/boolean) values are strictly diffed. Array/object-valued options
+ * (headers, custom_auth_params, custom_query_params, access_token_custom_headers, ...) are
+ * excluded from the check entirely: the frontend's key-value editor (HttpHeaders/index.js)
+ * appends a fresh empty pair on any edit to the current last row, so the same field can arrive
+ * structurally different on every save even with no meaningful change — these are config
+ * plumbing, not git-tracked secrets, so they can't disqualify a secrets-only edit here.
  */
 function isSecretsOnlyEdit(incomingOptions: unknown, storedOptions: Record<string, any> | undefined): boolean {
   if (!Array.isArray(incomingOptions)) return false;
@@ -33,8 +40,10 @@ function isSecretsOnlyEdit(incomingOptions: unknown, storedOptions: Record<strin
     // same defensive check used throughout workspace-git-sync-adapter.ts (sanitizeOptionsForGit,
     // restoreOptionsFromGit).
     if (option?.['encrypted'] === true || option?.['encrypted'] === 'true') continue;
+    const value = option?.['value'];
+    if (value !== null && typeof value === 'object') continue;
     const storedValue = stored[key]?.['value'];
-    if (option?.['value'] !== storedValue) return false;
+    if (value !== storedValue) return false;
   }
   return true;
 }
@@ -102,6 +111,8 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
       ]);
       const nameUnchanged = request.body?.name === undefined || request.body.name === dataSource?.name;
       secretsOnly = nameUnchanged && isSecretsOnlyEdit(request.body.options, storedOptions?.options);
+      console.log('LOG');
+      console.log(request.body.options, storedOptions?.options);
     }
 
     await assertGitSyncEditAllowedForOrg(
