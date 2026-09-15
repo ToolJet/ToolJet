@@ -1,17 +1,7 @@
-// OpenApiSpecProcessor is a BullMQ WorkerHost, but process(job) is a plain async method - there is
-// no queue harness here on purpose. Construct the processor directly with stub dependencies and
-// call process({ id, data }); dbTransactionWrap is mocked so no database is needed either.
 import { createHash } from 'crypto';
-import * as fs from 'fs';
 import * as yaml from 'js-yaml';
-import type { OpenApiSpecProcessor as OpenApiSpecProcessorType } from '../../../../src/modules/openapi-spec/processors/openapi-spec.processor';
 import { OpenApiSpecSourceType, OpenApiSpecStatus } from '../../../../src/modules/openapi-spec/constants';
-
-let mockManager: any;
-
-jest.mock('../../../../src/helpers/database.helper', () => ({
-  dbTransactionWrap: jest.fn().mockImplementation(async (cb: (manager: any) => Promise<any>) => cb(mockManager)),
-}));
+import { DATA_SOURCE_ID, definitionJob, loadProcessor, makeManager, makeProcessor } from './processor-harness';
 
 jest.mock('got', () => ({ __esModule: true, default: jest.fn() }));
 
@@ -44,59 +34,11 @@ jest.mock('@apidevtools/json-schema-ref-parser', () => {
   };
 });
 
-// jest-transaction-setup loads the app module graph (this processor included) with the real
-// database helper before the mocks above are registered - reload so the processor sees them.
-let OpenApiSpecProcessor: typeof OpenApiSpecProcessorType;
 let got: jest.Mock;
 beforeAll(async () => {
-  jest.resetModules();
-  ({ OpenApiSpecProcessor } = await import('../../../../src/modules/openapi-spec/processors/openapi-spec.processor'));
+  await loadProcessor();
   got = (await import('got')).default as unknown as jest.Mock;
 });
-
-const DATA_SOURCE_ID = 'ds-1';
-
-function makeManager() {
-  const saved: Record<string, any>[] = [];
-  const updates: Record<string, any>[] = [];
-  const manager = {
-    query: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue({}),
-    create: jest.fn((_entity: unknown, row: Record<string, any>) => row),
-    save: jest.fn(async (_entity: unknown, rows: Record<string, any>[]) => {
-      saved.push(...rows);
-      return rows;
-    }),
-    findOne: jest.fn().mockResolvedValue({ options: {} }),
-    update: jest.fn(async (_entity: unknown, where: Record<string, any>, patch: Record<string, any>) => {
-      updates.push({ where, ...patch });
-    }),
-  };
-  return { manager, saved, updates };
-}
-
-function makeProcessor({ terminated = false } = {}) {
-  const terminationRegistry = {
-    isTerminated: jest.fn().mockResolvedValue(terminated),
-    clear: jest.fn(),
-  };
-  const logger = { log: jest.fn(), error: jest.fn(), warn: jest.fn() };
-  const processor = new OpenApiSpecProcessor(terminationRegistry as any, logger as any);
-  return { processor, logger, terminationRegistry };
-}
-
-function definitionJob(definition: string, environmentIds = ['env-1']) {
-  return {
-    id: 'job-1',
-    data: {
-      dataSourceId: DATA_SOURCE_ID,
-      organizationId: 'org-1',
-      environmentIds,
-      sourceType: OpenApiSpecSourceType.DEFINITION,
-      definition,
-    },
-  } as any;
-}
 
 const rowsFor = (saved: Record<string, any>[], environmentId: string) =>
   saved.filter((row) => row.environmentId === environmentId);
@@ -223,7 +165,6 @@ describe('OpenApiSpecProcessor', () => {
 
   beforeEach(() => {
     harness = makeManager();
-    mockManager = harness.manager;
     mockDereferenceCalls.length = 0;
     mockCountDereferencedNodes = false;
     got.mockReset();
@@ -237,7 +178,6 @@ describe('OpenApiSpecProcessor', () => {
       const fromJson = harness.saved;
 
       harness = makeManager();
-      mockManager = harness.manager;
       await makeProcessor().processor.process(definitionJob(yaml.dump(spec)));
 
       expect(fromJson).toHaveLength(4);
@@ -487,34 +427,5 @@ describe('OpenApiSpecProcessor', () => {
         expect(row).not.toHaveProperty('responseSchemasRaw');
       }
     });
-  });
-
-  // On-demand run against a real, large spec (e.g. Microsoft Graph v1.0, 17,777 operations):
-  //   OPENAPI_SPEC_GRAPH_FIXTURE=/path/to/openapi.yaml SKIP_GLOBAL_SETUP=1 NODE_ENV=test npx jest --config jest.config.ts test/modules/openapi-spec/unit/openapi-spec.processor.spec.ts -t Graph
-  const describeGraph = process.env.OPENAPI_SPEC_GRAPH_FIXTURE ? describe : describe.skip;
-
-  describeGraph('Microsoft Graph spec', () => {
-    it('should process every operation within the memory and time budget', async () => {
-      const definition = fs.readFileSync(process.env.OPENAPI_SPEC_GRAPH_FIXTURE as string, 'utf8');
-      let savedRows = 0;
-      let peakHeapUsedMB = 0;
-      // Count instead of retaining rows, so the measured heap is the processor's, not the test's.
-      harness.manager.save.mockImplementation(async (_entity: unknown, rows: Record<string, any>[]) => {
-        savedRows += rows.length;
-        peakHeapUsedMB = Math.max(peakHeapUsedMB, process.memoryUsage().heapUsed / 1024 / 1024);
-        return rows;
-      });
-
-      const startedAt = Date.now();
-      await makeProcessor().processor.process(definitionJob(definition));
-      const elapsedSeconds = (Date.now() - startedAt) / 1000;
-
-      process.stdout.write(
-        `[graph] rows=${savedRows} peakHeapUsedMB=${peakHeapUsedMB.toFixed(0)} seconds=${elapsedSeconds.toFixed(1)}\n`
-      );
-      expect(savedRows).toBe(17777);
-      expect(peakHeapUsedMB).toBeLessThan(1500);
-      expect(elapsedSeconds).toBeLessThan(60);
-    }, 120000);
   });
 });

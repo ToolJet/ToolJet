@@ -40,3 +40,4 @@ lerna-debug.log*
 
 # Postgrest configuration
 **/postgrest.confautoresearch-results.tsv
+/test/modules/openapi-spec/__fixtures__/.cache/
