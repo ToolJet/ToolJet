@@ -1077,3 +1077,56 @@ describe('CSA state across a reset (QA report)', () => {
     expect(formEl()).toHaveStyle({ display: 'none' });
   });
 });
+
+describe('schema-mode scrolling', () => {
+  // A drag-and-drop Form scrolls because SubContainer renders `.real-canvas`, which is the scroll
+  // container. Schema mode renders `RenderSchema` straight into the fieldset and mounts no
+  // SubContainer at all, so nothing between the fields and the Form could scroll and a schema
+  // taller than the Form was simply unreachable.
+  const schema =
+    "{{ ({ title: 'T', properties: { a: { type: 'textinput', label: 'A' }, b: { type: 'textinput', label: 'B' } } }) }}";
+
+  const renderSchemaForm = async (extraProperties = {}, renderOptions = {}) => {
+    form.render({
+      properties: {
+        generateFormFrom: binding('jsonSchema'),
+        newJsonSchema: binding(schema),
+        ...extraProperties,
+      },
+      extraComponents: {},
+      ...renderOptions,
+    });
+    await waitFor(() => expect(bodySection()).not.toBeNull());
+    return bodySection();
+  };
+
+  test('[Form-LAYOUT-004] the schema-mode body is the scroll container', async () => {
+    // Break this catches: with no overflow declared here, a JSON schema taller than the Form
+    // overflows a body that cannot scroll, and every field past the fold is unreachable — there is
+    // no SubContainer in this mode to fall back on.
+    expect((await renderSchemaForm()).style.overflowY).toBe('auto');
+  });
+
+  test('[Form-LAYOUT-004] schema mode with dynamic height does not scroll', async () => {
+    // Break this catches: the Form already grows to fit its content in dynamic mode, so a scrollbar
+    // here is the transient flash a9dadd7d6f suppressed on the drag-and-drop path. Schema mode has
+    // to make the same choice, not the opposite one.
+    //
+    // Rendered in VIEW mode on purpose: `isDynamicHeightEnabled` is
+    // `properties.dynamicHeight && currentMode === 'view'` (Form.jsx:80), so in the editor the
+    // toggle is inert and the body correctly stays scrollable.
+    const body = await renderSchemaForm({ dynamicHeight: binding('{{true}}') }, { currentMode: 'view' });
+
+    expect(body.style.overflowY).toBe('hidden');
+  });
+
+  test('[Form-LAYOUT-004] a drag-and-drop Form still delegates scrolling to its SubContainer', async () => {
+    // Break this catches: declaring overflow unconditionally puts a second scroll container around
+    // `.real-canvas`, which already scrolls — nested scrollbars on every ordinary Form.
+    form.render({ properties: {}, extraComponents: componentsById(textInput('c1', 'in1', 'x')) });
+
+    await waitFor(() => expect(bodySection()).not.toBeNull());
+    expect(bodySection().querySelector('.real-canvas')).not.toBeNull();
+    expect(bodySection().style.overflowY).toBe('');
+  });
+});

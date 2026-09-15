@@ -118,6 +118,7 @@ const FormComponent = (props) => {
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     borderRadius: 'inherit',
+    ...(advanced && { overflowY: isDynamicHeightEnabled ? 'hidden' : 'auto' }),
   };
 
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
