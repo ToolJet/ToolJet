@@ -241,7 +241,8 @@
     },
     {
       "componentType": "Timer",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Timer/TESTING.md"
     },
     {
       "componentType": "Spinner",
