@@ -74,7 +74,6 @@ export const useInput = ({
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
-  const [iconVisibility, setIconVisibility] = useState(false);
   const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
   const { isValid, validationError } = validationStatus;
@@ -353,8 +352,6 @@ export const useInput = ({
     setShowValidationError,
     isFocused,
     labelWidth,
-    iconVisibility,
-    setIconVisibility,
     isValid,
     validationError,
     isMandatory,

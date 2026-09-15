@@ -322,6 +322,50 @@ describe('the other validators that actually exist', () => {
     });
   });
 
+  // Break this catches: adding a PasswordInput branch to validateWidget. Unlike
+  // EmailInput, a password field has NO built-in format rule — every rule a builder
+  // sees is one they configured — and an app relying on `regex` to enforce a password
+  // policy must not be short-circuited by a hidden check.
+  test('[PasswordInput-VAL-003] PasswordInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forPassword = (validationObject, widgetValue) =>
+      validate({ componentType: 'PasswordInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forPassword({}, 'not-an-email')).toEqual({ isValid: true, validationError: null });
+    expect(forPassword({}, 'a')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forPassword({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forPassword({ mandatory: { value: true } }, 'secret')).toEqual({ isValid: true, validationError: null });
+
+    // regex — reachable, because nothing short-circuits ahead of it.
+    const policy = { regex: { value: '^(?=.*[A-Z])(?=.*\\d).{8,}$' } };
+    expect(forPassword(policy, 'short1A').validationError).toBe('The input should match pattern');
+    expect(forPassword(policy, 'LongEnough1')).toEqual({ isValid: true, validationError: null });
+
+    // minLength / maxLength
+    expect(forPassword({ minLength: { value: 8 } }, 'short').validationError).toBe('Minimum 8 characters is needed');
+    expect(forPassword({ maxLength: { value: 4 } }, 'toolong').validationError).toBe('Maximum 4 characters is allowed');
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', 'secret');
+    expect(
+      forPassword(
+        { customRule: { value: "{{components.textinput1.value !== 'secret' && 'passwords must match'}}" } },
+        'secret'
+      )
+    ).toEqual({ isValid: true, validationError: null });
+    expect(
+      forPassword(
+        { customRule: { value: "{{components.textinput1.value !== 'other' && 'passwords must match'}}" } },
+        'secret'
+      )
+    ).toEqual({ isValid: false, validationError: 'passwords must match' });
+  });
+
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
     // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
     expect(

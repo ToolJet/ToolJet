@@ -78,7 +78,8 @@
     },
     {
       "componentType": "PasswordInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
