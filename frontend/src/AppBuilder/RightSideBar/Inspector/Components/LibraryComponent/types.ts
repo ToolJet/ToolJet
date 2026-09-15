@@ -19,6 +19,7 @@ export interface FieldMeta {
   type?: string;
   checkboxLabel?: string;
   options?: { value: string; [labelKey: string]: string }[];
+  validation?: { schema: { type: string }; defaultValue?: unknown };
 }
 
 export type ParamUpdated = (
