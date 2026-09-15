@@ -126,7 +126,8 @@
     },
     {
       "componentType": "ToggleSwitchV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ToggleSwitchV2/TESTING.md"
     },
     {
       "componentType": "RadioButtonV2",
