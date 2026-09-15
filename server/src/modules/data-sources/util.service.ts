@@ -272,7 +272,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId?: string,
     organizationId?: string,
     environmentId?: string,
-    dataSourceOptionId?: string
+    dataSourceOptionId?: string,
+    dataSourceId?: string
   ) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
@@ -334,15 +335,20 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
         }
 
-        //Propagate token to all branches since tokens are branch-invariant
-        this.propagateTokenToAllBranches(
-          dataSourceOptionId,
-          environmentId,
-          userId,
-          access_token,
-          refresh_token,
-          manager
-        );
+        // Propagate token to all branches since tokens are branch-invariant. dataSourceId is the
+        // data_sources.id (not dataSourceOptionId, which is the DSVO id upsertUserTokenData just
+        // wrote directly above) — propagateTokenToAllBranches looks up DataSourceVersion rows by
+        // data_source_id, so passing the DSVO id here would silently match zero branches.
+        if (dataSourceId) {
+          await this.propagateTokenToAllBranches(
+            dataSourceId,
+            environmentId,
+            userId,
+            access_token,
+            refresh_token,
+            manager
+          );
+        }
 
         // Strip OAuth flow keys and token keys from options (any extra non-token fields pushed
         // above, e.g. instance_url, are intentionally kept)
@@ -853,7 +859,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       userId,
       organizationId,
       environmentId,
-      dataSourceOptionId
+      dataSourceOptionId,
+      dataSource?.id
     );
     const parsedOptions = {};
 
@@ -1666,6 +1673,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     refreshToken: string | null,
     manager: EntityManager
   ): Promise<void> {
+    console.log('Called');
     const encryptedAccessToken = accessToken
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', accessToken)
       : null;
