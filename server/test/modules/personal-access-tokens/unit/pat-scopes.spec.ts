@@ -1,3 +1,4 @@
+import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import {
@@ -62,10 +63,30 @@ describe('PAT scope definition', () => {
     expect(patCanAccess(MODULES.ORGANIZATION_USER, ORGANIZATION_USER_FEATURE.USER_ARCHIVE_ALL)).toBe(false);
   });
 
+  it('allows only the group operations needed for custom group management', () => {
+    const allowed = new Set([
+      GROUP_FEATURE.GET_ALL, GROUP_FEATURE.GET_ONE, GROUP_FEATURE.GET_ALL_GROUP_USER,
+      GROUP_FEATURE.CREATE, GROUP_FEATURE.UPDATE, GROUP_FEATURE.DELETE, GROUP_FEATURE.DELETE_GROUP_USER,
+      GROUP_FEATURE.DUPLICATE,
+      GROUP_FEATURE.GET_ADDABLE_APPS,
+      GROUP_FEATURE.GET_ADDABLE_DS,
+      GROUP_FEATURE.GET_ALL_GRANULAR_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_DATA_PERMISSIONS,
+    ]);
+    for (const feature of Object.values(GROUP_FEATURE)) {
+      expect(patCanAccess(MODULES.GROUP_PERMISSIONS, feature)).toBe(allowed.has(feature));
+    }
+    expect(patCanAccess(MODULES.GROUP_PERMISSIONS)).toBe(false);
+  });
+
   it('denies workspace and instance administration', () => {
     for (const module of [
       MODULES.ORGANIZATIONS,
-      MODULES.GROUP_PERMISSIONS,
       MODULES.LOGIN_CONFIGS,
       MODULES.INSTANCE_SETTINGS,
       MODULES.LICENSING,
@@ -138,6 +159,17 @@ describe('PatScopeInterceptor', () => {
   it('lets a workspace PAT through on an allowed module', () => {
     const patSession = { isPATLogin: true };
     expect(interceptorFor(MODULES.APP).intercept(contextFor(patSession), nextHandler)).toBe('HANDLED');
+  });
+
+  it('enforces group feature limits for workspace PAT sessions', () => {
+    for (const feature of [GROUP_FEATURE.CREATE, GROUP_FEATURE.DELETE_GROUP_USER, GROUP_FEATURE.DUPLICATE, GROUP_FEATURE.USER_ROLE_CHANGE]) {
+      const interceptor = new PatScopeInterceptor({
+        get: (key: string) => key === 'tjModuleId' ? MODULES.GROUP_PERMISSIONS : feature,
+      } as any);
+      const invoke = () => interceptor.intercept(contextFor({ isPATLogin: true }), nextHandler);
+      if (feature === GROUP_FEATURE.USER_ROLE_CHANGE) expect(invoke).toThrow(ForbiddenException);
+      else expect(invoke()).toBe('HANDLED');
+    }
   });
 
   it('blocks a workspace PAT on a module outside the allowlist', () => {
