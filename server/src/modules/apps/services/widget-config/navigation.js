@@ -213,7 +213,23 @@ export const navigationConfig = {
     {
       handle: 'selectItem',
       displayName: 'Select item',
-      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'text' }],
+      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'code' }],
+    },
+    {
+      handle: 'setItemVisibility',
+      displayName: 'Set item visibility',
+      params: [
+        { handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'code' },
+        { handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' },
+      ],
+    },
+    {
+      handle: 'setItemDisable',
+      displayName: 'Set item disable',
+      params: [
+        { handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'code' },
+        { handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' },
+      ],
     },
   ],
   definition: {
