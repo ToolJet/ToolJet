@@ -12,6 +12,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
+import { ValidateOpenApiSpecStatusGuard } from './guards/validate-openapi-spec-status.guard';
 
 export class DataQueriesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -40,6 +41,7 @@ export class DataQueriesModule extends SubModule {
         AppFeatureAbilityFactory,
         DataSourceFeatureAbilityFactory,
         DataQueryFolderMappingRepository,
+        ValidateOpenApiSpecStatusGuard,
       ],
       exports: [DataQueriesUtilService],
       controllers: isMainImport ? [DataQueriesController] : [],

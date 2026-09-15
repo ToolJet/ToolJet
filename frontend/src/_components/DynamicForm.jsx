@@ -8,6 +8,7 @@ import Sort from '@/_ui/Sort';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
+import OpenApiV2Config from '@/_ui/OpenAPIV2';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
@@ -247,6 +248,8 @@ const DynamicForm = ({
         return CodeHinter;
       case 'react-component-openapi-validator':
         return OpenApi;
+      case 'react-component-openapi-v2-config':
+        return OpenApiV2Config;
       case 'react-component-zendesk':
         return Zendesk;
       case 'columns':
@@ -608,6 +611,36 @@ const DynamicForm = ({
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
+          audience: options?.audience?.value,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
+        };
+      case 'react-component-openapi-v2-config':
+        return {
+          selectedDataSource,
+          isSaving,
+          currentAppEnvironmentId,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          auth_type: options.auth_type?.value,
+          auth_key: options.auth_key?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
+          api_keys: options.api_keys?.value,
+          optionchanged,
+          grant_type: options.grant_type?.value,
+          add_token_to: options.add_token_to?.value,
+          header_prefix: options.header_prefix?.value,
+          access_token_url: options.access_token_url?.value,
+          access_token_custom_headers: options.access_token_custom_headers?.value,
+          client_id: options.client_id?.value,
+          client_secret: options.client_secret?.value,
+          client_auth: options.client_auth?.value,
+          scopes: options.scopes?.value,
+          auth_url: options.auth_url?.value,
+          custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
           audience: options?.audience?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),

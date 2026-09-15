@@ -1,4 +1,8 @@
 import { DynamicModule } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesRepository } from './repository';
@@ -14,6 +18,10 @@ import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
+import { OpenApiSpecTerminationRegistry } from '@modules/openapi-spec/services/openapi-spec-termination-registry';
+import { OpenApiSpecProcessor } from '@modules/openapi-spec/processors/openapi-spec.processor';
+import { OPENAPI_SPEC_PROCESSING_QUEUE } from '@modules/openapi-spec/constants';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -44,6 +52,10 @@ export class DataSourcesModule extends SubModule {
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
         await AppPermissionsModule.register(configs!),
+        TypeOrmModule.forFeature([OpenApiSpecOperation]),
+        // Registered in every edition - the OpenAPI v2 worker runs identically across CE/EE/Cloud.
+        BullModule.registerQueue({ name: OPENAPI_SPEC_PROCESSING_QUEUE }),
+        BullBoardModule.forFeature({ name: OPENAPI_SPEC_PROCESSING_QUEUE, adapter: BullMQAdapter }),
       ],
       providers: [
         DataSourcesService,
@@ -57,6 +69,10 @@ export class DataSourcesModule extends SubModule {
         SampleDataSourceService,
         FeatureAbilityFactory,
         OrganizationRepository,
+        OpenApiSpecTerminationRegistry,
+        // Only the dedicated worker process actually consumes jobs (WORKER=true), matching the
+        // Workflows queue's split between HTTP-only and worker instances. No edition gating.
+        ...(isMainImport && process.env.WORKER === 'true' ? [OpenApiSpecProcessor] : []),
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],

@@ -25,6 +25,7 @@ import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import { getAutoFillStrategy } from '@/_helpers/autoFillRegistry';
 import { useConnectionStringAutoFill } from '@/_hooks/useConnectionStringAutofill';
 import OracleWalletPicker from '@/_components/OracleWalletPicker';
+import OpenApiV2Config from '@/_ui/OpenAPIV2';
 
 const DynamicFormV2 = ({
   schema,
@@ -423,6 +424,8 @@ const DynamicFormV2 = ({
         return OracleWalletPicker;
       case 'react-component-oauth':
         return OAuthWrapper;
+      case 'react-component-openapi-v2-config':
+        return OpenApiV2Config;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -557,6 +560,44 @@ const DynamicFormV2 = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           scopes: options?.scopes?.value,
           oauth_configs,
+        };
+      case 'react-component-openapi-v2-config':
+        return {
+          selectedDataSource,
+          isSaving,
+          currentAppEnvironmentId,
+          // Form-tracked (like host/auth_key below) so Save persists them and validateOptions
+          // treats them consistently, rather than living only in local component state.
+          sourceType: options?.spec_source_type?.value || 'url',
+          url: options?.spec_url?.value || '',
+          definition: options?.raw_spec?.value || '',
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          auth_type: options?.auth_type?.value,
+          auth_key: options?.auth_key?.value,
+          username: options?.username?.value,
+          password: options?.password?.value,
+          bearer_token: options?.bearer_token?.value,
+          api_keys: options?.api_keys?.value,
+          optionchanged: (key, value) => handleOptionChange(key, value, true),
+          grant_type: options?.grant_type?.value,
+          add_token_to: options?.add_token_to?.value,
+          header_prefix: options?.header_prefix?.value,
+          access_token_url: options?.access_token_url?.value,
+          access_token_custom_headers: options?.access_token_custom_headers?.value,
+          client_id: options?.client_id?.value,
+          client_secret: options?.client_secret?.value,
+          client_auth: options?.client_auth?.value,
+          scopes: options?.scopes?.value,
+          auth_url: options?.auth_url?.value,
+          custom_auth_params: options?.custom_auth_params?.value,
+          custom_query_params: options?.custom_query_params?.value,
+          audience: options?.audience?.value,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
+          // Raw options object - needed by OAuth/Authentication.jsx's EncryptedFieldWrapper to
+          // know whether a saved credential is already encrypted (mask vs show).
+          options,
         };
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
@@ -760,7 +801,11 @@ const DynamicFormV2 = ({
             return null;
           }
 
-          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(widget);
+          const isSpecificComponent = [
+            'tooljetdb-operations',
+            'react-component-api-endpoint',
+            'react-component-openapi-v2-config',
+          ].includes(widget);
 
           return (
             <div

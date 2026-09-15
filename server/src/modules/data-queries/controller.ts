@@ -7,13 +7,20 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import {
+  CreateDataQueryDto,
+  ListTablesDto,
+  UpdateDataQueryDto,
+  UpdateSourceDto,
+  UpdatingReferencesOptionsDto,
+} from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/guard';
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
+import { ValidateOpenApiSpecStatusGuard } from './guards/validate-openapi-spec-status.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
@@ -45,6 +52,7 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
+    ValidateOpenApiSpecStatusGuard,
     DataSourceFeatureAbilityGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
@@ -64,6 +72,7 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
+    ValidateOpenApiSpecStatusGuard,
     DataSourceFeatureAbilityGuard
   )
   @Patch(':id/versions/:versionId')
