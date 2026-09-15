@@ -3,7 +3,8 @@ import { Job } from 'bullmq';
 import { createHash } from 'crypto';
 import got from 'got';
 import * as yaml from 'js-yaml';
-import { EntityManager } from 'typeorm';
+import { BaseEntity, EntityManager, In } from 'typeorm';
+import { chunk } from 'lodash';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { dereferenceInternal, getJsonSchemaRefParserDefaultOptions } from '@apidevtools/json-schema-ref-parser';
 import { Logger } from 'nestjs-pino';
@@ -11,18 +12,15 @@ import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { OpenApiSpecTerminationRegistry } from '../services/openapi-spec-termination-registry';
-import { StageTimer } from '../utils/stage-timer.util';
 import { pruneCircularRefs } from '../utils/circular-ref.util';
-import { chunkArray } from '../utils/chunk.util';
-import { sleep } from '../utils/sleep.util';
 import {
   DEFAULT_OPENAPI_SPEC_BATCH_SIZE,
+  OPENAPI_SPEC_CONCURRENCY,
   OPENAPI_SPEC_OPTION_KEYS,
   OPENAPI_SPEC_PROCESSING_QUEUE,
   OpenApiSpecSourceType,
   OpenApiSpecStatus,
 } from '../constants';
-import { OPENAPI_SPEC_CONCURRENCY } from '../constants/queue-config';
 
 export interface OpenApiSpecJobData {
   dataSourceId: string;
@@ -33,19 +31,17 @@ export interface OpenApiSpecJobData {
   definition?: string;
 }
 
-interface ExtractedOperation {
-  operationId: string;
-  serviceId: string;
-  path: string;
-  method: string;
-  name: string;
-  deprecated: boolean;
-  tags: string[];
-  security: string[];
-  hasRequestBody: boolean;
-  parameters: Record<string, any>[];
-  requestBodySchema: Record<string, any> | null;
-}
+type ExtractedOperation = Omit<
+  OpenApiSpecOperation,
+  | keyof BaseEntity
+  | 'id'
+  | 'dataSourceId'
+  | 'environmentId'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'dataSource'
+  | 'appEnvironment'
+>;
 
 interface PathItemEntry {
   path: string;
@@ -73,10 +69,7 @@ export class OpenApiSpecProcessor extends WorkerHost {
 
   async process(job: Job<OpenApiSpecJobData>): Promise<void> {
     const { dataSourceId, environmentIds, sourceType, url, definition } = job.data;
-    const timer = new StageTimer();
-    this.logger.log(
-      `[openapi-spec:${job.id}] default heap ceiling: ${timer.defaultHeapLimitMB}MB - measured before processing starts`
-    );
+    const startedAt = Date.now();
 
     try {
       if (await this.isTerminated(dataSourceId, environmentIds)) {
@@ -85,13 +78,13 @@ export class OpenApiSpecProcessor extends WorkerHost {
 
       // CreateOpenApiSpecDto guarantees url/definition is set for the matching sourceType.
       const rawSpec =
-        sourceType === OpenApiSpecSourceType.URL ? await this.fetchSpecText(url as string) : (definition as string);
+        sourceType === OpenApiSpecSourceType.URL
+          ? (await got(url as string, { timeout: { request: FETCH_TIMEOUT_MS } })).body
+          : (definition as string);
       const parsedInput = this.parseSpecText(rawSpec);
-      timer.mark('parse');
       // resolve() only builds the $refs map; unlike dereference() it does not expand the whole
-      // document. Each operation is dereferenced lazily per batch below, yielding between batches.
+      // document. Each operation is dereferenced lazily per batch below.
       const $refs = await SwaggerParser.resolve(parsedInput as any);
-      timer.mark('resolve');
 
       if (await this.isTerminated(dataSourceId, environmentIds)) {
         return this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.CANCELLED);
@@ -99,18 +92,16 @@ export class OpenApiSpecProcessor extends WorkerHost {
 
       const version = parsedInput.openapi ? '3.0' : '2.0';
       const metadata = this.extractMetadata(parsedInput, version);
-      const checksum = this.checksum(rawSpec);
+      const checksum = createHash('sha256').update(rawSpec).digest('hex');
       const specSecurity = parsedInput.security || [];
 
-      const batches = chunkArray(this.extractPathItems(parsedInput), DEFAULT_OPENAPI_SPEC_BATCH_SIZE);
-      const persistedCounts: Record<string, number> = Object.fromEntries(environmentIds.map((id) => [id, 0]));
+      const batches = chunk(this.extractPathItems(parsedInput), DEFAULT_OPENAPI_SPEC_BATCH_SIZE);
+      let operationCount = 0;
 
       // Readers only see rows once status is READY, so no transaction needs to span the job.
-      for (const environmentId of environmentIds) {
-        await dbTransactionWrap((manager: EntityManager) =>
-          manager.delete(OpenApiSpecOperation, { dataSourceId, environmentId })
-        );
-      }
+      await dbTransactionWrap((manager: EntityManager) =>
+        manager.delete(OpenApiSpecOperation, { dataSourceId, environmentId: In(environmentIds) })
+      );
 
       for (let i = 0; i < batches.length; i++) {
         if (await this.isTerminated(dataSourceId, environmentIds)) {
@@ -134,25 +125,16 @@ export class OpenApiSpecProcessor extends WorkerHost {
           }
         }
 
-        // `batches` lives for the whole job; release consumed entries so they can be GC'd.
-        batches[i] = [];
-
         for (const environmentId of environmentIds) {
-          persistedCounts[environmentId] += await this.persistBatchForEnvironment(
-            dataSourceId,
-            environmentId,
-            batchOperations
-          );
+          await this.persistBatchForEnvironment(dataSourceId, environmentId, batchOperations);
         }
+        operationCount += batchOperations.length;
 
         this.logger.log(
           `[openapi-spec:${job.id}] batch ${i + 1}/${batches.length} dereferenced + persisted ` +
             `(${batchOperations.length} operations x ${environmentIds.length} environments)`
         );
-        await sleep(0);
       }
-
-      timer.mark(`dereference+persist (${batches.length} batches)`);
 
       for (const environmentId of environmentIds) {
         await this.updateSpecOptions(dataSourceId, environmentId, {
@@ -162,12 +144,13 @@ export class OpenApiSpecProcessor extends WorkerHost {
           [OPENAPI_SPEC_OPTION_KEYS.VERSION]: version,
           [OPENAPI_SPEC_OPTION_KEYS.CHECKSUM]: checksum,
         });
-        this.logger.log(
-          `[openapi-spec:${job.id}] persisted ${persistedCounts[environmentId]} operations for environment ${environmentId}`
-        );
       }
 
-      this.logger.log(`[openapi-spec:${job.id}] processing complete: ${JSON.stringify(timer.summary())}`);
+      this.logger.log(
+        `[openapi-spec:${job.id}] processing complete: ${operationCount} operations x ${environmentIds.length} ` +
+          `environments in ${Date.now() - startedAt}ms, heap used ` +
+          `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`
+      );
     } catch (error) {
       this.logger.error(`OpenAPI spec processing failed for datasource ${dataSourceId}`, error);
       await this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.FAILED, (error as Error).message);
@@ -207,15 +190,6 @@ export class OpenApiSpecProcessor extends WorkerHost {
         [OPENAPI_SPEC_OPTION_KEYS.ERROR]: errorMessage,
       });
     }
-  }
-
-  private async fetchSpecText(url: string): Promise<string> {
-    const response = await got(url, { timeout: { request: FETCH_TIMEOUT_MS } });
-    return response.body;
-  }
-
-  private checksum(rawSpec: string): string {
-    return createHash('sha256').update(rawSpec).digest('hex');
   }
 
   private extractMetadata(spec: Record<string, any>, version: string): Record<string, any> {
@@ -291,7 +265,7 @@ export class OpenApiSpecProcessor extends WorkerHost {
     const mergedParameters = this.mergeParameters(resolvedPathItemParams, operation.parameters || []);
 
     const operationId = operation.operationId || `${method}_${path}`;
-    const security = (operation.security || specSecurity || []).flatMap((s: Record<string, any>) => Object.keys(s));
+    const security = (operation.security || specSecurity).flatMap((s: Record<string, any>) => Object.keys(s));
     const requestBodySchema = this.extractRequestBodySchema(operation, version);
 
     return {
@@ -345,19 +319,14 @@ export class OpenApiSpecProcessor extends WorkerHost {
     dataSourceId: string,
     environmentId: string,
     batchOperations: ExtractedOperation[]
-  ): Promise<number> {
-    if (!batchOperations.length) return 0;
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const entities = batchOperations.map((op) =>
-        manager.create(OpenApiSpecOperation, {
-          ...op,
-          dataSourceId,
-          environmentId,
-        })
-      );
-      const saved = await manager.save(OpenApiSpecOperation, entities);
-      return saved.length;
-    });
+  ): Promise<void> {
+    if (!batchOperations.length) return;
+    await dbTransactionWrap((manager: EntityManager) =>
+      manager.save(
+        OpenApiSpecOperation,
+        batchOperations.map((op) => ({ ...op, dataSourceId, environmentId }))
+      )
+    );
   }
 
   // Uses DataSourceOptions directly, not the edition-split AppEnvironmentUtilService: this

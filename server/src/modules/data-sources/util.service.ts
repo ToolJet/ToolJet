@@ -1159,13 +1159,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     await this.openApiSpecTerminationRegistry.requestTermination(dataSourceId, environmentId);
 
-    if (jobId) {
-      const job = await this.openApiSpecQueue.getJob(jobId);
-      // BullMQ can't remove an active job; it stops cooperatively on the termination flag.
-      if (job && ['waiting', 'delayed'].includes(await job.getState())) {
-        await job.remove();
-      }
-    }
+    await this.openApiSpecTerminationRegistry.removeIfQueued(jobId);
 
     await this.writeOpenApiSpecOptions(dataSourceId, organizationId, environmentId, {
       [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.CANCELLED,

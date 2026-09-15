@@ -8,6 +8,10 @@ export const PROCESS_OPENAPI_SPEC_JOB = 'process-openapi-spec';
 // Postgres's 65,535 bind-parameter limit.
 export const DEFAULT_OPENAPI_SPEC_BATCH_SIZE = parseInt(process.env.OPENAPI_SPEC_BATCH_SIZE) || 50;
 
+// Spec-processing jobs per worker (TOOLJET_OPENAPI_SPEC_CONCURRENCY). Defaults to 1 because large
+// specs are CPU/memory heavy.
+export const OPENAPI_SPEC_CONCURRENCY = parseInt(process.env.TOOLJET_OPENAPI_SPEC_CONCURRENCY || '1');
+
 export enum OpenApiSpecStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',

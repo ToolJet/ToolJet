@@ -5,35 +5,6 @@ import { DATA_SOURCE_ID, definitionJob, loadProcessor, makeManager, makeProcesso
 
 jest.mock('got', () => ({ __esModule: true, default: jest.fn() }));
 
-// Records what the processor hands the dereferencer. Keys are captured BEFORE delegating because
-// dereferenceInternal mutates parser.schema in place.
-const mockDereferenceCalls: { keys: string[]; nodes?: number }[] = [];
-let mockCountDereferencedNodes = false;
-
-jest.mock('@apidevtools/json-schema-ref-parser', () => {
-  const actual = jest.requireActual('@apidevtools/json-schema-ref-parser');
-  const countNodes = (root: unknown) => {
-    const visited = new Set<object>();
-    const walk = (node: any) => {
-      if (!node || typeof node !== 'object' || visited.has(node)) return;
-      visited.add(node);
-      Object.values(node).forEach(walk);
-    };
-    walk(root);
-    return visited.size;
-  };
-  return {
-    ...actual,
-    dereferenceInternal: jest.fn((parser: any, options: any) => {
-      const call: { keys: string[]; nodes?: number } = { keys: Object.keys(parser.schema) };
-      mockDereferenceCalls.push(call);
-      const result = actual.dereferenceInternal(parser, options);
-      if (mockCountDereferencedNodes) call.nodes = countNodes(parser.schema);
-      return result;
-    }),
-  };
-});
-
 let got: jest.Mock;
 beforeAll(async () => {
   await loadProcessor();
@@ -117,39 +88,6 @@ function petStoreSwagger2(): Record<string, any> {
   };
 }
 
-// Heavy responses next to tiny parameters, like a Microsoft Graph operation. 200 separate Leaf
-// components, because one shared $ref resolves to a single object and would not add weight.
-function heavyResponsesOpenApi3(): Record<string, any> {
-  const leaves: Record<string, any> = {};
-  const bigProperties: Record<string, any> = {};
-  for (let i = 0; i < 200; i++) {
-    leaves[`Leaf${i}`] = { type: 'object', properties: { id: { type: 'string' }, value: { type: 'string' } } };
-    bigProperties[`field${i}`] = { $ref: `#/components/schemas/Leaf${i}` };
-  }
-  return {
-    openapi: '3.0.0',
-    info: { title: 'Heavy', version: '1.0.0' },
-    components: { schemas: { ...leaves, Big: { type: 'object', properties: bigProperties } } },
-    paths: {
-      '/items': {
-        get: {
-          operationId: 'listItems',
-          parameters: [
-            { name: 'top', in: 'query', schema: { type: 'integer' } },
-            { name: 'skip', in: 'query', schema: { type: 'integer' } },
-          ],
-          responses: {
-            200: {
-              description: 'ok',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Big' } } },
-            },
-          },
-        },
-      },
-    },
-  };
-}
-
 // 60 operations: more than one batch at the default batch size of 50.
 function manyOperationsOpenApi3(count = 60): Record<string, any> {
   const paths: Record<string, any> = {};
@@ -165,8 +103,6 @@ describe('OpenApiSpecProcessor', () => {
 
   beforeEach(() => {
     harness = makeManager();
-    mockDereferenceCalls.length = 0;
-    mockCountDereferencedNodes = false;
     got.mockReset();
   });
 
@@ -398,34 +334,25 @@ describe('OpenApiSpecProcessor', () => {
   });
 
   describe('dereference scope', () => {
-    it('should hand the dereferencer only parameters and requestBody, never responses', async () => {
-      await makeProcessor().processor.process(definitionJob(JSON.stringify(heavyResponsesOpenApi3())));
+    it('should persist an operation whose response schema has an unresolvable $ref', async () => {
+      const spec = petStoreOpenApi3();
+      spec.paths['/orphans'] = {
+        get: {
+          operationId: 'listOrphans',
+          parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer' } }],
+          responses: {
+            200: { content: { 'application/json': { schema: { $ref: '#/components/schemas/DoesNotExist' } } } },
+          },
+        },
+      };
+      const { processor, logger } = makeProcessor();
 
-      const unexpectedKeys = mockDereferenceCalls
-        .flatMap((call) => call.keys)
-        .filter((key) => !['parameters', 'requestBody'].includes(key));
-      expect(mockDereferenceCalls.length).toBeGreaterThan(0);
-      expect(unexpectedKeys).toEqual([]);
-    });
+      await processor.process(definitionJob(JSON.stringify(spec)));
 
-    it('should not expand response schemas at all', async () => {
-      mockCountDereferencedNodes = true;
-
-      await makeProcessor().processor.process(definitionJob(JSON.stringify(heavyResponsesOpenApi3())));
-
-      const expandedNodes = mockDereferenceCalls.reduce((total, call) => total + (call.nodes ?? 0), 0);
-      expect(harness.saved).toHaveLength(1);
-      expect(expandedNodes).toBeLessThan(50);
-    });
-
-    it('should not persist response schemas or raw schema columns', async () => {
-      await makeProcessor().processor.process(definitionJob(JSON.stringify(petStoreOpenApi3())));
-
-      for (const row of harness.saved) {
-        expect(row).not.toHaveProperty('responseSchemas');
-        expect(row).not.toHaveProperty('requestBodySchemaRaw');
-        expect(row).not.toHaveProperty('responseSchemasRaw');
-      }
+      expect(byOperationId(harness.saved, 'listOrphans')).toMatchObject({
+        parameters: [{ name: 'limit', in: 'query', required: false, schema: { type: 'integer' } }],
+      });
+      expect(logger.error).not.toHaveBeenCalled();
     });
   });
 });

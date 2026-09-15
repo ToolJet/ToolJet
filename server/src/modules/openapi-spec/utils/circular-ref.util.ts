@@ -8,21 +8,15 @@ export function pruneCircularRefs<T>(value: T): T {
   const visited = new Set<object>();
 
   function walk(node: any): any {
-    if (Array.isArray(node)) {
-      if (visited.has(node)) return [];
-      visited.add(node);
-      return node.map((item) => walk(item));
-    }
-    if (node && typeof node === 'object') {
-      if (visited.has(node)) return {};
-      visited.add(node);
-      const result: Record<string, any> = {};
-      for (const key of Object.keys(node)) {
-        result[key] = walk(node[key]);
-      }
-      return result;
-    }
-    return node;
+    if (!node || typeof node !== 'object') return node;
+    if (visited.has(node)) return Array.isArray(node) ? [] : {};
+    visited.add(node);
+    if (Array.isArray(node)) return node.map(walk);
+    // A plain loop, not Object.fromEntries(Object.entries(...)): the per-node entry arrays pushed
+    // peak heap on Microsoft Graph from ~1.3 GB to ~2.1 GB.
+    const result: Record<string, any> = {};
+    for (const key of Object.keys(node)) result[key] = walk(node[key]);
+    return result;
   }
 
   return walk(value) as T;

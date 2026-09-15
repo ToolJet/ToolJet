@@ -67,26 +67,24 @@ describe('openapiv2 - run()', () => {
     plugin = new OpenApiV2();
   });
 
-  const baseQueryOptions = (overrides: Partial<any> = {}) => ({
-    host: 'https://fallback.example.com',
-    path: '/ping',
-    operation: 'get',
-    params: { request: {}, query: {}, header: {}, path: {} },
-    ...overrides,
-  });
+  const run = (q: Partial<any> = {}, src: any = { host: 'https://api.example.com' }) =>
+    plugin.run(
+      src,
+      {
+        host: 'https://fallback.example.com',
+        path: '/ping',
+        operation: 'get',
+        ...q,
+        params: { request: {}, query: {}, header: {}, path: {}, ...q.params },
+      },
+      'ds-1',
+      '2024-01-01T00:00:00Z'
+    );
 
   it('should substitute {param}-style path params and prefix sourceOptions.host', async () => {
     mockGotSuccess();
 
-    await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions({
-        path: '/users/{id}/posts/{postId}',
-        params: { request: {}, query: {}, header: {}, path: { id: '42', postId: '7' } },
-      }),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    await run({ path: '/users/{id}/posts/{postId}', params: { path: { id: '42', postId: '7' } } });
 
     const calledUrl = mockGot.mock.calls[0][0];
     expect(calledUrl.toString()).toBe('https://api.example.com/users/42/posts/7');
@@ -95,7 +93,7 @@ describe('openapiv2 - run()', () => {
   it('should fall back to queryOptions.host when sourceOptions.host is not set', async () => {
     mockGotSuccess();
 
-    await plugin.run({} as any, baseQueryOptions({ path: '/ping' }), 'ds-1', '2024-01-01T00:00:00Z');
+    await run({}, {});
 
     const calledUrl = mockGot.mock.calls[0][0];
     expect(calledUrl.toString()).toBe('https://fallback.example.com/ping');
@@ -104,19 +102,7 @@ describe('openapiv2 - run()', () => {
   it('should send query params as searchParams and header params as headers', async () => {
     mockGotSuccess();
 
-    await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions({
-        params: {
-          request: {},
-          query: { filter: 'active', page: '2' },
-          header: { Authorization: 'Bearer t' },
-          path: {},
-        },
-      }),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    await run({ params: { query: { filter: 'active', page: '2' }, header: { Authorization: 'Bearer t' } } });
 
     const requestOptions = mockGot.mock.calls[0][1];
     expect(requestOptions).toMatchObject({
@@ -128,15 +114,7 @@ describe('openapiv2 - run()', () => {
   it('should drop request body params whose value is an empty string (sanitizeObject)', async () => {
     mockGotSuccess();
 
-    await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions({
-        operation: 'post',
-        params: { request: { comment: 'hi', note: '' }, query: {}, header: {}, path: {} },
-      }),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    await run({ operation: 'post', params: { request: { comment: 'hi', note: '' } } });
 
     const requestOptions = mockGot.mock.calls[0][1];
     expect(requestOptions.json).toEqual({ comment: 'hi' });
@@ -145,47 +123,24 @@ describe('openapiv2 - run()', () => {
 
   it('should send the request body as JSON only for non-GET operations, and no body for GET', async () => {
     mockGotSuccess();
-    await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions({
-        operation: 'get',
-        params: { request: { foo: 'bar' }, query: {}, header: {}, path: {} },
-      }),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    await run({ operation: 'get', params: { request: { foo: 'bar' } } });
     expect(mockGot.mock.calls[0][1]).not.toHaveProperty('json');
 
     mockGotSuccess();
-    await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions({
-        operation: 'post',
-        params: { request: { foo: 'bar' }, query: {}, header: {}, path: {} },
-      }),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    await run({ operation: 'post', params: { request: { foo: 'bar' } } });
     expect(mockGot.mock.calls[1][1]).toMatchObject({ json: { foo: 'bar' } });
   });
 
   it('should return the ok result shape on success', async () => {
     mockGotSuccess({
-      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ hello: 'world' }),
-      statusCode: 200,
       request: {
         requestUrl: 'https://api.example.com/ping?a=1',
         options: { method: 'get', headers: { Authorization: 'Bearer t' } },
       },
     });
 
-    const result = await plugin.run(
-      { host: 'https://api.example.com' } as any,
-      baseQueryOptions(),
-      'ds-1',
-      '2024-01-01T00:00:00Z'
-    );
+    const result = await run();
 
     expect(result).toMatchObject({
       status: 'ok',
@@ -206,9 +161,7 @@ describe('openapiv2 - run()', () => {
   it('should surface a thrown got error as a QueryError', async () => {
     mockGot.mockRejectedValueOnce(new Error('network fail'));
 
-    await expect(
-      plugin.run({ host: 'https://api.example.com' } as any, baseQueryOptions(), 'ds-1', '2024-01-01T00:00:00Z')
-    ).rejects.toBeInstanceOf(QueryError);
+    await expect(run()).rejects.toBeInstanceOf(QueryError);
   });
 
   it('should surface a 401 with auth_type oauth2 as an OAuthUnauthorizedClientError', async () => {
@@ -218,14 +171,9 @@ describe('openapiv2 - run()', () => {
     });
     mockGot.mockRejectedValueOnce(httpError);
 
-    await expect(
-      plugin.run(
-        { host: 'https://api.example.com', auth_type: 'oauth2' } as any,
-        baseQueryOptions(),
-        'ds-1',
-        '2024-01-01T00:00:00Z'
-      )
-    ).rejects.toBeInstanceOf(OAuthUnauthorizedClientError);
+    await expect(run({}, { host: 'https://api.example.com', auth_type: 'oauth2' })).rejects.toBeInstanceOf(
+      OAuthUnauthorizedClientError
+    );
 
     // Token refresh (getRefreshedToken) is invoked by the caller via plugin.refreshToken(), not from inside run().
   });
@@ -243,9 +191,9 @@ describe('openapiv2 - run()', () => {
   it('should not read the spec from sourceOptions - only host/path/operation/params drive the request', async () => {
     mockGotSuccess();
 
-    const sourceOptions = { host: 'https://api.example.com', bearer_token: '' } as any;
+    const sourceOptions = { host: 'https://api.example.com', bearer_token: '' };
 
-    await plugin.run(sourceOptions, baseQueryOptions({ path: '/health' }), 'ds-1', '2024-01-01T00:00:00Z');
+    await run({ path: '/health' }, sourceOptions);
 
     expect(mockGot).toHaveBeenCalledTimes(1);
     expect(mockGot.mock.calls[0][0].toString()).toBe('https://api.example.com/health');

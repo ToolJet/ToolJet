@@ -26,9 +26,7 @@ export function makeManager() {
   const saved: Record<string, any>[] = [];
   const updates: Record<string, any>[] = [];
   const manager = {
-    query: jest.fn().mockResolvedValue(undefined),
     delete: jest.fn().mockResolvedValue({}),
-    create: jest.fn((_entity: unknown, row: Record<string, any>) => row),
     save: jest.fn(async (_entity: unknown, rows: Record<string, any>[]) => {
       saved.push(...rows);
       return rows;
@@ -47,7 +45,7 @@ export function makeProcessor({ terminated = false } = {}) {
     isTerminated: jest.fn().mockResolvedValue(terminated),
     clear: jest.fn(),
   };
-  const logger = { log: jest.fn(), error: jest.fn(), warn: jest.fn() };
+  const logger = { log: jest.fn(), error: jest.fn() };
   const processor = new OpenApiSpecProcessor(terminationRegistry as any, logger as any);
   return { processor, logger, terminationRegistry };
 }

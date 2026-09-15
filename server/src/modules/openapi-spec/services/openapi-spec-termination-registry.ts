@@ -1,11 +1,9 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Queue, QueueEvents } from 'bullmq';
+import { Job, Queue, QueueEvents } from 'bullmq';
 import Redis, { RedisOptions } from 'ioredis';
 import { Logger } from 'nestjs-pino';
 import { OPENAPI_SPEC_PROCESSING_QUEUE } from '../constants';
-
-export class OpenApiSpecTerminationTimeoutError extends Error {}
 
 /**
  * Redis-backed cancellation flag for OpenAPI spec jobs (mirrors WorkflowTerminationRegistry).
@@ -66,8 +64,21 @@ export class OpenApiSpecTerminationRegistry implements OnModuleInit, OnModuleDes
     }
   }
 
+  // BullMQ can't remove an active job; it stops cooperatively on the termination flag.
+  // Returns the job unless it does not exist or was removed here.
+  async removeIfQueued(jobId: string | number | undefined): Promise<Job | null> {
+    if (!jobId) return null;
+    const job = await this.queue.getJob(String(jobId));
+    if (!job) return null;
+    if (['waiting', 'delayed'].includes(await job.getState())) {
+      await job.remove();
+      return null;
+    }
+    return job;
+  }
+
   // Resolves once the job is no longer running (removed, finished, or failed for any reason).
-  // Throws OpenApiSpecTerminationTimeoutError only if it is still active after timeoutMs.
+  // Throws only if it is still active after timeoutMs.
   async terminateAndWait(
     dataSourceId: string,
     environmentId: string,
@@ -76,22 +87,14 @@ export class OpenApiSpecTerminationRegistry implements OnModuleInit, OnModuleDes
   ): Promise<void> {
     await this.requestTermination(dataSourceId, environmentId);
 
-    if (!jobId) return;
-    const job = await this.queue.getJob(String(jobId));
-    if (!job) return;
-
-    const state = await job.getState();
-    if (['waiting', 'delayed'].includes(state)) {
-      await job.remove();
-      return;
-    }
-    if (['completed', 'failed'].includes(state)) return;
+    const job = await this.removeIfQueued(jobId);
+    if (!job || ['completed', 'failed'].includes(await job.getState())) return;
 
     try {
       await job.waitUntilFinished(this.queueEvents, timeoutMs);
     } catch (error) {
       if ((error as Error).message?.includes('timed out before finishing')) {
-        throw new OpenApiSpecTerminationTimeoutError(
+        throw new Error(
           `OpenAPI spec processing job ${jobId} for datasource ${dataSourceId}, environment ${environmentId} did not ` +
             `stop within ${timeoutMs}ms of requesting termination - refusing to proceed while it may still be running.`
         );
