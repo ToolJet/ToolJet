@@ -398,7 +398,11 @@ const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
 function createLicenseInstance(plan: string): LicenseBase {
   const terms = PLAN_TO_TERMS[plan] ?? ENTERPRISE_TEST_TERMS;
   const futureDate = new Date();
-  futureDate.setMinutes(futureDate.getMinutes() + 30);
+  // A day, not 30 minutes. The instance is minted once at app boot and re-minted only when a
+  // test calls restoreLicensePlan(), so a long suite outlives it: the git-sync e2e file runs
+  // ~60 min and its tail started getting 451 from the license gate — a wall-clock artifact
+  // indistinguishable from a product bug.
+  futureDate.setDate(futureDate.getDate() + 1);
   return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);
 }
 
@@ -447,7 +451,7 @@ function configurePlanMock(app: INestApplication, plan: string) {
 function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): LicenseBase {
   const expiry = new Date();
   if (expired) expiry.setDate(expiry.getDate() - 1);
-  else expiry.setMinutes(expiry.getMinutes() + 30);
+  else expiry.setDate(expiry.getDate() + 1);
   return new (LicenseBase as any)(
     CE_BASIC_PLAN_TERMS,
     terms,

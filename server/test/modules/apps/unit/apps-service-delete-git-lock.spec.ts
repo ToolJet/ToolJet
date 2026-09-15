@@ -1,6 +1,7 @@
 /**
  * Regression: deleting an app in a git-configured-but-unlicensed workspace must be BLOCKED, the same
  * way create is (assertNotGitLicenseLocked → ForbiddenException "Turn off git sync to continue").
+ * Every app type is covered, including workflows (Phase 2 removed their exemption).
  *
  * Why an EE-specific test: the EE AppsService.delete override handles git apps itself and returns
  * WITHOUT calling super.delete, so the base class' git guard was bypassed on exactly that path. This
@@ -55,12 +56,11 @@ describe('EE AppsService.delete — git license lock', () => {
     expect(isGitEditLocked).toHaveBeenCalledWith('org-1');
   });
 
-  it('skips the lock check entirely for workflows (not git-synced)', async () => {
+  it('runs the same lock check for a workflow delete (Phase 2: workflows are no longer exempt)', async () => {
     const isGitEditLocked = jest.fn().mockResolvedValue(true);
     const svc = makeSvc(isGitEditLocked);
 
-    // Workflow → guard skipped; delete proceeds and fails downstream on the stub.
-    await svc.delete(makeApp(APP_TYPES.WORKFLOW), makeUser()).catch(() => {});
-    expect(isGitEditLocked).not.toHaveBeenCalled();
+    await expect(svc.delete(makeApp(APP_TYPES.WORKFLOW), makeUser())).rejects.toBeInstanceOf(ForbiddenException);
+    expect(isGitEditLocked).toHaveBeenCalledWith('org-1');
   });
 });

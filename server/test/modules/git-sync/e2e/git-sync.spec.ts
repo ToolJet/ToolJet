@@ -23,12 +23,38 @@ import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.servi
 // Tests in the save+retrieve block and the App git life cycle hit this
 // server for real (no stubs). All URLs are derived from TEST_GIT_BASE_URL +
 // TEST_GIT_REPO_PATH so changing the host needs only one override.
-// Required environment variables for this suite. No defaults: a missing or
-// empty value is a hard error so misconfigured CI fails loudly instead of
-// silently hitting the wrong host or sending placeholder credentials.
+// Required environment variables for this suite. Checked up front rather than
+// on first use, so a CI without the simulator skips the suite instead of
+// failing it: these reads happen at module scope, and throwing there aborts the
+// import and reports "Test suite failed to run" with no indication that the
+// cause was configuration. Same shape as git-sync-gitlab.spec.ts and
+// save-release-gitsync.
+const REQUIRED_ENV = [
+  'TEST_GIT_BASE_URL',
+  'TOOLJET_GITHUB_APP_ID',
+  'TOOLJET_GITHUB_INSTALLATION_ID',
+  'TOOLJET_GITHUB_APP_PRIVATE_KEY',
+  'TOOLJET_GIT_ADMIN_USER',
+  'TOOLJET_GIT_ADMIN_PASSWORD',
+];
+const MISSING_ENV = REQUIRED_ENV.filter((name) => !process.env[name]);
+const GITSYNC_E2E_ENABLED = MISSING_ENV.length === 0;
+if (!GITSYNC_E2E_ENABLED) {
+  console.warn(
+    `[git-sync] SKIPPED — set ${MISSING_ENV.join(', ')} (plus a GitHub-Enterprise-shaped simulator) to run this suite.`
+  );
+}
+const describeGitSync = GITSYNC_E2E_ENABLED ? describe : describe.skip;
+
+// A missing or empty value is still a hard error when the suite is enabled, so
+// a half-configured CI fails loudly instead of silently hitting the wrong host
+// or sending placeholder credentials. When the suite is skipped the reads are
+// inert and return '' — the values are never used, and throwing would defeat
+// the skip above.
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
+    if (!GITSYNC_E2E_ENABLED) return '';
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
@@ -73,7 +99,7 @@ const BASIC =
 /**
  * @group gitsync
  */
-describe('GitSyncController', () => {
+describeGitSync('GitSyncController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let tokenCookie: string;
@@ -5846,6 +5872,114 @@ describe('GitSyncController', () => {
         expect(hydrateResp.body.hydration_status).toBe('success');
 
         step(6, 'the branch DSV is back — the connected data source populated on open');
+        expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
+      }, 300000);
+
+      it('carries a connected global data source into the feature branch on workflow push, and re-hydrates it on open', async () => {
+        // Regression for the workflow counterpart of the app/module cases above: gitPushApp
+        // gated serializeLinkedDataSourcesForApp to FRONT_END|MODULE, so a global DS connected
+        // solely via a workflow's query never rode into the commit and was left permanently
+        // unsynced on other branches.
+        //
+        // Authored on the FEATURE branch, exactly like the two cases above. An earlier draft of
+        // this test targeted the default branch on the belief that "a workflow is always created
+        // there" — false under multi-branch: AppsService.create reads the branch from the DTO
+        // BODY (`appCreateDto.branchId`, apps/service.ts:106), falling back to the org default
+        // only when absent, and then rejects the default branch outright whenever multi-branching
+        // is enabled. So the body field is what places the workflow; ?branch_id alone is not
+        // enough (it only sets user.branchId, which create() never reads). Single-branch is the
+        // exempt case, not this one.
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-dep-ds-workflow';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a workflow + global data source on the feature branch, link the DS via a query');
+        const workflowId: string = (
+          await auth(agent().post('/api/workflows'))
+            .query({ branch_id: featBranchId })
+            .send({ name: 'dep-ds-workflow', type: 'workflow', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        // Read the version from the DB: GET /api/apps/:id is the app/module idiom and is
+        // deliberately not relied on for workflows here.
+        const versionId: string = (
+          await depDs.query(`SELECT id FROM app_versions WHERE app_id = $1 AND branch_id = $2`, [
+            workflowId,
+            featBranchId,
+          ])
+        )[0]?.id;
+        expect(versionId).toBeTruthy();
+
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'dep-carry-workflow-ds',
+              kind: 'restapi',
+              options: dsOptions('http://dep-carry-workflow.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_dep_carry_workflow',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, featBranchId);
+
+        step(3, 'gitpush the workflow to the feature branch → its connected DS rides into the same commit');
+        await gitpushApp(workflowId, versionId, 'dep-ds-workflow', FEAT, featBranchId).expect(201);
+
+        step(4, 'the connected data source is present in git on the feature branch');
+        const dsFile = await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`);
+        expect(dsFile).not.toBeNull();
+        const dsJson = JSON.parse(dsFile as string);
+        expect(dsJson.id).toBe(await dsCoRelId(dsId));
+        expect(dsJson.kind).toBe('restapi');
+        // The name lives in the directory (data-sources/<name>/), never in the file.
+        expect(dsJson.name).toBeUndefined();
+
+        step(5, 'the workflow committed under its NAME not its UUID, and carries no enable toggle');
+        const wfFile = await readGitFile(FEAT, 'workflows/dep-ds-workflow/app/app.json');
+        expect(wfFile).not.toBeNull();
+        const wfJson = JSON.parse(wfFile as string);
+        expect(wfJson.name).toBeUndefined();
+        expect(wfJson.type).toBe('workflow');
+        // is_maintenance_on is the workflow ENABLE toggle — workspace-local, must never travel.
+        expect(wfJson.isMaintenanceOn).toBeUndefined();
+
+        step(6, 'drop the branch DSV, force a fresh open → hydrate re-creates it from git (no dummy)');
+        await depDs.query(
+          `DELETE FROM data_source_version_options
+             WHERE data_source_version_id IN (
+               SELECT id FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2)`,
+          [dsId, featBranchId]
+        );
+        await depDs.query(`DELETE FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+          dsId,
+          featBranchId,
+        ]);
+        expect(await dsvCount(dsId, featBranchId)).toBe(0);
+
+        await depDs.query(
+          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
+             WHERE app_id = $1 AND branch_id = $2`,
+          [workflowId, featBranchId]
+        );
+
+        const hydrateResp = await auth(agent().get(`/api/apps/${workflowId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        expect(hydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateResp.body.hydration_status).toBe('success');
+
+        step(7, 'the branch DSV is back — the connected data source populated on open');
         expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
       }, 300000);
 
