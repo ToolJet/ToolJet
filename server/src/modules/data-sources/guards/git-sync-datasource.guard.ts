@@ -29,7 +29,10 @@ function isSecretsOnlyEdit(incomingOptions: unknown, storedOptions: Record<strin
   for (const option of incomingOptions) {
     const key = option?.['key'];
     if (!key || OAUTH_FLOW_KEYS.has(key)) continue;
-    if (option?.['encrypted'] === true) continue;
+    // encrypted arrives as either a boolean or the string "true" depending on the caller —
+    // same defensive check used throughout workspace-git-sync-adapter.ts (sanitizeOptionsForGit,
+    // restoreOptionsFromGit).
+    if (option?.['encrypted'] === true || option?.['encrypted'] === 'true') continue;
     const storedValue = stored[key]?.['value'];
     if (option?.['value'] !== storedValue) return false;
   }
@@ -91,17 +94,28 @@ export class GitSyncDataSourceEditGuard implements CanActivate {
           dsv.branchId ?? branchId
         ),
         dbTransactionWrap((manager: EntityManager) =>
-          manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] })
+          manager.findOne(DataSource, {
+            where: { id: dataSourceId },
+            select: ['id', 'name'],
+          })
         ),
       ]);
       const nameUnchanged = request.body?.name === undefined || request.body.name === dataSource?.name;
       secretsOnly = nameUnchanged && isSecretsOnlyEdit(request.body.options, storedOptions?.options);
+
+      console.log(secretsOnly, 'secretsOnly');
+      console.log(request.body?.options, 'request.body?.options');
+      console.log(storedOptions?.options, 'storedOptions?.options');
     }
 
     await assertGitSyncEditAllowedForOrg(
       this.gitSyncConfigsUtilService,
       organizationId,
-      { branchId: dsv?.branchId ?? branchId, isSynced: !!dsv?.isSynced, secretsOnly },
+      {
+        branchId: dsv?.branchId ?? branchId,
+        isSynced: !!dsv?.isSynced,
+        secretsOnly,
+      },
       'data source'
     );
     return true;
