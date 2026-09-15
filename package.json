@@ -23,6 +23,15 @@
   "overrides": {
     "@eslint/eslintrc": {
       "js-yaml": "4.3.2"
+    },
+    "eslint": {
+      "minimatch": "3.1.5"
+    },
+    "glob": {
+      "minimatch": "3.1.5"
+    },
+    "ignore-walk": {
+      "minimatch": "3.1.5"
     }
   },
   "scripts": {
