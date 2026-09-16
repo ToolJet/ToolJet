@@ -73,6 +73,9 @@
     "@babel/helper-compilation-targets": {
       "browserslist": "4.28.9"
     },
+    "@sendgrid/client": {
+      "axios": "1.20.0"
+    },
     "@types/request": {
       "form-data": "2.5.6"
     },
@@ -81,6 +84,9 @@
     },
     "cosmiconfig": {
       "js-yaml": "4.3.2"
+    },
+    "ibm_db": {
+      "axios": "1.20.0"
     },
     "jsdom": {
       "ws": "7.5.13"
@@ -91,6 +97,12 @@
     "minimatch": {
       "brace-expansion": "1.1.18"
     },
+    "nx": {
+      "axios": "1.20.0"
+    },
+    "snowflake-sdk": {
+      "axios": "1.20.0"
+    },
     "socks": {
       "ip-address": "10.7.1"
     },
@@ -98,8 +110,17 @@
     "thrift": {
       "ws": "5.2.7"
     },
+    "twilio": {
+      "axios": "1.20.0"
+    },
+    "typesense": {
+      "axios": "1.20.0"
+    },
     "update-browserslist-db": {
       "browserslist": "4.28.9"
+    },
+    "woocommerce-rest-ts-api": {
+      "axios": "1.20.0"
     }
   },
   "peerDependencies": {
