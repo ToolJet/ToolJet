@@ -176,12 +176,13 @@ if (summary?.total) {
   const sorted = [...areas].sort((a, b) => b[1].covered - a[1].covered);
   const areaRow = (name, c, t) => `| ${name} | ${fmtInt(c)}/${fmtInt(t)} | ${t ? ((c / t) * 100).toFixed(1) : '—'}% |`;
   const rest = sorted.slice(MAX_AREAS);
-  const link = process.env.COVERAGE_ARTIFACT_URL ? ` · [full HTML report ↗](${process.env.COVERAGE_ARTIFACT_URL})` : '';
   out.push(
     '',
     '<details>',
-    `<summary>Overall coverage by area · ${fmtInt(summary.total.lines.covered)}/${fmtInt(summary.total.lines.total)} lines${link}</summary>`,
+    `<summary>Overall coverage by area · ${fmtInt(summary.total.lines.covered)}/${fmtInt(summary.total.lines.total)} lines</summary>`,
     '',
+    // markdown doesn't render inside <summary>, so the link lives in the body
+    ...(process.env.COVERAGE_ARTIFACT_URL ? [`[Full HTML report ↗](${process.env.COVERAGE_ARTIFACT_URL})`, ''] : []),
     '| Area | Lines | % |',
     '|---|---:|---:|',
     ...sorted.slice(0, MAX_AREAS).map(([n, { covered, total }]) => areaRow(`\`${n}\``, covered, total)),
