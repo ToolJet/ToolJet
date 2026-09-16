@@ -83,7 +83,8 @@
     },
     {
       "componentType": "TextArea",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
       "componentType": "RichTextEditor",

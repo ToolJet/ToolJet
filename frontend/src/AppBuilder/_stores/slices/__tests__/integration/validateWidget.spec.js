@@ -453,6 +453,48 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'Value needs to be more than $99' });
   });
 
+  // Break this catches: adding a TextArea branch to validateWidget. A text area has no
+  // built-in format rule, so a builder's own regex is always reachable, and the length
+  // rules count newlines like any other character ([TextArea-VAL-002] pins that at the
+  // widget layer).
+  test('[TextArea-VAL-003] TextArea rules resolve against the shared engine, with no built-in format rule', () => {
+    const forTextArea = (validationObject, widgetValue) =>
+      validate({ componentType: 'TextArea', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forTextArea({}, 'not-an-email\nsecond line')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forTextArea({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forTextArea({ mandatory: { value: true } }, 'x')).toEqual({ isValid: true, validationError: null });
+
+    // minLength / maxLength, counting newlines as characters
+    expect(forTextArea({ minLength: { value: 5 } }, 'a\nb\nc')).toEqual({ isValid: true, validationError: null });
+    expect(forTextArea({ minLength: { value: 6 } }, 'a\nb\nc').validationError).toBe('Minimum 6 characters is needed');
+    expect(forTextArea({ maxLength: { value: 3 } }, 'a\nb\nc').validationError).toBe('Maximum 3 characters is allowed');
+
+    // regex, reachable because nothing short-circuits ahead of it
+    expect(forTextArea({ regex: { value: '^[a-z ]+$' } }, 'all lower')).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+    expect(forTextArea({ regex: { value: '^[a-z ]+$' } }, 'Has Caps').validationError).toBe(
+      'The input should match pattern'
+    );
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', 'short');
+    expect(
+      forTextArea(
+        { customRule: { value: "{{components.textinput1.value.length < 10 && 'Value needs to be longer'}}" } },
+        'short'
+      )
+    ).toEqual({ isValid: false, validationError: 'Value needs to be longer' });
+  });
+
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
     // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
     expect(
