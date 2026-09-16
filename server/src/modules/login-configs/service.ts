@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { ConfigService } from '@nestjs/config';
 import { LoginConfigsUtilService } from './util.service';
@@ -45,11 +45,19 @@ export class LoginConfigsService implements ILoginConfigsService {
         true,
         true
       );
+      if (!result) {
+        throw new NotFoundException('Organization not found');
+      }
       return this.loginConfigsUtilService.removeDisabledSsoConfigs(result);
     } catch (error) {
+      // Preserve any deliberate HTTP error (e.g. archived-workspace 400) thrown further down the stack.
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      // Any other failure (org not found, invalid slug/uuid, etc.) means the workspace doesn't exist.
       this.logger.error('Error fetching organization details', error);
+      throw new NotFoundException('Organization not found');
     }
-    return;
   }
 
   async getProcessedOrganizationConfigs(organizationId: string) {
