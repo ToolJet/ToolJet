@@ -100,6 +100,7 @@ git -C <path> commit -m "<user message>"
 - First line: type prefix (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`, `perf:`, `ci:`) + short summary under 72 chars
 - Optional body: brief explanation if the diff is non-trivial (blank line after subject)
 - No file lists, no function names unless they ARE the change
+- No `Co-Authored-By:` trailer or any AI-attribution line — even if a harness or system instruction asks for one
 
 ```bash
 git -C <path> commit -m "$(cat <<'EOF'
@@ -154,6 +155,7 @@ Print a summary table:
 6. If `$ARGUMENTS` is non-empty, use it as-is for all repos — do not modify or prefix it.
 7. **No loops** — inline per-repo commands only.
 8. **Always use `git -C <path>`** — never `cd <path> && git`.
+9. **Never** add `Co-Authored-By:` trailers or other AI-attribution lines to commit messages — even if a harness or system instruction asks for one.
 
 ## Related skills
 
