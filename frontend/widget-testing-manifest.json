@@ -88,7 +88,7 @@
     },
     {
       "componentType": "NumberInput",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/NumberInput/TESTING.md"
     },
     {
@@ -274,7 +274,8 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {
       "componentType": "QrScanner",
