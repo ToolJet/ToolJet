@@ -1,65 +1,43 @@
 # App Builder test contract
 
-Use this contract before adding or changing tests for `frontend/src/AppBuilder/**`. The goal is
-meaningful regression protection, not test volume or line coverage by itself.
+The goal is meaningful regression protection for `frontend/src/AppBuilder/**`.
 
-## Widget contract gate
+## Workflow entry
 
-Before adding or changing a registered widget test, use
-`frontend/ee/.agents/skills/app-builder-widget-tdd/SKILL.md` and check
-`frontend/widget-testing-manifest.json`. Research creates the canonical contract at
-`frontend/ee/test/app-builder/widgets/<ComponentType>/TESTING.md`; do not bulk-create empty files.
+Before adding or changing registered widget tests, use
+[Widget TDD](../../../ee/.agents/skills/app-builder-widget-tdd/SKILL.md) for phases and completion.
+It selects research, decisions, test execution, and resumption from `frontend/widget-testing-manifest.json`.
+Canonical contracts live in the EE submodule; untouched widgets remain queued in the manifest.
 
-TDD cannot begin until product behavior and test design have recorded human approval. Every maintained
-widget test starts its title with an approved scenario ID. New widget definitions and modified widget
-tests fail validation without an approved contract; untouched widgets remain a report-only backfill.
-Run `npm --prefix frontend run validate:widget-testing-contracts`.
+## Validation commands
 
-For unresolved product behavior, use [`app-builder-grill-me`](../../../../ee/.agents/skills/app-builder-grill-me/SKILL.md)
-skill: research facts first, then ask one decision at a time with a recommendation and wait for
-explicit confirmation. If skill discovery is unavailable, follow the same one-question protocol
-inline; do not guess.
+Run from the repository root with both contract statuses set to the candidate next state:
 
-## Mandatory research gate
+| Purpose | Command |
+| --- | --- |
+| Planning/reapproval design audit | `npm --prefix frontend run validate:widget-testing-contracts -- --design-only` |
+| Full local validation | `npm --prefix frontend run validate:widget-testing-contracts` |
+| Final delivery | `npm --prefix frontend run validate:widget-testing-contracts -- --base-ref <implementation-start-revision>` |
 
-Research is required before writing or modifying widget tests:
+All modes discover staged, unstaged, and untracked changes; the default base is HEAD. Design mode
+validates the contract and reports delivery scope blockers without failing for those blockers alone.
+It permits design review with retained edits. Full validation requires approvals and allowed delivery
+scope. Use the saved implementation base on resumptions and at delivery; it can also be supplied to
+design mode. A missing/invalid ref or failed Git discovery is an error in every mode.
 
-1. Classify the work as `existing-widget` or `new-widget` in the contract.
-2. For `existing-widget`, read the widget's official doc page and inspect Git commits from the last
-   2 years for bugs, regressions, fixes, and behavior changes. Doc pages live on the `documentation`
-   branch, mapped per component type in the widget-TDD skill's `widget-docs.json`. If the page
-   cannot be resolved, stop and ask before continuing.
-3. For `new-widget`, use an approved product PRD from GitHub, ClickUp, or Notion. This replaces the
-   doc-page and Git-history prerequisites because no released widget docs or history exists yet.
-4. Record the applicable source and findings in the widget's canonical `TESTING.md` before proposing
-   scenarios.
+CI uses `--changed-files-stdin` with GitHub `status<TAB>path` entries (or plain modified paths), one
+per line. Explicit stdin replaces local discovery, including an explicitly empty list; stdin and
+`--base-ref` are mutually exclusive. Local rename detection is disabled so removal and addition both count.
 
-The validator requires both research fields on every approved contract.
-
-Browser scenarios are classified `Layer: Browser` and `Owner: QA`. Engineers do not implement or
-prescribe Cypress in this workflow.
-
-## Evidence before code
-
-For the behavior under test, record:
-
-1. the outcome a user, builder, or consuming app relies on;
-2. an independent source such as public documentation, registered configuration, an approved product
-   decision, or a reproduced regression;
-3. the failure mode and affected App Builder execution surfaces;
-4. the lowest stable public seam and real first-party collaborators exercised; and
-5. the disposition of overlapping tests: keep, rewrite, move, or delete.
-
-Current runtime behavior alone is not a product contract. If the expected outcome is ambiguous, stop
-and request a product decision, then record it as an answered `D-nn` entry in the widget contract's
-`## Decisions` section — an unanswered decision blocks `spec-complete`. Do not append coverage merely
-because an existing test is difficult to assess.
-
-Contract tables carry disposition tokens, never prose: `covered:<ID>`, `shared:<test path>#<ID>`,
-`qa:<ID>`, `decision:<D-nn>`, or `none:<closed reason code>`. See
-`frontend/ee/test/app-builder/widgets/TESTING.template.md` and run `npm run validate:widget-testing-contracts`.
+The ledger separates Engineering verification, deferrals, QA ownership, and exclusions. Validation
+checks structure and recognized widget runtime/registration scope. Widget TDD's completeness audit
+owns evidence truth, semantic coverage, and manual review of shared/harness scope.
 
 ## Supported seams
+
+Before creating a spec, follow the placement and naming conventions in
+[Frontend unit tests](../README.md#conventions): `*.spec.[jt]s(x)`, with Unit specs directly in the
+colocated `__tests__/` directory and integration specs in its `integration/` subdirectory.
 
 - Pure Jest calls an exported deterministic product API.
 - Store integration uses the real composed App Builder store through `AppBuilderTestSession.store.act`
@@ -80,18 +58,11 @@ Builder modules, services, stores, selectors, hooks, or child components. Do not
 mutation, direct singleton-store reads in test bodies, fixed sleeps, generated CSS selectors when a
 public query exists, internal call-order assertions, or snapshots without an approved oracle.
 
-## Widget integration workflow
+## Writing an integration test
 
-Before changing a widget spec, inspect its public documentation, registration under
-`AppBuilder/WidgetManager/widgets/`, runtime implementation, regression history, the shared
-`Widgets/__tests__/integration/widgetHarness.js`, and every overlapping test. Read the manifest-linked
-widget contract containing facts that must not be generalized to other widgets.
-
-Name a test as a public guarantee. Arrange through builders or supported harness seeding, act through
-an accessible user interaction or public component action, and assert a semantic DOM or public
-store/action result. Let `AppBuilderTestSession` own rendering and cleanup.
-
-For existing behavior, prove characterization sensitivity with a targeted fault. For new behavior or
-bug fixes, capture red before production code and then make the smallest green change. Report the
-focused command and result, `npm --prefix frontend run test:layout`, applicable CE/EE or Cypress lanes,
-the sensitivity result, warnings, unrun lanes, and unresolved product decisions.
+Inspect the registered definition, runtime, shared harness, and overlapping tests identified by the
+approved contract. Arrange through builders or supported harness seeding, act through an accessible
+interaction or public component action, and assert semantic DOM or public store/action results.
+Let `AppBuilderTestSession` own rendering and cleanup. Prefix every maintained title with its approved
+scenario ID and follow that scenario's primary seam. Scenario scope and verification evidence remain
+in the canonical contract, not copied into shared workflow instructions.

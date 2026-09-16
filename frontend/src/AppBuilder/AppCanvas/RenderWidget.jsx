@@ -265,7 +265,7 @@ const RenderWidget = ({
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
-  setDefaultExposedValues(id, parentId, componentType);
+  setDefaultExposedValues(id, parentId, componentType, moduleId);
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
