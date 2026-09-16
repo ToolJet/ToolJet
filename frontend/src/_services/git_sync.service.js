@@ -19,6 +19,7 @@ export const gitSyncService = {
   confirmPullChanges,
   updateStatus,
   getGitStatus,
+  getUncommittedResources,
   saveProviderConfigs,
   getAppGitConfigs,
   // New branch management methods
@@ -124,6 +125,20 @@ function getGitStatus(workspaceId) {
   };
   return fetch(`${config.apiUrl}/git-sync/${workspaceId}/status`, requestOptions).then((response) =>
     handleResponse(response, false, null, true)
+  );
+}
+
+// Pre-flight for a push+pull sync flow: which apps/modules/datasources on this branch have
+// local, unpushed edits, without attempting a pull.
+function getUncommittedResources(workspaceId, branchId) {
+  const params = branchId ? `?branch_id=${encodeURIComponent(branchId)}` : '';
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/${workspaceId}/uncommitted-changes${params}`, requestOptions).then(
+    handleResponse
   );
 }
 

@@ -29,4 +29,8 @@ export interface IGitSyncConfigsService {
     isBranchingEnabled: boolean
   ): Promise<void>;
   deleteConfig(organizationId: string, organizationGitId: string, gitType: string): Promise<void>;
+  getUncommittedResources(
+    userOrganizationId: string,
+    branchId?: string
+  ): Promise<{ resources: { type: string; id: string; name: string }[] }>;
 }

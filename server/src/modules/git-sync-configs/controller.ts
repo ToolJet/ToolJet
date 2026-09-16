@@ -25,6 +25,15 @@ export class GitSyncConfigsController implements IGitSyncConfigsController {
     throw new NotFoundException();
   }
 
+  @Get(':id/uncommitted-changes')
+  async getUncommittedResources(
+    @User() _user: UserEntity,
+    @Param('id') _organizationId: string,
+    @Query('branch_id') _branchId?: string
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
   @Post()
   async create(
     @User() _user: UserEntity,

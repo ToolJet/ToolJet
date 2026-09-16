@@ -51,4 +51,11 @@ export class GitSyncConfigsService implements IGitSyncConfigsService {
   async deleteConfig(_organizationId: string, _organizationGitId: string, _gitType: string): Promise<void> {
     throw new NotImplementedException();
   }
+
+  async getUncommittedResources(
+    _userOrganizationId: string,
+    _branchId?: string
+  ): Promise<{ resources: { type: string; id: string; name: string }[] }> {
+    throw new NotImplementedException();
+  }
 }
