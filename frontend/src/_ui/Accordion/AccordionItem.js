@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import cx from 'classnames';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
-const AccordionItem = ({ open = true, index, title, isTitleCase = true, children }) => {
+const AccordionItem = ({ open = true, index, title, isTitleCase = true, isDeprecated = false, children }) => {
   const [show, setShow] = React.useState(open);
   const [newChildren, setNewChildren] = React.useState([]);
 
@@ -44,13 +45,18 @@ const AccordionItem = ({ open = true, index, title, isTitleCase = true, children
       >
         <div className={cx('accordion-button inspector')}>
           <span
-            className={`${isTitleCase ? 'text-capitalize' : ''} accordion-title-text tw-text-sm tw-text-text-default`}
+            className={`${
+              isTitleCase ? 'text-capitalize' : ''
+            } accordion-title-text tw-text-sm tw-text-text-default d-flex align-items-center gap-1`}
             data-cy={`label-${String(title).toLowerCase().replace(/\s+/g, '-')}`}
             style={{
               fontSize: '12px',
             }}
           >
             {title}
+            {isDeprecated && (
+              <IconAlertTriangle size={16} stroke={1.5} aria-label="Deprecated" color="var(--icon-danger)" />
+            )}
           </span>
 
           <div

@@ -133,7 +133,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -187,6 +188,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -290,6 +292,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -344,6 +357,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -1995,7 +2009,8 @@ export class AppImportExportService {
       importingDataQueryFolders,
       importingDataQueryFolderMappings,
       branchId,
-      isGitApp
+      isGitApp,
+      importedApp.type
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -2275,7 +2290,8 @@ export class AppImportExportService {
     importingDataQueryFolders: DataQueryFolder[] = [],
     importingDataQueryFolderMappings: DataQueryFolderMapping[] = [],
     branchId?: string,
-    isGitApp = false
+    isGitApp = false,
+    appType?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -2608,6 +2624,14 @@ export class AppImportExportService {
           newComponentIdsMap[component.id] = uuid();
         }
 
+        // Modules require every non-container component to be parented under the
+        // ModuleContainer; the builder/incremental APIs enforce this (component.service.ts),
+        // but imported bundles can carry components with no parent at all. Fall back to the
+        // page's ModuleContainer so imported modules get the same guarantee.
+        const moduleContainerComponent =
+          appType === APP_TYPES.MODULE ? pageComponents.find((c) => c.type === 'ModuleContainer') : null;
+        const moduleContainerId = moduleContainerComponent ? newComponentIdsMap[moduleContainerComponent.id] : null;
+
         for (const component of pageComponents) {
           let skipComponent = false;
           const newComponent = new Component();
@@ -2657,6 +2681,15 @@ export class AppImportExportService {
               NewRevampedComponents,
               tooljetVersion
             );
+            // ModuleContainer's visibility isn't a schema-declared property (no UI control for
+            // it), so there's no resolve-time fallback if it's missing - unlike the builder/API
+            // create paths (util.service.ts, appCanvasUtils.js) which hardcode it at creation
+            // time. Imported bundles can carry a ModuleContainer with this stripped, which
+            // renders it at 0 height. Mirror the same hardcoded default here.
+            if (component.type === 'ModuleContainer' && !properties.visibility) {
+              properties.visibility = { value: '{{true}}' };
+            }
+
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
@@ -2666,7 +2699,11 @@ export class AppImportExportService {
             newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = validation;
-            newComponent.parent = component.parent ? parentId : null;
+            newComponent.parent = component.parent
+              ? parentId
+              : moduleContainerId && component.type !== 'ModuleContainer'
+                ? moduleContainerId
+                : null;
 
             if (component.type === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
               // ModuleViewer properties hold references into the module app/version.
@@ -4549,6 +4586,10 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };

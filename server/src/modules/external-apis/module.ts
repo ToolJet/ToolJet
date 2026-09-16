@@ -47,6 +47,7 @@ export class ExternalApiModule extends SubModule {
       ExternalApisWorkflowFoldersControllerV2,
       ExternalApisTjdbController,
       ExternalApisBanController,
+      ExternalApisAppExportController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
@@ -62,6 +63,7 @@ export class ExternalApiModule extends SubModule {
       'controllers/workflow-folders.controller.v2',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
+      'controllers/app-export.controller',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -113,6 +115,7 @@ export class ExternalApiModule extends SubModule {
             ExternalApisWorkflowFoldersControllerV2,
             ExternalApisTjdbController,
             ExternalApisBanController,
+            ExternalApisAppExportController,
           ]
         : [],
       exports: [ExternalApiUtilService],
