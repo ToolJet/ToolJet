@@ -41,6 +41,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { WorkflowApprovalRequestRepository } from './repositories/workflow-approval-request.repository';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -214,6 +215,7 @@ export class WorkflowsModule extends SubModule {
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
+        WorkflowApprovalRequestRepository,
         ...(isMainImport
           ? [
               WorkflowStreamService,
