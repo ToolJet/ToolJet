@@ -196,6 +196,9 @@
     "@hubspot/api-client": {
       "form-data": "4.0.6"
     },
+    "@nestjs/microservices": {
+      "@grpc/grpc-js": "1.14.4"
+    },
     "@nestjs/platform-express": {
       "multer": "2.3.0"
     },
@@ -205,8 +208,29 @@
     "@node-saml/node-saml": {
       "@xmldom/xmldom": "0.9.12"
     },
+    "@opentelemetry/exporter-logs-otlp-grpc": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "@opentelemetry/exporter-metrics-otlp-grpc": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "@opentelemetry/exporter-trace-otlp-grpc": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "@opentelemetry/otlp-grpc-exporter-base": {
+      "@grpc/grpc-js": "1.14.4"
+    },
     "@opentelemetry/sdk-node": {
       "@opentelemetry/propagator-jaeger": "2.11.0"
+    },
+    "@temporalio/client": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "@temporalio/core-bridge": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "@temporalio/worker": {
+      "@grpc/grpc-js": "1.14.4"
     },
     "@tooljet/plugins": {
       "form-data": "4.0.6"
@@ -234,6 +258,12 @@
     },
     "engine.io-client": {
       "ws": "8.21.3"
+    },
+    "google-gax": {
+      "@grpc/grpc-js": "1.14.4"
+    },
+    "grpc-gcp": {
+      "@grpc/grpc-js": "1.14.4"
     },
     "minimatch": {
       "brace-expansion": "5.0.9"
