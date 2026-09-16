@@ -1,14 +1,24 @@
 const fs = require('fs');
 const path = require('path');
+const { parseSync } = require('@babel/core');
 
-const CONTRACT_STATUSES = new Set(['not-started', 'researching', 'grilling', 'spec-complete', 'approved', 'verified']);
-const SPEC_GATED_STATUSES = new Set(['spec-complete', 'approved', 'verified']);
-const APPROVED_CONTRACT_STATUSES = new Set(['approved', 'verified']);
+const CONTRACT_STATUSES = new Set([
+  'not-started',
+  'researching',
+  'grilling',
+  'spec-complete',
+  'approved',
+  'partial',
+  'verified',
+]);
+const SPEC_GATED_STATUSES = new Set(['spec-complete', 'approved', 'partial', 'verified']);
+const APPROVED_CONTRACT_STATUSES = new Set(['approved', 'partial', 'verified']);
 const IMPLEMENTED_SCENARIO_STATUSES = new Set(['implemented', 'verified']);
 const UNSETTLED_SCENARIO_STATUSES = new Set(['proposed', 'decision-required']);
 const SCENARIO_STATUSES = new Set([
   'proposed',
   'decision-required',
+  'ready',
   'approved',
   'implemented',
   'verified',
@@ -17,12 +27,10 @@ const SCENARIO_STATUSES = new Set([
   'qa-owned',
 ]);
 const OWNERS = new Set(['Engineering', 'QA']);
+const RANKS = new Set(['Critical', 'High', 'Medium', 'Low']);
 const DEVELOPMENT_TYPES = new Set(['existing-widget', 'new-widget']);
-// Each entry is a field name, or a list of accepted names whose FIRST is canonical.
-// `research_context7` is the retired name for `research_docs`:
-//  - widget docs are read from the `documentation` branch now, not Context7
-//  - Both are accepted so contracts written under either gate keep validating.
-const REQUIRED_RESEARCH_FIELDS = [['research_docs', 'research_context7'], 'research_git_history'];
+const PRODUCTION_CHANGE_POLICIES = new Set(['forbidden', 'allowed']);
+const REQUIRED_RESEARCH_FIELDS = ['research_docs', 'research_git_history'];
 const DISPOSITION_SECTIONS = [
   '## Research findings',
   '## Registered-surface disposition',
@@ -35,15 +43,18 @@ const NONE_REASON_CODES = new Set([
   'param-handle',
   'seeding-artifact',
   'platform-owned',
+  'not-applicable',
 ]);
 const DISPOSITION_PATTERNS = [
-  { kind: 'covered', pattern: /^covered:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/ },
+  {
+    kind: 'covered',
+    pattern: /^covered:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/,
+  },
   { kind: 'shared', pattern: /^shared:(\S+)#([A-Za-z0-9-]+)$/ },
   { kind: 'qa', pattern: /^qa:([A-Za-z0-9-]+(?:\s*,\s*[A-Za-z0-9-]+)*)$/ },
   { kind: 'decision', pattern: /^decision:(D-\d{2,})$/ },
   { kind: 'none', pattern: /^none:([a-z-]+(?::[A-Za-z0-9-]+)?)$/ },
 ];
-const TITLE_TAG = String.raw`^\s*(?:test|it)(?:\.each\([^)]*\))?(?:\.failing|\.skip|\.only)?\(\s*[\`'"]\[`;
 
 function read(frontendRoot, relative) {
   return fs.readFileSync(path.join(frontendRoot, relative), 'utf8');
@@ -74,19 +85,46 @@ function parseRegisteredWidgets(frontendRoot, registryPath) {
       configDefinitions.set(match[1], {
         componentType: match[2],
         definition: `src/AppBuilder/WidgetManager/widgets/${file}`,
+        surface: parseRegisteredSurface(source),
       });
     }
   }
 
-  return registeredConfigs.map((config) => ({ config, ...configDefinitions.get(config) }));
+  return registeredConfigs.map((config) => ({
+    config,
+    ...configDefinitions.get(config),
+  }));
+}
+
+function parseRegisteredSurface(source) {
+  const surface = [];
+  for (const section of ['others', 'validation', 'properties', 'events', 'styles', 'exposedVariables']) {
+    const body = source.match(new RegExp(`^  ${section}: \\{\\n([\\s\\S]*?)^  \\},?`, 'm'))?.[1];
+    if (!body) continue;
+    for (const match of body.matchAll(/^ {4}(?:['"]([^'"]+)['"]|([A-Za-z_$][\w$]*))\s*:/gm)) {
+      surface.push(`${section}.${match[1] ?? match[2]}`);
+    }
+  }
+  const actions = source.match(/^ {2}actions: \[([\s\S]*?)^ {2}\],?/m)?.[1] ?? '';
+  for (const match of actions.matchAll(/^ {6}handle:\s*['"]([^'"]+)['"]/gm)) {
+    surface.push(`actions.${match[1]}`);
+  }
+  return surface;
 }
 
 function stripScalar(value) {
   const trimmed = value.trim();
   if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-    return trimmed.slice(1, -1);
+    return trimmed.slice(1, -1).trim();
   }
   return trimmed;
+}
+
+function hasDeferralAttribution(value = '') {
+  const date = value.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
+  if (!date || !/\p{L}/u.test(value.replace(date, ''))) return false;
+  const parsed = new Date(`${date}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
 }
 
 function parseDecisions(source) {
@@ -149,6 +187,19 @@ function inferWidgetFromTestPath(relative, widgets) {
   );
 }
 
+function isWidgetProductionPath(relative, widget, definitionPath) {
+  const normalizedPath = relative.replace(/^frontend\//, '');
+  if (normalizedPath === definitionPath) return true;
+  if (!normalizedPath.startsWith('src/AppBuilder/Widgets/') || /\/(?:__tests__|test)\//.test(normalizedPath)) {
+    return false;
+  }
+  if (!/\.[jt]sx?$/.test(normalizedPath) || /\.(?:spec|test)\.[jt]sx?$/.test(normalizedPath)) return false;
+
+  const widgetPath = normalizedPath.replace('src/AppBuilder/Widgets/', '').replace(/\.[jt]sx?$/, '');
+  const names = [widgetPath.split('/')[0], widgetPath.split('/').at(-1)];
+  return names.some((name) => normalizeComponentName(name) === normalizeComponentName(widget.componentType));
+}
+
 function parseDispositionRows(source, sections) {
   const rows = [];
   for (const section of sections) {
@@ -174,50 +225,136 @@ function parseDispositionRows(source, sections) {
         kind,
         match: disposition.match(pattern),
       })).find(({ match }) => match);
-      rows.push({ heading, subject, disposition, kind: matched?.kind ?? null, match: matched?.match ?? null });
+      rows.push({
+        heading,
+        subject,
+        rationale: cells.slice(1, -1).join(' ').trim(),
+        disposition,
+        kind: matched?.kind ?? null,
+        match: matched?.match ?? null,
+      });
     }
   }
   return rows;
 }
 
-function titleHasId(source, id) {
-  return new RegExp(`${TITLE_TAG}${id}\\]`, 'm').test(source);
-}
-
-function titledIds(source, prefix) {
-  const ids = new Set();
-  for (const match of source.matchAll(new RegExp(`${TITLE_TAG}([A-Za-z0-9-]+)\\]`, 'gm'))) {
-    if (match[1].startsWith(prefix)) ids.add(match[1]);
-  }
-  return ids;
+function testDeclarations(source) {
+  const ast = parseSync(source, {
+    babelrc: false,
+    configFile: false,
+    sourceType: 'unambiguous',
+    parserOpts: { plugins: ['jsx', 'typescript'] },
+  });
+  const result = {
+    ids: new Set(),
+    activeIds: new Set(),
+    inactiveIds: new Set(),
+    focused: false,
+  };
+  const chain = (node) => {
+    if (node?.type === 'Identifier') return [node.name];
+    if (node?.type === 'MemberExpression') {
+      const base = chain(node.object);
+      const member = node.computed ? node.property.value : node.property.name;
+      return base && typeof member === 'string' ? [...base, member] : null;
+    }
+    // Parameter tables are calls or tagged templates preceding the declaration.
+    if (node?.type === 'CallExpression' || node?.type === 'TaggedTemplateExpression') {
+      const base = chain(node.callee ?? node.tag);
+      return base?.at(-1) === 'each' ? base : null;
+    }
+    return null;
+  };
+  const visit = (node, blocked = false) => {
+    if (!node || typeof node.type !== 'string') return;
+    let childBlocked = blocked;
+    if (node.type === 'CallExpression') {
+      const parts = chain(node.callee);
+      if (parts && /^(test|it|describe|xtest|xit|xdescribe|fit|fdescribe)$/.test(parts[0])) {
+        const focused = parts.includes('only') || ['fit', 'fdescribe'].includes(parts[0]);
+        result.focused ||= focused;
+        const inactive =
+          blocked ||
+          focused ||
+          parts[0].startsWith('x') ||
+          parts.some((part) => ['skip', 'todo', 'failing'].includes(part));
+        if (parts[0].includes('describe')) childBlocked = inactive;
+        const titleNode = node.arguments[0];
+        const title =
+          titleNode?.type === 'StringLiteral'
+            ? titleNode.value
+            : titleNode?.type === 'TemplateLiteral'
+            ? titleNode.quasis[0].value.cooked
+            : null;
+        if (title !== null) {
+          if (!parts[0].includes('describe')) {
+            const id = title.match(/^\[([A-Za-z0-9-]+)\]/)?.[1];
+            if (id) {
+              result.ids.add(id);
+              if (!inactive && node.arguments.length > 1) result.activeIds.add(id);
+              else result.inactiveIds.add(id);
+            }
+          }
+        }
+      }
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach((child) => visit(child, childBlocked));
+      else if (value && typeof value === 'object') visit(value, childBlocked);
+    }
+  };
+  visit(ast);
+  return result;
 }
 
 function walkSpecs(frontendRoot) {
   const specs = [];
   const visit = (relDir, ok) => {
     if (!exists(frontendRoot, relDir)) return;
-    for (const entry of fs.readdirSync(path.join(frontendRoot, relDir), { withFileTypes: true })) {
+    for (const entry of fs.readdirSync(path.join(frontendRoot, relDir), {
+      withFileTypes: true,
+    })) {
       const rel = `${relDir}/${entry.name}`;
       if (entry.isDirectory()) visit(rel, ok);
       else if (ok(rel)) specs.push({ path: rel, source: read(frontendRoot, rel) });
     }
   };
-  visit('src/AppBuilder/Widgets', (rel) => /\/__tests__\/.+\.spec\.(js|jsx)$/.test(rel));
-  visit('src/AppBuilder/AppCanvas/__tests__', (rel) => /\.(js|jsx)$/.test(rel));
-  visit('src/AppBuilder/_stores/slices/__tests__', (rel) => /\.(js|jsx)$/.test(rel));
+  visit('src/AppBuilder/Widgets', (rel) => /\/__tests__\/.+\.spec\.[jt]sx?$/.test(rel));
+  visit('src/AppBuilder/AppCanvas/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
+  visit('src/AppBuilder/_stores/slices/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   return specs;
 }
 
-function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}) {
+function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], designOnly = false } = {}) {
   const manifest = JSON.parse(fs.readFileSync(path.join(frontendRoot, 'widget-testing-manifest.json'), 'utf8'));
   const registered = parseRegisteredWidgets(frontendRoot, manifest.registry);
   const errors = [];
+  const scopeErrors = [];
   const warnings = [];
   const ledger = [];
   const manifestByType = new Map(manifest.widgets.map((widget) => [widget.componentType, widget]));
   const registeredByType = new Map(registered.map((widget) => [widget.componentType, widget]));
   const seenManifestTypes = new Set();
   const specs = walkSpecs(frontendRoot);
+  const parsedTests = new Map();
+  const declarations = (testPath) => {
+    if (!parsedTests.has(testPath)) {
+      let parsed = {
+        ids: new Set(),
+        activeIds: new Set(),
+        inactiveIds: new Set(),
+        focused: false,
+      };
+      try {
+        parsed = testDeclarations(read(frontendRoot, testPath));
+        if (parsed.focused) errors.push(`${testPath}: focused tests or suites prevent complete verification`);
+      } catch (error) {
+        errors.push(`Cannot parse test ${testPath}: ${error.message}`);
+      }
+      parsedTests.set(testPath, parsed);
+    }
+    return parsedTests.get(testPath);
+  };
 
   for (const widget of manifest.widgets) {
     if (seenManifestTypes.has(widget.componentType)) {
@@ -249,7 +386,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       const added = registered.find((widget) => widget.definition === normalizedPath);
       const status = added && manifestByType.get(added.componentType)?.status;
       if (added && !APPROVED_CONTRACT_STATUSES.has(status)) {
-        errors.push(`New widget ${added.componentType} requires an approved testing contract`);
+        scopeErrors.push(`New widget ${added.componentType} requires an approved testing contract`);
       }
     }
     if (!normalizedPath.startsWith('src/AppBuilder/Widgets/') || !/\.(spec|test)\.[jt]sx?$/.test(normalizedPath)) {
@@ -259,7 +396,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     if (!widget) {
       warnings.push(`Cannot map modified widget test ${normalizedPath} to a registered component type`);
     } else if (!APPROVED_CONTRACT_STATUSES.has(widget.status)) {
-      errors.push(`Modified widget test ${normalizedPath} requires an approved ${widget.componentType} contract`);
+      scopeErrors.push(`Modified widget test ${normalizedPath} requires an approved ${widget.componentType} contract`);
     }
   }
 
@@ -286,12 +423,23 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     if (!CONTRACT_STATUSES.has(contract.metadata.contract_status)) {
       errors.push(`${widget.componentType}: unknown contract_status ${contract.metadata.contract_status}`);
     }
-    const needsResearch =
+    if (contract.metadata.contract_status !== widget.status) {
+      errors.push(
+        `${widget.componentType}: contract_status ${contract.metadata.contract_status} does not match manifest status ${widget.status}`
+      );
+    }
+    const needsApproval =
       APPROVED_CONTRACT_STATUSES.has(widget.status) ||
       APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status);
+    if (needsApproval) {
+      for (const field of ['product_approval', 'test_design_approval']) {
+        if (!contract.metadata[field])
+          errors.push(`${widget.componentType}: ${widget.status} contract requires ${field}`);
+      }
+    }
     if (contract.metadata.development_type && !DEVELOPMENT_TYPES.has(contract.metadata.development_type)) {
       errors.push(`${widget.componentType}: unknown development_type ${contract.metadata.development_type}`);
-    } else if (needsResearch) {
+    } else if (specGated) {
       if (!DEVELOPMENT_TYPES.has(contract.metadata.development_type)) {
         errors.push(`${widget.componentType}: unknown development_type ${contract.metadata.development_type}`);
       } else if (contract.metadata.development_type === 'new-widget') {
@@ -300,10 +448,45 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
         }
       } else {
         for (const field of REQUIRED_RESEARCH_FIELDS) {
-          const accepted = Array.isArray(field) ? field : [field];
-          if (!accepted.some((name) => contract.metadata[name])) {
-            errors.push(`${widget.componentType}: ${widget.status} contract requires ${accepted[0]}`);
+          if (!contract.metadata[field]) {
+            errors.push(`${widget.componentType}: ${widget.status} contract requires ${field}`);
           }
+        }
+      }
+    }
+    if (contract.metadata.production_changes && !PRODUCTION_CHANGE_POLICIES.has(contract.metadata.production_changes)) {
+      errors.push(`${widget.componentType}: unknown production_changes policy ${contract.metadata.production_changes}`);
+    } else if (specGated && !contract.metadata.production_changes) {
+      errors.push(
+        `${widget.componentType}: ${widget.status} contract requires production_changes to be forbidden or allowed`
+      );
+    }
+    if (contract.metadata.production_changes === 'forbidden') {
+      const definitionPath = registeredByType.get(widget.componentType)?.definition;
+      for (const changedFile of changedFiles) {
+        if (isWidgetProductionPath(changedFile.path, widget, definitionPath)) {
+          scopeErrors.push(
+            `${widget.componentType}: production_changes is forbidden but ${changedFile.path.replace(
+              /^frontend\//,
+              ''
+            )} was ${changedFile.status}`
+          );
+        }
+      }
+    }
+
+    if (specGated) {
+      for (const decision of contract.decisions) {
+        if (!decision.fields.answer)
+          errors.push(`${widget.componentType}: decision ${decision.id} requires an Answer before ${widget.status}`);
+      }
+      const registeredRows = parseDispositionRows(contractSource, ['## Registered-surface disposition']);
+      const rowSubjects = new Set(
+        registeredRows.map(({ subject }) => normalizeComponentName(subject.replace(/`/g, '')))
+      );
+      for (const registeredKey of registeredByType.get(widget.componentType)?.surface ?? []) {
+        if (!rowSubjects.has(normalizeComponentName(registeredKey))) {
+          errors.push(`${widget.componentType}: registered surface ${registeredKey} has no disposition row`);
         }
       }
     }
@@ -320,9 +503,55 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       else if (!OWNERS.has(scenario.fields.owner)) {
         errors.push(`${scenario.id} has unknown Owner ${scenario.fields.owner}`);
       }
+      if (specGated && !scenario.fields.rank) errors.push(`${scenario.id} is missing Rank`);
+      else if (scenario.fields.rank && !RANKS.has(scenario.fields.rank)) {
+        errors.push(`${scenario.id} has unknown Rank ${scenario.fields.rank}`);
+      }
       if (scenario.fields.layer === 'Browser' && scenario.fields.owner !== 'QA') {
         errors.push(`${scenario.id}: Browser scenarios must be owned by QA`);
       }
+      const engineering = scenario.fields.owner === 'Engineering';
+      if (scenario.fields.owner === 'QA' && scenario.fields.layer !== 'Browser') {
+        errors.push(`${scenario.id}: QA scenarios must use Layer Browser`);
+      }
+      if (engineering && scenario.fields.status === 'qa-owned') {
+        errors.push(`${scenario.id}: Engineering scenarios cannot be qa-owned`);
+      }
+      if (scenario.fields.status === 'deferred' && !hasDeferralAttribution(scenario.fields['deferred-by'])) {
+        errors.push(`${scenario.id}: deferred requires Deferred-by with a person and valid YYYY-MM-DD date`);
+      }
+      if (specGated) {
+        for (const field of ['Guarantee', 'Sources', ...(engineering ? ['Public seam'] : [])]) {
+          if (!scenario.fields[field.toLowerCase()]) errors.push(`${scenario.id} is missing ${field}`);
+        }
+        if (!engineering && scenario.fields.status !== 'qa-owned') {
+          errors.push(`${scenario.id}: Browser/QA scenarios require Status qa-owned`);
+        }
+        if (
+          engineering &&
+          widget.status === 'spec-complete' &&
+          !['ready', 'deferred'].includes(scenario.fields.status)
+        ) {
+          errors.push(`${widget.componentType}: spec-complete requires ${scenario.id} to be ready or deferred`);
+        }
+        if (engineering && widget.status === 'verified' && scenario.fields.status !== 'verified') {
+          errors.push(
+            `${widget.componentType}: verified requires ${scenario.id} to be verified (got ${scenario.fields.status})`
+          );
+        }
+        if (engineering && widget.status === 'partial' && !['verified', 'deferred'].includes(scenario.fields.status)) {
+          errors.push(
+            `${widget.componentType}: partial requires ${scenario.id} to be verified or deferred (got ${scenario.fields.status})`
+          );
+        }
+      }
+      if (approved && scenario.fields.status === 'ready')
+        errors.push(`${scenario.id} is still ready in an approved contract`);
+      if (approved && scenario.fields.status === 'harness-blocked') {
+        errors.push(`${scenario.id}: harness-blocked requires returning the contract to grilling`);
+      }
+      if (scenario.fields.status === 'verified' && !scenario.fields.evidence)
+        errors.push(`${scenario.id} is missing Evidence`);
       if (specGated && UNSETTLED_SCENARIO_STATUSES.has(scenario.fields.status)) {
         errors.push(
           `${widget.componentType}: ${scenario.id} is still ${scenario.fields.status} in a ${widget.status} contract`
@@ -340,7 +569,14 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
     }
 
     const rows = parseDispositionRows(contractSource, DISPOSITION_SECTIONS);
-    const counts = { covered: 0, shared: 0, qa: 0, decision: 0, none: 0, illegal: 0 };
+    const counts = {
+      covered: 0,
+      shared: 0,
+      qa: 0,
+      decision: 0,
+      none: 0,
+      illegal: 0,
+    };
     for (const row of rows) {
       if (!row.kind) {
         counts.illegal += 1;
@@ -378,13 +614,19 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
           errors.push(
             `${widget.componentType}: "${row.heading}" row ${row.subject} points at missing shared test ${sharedPath}`
           );
-        } else if (!titleHasId(read(frontendRoot, sharedPath), sharedId)) {
+        } else if (
+          !declarations(sharedPath).activeIds.has(sharedId) ||
+          declarations(sharedPath).inactiveIds.has(sharedId)
+        ) {
           errors.push(
-            `${widget.componentType}: shared test ${sharedPath} does not reference ${sharedId} for row ${row.subject}`
+            `${widget.componentType}: shared test ${sharedPath} does not reference an active ${sharedId} test for row ${row.subject}`
           );
         }
       }
       if (row.kind === 'decision') {
+        errors.push(
+          `${widget.componentType}: row ${row.subject} must replace ${row.disposition} with a final disposition`
+        );
         const decision = decisionsById.get(row.match[1]);
         if (!decision) {
           errors.push(`${widget.componentType}: "${row.heading}" row ${row.subject} cites unknown ${row.match[1]}`);
@@ -396,6 +638,13 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       }
       if (row.kind === 'none') {
         const [reason, target] = row.match[1].split(':');
+        if (reason === 'not-applicable') {
+          if (!row.rationale)
+            errors.push(`${widget.componentType}: row ${row.subject} requires a rationale for none:not-applicable`);
+          if (row.heading === 'Registered-surface disposition') {
+            errors.push(`${widget.componentType}: registered surface ${row.subject} cannot be none:not-applicable`);
+          }
+        }
         if (reason === 'duplicate-of') {
           if (!target || !scenariosById.has(target)) {
             errors.push(
@@ -414,14 +663,25 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
 
     if (approved) {
       const foundIds = new Set();
-      for (const { source } of taggedSpecs) {
-        for (const id of titledIds(source, `${widget.componentType}-`)) foundIds.add(id);
+      for (const spec of taggedSpecs) {
+        for (const id of declarations(spec.path).ids) {
+          if (id.startsWith(`${widget.componentType}-`)) foundIds.add(id);
+        }
       }
       for (const scenario of contract.scenarios) {
+        if (
+          scenario.fields.owner === 'Engineering' &&
+          scenario.fields.status !== 'deferred' &&
+          taggedSpecs.some((spec) => declarations(spec.path).inactiveIds.has(scenario.id))
+        ) {
+          errors.push(`${scenario.id}: inactive tagged tests require an explicit deferred scenario`);
+        }
         if (!IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status)) continue;
         if (scenario.fields.owner === 'QA' || scenario.fields.layer === 'Browser') continue;
-        if (![...taggedSpecs].some(({ source }) => titleHasId(source, scenario.id))) {
-          errors.push(`${widget.componentType}: ${scenario.id} has no test whose title starts with [${scenario.id}]`);
+        if (!taggedSpecs.some((spec) => declarations(spec.path).activeIds.has(scenario.id))) {
+          errors.push(
+            `${widget.componentType}: ${scenario.id} has no active test whose title starts with [${scenario.id}]`
+          );
         }
       }
       for (const id of foundIds) {
@@ -431,12 +691,20 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
       }
     }
 
+    const deferredScenarios = contract.scenarios
+      .filter(({ fields }) => fields.owner === 'Engineering' && fields.status === 'deferred')
+      .map(({ id, fields }) => ({ id, deferredBy: fields['deferred-by'] }));
+    if (widget.status === 'partial' && deferredScenarios.length === 0) {
+      errors.push(`${widget.componentType}: partial requires at least one deferred Engineering scenario`);
+    }
     ledger.push({
       componentType: widget.componentType,
       status: widget.status,
       rows: rows.length,
       scenarios: contract.scenarios.length,
       engineeringScenarios: contract.scenarios.filter(({ fields }) => fields.owner !== 'QA').length,
+      deferredScenarios,
+      qaScenarios: contract.scenarios.filter(({ fields }) => fields.owner === 'QA').length,
       verifiedScenarios: contract.scenarios.filter(({ fields }) => fields.status === 'verified').length,
       openDecisions: contract.decisions.filter(({ fields }) => !fields.answer).length,
       dispositions: counts,
@@ -444,12 +712,14 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [] } = {}
   }
 
   return {
-    errors,
+    errors: designOnly ? errors : [...errors, ...scopeErrors],
+    scopeErrors,
     warnings,
     ledger,
     registeredWidgetTypes: registered.map(({ componentType }) => componentType),
     trackedWidgets: manifest.widgets.length,
     approvedWidgets: manifest.widgets.filter(({ status }) => APPROVED_CONTRACT_STATUSES.has(status)).length,
+    partialWidgets: manifest.widgets.filter(({ status }) => status === 'partial').length,
     pendingWidgets: manifest.widgets.filter(({ status }) => !APPROVED_CONTRACT_STATUSES.has(status)).length,
     changedFiles,
   };
