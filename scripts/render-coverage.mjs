@@ -13,7 +13,7 @@
 //   base/coverage-summary.json      base-branch coverage (optional → no floor check)
 //   lcov/pr.diff                    PR diff incl. submodule changes (new-file detection)
 //   patch.json                      diff-cover --format json output
-// COVERAGE_ARTIFACT_URL (optional) — link to the HTML report.
+// COVERAGE_ARTIFACT_URL (optional) — link to the HTML report. BASE_REF (optional) — base branch label.
 //
 // Renders only paths, percentages and line numbers — never source lines: this is a
 // public PR comment and server/ee is private.
@@ -89,20 +89,22 @@ const check = (name, result, target, ok) => {
 };
 
 // 1. Overall floor
+const baseName = process.env.BASE_REF ? `\`${process.env.BASE_REF}\`` : 'base';
+const floorRule = `no more than ${FLOOR_TOLERANCE} pts below ${baseName}`;
 if (!summary?.total) {
-  check('Overall lines', 'coverage report missing', `≥ base − ${FLOOR_TOLERANCE}`, false);
+  check('Overall lines', 'coverage report missing', floorRule, false);
 } else {
   const prPct = summary.total.lines.pct;
   const basePct = base?.total?.lines?.pct;
   if (basePct === undefined) {
-    check('Overall lines', `${pct(prPct)} (no baseline found)`, `≥ base − ${FLOOR_TOLERANCE}`, null);
+    check('Overall lines', `${pct(prPct)} (no ${baseName} coverage found)`, floorRule, null);
   } else {
     const delta = prPct - basePct;
     const sign = delta >= 0 ? '+' : '−';
     check(
       'Overall lines',
-      `${pct(prPct)} (base ${pct(basePct)}, ${sign}${Math.abs(delta).toFixed(2)})`,
-      `≥ base − ${FLOOR_TOLERANCE}`,
+      `${pct(prPct)} (${sign}${Math.abs(delta).toFixed(2)} pts vs ${baseName} ${pct(basePct)})`,
+      `≥ ${pct(basePct - FLOOR_TOLERANCE)} (${baseName} − ${FLOOR_TOLERANCE} pts)`,
       delta >= -FLOOR_TOLERANCE
     );
   }
