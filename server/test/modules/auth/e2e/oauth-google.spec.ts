@@ -80,6 +80,27 @@ describe('OAuthController', () => {
               .expect(401);
           });
 
+          it('should return 401 when the SSO config has no clientId, without accepting any Google-issued token (GHSA-xfj2)', async () => {
+            await ssoConfigsRepository.update(sso_configs.id, { configs: { clientId: undefined } });
+            const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+            googleVerifyMock.mockImplementation(() => ({
+              getPayload: () => ({
+                sub: 'someSSOId',
+                email: 'ssouser@tooljet.io',
+                name: 'SSO User',
+                hd: 'tooljet.io',
+              }),
+            }));
+
+            await request(app.getHttpServer())
+              .post('/api/oauth/sign-in/' + sso_configs.id)
+              .send({ token })
+              .expect(401);
+
+            expect(googleVerifyMock).not.toHaveBeenCalled();
+            await ssoConfigsRepository.update(sso_configs.id, { configs: { clientId: 'client-id' } });
+          });
+
           it('should return 401 when the user does not exist and sign up is disabled', async () => {
             await orgRepository.update(current_organization.id, { enableSignUp: false });
             const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
