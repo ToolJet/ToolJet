@@ -79,6 +79,7 @@ export class WorkflowsModule extends SubModule {
       SecurityModeDetectorService,
       PythonBundleGenerationService,
       PyPiRegistryService,
+      WorkflowApprovalsService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -106,6 +107,7 @@ export class WorkflowsModule extends SubModule {
       'services/security-mode-detector.service',
       'services/python-bundle-generation.service',
       'services/pypi-registry.service',
+      'services/workflow-approvals.service',
     ]);
 
     // Get apps related providers
@@ -216,6 +218,7 @@ export class WorkflowsModule extends SubModule {
         RolesRepository,
         GroupPermissionsRepository,
         WorkflowApprovalRequestRepository,
+        WorkflowApprovalsService,
         ...(isMainImport
           ? [
               WorkflowStreamService,
