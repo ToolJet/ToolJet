@@ -88,7 +88,7 @@
     },
     {
       "componentType": "NumberInput",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/NumberInput/TESTING.md"
     },
     {
@@ -109,7 +109,8 @@
     },
     {
       "componentType": "DropdownV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DropdownV2/TESTING.md"
     },
     {
       "componentType": "MultiselectV2",
@@ -274,7 +275,8 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {
       "componentType": "QrScanner",
