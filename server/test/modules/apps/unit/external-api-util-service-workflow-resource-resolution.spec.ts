@@ -8,6 +8,7 @@ import { SessionUtilService } from '@ee/session/util.service';
 import { GranularPermissionsUtilService } from '@ee/group-permissions/util-services/granular-permissions.util.service';
 import { LicenseUserService } from '@ee/licensing/services/user.service';
 import { UserDetailsService } from '@ee/organization-users/services/user-details.service';
+import { GitSyncConfigsUtilService } from '@ee/git-sync-configs/util.service';
 import { GranularPermissionResourceType } from '@modules/external-apis/dto';
 import { AppBase } from '@entities/app_base.entity';
 
@@ -38,6 +39,7 @@ describe('ExternalApiUtilService.validateResourcesExist — workflow name resolu
         { provide: GranularPermissionsUtilService, useValue: {} },
         { provide: LicenseUserService, useValue: {} },
         { provide: UserDetailsService, useValue: {} },
+        { provide: GitSyncConfigsUtilService, useValue: {} },
       ],
     }).compile();
 
