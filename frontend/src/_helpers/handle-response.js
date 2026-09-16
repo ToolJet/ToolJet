@@ -120,7 +120,14 @@ export function handleResponse(
           ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {
-        redirectToSwitchOrArchivedAppPage(data);
+        // Only hijack navigation for a signed-in visitor who landed on a workspace
+        // they no longer have access to. An anonymous lookup (e.g. AuthRoute checking
+        // an org slug before login) has no session to switch away from — let it reject
+        // normally so the caller's own error handling (e.g. the invalid-link page) runs.
+        const currentSession = authenticationService?.currentSessionValue;
+        if (currentSession?.authentication_status) {
+          redirectToSwitchOrArchivedAppPage(data);
+        }
       }
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });
