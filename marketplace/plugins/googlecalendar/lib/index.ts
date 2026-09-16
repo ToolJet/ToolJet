@@ -218,16 +218,17 @@ export default class GoogleCalendar implements QueryService {
     };
 
     const oauth_type = getOptionValue('oauth_type');
+    let host = process.env.TOOLJET_HOST;
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.GOOGLE_CLIENT_ID;
       clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     } else {
       clientId = getOptionValue('client_id');
       clientSecret = getOptionValue('client_secret');
+      host = getOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

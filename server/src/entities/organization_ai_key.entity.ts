@@ -30,6 +30,17 @@ export class OrganizationAiKey extends BaseEntity {
   @Column({ name: 'provider', type: 'varchar', length: 50, default: 'anthropic' })
   provider: string;
 
+  /**
+   * Model slug, for providers that route to many models. OpenRouter only today —
+   * every other provider resolves its model from a fixed per-tier table in the agent.
+   */
+  @Column({ name: 'model', type: 'varchar', length: 200, nullable: true })
+  model: string | null;
+
+  /** Context window of the selected model, captured when it was chosen. */
+  @Column({ name: 'model_context_window', type: 'integer', nullable: true })
+  modelContextWindow: number | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

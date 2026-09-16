@@ -409,6 +409,12 @@ export class DataSourcesService implements IDataSourcesService {
       dataSourceOptions.id
     );
 
+    if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+      sourceOptions['tj_redirect_host'] = await this.dataSourcesUtilService.resolveOAuthRedirectHost(
+        user.organizationId
+      );
+    }
+
     const resolvedArgs = resolvedOptions
       ? await this.dataQueriesUtilService.parseQueryOptions(
           args,

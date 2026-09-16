@@ -43,6 +43,7 @@ type LDAP = {
   basedn: string;
   basedns?: string[];
   bindAttribute?: 'cn' | 'upn';
+  useUpnAsEmail?: boolean;
   enableGroupSync: boolean;
 };
 type SAML = {
