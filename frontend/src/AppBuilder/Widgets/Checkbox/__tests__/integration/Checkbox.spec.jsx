@@ -151,19 +151,18 @@ describe('Checkbox: what renders on load', () => {
     });
     expect(exposed('value')).toBe(true);
 
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'defaultValue', '{{true}}', 'properties');
-    });
-    await waitFor(() => expect(exposed('value')).toBe(true));
-
+    // Back to false by hand, so the rebind below targets a value the checkbox is
+    // NOT already showing. Every assertion above only asks "did it stay what it
+    // was", which an effect that stopped applying defaults entirely satisfies
+    // too; this is the one transition that can tell the two apart.
     await user().click(box());
     await waitFor(() => expect(exposed('value')).toBe(false));
 
     await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'defaultValue', '{{false}}', 'properties');
+      widget.setComponentProperty(ID, 'defaultValue', '{{true}}', 'properties');
     });
 
-    await waitFor(() => expect(exposed('value')).toBe(false));
+    await waitFor(() => expect(exposed('value')).toBe(true));
   });
 });
 
@@ -395,7 +394,7 @@ describe('Checkbox: disabled, loading and visibility', () => {
 
   test('[Checkbox-STATE-002] Loading state replaces the checkbox with a loader and publishes `isLoading`', async () => {
     // Break this catches: rendering the loader BESIDE the checkbox instead of
-    // instead of it, which would let a user answer a field that is still
+    // in place of it, which would let a user answer a field that is still
     // loading its state.
     await mount({ properties: { loadingState: binding('{{true}}') } });
 
@@ -498,12 +497,27 @@ describe('Checkbox: styles', () => {
     //
     // Both shims replace a literal color with a CSS custom property, and jsdom
     // drops `var(...)` from inline styles, so the observable proof is "the
-    // legacy literal is NOT what gets applied". That a NON-legacy color IS
-    // applied verbatim is pinned by Checkbox-STYLE-001.
+    // legacy literal is NOT what gets applied".
+    //
+    // On its own that proof is worthless: an empty color is also "not the
+    // legacy literal", so deleting the assignments outright would pass. The
+    // positive control below pins that these two styles reach the DOM at all
+    // (Checkbox-STYLE-001 covers the box and tick colors, never the label's),
+    // which is what gives the negative assertions their teeth.
+    await mount({ styles: { textColor: binding('#123456'), borderColor: binding('#654321') } });
+
+    expect(label().parentElement.style.color).toBe('rgb(18, 52, 86)');
+    expect(box().style.borderColor).toBe('#654321');
+
     await mount({ styles: { textColor: binding('#1B1F24'), borderColor: binding('#CCD1D5') } });
 
+    // Checked in both spellings: jsdom normalizes `color` to rgb() but leaves
+    // `borderColor` as the authored hex, so a single-form assertion would pass
+    // on the untouched literal.
     expect(label().parentElement.style.color).not.toBe('rgb(27, 31, 36)');
+    expect(label().parentElement.style.color).not.toBe('#1B1F24');
     expect(box().style.borderColor).not.toBe('rgb(204, 209, 213)');
+    expect(box().style.borderColor).not.toBe('#CCD1D5');
 
     await user().click(box());
 
@@ -538,7 +552,12 @@ describe('Checkbox: accessibility and compatibility', () => {
 
     await waitFor(() => expect(input()).toHaveAttribute('aria-required', 'true'));
     expect(input()).toHaveAttribute('aria-invalid', 'true');
-    expect(label()).toHaveAttribute('for', input().getAttribute('id'));
+    // Read the id out first and require it to exist: comparing `for` against
+    // whatever the input happens to carry would call two empty strings a match,
+    // so a regression that dropped the id entirely would still look associated.
+    const inputId = input().getAttribute('id');
+    expect(inputId).toBeTruthy();
+    expect(label()).toHaveAttribute('for', inputId);
 
     await user().click(box());
 
@@ -589,9 +608,10 @@ describe('Checkbox: known unfixed bugs', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  // BUG (unfixed, contract D-01): the hidden input carries its own onClick AND
-  // sits inside the div that carries `handleToggleChange`, so a click on the
-  // label runs both handlers. The value lands correctly (both compute the same
+  // BUG (unfixed, contract D-01): the hidden input carries its own onClick
+  // (Checkbox.jsx:221 -> `toggleValue` :43-52) AND sits inside the div that
+  // carries `handleToggleChange` (:212 -> :169-178), so a click on the label
+  // runs both handlers. The value lands correctly (both compute the same
   // next state) but the deprecated onCheck/onUnCheck run twice, double-running
   // whatever query a builder wired to them. Fix: drop the input's onClick.
   test.failing('[Checkbox-BUG-001] clicking the label fires the deprecated events exactly once', async () => {
@@ -603,9 +623,10 @@ describe('Checkbox: known unfixed bugs', () => {
     expect(fired('chk')).toBe(1);
   });
 
-  // BUG (unfixed, contract D-02): `setValue`/`setChecked` write the value but
-  // never fire onChange, while `toggle` fires onChange and never the deprecated
-  // pair — three CSAs, three different event sets for the same state write.
+  // BUG (unfixed, contract D-02): `setValue`/`setChecked` (Checkbox.jsx:135-136,
+  // both bound to `setCheckedAndNotify` :124-133) write the value but never fire
+  // onChange, while `toggle` (:115-118 and :149-152) fires onChange and never
+  // the deprecated pair — three CSAs, three different event sets for the same state write.
   // Fix: fire onChange from every path that changes the value.
   test.failing('[Checkbox-BUG-002] `setValue` fires On change like every other value change', async () => {
     await mount({ events: ALL_EVENTS });
@@ -616,9 +637,9 @@ describe('Checkbox: known unfixed bugs', () => {
     expect(fired('chg')).toBe(1);
   });
 
-  // BUG (unfixed, contract D-03): the only input is `display: none`, so it can
-  // never be focused, and the clickable wrapper is a plain div with no
-  // tabIndex/role/key handler. A keyboard-only user cannot answer a mandatory
+  // BUG (unfixed, contract D-03): the only input is `display: none`
+  // (Checkbox.jsx:218), so it can never be focused, and the clickable wrapper
+  // (:212) is a plain div with no tabIndex/role/key handler. A keyboard-only user cannot answer a mandatory
   // checkbox at all. Fix: visually hide the input instead of display:none, or
   // give the wrapper role="checkbox" + tabIndex + a key handler.
   test.failing('[Checkbox-BUG-003] the checkbox can be reached and toggled with the keyboard', async () => {
@@ -630,15 +651,26 @@ describe('Checkbox: known unfixed bugs', () => {
     await waitFor(() => expect(exposed('value')).toBe(true));
   });
 
-  // BUG (unfixed, contract D-06): `disable` only reaches `data-disabled` and
-  // `aria-disabled`; the wrapper's onClick is not gated on it, so a disabled
-  // checkbox still toggles and publishes the new value. Fix: return early from
-  // handleToggleChange while disabled.
+  // BUG (unfixed, contract D-06): `disable` only reaches `data-disabled`
+  // (Checkbox.jsx:194) and `aria-disabled` (:225); neither the wrapper's onClick
+  // (:212 -> `handleToggleChange` :169-178) nor the input's (:221 ->
+  // `toggleValue` :43-52) is gated on it, so a disabled checkbox still toggles
+  // and publishes the new value. Fix: return early from BOTH handlers while
+  // disabled.
   test.failing('[Checkbox-BUG-004] a disabled checkbox does not change when clicked', async () => {
     await mount({ properties: { disabledState: binding('{{true}}') } });
     await waitFor(() => expect(exposed('isDisabled')).toBe(true));
 
     await user().click(box());
+
+    expect(exposed('value')).toBe(false);
+    expect(tick()).toBeNull();
+
+    // The label is the other public way in, and it reaches a different handler:
+    // `htmlFor` targets the hidden input, whose own onClick runs `toggleValue`.
+    // Gating only `handleToggleChange` would leave this route toggling a
+    // disabled checkbox while the assertion above went green.
+    await user().click(label());
 
     expect(exposed('value')).toBe(false);
     expect(tick()).toBeNull();
