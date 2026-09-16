@@ -366,6 +366,54 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'passwords must match' });
   });
 
+  // Break this catches: adding a PhoneInput branch to validateWidget. Unlike EmailInput,
+  // a phone field has NO built-in format rule, so a builder's own regex is always
+  // reachable. Note the widget strips the dial code BEFORE calling this engine
+  // ([PhoneInput-VAL-002]); everything here is about the national number.
+  test('[PhoneInput-VAL-003] PhoneInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forPhone = (validationObject, widgetValue) =>
+      validate({ componentType: 'PhoneInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forPhone({}, 'not-a-phone-number')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forPhone({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forPhone({ mandatory: { value: true } }, '9876543210')).toEqual({ isValid: true, validationError: null });
+
+    // regex — the pattern the documentation itself suggests, reachable because nothing
+    // short-circuits ahead of it.
+    const docsPattern = { regex: { value: '^\\d{1,10}$' } };
+    expect(forPhone(docsPattern, '9876543210')).toEqual({ isValid: true, validationError: null });
+    expect(forPhone(docsPattern, '98765432101').validationError).toBe('The input should match pattern');
+
+    // minLength / maxLength, counted on the national number
+    expect(forPhone({ minLength: { value: 10 } }, '987654321').validationError).toBe('Minimum 10 characters is needed');
+    expect(forPhone({ minLength: { value: 10 } }, '9876543210')).toEqual({ isValid: true, validationError: null });
+    expect(forPhone({ maxLength: { value: 10 } }, '98765432101').validationError).toBe(
+      'Maximum 10 characters is allowed'
+    );
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', '9876543210');
+    expect(
+      forPhone(
+        { customRule: { value: "{{components.textinput1.value.length !== 10 && 'must be 10 digits'}}" } },
+        '9876543210'
+      )
+    ).toEqual({ isValid: true, validationError: null });
+    state().setExposedValue('c1', 'value', '98765');
+    expect(
+      forPhone(
+        { customRule: { value: "{{components.textinput1.value.length !== 10 && 'must be 10 digits'}}" } },
+        '98765'
+      )
+    ).toEqual({ isValid: false, validationError: 'must be 10 digits' });
+  });
+
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
     // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
     expect(
