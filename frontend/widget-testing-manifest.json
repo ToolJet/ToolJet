@@ -114,7 +114,8 @@
     },
     {
       "componentType": "MultiselectV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
       "componentType": "TagsInput",
@@ -143,7 +144,8 @@
     },
     {
       "componentType": "Cascader",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Cascader/TESTING.md"
     },
     {
       "componentType": "DatePickerV2",
