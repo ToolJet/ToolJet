@@ -414,6 +414,45 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'must be 10 digits' });
   });
 
+  // Break this catches: adding a CurrencyInput branch to validateWidget, or letting it
+  // reach the length rules. CurrencyInput registers minValue/maxValue rather than
+  // minLength/maxLength, and the widget hands this engine a canonical numeric STRING
+  // ([CurrencyInput-VAL-002]), so everything here is about numeric comparison.
+  test('[CurrencyInput-VAL-003] CurrencyInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forCurrency = (validationObject, widgetValue) =>
+      validate({ componentType: 'CurrencyInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty value is valid until the builder says otherwise.
+    expect(forCurrency({}, '1234.56')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forCurrency({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forCurrency({ mandatory: { value: true } }, '0')).toEqual({ isValid: true, validationError: null });
+
+    // minValue / maxValue, the pair this widget actually registers
+    expect(forCurrency({ minValue: { value: 99 } }, '50').validationError).toBe('Minimum value is 99');
+    expect(forCurrency({ minValue: { value: 99 } }, '100')).toEqual({ isValid: true, validationError: null });
+    expect(forCurrency({ maxValue: { value: 1000 } }, '1500').validationError).toBe('Maximum value is 1000');
+    expect(forCurrency({ maxValue: { value: 1000 } }, '999.99')).toEqual({ isValid: true, validationError: null });
+
+    // regex, from the documentation's own example
+    const twoDecimals = { regex: { value: '^\\d+(\\.\\d{1,2})?$' } };
+    expect(forCurrency(twoDecimals, '1234.56')).toEqual({ isValid: true, validationError: null });
+    expect(forCurrency(twoDecimals, '1234.5678').validationError).toBe('The input should match pattern');
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', '50');
+    expect(
+      forCurrency(
+        { customRule: { value: "{{Number(components.textinput1.value) < 99 && 'Value needs to be more than $99'}}" } },
+        '50'
+      )
+    ).toEqual({ isValid: false, validationError: 'Value needs to be more than $99' });
+  });
+
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
     // Break this catches: dropping the minSelection branch so one selected value passes a minimum of 2.
     expect(

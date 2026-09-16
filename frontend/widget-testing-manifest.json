@@ -101,7 +101,8 @@
     },
     {
       "componentType": "CurrencyInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {
       "componentType": "RangeSliderV2",
