@@ -80,6 +80,7 @@ export class WorkflowsModule extends SubModule {
       PythonBundleGenerationService,
       PyPiRegistryService,
       WorkflowApprovalsService,
+      WorkflowApprovalsController,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -108,6 +109,7 @@ export class WorkflowsModule extends SubModule {
       'services/python-bundle-generation.service',
       'services/pypi-registry.service',
       'services/workflow-approvals.service',
+      'controllers/workflow-approvals.controller',
     ]);
 
     // Get apps related providers
@@ -237,6 +239,7 @@ export class WorkflowsModule extends SubModule {
         WorkflowWebhooksController,
         WorkflowSchedulesController,
         WorkflowBundlesController,
+        WorkflowApprovalsController,
       ],
     });
   }
