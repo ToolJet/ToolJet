@@ -248,6 +248,52 @@ describe('OnboardingController', () => {
         });
         expect(orgUser.status).toBe('active');
       });
+
+      it('should reject accepting a workspace invite when the logged-in caller is not the invitee (GHSA-392x)', async () => {
+        // Create the invited (victim) user
+        await createUser(app, {
+          firstName: 'Other',
+          lastName: 'User',
+          email: 'other@tooljet.com',
+          status: 'active',
+        });
+
+        // Invite the victim
+        await request(app.getHttpServer())
+          .post('/api/organization-users')
+          .send({ email: 'other@tooljet.com', role: 'end-user' })
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', loggedAdmin.tokenCookie)
+          .expect(201);
+
+        const otherUser = await userRepository.findOneOrFail({ where: { email: 'other@tooljet.com' } });
+        const { invitationToken } = await orgUserRepository.findOneOrFail({
+          where: { userId: otherUser.id, organizationId: adminOrg.id },
+        });
+
+        // A different, unrelated logged-in user (the attacker) tries to accept the victim's invite
+        const { user: attacker } = await createUser(app, {
+          firstName: 'Attacker',
+          lastName: 'User',
+          email: 'attacker@tooljet.com',
+          status: 'active',
+        });
+        const loggedAttacker = await login(app, attacker.email);
+
+        const response = await request(app.getHttpServer())
+          .post('/api/onboarding/accept-invite')
+          .send({ token: invitationToken })
+          .set('Cookie', loggedAttacker.tokenCookie);
+
+        expect(response.status).toBe(406);
+        expect(response.headers['set-cookie']).toBeUndefined();
+
+        // No session was minted for the victim, and the invite is untouched
+        const orgUser = await orgUserRepository.findOneOrFail({
+          where: { userId: otherUser.id, organizationId: adminOrg.id },
+        });
+        expect(orgUser.status).toBe('invited');
+      });
     });
 
     describe('Signup and invite interaction', () => {
