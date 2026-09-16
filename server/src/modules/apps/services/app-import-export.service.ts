@@ -3849,6 +3849,8 @@ export class AppImportExportService {
           // Git-repo imports/pulls (isGitApp=true, ee/app-git/*) keep the original behavior:
           // that content genuinely came from git and matches remote.
           isSynced: isGitApp && isGitSyncConfigured && !isWorkflow && !isSubBranch,
+          // Multi-branch: a feature-branch import is uncommitted from creation, regardless of isSynced.
+          hasUncommittedChanges: isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
