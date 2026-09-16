@@ -91,7 +91,7 @@ describe('WorkflowApprovalsService.resolve', () => {
       expect.objectContaining({
         startNodeId: node.id,
         requestId: req.id,
-        injectedState: { __humanDecision: { outcome: 'approved', input: {} } },
+        injectedState: { __humanDecision: { outcome: 'approved', input: {}, resolvedBy: null } },
       })
     );
     enqueueSpy.mockRestore();
