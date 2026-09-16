@@ -109,6 +109,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         opts
       );
 
+      const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+      if (!isTooljetManagedApp) {
+        sourceOptions['tj_redirect_host'] = await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+      }
+
       // Determine whether query timeout is set, to initiate abort controller
       const queryTimeoutMs =
         typeof parsedQueryOptions['query_timeout'] === 'string' && parsedQueryOptions['query_timeout'].trim() === ''
@@ -212,6 +217,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                   provider: dataSource.kind,
                   source_options: sourceOptions,
                   plugin_id: dataSource.pluginId,
+                  organization_id: organizationId,
+                  environment_id: environmentId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -264,6 +271,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user,
               opts
             ));
+            if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+              sourceOptions['tj_redirect_host'] =
+                await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+            }
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
 
@@ -293,13 +304,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'slack' ||
             dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2' ||
-            dataSource.kind === 'servicenow'
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
               provider: dataSource.kind,
               source_options: sourceOptions,
               plugin_id: dataSource.pluginId,
+              organization_id: organizationId,
+              environment_id: environmentId,
             });
             return {
               status: 'needs_oauth',

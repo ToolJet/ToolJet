@@ -207,6 +207,45 @@ describe('Personal access token session exchange', () => {
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(200);
+
+      await request
+        .agent(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(200);
+    });
+
+    it('should ignore a body workspace override for archive and unarchive', async () => {
+      const outsider = await createUser(app, {
+        email: 'pat-scope-outsider@tooljet.io',
+        firstName: 'other',
+        lastName: 'user',
+      });
+      const { token } = await createPat('workspace-user-pinning');
+      const { body } = await exchange(token).expect(201);
+      const agent = request.agent(app.getHttpServer());
+
+      const archive = await agent
+        .post(`/api/organization-users/${outsider.orgUser.id}/archive`)
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .send({ organizationId: outsider.organization.id });
+      expect(archive.status).toBeGreaterThanOrEqual(400);
+      await outsider.orgUser.reload();
+      expect(outsider.orgUser.status).toBe('active');
+
+      await getDefaultDataSource()
+        .getRepository(OrganizationUser)
+        .update({ id: outsider.orgUser.id }, { status: 'archived' });
+      const unarchive = await agent
+        .post(`/api/organization-users/${outsider.orgUser.id}/unarchive`)
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .send({ organizationId: outsider.organization.id });
+      expect(unarchive.status).toBeGreaterThanOrEqual(400);
+      await outsider.orgUser.reload();
+      expect(outsider.orgUser.status).toBe('archived');
     });
 
     it('should be refused on a module outside the allowlist', async () => {
@@ -217,12 +256,19 @@ describe('Personal access token session exchange', () => {
       // which is the whole point of the allowlist.
       const res = await request
         .agent(app.getHttpServer())
-        .get('/api/organization-users')
+        .get('/api/v2/group-permissions')
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(403);
 
       expect(res.body.message).toMatch(/personal access token cannot access/i);
+
+      await request
+        .agent(app.getHttpServer())
+        .post('/api/organization-users/random-id/archive-all')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(403);
     });
 
     it('should not be able to mint another token', async () => {
