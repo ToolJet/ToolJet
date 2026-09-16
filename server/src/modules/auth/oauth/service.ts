@@ -120,7 +120,10 @@ export class OauthService implements IOAuthService {
       throw new UnauthorizedException();
     }
     const domain = organization?.domain;
-    const enableSignUp = typeof organization?.id === 'undefined' ? true : !!organization.enableSignUp;
+    // Instance SSO login builds a synthetic `organization` with no `id` (see
+    // AuthUtilService.getInstanceSSOConfigsOfType); it always carries the real enableSignUp
+    // value, so there's no case where falling back to `true` is correct.
+    const enableSignUp = !!organization?.enableSignUp;
     const { sso, configs } = ssoConfigs;
     const { token } = ssoResponse;
 
