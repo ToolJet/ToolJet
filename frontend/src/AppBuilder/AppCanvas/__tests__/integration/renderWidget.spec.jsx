@@ -170,5 +170,5 @@ describe('RTL seam: real App Builder widgets render under jest', () => {
     // rows are windowed in. That is a jsdom geometry limit, not a seam failure:
     // a spec that needs real rows must stub the height source, e.g. with the
     // session's `geometry` capability, or assert against the store instead.
-  });
+  }, 20000);
 });

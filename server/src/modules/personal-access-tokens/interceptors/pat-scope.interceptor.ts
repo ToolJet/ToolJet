@@ -38,9 +38,10 @@ export class PatScopeInterceptor implements NestInterceptor {
     }
 
     const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
-    if (!patCanAccess(module)) {
+    const feature = this.reflector.get<string>('tjFeatureId', context.getHandler());
+    if (!patCanAccess(module, feature)) {
       throw new ForbiddenException(
-        `This personal access token cannot access ${module ?? 'this resource'}. ` +
+        `This personal access token cannot access ${feature ?? module ?? 'this resource'}. ` +
           `Workspace tokens are limited to: ${PAT_ALLOWED_BUNDLES.join(', ')}.`
       );
     }

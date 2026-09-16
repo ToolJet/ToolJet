@@ -1,11 +1,11 @@
-import { profileSelector } from "Selectors/profile";
+import { profileSelector } from "Selectors/platform/profile";
 import * as profile from "Support/utils/profile";
 import * as common from "Support/utils/common";
-import { profileText } from "Texts/profile";
+import { profileText } from "Texts/platform/profile";
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText } from "Texts/common";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { apiUpdateProfile } from "Support/utils/platform/apiUtils/commonApi";
 
 describe("Profile Settings", () => {

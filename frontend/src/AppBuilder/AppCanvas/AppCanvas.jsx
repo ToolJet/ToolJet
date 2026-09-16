@@ -5,6 +5,7 @@ import './appCanvas.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
+import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
@@ -219,6 +220,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         id="main-editor-canvas"
         onMouseUp={handleCanvasContainerMouseUp}
       >
+        <AgentBuildingOverlay />
         <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
             ref={canvasContainerRef}

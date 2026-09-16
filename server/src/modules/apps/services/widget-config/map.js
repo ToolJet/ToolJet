@@ -137,6 +137,7 @@ export const mapConfig = {
   },
   exposedVariables: {
     center: {},
+    selectedMarker: {},
   },
   definition: {
     others: {
