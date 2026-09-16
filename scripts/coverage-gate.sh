@@ -13,10 +13,15 @@ R="${CI_RESULTS:-/tmp/ci-results}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ -n "${BASE_REF:-}" ] && [ ! -f "$R/base/coverage-summary.json" ]; then
+  # diagnostics go to stderr (job log); stdout is the PR comment
   for id in $(gh run list --workflow ci.yml --branch "$BASE_REF" --event push --limit 20 \
-                --json databaseId -q '.[].databaseId' 2>/dev/null); do
-    gh run download "$id" -n coverage-summary -D "$R/base" >/dev/null 2>&1 && break
+                --json databaseId -q '.[].databaseId'); do
+    if gh run download "$id" -n coverage-summary -D "$R/base" >&2; then
+      echo "coverage baseline: run $id" >&2
+      break
+    fi
   done
+  [ -f "$R/base/coverage-summary.json" ] || echo "coverage baseline: none found on $BASE_REF" >&2
 fi
 
 # git-sync lines are only exercised by the git-sync suite — a missing report would read
