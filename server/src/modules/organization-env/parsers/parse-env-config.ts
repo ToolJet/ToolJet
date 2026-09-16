@@ -197,12 +197,16 @@ export function deriveOidcTemplate(
   if (has(k.CLIENT_ID)) config.clientId = toTemplate(k.CLIENT_ID);
   if (has(k.WELL_KNOWN_URL)) config.wellKnownUrl = toTemplate(k.WELL_KNOWN_URL);
   if (has(k.CLIENT_SECRET)) config.clientSecret = toTemplate(k.CLIENT_SECRET);
-  if (has(k.NAME)) config.name = get(k.NAME);
+  if (has(k.NAME)) config.name = toTemplate(k.NAME);
+  if (has(k.NAME)) config.resolvedName = get(k.NAME);
   if (has(k.ENABLE_GROUP_SYNC)) config.enableGroupSync = get(k.ENABLE_GROUP_SYNC) === 'true';
   if (has(k.CUSTOM_SCOPES)) config.customScopes = toTemplate(k.CUSTOM_SCOPES);
   if (has(k.CLAIM_NAME)) config.claimName = toTemplate(k.CLAIM_NAME);
   if (has(k.GROUP_MAPPING)) (config as { groupMapping?: unknown }).groupMapping = toTemplate(k.GROUP_MAPPING);
-  if (has(k.GRANT_TYPE)) config.grantType = toTemplate(k.GRANT_TYPE);
+  if (has(k.GRANT_TYPE)) {
+    const rawGrantType = get(k.GRANT_TYPE);
+    config.grantType = rawGrantType === 'pkce' ? 'authorization_code_pkce' : rawGrantType;
+  }
   if (has(k.CODE_VERIFIER)) config.codeVerifier = toTemplate(k.CODE_VERIFIER);
   return Object.keys(config).length ? config : null;
 }

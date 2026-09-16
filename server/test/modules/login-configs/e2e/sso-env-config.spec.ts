@@ -12,7 +12,9 @@ import {
   buildTestSession,
 } from 'test-helper';
 import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
+import { OidcEnvUtilService } from '@ee/organization-env/services/oidc.util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
+import { OauthService } from '@ee/auth/oauth/service';
 import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -227,6 +229,113 @@ describe('LoginConfigsController', () => {
 
         await groupSyncRepository.delete({ ssoConfigId: row.id });
       });
+
+      it('should expose the group-sync claim name as claim_name (not blank) in the GET /instance-sso API response', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+          enableGroupSync: true,
+        });
+
+        try {
+          const response = await request(app.getHttpServer())
+            .get('/api/login-configs/instance-sso')
+            .set('Cookie', tokenCookie)
+            .set('tj-workspace-id', orgId)
+            .expect(200);
+
+          const openidConfig = (response.body as any[]).find((c) => c.sso === SSOType.OPENID);
+          const groupSync = openidConfig?.oidc_group_syncs?.find((g: any) => g.organization_id === orgId);
+
+          expect(groupSync).toBeDefined();
+          expect(groupSync?.claim_name).toBe('groups');
+          expect(groupSync?.claimName).toBeUndefined();
+        } finally {
+          await groupSyncRepository.delete({ ssoConfigId: row.id });
+        }
+      });
+
+      it('should keep DB-configured group sync for workspaces the .env override does not cover, once the shared instance provider is env-managed', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const otherOrgId = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+        const dbGroupSyncs = [
+          { organizationId: orgId, claimName: 'stale-claim', groupMapping: { engineering: 'stale-group' } },
+          { organizationId: otherOrgId, claimName: 'db-claim', groupMapping: { engineering: 'db-mapped-group' } },
+        ];
+
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME = 'groups';
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING = JSON.stringify({ engineering: 'from-env' });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            undefined,
+            null,
+            dbGroupSyncs
+          );
+
+          const forTestOrg = result.find((entry: any) => entry.organizationId === orgId);
+          const forOtherOrg = result.find((entry: any) => entry.organizationId === otherOrgId);
+
+          expect(forTestOrg).toMatchObject({ claimName: 'groups', groupMapping: { engineering: 'from-env' } });
+          expect(forOtherOrg).toMatchObject({
+            claimName: 'db-claim',
+            groupMapping: { engineering: 'db-mapped-group' },
+          });
+        } finally {
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME;
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING;
+          await app.get(OrganizationEnvUtilService).initialize();
+        }
+      });
+
+      it('should source login-time group sync mapping from OIDC_GROUP_SYNC_* env vars, not a stale GUI-configured DB row', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'stale-claim',
+          groupMapping: { engineering: 'stale-group' },
+          enableGroupSync: true,
+        });
+
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME = 'groups';
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING = JSON.stringify({ engineering: 'from-env' });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const mappings = await app.get(OidcEnvUtilService).getInstanceGroupSyncMappings();
+          const orgMapping = mappings.find((m) => m.organizationId === orgId);
+
+          expect(orgMapping).toMatchObject({
+            claimName: 'groups',
+            groupMapping: { engineering: 'from-env' },
+          });
+        } finally {
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME;
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING;
+          await app.get(OrganizationEnvUtilService).initialize();
+          await groupSyncRepository.delete({ ssoConfigId: row.id });
+        }
+      });
     });
 
     describe('workspace OIDC env config', () => {
@@ -307,6 +416,82 @@ describe('LoginConfigsController', () => {
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/already being used/);
+      });
+
+      describe('login-time group sync source (OauthService.resolveOidcGroupSyncs)', () => {
+        const stubDbGroupSyncs = [
+          { organizationId: 'stale-org', claimName: 'stale-claim', groupMapping: { engineering: 'stale-group' } },
+        ];
+
+        it('should use the env-derived mapping when the provider config has group sync enabled', async () => {
+          process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+            [TEST_ORG_SLUG]: [
+              {
+                OIDC_CLIENT_ID: 'id-1',
+                OIDC_CLIENT_SECRET: 'secret-1',
+                OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+                OIDC_NAME: 'first',
+                OIDC_GRANT_TYPE: 'authorization_code',
+                OIDC_CLAIM_NAME: 'groups',
+                OIDC_ENABLE_GROUP_SYNC: 'true',
+                OIDC_GROUP_MAPPING: JSON.stringify({ engineering: 'from-env' }),
+              },
+            ],
+          });
+          jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+          await runBootSequence();
+          const row = await getOrgRow(SSOType.OPENID);
+          const resolvedOidcConfigs = await app.get(OidcEnvUtilService).getOidcConfig(orgId, row.id, 0);
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            row.id,
+            resolvedOidcConfigs,
+            stubDbGroupSyncs
+          );
+
+          expect(result).toEqual([
+            { claimName: 'groups', enableGroupSync: true, groupMapping: { engineering: 'from-env' } },
+          ]);
+        });
+
+        it('should return no group sync — not the stale DB row — when env-config is on but group sync is not enabled in .env', async () => {
+          process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+            [TEST_ORG_SLUG]: [
+              {
+                OIDC_CLIENT_ID: 'id-1',
+                OIDC_CLIENT_SECRET: 'secret-1',
+                OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+                OIDC_NAME: 'first',
+                OIDC_GRANT_TYPE: 'authorization_code',
+              },
+            ],
+          });
+          jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+          await runBootSequence();
+          const row = await getOrgRow(SSOType.OPENID);
+          const resolvedOidcConfigs = await app.get(OidcEnvUtilService).getOidcConfig(orgId, row.id, 0);
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            row.id,
+            resolvedOidcConfigs,
+            stubDbGroupSyncs
+          );
+
+          expect(result).toEqual([]);
+        });
+
+        it('should use the DB-configured mapping when the provider is not env-managed', async () => {
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            false,
+            'some-config-id',
+            { enableGroupSync: false },
+            stubDbGroupSyncs
+          );
+
+          expect(result).toBe(stubDbGroupSyncs);
+        });
       });
     });
 

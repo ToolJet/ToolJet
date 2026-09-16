@@ -25,6 +25,7 @@ export interface OidcEnvConfig {
   wellKnownUrl: string;
   clientSecret?: string;
   name?: string;
+  resolvedName?: string;
   customScopes?: string;
   claimName?: string;
   enableGroupSync?: boolean;
