@@ -246,7 +246,8 @@
     },
     {
       "componentType": "Spinner",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Spinner/TESTING.md"
     },
     {
       "componentType": "JSONExplorer",
