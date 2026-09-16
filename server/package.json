@@ -193,6 +193,9 @@
     "@eslint/eslintrc": {
       "js-yaml": "4.3.2"
     },
+    "@hubspot/api-client": {
+      "form-data": "4.0.6"
+    },
     "@nestjs/platform-express": {
       "multer": "2.3.0"
     },
@@ -205,11 +208,20 @@
     "@opentelemetry/sdk-node": {
       "@opentelemetry/propagator-jaeger": "2.11.0"
     },
+    "@tooljet/plugins": {
+      "form-data": "4.0.6"
+    },
     "@types/got": {
       "form-data": "2.5.6"
     },
+    "@types/node-fetch": {
+      "form-data": "4.0.6"
+    },
     "@types/request": {
       "form-data": "2.5.6"
+    },
+    "@types/superagent": {
+      "form-data": "4.0.6"
     },
     "ai": {
       "jsondiffpatch": "0.7.6"
@@ -231,6 +243,9 @@
     },
     "socket.io-client": {
       "socket.io-parser": "4.2.7"
+    },
+    "superagent": {
+      "form-data": "4.0.6"
     },
     "update-browserslist-db": {
       "browserslist": "4.28.9"
