@@ -31,6 +31,10 @@ export const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export const SCHEDULE_JOB = 'workflow-scheduler-job';
 export const EXECUTION_JOB = 'workflow-execution-job';
 
+export const WORKFLOW_APPROVAL_TIMEOUT_QUEUE = 'workflow-approval-timeout-queue';
+export const APPROVAL_DEADLINE_JOB = 'approval-deadline-job';
+export const APPROVAL_REMINDER_JOB = 'approval-reminder-job';
+
 export const WORKFLOW_EXECUTION_STATUS = {
   TRIGGERED: 'workflow_execution_triggered',
   RUNNING: 'workflow_execution_running',

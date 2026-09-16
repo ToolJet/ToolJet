@@ -42,6 +42,7 @@ import { UsersModule } from '@modules/users/module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { WorkflowApprovalRequestRepository } from './repositories/workflow-approval-request.repository';
+import { WORKFLOW_APPROVAL_TIMEOUT_QUEUE } from './constants';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -81,6 +82,7 @@ export class WorkflowsModule extends SubModule {
       PyPiRegistryService,
       WorkflowApprovalsService,
       WorkflowApprovalsController,
+      WorkflowApprovalTimeoutService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -110,6 +112,7 @@ export class WorkflowsModule extends SubModule {
       'services/pypi-registry.service',
       'services/workflow-approvals.service',
       'controllers/workflow-approvals.controller',
+      'services/workflow-approval-timeout.service',
     ]);
 
     // Get apps related providers
@@ -158,6 +161,9 @@ export class WorkflowsModule extends SubModule {
         BullModule.registerQueue({
           name: WORKFLOW_EXECUTION_QUEUE,
         }),
+        BullModule.registerQueue({
+          name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
+        }),
         // Register queues with Bull Board for dashboard visibility
         BullBoardModule.forFeature({
           name: WORKFLOW_SCHEDULE_QUEUE,
@@ -165,6 +171,10 @@ export class WorkflowsModule extends SubModule {
         }),
         BullBoardModule.forFeature({
           name: WORKFLOW_EXECUTION_QUEUE,
+          adapter: BullMQAdapter,
+        }),
+        BullBoardModule.forFeature({
+          name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
           adapter: BullMQAdapter,
         }),
         await AppsModule.register(configs),
@@ -221,6 +231,7 @@ export class WorkflowsModule extends SubModule {
         GroupPermissionsRepository,
         WorkflowApprovalRequestRepository,
         WorkflowApprovalsService,
+        WorkflowApprovalTimeoutService,
         ...(isMainImport
           ? [
               WorkflowStreamService,
