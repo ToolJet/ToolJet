@@ -161,6 +161,9 @@ export class OauthService implements IOAuthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    if (userResponse.emailVerified === false) {
+      throw new UnauthorizedException('Email not verified with the SSO provider');
+    }
     if (!isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
