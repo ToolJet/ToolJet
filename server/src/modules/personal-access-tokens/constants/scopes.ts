@@ -1,6 +1,7 @@
 import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
+import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -160,6 +161,11 @@ export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
  */
 export function patCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
+  // Installed API specs are read-only datasource metadata. Keep plugin administration in its
+  // instance-admin bundle while allowing data clients to discover valid query contracts.
+  if (module === MODULES.PLUGINS && feature === PLUGIN_FEATURE.GET_SPEC) {
+    return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.DATA);
+  }
   if (!ALLOWED_MODULES.has(module)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];
   return !allowedFeatures || (!!feature && allowedFeatures.has(feature));
