@@ -15,6 +15,7 @@ export const aiService = {
   createConversation,
   getConversation,
   getConversationStatus,
+  cancelGeneration,
   autoSort,
   getTokenUsage,
   getLlmPreference,
@@ -195,6 +196,14 @@ async function getConversation(conversationId) {
 async function getConversationStatus(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/status`, requestOptions).then(handleResponse);
+}
+
+async function cancelGeneration(conversationId, runId) {
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/runs/${runId}/cancel`, {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  }).then(handleResponse);
 }
 
 async function autoSort(body) {
