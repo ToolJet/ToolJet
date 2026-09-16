@@ -9,7 +9,7 @@
 #   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
-#   COVERAGE_SUMMARY, COVERAGE_ARTIFACT_URL — for render-coverage.mjs, full lane only
+#   COVERAGE_MD — coverage gate section from coverage-gate.sh, full lane only
 
 set -euo pipefail
 MODE="$1"
@@ -96,22 +96,10 @@ if [ -n "$details" ]; then
   echo
 fi
 
-# Coverage only in full mode — the changed lane runs a filtered test subset against
-# the full collectCoverageFrom denominator, which would report a misleading number.
-if [ "$MODE" = "full" ]; then
-  coverage=$(node "$SCRIPT_DIR/render-coverage.mjs" || true)
-  if [ -n "$coverage" ]; then
-    echo "$coverage"
-    echo
-  fi
-
-  # Patch coverage (combined + server/git-sync) — full mode only, informational.
-  # Reads PATCH_COV_INPUTS (comma-separated patch-coverage JSONs); empty if none.
-  patchcov=$(node "$SCRIPT_DIR/render-patch-coverage.mjs" || true)
-  if [ -n "$patchcov" ]; then
-    echo "$patchcov"
-    echo
-  fi
+# Coverage gate section, written by scripts/coverage-gate.sh in ci-gate (full PR runs only).
+if [ -s "${COVERAGE_MD:-}" ]; then
+  cat "$COVERAGE_MD"
+  echo
 fi
 
 if [ "$MODE" = "full" ]; then
