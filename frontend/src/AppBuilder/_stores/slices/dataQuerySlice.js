@@ -439,6 +439,10 @@ export const createDataQuerySlice = (set, get) => ({
         .finally(() => setIsAppSaving(false));
     },
     updateDataQuery: (options, moduleId = 'canvas') => {
+      // Deliberately the RAW mapping, not `getComponentResolutionMapping`. The resolution
+      // mapping rebinds foreign component ids onto the current page, which is correct when
+      // reading but destructive when writing: re-saving a query from page B would rewrite a
+      // reference authored against page A to page B's id and silently break page A.
       const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
       const queryNameIdMapping = get().modules['canvas'].queryNameIdMapping;
       set((state) => {
