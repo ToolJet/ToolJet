@@ -119,13 +119,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         // The default DSV will be created when this branch is merged to main
         // via git pull/deserialize. This prevents the DS from appearing on main
         // before the branch is merged.
+        // Multi-branch: a feature-branch DSV is uncommitted from creation, regardless of isSynced.
+        const workspaceBranch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
         await this.createDataSourceVersionForBranchWithOptions(
           dataSource,
           branchId,
           envToUpdate,
           allEnvs,
           createArgumentsDto.options,
-          manager
+          manager,
+          !!workspaceBranch && !workspaceBranch.isDefault
         );
 
         // A brand-new data source has never been committed, so it must stay
@@ -1406,13 +1409,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     envToUpdate: any,
     allEnvs: any[],
     rawOptions: any[],
-    manager: EntityManager
+    manager: EntityManager,
+    hasUncommittedChanges = false
   ): Promise<DataSourceVersion> {
     const dsv = manager.create(DataSourceVersion, {
       dataSourceId: dataSource.id,
       branchId,
       name: dataSource.name,
       isActive: true,
+      hasUncommittedChanges,
     });
     const savedDsv = await manager.save(DataSourceVersion, dsv);
 

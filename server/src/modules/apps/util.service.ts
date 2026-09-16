@@ -199,6 +199,8 @@ export class AppsUtilService implements IAppsUtilService {
                 // it must start unsynced so it's treated as new content until its first push
                 // (which flips is_synced=true). Explicit so it doesn't depend on the column default.
                 isSynced: false,
+                // Multi-branch: a feature-branch draft is uncommitted from creation, regardless of isSynced.
+                hasUncommittedChanges: true,
                 showViewerNavigation: type === 'module' ? false : true,
                 globalSettings: defaultSettings,
                 pageSettings: {},
