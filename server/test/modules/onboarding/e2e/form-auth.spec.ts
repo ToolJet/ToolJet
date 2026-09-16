@@ -5,7 +5,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, createUser, login, getEntityRepository, closeTestApp } from 'test-helper';
+import { initTestApp, createUser, login, getEntityRepository, closeTestApp, updateEntity } from 'test-helper';
 import { Repository } from 'typeorm';
 
 /**
@@ -361,6 +361,77 @@ describe('OnboardingController', () => {
           where: { userId: newUser.id, organizationId: adminUser.defaultOrganizationId },
         });
         expect(orgUser).toBeDefined();
+      });
+    });
+
+    describe('POST /api/onboarding/signup | Existing SSO-provisioned user, workspace-level signup (GHSA-7fgx)', () => {
+      it('does not set a password or auto-login when an SSO-provisioned user is impersonated via workspace signup', async () => {
+        // Existing user, active elsewhere, but SSO-provisioned — no local password
+        const { user: victim } = await createUser(app, {
+          firstName: 'Victim',
+          lastName: 'User',
+          email: 'sso-victim@tooljet.com',
+          status: 'active',
+        });
+        await updateEntity(User, victim.id, { password: null });
+
+        // A separate workspace that allows signup
+        const { organization: targetOrg } = await createUser(app, {
+          firstName: 'org-b',
+          lastName: 'owner',
+          email: 'org-b-owner@tooljet.com',
+          status: 'active',
+          enableSignUp: true,
+        });
+
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+          email: 'sso-victim@tooljet.com',
+          name: 'Attacker Chosen Name',
+          password: 'attacker-chosen-password',
+          organizationId: targetOrg.id,
+        });
+
+        expect(response.headers['set-cookie']).toBeUndefined();
+
+        const victimAfter = await userRepository.findOneOrFail({ where: { email: 'sso-victim@tooljet.com' } });
+        expect(victimAfter.password).toBeNull();
+
+        const orgUser = await orgUserRepository.findOne({
+          where: { userId: victimAfter.id, organizationId: targetOrg.id },
+        });
+        expect(orgUser?.status).not.toBe('active');
+      });
+
+      it('still instantly activates + logs in a self-hosted user who proves their existing password', async () => {
+        const { user: existingUser } = await createUser(app, {
+          firstName: 'Real',
+          lastName: 'User',
+          email: 'real-user@tooljet.com',
+          status: 'active',
+        });
+
+        const { organization: targetOrg } = await createUser(app, {
+          firstName: 'org-c',
+          lastName: 'owner',
+          email: 'org-c-owner@tooljet.com',
+          status: 'active',
+          enableSignUp: true,
+        });
+
+        const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+          email: 'real-user@tooljet.com',
+          name: 'Real User',
+          password: 'password', // matches createUser's default seeded password
+          organizationId: targetOrg.id,
+        });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.headers['set-cookie']).toBeDefined();
+
+        const orgUser = await orgUserRepository.findOneOrFail({
+          where: { userId: existingUser.id, organizationId: targetOrg.id },
+        });
+        expect(orgUser.status).toBe('active');
       });
     });
 
