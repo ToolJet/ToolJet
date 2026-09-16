@@ -6,30 +6,29 @@ import { FEATURE_KEY } from '@modules/workflows/constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/app/guard';
 import { User } from '@modules/app/decorators/user.decorator';
-import { WorkflowApprovalsService } from '@modules/workflows/services/workflow-approvals.service';
 import { ResolveApprovalDto } from '@modules/workflows/dto/resolve-approval.dto';
 
 @Controller('workflow-approvals')
 @InitModule(MODULES.WORKFLOWS)
 export class WorkflowApprovalsController {
-  constructor(private readonly approvalsService: WorkflowApprovalsService) {}
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Get(':token')
   async get(@Param('token') token: string) {
-    return this.approvalsService.getByToken(token);
+    throw new Error('Method not implemented.');
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Post(':token/resolve')
   async resolve(@Param('token') token: string, @Body() dto: ResolveApprovalDto) {
-    return this.approvalsService.resolve(token, dto);
+    throw new Error('Method not implemented.');
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/cancel')
   async cancel(@Param('id') id: string, @User() user) {
-    return this.approvalsService.cancel(id, user);
+    throw new Error('Method not implemented.');
   }
 }
