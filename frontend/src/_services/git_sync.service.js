@@ -130,16 +130,20 @@ function getGitStatus(workspaceId) {
 
 // Pre-flight for a push+pull sync flow: which apps/modules/datasources on this branch have
 // local, unpushed edits, without attempting a pull.
-function getUncommittedResources(workspaceId, branchId) {
-  const params = branchId ? `?branch_id=${encodeURIComponent(branchId)}` : '';
+function getUncommittedResources(workspaceId, branchId, appId) {
+  const query = new URLSearchParams();
+  if (branchId) query.set('branch_id', branchId);
+  if (appId) query.set('app_id', appId);
+  const queryString = query.toString();
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/git-sync/${workspaceId}/uncommitted-changes${params}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${config.apiUrl}/git-sync/${workspaceId}/uncommitted-changes${queryString ? `?${queryString}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function deleteConfig(organizationGitId, gitType) {

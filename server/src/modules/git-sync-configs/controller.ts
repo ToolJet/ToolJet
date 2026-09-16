@@ -29,7 +29,8 @@ export class GitSyncConfigsController implements IGitSyncConfigsController {
   async getUncommittedResources(
     @User() _user: UserEntity,
     @Param('id') _organizationId: string,
-    @Query('branch_id') _branchId?: string
+    @Query('branch_id') _branchId?: string,
+    @Query('app_id') _appId?: string
   ): Promise<any> {
     throw new NotFoundException();
   }

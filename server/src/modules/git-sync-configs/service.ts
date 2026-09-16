@@ -54,7 +54,8 @@ export class GitSyncConfigsService implements IGitSyncConfigsService {
 
   async getUncommittedResources(
     _userOrganizationId: string,
-    _branchId?: string
+    _branchId?: string,
+    _appId?: string
   ): Promise<{ resources: { type: string; id: string; name: string }[] }> {
     throw new NotImplementedException();
   }

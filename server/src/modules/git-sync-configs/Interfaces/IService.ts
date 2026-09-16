@@ -31,6 +31,7 @@ export interface IGitSyncConfigsService {
   deleteConfig(organizationId: string, organizationGitId: string, gitType: string): Promise<void>;
   getUncommittedResources(
     userOrganizationId: string,
-    branchId?: string
+    branchId?: string,
+    appId?: string
   ): Promise<{ resources: { type: string; id: string; name: string }[] }>;
 }
