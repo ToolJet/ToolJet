@@ -492,6 +492,42 @@ describe('clear button and Form', () => {
     expect(errorText()).toBeNull(); // no mid-edit accusation
   });
 
+  // Break this catches: reverting the clear button's vertical offset to a fixed
+  // `calc(50% + 10px)`. The button is positioned against the WHOLE widget, but a
+  // top-aligned label takes a share of that widget which grows with its font size, so a
+  // constant offset leaves the button riding up over the label instead of centred on the
+  // field. 10px happens to be correct only at the default 12px label.
+  //
+  // This is a shared BaseInput fix: TextInput and NumberInput enable the same clear
+  // button and had the same bug, so this test guards all three.
+  test('[EmailInput-CLR-004] the clear button stays centred on the field as the label grows', async () => {
+    const withLabelSize = async (labelFontSize) => {
+      harness.render({
+        properties: { value: binding('ada@tooljet.com'), showClearBtn: binding('{{true}}'), label: binding('Email') },
+        styles: { alignment: binding('top'), labelFontSize },
+      });
+      await waitFor(() => expect(clearButton()).toBeTruthy());
+      return clearButton().style.top;
+    };
+
+    // The offset is half the label's own height, so the button lands on the middle of
+    // the field rather than the middle of the widget.
+    expect(await withLabelSize(binding('{{12}}'))).toBe('calc(50% + 10px)');
+    expect(await withLabelSize(binding('{{20}}'))).toBe('calc(50% + 14px)');
+    expect(await withLabelSize(binding('{{32}}'))).toBe('calc(50% + 20px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await withLabelSize(binding('abc'))).toBe('calc(50% + 10px)');
+
+    // A side-aligned label takes no vertical space, so there is nothing to offset.
+    harness.render({
+      properties: { value: binding('ada@tooljet.com'), showClearBtn: binding('{{true}}'), label: binding('Email') },
+      styles: { alignment: binding('side'), labelFontSize: binding('{{32}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(clearButton().style.top).toBe('50%');
+  });
+
   const formExposed = () => harness.exposed('form1');
   const formAct = async (name, ...args) => {
     await waitFor(() => expect(formExposed()[name]).toBeInstanceOf(Function));

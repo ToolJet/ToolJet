@@ -134,7 +134,10 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-      ? 'calc(50% + 10px)'
+      ? // Half the label's own height: the button is positioned against the whole widget,
+        // so it must be pushed down by half of whatever the top-aligned label consumes to
+        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
       : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (
