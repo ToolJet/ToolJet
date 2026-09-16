@@ -8,6 +8,9 @@ import {
   AppImportRequestDto,
   AutoDeployBodyDto,
   SaveVersionBodyDto,
+  UpdateUserV2Dto,
+  ListUsersV2QueryDto,
+  ListUserWorkspacesV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -59,4 +62,18 @@ export interface IExternalApisAppsController {
     appVersion: string,
     exportAllVersions: boolean
   ): Promise<any>;
+}
+
+export interface IExternalApisUsersControllerV2 {
+  listUsers(query: ListUsersV2QueryDto): Promise<any>;
+
+  getUser(userIdentifier: string): Promise<any>;
+
+  updateUser(userIdentifier: string, dto: UpdateUserV2Dto): Promise<any>;
+
+  archiveUser(userIdentifier: string): Promise<any>;
+
+  unarchiveUser(userIdentifier: string): Promise<any>;
+
+  listUserWorkspaces(userIdentifier: string, query: ListUserWorkspacesV2QueryDto): Promise<any>;
 }

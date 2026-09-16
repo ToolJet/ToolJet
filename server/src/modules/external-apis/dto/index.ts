@@ -16,6 +16,7 @@ import {
   IsUrl,
   IsInt,
   Min,
+  Max,
   IsNumber,
   IsPositive,
   registerDecorator,
@@ -600,4 +601,53 @@ export class UnbanWorkspaceDto {
   @IsNotEmpty()
   @IsString()
   slug?: string;
+}
+
+export class UpdateUserV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+}
+
+export class ListUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListUserWorkspacesV2QueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
 }
