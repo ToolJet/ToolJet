@@ -36,7 +36,7 @@ export class WorkflowApprovalRequest {
   @Column('jsonb', { name: 'input', nullable: true })
   input: Record<string, unknown> | null;
 
-  @Column({ name: 'resolved_by_user_id', nullable: true })
+  @Column({ name: 'resolved_by_user_id', type: 'uuid', nullable: true })
   resolvedByUserId: string | null;
 
   @Column('jsonb', { name: 'approvers_snapshot' })
@@ -58,7 +58,7 @@ export class WorkflowApprovalRequest {
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'resolved_by_user_id' })
-  resolvedByUser: User;
+  resolvedByUser: User | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
