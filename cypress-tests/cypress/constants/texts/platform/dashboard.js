@@ -62,4 +62,35 @@ export const dashboardText = {
   exploreTemplateCardTitle: "Explore templates",
   exploreTemplateCardDescription:
     "Get started quickly with ready-to-deploy applications",
+
+  // AI-interface home page (new design)
+  editorConnectDividerText: "OR USE TOOLJET WITH YOUR CODING AGENT",
+  editorConnectCards: [
+    {
+      id: "claude-code",
+      label: "Claude Code",
+      description: "Install the plugin to build ToolJet apps from Claude Code",
+    },
+    {
+      id: "codex",
+      label: "Codex",
+      description: "Install the plugin to build ToolJet apps from Codex",
+    },
+    {
+      id: "grok",
+      label: "Grok Build",
+      description: "Install the plugin to build ToolJet apps from Grok Build",
+    },
+    {
+      id: "others",
+      label: "Others",
+      description: "Connect any coding agent via MCP",
+    },
+  ],
+  buildFromEditorModalTitle: "Build ToolJet apps from your coding agent",
+  buildFromEditorModalDescription:
+    "ToolJet ships an MCP server and a skill, so your coding agent can build and edit ToolJet apps straight from your editor.",
+  byoaCreateTokenLinkText: "create a personal access token",
+  byoaDocsLinkText: "Read setup guide",
+  byoaNotNowButtonText: "Not now",
 };
