@@ -106,7 +106,7 @@ On the default branch, pulling removes applications and modules that are no long
 
 ### Pull a Saved Version
 
-Every saved version is tagged in the Git repository at the point it is saved. Pulling a version restores it from that tag and recreates it in the workspace as a published version.
+Every saved version is tagged in the Git repository at the point it is saved. Pulling a version restores it from that tag and recreates it in the workspace as a published version. Refer to [Version Control with Git](/docs/beta/branching/versioning) for how drafts, saved versions, and Git tags relate to each other.
 
 Saved versions can be pulled for the following use cases:
 

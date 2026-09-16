@@ -101,7 +101,7 @@ Pulling removes applications and modules that are no longer present in Git, and 
 
 Saving a version locks it and creates a tag in the Git repository. A saved version cannot be edited or renamed, and it becomes available to promote through environments and release.
 
-Each application has one draft, which is what you edit. Saving a version creates a new draft so there is always something to work on.
+Each application has one draft, which is what you edit. Saving a version creates a new draft so there is always something to work on. Refer to [Version Control with Git](/docs/beta/branching/versioning) for how drafts, saved versions, and Git tags relate to each other.
 
 ### Pull a Saved Version
 
