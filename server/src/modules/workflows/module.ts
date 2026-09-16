@@ -83,6 +83,8 @@ export class WorkflowsModule extends SubModule {
       WorkflowApprovalsService,
       WorkflowApprovalsController,
       WorkflowApprovalTimeoutService,
+      WorkflowApprovalTimeoutProcessor,
+      ApprovalTimeoutBootstrapService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -113,6 +115,8 @@ export class WorkflowsModule extends SubModule {
       'services/workflow-approvals.service',
       'controllers/workflow-approvals.controller',
       'services/workflow-approval-timeout.service',
+      'processors/workflow-approval-timeout.processor',
+      'services/approval-timeout-bootstrap.service',
     ]);
 
     // Get apps related providers
@@ -239,7 +243,13 @@ export class WorkflowsModule extends SubModule {
               // Only register BullMQ processors and schedule bootstrap when WORKER=true
               // This allows running dedicated HTTP-only instances and worker instances
               ...(process.env.WORKER === 'true'
-                ? [WorkflowScheduleProcessor, WorkflowExecutionProcessor, ScheduleBootstrapService]
+                ? [
+                    WorkflowScheduleProcessor,
+                    WorkflowExecutionProcessor,
+                    ScheduleBootstrapService,
+                    WorkflowApprovalTimeoutProcessor,
+                    ApprovalTimeoutBootstrapService,
+                  ]
                 : []),
             ]
           : []),
