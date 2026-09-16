@@ -22,6 +22,7 @@ export enum FEATURE_KEY {
   WORKFLOW_PACKAGES = 'workflow_packages',
   TERMINATE_WORKFLOW_EXECUTION = 'terminate_workflow_execution',
   WORKFLOW_EXECUTION_STATE = 'workflow_execution_state',
+  HUMAN_IN_THE_LOOP = 'human_in_the_loop',
 }
 
 // Queue and job name constants
@@ -36,6 +37,7 @@ export const WORKFLOW_EXECUTION_STATUS = {
   COMPLETED: 'workflow_execution_completed',
   ERROR: 'workflow_execution_error',
   TERMINATED: 'workflow_execution_terminated',
+  WAITING: 'workflow_execution_waiting',
 };
 
 // Re-export types from types module for backward compatibility

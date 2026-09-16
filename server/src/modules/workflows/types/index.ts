@@ -53,6 +53,7 @@ interface Features {
   [FEATURE_KEY.WORKFLOW_PACKAGES]: FeatureConfig;
   [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: FeatureConfig;
+  [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
@@ -101,5 +102,15 @@ export class WorkflowTerminationError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, WorkflowTerminationError);
     }
+  }
+}
+
+export class WorkflowSuspendedSignal extends Error {
+  constructor(
+    public readonly executionId: string,
+    public readonly requestId: string
+  ) {
+    super('Workflow execution suspended awaiting human input');
+    this.name = 'WorkflowSuspendedSignal';
   }
 }
