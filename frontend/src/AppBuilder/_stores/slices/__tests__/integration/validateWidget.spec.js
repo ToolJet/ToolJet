@@ -103,7 +103,7 @@ describe('mandatory + falsy values', () => {
     });
   });
 
-  test('TextInput: `false` counts as EMPTY, because a text field has no option values', () => {
+  test('[TextInput-VAL-003] TextInput: `false` counts as EMPTY, because a text field has no option values', () => {
     // The mirror image of the cases above, and the reason the fix could not
     // simply be "treat false as filled everywhere".
     expect(
@@ -267,7 +267,9 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: true, validationError: null });
   });
 
-  test('EmailInput: a malformed address is rejected without any regex configured', () => {
+  // Break this catches: removing the EmailInput branch from validateWidget, so a
+  // malformed address passes with no regex configured.
+  test('[EmailInput-VAL-003] EmailInput: a malformed address is rejected without any regex configured', () => {
     expect(validate({ componentType: 'EmailInput', widgetValue: 'not-an-email' })).toEqual({
       isValid: false,
       validationError: 'Input should be a valid email',
@@ -275,7 +277,9 @@ describe('the other validators that actually exist', () => {
     expect(validate({ componentType: 'EmailInput', widgetValue: 'kavin@tooljet.com' }).isValid).toBe(true);
   });
 
-  test('EmailInput: an empty value skips the email check and is left to `mandatory`', () => {
+  // Break this catches: dropping the `&& widgetValue` guard on the EmailInput branch,
+  // so an untouched empty field reports "invalid email" instead of "cannot be empty".
+  test('[EmailInput-VAL-003] EmailInput: an empty value skips the email check and is left to `mandatory`', () => {
     // `componentType === 'EmailInput' && widgetValue` gates the check, so an
     // untouched email field reports "cannot be empty", not "invalid email".
     expect(validate({ componentType: 'EmailInput', widgetValue: '' })).toEqual({
@@ -285,6 +289,210 @@ describe('the other validators that actually exist', () => {
     expect(
       validate({ componentType: 'EmailInput', widgetValue: '', validationObject: { mandatory: { value: true } } })
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
+  });
+
+  // Break this catches: moving the EmailInput branch below the regex/length branches,
+  // or making it fall through instead of returning. D-01 pinned this order: the
+  // built-in check short-circuits, so a builder's own rules are unreachable for a
+  // value that is not already a valid email.
+  test('[EmailInput-VAL-007] the built-in email check short-circuits the builder’s own rules', () => {
+    const forEmail = (validationObject, widgetValue) =>
+      validate({ componentType: 'EmailInput', widgetValue, validationObject });
+
+    // A regex the builder wrote to ACCEPT this value never runs.
+    expect(forEmail({ regex: { value: '^internal-.*$' } }, 'internal-ada')).toEqual({
+      isValid: false,
+      validationError: 'Input should be a valid email',
+    });
+    // A length violation is masked by the email message too.
+    expect(forEmail({ minLength: { value: 50 } }, 'not-an-email').validationError).toBe(
+      'Input should be a valid email'
+    );
+
+    // A valid address falls through to the builder's rules normally.
+    expect(forEmail({ minLength: { value: 50 } }, 'ada@tooljet.com').validationError).toBe(
+      'Minimum 50 characters is needed'
+    );
+    expect(forEmail({ regex: { value: '^.*@tooljet\\.com$' } }, 'ada@example.com').validationError).toBe(
+      'The input should match pattern'
+    );
+    expect(forEmail({ regex: { value: '^.*@tooljet\\.com$' } }, 'ada@tooljet.com')).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+  });
+
+  // Break this catches: adding a PasswordInput branch to validateWidget. Unlike
+  // EmailInput, a password field has NO built-in format rule — every rule a builder
+  // sees is one they configured — and an app relying on `regex` to enforce a password
+  // policy must not be short-circuited by a hidden check.
+  test('[PasswordInput-VAL-003] PasswordInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forPassword = (validationObject, widgetValue) =>
+      validate({ componentType: 'PasswordInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forPassword({}, 'not-an-email')).toEqual({ isValid: true, validationError: null });
+    expect(forPassword({}, 'a')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forPassword({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forPassword({ mandatory: { value: true } }, 'secret')).toEqual({ isValid: true, validationError: null });
+
+    // regex — reachable, because nothing short-circuits ahead of it.
+    const policy = { regex: { value: '^(?=.*[A-Z])(?=.*\\d).{8,}$' } };
+    expect(forPassword(policy, 'short1A').validationError).toBe('The input should match pattern');
+    expect(forPassword(policy, 'LongEnough1')).toEqual({ isValid: true, validationError: null });
+
+    // minLength / maxLength
+    expect(forPassword({ minLength: { value: 8 } }, 'short').validationError).toBe('Minimum 8 characters is needed');
+    expect(forPassword({ maxLength: { value: 4 } }, 'toolong').validationError).toBe('Maximum 4 characters is allowed');
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', 'secret');
+    expect(
+      forPassword(
+        { customRule: { value: "{{components.textinput1.value !== 'secret' && 'passwords must match'}}" } },
+        'secret'
+      )
+    ).toEqual({ isValid: true, validationError: null });
+    expect(
+      forPassword(
+        { customRule: { value: "{{components.textinput1.value !== 'other' && 'passwords must match'}}" } },
+        'secret'
+      )
+    ).toEqual({ isValid: false, validationError: 'passwords must match' });
+  });
+
+  // Break this catches: adding a PhoneInput branch to validateWidget. Unlike EmailInput,
+  // a phone field has NO built-in format rule, so a builder's own regex is always
+  // reachable. Note the widget strips the dial code BEFORE calling this engine
+  // ([PhoneInput-VAL-002]); everything here is about the national number.
+  test('[PhoneInput-VAL-003] PhoneInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forPhone = (validationObject, widgetValue) =>
+      validate({ componentType: 'PhoneInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forPhone({}, 'not-a-phone-number')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forPhone({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forPhone({ mandatory: { value: true } }, '9876543210')).toEqual({ isValid: true, validationError: null });
+
+    // regex — the pattern the documentation itself suggests, reachable because nothing
+    // short-circuits ahead of it.
+    const docsPattern = { regex: { value: '^\\d{1,10}$' } };
+    expect(forPhone(docsPattern, '9876543210')).toEqual({ isValid: true, validationError: null });
+    expect(forPhone(docsPattern, '98765432101').validationError).toBe('The input should match pattern');
+
+    // minLength / maxLength, counted on the national number
+    expect(forPhone({ minLength: { value: 10 } }, '987654321').validationError).toBe('Minimum 10 characters is needed');
+    expect(forPhone({ minLength: { value: 10 } }, '9876543210')).toEqual({ isValid: true, validationError: null });
+    expect(forPhone({ maxLength: { value: 10 } }, '98765432101').validationError).toBe(
+      'Maximum 10 characters is allowed'
+    );
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', '9876543210');
+    expect(
+      forPhone(
+        { customRule: { value: "{{components.textinput1.value.length !== 10 && 'must be 10 digits'}}" } },
+        '9876543210'
+      )
+    ).toEqual({ isValid: true, validationError: null });
+    state().setExposedValue('c1', 'value', '98765');
+    expect(
+      forPhone(
+        { customRule: { value: "{{components.textinput1.value.length !== 10 && 'must be 10 digits'}}" } },
+        '98765'
+      )
+    ).toEqual({ isValid: false, validationError: 'must be 10 digits' });
+  });
+
+  // Break this catches: adding a CurrencyInput branch to validateWidget, or letting it
+  // reach the length rules. CurrencyInput registers minValue/maxValue rather than
+  // minLength/maxLength, and the widget hands this engine a canonical numeric STRING
+  // ([CurrencyInput-VAL-002]), so everything here is about numeric comparison.
+  test('[CurrencyInput-VAL-003] CurrencyInput rules resolve against the shared engine, with no built-in format rule', () => {
+    const forCurrency = (validationObject, widgetValue) =>
+      validate({ componentType: 'CurrencyInput', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty value is valid until the builder says otherwise.
+    expect(forCurrency({}, '1234.56')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forCurrency({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forCurrency({ mandatory: { value: true } }, '0')).toEqual({ isValid: true, validationError: null });
+
+    // minValue / maxValue, the pair this widget actually registers
+    expect(forCurrency({ minValue: { value: 99 } }, '50').validationError).toBe('Minimum value is 99');
+    expect(forCurrency({ minValue: { value: 99 } }, '100')).toEqual({ isValid: true, validationError: null });
+    expect(forCurrency({ maxValue: { value: 1000 } }, '1500').validationError).toBe('Maximum value is 1000');
+    expect(forCurrency({ maxValue: { value: 1000 } }, '999.99')).toEqual({ isValid: true, validationError: null });
+
+    // regex, from the documentation's own example
+    const twoDecimals = { regex: { value: '^\\d+(\\.\\d{1,2})?$' } };
+    expect(forCurrency(twoDecimals, '1234.56')).toEqual({ isValid: true, validationError: null });
+    expect(forCurrency(twoDecimals, '1234.5678').validationError).toBe('The input should match pattern');
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', '50');
+    expect(
+      forCurrency(
+        { customRule: { value: "{{Number(components.textinput1.value) < 99 && 'Value needs to be more than $99'}}" } },
+        '50'
+      )
+    ).toEqual({ isValid: false, validationError: 'Value needs to be more than $99' });
+  });
+
+  // Break this catches: adding a TextArea branch to validateWidget. A text area has no
+  // built-in format rule, so a builder's own regex is always reachable, and the length
+  // rules count newlines like any other character ([TextArea-VAL-002] pins that at the
+  // widget layer).
+  test('[TextArea-VAL-003] TextArea rules resolve against the shared engine, with no built-in format rule', () => {
+    const forTextArea = (validationObject, widgetValue) =>
+      validate({ componentType: 'TextArea', widgetValue, validationObject });
+
+    // No built-in rule: any non-empty string is valid until the builder says otherwise.
+    expect(forTextArea({}, 'not-an-email\nsecond line')).toEqual({ isValid: true, validationError: null });
+
+    // mandatory
+    expect(forTextArea({ mandatory: { value: true } }, '')).toEqual({
+      isValid: false,
+      validationError: 'Field cannot be empty',
+    });
+    expect(forTextArea({ mandatory: { value: true } }, 'x')).toEqual({ isValid: true, validationError: null });
+
+    // minLength / maxLength, counting newlines as characters
+    expect(forTextArea({ minLength: { value: 5 } }, 'a\nb\nc')).toEqual({ isValid: true, validationError: null });
+    expect(forTextArea({ minLength: { value: 6 } }, 'a\nb\nc').validationError).toBe('Minimum 6 characters is needed');
+    expect(forTextArea({ maxLength: { value: 3 } }, 'a\nb\nc').validationError).toBe('Maximum 3 characters is allowed');
+
+    // regex, reachable because nothing short-circuits ahead of it
+    expect(forTextArea({ regex: { value: '^[a-z ]+$' } }, 'all lower')).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+    expect(forTextArea({ regex: { value: '^[a-z ]+$' } }, 'Has Caps').validationError).toBe(
+      'The input should match pattern'
+    );
+
+    // customRule, resolved through the real store
+    state().setExposedValue('c1', 'value', 'short');
+    expect(
+      forTextArea(
+        { customRule: { value: "{{components.textinput1.value.length < 10 && 'Value needs to be longer'}}" } },
+        'short'
+      )
+    ).toEqual({ isValid: false, validationError: 'Value needs to be longer' });
   });
 
   test('[MultiselectV2-VAL-003] one selected under minSelection: 2 is invalid', () => {
@@ -324,6 +532,54 @@ describe('the other validators that actually exist', () => {
     expect(
       validate({ componentType: 'DropdownV2', widgetValue: 'a', validationObject: { minSelection: { value: 2 } } })
     ).toEqual({ isValid: true, validationError: null });
+  });
+
+  // Every rule a text field can register, applied at once — and the ORDER they
+  // report in, which is what a user actually sees when more than one is violated.
+  // Tagged for the TextInput contract because that widget's registered validation
+  // surface is exactly this set (textinput.js:99-109), but the heading stays
+  // generic: the engine is shared, and `validate()` above already defaults to
+  // TextInput, so most cases in this file are text-field cases too.
+  test('[TextInput-VAL-003] a whole registered rule set is applied, regex before mandatory', () => {
+    const rules = {
+      mandatory: { value: true },
+      regex: { value: '^[A-Za-z]+$' },
+      minLength: { value: 3 },
+      maxLength: { value: 8 },
+      customRule: { value: '' },
+    };
+
+    // An EMPTY required field reports the REGEX message, not the mandatory one:
+    // unlike the email check (see the EmailInput case below), regex does not skip
+    // an empty value, and it is evaluated first. A builder who configures both
+    // gets "The input should match pattern" on a field the user simply left blank.
+    expect(validate({ widgetValue: '', validationObject: rules }).validationError).toBe(
+      'The input should match pattern'
+    );
+    // Mandatory is what reports when it is the only rule configured.
+    expect(validate({ widgetValue: '', validationObject: { mandatory: { value: true } } }).validationError).toBe(
+      'Field cannot be empty'
+    );
+
+    // Each remaining rule bites when it is the one violated.
+    expect(validate({ widgetValue: '1Ada', validationObject: rules }).validationError).toBe(
+      'The input should match pattern'
+    );
+    expect(validate({ widgetValue: 'Ad', validationObject: rules }).validationError).toBe(
+      'Minimum 3 characters is needed'
+    );
+    expect(validate({ widgetValue: 'Adalovelace', validationObject: rules }).validationError).toBe(
+      'Maximum 8 characters is allowed'
+    );
+    expect(
+      validate({ widgetValue: 'Ada', validationObject: { ...rules, customRule: { value: 'Nope' } } }).validationError
+    ).toBe('Nope');
+
+    // ...and a value satisfying all of them passes.
+    expect(validate({ widgetValue: 'Ada', validationObject: rules })).toEqual({
+      isValid: true,
+      validationError: null,
+    });
   });
 });
 
