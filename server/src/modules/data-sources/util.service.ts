@@ -1162,7 +1162,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   async testConnection(
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
-    dataSourceId?: string
+    dataSourceId?: string,
+    branchId?: string
   ): Promise<object> {
     const { kind, options, plugin_id, environment_id } = testDataSourceDto;
 
@@ -1177,7 +1178,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     // source (e.g. testSampleDBConnection, which already loads its own options from the DB).
     if (dataSourceId) {
       const storedOptions =
-        (await this.appEnvironmentUtilService.getOptions(dataSourceId, organization_id, environment_id))?.options || {};
+        (await this.appEnvironmentUtilService.getOptions(dataSourceId, organization_id, environment_id, branchId))
+          ?.options || {};
 
       for (const key of Object.keys(parsedOptions)) {
         const credentialId = parsedOptions[key]?.['credential_id'];

@@ -43,7 +43,12 @@ export interface IDataSourcesController {
 
   getDataSourceByEnvironment(user: User, dataSourceId: string, environmentId: string): Promise<any>;
 
-  testConnection(user: User, dataSourceId: string, testDataSourceDto: TestDataSourceDto): Promise<object>;
+  testConnection(
+    user: User,
+    dataSourceId: string,
+    testDataSourceDto: TestDataSourceDto,
+    branchId?: string
+  ): Promise<object>;
 
   testConnectionSampleDb(user: User, testDataSourceDto: TestSampleDataSourceDto): Promise<object>;
 
