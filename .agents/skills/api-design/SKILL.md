@@ -14,7 +14,7 @@ When writing or reviewing API code for ToolJet (NestJS controllers and services)
 3. **Never use `humps.decamelizeKeys()` on API responses:** Controllers must not blindly mutate object keys. Case mapping must be handled explicitly in the DTO using `class-transformer` (`@Expose({ name: '...' })`).
 4. **No untyped Queries or Bodies:** Never use `@Query() query: any` and manual destructuring. Always map inputs to a Request/Query DTO to ensure validation (e.g., string vs number checks).
 5. **No duplicated DTOs:** Never copy-paste DTOs across modules (e.g., `users/dto` vs `onboarding/dto`). Maintain a single source of truth for a wire shape.
-6. **No over-fetching for side-effects:** Do not load full entities and relations into memory (e.g., via `findOneOrFail` with relations) just to extract a few fields for audit logging. Use `.select()` to narrow the query.
+6. **No over-fetching for side-effects:** Do not load full entities and relations into memory (e.g., via `findOneOrFail` with relations) just to extract a few fields for audit logging. Use `.select()` to narrow the query. If the same narrowed field-set is needed at more than one call site, don't repeat the `.select()` inline at each — add a named method to the module's Repository class (e.g. `getUserAuditFields(id)`), per the existing repository convention (`server/AGENTS.md` — "custom typed query methods, one per module"). One caller getting the field list wrong is a bug; every caller re-deriving it independently is a guarantee one eventually will.
 
 ## ✅ Required Patterns
 
