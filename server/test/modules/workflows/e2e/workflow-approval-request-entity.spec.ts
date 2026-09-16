@@ -1,0 +1,81 @@
+import { INestApplication } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
+import {
+  initTestApp,
+  closeTestApp,
+  saveEntity,
+  findEntityOrFail,
+  setupOrganizationAndUser,
+  createWorkflowForUser,
+  createWorkflowApplicationVersion,
+} from 'test-helper';
+
+/** @group workflows */
+describe('WorkflowApprovalRequest entity', () => {
+  let app: INestApplication;
+  let executionId: string;
+  let nodeId: string;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    const { user } = await setupOrganizationAndUser(app, {
+      email: 'hitl-entity@tooljet.io',
+      password: 'password',
+      firstName: 'Hitl',
+      lastName: 'Entity',
+    });
+    const workflowApp = await createWorkflowForUser(app, user, 'HITL entity wf');
+    const appVersion = await createWorkflowApplicationVersion(app, workflowApp);
+    const execution = await saveEntity(WorkflowExecution, {
+      appVersionId: appVersion.id,
+      startNodeId: null,
+      executed: false,
+      status: 'waiting',
+      executingUserId: user.id,
+      logs: [],
+    });
+    executionId = execution.id;
+    const node = await saveEntity(WorkflowExecutionNode, {
+      type: 'human',
+      executed: false,
+      result: '',
+      state: {},
+      idOnWorkflowDefinition: 'human-1',
+      workflowExecutionId: executionId,
+      definition: { nodeType: 'human', nodeName: 'approval1' },
+    });
+    nodeId = node.id;
+  });
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60000);
+
+  it('persists and reads back a pending approval request', async () => {
+    const saved = await saveEntity(WorkflowApprovalRequest, {
+      workflowExecutionId: executionId,
+      executionNodeId: nodeId,
+      token: 'tok-entity-1',
+      status: 'pending',
+      approversSnapshot: { users: [], groups: [], emails: [] },
+      expiresAt: null,
+    });
+    const found = await findEntityOrFail(WorkflowApprovalRequest, { id: saved.id });
+    expect(found).toMatchObject({ token: 'tok-entity-1', status: 'pending', workflowExecutionId: executionId });
+  });
+
+  it('rejects a second pending request for the same (execution, node) via the partial unique index', async () => {
+    await expect(
+      saveEntity(WorkflowApprovalRequest, {
+        workflowExecutionId: executionId,
+        executionNodeId: nodeId,
+        token: 'tok-entity-2',
+        status: 'pending',
+        approversSnapshot: {},
+        expiresAt: null,
+      })
+    ).rejects.toBeInstanceOf(QueryFailedError);
+  });
+});

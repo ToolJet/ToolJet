@@ -37,6 +37,15 @@ export class WorkflowExecution {
   @Column('json', { name: 'logs' })
   logs: string[];
 
+  @Column({ name: 'parent_execution_id', nullable: true })
+  parentExecutionId: string | null;
+
+  @Column({ name: 'parent_node_id', nullable: true })
+  parentNodeId: string | null;
+
+  @Column({ name: 'schedule_id', nullable: true })
+  scheduleId: string | null;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'executing_user_id' })
   user: User;
