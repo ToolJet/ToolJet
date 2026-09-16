@@ -139,6 +139,34 @@ const countingEvent = (eventId, key) => [
 
 const fireCount = (key) => store().getVariable(key, MODULE_ID) ?? 0;
 
+/**
+ * A second handler on the same event, recording what `values` looked like at
+ * the moment the event fired. The counter above proves the handler ran; this
+ * proves the handler could actually read the interaction that triggered it,
+ * which is the whole reason a builder wires one. Stringified so the assertion
+ * compares a snapshot rather than a live reference.
+ */
+const capturingEvent = (eventId, key) => [
+  {
+    id: `evt-${eventId}-capture`,
+    index: 1,
+    sourceId: ID,
+    name: `evt-${eventId}-capture`,
+    target: 'component',
+    event: {
+      eventId,
+      actionId: 'set-custom-variable',
+      key,
+      value: `{{JSON.stringify(components.${NAME}.values)}}`,
+    },
+  },
+];
+
+const captured = (key) => {
+  const raw = store().getVariable(key, MODULE_ID);
+  return raw === undefined ? undefined : JSON.parse(raw);
+};
+
 const SCHEMA_THREE = `{{[
   {label: 'Alpha', value: 'a', visible: true, default: true, disable: false},
   {label: 'Beta', value: 'b', visible: false, default: false, disable: false},
@@ -190,6 +218,21 @@ describe('TagsInput: what renders on load', () => {
     await waitFor(() => expect(chips()).toEqual(['New York']));
     expect(exposed('values')).toEqual(['new_york']);
     expect(exposed('selectedTags')).toEqual([{ label: 'New York', value: 'new_york' }]);
+
+    // The other half of the same filter (TagsInput.jsx:189-196): outside dynamic
+    // mode it ORs the persisted `values` array with each option's own `default`
+    // flag. Seeded with an EMPTY `values` so the flag is carrying the selection
+    // on its own — drop `item?.default` from that filter and only this half
+    // notices.
+    await mount({
+      properties: {
+        values: binding([]),
+        options: binding([option('Newport', 'newport'), option('New York', 'new_york', { isDefault: true })]),
+      },
+    });
+
+    await waitFor(() => expect(chips()).toEqual(['New York']));
+    expect(exposed('values')).toEqual(['new_york']);
   });
 
   test('[TagsInput-DEF-004] with Dynamic tags on, the schema supplies the options and only visible defaults preselect', async () => {
@@ -254,7 +297,9 @@ describe('TagsInput: adding tags', () => {
     // Break this catches: firing onTagAdded from both onChange and the option's
     // own click path (a double fire), or publishing the label where the value
     // belongs.
-    await mount({ events: countingEvent('onTagAdded', 'added') });
+    await mount({
+      events: [...countingEvent('onTagAdded', 'added'), ...capturingEvent('onTagAdded', 'addedValues')],
+    });
     await openMenu();
 
     await clickOption('Newport');
@@ -263,6 +308,8 @@ describe('TagsInput: adding tags', () => {
     expect(exposed('values')).toEqual(['newport']);
     expect(exposed('selectedTags')).toEqual([{ label: 'Newport', value: 'newport' }]);
     expect(fireCount('added')).toBe(1);
+    // The handler saw the tag it was fired for, not the selection before it.
+    expect(captured('addedValues')).toEqual(['newport']);
   });
 
   test('[TagsInput-TAG-002] Enter on unmatched text creates a tag, publishes it in `newTagsAdded`, and leaves `tags` alone', async () => {
@@ -382,7 +429,7 @@ describe('TagsInput: removing tags', () => {
     // on react-select's action name), or firing the delete event twice.
     await mount({
       properties: { values: binding(['newport', 'new_york']) },
-      events: countingEvent('onTagDeleted', 'deleted'),
+      events: [...countingEvent('onTagDeleted', 'deleted'), ...capturingEvent('onTagDeleted', 'deletedValues')],
     });
     await waitFor(() => expect(chips()).toEqual(['Newport', 'New York']));
 
@@ -391,6 +438,8 @@ describe('TagsInput: removing tags', () => {
     await waitFor(() => expect(chips()).toEqual(['New York']));
     expect(exposed('values')).toEqual(['new_york']);
     expect(fireCount('deleted')).toBe(1);
+    // The handler saw the selection the removal left behind, not the one before it.
+    expect(captured('deletedValues')).toEqual(['new_york']);
   });
 
   test('[TagsInput-DEL-002] Backspace on an empty input removes the last selected tag', async () => {
@@ -949,8 +998,9 @@ describe('TagsInput: known unfixed bugs', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  // BUG (unfixed, contract D-05): the defaults effect is keyed on
-  // JSON.stringify(schema), so ANY re-resolve of a bound schema re-applies the
+  // BUG (unfixed, contract D-05): the defaults effect at
+  // TagsInput.jsx:485-489 is keyed on `JSON.stringify(schema)`, so ANY
+  // re-resolve of a bound schema re-applies the
   // schema defaults over whatever the user had selected. The documented
   // server-side-search workflow rebinds that schema on every keystroke, so the
   // user's tags are wiped mid-search. Fix: apply defaults on the first resolve
@@ -978,8 +1028,9 @@ describe('TagsInput: known unfixed bugs', () => {
     expect(chips()).toEqual(['Alpha', 'Gamma']);
   });
 
-  // BUG (unfixed, contract D-10): the mount effect publishes `isValid` from the
-  // first render's closure, computed against an EMPTY selection, and it lands
+  // BUG (unfixed, contract D-10): the mount effect at TagsInput.jsx:533-557
+  // publishes `isValid` (:557) from the first render's closure — the
+  // `validationStatus` seeded at :82-84 against an EMPTY selection — and it lands
   // after the defaults effect's correct write. A mandatory field that loads
   // already filled therefore publishes `isValid: false` until the user touches
   // it, so a submit button bound to `{{components.tagsinput1.isValid}}` starts
@@ -1000,9 +1051,10 @@ describe('TagsInput: known unfixed bugs', () => {
     }
   );
 
-  // BUG (unfixed, contract D-06): selectTags tests membership against the
-  // pre-call `selected` rather than the array it is building, so a repeated tag
-  // in one call is pushed twice. Fix: test against `newSelected`.
+  // BUG (unfixed, contract D-06): `selectTags` at TagsInput.jsx:568-585 tests
+  // membership against the pre-call `selected` (:579) rather than the
+  // `newSelected` array it is building (:570), so a repeated tag in one call is
+  // pushed twice. Fix: test against `newSelected`.
   test.failing('[TagsInput-BUG-002] `selectTags` passing the same tag twice selects it once', async () => {
     await mount();
 
