@@ -143,7 +143,8 @@
     },
     {
       "componentType": "Cascader",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Cascader/TESTING.md"
     },
     {
       "componentType": "DatePickerV2",
