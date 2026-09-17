@@ -211,7 +211,8 @@
     },
     {
       "componentType": "Text",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Text/TESTING.md"
     },
     {
       "componentType": "Tags",
