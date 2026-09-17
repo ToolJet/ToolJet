@@ -25,7 +25,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 | Bundle API | `controllers/workflow-bundles.controller.ts`, `dto/workflow-bundle.dto.ts` |
 | Config | `constants/index.ts` (queue/job names, statuses), `constants/queue-config.ts` (priority, retries, timeout, concurrency), `types/index.ts` |
 | Access | `guards/workflow-access.guard.ts`, `ability/app/`, `constants/feature.ts` (`FEATURE_KEY`) |
-| Misc | `listeners/app-actions.listener.ts` (app.deleted / maintenance-toggled → schedule cleanup), `services/agent-node.service.ts` (AI agent node), `services/workflow-version.util.service.ts` |
+| Misc | `listeners/app-actions.listener.ts` (app.deleted / maintenance-toggled → schedule cleanup — also emitted by `platform-git-sync`'s orphan-pull delete, not just `AppsService.delete`), `services/agent-node.service.ts` (AI agent node), `services/workflow-version.util.service.ts` |
 
 ## Edition split
 - CE = interface stubs (services throw `Method not implemented.`); controllers/DI wiring live in CE `module.ts`, implementations resolved from `ee/workflows` via `SubModule.getProviders`. Never import `@ee` from CE.
