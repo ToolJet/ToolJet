@@ -8,9 +8,14 @@
  * @param {string} execution.status - DB status ('success', 'failed', 'terminated', null)
  * @param {string} [execution.jobState] - BullMQ state ('active', 'waiting', 'delayed', 'completed', 'failed')
  * @param {boolean} [execution.terminationRequested] - Redis termination flag
- * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'completed' | 'failed' | 'terminated'
+ * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated'
  */
 export function getExecutionDisplayState(execution) {
+  // A suspended (Human-in-the-Loop) run: status is persisted as 'waiting' with executed=false,
+  // but its original BullMQ job has COMPLETED (returns a waiting sentinel), so jobState would
+  // otherwise mis-render it as 'completed'. The DB status is authoritative here.
+  if (execution.status === 'waiting') return 'waiting';
+
   // Already finished in database - this is the final state
   if (execution.executed) {
     if (execution.status === 'terminated') return 'terminated';
@@ -65,11 +70,11 @@ export function getExecutionDisplayState(execution) {
  * Check if execution is in progress (not in final state)
  *
  * @param {Object} execution - Raw execution object
- * @returns {boolean} True if execution is pending, running, or terminating
+ * @returns {boolean} True if execution is pending, running, terminating, or waiting
  */
 export function isExecutionInProgress(execution) {
   const state = getExecutionDisplayState(execution);
-  return ['pending', 'running', 'terminating'].includes(state);
+  return ['pending', 'running', 'terminating', 'waiting'].includes(state);
 }
 
 /**
@@ -138,6 +143,14 @@ export function getExecutionDisplayConfig(execution) {
       showTime: true,
       icon: 'terminated',
     },
+    waiting: {
+      state: 'waiting',
+      text: 'Waiting for input',
+      showSpinner: false,
+      showCancelButton: false,
+      showTime: false,
+      icon: 'waiting',
+    },
   };
 
   return configs[state] || configs.running; // Fallback to running if unknown state
@@ -171,6 +184,7 @@ export function getExecutionStatusText(execution) {
     completed: 'Completed',
     failed: 'Failed',
     terminated: 'Terminated',
+    waiting: 'Waiting for input',
   };
 
   return statusTexts[state] || 'Unknown';
