@@ -21,14 +21,17 @@ export class WorkflowApprovalsController {
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Post(':token/resolve')
-  async resolve(@Param('token') token: string, @Body() dto: ResolveApprovalDto) {
+  // Return type must match the EE override (which returns the resolve result), or the EE
+  // subclass trips TS2416 (its concrete return isn't assignable to an inferred Promise<void>).
+  async resolve(@Param('token') token: string, @Body() dto: ResolveApprovalDto): Promise<{ status: 'resolved' }> {
     throw new Error('Method not implemented.');
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/cancel')
-  async cancel(@Param('id') id: string, @User() user) {
+  // Explicit return type to match the EE override (see the note on resolve above).
+  async cancel(@Param('id') id: string, @User() user): Promise<{ status: 'cancelled' }> {
     throw new Error('Method not implemented.');
   }
 }
