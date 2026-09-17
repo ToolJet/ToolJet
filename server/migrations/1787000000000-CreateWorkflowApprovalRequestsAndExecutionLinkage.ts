@@ -45,6 +45,7 @@ export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000000 impl
       new TableColumn({ name: 'parent_execution_id', type: 'uuid', isNullable: true }),
       new TableColumn({ name: 'parent_node_id', type: 'uuid', isNullable: true }),
       new TableColumn({ name: 'schedule_id', type: 'uuid', isNullable: true }),
+      new TableColumn({ name: 'environment_id', type: 'uuid', isNullable: true }),
     ]);
     await queryRunner.createForeignKeys('workflow_executions', [
       new TableForeignKey({ columnNames: ['parent_execution_id'], referencedTableName: 'workflow_executions', referencedColumnNames: ['id'], onDelete: 'CASCADE' }),
@@ -59,7 +60,12 @@ export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000000 impl
       const fk = execTable.foreignKeys.find((f) => f.columnNames.includes(col));
       if (fk) await queryRunner.dropForeignKey('workflow_executions', fk);
     }
-    await queryRunner.dropColumns('workflow_executions', ['parent_execution_id', 'parent_node_id', 'schedule_id']);
+    await queryRunner.dropColumns('workflow_executions', [
+      'parent_execution_id',
+      'parent_node_id',
+      'schedule_id',
+      'environment_id',
+    ]);
     await queryRunner.dropTable('workflow_approval_requests', true);
   }
 }

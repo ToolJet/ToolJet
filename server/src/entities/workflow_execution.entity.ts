@@ -46,6 +46,9 @@ export class WorkflowExecution {
   @Column({ name: 'schedule_id', type: 'uuid', nullable: true })
   scheduleId: string | null;
 
+  @Column({ name: 'environment_id', type: 'uuid', nullable: true })
+  environmentId: string;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'executing_user_id' })
   user: User;
