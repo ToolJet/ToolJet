@@ -23,6 +23,8 @@ export const BlankPage = function BlankPage({
   appType,
   canCreateApp,
   workflowsLimit,
+  onImportFromDeviceClick,
+  gitSyncLicenseLocked = false,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -44,7 +46,8 @@ export const BlankPage = function BlankPage({
     });
   }
 
-  const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
+  const appCreationDisabled =
+    !canCreateApp() || gitSyncLicenseLocked || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
   const workflowsCreationDisabled =
     !canCreateApp() || (!workflowsLimit?.canAddUnlimited && workflowsLimit?.percentage >= 100);
 
@@ -181,6 +184,11 @@ export const BlankPage = function BlankPage({
                             })}
                             style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                             data-cy={appType !== 'workflow' ? 'import-an-application' : 'import-a-workflow'}
+                            onClick={(e) => {
+                              if (onImportFromDeviceClick && onImportFromDeviceClick(e) === false) {
+                                e.preventDefault();
+                              }
+                            }}
                           >
                             &nbsp;
                             {appType !== 'workflow'

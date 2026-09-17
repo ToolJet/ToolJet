@@ -40,7 +40,7 @@ export class InstanceConfigsUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(250, { message: 'Domains cannot be longer than 250 characters' })
   allowedDomains?: string;
-  
+
   @IsOptional()
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))

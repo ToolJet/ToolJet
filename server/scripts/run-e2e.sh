@@ -39,13 +39,17 @@ fmt_duration() {
 mode="sequential"   # sequential | ci
 coverage=false
 jest_extra_args=()
-
-for arg in "$@"; do
-  case "$arg" in
-    --ci)       mode="ci" ;;
-    --coverage) coverage=true ;;
-    *) jest_extra_args+=("$arg") ;;
+json_output_dir=""
+_args=("$@")
+_i=0
+while [[ $_i -lt ${#_args[@]} ]]; do
+  case "${_args[$_i]}" in
+    --ci)              mode="ci" ;;
+    --coverage)        coverage=true ;;
+    --json-output-dir) _i=$((_i + 1)); json_output_dir="${_args[$_i]}" ;;
+    *)                 jest_extra_args+=("${_args[$_i]}") ;;
   esac
+  _i=$((_i + 1))
 done
 
 # ---------------------------------------------------------------------------
@@ -67,6 +71,26 @@ TOOLJET_DB_NAME="${TOOLJET_DB:-tooljet_db_test}"
 
 export PGPASSWORD="$PG_PASS"
 
+# ---------------------------------------------------------------------------
+# Per-run git repo path (git-sync e2e)
+# ---------------------------------------------------------------------------
+# The git-sync e2e specs default to the static repos gsmithun4/e2e (GitHub) and
+# gsmithun4/gitlab-e2e (GitLab). Static paths mean two concurrent runs — or a
+# previous run that died mid-way and left stale refs — collide on the shared
+# simulator. Instead, mint ONE fresh run id here and hand every shard the same
+# run-ci/<uuid> repo path via the environment. Generated once (not per shard, not
+# per spec) so a single `npm run test:gitsync` touches exactly one repo; the
+# simulator's reset endpoint auto-creates it as an empty bare repo on first use.
+#
+# GitHub and GitLab get sibling paths under the same run id (…-gitlab) because the
+# two suites must not share a repo on the simulator. Respect a caller-provided
+# TEST_GIT_REPO_PATH / TEST_GITLAB_REPO_PATH so a specific repo can still be pinned.
+RUN_REPO_ID="$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid 2>/dev/null)"
+RUN_REPO_ID="$(printf '%s' "$RUN_REPO_ID" | tr '[:upper:]' '[:lower:]')"
+export TEST_GIT_REPO_PATH="${TEST_GIT_REPO_PATH:-run-ci/${RUN_REPO_ID}}"
+export TEST_GITLAB_REPO_PATH="${TEST_GITLAB_REPO_PATH:-run-ci/${RUN_REPO_ID}-gitlab}"
+printf "\033[2mgit-sync e2e repo: %s (gitlab: %s)\033[0m\n" "$TEST_GIT_REPO_PATH" "$TEST_GITLAB_REPO_PATH"
+
 psql_cmd() {
   psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -v ON_ERROR_STOP=1 "$@" 2>&1
 }
@@ -82,7 +106,9 @@ printf "\n"
 # Shared shard config
 # ---------------------------------------------------------------------------
 SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
-[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
+# --coverageReporters=json: per-shard HTML/lcov would be thrown away anyway once
+# merge-coverage.mjs combines all shards below.
+[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage --coverageReporters=json)
 
 SHARD_LOG_DIR=$(mktemp -d)
 trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
@@ -115,12 +141,15 @@ collect_shard_results() {
 # ---------------------------------------------------------------------------
 if [ "$mode" = "sequential" ]; then
   for s in $(seq 1 $SHARDS); do
+    json_args=()
+    [[ -n "$json_output_dir" ]] && json_args=(--json --outputFile "$json_output_dir/shard-$s.json")
+
     printf "\033[1m━━━ Running shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
 
     SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
       --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
       --coverageDirectory=.coverage/shard-$s \
-      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
+      "${SHARD_JEST_ARGS[@]}" "${json_args[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
 
     shard_exit=${PIPESTATUS[0]}
     [ $shard_exit -ne 0 ] && exit_code=1
@@ -171,12 +200,15 @@ if [ "$mode" = "ci" ]; then
 
   pids=()
   for s in $(seq 1 $SHARDS); do
+    json_args=()
+    [[ -n "$json_output_dir" ]] && json_args=(--json --outputFile "$json_output_dir/shard-$s.json")
+
     printf "\033[1m━━━ Launching shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
     PG_DB="${shard_dbs[$((s-1))]}" TOOLJET_DB="${shard_tjdbs[$((s-1))]}" \
     SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" \
     npx jest --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
       --coverageDirectory=.coverage/shard-$s \
-      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" \
+      "${SHARD_JEST_ARGS[@]}" "${json_args[@]}" "${jest_extra_args[@]}" \
       > "$SHARD_LOG_DIR/shard-$s.log" 2>&1 &
     pids+=($!)
     [ "$s" -lt "$SHARDS" ] && sleep 30
@@ -201,15 +233,18 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
-  mkdir -p .coverage/merged
-  npx nyc merge .coverage .coverage/merged/coverage-final.json 2>/dev/null
-  npx nyc report \
-    --temp-dir .coverage/merged \
-    --reporter=html --reporter=lcov --reporter=json \
-    --report-dir=coverage-e2e 2>/dev/null
-  cp .coverage/merged/coverage-final.json coverage-e2e/coverage-final.json 2>/dev/null
-  printf "\033[32mCoverage report written to coverage-e2e/\033[0m\n"
+  # CI (--ci) only ever consumes coverage-e2e/coverage-final.json downstream (via
+  # test:cov:merge) — the HTML/lcov/summary here get thrown away with the runner, so
+  # skip rendering them twice. Local standalone runs are the audience that actually
+  # opens this report, so keep the full set there.
+  merge_reporters="json,html,lcovonly,json-summary"
+  [ "$mode" = "ci" ] && merge_reporters="json"
+  node scripts/merge-coverage.mjs --out coverage-e2e --reporters "$merge_reporters" .coverage
   rm -rf .coverage
+
+  # --coverage makes jest attach a full coverageMap to every --json shard file too —
+  # strip it, coverage-e2e/coverage-final.json above is the authoritative report.
+  [ -n "$json_output_dir" ] && node scripts/strip-coverage-map.mjs "$json_output_dir"/shard-*.json
 fi
 
 # ---------------------------------------------------------------------------

@@ -164,12 +164,12 @@ export default class Openapi implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     try {
-      const spec = sourceOptions.spec; 
+      const spec = sourceOptions.spec;
       const paths = spec?.paths || {};
 
       const endpoints = Object.entries(paths).flatMap(([path, methods]: [string, any]) =>
         Object.keys(methods)
-          .filter((m) => ['get','post','put','patch','delete','head','options'].includes(m))
+          .filter((m) => ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'].includes(m))
           .map((method) => ({
             path,
             method: method.toUpperCase(),

@@ -245,7 +245,11 @@ export class TooljetDbUtilService {
 
     csvStream
       .on('headers', (headers) => {
-        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        const resolved = this.resolvePrimaryKeyAndDataColumns(
+          internalTableDatabaseColumn,
+          primaryKeyColumnSchema,
+          headers
+        );
         primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
         dataColumnsInCsv = resolved.dataColumns;
 
@@ -409,7 +413,11 @@ export class TooljetDbUtilService {
 
     csvStream
       .on('headers', (headers) => {
-        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        const resolved = this.resolvePrimaryKeyAndDataColumns(
+          internalTableDatabaseColumn,
+          primaryKeyColumnSchema,
+          headers
+        );
         primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
 
         if (primaryKeyColumnsInCsv.length === 0) {
@@ -555,9 +563,7 @@ export class TooljetDbUtilService {
         if (requiredColumns.includes(columnName) && isEmpty(row[columnName]))
           throw `Primary key value required for column ${columnName}`;
 
-        const columnDetails = internalTableDatabaseColumn.find(
-          (colDetails) => colDetails.column_name === columnName
-        );
+        const columnDetails = internalTableDatabaseColumn.find((colDetails) => colDetails.column_name === columnName);
         filteredRow[columnName] = this.convertToDataType(row[columnName], columnDetails!.data_type);
       }
 

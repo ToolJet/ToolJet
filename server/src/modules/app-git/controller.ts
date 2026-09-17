@@ -1,13 +1,7 @@
 import { Controller, Get, UseGuards, Post, Param, Body, NotFoundException, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
-import {
-  AppGitPullDto,
-  AppGitPullUpdateDto,
-  AppGitPushDto,
-  AppGitUpdateDto,
-  RenameAppOrVersionDto,
-} from '@modules/app-git/dto';
+import { AppGitPullDto, AppGitPullUpdateDto, AppGitPushDto, RenameAppOrVersionDto } from '@modules/app-git/dto';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -27,12 +21,8 @@ export class AppGitController {
 
   @InitFeature(FEATURE_KEY.GIT_SYNC_APP)
   @UseGuards(JwtAuthGuard)
-  @Post('gitpush/:appGitId/:versionId')
-  async gitSyncApp(
-    @User() user,
-    @Param('appGitId') appGitId: string,
-    @Body() appGitPushBody: AppGitPushDto
-  ): Promise<any> {
+  @Post('gitpush/:appId/:versionId')
+  async gitSyncApp(@User() user, @Param('appId') appId: string, @Body() appGitPushBody: AppGitPushDto): Promise<any> {
     throw new NotFoundException();
   }
 
@@ -74,16 +64,6 @@ export class AppGitController {
     @User() user: UserEntity,
     @Param('appId') appId: string,
     @Body() renameAppOrVersionDto: RenameAppOrVersionDto
-  ) {
-    throw new NotFoundException();
-  }
-
-  @InitFeature(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE)
-  @Put(':appId/configs')
-  async updateAppGitConfigs(
-    @User() user: UserEntity,
-    @Param('appId') appId: string,
-    @Body() updateAppGitDto: AppGitUpdateDto
   ) {
     throw new NotFoundException();
   }

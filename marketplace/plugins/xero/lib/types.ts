@@ -31,4 +31,3 @@ export type QueryResult = {
   data: Array<object> | object | OptionsOfTextResponseBody;
   metadata?: Array<object> | object;
 };
-

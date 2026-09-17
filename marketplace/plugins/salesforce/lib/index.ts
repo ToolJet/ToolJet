@@ -52,11 +52,7 @@ export default class Salesforce implements QueryService {
         case 'soql': {
           const query = queryOptions.soql_query;
           if (!query || query.trim() === '') {
-            throw new QueryError(
-              'Invalid Query', 
-              'The SOQL query cannot be empty. Please provide a valid query.', 
-              {}
-            );
+            throw new QueryError('Invalid Query', 'The SOQL query cannot be empty. Please provide a valid query.', {});
           }
           result = await conn.query(query);
           break;
@@ -94,8 +90,7 @@ export default class Salesforce implements QueryService {
         }
       }
     } catch (error) {
-      if(error instanceof QueryError)
-        throw error;
+      if (error instanceof QueryError) throw error;
 
       // Check for 401 status code in various locations where jsforce might set it
       const statusCode = error?.response?.statusCode || error?.statusCode || error?.response?.status;
@@ -274,12 +269,14 @@ export default class Salesforce implements QueryService {
     let client_id = this.getOptionValue(options.client_id);
     let client_secret = this.getOptionValue(options.client_secret);
 
+    let host = process.env.TOOLJET_HOST;
     if (oauth_type === 'tooljet_app') {
       client_id = process.env.SALESFORCE_CLIENT_ID;
       client_secret = process.env.SALESFORCE_CLIENT_SECRET;
+    } else {
+      host = this.getOptionValue(options.tj_redirect_host) || process.env.TOOLJET_HOST;
     }
 
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirect_uri = `${fullUrl}oauth2/authorize`;

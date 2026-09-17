@@ -1,17 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-  IsDefined,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  Validate,
-  ValidateIf,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-  IsEnum,
-  IsBoolean,
-} from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsBoolean } from 'class-validator';
 import { sanitizeInput } from '../helpers/utils.helper';
 
 export class LoginConfigsUpdateDto {

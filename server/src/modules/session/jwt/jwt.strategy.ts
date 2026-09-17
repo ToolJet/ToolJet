@@ -1,6 +1,6 @@
 import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
@@ -10,7 +10,27 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { trackUserActivity } from '@otel/tracing';
+import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
+import * as crypto from 'crypto';
+import * as uuid from 'uuid';
+
+const ADMIN_API_KEY_HEADER = 'tj-admin-api-key';
+const WORKSPACE_ID_HEADER = 'tj-workspace-id';
+
+/* Headers may arrive as string | string[]; normalise to a single value */
+function getHeader(req: Request, name: string): string | undefined {
+  const value = req.headers[name];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/* Constant-time comparison to avoid leaking the key via timing */
+function safeCompare(a?: string, b?: string): boolean {
+  if (!a || !b) return false;
+  const bufA = Buffer.from(String(a));
+  const bufB = Buffer.from(String(b));
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,6 +43,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: (request: Request) => {
+        /*
+         * Admin API key authentication: when a valid `tj-admin-api-key` header is supplied,
+         * mint a short-lived synthetic token (signed with SECRET_KEY_BASE) so the request can
+         * flow through the JWT strategy. The actual workspace/user resolution and the session
+         * skip happen in validate(). The synthetic token only carries `isAdminApiKeyAuth: true`,
+         * and because it is signed with our own secret it cannot be forged by a caller.
+         */
+        const adminApiKey = getHeader(request, ADMIN_API_KEY_HEADER);
+        if (adminApiKey) {
+          const expectedKey = configService.get<string>('TJ_ADMIN_API_KEY');
+          if (safeCompare(adminApiKey, expectedKey)) {
+            return sessionUtilService.sign({ isAdminApiKeyAuth: true });
+          }
+        }
         // Ensure PAT is processed correctly without bypassing JWT validation
         if (request.headers['tj_auth_token']) {
           return request.headers['tj_auth_token'];
@@ -39,6 +73,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const startTime = Date.now();
     this.transactionLogger.log(`JwtStrategy validate invoked at ${new Date().toISOString()}`);
     try {
+      /* Admin API key flow: skip the session check and impersonate the workspace admin */
+      if (payload?.isAdminApiKeyAuth) {
+        return await this.validateAdminApiKeySession(req);
+      }
+
       const isUserMandatory = !req['isUserNotMandatory'];
       const isGetUserSession = !!req['isGetUserSession'];
       const isGettingOrganizations = !!req['isGettingOrganizations'];
@@ -51,7 +90,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           ? req.headers['tj-workspace-id'][0]
           : req.headers['tj-workspace-id'];
 
-      if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      /* A PAT session is bound to exactly one workspace at mint time, so its single
+         organizationId is unambiguous — no tj-workspace-id header required. Previously gated on
+         payload.appId, which only the app-scoped embed flow sets; workspace PATs have no appId. */
+      if (!organizationId && payload?.isPATLogin && payload?.organizationIds?.length === 1) {
         organizationId = payload.organizationIds[0];
       }
 
@@ -64,6 +106,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.organizationId = user.organizationId ?? organizationId;
+        user.branchId = await this.resolveBranchId(req, user.organizationId);
 
         return user;
       }
@@ -112,6 +156,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        // Resolve the active Git branch once per request: explicit `branch_id` query
+        // param, else the org's default branch. Consumers read user.branchId instead
+        // of the old x-branch-id header.
+        user.branchId = await this.resolveBranchId(req, user.organizationId);
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)
@@ -120,7 +170,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             trackUserActivity({
               workspaceId: user.organizationId,
               userId: user.id,
-              sessionId: payload.sessionId,
+              /* App-scoped requests only; PAT sessions carry the app id on the token itself */
+              appId: extractAppIdFromPath(req.originalUrl || req.url) || payload.appId,
             });
           } catch (error) {
             // Don't let metrics tracking failures affect authentication
@@ -135,5 +186,91 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         `JwtStrategy validate completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
       );
     }
+  }
+
+  /**
+   * Resolves the active Git branch id for a request. Precedence:
+   *   1. The explicit `branch_id` query param (current mechanism).
+   *   2. The legacy `x-branch-id` header — transitional fallback for clients not yet migrated
+   *      to the query param (cached SPAs, mobile, external API callers).
+   *   3. The organization's default branch.
+   * Returns null when none are available (e.g. no org context). NULL-convention consumers
+   * (folder-apps for non-git orgs / workflows) read the raw query param directly instead.
+   */
+  private async resolveBranchId(req: Request, organizationId?: string): Promise<string | null> {
+    // Callers that want the NULL branch (workflows, non-git contexts) send an empty/`null`
+    // value and read the raw query/header themselves; normalize those to "absent" here so
+    // user.branchId is never the literal string "null".
+    const normalize = (value?: string): string | undefined => {
+      const v = value?.trim();
+      return v && v !== 'null' && v !== 'undefined' ? v : undefined;
+    };
+
+    const rawQuery = req.query?.['branch_id'];
+    const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
+    if (queryBranchId) return queryBranchId;
+
+    const rawHeader = req.headers['x-branch-id'];
+    const headerBranchId = normalize(Array.isArray(rawHeader) ? rawHeader[0] : rawHeader);
+    if (headerBranchId) return headerBranchId;
+
+    if (!organizationId) return null;
+    return this.sessionUtilService.getDefaultBranchId(organizationId);
+  }
+
+  /**
+   * Resolves an authenticated user from the `tj-admin-api-key` header without a real session.
+   *
+   * Re-verifies the key against TJ_ADMIN_API_KEY (defence in depth), reads the target workspace
+   * from the `tj-workspace-id` header, loads that workspace's admin user and returns a simulated
+   * session for them. The regular `validateUserSession` check is intentionally skipped here.
+   */
+  private async validateAdminApiKeySession(req: Request): Promise<User | false> {
+    const adminApiKey = getHeader(req, ADMIN_API_KEY_HEADER);
+    const expectedKey = this.configService.get<string>('TJ_ADMIN_API_KEY');
+    if (!safeCompare(adminApiKey, expectedKey)) {
+      throw new UnauthorizedException('Invalid admin API key');
+    }
+
+    const organizationId = getHeader(req, WORKSPACE_ID_HEADER);
+    if (!organizationId) {
+      throw new BadRequestException(`${WORKSPACE_ID_HEADER} header is required for admin API key authentication`);
+    }
+
+    /* Validates the workspace exists and is active */
+    await this.sessionUtilService.findOrganization(organizationId);
+
+    const adminUser = await this.userRepository.getUserWithAdminRole(organizationId);
+    if (!adminUser) {
+      throw new UnauthorizedException('No admin user found for the requested workspace');
+    }
+
+    /* Re-fetch with the workspace context so organizationUsers relations are populated,
+       matching the shape produced by the regular JWT flow. */
+    const user = await this.userRepository.findByEmail(adminUser.email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+    if (!user) {
+      throw new UnauthorizedException('No admin user found for the requested workspace');
+    }
+
+    /* Simulate a user session — no UserSessions row is created or validated */
+    user.organizationId = organizationId;
+    user.organizationIds = [organizationId];
+    user.sessionId = uuid.v4();
+    user.isPasswordLogin = false;
+    user.isSSOLogin = false;
+
+    if (user.organizationId && user.id) {
+      try {
+        trackUserActivity({
+          workspaceId: user.organizationId,
+          userId: user.id,
+          appId: extractAppIdFromPath(req.originalUrl || req.url),
+        });
+      } catch (error) {
+        console.error('Error tracking user activity:', error);
+      }
+    }
+
+    return user;
   }
 }

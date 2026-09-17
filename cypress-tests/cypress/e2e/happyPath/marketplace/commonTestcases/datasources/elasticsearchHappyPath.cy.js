@@ -103,7 +103,7 @@ describe("Elasticsearch", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidPort);
-        verifyDSConnection("failed", "ConnectionError: connect ECONNREFUSED");
+        verifyDSConnection("failed", "connect ECONNREFUSED");
     });
 });
 

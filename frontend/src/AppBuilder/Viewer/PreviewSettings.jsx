@@ -21,13 +21,17 @@ const AppEnvironments = lazy(() =>
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
-  const { setShowUndoRedoBtn, editingVersion } = useStore(
+  const { setShowUndoRedoBtn, editingVersion, selectedVersion } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
       editingVersion: state?.editingVersion,
+      selectedVersion: state?.selectedVersion,
     }),
     shallow
   );
+
+  // In sub-branch preview, lock version and env selectors so user cannot switch
+  const isSubBranch = selectedVersion?.versionType === 'branch';
 
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
@@ -42,7 +46,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
         <span className="preview-settings-text" data-cy="preview-settings-text">
           Preview settings
         </span>
-        {editingVersion && appType !== 'module' && (
+        {editingVersion && (
           <Suspense
             fallback={
               <div className="d-flex justify-content-center" style={{ width: '304px' }}>
@@ -52,9 +56,9 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               </div>
             }
           >
-            <AppVersionsManager darkMode={darkMode} />
+            <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
             <div className="navbar-seperator"></div>
-            <AppEnvironments darkMode={darkMode} />
+            <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
           </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
@@ -103,17 +107,15 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              {appType !== 'module' && (
-                <Suspense fallback={null}>
-                  <span style={{ marginTop: '4px' }}>
-                    <AppEnvironments darkMode={darkMode} />
-                  </span>
-                  <hr className="m-0" />
-                  <span>
-                    <AppVersionsManager darkMode={darkMode} />
-                  </span>
-                </Suspense>
-              )}
+              <Suspense fallback={null}>
+                <span style={{ marginTop: '4px' }}>
+                  <AppEnvironments darkMode={darkMode} />
+                </span>
+                <hr className="m-0" />
+                <span>
+                  <AppVersionsManager darkMode={darkMode} />
+                </span>
+              </Suspense>
 
               <div
                 className={classNames('d-flex px-2 pb-2 align-items-center width-100', {

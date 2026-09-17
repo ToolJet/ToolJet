@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -7,22 +7,17 @@ import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
-const CreateDraftVersionModal = ({
-  showCreateAppVersion,
-  setShowCreateAppVersion,
-  handleCommitEnableChange,
-  canCommit,
-  orgGit,
-  fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
-}) => {
+const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
-  const [versionName, setVersionName] = useState('');
-  const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
+  const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
+  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -30,6 +25,8 @@ const CreateDraftVersionModal = ({
     developmentVersions,
     appId,
     selectedVersion,
+    selectedEnvironment,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -42,18 +39,36 @@ const CreateDraftVersionModal = ({
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
 
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
-  useEffect(() => {
-    const gitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-    setIsGitSyncEnabled(gitSyncEnabled);
-  }, [orgGit]);
-
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
+
+  // Unsynced apps (never pushed to git) behave like a non-git workspace for this modal —
+  // no branch-name auto-fill, user picks their own draft name. isSynced propagates from
+  // the source version being created from (see `createVersion` in versions/util.service.ts).
+  const isAppGitTracked = isGitSyncEnabled && selectedVersionForCreation?.isSynced !== false;
+
+  // Git single-branch replace flow: git enabled + branching disabled (by license or manually) +
+  // the app is SYNCED (a synced draft already exists). Git keeps exactly one draft tied to the
+  // default branch, so creating a new draft from a saved version REPLACES it (backend swaps it
+  // atomically via `replace: true`). Unsynced apps (is_synced=false) are exempt from the single-draft
+  // rule — they behave like git-off (unlimited drafts) and use the normal create flow below.
+  const hasSyncedDraft = developmentVersions.some(
+    (v) => v.versionType === 'version' && v.status === 'DRAFT' && v.isSynced !== false
+  );
+  const isReplaceFlow = isGitSyncEnabled && !isMultiBranchingEnabled && hasSyncedDraft;
+
+  // Use git draft naming (auto name = default branch, no name input/validation) whenever the
+  // resulting draft is git-tracked: either the source version is synced, or this is the single-branch
+  // replace flow (the draft is the default-branch working draft regardless of the source's own flag).
+  const useGitDraftName = isAppGitTracked || isReplaceFlow;
 
   useEffect(() => {
     if (appId) {
@@ -88,20 +103,6 @@ const CreateDraftVersionModal = ({
     }
   }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
-  // Update version name when selectedVersionForCreation changes or when modal opens
-  const hasInitializedVersionName = useRef(false);
-
-  useEffect(() => {
-    if (!showCreateAppVersion) {
-      hasInitializedVersionName.current = false;
-      return;
-    }
-    if (!hasInitializedVersionName.current && selectedVersionForCreation?.name) {
-      setVersionName(selectedVersionForCreation.name);
-      hasInitializedVersionName.current = true;
-    }
-  }, [selectedVersionForCreation, showCreateAppVersion]);
-
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
@@ -112,13 +113,11 @@ const CreateDraftVersionModal = ({
       ? [{ label: selectedVersion.name, value: selectedVersion.id }]
       : [];
 
+  const [versionName, setVersionName] = useState('');
+
   const createVersion = () => {
-    if (versionName.trim().length > 25) {
-      toast.error('Version name should not be longer than 25 characters');
-      return;
-    }
-    if (versionName.trim() == '') {
-      toast.error('Version name should not be empty');
+    if (isEditorReadOnly) {
+      toast.error('You do not have permission to create a draft version');
       return;
     }
 
@@ -127,29 +126,45 @@ const CreateDraftVersionModal = ({
       return;
     }
 
+    if (!useGitDraftName) {
+      if (!versionName || versionName.trim() === '') {
+        toast.error('Version name should not be empty');
+        return;
+      }
+      if (versionName.trim().length > 25) {
+        toast.error('Version name should not be longer than 25 characters');
+        return;
+      }
+      if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+        toast.error('Version name cannot contain spaces or special characters (~ ^ : ? * [ \\ @ {).');
+        return;
+      }
+    }
+
     setIsCreatingVersion(true);
+
+    const draftName = useGitDraftName ? defaultBranch : versionName.trim();
+    const draftDescription = useGitDraftName ? 'Latest commit to main will appear here' : '';
 
     //TODO: pass environmentId to the func
     createNewVersionAction(
       appId,
-      versionName,
+      draftName,
       selectedVersionForCreation.id,
-      '',
+      draftDescription,
       (newVersion) => {
-        toast.success('Version Created');
-        setVersionName('');
+        toast.success(isReplaceFlow ? 'Draft replaced' : 'Version Created');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
+        refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
         changeEditorVersionAction(
           appId,
           newVersion.id,
-          (data) => {
-            handleCommitOnVersionCreation(data);
-          },
+          () => {},
           (error) => {
             console.error('Error switching to new draft version:', error);
             toast.error('Draft created but failed to switch to it');
@@ -164,7 +179,9 @@ const CreateDraftVersionModal = ({
           toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
         }
         setIsCreatingVersion(false);
-      }
+      },
+      'version',
+      isReplaceFlow
     );
   };
 
@@ -177,6 +194,7 @@ const CreateDraftVersionModal = ({
       }}
       title={t('editor.appVersionManager.createDraftVersion', 'Create draft version')}
       customClassName="create-draft-version-modal"
+      dialogClassName="create-draft-version-dialog"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">
@@ -190,8 +208,8 @@ const CreateDraftVersionModal = ({
           }}
         >
           <div className="create-draft-version-body">
-            <div className="mb-3">
-              <div className="col">
+            {!useGitDraftName && (
+              <div className="col mt-3 mb-3">
                 <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                   {t('editor.appVersionManager.versionName', 'Version Name')}
                 </label>
@@ -206,14 +224,12 @@ const CreateDraftVersionModal = ({
                   autoFocus={true}
                   minLength="1"
                   maxLength="25"
-                  style={{ height: '32px' }}
                 />
                 <small className="version-name-helper-text" data-cy="version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>
-            </div>
-
+            )}
             <div className="mt-3 mb-3 version-select">
               <div className="col">
                 <label className="form-label mb-1 ms-1" data-cy="create-draft-version-from-label">
@@ -238,7 +254,7 @@ const CreateDraftVersionModal = ({
             <Alert
               placeSvgTop={true}
               svg="warning-icon"
-              cls={`create-draft-version-alert ${isGitSyncEnabled ? 'git-sync-enabled' : 'git-sync-disabled'}`}
+              cls={`create-draft-version-alert ${useGitDraftName ? 'git-sync-enabled' : 'git-sync-disabled'}`}
             >
               <div
                 className="d-flex align-items-center"
@@ -254,32 +270,12 @@ const CreateDraftVersionModal = ({
                   style={{ marginBottom: '12px' }}
                   data-cy="create-draft-version-helper-text"
                 >
-                  Draft version can only be created from saved versions.{' '}
+                  {isReplaceFlow
+                    ? `This app uses git, which keeps a single draft tied to the ${defaultBranch} branch at all times. Creating a new draft will replace your current one.`
+                    : 'Draft version can only be created from saved versions.'}{' '}
                 </div>
               </div>
             </Alert>
-
-            {isGitSyncEnabled && (
-              <div className="commit-changes mb-3">
-                <div>
-                  <input
-                    className="form-check-input"
-                    checked={canCommit}
-                    type="checkbox"
-                    onChange={handleCommitEnableChange}
-                    data-cy="git-commit-input"
-                  />
-                </div>
-                <div>
-                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                    Commit changes
-                  </div>
-                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                    This will commit the creation of the new version to the git repo
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="create-draft-version-footer">
@@ -295,17 +291,19 @@ const CreateDraftVersionModal = ({
                 className="mx-2"
                 data-cy="create-draft-version-cancel-button"
               >
-                {t('globals.cancel', 'Cancel')}
+                {isReplaceFlow ? 'Keep current draft' : t('globals.cancel', 'Cancel')}
               </ButtonSolid>
               <ButtonSolid
                 size="lg"
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation}
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
                 data-cy="create-draft-version-create-button"
               >
-                {t('editor.appVersionManager.createVersion', 'Create Version')}
+                {isReplaceFlow
+                  ? 'Replace with new draft'
+                  : t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>
             </div>
           </div>

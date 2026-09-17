@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
@@ -7,8 +7,6 @@ import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
-
-import useStore from '@/AppBuilder/_stores/store';
 
 import { Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
@@ -21,14 +19,9 @@ const CreateDraftVersionModal = lazy(() =>
 // TODO: edit version modal and add version modal
 const Menu = (props) => {
   const isEditable = props.selectProps.isEditable;
-  const creationMode = props?.selectProps?.appCreationMode;
-  const allowAppEdit = useStore((state) => state.allowEditing);
-  const [isVersionCreationEnabled, setIsVersionCreationEnabled] = useState(
-    creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit)
-  );
-  useEffect(() => {
-    setIsVersionCreationEnabled(creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit));
-  }, [allowAppEdit, creationMode]);
+  // Workspace-level git sync: every app is editable on a feature branch.
+  // Version creation is always allowed; the gate now lives at the branch level.
+  const isVersionCreationEnabled = true;
 
   return (
     <components.Menu {...props}>
@@ -105,7 +98,7 @@ const Menu = (props) => {
 
 export const SingleValue = ({ selectProps = {} }) => {
   const appVersionName = selectProps.value?.appVersionName;
-  const { menuIsOpen, onToggleMenu } = selectProps;
+  const { menuIsOpen, onToggleMenu, isDisabled } = selectProps;
   return (
     <div className="d-inline-flex align-items-center tw-w-full" data-cy="app-version-label" style={{ gap: '8px' }}>
       <Button
@@ -116,7 +109,10 @@ export const SingleValue = ({ selectProps = {} }) => {
           }
         }}
         variant="ghost"
-        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
+        disabled={isDisabled}
+        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen && !isDisabled ? 'tw-bg-button-outline-hover' : ''} ${
+          isDisabled ? '!tw-cursor-default tw-opacity-50' : ''
+        }`}
       >
         <Tag width="16" height="16" className="tw-text-icon-success" />
 

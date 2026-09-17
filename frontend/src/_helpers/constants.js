@@ -18,6 +18,9 @@ export const USER_COLORS = [
 
 export const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
 
+// Temporarily hide inline AI actions that are not served by the standalone MCP agent.
+export const INLINE_AI_FEATURES_ENABLED = false;
+
 export const ON_BOARDING_ROLES = [
   'Head of engineering',
   'Head of product',
@@ -39,6 +42,8 @@ export const ERROR_TYPES = {
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
   PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
+  APP_NOT_ON_BRANCH: 'app-not-on-branch',
+  APP_NOT_READY: 'app-not-ready',
   WORKSPACE_SUSPENDED: 'workspace-suspended',
   USER_SUSPENDED: 'user-suspended',
 };
@@ -99,6 +104,21 @@ export const ERROR_MESSAGES = {
     cta: 'Back to home page',
     queryParams: [],
   },
+  'app-not-on-branch': {
+    title: 'App not available',
+    message:
+      'This app is not available on the current branch. Switch to the correct branch or go back to the dashboard.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'app-not-ready': {
+    title: "App isn't available yet",
+    message: "This app doesn't have a released version yet. Contact your admin to know more",
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
   'no-active-workspace': {
     title: 'No active workspaces',
     message: 'No active workspace were found for this user. Kindly contact admin to know more.',
@@ -157,6 +177,7 @@ export const DEFAULT_ERROR_MESSAGE = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
   RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
+  DEFAULT_BRANCH_LOCKED: 'Master branch is locked. Switch branch to update app slug.',
 };
 
 export const DATA_SOURCE_TYPE = {

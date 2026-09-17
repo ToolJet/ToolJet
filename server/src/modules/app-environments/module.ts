@@ -4,17 +4,21 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class AppEnvironmentsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { AppEnvironmentsController, AppEnvironmentService, AppEnvironmentUtilService } = await this.getProviders(
       configs,
       'app-environments',
       ['controller', 'service', 'util.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppEnvironmentsModule,
       controllers: isMainImport ? [AppEnvironmentsController] : [],
       providers: [AppEnvironmentService, AppEnvironmentUtilService, FeatureAbilityFactory],
       exports: [AppEnvironmentUtilService],
-    };
+    });
   }
 }

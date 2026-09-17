@@ -9,7 +9,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE]: {},
     [FEATURE_KEY.APP_PUBLIC_UPDATE]: {
       auditLogsKey: 'APP_PUBLIC_UPDATE',
-      license: LICENSE_FIELD.APP_PUBLIC,
+      license: LICENSE_FIELD.PUBLIC_APP,
     },
     [FEATURE_KEY.UPDATE_ICON]: {
       auditLogsKey: FEATURE_KEY.UPDATE,

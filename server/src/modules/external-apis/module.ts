@@ -12,9 +12,9 @@ import { SessionModule } from '@modules/session/module';
 import { UsersModule } from '@modules/users/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { WorkspaceBanListRepository } from '@modules/organizations/repositories/workspace-ban-list.repository';
@@ -26,11 +26,16 @@ import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       ExternalApisController,
       ExternalApisService,
       ExternalApiUtilService,
       ExternalApisAppsController,
+      ExternalApisGroupsController,
       ExternalApisModulesController,
       ExternalApisTjdbController,
       ExternalApisBanController,
@@ -40,13 +45,14 @@ export class ExternalApiModule extends SubModule {
       'service',
       'util.service',
       'controllers/apps.controller',
+      'controllers/groups.controller',
       'controllers/modules.controller',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
       'controllers/app-export.controller',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: ExternalApiModule,
       imports: [
         await UsersModule.register(configs),
@@ -58,6 +64,7 @@ export class ExternalApiModule extends SubModule {
         await VersionModule.register(configs),
         await AppGitModule.register(configs),
         await GitSyncModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
         await OrganizationUsersModule.register(configs),
@@ -70,7 +77,6 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
         GroupPermissionsRepository,
         VersionRepository,
-        AppGitRepository,
         OrganizationRepository,
         WorkspaceBanListRepository,
         UserRepository,
@@ -83,6 +89,7 @@ export class ExternalApiModule extends SubModule {
         ? [
             ExternalApisController,
             ExternalApisAppsController,
+            ExternalApisGroupsController,
             ExternalApisModulesController,
             ExternalApisTjdbController,
             ExternalApisBanController,
@@ -90,6 +97,6 @@ export class ExternalApiModule extends SubModule {
           ]
         : [],
       exports: [ExternalApiUtilService],
-    };
+    });
   }
 }

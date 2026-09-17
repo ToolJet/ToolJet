@@ -114,10 +114,10 @@ export const Listview = function Listview({
   const prevDynamicRef = useRef(isDynamicHeightEnabled);
   useEffect(() => {
     if (prevDynamicRef.current && !isDynamicHeightEnabled) {
-      clearContainerTempLayouts?.(id, parentIndices);
+      clearContainerTempLayouts?.(id, parentIndices, moduleId);
     }
     prevDynamicRef.current = isDynamicHeightEnabled;
-  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts]);
+  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts, moduleId]);
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
@@ -200,7 +200,7 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+      className={cx(`flex-column w-100 position-relative dynamic-${id} listview-scroll-container`, {
         'jet-container-loading': loadingState,
       })}
       id={id}
@@ -217,6 +217,7 @@ export const Listview = function Listview({
                 key={index}
                 id={id}
                 index={index}
+                moduleId={moduleId}
                 mode={mode}
                 rowHeight={rowHeight}
                 positiveColumns={positiveColumns}

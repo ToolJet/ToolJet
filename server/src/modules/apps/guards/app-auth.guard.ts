@@ -17,7 +17,6 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  // This guard will allow access for unauthenticated user if the app is public
   constructor(
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
@@ -36,17 +35,17 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    // unauthenticated users should be able to to view public apps
-    const app = await this.appRepository.findOne({
-      where: {
-        slug,
-      },
-    });
+    // Slug-based lookup is a released-app resolution path — the slug is the
+    // public URL handle and resolves the app instance-wide via its canonical
+    // (default-branch or branchless) row. The requester's active branch is the
+    // wrong scope here; ignore it and let findAppBySlug do the global resolution.
+    // (The client also omits branch_id on this endpoint — see fetchAppBySlug.)
+    const app = await this.appRepository.findAppBySlug(slug);
+
     if (!app) throw new NotFoundException('App not found. Invalid app id');
+
     const organization = await this.organizationRepository.findOne({
-      where: {
-        id: app.organizationId,
-      },
+      where: { id: app.organizationId },
     });
     if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
       const banned = await this.dataSource
@@ -66,7 +65,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
 
     const isAppPublicLicensed =
       app.isPublic === true
-        ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.APP_PUBLIC, app.organizationId)
+        ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.PUBLIC_APP, app.organizationId)
         : false;
 
     if (app.isPublic === true && isAppPublicLicensed) {

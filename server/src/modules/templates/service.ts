@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
@@ -28,12 +29,13 @@ export class TemplatesService {
     identifier: string,
     appName: string,
     dependentPlugins: Array<string>,
-    shouldAutoImportPlugin: boolean
+    shouldAutoImportPlugin: boolean,
+    branchId?: string
   ) {
     const templateDefinition = this.findTemplateDefinition(identifier);
     if (dependentPlugins.length)
       await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
-    return this.importTemplate(currentUser, templateDefinition, appName, identifier);
+    return this.importTemplate(currentUser, templateDefinition, appName, identifier, branchId);
   }
 
   async createSampleApp(currentUser: User) {
@@ -48,21 +50,39 @@ export class TemplatesService {
     const maxNumber = getMaxCopyNumber(existNameList, ' ');
     const nameWithCount = `${name} ${maxNumber}`;
     const sampleAppDef = JSON.parse(readFileSync(`templates/sample_app_def.json`, 'utf-8'));
+    if (sampleAppDef?.app?.[0]?.definition?.appV2) {
+      delete sampleAppDef.app[0].definition.appV2.slug;
+    }
     return this.importTemplate(currentUser, sampleAppDef, nameWithCount);
   }
 
   async createSampleOnboardApp(currentUser: User) {
     const name = 'Product inventory';
     const sampleAppDef = JSON.parse(readFileSync(`templates/onboard_sample_app.json`, 'utf-8'));
+    // Give each instance a fresh co_relation_id so the onboarding app is not
+    // treated as the same git entity across workspaces (the template JSON has a
+    // hardcoded appV2.id that createImportedAppForUser would otherwise copy verbatim).
+    // Also drop the hardcoded slug for the same reason — see createSampleApp above.
+    if (sampleAppDef?.app?.[0]?.definition?.appV2) {
+      sampleAppDef.app[0].definition.appV2.id = uuidv4();
+      delete sampleAppDef.app[0].definition.appV2.slug;
+    }
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
 
-  async importTemplate(currentUser: User, templateDefinition: any, appName: string, identifier?: string) {
+  async importTemplate(
+    currentUser: User,
+    templateDefinition: any,
+    appName: string,
+    identifier?: string,
+    branchId?: string
+  ) {
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
     importDto.tooljet_database = templateDefinition.tooljet_database;
     importDto.tooljet_version = templateDefinition.tooljet_version;
+    if (branchId) importDto.branchId = branchId;
 
     if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;
@@ -143,9 +163,8 @@ export class TemplatesService {
         dataSourcesUsedInApps.push(dataSource);
       });
     });
-    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
-      dataSourcesUsedInApps
-    );
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
     return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }

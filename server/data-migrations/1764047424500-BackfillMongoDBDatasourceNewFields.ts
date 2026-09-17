@@ -2,7 +2,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackfillMongoDBDatasourceNewFields1764000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-
     await queryRunner.query(`
       UPDATE data_source_options dso
       SET "options" = (
@@ -18,9 +17,7 @@ export class BackfillMongoDBDatasourceNewFields1764000000000 implements Migratio
       WHERE ds.id = dso.data_source_id
         AND ds.kind = 'mongodb';
     `);
-
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-  }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

@@ -19,6 +19,8 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -375,6 +377,7 @@ const PreviewContainer = ({
   } = restProps;
 
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
   const clearChatHistory = useStore((state) => state.clearChatHistory);
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
@@ -509,7 +512,7 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && (
+                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && !isAiBlockedByBranch && (
                   <ToolTip
                     placement="left"
                     message={<FixIssueTooltipContent />}

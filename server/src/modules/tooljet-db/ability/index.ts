@@ -42,10 +42,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (!isEmpty(dataQueryId)) {
       dataQuery = await this.manager.findOne(DataQuery, {
         where: { id: dataQueryId },
-        relations: ['apps'],
+        relations: ['apps', 'appVersion'],
       });
     }
-    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
+    // Every app type carries is_public on its own app_versions row.
+    const isQueryPublic = dataQuery?.appVersion?.isPublic;
+    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && isQueryPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
     const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 

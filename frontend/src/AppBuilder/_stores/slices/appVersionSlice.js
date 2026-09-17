@@ -4,6 +4,9 @@ const initialState = {
   releasedVersionId: null,
   isVersionReleased: false,
   isEditorFreezed: false,
+  // Git sync is configured but not covered by the current license — freezes the whole editor
+  // until the user turns git off. Synced from useGitSyncConfig (git-sync status API).
+  isGitSyncLicenseLocked: false,
   isBannerMandatory: false,
   appVersions: [],
   isAppVersionPromoted: false,
@@ -11,6 +14,7 @@ const initialState = {
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
   restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
   isEditorReadOnly: false, // module opened in Build-with (view-only) mode
+  hotReloadTimestamp: null, // Timestamp to re-fetch the app in place (canvas-only loader, stays on current page)
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -54,6 +58,15 @@ export const createAppVersionSlice = (set, get) => ({
       'setIsEditorFreezed'
     ),
 
+  setGitSyncLicenseLocked: (value = false) =>
+    set(
+      (state) => {
+        state.isGitSyncLicenseLocked = value;
+      },
+      false,
+      'setGitSyncLicenseLocked'
+    ),
+
   setIsEditorReadOnly: (value = false) =>
     set(
       (state) => {
@@ -70,13 +83,22 @@ export const createAppVersionSlice = (set, get) => ({
 
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
-  getShouldFreeze: (skipIsEditorFreezedCheck = false) => {
-    return (
-      get().isVersionReleased ||
-      (!skipIsEditorFreezedCheck && get().isEditorFreezed) ||
-      get().selectedVersion?.id === get().releasedVersionId ||
-      get().isEditorReadOnly
-    );
+  getShouldFreeze: (skipIsEditorFreezedCheck = false, _isModuleEditor = false) => {
+    const isVersionReleased = get().isVersionReleased;
+    const selectedVersionId = get().selectedVersion?.id;
+    const releasedVersionId = get().releasedVersionId;
+    const isEditorFreezed = get().isEditorFreezed;
+    // Git-sync-license lock freezes the editor unconditionally (independent of the
+    // skipIsEditorFreezedCheck escape hatch) — there is no editing at all in this state.
+    const isEditorReadOnly = get().isEditorReadOnly;
+    const isGitSyncLicenseLocked = get().isGitSyncLicenseLocked;
+    const result =
+      isVersionReleased ||
+      isGitSyncLicenseLocked ||
+      (!skipIsEditorFreezedCheck && isEditorFreezed) ||
+      selectedVersionId === releasedVersionId ||
+      isEditorReadOnly;
+    return result;
   },
 
   setRestoredAppHistoryId: (id) => {
@@ -87,6 +109,25 @@ export const createAppVersionSlice = (set, get) => ({
       },
       false,
       'setRestoredAppHistoryId'
+    );
+  },
+
+  /**
+   * Re-fetches the current app version and rebuilds the canvas in place. Runs the same refresh
+   * pipeline as a version switch (see useAppData), except the editor chrome — header, sidebars,
+   * and the AI chat with its conversation and streaming response — stays mounted, and the user
+   * stays on the page they were on.
+   *
+   * Use it when something outside the editor changed the app wholesale (e.g. the AI builder
+   * editing pages/queries/global settings) and an incremental store update won't cover it.
+   */
+  triggerHotReload: () => {
+    set(
+      (state) => {
+        state.hotReloadTimestamp = Date.now();
+      },
+      false,
+      'triggerHotReload'
     );
   },
 });

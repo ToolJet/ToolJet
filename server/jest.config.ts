@@ -1,3 +1,4 @@
+/** @jest-config-loader ts-node */
 import type { Config } from '@jest/types';
 import { coverageConfig } from './test/jest-coverage.config';
 
@@ -46,7 +47,7 @@ const config: Config.InitialOptions = {
   testTimeout: 30000,
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
 };
 

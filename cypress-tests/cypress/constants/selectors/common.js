@@ -7,7 +7,7 @@ export const commonSelectors = {
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
   createWorkFlowsButton: '[data-cy="+-create-workflow"]',
   workFlowNameInputField: '[data-cy="app-name-input"]',
-  toastMessage: ".go3958317564",
+  toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
@@ -116,7 +116,7 @@ export const commonSelectors = {
   emptyNotificationIcon: '[data-cy="empty-notification-icon"]',
   emptyNotificationTitle: '[data-cy="empty-notification-title"]',
   emptyNotificationSubtitle: '[data-cy="empty-notification-subtitle"]',
-  notificationsCardFooter: '[data-cy="notifications-card-footer"]',
+  loadMoreNotifications: '[data-cy="load-more-notifications"]',
   allApplicationLink: '[data-cy="all-applications-link"]',
   logoutLink: "[data-cy=logout-link]",
   exportAllButton: '[data-cy="export-all-button"]',
@@ -418,12 +418,16 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  // NOTE: data-cy="left-sidebar-inspector" is on the OUTER sidebar wrapper div
-  // (frontend/src/AppBuilder/LeftSidebar/LeftSidebar.jsx:236), not the clickable
-  // Inspector button. The button gets data-cy="left-sidebar-inspector-button"
-  // (SidebarItem.jsx:49, tip="Inspector" -> generateCypressDataCy -> "inspector").
-  // Clicking the wrapper div is a no-op, so target the button to open the panel.
-  sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+
+  appHistoryButton: "[data-cy='left-sidebar-app-history-button']",
+  appHistoryCloseButton: "[data-cy='left-sidebar-close-button']",
+  appHistoryHeaderTitle: ".app-history-header-title",
+  historyTimeline: ".history-timeline",
+  historyDateGroup: ".history-date",
+  historyEntry: ".history-entry",
+  historyEntryName: ".entry-name",
+
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",

@@ -122,6 +122,31 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
   }
 }
 
+export async function initializeEnvConfigRegistry(app: NestExpressApplication, logger?: any) {
+  if (!logger) {
+    logger = createLogger('EnvConfigRegistry');
+  }
+  try {
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
+      logger.log('Skipping environment config registry initialization for non-EE edition');
+      return;
+    }
+
+    logger.log('Initializing environment config registry...');
+    const importPath = await getImportPath(false, tooljetEdition);
+    const { OrganizationEnvUtilService } = await import(`${importPath}/organization-env/util.service`);
+
+    const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
+    await orgEnvUtilService.initialize();
+    logger.log('✅ Environment config registry initialized successfully');
+  } catch (error) {
+    logger.error('❌ Failed to initialize environment config registry:', error);
+    throw error;
+  }
+}
+
 /**
  * Replaces subpath placeholders in static assets
  */
@@ -183,10 +208,11 @@ export function initSentry(logger: any, configService: ConfigService) {
   try {
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DNS'),
-      tracesSampleRate: 1.0,
       environment: configService.get<string>('NODE_ENV') || 'development',
       debug: !!configService.get<string>('SENTRY_DEBUG'),
       sendDefaultPii: true,
+      // OTel SDK (otel/tracing.ts) owns tracing; else Sentry double-registers spans, splits every trace in two.
+      skipOpenTelemetrySetup: true,
     });
   } catch (error) {
     logger.error('❌ Failed to set Sentry options:', error);
@@ -209,6 +235,7 @@ type CorsOriginsCache = { getOriginsSet(): Promise<Set<string> | null> };
 
 function tryGetCacheService(app: NestExpressApplication): CorsOriginsCache | null {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { CustomDomainCacheService } = require('@modules/custom-domains/cache.service');
     return app.get(CustomDomainCacheService, { strict: false }) ?? null;
   } catch {
@@ -579,9 +606,6 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`ORM logging level: ${configService.get<string>('ORM_LOGGING') || 'Not - configured'}`);
   logger.log(
     `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
-  );
-  logger.log(
-    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
   );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));

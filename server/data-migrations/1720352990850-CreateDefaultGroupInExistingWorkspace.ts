@@ -60,7 +60,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
 
     for (const organizationId of organizationIds) {
       for (const defaultGroup of Object.keys(USER_ROLE)) {
-        const groupPermissions = licenseValid
+        const groupPermissions: any = licenseValid
           ? DEFAULT_GROUP_PERMISSIONS_MIGRATIONS[defaultGroup]
           : DEFAULT_GROUP_PERMISSIONS[defaultGroup];
         const query = `

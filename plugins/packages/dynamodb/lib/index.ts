@@ -16,7 +16,6 @@ import { STSClient, AssumeRoleCommand, AssumeRoleCommandOutput } from '@aws-sdk/
 import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
 
-
 // JSON.parse turns Buffer/Uint8Array into {type:'Buffer',data:[...]} which DynamoDB
 // marshals as Map (M) instead of Binary (B). Recursively restore those to Uint8Array.
 function convertBuffers(value: any): any {
@@ -139,7 +138,12 @@ export default class DynamodbQueryService implements QueryService {
     };
   }
 
-  async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<unknown> {
+  async invokeMethod(
+    methodName: string,
+    _context: unknown,
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<unknown> {
     if (methodName === 'listTables') {
       const client = await this.getConnection(sourceOptions, { operation: 'list_tables' });
       return await this._listAllTables(client, args);

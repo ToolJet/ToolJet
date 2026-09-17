@@ -1,4 +1,4 @@
-import { resolveDynamicValues } from '../utils';
+import { resolveDynamicValues, registerResetter } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
@@ -62,6 +62,7 @@ export const createResolvedSlice = (set, get) => {
   // Explicit bracket only — ListView/Form row-mount coalescing, page-switch. Untouched by the
   // implicit mechanism below; nothing here changes what this instance has always done.
   const _exposedValueBatch = createBatchManager(set, get);
+  registerResetter(() => _exposedValueBatch.reset());
 
   // Implicit microtask batch: coalesces dep-cascade recomputes from setVariable / setExposedValue
   // calls that happen outside an explicit batch window (ListView/Form/page-switch bracket).

@@ -22,8 +22,12 @@ export function ToolTip({
       trigger={trigger}
       placement={placement}
       delay={delay}
+      popperConfig={rest?.popperConfig}
       overlay={
-        <Tooltip className={tooltipClassName} style={{ width: rest?.width ? rest?.width : 'auto' }}>
+        <Tooltip
+          className={tooltipClassName}
+          style={{ width: rest?.width ?? 'auto', maxWidth: rest?.maxWidth ?? undefined }}
+        >
           {message}
         </Tooltip>
       }

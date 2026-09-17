@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { AppsRepository } from '../repository';
 import { IWorkflowService } from '../interfaces/services/IWorkflowService';
-import { APP_TYPES } from '../constants';
+import { User } from '@entities/user.entity';
 @Injectable()
 export class WorkflowService implements IWorkflowService {
   constructor(protected readonly appsRepository: AppsRepository) {}
 
-  async getWorkflows(organizationId: string) {
-    const workflowApps = await this.appsRepository.find({
-      where: { type: APP_TYPES.WORKFLOW, organizationId },
-    });
-
-    const result = workflowApps.map((workflowApp) => ({ id: workflowApp.id, name: workflowApp.name }));
-
-    return result;
+  // CE has no workflow/workflow-folder granular permission model - listing stays org-wide.
+  // EE overrides this to scope the list to the user's editable/executable workflows.
+  async getWorkflows(organizationId: string, _user: User) {
+    return await this.appsRepository.findAllOrganizationWorkflows(organizationId);
   }
 }

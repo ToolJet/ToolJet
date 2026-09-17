@@ -95,7 +95,7 @@ const WidgetWrapper = memo(
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
       const layoutContext = indices ?? subContainerIndex;
-      return state.temporaryLayouts?.[getDynamicLayoutKey(id, layoutContext)];
+      return state.temporaryLayouts?.[getDynamicLayoutKey(id, layoutContext, '', moduleId)];
     }, shallow);
     const getExposedPropertyForAdditionalActions = useStore(
       (state) => state.getExposedPropertyForAdditionalActions,
@@ -268,6 +268,7 @@ const WidgetWrapper = memo(
           parent-id={parentId}
           subcontainer-id={subContainerIndex}
           data-layout-context={serializedLayoutContext}
+          data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
           onMouseEnter={() => {

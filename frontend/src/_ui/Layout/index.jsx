@@ -8,6 +8,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { shallow } from 'zustand/shallow';
 import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
@@ -15,6 +16,7 @@ import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import UnsavedChangesDialog from '@/modules/dataSources/components/DataSourceManager/UnsavedChangesDialog';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function Layout({
   children,
@@ -84,6 +86,27 @@ function Layout({
     useLicenseStore.getState().actions.fetchFeatureAccess();
     fetchWhiteLabelDetails(authenticationService?.currentSessionValue?.organization_id);
   }, []);
+
+  // Initialize workspace branches store after feature access is available
+  // End users should only see default branch data — skip branch store initialization for them.
+  // Also initialize when the license is expired/invalid: git sync may still be CONFIGURED, in which
+  // case the workspace must be frozen (and the user prompted to turn git off). featureAccess.gitSync
+  // is false on an expired plan, so we can't gate solely on it.
+  useEffect(() => {
+    // Initialize whenever git sync may be CONFIGURED but not fully covered by the license: expired,
+    // invalid, OR a valid plan that simply doesn't include git sync (featureAccess.gitSync === false).
+    // In every one of these the workspace must be frozen and the user prompted to turn git off — which
+    // needs the branch store (orgGitConfig / isGitSyncConfigured) loaded to detect a connected provider.
+    // isGitSyncLicenseInvalid covers all three; gitSync truthy is the normal licensed path.
+    if (featureAccess?.gitSync || isGitSyncLicenseInvalid(featureAccess)) {
+      const currentSession = authenticationService?.currentSessionValue;
+      const isAdminOrBuilder = currentSession?.admin || currentSession?.user_permissions?.is_builder;
+      const workspaceId = currentSession?.current_organization_id;
+      if (workspaceId && isAdminOrBuilder) {
+        useWorkspaceBranchesStore.getState().actions.initialize(workspaceId);
+      }
+    }
+  }, [featureAccess]);
 
   useEffect(() => {
     let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;

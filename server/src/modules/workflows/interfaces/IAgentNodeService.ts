@@ -49,7 +49,7 @@ export interface IAgentNodeService {
     response?: any | null,
     executionStartTime?: Date | null,
     terminationRegistry?: any | null,
-    executionId?: string | null,
+    executionId?: string | null
   ): Promise<{
     status: string;
     data: any;

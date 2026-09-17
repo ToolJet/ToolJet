@@ -43,7 +43,6 @@ export class NodeQueryError {
   }
 }
 
-
 export type AddLogFunction = (
   message: string,
   queryName?: string,
@@ -61,8 +60,6 @@ export interface ResponseNodeMetadata {
     };
   };
 }
-
-
 
 export interface IWorkflowExecutionsService {
   create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution>;

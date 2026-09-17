@@ -13,5 +13,5 @@ export interface IAppEnvironmentsController {
   create(user: any, versionId: string, createAppEnvironmentDto: CreateAppEnvironmentDto): Promise<any>;
   update(user: any, id: string, versionId: string, updateAppEnvironmentDto: UpdateAppEnvironmentDto): Promise<any>;
   delete(user: any, id: string, versionId: string): Promise<any>;
-  getEnvironmentById(user: any, id: string): Promise<any>;
+  getEnvironmentById(user: any, id: string, req: any): Promise<any>;
 }

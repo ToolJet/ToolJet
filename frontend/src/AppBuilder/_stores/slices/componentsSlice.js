@@ -166,6 +166,11 @@ const initialState = {
   },
   selectedComponents: [],
   showWidgetDeleteConfirmation: false,
+  deleteTargetIsModuleEditor: false,
+  // Components the open delete confirmation targets. Null means "whatever is selected
+  // on the canvas"; the component tree sets it so it can delete a component without
+  // stealing the canvas selection.
+  widgetDeleteConfirmationTargets: null,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
@@ -848,11 +853,15 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = resolveValue(mandatory) || false;
-    // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
-    const optionValueWidgets = ['DropdownV2', 'MultiselectV2', 'Cascader'];
+    // Option widgets may use `false` as a legitimate configured value. DropdownV2 also distinguishes
+    // an explicitly selected empty-string option from its `null` clear state.
+    const optionValueWidgets = ['DropdownV2', 'MultiselectV2', 'Cascader', 'RadioButtonV2'];
+    const isLegitimateFalsyOptionValue =
+      (widgetValue === false && optionValueWidgets.includes(componentType)) ||
+      (widgetValue === '' && componentType === 'DropdownV2');
     const isEmpty = Array.isArray(widgetValue)
       ? widgetValue.length === 0
-      : !widgetValue && widgetValue !== 0 && !(widgetValue === false && optionValueWidgets.includes(componentType));
+      : !widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue;
 
     if (resolvedMandatory == true && isEmpty) {
       return {
@@ -1536,7 +1545,7 @@ export const createComponentsSlice = (set, get) => ({
   deleteComponents: (
     selected,
     moduleId = 'canvas',
-    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false } = {}
+    { skipUndoRedo = false, saveAfterAction = true, isCut = false, skipFormUpdate = false, isModuleEditor = false } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1555,7 +1564,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageIndex,
     } = get();
     const isAppBeingEditedByAI = get().ai?.isLoading ?? false;
-    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI);
+    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI, isModuleEditor);
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
@@ -1644,6 +1653,7 @@ export const createComponentsSlice = (set, get) => ({
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
+          state.widgetDeleteConfirmationTargets = null;
         });
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
@@ -2156,7 +2166,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+  persistComponentDefinition: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const currentMode = getCurrentMode(moduleId);
@@ -2173,8 +2183,21 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+  },
+
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    get().persistComponentDefinition(componentId, moduleId);
 
     get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+  },
+
+  // One save and one broadcast for properties that must be applied together
+  saveComponentPropertyChangesBatch: (componentId, updates, moduleId = 'canvas') => {
+    if (!updates?.length) return;
+
+    get().persistComponentDefinition(componentId, moduleId);
+
+    get().multiplayer.broadcastUpdates({ componentId, updates }, 'components', 'update');
   },
 
   setComponentProperty: (
@@ -2582,9 +2605,21 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
-  setWidgetDeleteConfirmation: (value) => {
+  setWidgetDeleteConfirmation: (value, second = null) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
+      if (!value) {
+        state.widgetDeleteConfirmationTargets = null;
+        return;
+      }
+      // Canvas/hotkey/inspector pass a boolean isModuleEditor. The component tree
+      // passes an explicit id list so it can delete without stealing canvas selection.
+      if (Array.isArray(second)) {
+        state.widgetDeleteConfirmationTargets = second;
+      } else {
+        state.deleteTargetIsModuleEditor = Boolean(second);
+        state.widgetDeleteConfirmationTargets = null;
+      }
     });
   },
 
@@ -2776,6 +2811,7 @@ export const createComponentsSlice = (set, get) => ({
       if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
@@ -2786,6 +2822,7 @@ export const createComponentsSlice = (set, get) => ({
       } else {
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
@@ -2800,7 +2837,10 @@ export const createComponentsSlice = (set, get) => ({
     } else {
       applyOrQueueMutation((state) => {
         let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-        // Guard: stale array format from previous ListView/Kanban parent
+        // Guard: stale dependency-graph entry referencing a component that no longer
+        // exists in the current resolvedStore (e.g. right after a version/env switch,
+        // before the graph is rebuilt) — nothing to update.
+        if (!entity) return;
         if (Array.isArray(entity)) {
           entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
           state.resolvedStore.modules[moduleId][entityType][entityId] = entity;

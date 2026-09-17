@@ -6,7 +6,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  Unique
+  Unique,
 } from 'typeorm';
 import { File } from 'src/entities/file.entity';
 

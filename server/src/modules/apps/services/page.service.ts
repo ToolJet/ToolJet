@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
@@ -152,14 +152,12 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
-    );
-    return pagesWithComponents;
+    const pageIds = allPages.map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+    return allPages.map((page) => {
+      delete page.appVersionId;
+      return { ...page, components: componentsByPage.get(page.id) ?? {}, restricted: false };
+    }) as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
@@ -172,12 +170,12 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    const result = await dbTransactionWrap(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
       const savedPage = await manager.save(Page, newPage);
       await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!page.isPageGroup);
       return savedPage;
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -193,7 +191,7 @@ export class PageService implements IPageService {
 
     let clonedPage: Page | null = null;
 
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    await dbTransactionWrap(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
       });
@@ -226,6 +224,7 @@ export class PageService implements IPageService {
       newPage.icon = pageToClone.icon || 'IconFile';
       newPage.openIn = pageToClone.openIn;
       newPage.appId = pageToClone.appId;
+      newPage.targetCorelationId = pageToClone.targetCorelationId;
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
@@ -240,7 +239,7 @@ export class PageService implements IPageService {
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (clonedPage) {
@@ -529,7 +528,7 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageDelete(pageId, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
         where: { id: pageId },
       });
@@ -566,7 +565,7 @@ export class PageService implements IPageService {
       }
 
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -650,5 +649,31 @@ export class PageService implements IPageService {
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
     return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
+  }
+
+  async findModuleContainersForVersions(
+    appVersionIds: string[],
+    _organizationId: string,
+    manager: EntityManager
+  ): Promise<Map<string, any>> {
+    const versionIds = appVersionIds.filter(Boolean);
+    if (versionIds.length === 0) return new Map();
+
+    const pagesByVersion = await this.pageHelperService.findFirstPagesByVersionIds(versionIds, manager);
+    if (pagesByVersion.size === 0) return new Map();
+
+    const pageIds = [...pagesByVersion.values()].map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+
+    const moduleContainerByVersion = new Map<string, any>();
+    for (const [versionId, page] of pagesByVersion) {
+      const components = componentsByPage.get(page.id) ?? {};
+      const moduleContainer = _.find(
+        Object.values(components),
+        (c: any) => c?.component?.component === 'ModuleContainer'
+      );
+      if (moduleContainer) moduleContainerByVersion.set(versionId, moduleContainer);
+    }
+    return moduleContainerByVersion;
   }
 }

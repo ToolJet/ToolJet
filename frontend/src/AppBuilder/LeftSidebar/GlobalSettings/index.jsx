@@ -43,9 +43,7 @@ const GlobalSettings = ({ darkMode, onClose, isModuleEditor = false }) => {
           {!isModuleEditor && (
             <>
               <SlugInput />
-              <div className={cx({ disabled: shouldFreeze })}>
-                <MaintenanceMode darkMode={darkMode} />
-              </div>
+              <MaintenanceMode darkMode={darkMode} />
             </>
           )}
           <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />

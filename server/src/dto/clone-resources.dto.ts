@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsString } from 'class-validator';
+import { IsUUID, IsOptional, IsString, Matches } from 'class-validator';
 
 export class CloneResourcesDto {
   @IsOptional()
@@ -9,6 +9,10 @@ export class CloneResourcesDto {
 
   @IsUUID()
   organization_id: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class CloneAppDto {
@@ -16,6 +20,7 @@ export class CloneAppDto {
   id: string;
 
   @IsString()
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 }
 

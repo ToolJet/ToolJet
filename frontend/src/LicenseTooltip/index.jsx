@@ -11,6 +11,7 @@ const LicenseTooltip = ({
   noTooltipIfValid = false,
   customMessage,
   customTitle = '',
+  className = '',
 }) => {
   const { percentage, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid } = licenseStatus ?? {};
@@ -29,7 +30,7 @@ const LicenseTooltip = ({
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
     'Custom groups': 'customGroups',
-    'Make application public': 'appPublic',
+    'Make application public': 'publicApp',
   };
 
   const generateMessage = () => {
@@ -47,6 +48,11 @@ const LicenseTooltip = ({
           `${feature} is not included in your
           current plan`
         }`;
+      case feature === 'GitSync' &&
+        isExpired &&
+        (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
+        !allowedFeaturesOnExpiry.includes(feature):
+        return `${customMessage ?? 'Your plan has expired. Renew your plan or disable git sync to continue.'}`;
       case (!isLicenseValid || isExpired) &&
         (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
         !allowedFeaturesOnExpiry.includes(feature):
@@ -64,7 +70,7 @@ const LicenseTooltip = ({
 
   return message ? (
     <ToolTip message={message} placement={placement}>
-      <div className="license-tooltip">{children}</div>
+      <div className={`license-tooltip ${className}`.trim()}>{children}</div>
     </ToolTip>
   ) : percentage >= 100 || noTooltipIfValid ? (
     <>{children}</>

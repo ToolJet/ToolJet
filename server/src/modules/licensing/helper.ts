@@ -53,6 +53,12 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.GIT_SYNC:
       return licenseInstance.gitSync;
 
+    case LICENSE_FIELD.GIT_SYNC_MULTI_BRANCH:
+      return licenseInstance.gitSyncMultiBranch;
+
+    case LICENSE_FIELD.WORKSPACE_ENV:
+      return licenseInstance.workspaceEnv;
+
     case LICENSE_FIELD.CUSTOM_STYLE:
       return licenseInstance.customStyling;
 
@@ -78,9 +84,6 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.AUTOMATIC_SSO_LOGIN:
       return licenseInstance.automaticSsoLogin;
-
-    case LICENSE_FIELD.APP_PUBLIC:
-      return licenseInstance.appPublic;
 
     case LICENSE_FIELD.VALID:
       return licenseInstance.isValid && !licenseInstance.isExpired;
@@ -186,6 +189,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.RELEASE:
       return licenseInstance.canRelease;
+
+    case LICENSE_FIELD.PUBLIC_APP:
+      return licenseInstance.publicApp;
 
     default:
       return licenseInstance.terms;

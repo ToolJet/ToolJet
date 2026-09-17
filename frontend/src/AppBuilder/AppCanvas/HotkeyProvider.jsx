@@ -14,7 +14,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const handleRedo = useStore((state) => state.handleRedo);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const moveComponentPosition = useStore((state) => state.moveComponentPosition, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
@@ -22,6 +22,16 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+  // Canvas shortcuts must stand down while a delete dialog owns the screen. Two concrete
+  // problems otherwise, because setWidgetDeleteConfirmation defaults `targets` to null and
+  // DeleteWidgetConfirmation falls back to the live canvas selection:
+  //  - Backspace re-fires the action and silently retargets an open dialog (a delete started
+  //    from the sidebar inspector for one component would delete the canvas selection instead)
+  //  - Escape clears the selection out from under a dialog that has no explicit targets,
+  //    leaving it confirming "Delete 0 components?"
+  const isDeleteDialogOpen = useStore(
+    (state) => Boolean(state.showWidgetDeleteConfirmation) || Boolean(state.queryPanel?.deletingQueryId)
+  );
 
   useHotkeys(
     'meta+z, control+z',
@@ -66,7 +76,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
@@ -137,7 +147,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       'meta+a, ctrl+a',
     ],
     handleHotKeysCallback,
-    mode === 'edit'
+    mode === 'edit' && !isDeleteDialogOpen
   );
 
   return (

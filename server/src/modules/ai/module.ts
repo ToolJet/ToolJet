@@ -19,9 +19,15 @@ import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { EncryptionModule } from '@modules/encryption/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
+import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { AiController } = await import(`${importPath}/ai/controller`);
     const { AiService } = await import(`${importPath}/ai/service`);
@@ -34,7 +40,7 @@ export class AiModule extends SubModule {
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AiModule,
       imports: [
         await TooljetDbModule.register(configs),
@@ -45,6 +51,11 @@ export class AiModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await EncryptionModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
+        // The app-builder hands the agent a session minted for the SIGNED-IN user, so its writes
+        // carry that user's identity into the audit log. Registered without isMainImport so the
+        // PAT controller is not mounted a second time.
+        await PersonalAccessTokensModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
@@ -70,6 +81,6 @@ export class AiModule extends SubModule {
         ...(isMainImport ? [AiService, AiCacheService] : []),
       ],
       exports: [AiUtilService],
-    };
+    });
   }
 }

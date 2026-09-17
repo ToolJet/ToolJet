@@ -6,6 +6,10 @@ import { GroupPermissionsModule } from '@modules/group-permissions/module';
 
 export class ScimModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       ScimService,
       ScimController,
@@ -22,11 +26,11 @@ export class ScimModule extends SubModule {
       'services/scim-groups.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: ScimModule,
       imports: [await ExternalApiModule.register(configs), await GroupPermissionsModule.register(configs)],
       providers: [FeatureAbilityFactory, ScimService, ScimUsersService, ScimGroupsService],
       controllers: isMainImport ? [ScimController, ScimUsersController, ScimGroupsController] : [],
-    };
+    });
   }
 }

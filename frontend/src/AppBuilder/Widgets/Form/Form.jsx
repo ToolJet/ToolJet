@@ -247,6 +247,13 @@ const FormComponent = (props) => {
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
+  // When this Form is nested inside another Form, inherit the parent's submit
+  // attempts. A failed submit on the parent must surface validation errors on
+  // this child form's inputs too, even though they live under this form's own
+  // FormSignalContext.Provider (which would otherwise shadow the parent's).
+  const { submitAttemptCount: parentSubmitAttemptCount } = useContext(FormSignalContext);
+  const effectiveSubmitAttemptCount = submitAttemptCount + parentSubmitAttemptCount;
+
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
@@ -439,7 +446,10 @@ const FormComponent = (props) => {
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
 
-  const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
+  const formSignalContextValue = useMemo(
+    () => ({ submitAttemptCount: effectiveSubmitAttemptCount, clearCount }),
+    [effectiveSubmitAttemptCount, clearCount]
+  );
 
   return (
     <form

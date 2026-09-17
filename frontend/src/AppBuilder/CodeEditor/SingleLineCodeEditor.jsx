@@ -36,6 +36,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { completionLabelTooltip } from './completionLabelTooltip';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -480,6 +481,7 @@ const EditorInput = ({
         ? [
             langExtension,
             autoCompleteConfig,
+            completionLabelTooltip,
             keymap.of([...staticCustomKeyMaps]),
             customTabKeymap,
             tooltipExtension,
@@ -562,7 +564,7 @@ const EditorInput = ({
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
-      data-cy={`${cyLabel.replace(/_/g, '-')}-input-field`}
+      data-cy={`${cyLabel}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
       {usePortalEditor && (

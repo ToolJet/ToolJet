@@ -97,11 +97,11 @@ export class AppEnvironmentsController implements IAppEnvironmentsController {
     throw new NotFoundException();
   }
 
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(PublicAppEnvironmentGuard, FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_BY_ID)
   @Get('/:id')
-  async getEnvironmentById(@User() user, @Param('id') id: string) {
-    const { organizationId } = user;
+  async getEnvironmentById(@User() user, @Param('id') id: string, @Req() req) {
+    const organizationId = user?.organizationId ?? req.headers['tj-workspace-id'];
     const environment = await this.appEnvironmentServices.get(organizationId, id);
     return decamelizeKeys({ environment });
   }

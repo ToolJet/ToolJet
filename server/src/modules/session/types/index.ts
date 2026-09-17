@@ -15,6 +15,8 @@ export type JWTPayload = {
   token?: string;
   appId?: string;
   tj_api_source?: string;
+  /* Set on synthetic tokens minted for admin API key (TJ_ADMIN_API_KEY) authentication */
+  isAdminApiKeyAuth?: boolean;
 };
 
 interface Features {

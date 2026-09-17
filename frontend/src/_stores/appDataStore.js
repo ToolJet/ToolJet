@@ -31,6 +31,7 @@ const initialState = {
   appDiffOptions: {},
   isSaving: false,
   appId: null,
+  coRelationId: null,
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
   metadata: null,

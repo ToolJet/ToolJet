@@ -40,3 +40,7 @@ lerna-debug.log*
 
 # Postgrest configuration
 **/postgrest.confautoresearch-results.tsv
+
+/coverage-gitsync
+/coverage-gitsync-combined
+/coverage-gitsync-unit

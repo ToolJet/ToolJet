@@ -36,6 +36,11 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  // Last Git branch this user had active in this workspace. Restored on login so the user
+  // returns to the branch they were working on instead of the default branch. Nullable.
+  @Column({ name: 'last_branch_id', type: 'uuid', nullable: true })
+  lastBranchId?: string | null;
+
   @Column({ name: 'invitation_token_expiry', type: 'timestamptz', nullable: true, default: null })
   invitationTokenExpiry: Date | null;
 
@@ -49,6 +54,12 @@ export class OrganizationUser extends BaseEntity {
    */
   @Column({ name: 'llm_provider', nullable: true })
   llmProvider: string;
+
+  @Column({ name: 'llm_model', nullable: true })
+  llmModel: string;
+
+  @Column({ name: 'llm_model_context_window', nullable: true })
+  llmModelContextWindow: number;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

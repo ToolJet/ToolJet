@@ -7,9 +7,8 @@
     "cy:open": "cypress open --browser=chrome 103, --e2e"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^3.12.12",
     "@cypress/webpack-preprocessor": "^5.12.0",
-    "@faker-js/faker": "^7.3.0",
+    "@faker-js/faker": "^10.5.0",
     "chrome-remote-interface": "^0.34.0",
     "cypress": "^15.18.0",
     "cypress-mailhog": "^2.5.0",

@@ -1,0 +1,19 @@
+export interface GitHttpsEnvConfig {
+  httpsUrl: string;
+  githubBranch: string;
+  githubAppId: string;
+  githubInstallationId: string;
+  githubPrivateKey: string;
+  githubEnterpriseUrl?: string;
+  githubEnterpriseApiUrl?: string;
+}
+
+export interface GitLabEnvConfig {
+  gitlabUrl: string;
+  gitlabBranch: string;
+  gitlabProjectId: string;
+  gitlabProjectAccessToken?: string;
+  gitlabEnterpriseUrl?: string;
+}
+
+export type EnvProviderState = { isEnabled: boolean; isFinalized: boolean };

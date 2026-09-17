@@ -10,6 +10,7 @@ export const RESOURCE_TYPE = {
   APPS: 'app',
   DATA_SOURCES: 'data_source',
   WORKFLOWS: 'workflow',
+  FOLDERS: 'folder',
 };
 
 export const getResourceTypeConfig = (resourceType) => {
@@ -32,6 +33,12 @@ export const getResourceTypeConfig = (resourceType) => {
         noOptionsMessage: 'No workflows found',
         icon: 'workflows',
       };
+    case RESOURCE_TYPE.FOLDERS:
+      return {
+        placeholder: 'Select folders..',
+        noOptionsMessage: 'There are no folders created yet',
+        icon: 'folder',
+      };
     default:
       return {
         placeholder: 'Select resources..',
@@ -42,6 +49,7 @@ export const getResourceTypeConfig = (resourceType) => {
 };
 
 export function AppsSelect(props) {
+  const { customComponents, ...rest } = props;
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -127,12 +135,6 @@ export function AppsSelect(props) {
       ...base,
       display: 'none',
     }),
-    option: (base) => ({
-      ...base,
-      '.select-option': {
-        margin: '0px 10px',
-      },
-    }),
     multiValue: (base) => ({
       ...base,
       borderRadius: '6px',
@@ -176,12 +178,13 @@ export function AppsSelect(props) {
     }),
     menu: (base) => ({
       ...base,
-      background: 'var(--slate1)',
+      background: darkMode ? '#1c1f26' : 'var(--slate1)',
+      color: darkMode ? '#c1c8cd' : 'inherit',
       '.add-group-btn': {
         display: 'flex',
         justifyContent: 'flex-end',
         padding: '8px',
-        borderTop: '1px solid var(--slate5)',
+        borderTop: `1px solid ${darkMode ? '#2c3038' : 'var(--slate5)'}`,
         '.create-group': {
           background: 'none !important',
           '.rectangle-add-icon': {
@@ -189,6 +192,18 @@ export function AppsSelect(props) {
             height: '20px',
           },
         },
+      },
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 1060,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? (darkMode ? '#2c3038' : 'var(--slate3)') : 'transparent',
+      color: darkMode ? '#c1c8cd' : 'inherit',
+      '.select-option': {
+        margin: '0px 10px',
       },
     }),
   };
@@ -203,8 +218,8 @@ export function AppsSelect(props) {
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
       className={darkMode && 'theme-dark dark-theme'}
-      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
-      {...props}
+      {...rest}
+      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null, ...(customComponents || {}) }}
       onChange={(selected) => {
         const isCurrentSelectAll = props.value.find((app) => app?.isAllField)?.isAllField;
         const isSelectAllPresentInSelection = selected.find((app) => app?.isAllField)?.isAllField;
@@ -222,8 +237,12 @@ export function AppsSelect(props) {
         if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
         return props.onChange(selected.filter((app) => !app?.isAllField));
       }}
-      options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
+      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options].filter(
+        Boolean
+      )}
       styles={selectStyles}
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
       placeholder={resourceConfig.placeholder}
       noOptionsMessage={() => resourceConfig.noOptionsMessage}
     />

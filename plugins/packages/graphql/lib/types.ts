@@ -13,7 +13,7 @@ export type QueryOptions = {
   operation: string;
   query: string;
   headers?: [string, string][];
-  url_params?: [string, string][]; 
+  url_params?: [string, string][];
   cookies?: [string, string][];
   variables?: string;
 };

@@ -61,7 +61,7 @@ export const TJDefaultTheme: Definition = {
         dark: '#318344',
       },
       error: {
-        light: '#D72D39',   
+        light: '#D72D39',
         dark: '#D03F43',
       },
       warning: {

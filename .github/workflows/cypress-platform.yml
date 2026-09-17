@@ -3,6 +3,12 @@ name:
   # Cache invalidation - 2025-12-09
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -21,21 +27,27 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+    if: inputs.edition ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee')
 
     strategy:
       fail-fast: false
       matrix:
         edition:
           - ${{
+            inputs.edition ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' || ''
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'ee' || ''
             }}
+        label:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
         exclude:
           - edition: ""
 
@@ -69,7 +81,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -94,11 +106,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -118,11 +127,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -223,20 +229,28 @@ jobs:
           ELAPSED=0
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
 
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
 
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -398,7 +412,7 @@ jobs:
         env:
           CELL: "Platform / ${{ matrix.edition }}"
           BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+          CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
@@ -415,14 +429,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}
@@ -471,7 +485,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -496,11 +510,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -519,11 +530,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -624,18 +632,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -833,14 +848,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-subpath-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-subpath-${{ env.TIMESTAMP }}
@@ -892,7 +907,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -917,11 +932,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -940,11 +952,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -997,7 +1006,7 @@ jobs:
           echo "ENABLE_AI_FEATURES=true" >> .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           echo "TJ_AI_GATEWAY_URL=${{ secrets.TJ_AI_GATEWAY_URL }}" >> .env
-          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env         
+          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -1057,18 +1066,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -1267,14 +1283,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-proxy-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-proxy-${{ env.TIMESTAMP }}
@@ -1326,7 +1342,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -1351,11 +1367,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1374,11 +1387,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1492,18 +1502,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -1702,14 +1719,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-proxy-subpath-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-proxy-subpath-${{ env.TIMESTAMP }}
@@ -1733,13 +1750,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # This job runs separately from the matrix, so check out just the script.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
           sparse-checkout-cone-mode: false
 
       - name: Download run summaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: cypress-summary-*
           path: summaries

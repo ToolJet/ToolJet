@@ -29,6 +29,8 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
         throw new BadRequestException();
       }
 
+      // findByDataQuery already overlays the canonical is_public for non-workflows
+      // via AppsRepository.resolveMetadataVersion (workflows keep is_public on apps.*).
       const app = await this.appRepository.findByDataQuery(id);
 
       if (!app) {

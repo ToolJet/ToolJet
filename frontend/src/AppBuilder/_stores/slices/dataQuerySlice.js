@@ -106,6 +106,7 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.queries.modules[moduleId] = [
           {
             ...cleanSelectedQuery,
+            plugin_id: selectedDataSource.pluginId || selectedDataSource.plugin_id || null,
             data_source_id: dataSourceId,
             app_version_id: appVersionId,
             options,
@@ -166,6 +167,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
@@ -332,6 +338,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );

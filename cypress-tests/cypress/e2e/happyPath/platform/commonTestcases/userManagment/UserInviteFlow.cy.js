@@ -1,7 +1,7 @@
 import { smtpConfig } from "Constants/constants/whitelabel";
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import {
   confirmInviteElements,
   fetchAndVisitInviteLinkViaMH,
@@ -15,9 +15,9 @@ import {
 } from "Support/utils/manageUsers";
 import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { usersText } from "Texts/manageUsers";
+import { usersText } from "Texts/platform/manageUsers";
 
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import {
   fillInputField,
   logout,

@@ -243,6 +243,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,
+      appVersion: true,
     });
 
     // Persisting options on run is an EDITOR authoring convenience.
@@ -267,6 +268,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,
+      appVersion: true,
     });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
@@ -321,10 +323,16 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
+  async listTablesForApp(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    branchId?: string,
+    listTablesOptions?: ListTablesDto
+  ) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, listTablesOptions);
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, branchId, listTablesOptions);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

@@ -121,7 +121,7 @@ export default class ElasticsearchService implements QueryService {
       url = `${protocol}://${host}:${port}`;
     }
 
-    const options: ClientOptions = { 
+    const options: ClientOptions = {
       node: url,
       requestTimeout: 10000,
     };

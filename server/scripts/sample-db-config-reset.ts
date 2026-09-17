@@ -15,5 +15,4 @@ async function sampleDbConfigReset() {
   process.exit(0);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 sampleDbConfigReset();

@@ -6,7 +6,7 @@ import {
   fetchAndVisitInviteLinkViaMH,
 } from "Support/utils/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
 import { setupAppWithSlug, verifyRestrictedAccess } from "Support/utils/apps";
@@ -224,7 +224,7 @@ describe("Private and Public apps", () => {
     cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
 
-    cy.apiDeleteGranularPermission("end-user", ["app", "workflow"]);
+    cy.apiDeleteGranularPermission("end-user", ["app", "workflow", "folder"]);
 
     setSignupStatus(true, data.workspaceName);
 

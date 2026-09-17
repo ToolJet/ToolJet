@@ -294,9 +294,10 @@ export class TooljetDatabaseError extends QueryFailedError {
         return { table, column: matches[1], value: matches[2] };
       },
       [PostgresErrorCode.ForeignKeyViolation]: () => {
-        const matches = /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./.exec(
-          driverError.detail || ''
-        );
+        const matches =
+          /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./.exec(
+            driverError.detail || ''
+          );
         if (!matches) return null;
         return { table, column: matches[1], value: matches[2] };
       },

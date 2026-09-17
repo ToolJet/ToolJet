@@ -1,0 +1,156 @@
+.entity-delete-modal-root {
+  overflow: hidden;
+}
+
+.entity-delete-modal-dialog {
+  max-width: 505px;
+  max-height: calc(100% - var(--bs-modal-margin, 0.5rem) * 2);
+}
+
+.entity-delete-modal {
+  border-radius: 8px;
+  border: none;
+  background: var(--base);
+  max-height: calc(100vh - var(--bs-modal-margin, 0.5rem) * 2);
+  max-height: calc(100dvh - var(--bs-modal-margin, 0.5rem) * 2);
+  overflow: hidden;
+}
+.entity-delete-modal .entity-delete-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 24px 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.entity-delete-modal .entity-delete-warning-icon {
+  display: flex;
+  height: 40px;
+  flex-shrink: 0;
+}
+.entity-delete-modal .entity-delete-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  word-break: break-word;
+  flex-shrink: 0;
+}
+.entity-delete-modal .entity-delete-title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--text-default);
+}
+.entity-delete-modal .entity-delete-subtitle {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-placeholder);
+}
+.entity-delete-modal .entity-delete-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.entity-delete-modal .entity-delete-card {
+  border: 1px solid var(--border-weak);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+.entity-delete-modal .entity-delete-card.fill {
+  flex: 1 1 auto;
+}
+.entity-delete-modal .entity-delete-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  background: var(--interactive-default);
+  border-bottom: 1px solid var(--border-weak);
+  flex-shrink: 0;
+}
+.entity-delete-modal .entity-delete-card-header.clickable {
+  cursor: pointer;
+}
+.entity-delete-modal .entity-delete-card-subject {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.entity-delete-modal .entity-delete-card-name {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-default);
+}
+.entity-delete-modal .entity-delete-card-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-default);
+}
+.entity-delete-modal .entity-delete-card-chevron {
+  color: var(--icon-default);
+}
+.entity-delete-modal .entity-delete-card-body-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.entity-delete-modal .entity-delete-card-body {
+  padding: 6px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow-y: auto;
+  min-height: 0;
+  max-height: 40vh;
+}
+.entity-delete-modal .entity-delete-card.fill .entity-delete-card-body {
+  max-height: none;
+  flex: 1 1 auto;
+}
+.entity-delete-modal .entity-delete-scroll-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--base), transparent);
+}
+.entity-delete-modal .entity-delete-nested-note {
+  margin: 0 0 2px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-placeholder);
+}
+.entity-delete-modal .entity-delete-footer {
+  gap: 8px;
+  border-top: none;
+  padding: 24px;
+  flex-shrink: 0;
+}
+
+.entity-delete-modal.dark-theme {
+  background: var(--base);
+}
+.entity-delete-modal.dark-theme .entity-delete-card-header {
+  background: var(--interactive-default);
+}

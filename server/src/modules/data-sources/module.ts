@@ -13,27 +13,36 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       DataSourcesService,
       DataSourcesController,
       DataSourcesUtilService,
       PluginsServiceSelector,
       SampleDataSourceService,
+      GitSyncDataSourceCreateGuard,
+      GitSyncDataSourceEditGuard,
     } = await this.getProviders(configs, 'data-sources', [
       'service',
       'controller',
       'util.service',
       'services/plugin-selector.service',
       'services/sample-ds.service',
+      'guards/git-sync-datasource.guard',
     ]);
 
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: DataSourcesModule,
       imports: [
         await AppEnvironmentsModule.register(configs),
@@ -43,7 +52,9 @@ export class DataSourcesModule extends SubModule {
         await TooljetDbModule.register(configs),
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await AppPermissionsModule.register(configs!),
+        await CustomDomainsModule.register(configs!),
       ],
       providers: [
         DataSourcesService,
@@ -57,9 +68,11 @@ export class DataSourcesModule extends SubModule {
         SampleDataSourceService,
         FeatureAbilityFactory,
         OrganizationRepository,
+        GitSyncDataSourceCreateGuard,
+        GitSyncDataSourceEditGuard,
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
-    };
+    });
   }
 }

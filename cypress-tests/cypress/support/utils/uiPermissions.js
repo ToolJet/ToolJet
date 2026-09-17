@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 import { deleteFolder } from "Support/utils/common";
 import {
   addAndVerifyConstants,
@@ -167,6 +167,7 @@ export const uiFolderCRUDWorkflow = (folderName) => {
   uiCreateFolder(folderName);
   uiVerifyFolderCreated(folderName);
 
+  cy.wait(4000)
   deleteFolder(folderName);
   uiVerifyFolderDeleted(folderName);
 };

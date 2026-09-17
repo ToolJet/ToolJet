@@ -22,6 +22,11 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -40,6 +45,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingAddDataSource, setPendingAddDataSource] = useState(null);
+  const [pendingCreateDS, setPendingCreateDS] = useState(null);
+  const loadingSeenRef = useRef(false);
   const { t } = useTranslation();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
@@ -114,6 +123,21 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
 
+  // After branch switch + refetch, trigger the deferred add
+  useEffect(() => {
+    if (!pendingCreateDS) return;
+    if (isLoading) {
+      loadingSeenRef.current = true;
+    }
+    if (!isLoading && loadingSeenRef.current) {
+      const ds = pendingCreateDS;
+      loadingSeenRef.current = false;
+      setPendingCreateDS(null);
+      createDataSource(ds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading, pendingCreateDS]);
+
   const handleHideModal = (ds) => {
     if (dataSources?.length) {
       if (!isEditing) {
@@ -171,7 +195,22 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     setFilteredDataSources([...filtered]);
   };
 
-  const createDataSource = (dataSource) => {
+  const createDataSource = async (dataSource) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch) {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const { id } = dataSource;
     const selectedDataSource =
       dataSource.manifestFile?.data?.['tj:source'] ?? dataSource.manifestFile?.data?.source ?? dataSource;
@@ -346,16 +385,49 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
   };
 
+  const isGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
+  const isBranchLockedOnDefault = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    // orgGitConfig.is_branching_enabled is the stored flag and is license-unaware — on a license
+    // downgrade it stays true even though the workspace is now single-branch. isMultiBranchingEnabled
+    // (from the workspace-branches list endpoint) already folds in the multi-branch license, so gate
+    // on it to keep the default branch editable (no lock) when multi-branch isn't licensed.
+    const isBranchingEnabled =
+      (state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled) &&
+      state.isMultiBranchingEnabled !== false;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  });
+  // Read the license from the authoritative license store (the context's featureAccess can be
+  // stale/empty here). Git configured + expired/invalid license → the whole workspace is read-only.
+  const licenseFeatureAccess = useLicenseStore((state) => state.featureAccess);
+  const isGitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(licenseFeatureAccess);
+  const isWorkspaceBranchLocked = isBranchLockedOnDefault || isGitLicenseLocked;
+
   const renderCardGroup = (source, type) => {
-    const canAddDataSource = canCreateDataSource();
+    const hasCreatePermission = canCreateDataSource();
+    const canAddDataSource = hasCreatePermission && !isWorkspaceBranchLocked;
     const addDataSourceBtn = (item) => (
-      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+      <ToolTip
+        message={!hasCreatePermission ? 'You do not have permission to add a data source' : ''}
+        show={!hasCreatePermission}
+        placement="bottom"
+      >
         <div>
           <ButtonSolid
-            disabled={addingDataSource || !canAddDataSource}
+            // Hard-disable when the git-sync license is expired/invalid — the workspace is read-only.
+            disabled={addingDataSource || !hasCreatePermission || isGitLicenseLocked}
             isLoading={addingDataSource}
             variant="secondary"
-            onClick={() => createDataSource(item)}
+            onClick={() => {
+              if (isGitLicenseLocked) return;
+              if (isWorkspaceBranchLocked) {
+                setPendingAddDataSource(item);
+                setShowSwitchBranchModal(true);
+              } else {
+                createDataSource(item);
+              }
+            }}
             data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
           >
             <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
@@ -528,6 +600,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
+        <WorkspaceLockedBanner pageContext="data sources" />
         {containerRef && containerRef?.current && selectedDataSource && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
@@ -546,12 +619,30 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            isWorkspaceBranchLocked={isWorkspaceBranchLocked}
             environmentLoading={environmentLoading}
           />
         )}
         {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingAddDataSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingAddDataSource) {
+              loadingSeenRef.current = false;
+              setPendingCreateDS(pendingAddDataSource);
+              setPendingAddDataSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

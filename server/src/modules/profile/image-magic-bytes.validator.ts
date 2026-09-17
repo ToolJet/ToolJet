@@ -16,9 +16,7 @@ export class ImageMagicBytesValidator extends FileValidator {
   isValid(file: any): boolean {
     const buf = file?.buffer;
     if (!buf || buf.length < 12) return false;
-    return SIGNATURES.some(({ bytes, offset = 0 }) =>
-      bytes.every((b, i) => buf[offset + i] === b)
-    );
+    return SIGNATURES.some(({ bytes, offset = 0 }) => bytes.every((b, i) => buf[offset + i] === b));
   }
 
   buildErrorMessage(): string {

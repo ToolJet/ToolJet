@@ -14,11 +14,13 @@ export const aiService = {
   listConversations,
   createConversation,
   getConversation,
+  getConversationStatus,
   autoSort,
   getTokenUsage,
   getLlmPreference,
   updateLlmPreference,
   getOpenRouterModels,
+  getProviderModels,
 };
 
 function handleAITextResponse(response) {
@@ -190,6 +192,11 @@ async function getConversation(conversationId) {
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
 }
 
+async function getConversationStatus(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/status`, requestOptions).then(handleResponse);
+}
+
 async function autoSort(body) {
   const requestOptions = {
     method: 'POST',
@@ -210,17 +217,32 @@ async function getOpenRouterModels() {
   return fetch(`${config.apiUrl}/ai/openrouter-models`, requestOptions).then(handleResponse);
 }
 
-async function getLlmPreference() {
+async function getProviderModels(provider) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/provider-models?provider=${encodeURIComponent(provider)}`, requestOptions).then(
+    handleResponse
+  );
 }
 
-async function updateLlmPreference(provider) {
+// `conversationId` selects which chat's provider/model is being read or written. Omitted on the
+// home page, where no chat exists yet — there the call reads and writes the workspace default,
+// which is what the next new chat will be created with.
+async function getLlmPreference(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
+  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then(handleResponse);
+}
+
+async function updateLlmPreference(provider, model, modelContextWindow, conversationId) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ provider }),
+    body: JSON.stringify({
+      provider,
+      ...(model ? { model, modelContextWindow } : {}),
+      ...(conversationId ? { conversationId } : {}),
+    }),
   };
   return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }

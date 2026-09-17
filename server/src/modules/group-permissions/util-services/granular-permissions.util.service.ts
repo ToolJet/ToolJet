@@ -17,6 +17,8 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { catchDbException } from '@helpers/utils.helper';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { GroupApps } from '@entities/group_apps.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { GroupPermissionsRepository } from '../repository';
 import * as _ from 'lodash';
@@ -65,8 +67,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     }
   }
 
-  protected validateDataSourceResourcePermissionUpdateOperation(group: GroupPermissions) {
-    if (group.name === USER_ROLE.END_USER) {
+  protected validateDataSourceResourcePermissionUpdateOperation(
+    group: GroupPermissions,
+    actions?: ResourceGroupActions<ResourceType.DATA_SOURCE>
+  ) {
+    // End-user groups can only hold the query-run restriction, never builder-level access
+    if (group.name === USER_ROLE.END_USER && (actions?.canConfigure || actions?.canUse)) {
       throw new BadRequestException(ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER);
     }
   }
@@ -114,6 +120,30 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
             organizationId,
             granularPermissions,
             createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.APP>,
+            manager
+          );
+          break;
+        case ResourceType.FOLDER:
+          await this.createFolderGroupPermission(
+            organizationId,
+            granularPermissions,
+            createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.FOLDER>,
+            manager
+          );
+          break;
+        case ResourceType.WORKFLOW_FOLDER:
+          await this.createFolderGroupPermission(
+            organizationId,
+            granularPermissions,
+            createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.WORKFLOW_FOLDER>,
+            manager
+          );
+          break;
+        case ResourceType.MODULE_FOLDER:
+          await this.createFolderGroupPermission(
+            organizationId,
+            granularPermissions,
+            createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.MODULE_FOLDER>,
             manager
           );
           break;
@@ -179,6 +209,86 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         );
       }
     }, manager);
+  }
+
+  protected async createFolderGroupPermission(
+    organizationId: string,
+    granularPermissions: GranularPermissions,
+    createFolderPermissionsObj: CreateResourcePermissionObject<ResourceType.FOLDER>,
+    manager: EntityManager
+  ): Promise<void> {
+    const { resourcesToAdd, canEditFolder, canEditApps, canViewApps } = createFolderPermissionsObj;
+    // Module folders are never end-user-assignable — reject for view too, unlike plain/workflow
+    // folders where end-users can be granted view-only access.
+    const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Validate end-user constraints: can only have canViewApps (module folders: none at all)
+      await this.validateFolderResourceCreation(
+        {
+          groupId: granularPermissions.groupId,
+          organizationId,
+          isBuilderPermissions: canEditFolder || canEditApps || isModuleFolder,
+        },
+        manager,
+        isModuleFolder
+      );
+      const foldersGroupPermissions = await manager.save(
+        manager.create(FoldersGroupPermissions, {
+          canEditFolder: canEditFolder ?? false,
+          canEditApps: canEditApps ?? false,
+          canViewApps: canViewApps ?? false,
+          granularPermissionId: granularPermissions.id,
+        })
+      );
+
+      if (resourcesToAdd?.length) {
+        await manager.insert(
+          GroupFolders,
+          resourcesToAdd.map((folder) => ({
+            folderId: folder.folderId,
+            foldersGroupPermissionsId: foldersGroupPermissions.id,
+          }))
+        );
+      }
+    }, manager);
+  }
+
+  protected async validateFolderResourceCreation(
+    params: ResourceCreateValidation,
+    manager: EntityManager,
+    isModuleFolder = false
+  ): Promise<void> {
+    const { groupId, organizationId, isBuilderPermissions } = params;
+    if (!isBuilderPermissions) {
+      return;
+    }
+
+    const usersInGroup = await this.groupPermissionsRepository.getUsersInGroup(groupId, organizationId, null, manager);
+
+    if (!usersInGroup?.length) {
+      return;
+    }
+
+    const endUsers = await this.roleRepository.getRoleUsersList(
+      USER_ROLE.END_USER,
+      organizationId,
+      usersInGroup.map((groupUser) => groupUser.userId),
+      manager
+    );
+
+    if (endUsers.length) {
+      throw new BadRequestException({
+        message: {
+          error: isModuleFolder
+            ? 'End-users cannot have Module folder permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.'
+            : 'End-users cannot have Edit Folder or Edit Apps permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.',
+          data: endUsers.map((user) => user.email),
+          title: 'Cannot add this permission to the group',
+          type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
+        },
+      });
+    }
   }
 
   private getAppTypeFromResourceType(type: ResourceType) {
@@ -277,6 +387,30 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     const appGroupPermissions = new AppsGroupPermissions();
     appGranularPermission.appsGroupPermissions = appGroupPermissions;
 
+    const folderGranularPermission = new GranularPermissions();
+    const folderGroupPermissions = new FoldersGroupPermissions();
+    folderGranularPermission.foldersGroupPermissions = folderGroupPermissions;
+
+    // Modules are never end-user-assignable, so module folders have no default-permission
+    // spec for END_USER either — only constructed for ADMIN/BUILDER below.
+    const moduleFolderGranularPermission = new GranularPermissions();
+    const moduleFolderGroupPermissions = new FoldersGroupPermissions();
+    moduleFolderGranularPermission.foldersGroupPermissions = moduleFolderGroupPermissions;
+    moduleFolderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE_FOLDER];
+    moduleFolderGranularPermission.isAll = true;
+    moduleFolderGranularPermission.type = ResourceType.MODULE_FOLDER;
+    moduleFolderGroupPermissions.canEditFolder = true;
+    moduleFolderGroupPermissions.canEditApps = false;
+    moduleFolderGroupPermissions.canViewApps = false;
+
+    // Workflow folders follow the plain FOLDER visibility rule (all roles), unlike module folders.
+    const workflowFolderGranularPermission = new GranularPermissions();
+    const workflowFolderGroupPermissions = new FoldersGroupPermissions();
+    workflowFolderGranularPermission.foldersGroupPermissions = workflowFolderGroupPermissions;
+    workflowFolderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.WORKFLOW_FOLDER];
+    workflowFolderGranularPermission.isAll = true;
+    workflowFolderGranularPermission.type = ResourceType.WORKFLOW_FOLDER;
+
     switch (role) {
       case USER_ROLE.ADMIN:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -289,7 +423,21 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGroupPermissions.canAccessProduction = true;
         appGroupPermissions.canAccessReleased = true;
 
-        return [appGranularPermission];
+        folderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.FOLDER];
+        folderGranularPermission.isAll = true;
+        folderGranularPermission.type = ResourceType.FOLDER;
+        folderGroupPermissions.canEditApps = false;
+        folderGroupPermissions.canViewApps = false;
+
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = false;
+
+        return [
+          appGranularPermission,
+          folderGranularPermission,
+          moduleFolderGranularPermission,
+          workflowFolderGranularPermission,
+        ];
 
       case USER_ROLE.BUILDER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -302,7 +450,25 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGroupPermissions.canAccessProduction = false;
         appGroupPermissions.canAccessReleased = true;
 
-        return [appGranularPermission];
+        folderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.FOLDER];
+        folderGranularPermission.isAll = true;
+        folderGranularPermission.type = ResourceType.FOLDER;
+        // Radio button selection: Builder has "Edit folder" permission
+        // Only set the selected permission level to true; implied permissions are derived at runtime
+        folderGroupPermissions.canEditFolder = true;
+        folderGroupPermissions.canEditApps = false;
+        folderGroupPermissions.canViewApps = false;
+
+        workflowFolderGroupPermissions.canEditFolder = true;
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = false;
+
+        return [
+          appGranularPermission,
+          folderGranularPermission,
+          moduleFolderGranularPermission,
+          workflowFolderGranularPermission,
+        ];
 
       case USER_ROLE.END_USER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -314,7 +480,18 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGroupPermissions.canAccessProduction = false;
         appGroupPermissions.canAccessReleased = true;
 
-        return [appGranularPermission];
+        folderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.FOLDER];
+        folderGranularPermission.isAll = true;
+        folderGranularPermission.type = ResourceType.FOLDER;
+        folderGroupPermissions.canEditFolder = false;
+        folderGroupPermissions.canEditApps = false;
+        folderGroupPermissions.canViewApps = true;
+
+        workflowFolderGroupPermissions.canEditFolder = false;
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = true;
+
+        return [appGranularPermission, folderGranularPermission, workflowFolderGranularPermission];
 
       default:
         return [];
@@ -361,10 +538,75 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     return await dbTransactionWrap(async (manager: EntityManager) => {
       switch (granularPermissions.type) {
         case ResourceType.APP:
+        case ResourceType.MODULE:
           await this.updateAppsGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
+          break;
+        case ResourceType.FOLDER:
+          await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
+          break;
+        case ResourceType.WORKFLOW_FOLDER:
+          await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
+          break;
+        case ResourceType.MODULE_FOLDER:
+          await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         default:
           break;
+      }
+    }, manager);
+  }
+
+  protected async updateFoldersGroupPermission(
+    updateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject<ResourceType.FOLDER>,
+    organizationId: string,
+    manager?: EntityManager
+  ) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = updateResourceGroupPermissionsObject;
+      // Module folders are never end-user-assignable — reject for view too.
+      const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
+
+      // Validate end-user constraints
+      if (actions && (actions.canEditFolder || actions.canEditApps || isModuleFolder)) {
+        await this.validateFolderResourceCreation(
+          {
+            groupId: granularPermissions.groupId,
+            organizationId,
+            isBuilderPermissions: true,
+          },
+          manager,
+          isModuleFolder
+        );
+      }
+
+      const foldersGroupPermissions = granularPermissions.foldersGroupPermissions;
+
+      // Update permission flags
+      if (actions) {
+        await manager.update(FoldersGroupPermissions, foldersGroupPermissions.id, {
+          canEditFolder: actions.canEditFolder ?? foldersGroupPermissions.canEditFolder,
+          canEditApps: actions.canEditApps ?? foldersGroupPermissions.canEditApps,
+          canViewApps: actions.canViewApps ?? foldersGroupPermissions.canViewApps,
+        });
+      }
+
+      // Delete removed folders
+      if (resourcesToDelete?.length) {
+        await manager.delete(
+          GroupFolders,
+          resourcesToDelete.map((item) => item.id)
+        );
+      }
+
+      // Add new folders
+      if (resourcesToAdd?.length) {
+        await manager.insert(
+          GroupFolders,
+          resourcesToAdd.map((folder) => ({
+            folderId: folder.folderId,
+            foldersGroupPermissionsId: foldersGroupPermissions.id,
+          }))
+        );
       }
     }, manager);
   }

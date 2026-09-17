@@ -80,6 +80,11 @@ export class CreatePageDto {
   @IsUUID()
   @IsOptional()
   appId?: string;
+
+  // Co relation id for the target tooljet app when page type is 'app'
+  @IsUUID()
+  @IsOptional()
+  targetCorelationId?: string;
 }
 
 export class DeletePageDto {

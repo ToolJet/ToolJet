@@ -23,13 +23,25 @@ export const Viewer = ({
   moduleId = 'canvas',
   switchDarkMode,
   environmentId,
+  environmentName,
   versionId,
   moduleMode = false,
+  isHydrating = false,
   slug: appSlug,
+  componentName,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
-  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const appType = useAppData(
+    appId,
+    moduleId,
+    darkMode,
+    'view',
+    { environmentId, environmentName, versionId, componentName },
+    moduleMode,
+    false,
+    appSlug
+  );
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
   const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
@@ -126,7 +138,7 @@ export const Viewer = ({
     };
   }, []);
 
-  if (isEditorLoading) {
+  if (isEditorLoading || isHydrating) {
     return (
       <div className={cx('apploader', { 'dark-theme theme-dark': darkMode, 'module-mode': moduleMode })}>
         {moduleMode ? <Spinner /> : <TJLoader />}

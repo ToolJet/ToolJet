@@ -23,6 +23,7 @@ export function AppModal({
   selectedAppId = null,
   selectedAppName = null,
   title,
+  titleAdornment,
   actionButton,
   actionLoadingButton,
   fetchingOrgGit,
@@ -32,6 +33,8 @@ export function AppModal({
   appType,
   dependentPluginsDetail = [],
   dependentPlugins = [],
+  modalType,
+  // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -40,8 +43,9 @@ export function AppModal({
   }
 
   if (actionButton.includes('Clone')) {
-    if (selectedAppName.length >= 45) {
-      selectedAppName = selectedAppName.slice(0, 45) + '_Copy';
+    // Keep the cloned name within the 100-char limit: 95 + '_Copy' (5) = 100.
+    if (selectedAppName.length >= 95) {
+      selectedAppName = selectedAppName.slice(0, 95) + '_Copy';
     } else {
       selectedAppName = selectedAppName + '_Copy';
     }
@@ -116,17 +120,17 @@ export function AppModal({
     const newAppName = e.target.value;
     const trimmedName = newAppName.trim();
     setNewAppName(newAppName);
-    if (newAppName.length >= 50) {
+    if (newAppName.length >= 100) {
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
-      const error = validateName(trimmedName, 'App', false);
+      const error = validateName(trimmedName, 'App', false, false, true, true, false, false, 100);
       setErrorText(error?.errorMsg || '');
     }
   };
 
   const isNameEmpty = newAppName?.trim().length === 0;
-  const isNameTooLong = newAppName?.length > 50;
+  const isNameTooLong = newAppName?.length > 100;
   const isNameInvalid = isNameEmpty || isNameTooLong || !!errorText;
   const renameRequiresChange = actionButton.includes('Rename') && !isNameChanged;
   const createBtnDisableState = isLoading || isNameInvalid || renameRequiresChange;
@@ -136,6 +140,7 @@ export function AppModal({
       show={show}
       closeModal={closeModal}
       title={title}
+      titleAdornment={titleAdornment}
       footerContent={
         <>
           <ButtonSolid
@@ -176,7 +181,7 @@ export function AppModal({
                 placeholder={`Enter ${appTypeName.toLowerCase()} name`}
                 value={newAppName}
                 data-cy={`${generateCypressDataCy(appTypeName)}-name-input`}
-                maxLength={50}
+                maxLength={100}
                 autoFocus
                 ref={inputRef}
                 style={{
@@ -195,7 +200,7 @@ export function AppModal({
                 >
                   {errorText}
                 </small>
-              ) : infoText || newAppName.length >= 50 ? (
+              ) : infoText || newAppName.length >= 100 ? (
                 <small
                   className="tj-input-error"
                   style={{
@@ -215,30 +220,35 @@ export function AppModal({
                   }}
                   data-cy={`${generateCypressDataCy(appTypeName)}-name-info-label`}
                 >
-                  {`${appTypeName} name must be unique and max 50 characters`}
+                  {`${appTypeName} name must be unique and max 100 characters`}
                 </small>
               )}
-              {orgGit?.is_enabled && appType != APP_TYPE.WORKFLOW && appType != APP_TYPE.MODULE && (
-                <div className="commit-changes mt-3">
-                  <div>
-                    <input
-                      class="form-check-input"
-                      checked={commitEnabled}
-                      type="checkbox"
-                      onChange={handleCommitEnableChange}
-                      data-cy="git-commit-input"
-                    />
-                  </div>
-                  <div>
-                    <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                      Commit changes
+              {/* Disabling autoCommit */}
+              {/* {orgGit?.is_enabled &&
+                modalType !== 'create' &&
+                appType != APP_TYPE.WORKFLOW &&
+                appType != APP_TYPE.MODULE && (
+                  <div className="commit-changes mt-3">
+                    <div>
+                      <input
+                        class="form-check-input"
+                        checked={commitEnabled}
+                        type="checkbox"
+                        onChange={handleCommitEnableChange}
+                        // disabled={isAutoCommit}
+                        data-cy="git-commit-input"
+                      />
                     </div>
-                    <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                      This action commits the app&apos;s creation to the git repository
+                    <div>
+                      <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                        Commit changes
+                      </div>
+                      <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                        This action commits the app&apos;s creation to the git repository
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )} */}
             </div>
             {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>

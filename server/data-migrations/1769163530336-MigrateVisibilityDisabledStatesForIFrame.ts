@@ -34,7 +34,6 @@ export class MigrateVisibilityDisabledStatesForIFrame1769163530336 implements Mi
       const general = component.general_properties ? { ...component.general_properties } : {};
       const generalStyles = component.general_styles ? { ...component.general_styles } : {};
 
-
       if (styles.visibility) {
         properties.visibility = styles.visibility;
         delete styles.visibility;

@@ -8,6 +8,7 @@ import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightRef
 
 export const ListviewSubcontainer = ({
   index,
+  moduleId,
   mode,
   rowHeight,
   positiveColumns,
@@ -36,7 +37,7 @@ export const ListviewSubcontainer = ({
   );
 
   const temporaryLayout = useStore(
-    (state) => state.temporaryLayouts?.[getDynamicLayoutKey(id, contextIndices)],
+    (state) => state.temporaryLayouts?.[getDynamicLayoutKey(id, contextIndices, '', moduleId)],
     shallow
   );
   const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;

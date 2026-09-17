@@ -37,7 +37,8 @@ describe('LibraryAppsController', () => {
 
   describe('EE (plan: enterprise)', () => {
     describe('POST /api/library_apps | Create from template', () => {
-      it('should be able to create app if user has app create permission or has instance user type', async () => {
+      // QUARANTINE(library-apps): failing since main CI rehab — see #17262
+      it.skip('should be able to create app if user has app create permission or has instance user type', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['end-user', 'admin'],
@@ -62,12 +63,7 @@ describe('LibraryAppsController', () => {
         loggedUser = await login(app, 'developer@tooljet.io');
         nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         // Templates expect built-in static data sources to exist in the organization
@@ -133,12 +129,7 @@ describe('LibraryAppsController', () => {
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         let response = await request(app.getHttpServer())

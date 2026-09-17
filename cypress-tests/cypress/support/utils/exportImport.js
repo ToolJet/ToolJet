@@ -3,13 +3,13 @@ import {
   appVersionSelectors,
   exportAppModalSelectors,
   importSelectors,
-} from "Selectors/exportImport";
+} from "Selectors/platform/exportImport";
 import { verifyModal } from "Support/utils/common";
 import {
   appVersionText,
   exportAppModalText,
   importText,
-} from "Texts/exportImport";
+} from "Texts/platform/exportImport";
 
 export const verifyElementsOfExportModal = (
   currentVersionName,
@@ -94,7 +94,7 @@ export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string(
-      appName.toLowerCase()
+      appName
     );
   });
 };
@@ -159,7 +159,7 @@ export const verifyImportModalElements = (expectedAppName) => {
     .and("have.value", expectedAppName);
   cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
     "have.text",
-    "App name must be unique and max 50 characters"
+    "App name must be unique and max 100 characters"
   );
   cy.get(commonSelectors.cancelButton)
     .should("be.visible")

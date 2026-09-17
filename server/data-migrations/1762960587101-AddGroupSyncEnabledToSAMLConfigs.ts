@@ -1,12 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { filePathForEnvVars } from '../scripts/database-config-utils';
 
 export class AddGroupSyncEnabledToSAMLConfigs1762960587101 implements MigrationInterface {
-
   public async up(queryRunner: QueryRunner): Promise<void> {
-
     let data: any = process.env;
     const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
 

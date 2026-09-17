@@ -21,21 +21,41 @@ export class FolderAppsController {
   @Get()
   async index(@User() user: UserEntity, @Query() query, @UserPermissionsDecorator() userPermissions: UserPermissions) {
     user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
-    return await this.folderAppsService.getFolders(user, query);
+    // Read the raw branch_id query param (NOT the default-filled user.branchId). Absent for
+    // non-git orgs and workflows; getFolders resolves the org's default branch in that case,
+    // since folder_apps.branch_id is now mandatory (no NULL rows).
+    return await this.folderAppsService.getFolders(user, { ...query, branchId: query.branch_id });
   }
 
   @InitFeature(FEATURE_KEY.CREATE_FOLDER_APP)
   @Post()
-  async create(@Body() createBody: { folder_id: string; app_id: string }) {
-    const { folder_id: folderId, app_id: appId } = createBody;
+  async create(
+    @Body() createBody: { folder_id: string; app_id?: string; app_ids?: string[] },
+    // Raw branch_id query param, absent for workflows and non-git-workspace FRONT_END/MODULE
+    // apps. The service resolves the org's default branch when absent so every row gets a
+    // non-null branch_id.
+    @Query('branch_id') branchId?: string,
+    @User() user?: UserEntity
+  ) {
+    const { folder_id: folderId, app_id: appId, app_ids: appIds } = createBody;
 
-    const folder = await this.folderAppsService.create(folderId, appId);
+    if (appIds?.length) {
+      return this.folderAppsService.bulkCreate(folderId, appIds, branchId, user?.organizationId);
+    }
+    const folder = await this.folderAppsService.create(folderId, appId, branchId, user?.organizationId);
     return decamelizeKeys(folder);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_FOLDER_APP)
   @Put('/:folderId')
-  async remove(@Body('app_id') appId: string, @Param('folderId') folderId: string) {
-    await this.folderAppsService.remove(folderId, appId);
+  async remove(
+    @Body('app_id') appId: string,
+    @Param('folderId') folderId: string,
+    // Raw branch_id query param, absent for workflows / non-git orgs; the service resolves the
+    // org's default branch when absent.
+    @Query('branch_id') branchId?: string,
+    @User() user?: UserEntity
+  ) {
+    await this.folderAppsService.remove(folderId, appId, branchId, user?.organizationId);
   }
 }

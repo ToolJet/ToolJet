@@ -1,12 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
-import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
@@ -19,11 +18,18 @@ import {
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
 import { RequestContext } from '@modules/request-context/service';
-const _ = require('lodash');
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { MODULES } from '@modules/app/constants/modules';
+import { AppsRepository } from '../repository';
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(
+    protected eventHandlerService: EventsService,
+    private readonly abilityService: AbilityService,
+    private readonly appsRepository: AppsRepository
+  ) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -55,10 +61,10 @@ export class ComponentsService implements IComponentsService {
       ? null
       : await this.beforeComponentCreate(componentIds, pageId, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -104,12 +110,12 @@ export class ComponentsService implements IComponentsService {
 
     const context = await this.beforeComponentUpdate(componentIds, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -123,12 +129,12 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeComponentDelete(componentIds, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -145,7 +151,7 @@ export class ComponentsService implements IComponentsService {
   ) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -195,7 +201,7 @@ export class ComponentsService implements IComponentsService {
           await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -211,52 +217,71 @@ export class ComponentsService implements IComponentsService {
     return result;
   }
 
-  async getAllComponents(pageId: string, externalManager?: EntityManager) {
+  async getAllComponents(pageId: string, externalManager?: EntityManager): Promise<Record<string, any>> {
+    const byPage = await this.getAllComponentsForPages([pageId], externalManager);
+    return byPage.get(pageId) ?? {};
+  }
+
+  async getAllComponentsForPages(
+    pageIds: string[],
+    externalManager?: EntityManager
+  ): Promise<Map<string, Record<string, any>>> {
+    if (pageIds.length === 0) return new Map();
+
     return dbTransactionWrap(async (manager: EntityManager) => {
       const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
-        .where('component.pageId = :pageId', { pageId })
+        .where('component.pageId IN (:...pageIds)', { pageIds })
         .andWhere('layout.type IN (:...types)', {
           types: ['desktop', 'mobile'],
         })
-        .orderBy('component.id', 'ASC')
+        .orderBy('component.pageId', 'ASC')
+        .addOrderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
         .getMany();
 
-      const result: Record<string, any> = {};
-      const layoutsToUpdate: Layout[] = [];
+      const { componentsByPage, layoutsNeedingMigration } = this.assembleComponentsByPage(rawComponents);
 
-      for (const component of rawComponents) {
-        const processedLayoutsForComponent: Layout[] = [];
+      if (layoutsNeedingMigration.length > 0) {
+        await manager.save(Layout, layoutsNeedingMigration);
+      }
 
-        (component.layouts || []).forEach((layout) => {
-          if (layout && layout.type) {
-            const currentLayout = { ...layout };
+      return componentsByPage;
+    }, externalManager);
+  }
 
-            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
-              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
-              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              layoutsToUpdate.push(currentLayout);
-            }
-            processedLayoutsForComponent.push(currentLayout);
+  private assembleComponentsByPage(rawComponents: Component[]): {
+    componentsByPage: Map<string, Record<string, any>>;
+    layoutsNeedingMigration: Layout[];
+  } {
+    const componentsByPage = new Map<string, Record<string, any>>();
+    const layoutsNeedingMigration: Layout[] = [];
+
+    for (const component of rawComponents) {
+      const normalisedLayouts = (component.layouts || [])
+        .filter((l) => l && l.type)
+        .map((layout) => {
+          const next = { ...layout };
+          if (next.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+            next.left = this.resolveGridPositionForComponent(next.left, next.type);
+            next.dimensionUnit = LayoutDimensionUnits.COUNT;
+            layoutsNeedingMigration.push(next);
           }
+          return next;
         });
 
-        const relevantLayouts = processedLayoutsForComponent
-          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
-          .slice(0, 2);
+      const mostRecentLayouts = [...normalisedLayouts]
+        .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+        .slice(0, 2);
 
-        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
-        result[component.id] = transformedData[component.id];
-      }
+      const transformed = this.createComponentWithLayout(component, mostRecentLayouts);
+      const bucket = componentsByPage.get(component.pageId) ?? {};
+      bucket[component.id] = transformed[component.id];
+      componentsByPage.set(component.pageId, bucket);
+    }
 
-      if (layoutsToUpdate.length > 0) {
-        await manager.save(Layout, layoutsToUpdate);
-      }
-
-      return result;
-    }, externalManager);
+    return { componentsByPage, layoutsNeedingMigration };
   }
 
   transformComponentData(data: object): Component[] {
@@ -287,10 +312,7 @@ export class ComponentsService implements IComponentsService {
    * For module-type apps, resolves the ModuleContainer component id for the given version.
    * Returns null for non-module apps or if no ModuleContainer exists.
    */
-  protected async resolveModuleContainerId(
-    appVersionId: string,
-    manager: EntityManager
-  ): Promise<string | null> {
+  protected async resolveModuleContainerId(appVersionId: string, manager: EntityManager): Promise<string | null> {
     const appVersion = await manager.findOne(AppVersion, {
       where: { id: appVersionId },
       select: ['id', 'appId', 'homePageId'],
@@ -393,7 +415,7 @@ export class ComponentsService implements IComponentsService {
     },
     appVersionId: string
   ) {
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const results: {
         created?: number;
         updated?: number;
@@ -442,7 +464,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       return results;
-    }, appVersionId);
+    });
 
     // History capture is handled by EE override
     return result;
@@ -465,7 +487,9 @@ export class ComponentsService implements IComponentsService {
     proposedParentById: Record<string, string | null | undefined>,
     appVersionId: string,
     manager: EntityManager,
-    options: { newComponentParents?: Record<string, string | null | undefined> } = {}
+    options: {
+      newComponentParents?: Record<string, string | null | undefined>;
+    } = {}
   ): Promise<void> {
     const affectedIds = Object.keys(proposedParentById);
     if (affectedIds.length === 0) return;
@@ -554,6 +578,22 @@ export class ComponentsService implements IComponentsService {
     // instead of being placed on the root canvas (parent: null).
     const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
     if (moduleContainerId) {
+      // A module cannot embed another module. The editor hides the Modules tab while
+      // editing a module, but direct API/MCP callers bypass that client-side guard —
+      // reject a ModuleViewer here so invalid module-in-module data can't be persisted.
+      // Such data later surfaces as "Module not found" when the embedded reference
+      // fails to resolve (the nested module is never bundled on export/import).
+      const nestedModuleViewer = newComponents.find((component) => component.type === 'ModuleViewer');
+      if (nestedModuleViewer) {
+        const exc = new BadRequestException({
+          message: `Component ${nestedModuleViewer.id} cannot be added because a module cannot contain another module.`,
+          code: 'NESTED_MODULE_NOT_ALLOWED',
+          componentId: nestedModuleViewer.id,
+        });
+        (exc as any).code = 'NESTED_MODULE_NOT_ALLOWED';
+        throw exc;
+      }
+
       for (const component of newComponents) {
         if (!component.parent && component.type !== 'ModuleContainer') {
           component.parent = moduleContainerId;
@@ -611,15 +651,19 @@ export class ComponentsService implements IComponentsService {
           where: { componentId, type: layout.type },
         });
         if (existing) {
-          await manager.update(Layout, { id: existing.id }, {
-            top: layout.top,
-            left: layout.left,
-            width: layout.width,
-            height: layout.height,
-            widthPx: layout.widthPx,
-            fillWidth: layout.fillWidth,
-            dimensionUnit: layout.dimensionUnit,
-          });
+          await manager.update(
+            Layout,
+            { id: existing.id },
+            {
+              top: layout.top,
+              left: layout.left,
+              width: layout.width,
+              height: layout.height,
+              widthPx: layout.widthPx,
+              fillWidth: layout.fillWidth,
+              dimensionUnit: layout.dimensionUnit,
+            }
+          );
         } else {
           layoutsToInsert.push(layout);
         }
@@ -660,6 +704,15 @@ export class ComponentsService implements IComponentsService {
         where: { id: componentId },
       });
 
+      const incomingProperties = component.definition?.properties;
+      if (
+        componentData.type === 'ModuleViewer' &&
+        incomingProperties &&
+        ('moduleAppId' in incomingProperties || 'moduleVersionId' in incomingProperties)
+      ) {
+        await this.assertModulePinPermission(componentData, incomingProperties);
+      }
+
       const isComponentDefinitionChanged = component.definition ? true : false;
 
       if (isComponentDefinitionChanged) {
@@ -671,7 +724,13 @@ export class ComponentsService implements IComponentsService {
             componentData[column === 'others' ? 'displayPreferences' : column],
             updatedDefinition[column],
             (objValue, srcValue) => {
-              if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
+              if (
+                (componentData.type === 'Table' ||
+                  componentData.type === 'Form' ||
+                  componentData.type === 'KeyValuePair') &&
+                _.isArray(objValue)
+              ) {
+                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
                 return srcValue;
               } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
@@ -718,6 +777,48 @@ export class ComponentsService implements IComponentsService {
         }
         await manager.update(Component, componentId, component);
       }
+    }
+  }
+
+  // A ModuleViewer's version list is deliberately readable read-only by any builder who
+  // can edit the parent app (see FeatureAbilityFactory's isEmbeddedInEditableParentApp
+  // bypass) so the pinned version can be displayed. Persisting a pin change is a
+  // different action and requires the caller to actually hold Build-with or Edit on the
+  // referenced module — that check never happens upstream of this save path.
+  private async assertModulePinPermission(
+    componentData: Component,
+    incomingProperties: Record<string, any>
+  ): Promise<void> {
+    const user = (RequestContext.currentContext?.req as any)?.user;
+    if (!user) return;
+
+    const coRelationId = incomingProperties.moduleAppId?.value ?? componentData.properties?.moduleAppId?.value;
+    if (!coRelationId) return;
+
+    const organizationId = user.organizationId || user.defaultOrganizationId;
+    const moduleApp = await this.appsRepository.findOne({
+      where: { co_relation_id: coRelationId, organizationId },
+    });
+    if (!moduleApp) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
+    }
+
+    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+      organizationId,
+      resources: [{ resource: MODULES.MODULES }],
+    });
+
+    if (userPermissions.isAdmin || userPermissions.isSuperAdmin) return;
+
+    const modulePermissions = userPermissions[MODULES.MODULES];
+    const hasPermission =
+      !!modulePermissions?.isAllEditable ||
+      !!modulePermissions?.isAllViewable ||
+      !!modulePermissions?.editableAppsId?.includes(moduleApp.id) ||
+      !!modulePermissions?.viewableAppsId?.includes(moduleApp.id);
+
+    if (!hasPermission) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
     }
   }
 

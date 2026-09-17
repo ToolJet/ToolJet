@@ -4,8 +4,16 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils/DropdownUtils';
 import { noop } from 'lodash';
 import { useDropdownContext } from './DropdownProvider';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const DropdownComponent = ({ options = {}, onClose = noop, container, theme = 'light', ...props }) => {
+const DropdownComponent = ({
+  options = {},
+  onClose = noop,
+  container,
+  theme = 'light',
+  showItemOverflowTooltip = false,
+  ...props
+}) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
@@ -103,7 +111,13 @@ const DropdownComponent = ({ options = {}, onClose = noop, container, theme = 'l
                 avatarFall={options[key].avatarFall}
                 key={key}
               >
-                {options[key].label ?? key}
+                {showItemOverflowTooltip ? (
+                  <OverflowTooltip whiteSpace="nowrap" placement="top">
+                    {options[key].label ?? key}
+                  </OverflowTooltip>
+                ) : (
+                  options[key].label ?? key
+                )}
               </SelectItem>
             ))}
           </SelectGroup>

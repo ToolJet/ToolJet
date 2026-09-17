@@ -11,7 +11,7 @@ Cypress.Commands.add(
     userEmail = "dev@tooljet.io",
     userPassword = "password",
     workspaceId = "",
-    redirection = "/"
+    redirection = "/",
   ) => {
     cy.request({
       url: `${Cypress.env("server_host")}/api/authenticate/${workspaceId}`,
@@ -32,7 +32,7 @@ Cypress.Commands.add(
           message: `: Success`,
         });
       });
-  }
+  },
 );
 
 Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
@@ -43,7 +43,7 @@ Cypress.Commands.add("apiLogout", (cachedHeader = false) => {
         url: `${Cypress.env("server_host")}/api/session/logout`,
         headers: headers,
       },
-      { log: false }
+      { log: false },
     ).then((response) => {
       expect(response.status).to.equal(200);
     });
@@ -88,7 +88,7 @@ Cypress.Commands.add(
           return response;
         });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -109,19 +109,21 @@ Cypress.Commands.add(
     };
 
     return cy.getAuthHeaders().then((headers) => {
-    return cy.request(
-        {
-          method: "POST",
-          url: `${Cypress.env("server_host")}/api/organization-users`,
-          headers: headers,
-          body: requestBody,
-        },
-        { log: false }
-      ).then((response) => {
-        expect(response.status).to.equal(201);
-      });
+      return cy
+        .request(
+          {
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/organization-users`,
+            headers: headers,
+            body: requestBody,
+          },
+          { log: false },
+        )
+        .then((response) => {
+          expect(response.status).to.equal(201);
+        });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -151,7 +153,7 @@ Cypress.Commands.add(
         });
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add("apiUpdateWsConstant", (id, updateValue, envName) => {
@@ -188,7 +190,7 @@ Cypress.Commands.add("apiGetGroupId", (groupName) => {
       .then((response) => {
         expect(response.status).to.equal(200);
         const group = response.body.groupPermissions.find(
-          (g) => g.name === groupName
+          (g) => g.name === groupName,
         );
         if (!group) throw new Error(`Group with name ${groupName} not found`);
         return group.id;
@@ -216,31 +218,13 @@ Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
           .map((dsName) => {
             const normalizedSearchName = dsName.toLowerCase().trim();
             const ds = response.body.data_sources.find(
-              (d) => d.name.toLowerCase().trim() === normalizedSearchName
+              (d) => d.name.toLowerCase().trim() === normalizedSearchName,
             );
             return ds?.id;
           })
           .filter(Boolean);
 
         return dsIds;
-      });
-  });
-});
-
-Cypress.Commands.add("apiGetAppIdByName", (appName) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/apps`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const app = response.body.apps.find((app) => app.name === appName);
-        expect(app, `App with name "${appName}" not found`).to.exist;
-        return app.id;
       });
   });
 });
@@ -320,7 +304,7 @@ Cypress.Commands.add(
     resourceType = "app",
     permissions = {},
     resourcesToAdd = [],
-    isAll = true
+    isAll = true,
   ) => {
     // Normalize resourcesToAdd to always be an array
     const normalizedResources = Array.isArray(resourcesToAdd)
@@ -329,9 +313,12 @@ Cypress.Commands.add(
 
     const formatResources = (type, resources, isAll) => {
       if (isAll) return [];
-      return type === "datasource"
-        ? resources.map((id) => ({ dataSourceId: id }))
-        : resources.map((id) => ({ appId: id }));
+      else if (type === "datasource") {
+        return resources.map((id) => ({ dataSourceId: id }));
+      } else if (resourceType === "folder" || resourceType === "module_folder") {
+        return resources.map((id) => ({ folderId: id }));
+      }
+      return resources.map((id) => ({ appId: id }));
     };
 
     const buildPermissionObject = (type, perms, formattedResources) => {
@@ -341,6 +328,15 @@ Cypress.Commands.add(
             canUse: perms.canUse ?? true,
             canConfigure: perms.canConfigure ?? false,
           },
+          resourcesToAdd: formattedResources,
+        };
+      }
+
+      if (type === "folder" || type === "module_folder") {
+        return {
+          canEditFolder: perms.canEditFolder ?? true,
+          canEditApps: perms.canEditApps ?? false,
+          canViewApps: perms.canViewApps ?? false,
           resourcesToAdd: formattedResources,
         };
       }
@@ -362,7 +358,7 @@ Cypress.Commands.add(
       type,
       groupId,
       isAll,
-      permObj
+      permObj,
     ) => {
       const baseBody = { name, groupId, isAll };
       if (isEnterprise) {
@@ -396,8 +392,11 @@ Cypress.Commands.add(
         const isEnterprise = Cypress.env("environment") === "Enterprise";
         const typeMap = {
           app: { type: "app", endpoint: "app" },
+          module: { type: "module", endpoint: "data-source" },
           workflow: { type: "workflow", endpoint: "data-source" },
           datasource: { type: "data_source", endpoint: "data-source" },
+          folder: { type: "folder", endpoint: "folder" },
+          module_folder: { type: "module_folder", endpoint: "module-folder" },
         };
         const { type, endpoint } = typeMap[resourceType] || typeMap.app;
         const url = isEnterprise
@@ -409,12 +408,12 @@ Cypress.Commands.add(
             const formattedResources = formatResources(
               "datasource",
               dsIds,
-              false
+              false,
             );
             const permissionObject = buildPermissionObject(
               type,
               permissions,
-              formattedResources
+              formattedResources,
             );
             const body = buildRequestBody(
               isEnterprise,
@@ -422,7 +421,7 @@ Cypress.Commands.add(
               type,
               groupId,
               false,
-              permissionObject
+              permissionObject,
             );
             sendRequest(url, headers, body, resourceType, name);
           });
@@ -430,12 +429,12 @@ Cypress.Commands.add(
           const formattedResources = formatResources(
             resourceType,
             normalizedResources,
-            isAll
+            isAll,
           );
           const permissionObject = buildPermissionObject(
             type,
             permissions,
-            formattedResources
+            formattedResources,
           );
           const body = buildRequestBody(
             isEnterprise,
@@ -443,13 +442,13 @@ Cypress.Commands.add(
             type,
             groupId,
             isAll,
-            permissionObject
+            permissionObject,
           );
           sendRequest(url, headers, body, resourceType, name);
         }
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -468,8 +467,8 @@ Cypress.Commands.add(
 
           const permissionsToDelete = typesToDelete.length
             ? granularPermissions.filter((perm) =>
-              typesToDelete.includes(perm.type)
-            )
+                typesToDelete.includes(perm.type),
+              )
             : granularPermissions;
 
           permissionsToDelete.forEach((permission) => {
@@ -477,6 +476,10 @@ Cypress.Commands.add(
               app: "app",
               workflow: "app",
               data_source: "data-source",
+              folder: "folder",
+              modules:"data-source",
+              workflow_folder: "workflow-folder",
+              module_folder: "module-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -488,14 +491,14 @@ Cypress.Commands.add(
             }).then((deleteResponse) => {
               expect(deleteResponse.status).to.equal(200);
               cy.log(
-                `Deleted ${permission.type} granular permission: ${permission.name}`
+                `Deleted ${permission.type} granular permission: ${permission.name}`,
               );
             });
           });
         });
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add("apiDeleteAllApps", () => {
@@ -539,14 +542,14 @@ Cypress.Commands.add(
         cy.log("SSO configuration updated successfully.");
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
   "getSsoConfigId",
   (ssoType, workspaceSlug = "my-workspace") => {
     cy.request(
-      `${Cypress.env("server_host")}/api/login-configs/${workspaceSlug}/public`
+      `${Cypress.env("server_host")}/api/login-configs/${workspaceSlug}/public`,
     ).then((response) => {
       const configSection = response.body.sso_configs[ssoType];
       return (
@@ -555,9 +558,8 @@ Cypress.Commands.add(
         null
       );
     });
-  }
+  },
 );
-
 
 Cypress.Commands.add(
   "getOktaAuthorizationCode",
@@ -608,9 +610,8 @@ Cypress.Commands.add(
         Cypress.log({ message: "Authorization code obtained" });
         return code;
       });
-  }
+  },
 );
-
 
 Cypress.Commands.add(
   "exchangeCodeForTokens",
@@ -633,9 +634,8 @@ Cypress.Commands.add(
         Cypress.log({ message: "Tokens obtained successfully" });
         return tokenResp.body;
       });
-  }
+  },
 );
-
 
 Cypress.Commands.add(
   "oidcLogin",
@@ -712,7 +712,7 @@ Cypress.Commands.add(
         });
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add("apiUpdateProfile", ({ firstName, lastName }) => {
@@ -751,7 +751,7 @@ Cypress.Commands.add(
         body: { enableSignUp: state },
       });
     });
-  }
+  },
 );
 Cypress.Commands.add(
   "apiUpdateAutoSSO",
@@ -764,7 +764,7 @@ Cypress.Commands.add(
         body: { automaticSsoLogin: state },
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -776,7 +776,7 @@ Cypress.Commands.add(
     userPassword = "password",
     workspaceName = "My workspace",
     metaData = {},
-    groups = []
+    groups = [],
   ) => {
     let invitationToken, organizationToken;
 
@@ -784,33 +784,45 @@ Cypress.Commands.add(
       const groupArray = Array.isArray(groups) ? groups : [groups];
       const groupIds = [];
 
-      return cy.wrap(groupArray)
+      return cy
+        .wrap(groupArray)
         .each((groupName) => {
-         return cy.apiGetGroupId(groupName).then((id) => {
+          return cy.apiGetGroupId(groupName).then((id) => {
             groupIds.push(id);
           });
         })
         .then(() => {
-          return cy.apiUserInvite(userName, userEmail, userRole, metaData, groupIds).then(()=>{
-            return performOnboarding(userEmail, userPassword, organizationToken);
-          });
+          return cy
+            .apiUserInvite(userName, userEmail, userRole, metaData, groupIds)
+            .then(() => {
+              return performOnboarding(
+                userEmail,
+                userPassword,
+                organizationToken,
+              );
+            });
         });
     } else {
-      return cy.apiUserInvite(userName, userEmail, userRole, metaData, []).then(()=>{
-        return performOnboarding(userEmail, userPassword, organizationToken);
-      })
+      return cy
+        .apiUserInvite(userName, userEmail, userRole, metaData, [])
+        .then(() => {
+          return performOnboarding(userEmail, userPassword, organizationToken);
+        });
     }
 
     function performOnboarding(email, password, orgToken) {
-      return cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `
-      SELECT ou.invitation_token 
+      return cy
+        .task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `
+      SELECT ou.invitation_token
       FROM organization_users ou
       JOIN users u ON u.id = ou.user_id
       WHERE u.email='${email}'
+      AND ou.invitation_token IS NOT NULL
+      ORDER BY ou.created_at DESC
       LIMIT 1;`,
-      })
+        })
         .then((resp) => {
           organizationToken = resp.rows[0]?.invitation_token;
           invitationToken = organizationToken;
@@ -854,7 +866,7 @@ Cypress.Commands.add(
             });
         });
     }
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -889,33 +901,28 @@ Cypress.Commands.add(
         cy.visit(fullUrl);
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
   "apiCreateFolder",
-  (
-    folderName,
-    folderType = "front-end",
-    workspaceId = Cypress.env("workspaceId")
-  ) => {
-    cy.getAuthHeaders().then((headers) => {
-      cy.request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/folders`,
-        headers: headers,
-        body: {
-          name: folderName,
-          type: folderType,
-        },
-      }).then((response) => {
-        expect(response.status).to.equal(201);
-
-        const folderId = response.body.id || response.body.folderId;
-        Cypress.env("createdFolderId", folderId);
-      });
-    });
-  }
+  (folderName, folderType = "front-end") => {
+    return cy.getAuthHeaders().then((headers) =>
+      cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/folders`,
+          headers,
+          body: { name: folderName, type: folderType },
+        })
+        .then((response) => {
+          expect(response.status).to.equal(201);
+          const folderId = response.body.id || response.body.folderId;
+          Cypress.env("createdFolderId", folderId);
+          return response.body;
+        }),
+    );
+  },
 );
 
 Cypress.Commands.add(
@@ -930,7 +937,7 @@ Cypress.Commands.add(
         expect(response.status).to.equal(200);
       });
     });
-  }
+  },
 );
 
 Cypress.Commands.add(
@@ -952,7 +959,7 @@ Cypress.Commands.add(
           });
       });
     });
-  }
+  },
 );
 const defaultEnvPermissionBody = {
   name: "Apps",
@@ -973,7 +980,6 @@ const defaultEnvPermissionBody = {
 Cypress.Commands.add(
   "apiUpdateEnvironmentPermission",
   (groupName, bodyOverrides = {}, permissionName = "Apps") => {
-
     const requestBody = {
       ...defaultEnvPermissionBody,
       ...bodyOverrides,
@@ -983,7 +989,8 @@ Cypress.Commands.add(
       },
     };
 
-    return cy.apiGetGroupId(groupName)
+    return cy
+      .apiGetGroupId(groupName)
       .then((groupId) => {
         return cy.getAuthHeaders().then((headers) => {
           return cy.request({
@@ -995,8 +1002,7 @@ Cypress.Commands.add(
       })
       .then((response) => {
         const permission = response.body.find(
-          (gp) => gp.type === "app"
-            && gp.name === permissionName
+          (gp) => gp.type === "app" && gp.name === permissionName,
         );
 
         expect(permission).to.exist;
@@ -1016,9 +1022,8 @@ Cypress.Commands.add(
         expect(response.status).to.eq(200);
         return response.body;
       });
-  }
+  },
 );
-
 
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   let headers = {};
@@ -1077,7 +1082,7 @@ Cypress.Commands.add(
           return response;
         });
     });
-  }
+  },
 );
 
 Cypress.Commands.add("apiUpdateLicense", (keyType = "valid") => {
@@ -1177,7 +1182,7 @@ Cypress.Commands.add(
           return response.body.organizations;
         });
     });
-  }
+  },
 );
 
 Cypress.Commands.add("apiUpdateWhiteLabeling", (whiteLabelConfig) => {
@@ -1215,10 +1220,10 @@ Cypress.Commands.add("apiDeleteAllWorkspaces", () => {
 });
 
 Cypress.Commands.add("apiGetDefaultWorkspace", () => {
-  return cy.apiGetWorkspaceIDs().then(workspaces => {
-    const defaultWorkspace = workspaces.find(ws => ws.is_default);
+  return cy.apiGetWorkspaceIDs().then((workspaces) => {
+    const defaultWorkspace = workspaces.find((ws) => ws.is_default);
     if (!defaultWorkspace) {
-      throw new Error('No default workspace found');
+      throw new Error("No default workspace found");
     }
     return defaultWorkspace;
   });
@@ -1248,5 +1253,136 @@ Cypress.Commands.add(
           return response.body;
         });
     });
-  }
+  },
 );
+
+Cypress.Commands.add("apiDeleteAllModules", () => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps?page=1&folder=&searchKey=&type=module`,
+      headers,
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const modules = response.body.apps || [];
+      if (modules.length > 0) {
+        cy.wrap(modules).each((module) => {
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/modules/${module.id}`,
+            headers,
+            log: false,
+          }).then((deleteResponse) => {
+            expect(deleteResponse.status).to.equal(200);
+          });
+        });
+      }
+    });
+  });
+});
+
+Cypress.Commands.add("apiCreateModuleFolder", (folderName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folders`,
+        headers,
+        body: { name: folderName, type: "module" },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiGetModuleFolderId", (folderName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/folder-apps?searchKey=&type=module`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const folder = response.body.folders.find((f) => f.name === folderName);
+        if (!folder) throw new Error(`Module folder with name ${folderName} not found`);
+        return folder.id;
+      });
+  });
+});
+
+Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/folders/${folderId}`,
+        headers,
+        body: { name: newName },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        return response.body;
+      });
+  });
+});
+
+
+Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_id: moduleId, folder_id: folderId },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy.request({
+      method: "PUT",
+      url: `${Cypress.env("server_host")}/api/folder-apps/${folderId}`,
+      headers,
+      body: { app_id: moduleId },
+      log: false,
+    });
+  });
+});
+
+Cypress.Commands.add("apiRemoveUserFromGroup", (groupId, email) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const groupUser = response.body.find((gu) => gu.user?.email === email);
+        if (!groupUser) throw new Error(`User ${email} not found in group ${groupId}`);
+        return cy.request({
+          method: "DELETE",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/users/${groupUser.id}`,
+          headers,
+          log: false,
+        });
+      });
+  });
+});

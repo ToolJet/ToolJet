@@ -68,7 +68,7 @@ export class UserRepository extends Repository<User> {
         });
       }
     }
-    
+
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,
@@ -288,6 +288,8 @@ export class UserRepository extends Repository<User> {
           invitationToken: null,
           invitationTokenExpiry: null,
           llmProvider: null,
+          llmModel: null,
+          llmModelContextWindow: null,
           createdAt: null,
           updatedAt: null,
           user,

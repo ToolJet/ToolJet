@@ -4,9 +4,9 @@ import { commonSelectors } from "Selectors/common";
 import {
   importSelectors,
   exportAppModalSelectors,
-} from "Selectors/exportImport";
+} from "Selectors/platform/exportImport";
 import { commonText } from "Texts/common";
-import { exportAppModalText } from "Texts/exportImport";
+import { exportAppModalText } from "Texts/platform/exportImport";
 
 import {
   clickOnExportButtonAndVerify,
@@ -92,7 +92,7 @@ describe("App Export", () => {
       const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
 
       expect(downloadedAppExportFileName).to.contain(
-        data.appName.toLowerCase()
+        data.appName
       );
 
       cy.readFile(filePath).then((appData) => {
@@ -118,7 +118,7 @@ describe("App Export", () => {
       const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
 
       expect(downloadedAppExportFileName).to.contain(
-        data.appName.toLowerCase()
+        data.appName
       );
 
       cy.readFile(filePath).then((appData) => {

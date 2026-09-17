@@ -7,6 +7,7 @@ import * as requestIp from 'request-ip';
 import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -22,14 +23,18 @@ import { SSOConfigs } from '@entities/sso_config.entity';
 import { MetadataUtilService } from '@modules/meta/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions, UserDataSourcePermissions, UserPermissions } from '@modules/ability/types';
+import {
+  UserAppsPermissions,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions,
+} from '@modules/ability/types';
 import { JwtService } from '@nestjs/jwt';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -44,7 +49,7 @@ export class SessionUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
-  ) { }
+  ) {}
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -93,7 +98,8 @@ export class SessionUtilService {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
-          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
+            request?.headers['user-agent'] || 'unknown'
           }`,
           manager
         );
@@ -145,19 +151,6 @@ export class SessionUtilService {
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
       const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
 
-      // Track concurrent users if a new session was created and organization is available
-      if (loggedInUser?.id !== user.id && !isPatLogin && organization?.id) {
-        try {
-          incrementConcurrentUsers({
-            workspaceId: organization.id as string,
-            userId: user.id,
-            userRole: permissionData.admin ? 'admin' : 'member',
-          });
-        } catch (error) {
-          console.error('Error incrementing concurrent users metric:', error);
-        }
-      }
-
       const responsePayload = {
         organizationId: organization?.id,
         organization: organization?.name,
@@ -190,6 +183,7 @@ export class SessionUtilService {
     ssoUserInfo: any;
     appGroupPermissions: UserAppsPermissions;
     dataSourceGroupPermissions: UserDataSourcePermissions;
+    folderGroupPermissions?: UserFolderPermissions;
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
@@ -199,7 +193,7 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }],
+        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }, { resource: MODULES.FOLDER }],
       },
       manager
     );
@@ -209,6 +203,7 @@ export class SessionUtilService {
     const superAdmin = userPermissions.isSuperAdmin;
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    const folderGroupPermissions = userPermissions?.[MODULES.FOLDER];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
 
     if (superAdmin && !role) {
@@ -231,6 +226,7 @@ export class SessionUtilService {
       superAdmin,
       appGroupPermissions,
       dataSourceGroupPermissions,
+      folderGroupPermissions,
       ssoUserInfo,
       metadata: decryptedMetadata,
       role,
@@ -259,6 +255,23 @@ export class SessionUtilService {
 
   getAllGroupsOfUser(user: User, manager: EntityManager): Promise<GroupPermissions[]> {
     return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
+  }
+
+  // Resolves the org's default branch id. Used by the JWT strategy to populate user.branchId
+  // when a request carries no explicit `branch_id` query param. Applies to git and non-git
+  // workspaces alike: git-sync-disabled orgs show no branch on the client, but the server still
+  // resolves the default branch so reads land on the default-branch rows (every org has exactly
+  // one default branch, seeded on creation / backfilled). folder_apps is unaffected — it reads
+  // the raw query param (absent → IS NULL for non-git), not user.branchId.
+  async getDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | null> {
+    if (!organizationId) return null;
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const branch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      return branch?.id ?? null;
+    }, manager);
   }
 
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {
@@ -296,16 +309,6 @@ export class SessionUtilService {
         })
       );
 
-      // Increment active sessions counter
-      try {
-        incrementActiveSessions({
-          userId,
-          sessionType: 'user',
-        });
-      } catch (error) {
-        console.error('Error incrementing active sessions metric:', error);
-      }
-
       return session;
     }, manager);
   }
@@ -315,10 +318,10 @@ export class SessionUtilService {
     const now = new Date();
     return new Date(
       now.getTime() +
-      (this.configService.get<string>('USER_SESSION_EXPIRY')
-        ? this.configService.get<number>('USER_SESSION_EXPIRY')
-        : 14400) *
-      60000
+        (this.configService.get<string>('USER_SESSION_EXPIRY')
+          ? this.configService.get<number>('USER_SESSION_EXPIRY')
+          : 14400) *
+          60000
     );
   }
 
@@ -334,7 +337,8 @@ export class SessionUtilService {
 
     const session: UserSessions = await this.createSession(
       user.id,
-      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        request?.headers['user-agent'] || 'unknown'
       }`,
       manager
     );
@@ -384,9 +388,9 @@ export class SessionUtilService {
         ? currentOrganization
           ? currentOrganization
           : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          })
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
         : null;
 
       const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);

@@ -1,6 +1,6 @@
 const urrl = require('url');
-import { readFileSync } from 'fs';            
-import * as tls from 'tls';                  
+import { readFileSync } from 'fs';
+import * as tls from 'tls';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import {
   App,
@@ -12,9 +12,8 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
   sanitizeSearchParams,
-  sanitizeCookies,                            
-  cookiesToString,                            
-  fetchHttpsCertsForCustomCA,
+  sanitizeCookies,
+  cookiesToString,
   getRefreshedToken,
   getAuthUrl,
   redactHeaders,
@@ -59,16 +58,12 @@ export default class GraphqlQueryService implements QueryService {
     for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
       searchParams.append(key, String(value));
     }
-    const sourceBody = Object.fromEntries(
-      (sourceOptions.body || []).filter(([k]: [string]) => k)
-    );
+    const sourceBody = Object.fromEntries((sourceOptions.body || []).filter(([k]: [string]) => k));
     const mergedJson = { ...sourceBody, ...json };
 
     const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
 
-    const cookieString = cookiesToString(
-      sanitizeCookies(sourceOptions, queryOptions, hasDataSource)
-    );
+    const cookieString = cookiesToString(sanitizeCookies(sourceOptions, queryOptions, hasDataSource));
     if (cookieString) {
       (headers as Record<string, string>)['Cookie'] = cookieString;
     }
@@ -184,17 +179,13 @@ export default class GraphqlQueryService implements QueryService {
 
     if (process.env.NODE_EXTRA_CA_CERTS) {
       'https' in httpsParams
-        ? (httpsParams.https.certificateAuthority =
-            (httpsParams.https?.certificateAuthority || []).concat([
-              ...tls.rootCertificates,
-              readFileSync(process.env.NODE_EXTRA_CA_CERTS),
-            ]))
+        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
+            ...tls.rootCertificates,
+            readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+          ]))
         : (httpsParams = {
             https: {
-              certificateAuthority: [
-                ...tls.rootCertificates,
-                readFileSync(process.env.NODE_EXTRA_CA_CERTS),
-              ].join('\n'),
+              certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
             },
           });
     }

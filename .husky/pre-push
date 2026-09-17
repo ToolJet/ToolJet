@@ -1,0 +1,21 @@
+# Run the affected server tests before pushing (changed-scope, same as CI's run-ci-changed lane).
+# Emergency bypass: git push --no-verify — CI still gates the PR.
+
+# Drain the ref list git writes on stdin; leaving it unread can EPIPE/SIGPIPE the
+# parent git process after a long-running hook, killing the push post-verification.
+cat > /dev/null
+
+# Git sets GIT_DIR/GIT_WORK_TREE for the hook's own process so it resolves against this repo,
+# but that leaks into any test that shells out to git in a throwaway temp repo (e.g. targeted
+# app-deletion specs), redirecting their git commands right back at this repo. Those tests
+# rightly refuse to run rather than risk that — unset before spawning the test process instead.
+unset GIT_DIR GIT_WORK_TREE
+
+# Git hooks run with a minimal environment — put the dev's node/npm on PATH
+# so jest's ts-node config loader can resolve the .ts jest configs.
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  . "$HOME/.nvm/nvm.sh" >/dev/null 2>&1 || true
+fi
+command -v node >/dev/null 2>&1 || export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
+
+npm run ci:changed --silent

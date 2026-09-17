@@ -84,5 +84,4 @@ export class DataQueryFolderMappingRepository extends Repository<DataQueryFolder
       .orderBy('mapping.index', 'ASC')
       .getMany();
   }
-
 }

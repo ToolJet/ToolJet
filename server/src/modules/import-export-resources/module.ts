@@ -12,9 +12,14 @@ import { FeatureAbilityFactory } from './ability/app';
 import { FeatureAbilityFactory as DataSourceFeatureAbility } from './ability/data-source';
 import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class ImportExportResourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { ImportExportResourcesService, ImportExportResourcesController } = await this.getProviders(
       configs,
       'import-export-resources',
@@ -27,7 +32,7 @@ export class ImportExportResourcesModule extends SubModule {
       'services/event.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: ImportExportResourcesModule,
       imports: [
         await EncryptionModule.register(configs),
@@ -37,6 +42,7 @@ export class ImportExportResourcesModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await OrganizationConstantModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport ? [ImportExportResourcesController] : [],
       providers: [
@@ -51,6 +57,6 @@ export class ImportExportResourcesModule extends SubModule {
         EventsService,
       ],
       exports: [ImportExportResourcesService, AppImportExportService],
-    };
+    });
   }
 }

@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class DisablePublicAppsByDefault1784399400123 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // "Make application public" is now gated behind the appPublic license entitlement
+    // "Make application public" is now gated behind the publicApp license entitlement
     // (Team/Enterprise plans). Reset every existing app to private so that, going forward,
     // end-user access is governed solely by user-group permissions. Organizations with the
     // entitlement can re-enable sharing per app from the editor.

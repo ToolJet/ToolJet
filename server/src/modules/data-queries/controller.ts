@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { DataQueriesService } from './service';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSource, DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
@@ -7,7 +8,13 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import {
+  CreateDataQueryDto,
+  ListTablesDto,
+  UpdateDataQueryDto,
+  UpdateSourceDto,
+  UpdatingReferencesOptionsDto,
+} from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
@@ -21,6 +28,7 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
+import { GitSyncQueryEditGuard } from './guards/git-sync-query-edit.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -45,7 +53,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
@@ -64,7 +73,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Patch(':id/versions/:versionId')
   async updateDataQuery(
@@ -92,7 +102,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
   async delete(@Param('id') dataQueryId) {
@@ -106,7 +117,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    AppScopedThrottlerGuard
   )
   @Post(':id/versions/:versionId/run/:environmentId')
   runQueryOnBuilder(
@@ -134,7 +146,7 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
   @Post(':id/run')
   async runQuery(
     @User() user: UserEntity,
@@ -153,9 +165,10 @@ export class DataQueriesController implements IDataQueriesController {
     @User() user: UserEntity,
     @DataSource() dataSource: DataSourceEntity,
     @Param('environmentId') environmentId,
+    @Query('branch_id') branchId?: string,
     @Query() listTablesOptions?: ListTablesDto
   ) {
-    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, listTablesOptions);
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, branchId, listTablesOptions);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)

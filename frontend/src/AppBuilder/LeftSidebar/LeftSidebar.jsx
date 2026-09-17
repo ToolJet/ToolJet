@@ -10,10 +10,12 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import DependencyViewer from './Dependencies/DependencyViewer';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints } from 'lucide-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
@@ -25,6 +27,17 @@ import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+
+// Human names for the error-boundary label/location of each sidebar panel.
+const LEFT_SIDEBAR_PANEL_LABELS = {
+  page: 'Inspector',
+  inspect: 'Inspector',
+  tooljetai: 'AI chat',
+  apphistory: 'App history',
+  libraries: 'Libraries',
+  debugger: 'Debugger',
+  settings: 'Global settings',
+};
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -77,7 +90,13 @@ export const BaseLeftSidebar = ({
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
-    if (item === selectedSidebarItem && !pinned) {
+    // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
+    // themselves (the AI chat's X, and every other onClose handler) call toggleLeftSidebar(false)
+    // without clearing selectedSidebarItem, so it still points at that panel. Without the
+    // isSidebarOpen check the next click matches this branch and closes an already-closed sidebar,
+    // making the nav button look permanently disabled — the AI chat could not be reopened at all
+    // once dismissed mid-generation.
+    if (item === selectedSidebarItem && isSidebarOpen && !pinned) {
       return toggleLeftSidebar(false);
     }
     if (!isSidebarOpen) toggleLeftSidebar(true);
@@ -102,6 +121,21 @@ export const BaseLeftSidebar = ({
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
+    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
+    return (
+      // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
+      <FallbackBoundary
+        label={panelLabel}
+        location={`LeftSideBar ${panelLabel}`}
+        darkMode={darkMode}
+        resetKeys={[selectedSidebarItem]}
+      >
+        {renderSelectedPanel()}
+      </FallbackBoundary>
+    );
+  };
+
+  const renderSelectedPanel = () => {
     switch (selectedSidebarItem) {
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
@@ -116,11 +150,13 @@ export const BaseLeftSidebar = ({
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
+        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
+      case 'dependencies':
+        return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
         return (
           <GlobalSettings
@@ -166,6 +202,18 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('debugger')}
         >
           <Bug width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          icon="dependencies"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('dependencies')}
+          className={`left-sidebar-item left-sidebar-layout`}
+          tip="Dependencies"
+          ref={setSideBarBtnRefs('dependencies')}
+        >
+          <Waypoints width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
       </>
     );
@@ -245,7 +293,10 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
+          if (
+            ['tooljetai', 'inspect', 'debugger', 'settings', 'libraries', 'dependencies'].includes(selectedSidebarItem)
+          )
+            return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

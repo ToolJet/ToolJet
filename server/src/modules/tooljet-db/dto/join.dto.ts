@@ -1,4 +1,15 @@
-import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty, Matches, Validate, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  ValidateNested,
+  IsIn,
+  IsOptional,
+  IsObject,
+  IsNotEmpty,
+  Matches,
+  Validate,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { SQLInjectionValidator } from './index';
 
@@ -19,7 +30,8 @@ class Field {
   @IsString()
   @IsNotEmpty({ message: '::Columns names for join not selected' })
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
-    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+    message:
+      '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   name: string;
@@ -62,7 +74,8 @@ class ConditionField {
   @IsString()
   @IsOptional() // present only when type is column
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
-    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+    message:
+      '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;
@@ -122,7 +135,8 @@ class GroupBy {
   @IsString()
   @IsNotEmpty()
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
-    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+    message:
+      '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;
@@ -132,7 +146,8 @@ class Order {
   @IsString()
   @IsNotEmpty({ message: '::Sort column not selected' })
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
-    message: '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+    message:
+      '::Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
   })
   @Validate(SQLInjectionValidator, { message: '::Column name does not support special characters' })
   columnName: string;

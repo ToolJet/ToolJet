@@ -37,7 +37,7 @@ export abstract class AbilityGuard implements CanActivate {
   protected setResourceObject(resource: any): void {
     this.resource = resource;
   }
-  protected getResource(): ResourceDetails | ResourceDetails[] {
+  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
     return;
   }
 
@@ -150,7 +150,7 @@ export abstract class AbilityGuard implements CanActivate {
         return false;
       }
 
-      const resources = this.getResource();
+      const resources = this.getResource(request);
       const resourceArray: ResourceDetails[] = Array.isArray(resources) ? resources : resources ? [resources] : [];
 
       if (user) {
@@ -171,9 +171,14 @@ export abstract class AbilityGuard implements CanActivate {
         const resourceId = request.tj_resource_id;
 
         // Validate all features against resource if any
-        if (!features.every((feature) => ability.can(feature, this.getSubjectType(), resourceId || undefined))) {
+        const forbiddenFeature = features.find(
+          (feature: string) => !ability.can(feature, this.getSubjectType(), resourceId || undefined)
+        );
+
+        if (forbiddenFeature) {
+          const errorMessage = this.getForbiddenMessage(forbiddenFeature, resourceId);
           throw new ForbiddenException({
-            message: 'You do not have permission to access this resource',
+            message: errorMessage || 'You do not have permission to access this resource',
             organizationId: app?.organizationId,
           });
         }
@@ -196,5 +201,19 @@ export abstract class AbilityGuard implements CanActivate {
         this.transactionLogger.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Result: Success`);
       }
     }
+  }
+
+  protected getForbiddenMessage(feature: string, resourceId): string {
+    const messageGroups: { message: string; features: string[] }[] = [
+      {
+        message: 'You do not have access to perform this action',
+        features: ['CREATE_FOLDER_APP', 'DELETE_FOLDER_APP', 'DELETE_FOLDER'],
+      },
+      // Add more message groups here later
+    ];
+
+    const match = messageGroups.find((group) => group.features.includes(feature));
+
+    return match?.message;
   }
 }

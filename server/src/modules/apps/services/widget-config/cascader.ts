@@ -49,7 +49,7 @@ export const cascaderConfig = {
     value: {
       type: 'code',
       displayName: 'Default value',
-       validation: {
+      validation: {
         schema: { type: 'any' },
       },
       conditionallyRender: {

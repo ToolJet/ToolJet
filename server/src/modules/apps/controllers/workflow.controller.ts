@@ -1,4 +1,5 @@
 import { App as AppEntity } from '@entities/app.entity';
+import { User as UserEntity } from '@entities/user.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
@@ -7,6 +8,7 @@ import { decamelizeKeys } from 'humps';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { ValidAppGuard } from '../guards/valid-app.guard';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
+import { User } from '@modules/app/decorators/user.decorator';
 import { WorkflowService } from '../services/workflow.service';
 import { IWorkflowController } from '../interfaces/IControllerWorkflow';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -20,8 +22,8 @@ export class WorkflowController implements IWorkflowController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/workflows')
-  async fetchWorkflows(@App() app: AppEntity) {
-    const result = await this.workflowService.getWorkflows(app.organizationId);
+  async fetchWorkflows(@App() app: AppEntity, @User() user: UserEntity) {
+    const result = await this.workflowService.getWorkflows(app.organizationId, user);
 
     return decamelizeKeys({ workflows: result });
   }

@@ -122,7 +122,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     appsService
       .exportResource(requestBody, app.type)
       .then((data) => {
-        const appName = (app.appName || app.name).replace(/\s+/g, '-').toLowerCase();
+        const appName = (app.appName || app.name).replace(/\s+/g, '-');
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
         const json = JSON.stringify(data, null, 2);
@@ -187,7 +187,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 <InputRadioField
                   versionId={currentVersion?.id}
                   data-cy={`${currentVersion?.id.toLowerCase().replace(/\s+/g, '-')}-value`}
-                  versionName={currentVersion?.name}
+                  versionName={currentVersion?.display_name || currentVersion?.displayName || currentVersion?.name}
                   versionCreatedAt={currentVersion?.created_at || currentVersion?.createdAt}
                   checked={versionId === currentVersion?.id}
                   setVersionId={setVersionId}
@@ -205,9 +205,9 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                         <InputRadioField
                           versionId={version.id}
                           data-cy={`${version.id.toLowerCase().replace(/\s+/g, '-')}-value`}
-                          versionName={version.name}
+                          versionName={version.display_name || version.displayName || version.name}
                           versionCreatedAt={version.createdAt || version.created_at}
-                          key={version.name}
+                          key={version.display_name || version.displayName || version.name}
                           checked={versionId === version.id}
                           setVersionId={setVersionId}
                           className="other-version-wrap"

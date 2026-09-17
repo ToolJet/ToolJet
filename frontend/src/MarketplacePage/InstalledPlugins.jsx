@@ -4,7 +4,7 @@ import { pluginsService, marketplaceService, globalDatasourceService } from '@/_
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog, SearchBox } from '@/_components';
 import Icon from '@/_ui/Icon/SolidIcons';
 import config from 'config';
 import Modal from '@/HomePage/Modal';
@@ -13,6 +13,9 @@ export const InstalledPlugins = () => {
   const [allPlugins, setAllPlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
+  const [queryString, setQueryString] = React.useState('');
+  const [filteredPlugins, setFilteredPlugins] = React.useState([]);
+  const [suggestingDataSource, setSuggestingDataSource] = React.useState(false);
   const ENABLE_MARKETPLACE_DEV_MODE = window.public_config?.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   React.useEffect(() => {
@@ -44,6 +47,16 @@ export const InstalledPlugins = () => {
     setInstalledPlugins(data);
   };
 
+  const handleSearch = (e) => {
+    const searchQuery = e.target.value;
+    setQueryString(searchQuery);
+    const filtered = installedPlugins.filter((plugin) => plugin.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    setSuggestingDataSource(filtered.length === 0);
+    setFilteredPlugins(filtered);
+  };
+
+  const displayedInstalledPlugins = queryString ? filteredPlugins : installedPlugins;
+
   return (
     <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
       {fetching && (
@@ -52,27 +65,52 @@ export const InstalledPlugins = () => {
         </div>
       )}
       {!fetching && allPlugins.length > 0 && (
-        <div className="row row-cards">
-          {installedPlugins?.map((plugin) => {
-            const marketplacePlugin = allPlugins?.find((m) => m.id === plugin.pluginId);
-            const isUpdateAvailable = marketplacePlugin?.version !== plugin.version;
-            return (
-              <InstalledPlugins.Plugin
-                key={plugin.id}
-                plugin={plugin}
-                marketplacePlugin={marketplacePlugin}
-                fetchPlugins={fetchPlugins}
-                isDevMode={ENABLE_MARKETPLACE_DEV_MODE}
-                isUpdateAvailable={isUpdateAvailable}
+        <>
+          {installedPlugins?.length > 0 && (
+            <div className="marketplace-search-holder">
+              <SearchBox
+                dataCy="installed-plugins"
+                className="border-0"
+                placeholder="Search installed plugins"
+                width="100%"
+                callBack={handleSearch}
+                onClearCallback={() => {
+                  setQueryString('');
+                  setSuggestingDataSource(false);
+                }}
+                initialValue={queryString}
               />
-            );
-          })}
-          {!fetching && installedPlugins?.length === 0 && (
-            <div className="empty">
-              <p className="empty-title">No plugins added. Please add a plugin from the Marketplace.</p>
             </div>
           )}
-        </div>
+          {suggestingDataSource ? (
+            <center className="marketplace-empty-state">
+              <p className="mt-2 tj-text-lg font-weight-500 tj-text">{`No results for "${queryString}"`}</p>
+              <img src="assets/images/icons/no-results.svg" width="200" height="200" />
+            </center>
+          ) : (
+            <div className="row row-cards">
+              {displayedInstalledPlugins?.map((plugin) => {
+                const marketplacePlugin = allPlugins?.find((m) => m.id === plugin.pluginId);
+                const isUpdateAvailable = marketplacePlugin?.version !== plugin.version;
+                return (
+                  <InstalledPlugins.Plugin
+                    key={plugin.id}
+                    plugin={plugin}
+                    marketplacePlugin={marketplacePlugin}
+                    fetchPlugins={fetchPlugins}
+                    isDevMode={ENABLE_MARKETPLACE_DEV_MODE}
+                    isUpdateAvailable={isUpdateAvailable}
+                  />
+                );
+              })}
+              {installedPlugins?.length === 0 && (
+                <div className="empty">
+                  <p className="empty-title">No plugins added. Please add a plugin from the Marketplace.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
