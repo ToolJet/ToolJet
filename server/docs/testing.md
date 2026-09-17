@@ -397,3 +397,5 @@ JSDoc immediately before the outermost `describe`. Both e2e and unit tests use `
 - Never abbreviate `data_source` as `ds`
 - Use seed helpers, not inline entity construction
 - Tests should read like documentation — if a describe or it is opaque, rewrite it
+
+<!-- coverage gate probe: markdown edit alongside code -->
