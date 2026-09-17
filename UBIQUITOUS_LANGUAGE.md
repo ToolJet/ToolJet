@@ -135,12 +135,15 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 |------|-----------|-----------------|
 | **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
 | **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (reserve for component-level interactions) |
-| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated | — |
+| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated, waiting | — |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
 | **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | — |
 | **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | — |
 | **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | — |
 | **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
+| **Human Node** | A workflow node that pauses a run to await a person's decision (custom outcomes) and optional structured input; the run suspends until resolved via the approval API (`type: 'human'`, EE feature) | HITL node |
+| **Approval Request** | A pending decision for a suspended workflow run — one per (execution, node), resolved by `token` via the approval API (`WorkflowApprovalRequest`, `workflow_approval_requests`) | — |
+| **Waiting** (execution status) | Non-terminal status of a workflow execution suspended at a **Human Node**, awaiting input (`status='waiting'`, `executed=false`) | — |
 
 ## AI Features
 
@@ -194,6 +197,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - A **Global Data Source** is shared across all **Apps** in a **Workspace**; an **App-Level Data Source** belongs to one **App**
 - An **Environment** (dev/staging/prod) holds per-environment **Data Source** configurations and **Workspace Constant** values
 - A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request** resolved by token via the approval API
 - A **Plan** determines the **License Terms**, which gate **Features** via **Feature Flags**
 - A **Plugin** backs a **Data Source** type; **Marketplace Plugins** extend the built-in set
 

@@ -5,10 +5,12 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 ## Domain terms
 - **Trigger** — how an execution starts: `WORKFLOW_TRIGGER_TYPE` = `manual` | `schedule` | `webhook` (`types/index.ts`). Carried in job `ExecutionMetadata.triggeredBy`.
 - **Event** — execution *lifecycle* progress, distinct from trigger: `WORKFLOW_EXECUTION_STATUS` = `triggered/running/completed/error/terminated` (`constants/index.ts`), emitted via `job.updateProgress` and streamed to clients over SSE by `WorkflowStreamService` (BullMQ QueueEvents / Redis pub-sub).
-- **Execution** — `WorkflowExecution` entity (`@entities/workflow_execution.entity.ts`): one run of an app version; `executed` bool, `status` string, JSON `logs`, `startNodeId`, executing user. DB `status` stores `success/failure/terminated`; frontend wants `completed/failed/terminated` — mapped by `mapDbStatusToDisplayState` (`constants/queue-config.ts`).
+- **Execution** — `WorkflowExecution` entity (`@entities/workflow_execution.entity.ts`): one run of an app version; `executed` bool, `status` string, JSON `logs`, `startNodeId`, executing user. DB `status` stores `success/failure/terminated` (plus `waiting` for a run suspended at a Human node — non-terminal, `executed` stays false); frontend wants `completed/failed/terminated`/`waiting` — mapped by `mapDbStatusToDisplayState` (`constants/queue-config.ts`).
 - **Execution Node / Edge** — `WorkflowExecutionNode` / `WorkflowExecutionEdge`: per-run snapshot of each graph node (definition, `idOnWorkflowDefinition`, `executed`, `result`, `state`).
 - **Bundle** — `WorkflowBundle` entity: compiled dependency bundle per app version. `language` js|python, deps as JSON string (js) or requirements.txt text (python), `bundleBinary` bytea (`bundleContent` deprecated), `status`: `none | building | ready | failed`.
 - **Response Node** — terminal node that writes the HTTP response for webhook-triggered runs (custom status code, may be fx-evaluated); `processResponseNode` + `buildResponseNodeMetadata` in the executions service.
+- **Human node** (`type: 'human'`) — a node that suspends the run to await a person's decision (custom named outcomes + optional structured input). EE-only; handled by `processHumanNode` in the executions service.
+- **Approval request** — `WorkflowApprovalRequest` (`@entities/workflow_approval_request.entity.ts`, table `workflow_approval_requests`): one `pending` row per (execution, node) enforced by a partial unique index. `token` is the bearer secret for the public resolve endpoint; holds `approversSnapshot`, `resolvedOutcome`, `input` (jsonb), `expiresAt`.
 
 ## Key files (CE path; EE twin under `server/ee/workflows/` unless noted)
 | Concern | File |
@@ -41,6 +43,13 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - Schedules are BullMQ job schedulers keyed by schedule id; DB (`workflow_schedules`) is source of truth, reconciled on worker boot by `ScheduleBootstrapService`. Cron validated with `cron-validator`.
 - Job payload carries a serialized `WorkflowExecution` + dto; default params come from `appVersion.definition.defaultParams` merged with call params at process time.
 - Webhook endpoint is versioned (`version: '2'`) and throttled via `WEBHOOK_THROTTLE_TTL`/`WEBHOOK_THROTTLE_LIMIT`.
+
+## Human-in-the-loop (HITL)
+- **Suspend/resume.** At a Human node with no decision in state, `processHumanNode` creates the approval request, dispatches the notification, schedules timeout timers, calls `saveSuspendedStatus` (`status='waiting'`, `executed=false`), disposes the shared isolate, and throws `WorkflowSuspendedSignal(executionId, requestId)`; the processor catches it and completes the job as `waiting` (not failed). Resolve (`controllers/workflow-approvals.controller.ts` → `WorkflowApprovalsService.resolve`) re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision }, requestId })` under a **distinct** resume jobId `${executionId}:resume:${requestId}` (the original completed job is retained by `removeOnComplete`). On resume the Human node re-runs with the decision, marks every non-chosen outcome edge `skipped` (same mechanism as if-condition), and the run continues. Logs accumulate across the pause; resolve emits an `auditLogEntry`.
+- **Timeout.** Dedicated `workflow-approval-timeout` queue holds delayed deadline + reminder jobs (`constants/index.ts`); `ApprovalTimeoutBootstrapService` re-arms pending timers on worker boot (per-item isolation). On deadline the processor calls `expire()` (atomic conditional update on `status='pending'`); per node config the run fails or branches to a timeout outcome.
+- **Schedule overlap guard.** Runs carry `schedule_id`; the schedule processor skips enqueuing while a prior run of the same schedule is non-terminal (`waiting` counts as non-terminal) — a schedule cannot stack behind a run awaiting input.
+- **Gating & files (EE):** `FEATURE_KEY.HUMAN_IN_THE_LOOP`; `services/workflow-approvals.service.ts`, `services/workflow-approval-timeout.service.ts`, `processors/workflow-approval-timeout.processor.ts`, `services/approval-timeout-bootstrap.service.ts`, `controllers/workflow-approvals.controller.ts`, plus `processHumanNode`/`saveSuspendedStatus` in `services/workflow-executions.service.ts`.
+- **Nested chains** (a sub-workflow suspending its parent, spec §7) are a **separate follow-up plan** — not implemented here.
 
 ## Related modules
 - `apps` — workflow is an App (`APP_TYPES.WORKFLOW`); versions/environments come from apps/versions modules.
