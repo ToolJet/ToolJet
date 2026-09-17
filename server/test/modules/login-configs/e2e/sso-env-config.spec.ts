@@ -796,6 +796,125 @@ describe('LoginConfigsController', () => {
       });
     });
 
+    describe('lazy workspace auto-enable (login-page load, no restart)', () => {
+      const LAZY_ORG_SLUG = 'lazy-auto-enable-test-org';
+      let lazyOrgId: string;
+
+      const waitUntil = async (predicate: () => Promise<boolean>, timeoutMs = 2000, intervalMs = 50) => {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+          if (await predicate()) return;
+          await new Promise((resolve) => setTimeout(resolve, intervalMs));
+        }
+        throw new Error('waitUntil: condition not met within timeout');
+      };
+
+      beforeEach(async () => {
+        const samlMetadata = JSON.parse(baselineWorkspaceSamlConfig)[TEST_ORG_SLUG].SAML_IDP_METADATA;
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'lazy-client-1',
+              OIDC_CLIENT_SECRET: 'lazy-secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'lazy-first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        process.env.WORKSPACE_SAML_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: { SAML_IDP_METADATA: samlMetadata, SAML_NAME: 'Lazy SAML' },
+        });
+        process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: {
+            LDAP_HOST_NAME: 'localhost',
+            LDAP_PORT: '389',
+            LDAP_BASE_DN: 'dc=example,dc=com',
+            LDAP_NAME: 'Lazy LDAP',
+          },
+        });
+
+        await app.get(OrganizationEnvUtilService).initialize();
+
+        const { organization } = await createUser(app, {
+          organizationName: 'Lazy Auto Enable Org',
+          email: 'lazy-auto-enable@tooljet.io',
+        });
+        lazyOrgId = organization.id;
+        await getEntityRepository(Organization).update(lazyOrgId, { slug: LAZY_ORG_SLUG });
+      });
+
+      afterEach(async () => {
+        process.env.WORKSPACE_OIDC_CONFIG = baselineWorkspaceOidcConfig;
+        process.env.WORKSPACE_SAML_CONFIG = baselineWorkspaceSamlConfig;
+        process.env.WORKSPACE_LDAP_CONFIG = baselineWorkspaceLdapConfig;
+        await ssoConfigsRepository.delete({ organizationId: lazyOrgId });
+        await getEntityRepository(Organization).delete(lazyOrgId);
+      });
+
+      it('should auto-enable SAML/LDAP/OIDC the first time the login page reads org details — no restart involved', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+
+        await waitUntil(async () => {
+          const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+          const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+          const oidc = await ssoConfigsRepository.findOne({
+            where: { organizationId: lazyOrgId, sso: SSOType.OPENID },
+          });
+          return !!saml?.enabled && !!ldap?.enabled && !!oidc?.enabled;
+        });
+
+        const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+        const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+        const oidc = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.OPENID } });
+
+        expect(saml?.useEnvConfig).toBe(true);
+        expect(ldap?.useEnvConfig).toBe(true);
+        expect(oidc?.useEnvConfig).toBe(true);
+        expect(saml?.enabled).toBe(true);
+        expect(ldap?.enabled).toBe(true);
+        expect(oidc?.enabled).toBe(true);
+      });
+
+      it('should auto-enable when called with the workspace slug — the actual param AuthRoute.jsx sends, not a UUID', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(LAZY_ORG_SLUG);
+
+        await waitUntil(async () => {
+          const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+          const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+          const oidc = await ssoConfigsRepository.findOne({
+            where: { organizationId: lazyOrgId, sso: SSOType.OPENID },
+          });
+          return !!saml?.enabled && !!ldap?.enabled && !!oidc?.enabled;
+        });
+
+        const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+        const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+        const oidc = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.OPENID } });
+
+        expect(saml?.enabled).toBe(true);
+        expect(ldap?.enabled).toBe(true);
+        expect(oidc?.enabled).toBe(true);
+      });
+
+      it('should not re-attempt (and re-hit the IdP) on every request within the cooldown window', async () => {
+        const discoverSpy = jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+        await waitUntil(async () => discoverSpy.mock.calls.length > 0);
+        const callsAfterFirst = discoverSpy.mock.calls.length;
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(discoverSpy.mock.calls.length).toBe(callsAfterFirst);
+      });
+    });
+
     describe('workspace config shape enforcement', () => {
       afterEach(async () => {
         process.env.WORKSPACE_LDAP_CONFIG = baselineWorkspaceLdapConfig;
