@@ -10,6 +10,7 @@ export interface ManifestProp {
   inspector?: string;
   enumValues?: string[]; // only present when type === 'enumeration'
   enumLabels?: Record<string, string>; // only present when type === 'enumeration'
+  section?: string; // groups this prop into an Inspector accordion section by name
 }
 
 export interface ManifestEvent {
@@ -163,6 +164,7 @@ function walkComponentDeclaration(
               const label = getStringProp(optionsArg, 'label');
               const description = getStringProp(optionsArg, 'description');
               const inspector = getStringProp(optionsArg, 'inspector');
+              const section = getStringProp(optionsArg, 'section');
               const initialValue = getPropNode(optionsArg, 'initialValue');
               const enumDef = getPropNode(optionsArg, 'enumDefinition'); // useStateEnumeration only
               const enumLabelsNode = getPropNode(optionsArg, 'enumLabels'); // useStateEnumeration only
@@ -198,6 +200,7 @@ function walkComponentDeclaration(
                   ...(inspector ? { inspector } : {}),
                   ...(enumValues ? { enumValues } : {}),
                   ...(enumLabels ? { enumLabels } : {}),
+                  ...(section ? { section } : {}),
                 });
               }
             }
