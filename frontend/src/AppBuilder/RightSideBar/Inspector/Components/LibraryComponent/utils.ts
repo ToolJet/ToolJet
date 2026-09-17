@@ -7,6 +7,14 @@ export const filterVisibleProps = (props: ManifestProp[]): ManifestProp[] =>
 export const formatRevisionLabel = (revision: string | undefined): string | undefined =>
   revision?.startsWith?.('dev:') ? 'Dev preview' : revision;
 
+// Static widget-config properties (e.g. visibility) — same section every other widget's
+// DefaultComponent.jsx panel groups into "Additional Actions". Kept separate from the
+// manifest-driven Properties list so dynamic CCL props never crowd these out.
+export const additionalActionProps = (componentMeta: { properties?: Record<string, { section?: string }> }): string[] =>
+  Object.entries(componentMeta.properties ?? {})
+    .filter(([, prop]) => prop.section === 'additionalActions')
+    .map(([key]) => key);
+
 // Schema types validate() actually understands — anything else gets no validation
 // rather than a broken one.
 const VALIDATABLE_TYPES = new Set(['string', 'number', 'object', 'array']);

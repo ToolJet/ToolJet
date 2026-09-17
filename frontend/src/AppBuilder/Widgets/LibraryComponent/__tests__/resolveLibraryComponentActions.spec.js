@@ -2,6 +2,7 @@ import {
   getLibraryComponentIdentity,
   resolveManifestActions,
   resolveLibraryComponentActions,
+  mergeStaticAndDynamicActions,
 } from '../../libraryComponentRevision';
 import { buildManifestCacheKey } from '@/_helpers/customComponentLibrariesStoreUtils';
 
@@ -121,5 +122,21 @@ describe('resolveLibraryComponentActions', () => {
 
   it('[LibraryComponent-RESOLVE-004] returns [] when there is no pin for the library at all', () => {
     expect(resolveLibraryComponentActions(componentDef(), manifests, {})).toEqual([]);
+  });
+});
+
+describe('mergeStaticAndDynamicActions', () => {
+  // Break this catches: the bug this closes — EventManager returning only the manifest's
+  // actions for a LibraryComponent, silently dropping static widget-config actions like
+  // setVisibility from the "Control Component" action picker.
+  it('[LibraryComponent-MERGEACTIONS-001] keeps static actions and appends dynamic ones after them', () => {
+    const staticActions = [{ handle: 'setVisibility', displayName: 'Set visibility', params: [] }];
+    const dynamicActions = [{ handle: 'reset', displayName: 'reset', params: [] }];
+    expect(mergeStaticAndDynamicActions(staticActions, dynamicActions)).toEqual([...staticActions, ...dynamicActions]);
+  });
+
+  it('[LibraryComponent-MERGEACTIONS-002] returns just the static actions when there are no dynamic ones', () => {
+    const staticActions = [{ handle: 'setVisibility', displayName: 'Set visibility', params: [] }];
+    expect(mergeStaticAndDynamicActions(staticActions, [])).toEqual(staticActions);
   });
 });

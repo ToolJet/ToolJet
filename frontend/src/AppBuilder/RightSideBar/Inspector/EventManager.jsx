@@ -3,7 +3,10 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import { resolveLibraryComponentActions } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import {
+  mergeStaticAndDynamicActions,
+  resolveLibraryComponentActions,
+} from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import {
   Popover,
@@ -234,15 +237,18 @@ export const EventManager = ({
   }
 
   function resolveComponentActions(componentId, componentDef) {
-    if (componentDef?.component?.component === 'LibraryComponent') {
-      // libraryManifests is real Zustand state, so this re-evaluates (and the open action
-      // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
-      return resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
-    }
     const targetComponentMeta = componentTypes.find(
       (componentType) => componentDef?.component?.component === componentType.component
     );
-    return targetComponentMeta?.actions ?? [];
+    const staticActions = targetComponentMeta?.actions ?? [];
+
+    if (componentDef?.component?.component === 'LibraryComponent') {
+      // libraryManifests is real Zustand state, so this re-evaluates (and the open action
+      // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
+      const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
+      return mergeStaticAndDynamicActions(staticActions, dynamicActions);
+    }
+    return staticActions;
   }
 
   function getComponentOptionsOfComponentsWithActions(componentType = '') {

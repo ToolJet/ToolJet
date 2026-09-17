@@ -83,6 +83,13 @@ export const resolveManifestActions = (
   }));
 };
 
+// Dynamic (manifest) actions are appended after static ones (e.g. setVisibility), never
+// replacing them.
+export const mergeStaticAndDynamicActions = (
+  staticActions: ResolvedAction[],
+  dynamicActions: ResolvedAction[]
+): ResolvedAction[] => [...staticActions, ...dynamicActions];
+
 // Resolves a LibraryComponent's actions from the shared manifest cache for an arbitrary
 // component definition — e.g. EventManager, which needs this for whatever component an
 // event targets, not just the one it's currently rendering. Read-only: the manifest must

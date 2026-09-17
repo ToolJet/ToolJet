@@ -11,14 +11,22 @@ export const libraryComponentConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
-  events: {},
-  styles: {
+  properties: {
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+  },
+  events: {},
+  styles: {
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
@@ -28,7 +36,22 @@ export const libraryComponentConfig = {
       },
     },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -39,10 +62,11 @@ export const libraryComponentConfig = {
       correlationId: { value: '' },
       libraryName: { value: '' },
       componentName: { value: '' },
+      visibility: { value: '{{true}}' },
+      loadingState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

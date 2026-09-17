@@ -3,10 +3,11 @@ import React, { useMemo } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '@/AppBuilder/RightSideBar/Inspector/inspectorConstants';
 import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
-import { buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel } from './utils';
+import { additionalActionProps, buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel } from './utils';
 
 import type { LibraryComponentPropertiesProps } from './types';
 
@@ -46,7 +47,11 @@ export const LibraryComponentProperties = ({
 
   const eventMetaDefinition = useMemo(() => buildEventMetaDefinition(componentMeta, events), [componentMeta, events]);
 
-  const items: { title: string; isOpen: boolean; children: React.ReactNode }[] = [];
+  // Static widget-config properties (e.g. visibility) — never come from the manifest, so
+  // they must be rendered on top of it here, not folded into visibleProps.
+  const staticProps = additionalActionProps(componentMeta);
+
+  const items: { id?: string; title: string; isOpen: boolean; children: React.ReactNode }[] = [];
 
   // Identity — read-only context (picker UX arrives with F5's revision picker).
   items.push({
@@ -112,6 +117,32 @@ export const LibraryComponentProperties = ({
           darkMode={darkMode}
           pages={pages}
         />
+      ),
+    });
+  }
+
+  if (staticProps.length > 0) {
+    items.push({
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+      title: 'Additional Actions',
+      isOpen: true,
+      children: (
+        <>
+          {staticProps.map((property) =>
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              allComponents,
+              darkMode,
+              (componentMeta.properties as Record<string, { placeholder?: string }>)?.[property]?.placeholder
+            )
+          )}
+        </>
       ),
     });
   }

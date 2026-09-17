@@ -1,4 +1,4 @@
-import { fieldMeta } from '../utils';
+import { fieldMeta, additionalActionProps } from '../utils';
 
 describe('fieldMeta', () => {
   it('[LibraryComponent-FIELDMETA-001] gives a boolean prop a boolean schema', () => {
@@ -54,5 +54,26 @@ describe('fieldMeta', () => {
 
   it('[LibraryComponent-FIELDMETA-007] omits defaultValue when the manifest declares none', () => {
     expect(fieldMeta({ name: 'label', type: 'string' }).validation).toEqual({ schema: { type: 'string' } });
+  });
+});
+
+describe('additionalActionProps', () => {
+  it('[LibraryComponent-ADDITIONALACTIONS-001] picks out properties marked section: additionalActions', () => {
+    const componentMeta = {
+      properties: {
+        libraryId: { section: 'meta' },
+        visibility: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta)).toEqual(['visibility']);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-002] returns an empty list when no property is in that section', () => {
+    const componentMeta = { properties: { libraryId: { section: 'meta' } } };
+    expect(additionalActionProps(componentMeta)).toEqual([]);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-003] returns an empty list when componentMeta has no properties', () => {
+    expect(additionalActionProps({})).toEqual([]);
   });
 });

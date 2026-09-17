@@ -115,7 +115,6 @@ function renderWrapped({ properties = {}, styles = {}, others = {}, currentMode 
     ...properties,
   });
   definition.component.definition.styles = {
-    visibility: binding('{{true}}'),
     boxShadow: binding('0px 0px 0px 0px #00000040'),
     ...styles,
   };
@@ -181,17 +180,23 @@ describe('LibraryComponent integration', () => {
     expect(screen.getByText('Slot')).toBeInTheDocument();
   });
 
-  test('[LibraryComponent-COMBO-003] visibility: false collapses the Slot placeholder the same as a configured instance', () => {
+  test('[LibraryComponent-COMBO-003] visibility: false collapses the Slot placeholder the same as a configured instance', async () => {
     // Break this catches: the Slot branch bypassing WidgetWrapper's visibility
     // collapse (e.g. rendering at full height regardless of `visibility`), which
     // would make an intentionally-hidden unconfigured instance still take up
     // visible space in the app.
-    renderWrapped({ properties: { componentName: binding('') }, styles: { visibility: binding('{{false}}') } });
+    // LibraryComponent is lazy-loaded (editorHelpers.js) and RenderWidget wraps it
+    // in Suspense with `fallback={null}` — the first render can suspend, so this
+    // waits for it to settle instead of asserting synchronously (see SLOT-001).
+    renderWrapped({ properties: { componentName: binding(''), visibility: binding('{{false}}') } });
 
     // Still in the DOM (edit mode never unmounts a hidden widget — it collapses
     // it, see HIDDEN_COMPONENT_HEIGHT) — but collapsed to zero height.
-    expect(screen.getByText('Slot')).toBeInTheDocument();
-    expect(getWrapperEl()).toHaveStyle({ height: '0px' });
+    // Timeout above the default 1000ms: unlike SLOT-001, this mounts the full
+    // WidgetWrapper tree (ConfigHandle, license checks, etc.), which can take longer
+    // to settle when this is the first test in the file to touch the lazy import.
+    expect(await screen.findByText('Slot', {}, { timeout: 3000 })).toBeInTheDocument();
+    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }), { timeout: 3000 });
   });
 
   test('[LibraryComponent-LAYOUT-001] showOnDesktop / showOnMobile gate rendering per surface', () => {
@@ -202,13 +207,14 @@ describe('LibraryComponent integration', () => {
     expect(getWrapperEl()).toBeNull();
   });
 
-  test('[LibraryComponent-STYLE-001] visibility: false collapses a configured instance to zero height', () => {
+  test('[LibraryComponent-STYLE-001] visibility: false collapses a configured instance to zero height', async () => {
     // Break this catches: the configured iframe branch skipping the shared
     // visibility gate that every other widget goes through.
-    renderWrapped({ styles: { visibility: binding('{{false}}') } });
+    // Timeout above the default 1000ms — see COMBO-003.
+    renderWrapped({ properties: { visibility: binding('{{false}}') } });
 
-    expect(getIframe()).toBeInTheDocument();
-    expect(getWrapperEl()).toHaveStyle({ height: '0px' });
+    await waitFor(() => expect(getIframe()).toBeInTheDocument(), { timeout: 3000 });
+    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }), { timeout: 3000 });
   });
 
   test('[LibraryComponent-STYLE-002] boxShadow applies to the iframe element', () => {
@@ -321,6 +327,110 @@ describe('LibraryComponent integration', () => {
     expect(rejection).toBeInstanceOf(Error);
   });
 
+  test('[LibraryComponent-ACTION-003] setVisibility is exposed as a callable action, like every other widget', async () => {
+    // Break this catches: EventManager's "Control Component -> Set visibility" action
+    // invoking `components.x.setVisibility(...)` and finding it's not a function —
+    // the static setVisibility action now shows up in the picker (EventManager.jsx)
+    // but was never wired up as a real exposed variable on the widget itself.
+    widget.render();
+
+    await waitFor(() => expect(widget.exposed().setVisibility).toBeInstanceOf(Function));
+  });
+
+  test('[LibraryComponent-VISIBILITY-001] calling setVisibility(false) exposes isVisible: false and hides the widget', async () => {
+    widget.render();
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(true));
+
+    await widget.act('setVisibility', false);
+
+    expect(widget.exposed().isVisible).toBe(false);
+    expect(getWrapperDiv()).toHaveStyle({ display: 'none' });
+  });
+
+  test('[LibraryComponent-ACTION-004] setLoading is exposed as a callable action, like every other widget', async () => {
+    // Break this catches: the static setLoading action showing up in the picker
+    // (EventManager.jsx) but never wired up as a real exposed variable on the
+    // widget itself, mirroring ACTION-003's coverage of setVisibility.
+    widget.render();
+
+    await waitFor(() => expect(widget.exposed().setLoading).toBeInstanceOf(Function));
+  });
+
+  test('[LibraryComponent-LOADING-001] calling setLoading(true) exposes isLoading: true and renders a loading overlay', async () => {
+    widget.render();
+    await waitFor(() => expect(widget.exposed().isLoading).toBe(false));
+
+    await widget.act('setLoading', true);
+
+    expect(widget.exposed().isLoading).toBe(true);
+    expect(document.querySelector('.tj-widget-loader')).toBeInTheDocument();
+  });
+
+  test('[LibraryComponent-LOADING-002] calling setLoading(false) after true clears isLoading and removes the overlay', async () => {
+    widget.render();
+    await widget.act('setLoading', true);
+    expect(document.querySelector('.tj-widget-loader')).toBeInTheDocument();
+
+    await widget.act('setLoading', false);
+
+    expect(widget.exposed().isLoading).toBe(false);
+    expect(document.querySelector('.tj-widget-loader')).toBeNull();
+  });
+
+  test('[LibraryComponent-LOADING-003] setLoading(true) unmounts the iframe entirely, not just visually', async () => {
+    // Break this catches: rendering the loader on top of a still-mounted iframe (an
+    // overlay), which would leave the sandboxed component interactive/focusable
+    // underneath instead of tearing it down like IFrame.jsx does for its own loadingState.
+    widget.render();
+    expect(getIframe()).toBeInTheDocument();
+
+    await widget.act('setLoading', true);
+
+    expect(getIframe()).toBeNull();
+
+    await widget.act('setLoading', false);
+
+    expect(getIframe()).toBeInTheDocument();
+  });
+
+  test('[LibraryComponent-PROPS-003] loadingState is excluded from the shell props, like the identity keys', async () => {
+    // Break this catches: treating `loadingState` as an ordinary CCL prop and leaking
+    // it into the author's component props alongside libraryId/correlationId/etc.
+    // Kept false (unlike PROPS-002's visibility: true) — a true loadingState now
+    // unmounts the iframe entirely (LOADING-003), which this test isn't exercising.
+    widget.render({ properties: { componentName: binding('Widget'), loadingState: binding('{{false}}') } });
+    await postFromShell({ type: 'ready' });
+
+    const postToShell = spyOnShellPostMessage();
+    await act(async () => {
+      widget.setComponentProperty(ID, 'label', 'hello', 'properties');
+    });
+
+    await waitFor(() => {
+      const propsCall = postToShell.mock.calls.find(([msg]) => msg.type === 'props');
+      expect(propsCall).toBeDefined();
+      expect(propsCall[0].data).toEqual({ label: 'hello' });
+    });
+  });
+
+  test('[LibraryComponent-PROPS-002] visibility is excluded from the shell props, like the identity keys', async () => {
+    // Break this catches: treating `visibility` as an ordinary CCL prop and leaking
+    // it into the author's component props alongside libraryId/correlationId/etc.
+    widget.render({ properties: { componentName: binding('Widget'), visibility: binding('{{true}}') } });
+    await postFromShell({ type: 'ready' });
+
+    const postToShell = spyOnShellPostMessage();
+    await act(async () => {
+      widget.setComponentProperty(ID, 'label', 'hello', 'properties');
+    });
+
+    await waitFor(() => {
+      const propsCall = postToShell.mock.calls.find(([msg]) => msg.type === 'props');
+      expect(propsCall).toBeDefined();
+      expect(propsCall[0].data).toEqual({ label: 'hello' });
+    });
+  });
+
   test('[LibraryComponent-ERROR-001] a shell error message is logged, not surfaced visibly', async () => {
     // Break this catches: throwing, crashing, or silently dropping shell error
     // messages instead of the current console.error-only path.
@@ -388,6 +498,30 @@ describe('LibraryComponent integration', () => {
     });
 
     await waitFor(() => expect(resetSpy).toHaveBeenCalledWith(ID, MODULE_ID));
+  });
+
+  test('[LibraryComponent-RESET-002] setVisibility/setLoading/isVisible/isLoading survive an identity-change reset', async () => {
+    // Break this catches: the mount-only registration effect (deps=[]) never re-running
+    // after resetExposedVariables() wipes currentState[id] on a componentName/revision/
+    // dev-nonce change — regresses to setVisibility/setLoading being undefined and
+    // isVisible/isLoading missing from the Inspector's public interface.
+    widget.render();
+    await waitFor(() => expect(widget.exposed().setVisibility).toBeInstanceOf(Function));
+
+    await widget.act('setVisibility', false);
+    expect(widget.exposed().isVisible).toBe(false);
+
+    await act(async () => {
+      widget.setComponentProperty(ID, 'componentName', 'OtherWidget', 'properties');
+    });
+
+    await waitFor(() => expect(widget.exposed().setVisibility).toBeInstanceOf(Function));
+    expect(widget.exposed().setLoading).toBeInstanceOf(Function);
+    expect(widget.exposed().isVisible).not.toBeUndefined();
+    expect(widget.exposed().isLoading).not.toBeUndefined();
+
+    await widget.act('setVisibility', true);
+    expect(widget.exposed().isVisible).toBe(true);
   });
 });
 
