@@ -31,6 +31,7 @@ export interface OidcEnvConfig {
   enableGroupSync?: boolean;
   groupMapping?: Record<string, string>;
   grantType?: string;
+  resolvedGrantType?: string;
   codeVerifier?: string;
 }
 
