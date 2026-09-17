@@ -111,11 +111,16 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
 /**
  * The live allowlist. Everything not reachable from these bundles is denied.
  *
- * Currently the exact set an app-building automation client needs and nothing more. MODULES.AI is
+ * Supports app-building and workflow automation clients. MODULES.AI is
  * deliberately unassigned pending a decision — it builds apps, but its endpoints spend money on
- * model calls, so an app-scoped automation token should not reach it by default.
+ * model calls, so a workspace automation token should not reach it by default.
  */
-export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [PAT_BUNDLE.APPS, PAT_BUNDLE.DATA, PAT_BUNDLE.WORKSPACE_USERS];
+export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [
+  PAT_BUNDLE.APPS,
+  PAT_BUNDLE.DATA,
+  PAT_BUNDLE.WORKFLOWS,
+  PAT_BUNDLE.WORKSPACE_USERS,
+];
 
 const ALLOWED_MODULES: ReadonlySet<MODULES> = new Set(
   PAT_ALLOWED_BUNDLES.flatMap((bundle) => PAT_BUNDLE_MODULES[bundle])
