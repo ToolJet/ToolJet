@@ -140,7 +140,7 @@
     },
     {
       "componentType": "TreeSelect",
-      "status": "spec-complete",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/TreeSelect/TESTING.md"
     },
     {
