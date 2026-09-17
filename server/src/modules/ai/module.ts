@@ -20,6 +20,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { EncryptionModule } from '@modules/encryption/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
+import { AiAttachmentService } from './services/ai-attachment.service';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -53,6 +54,7 @@ export class AiModule extends SubModule {
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
+        AiAttachmentService,
         AiUtilService,
         AgentsService,
         ComponentsService,
