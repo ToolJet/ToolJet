@@ -62,6 +62,14 @@ describe('PAT scope definition', () => {
     expect(patCanAccess(MODULES.ORGANIZATION_USER, ORGANIZATION_USER_FEATURE.USER_ARCHIVE_ALL)).toBe(false);
   });
 
+  it.each([MODULES.WORKFLOWS, MODULES.WORKFLOW_FOLDER])('allows workflow module %s', (module) => {
+    expect(patCanAccess(module)).toBe(true);
+  });
+
+  it.each(PAT_UNASSIGNED_MODULES)('denies unassigned module %s', (module) => {
+    expect(patCanAccess(module)).toBe(false);
+  });
+
   it('denies workspace and instance administration', () => {
     for (const module of [
       MODULES.ORGANIZATIONS,
@@ -135,14 +143,23 @@ describe('PatScopeInterceptor', () => {
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(patSession, 'ws'), nextHandler)).toBe('HANDLED');
   });
 
-  it('lets a workspace PAT through on an allowed module', () => {
-    const patSession = { isPATLogin: true };
-    expect(interceptorFor(MODULES.APP).intercept(contextFor(patSession), nextHandler)).toBe('HANDLED');
-  });
+  it.each([MODULES.APP, MODULES.WORKFLOWS, MODULES.WORKFLOW_FOLDER])(
+    'lets a workspace PAT through on allowed module %s',
+    (module) => {
+      const patSession = { isPATLogin: true };
+      expect(interceptorFor(module).intercept(contextFor(patSession), nextHandler)).toBe('HANDLED');
+    }
+  );
 
   it('blocks a workspace PAT on a module outside the allowlist', () => {
     const patSession = { isPATLogin: true };
     expect(() => interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(patSession), nextHandler)).toThrow(
+      ForbiddenException
+    );
+  });
+
+  it('blocks a workspace PAT on an unassigned module', () => {
+    expect(() => interceptorFor(MODULES.AI).intercept(contextFor({ isPATLogin: true }), nextHandler)).toThrow(
       ForbiddenException
     );
   });

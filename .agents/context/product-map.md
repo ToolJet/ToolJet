@@ -20,6 +20,8 @@ ToolJet is a low-code platform for building and deploying internal applications.
 | End User | Views and interacts with released apps to which they have access. | `UBIQUITOUS_LANGUAGE.md`; `frontend/src/ViewerApp.jsx::ViewerApp` |
 | Application/API client | Opens a public or embedded app, or invokes an authorized outward-facing endpoint. | `server/src/modules/apps/controller.ts::AppsController`; `server/src/modules/external-apis/` |
 
+Workspace PAT sessions support app-building and workflow automation, including workflow creation, execution, status, nodes, and workflow folders. Access remains subject to owner permissions and edition/license gates; unassigned modules remain denied (`server/src/modules/personal-access-tokens/constants/scopes.ts::PAT_ALLOWED_BUNDLES`; `server/src/modules/personal-access-tokens/interceptors/pat-scope.interceptor.ts::PatScopeInterceptor`).
+
 ## Product model
 
 ```mermaid

@@ -1,6 +1,14 @@
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, login, closeTestApp, getDefaultDataSource } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  login,
+  closeTestApp,
+  getDefaultDataSource,
+  createCompleteWorkflow,
+} from 'test-helper';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
+import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import * as request from 'supertest';
 
@@ -214,6 +222,56 @@ describe('Personal access token session exchange', () => {
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(200);
+    });
+
+    it('should create a workflow with a workspace PAT session', async () => {
+      const { token } = await createPat('workflow-create');
+      const { body } = await exchange(token).expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post('/api/workflows')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .send({ name: 'PAT workflow', type: 'workflow' })
+        .expect(201);
+
+      expect(res.body).toMatchObject({ id: expect.any(String), name: 'PAT workflow' });
+    });
+
+    it('should execute a workflow and read its status and nodes with a workspace PAT session', async () => {
+      const user = await getDefaultDataSource().getRepository(User).findOneByOrFail({ id: userId });
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+        name: 'PAT execution',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+          },
+        ],
+        edges: [],
+        queries: [],
+      });
+      const { token } = await createPat('workflow-execute');
+      const { body } = await exchange(token).expect(201);
+      const headers = { Cookie: `tj_auth_token=${body.authToken}`, 'tj-workspace-id': orgId };
+
+      const execution = await request(app.getHttpServer())
+        .post('/api/workflow_executions')
+        .set(headers)
+        .send({ appId: workflow.id, executeUsing: 'app', userId, environmentId: appVersion.currentEnvironmentId })
+        .expect(201);
+      expect(execution.body).toMatchObject({ workflowExecution: { id: expect.any(String) } });
+
+      const executionId = execution.body.workflowExecution.id;
+      const status = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/${executionId}/status`)
+        .set(headers)
+        .expect(200);
+      expect(status.body).toMatchObject({ status: expect.any(String) });
+
+      await request(app.getHttpServer()).get(`/api/workflow_executions/${executionId}/nodes`).set(headers).expect(200);
     });
 
     it('should ignore a body workspace override for archive and unarchive', async () => {
