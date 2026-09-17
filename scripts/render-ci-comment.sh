@@ -52,6 +52,8 @@ if [ "$MODE" = "full" ]; then
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
   echo "| **Cypress — Marketplace** | $(cell "$RESULT_CYPRESS_MARKETPLACE") |"
+  # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs)
+  [ -s "${COVERAGE_MD:-}" ] && echo "| **Coverage — server** | $(head -n 1 "$COVERAGE_MD") |"
 else
   echo "| **Unit tests** | $(row unit "$RESULT_CHANGED") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_CHANGED") |"
@@ -96,9 +98,9 @@ if [ -n "$details" ]; then
   echo
 fi
 
-# Coverage gate section, written by scripts/coverage-gate.sh in ci-gate (full PR runs only).
-if [ -s "${COVERAGE_MD:-}" ]; then
-  cat "$COVERAGE_MD"
+# Uncovered changed lines (coverage gate), full PR runs only
+if [ -s "${COVERAGE_MD:-}" ] && [ "$(wc -l < "$COVERAGE_MD")" -gt 1 ]; then
+  tail -n +2 "$COVERAGE_MD"
   echo
 fi
 
