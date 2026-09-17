@@ -229,7 +229,8 @@
     },
     {
       "componentType": "Statistics",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Statistics/TESTING.md"
     },
     {
       "componentType": "Timeline",
