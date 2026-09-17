@@ -94,3 +94,119 @@ export const Widget = () => {
     expect(manifest.components.Widget.props[0]).to.not.have.property('section');
   }).timeout(30000);
 });
+
+const HELLO_WORLD_TEMPLATE_PATH = path.join(__dirname, '../../src/_templates/library/new/hello-world.ejs.t');
+
+// Hygen templates start with a `---\n...\n---\n` frontmatter block naming the output
+// path — strip it to get the real TSX source the CLI compiles.
+function stripHygenFrontmatter(templateSrc: string): string {
+  return templateSrc.replace(/^---\n[\s\S]*?\n---\n/, '');
+}
+
+describe('generateManifest - shipped HelloWorld template', () => {
+  const cwd = withTempCwd();
+
+  it('produces a valid manifest with whole-number defaultWidth/defaultHeight', async () => {
+    const componentSrc = stripHygenFrontmatter(fs.readFileSync(HELLO_WORLD_TEMPLATE_PATH, 'utf8'));
+
+    fs.mkdirSync(path.join(cwd.get(), 'src', 'components', 'HelloWorld'), { recursive: true });
+    fs.writeFileSync(path.join(cwd.get(), 'src', 'global.d.ts'), GLOBAL_DTS);
+    fs.writeFileSync(
+      path.join(cwd.get(), 'src', 'index.ts'),
+      `export { HelloWorld } from './components/HelloWorld';\n`
+    );
+    fs.writeFileSync(path.join(cwd.get(), 'src', 'components', 'HelloWorld', 'index.tsx'), componentSrc);
+    fs.writeFileSync(path.join(cwd.get(), 'tsconfig.json'), TSCONFIG);
+
+    // tsErrorCount isn't asserted here: this test's ambient `react` stub (GLOBAL_DTS)
+    // is intentionally minimal and doesn't declare the `React` namespace `React.FC`
+    // needs — a real scaffolded project gets that from an installed @types/react.
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.HelloWorld.defaultWidth).to.equal(8);
+    expect(manifest.components.HelloWorld.defaultHeight).to.equal(6);
+  }).timeout(30000);
+});
+
+describe('generateManifest - defaultWidth/defaultHeight', () => {
+  const cwd = withTempCwd();
+
+  it('accepts whole-number defaultWidth/defaultHeight', async () => {
+    writeProject(
+      cwd.get(),
+      `import { ToolJet } from '@tooljet/custom-component-sdk';
+
+      export const Widget = () => {
+        ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 6 });
+
+        return <div>Widget</div>;
+      };
+      `
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.defaultWidth).to.equal(8);
+    expect(manifest.components.Widget.defaultHeight).to.equal(6);
+  }).timeout(30000);
+
+  it('rejects a non-whole-number defaultWidth', async () => {
+    writeProject(
+      cwd.get(),
+      `import { ToolJet } from '@tooljet/custom-component-sdk';
+
+      export const Widget = () => {
+        ToolJet.useComponentSettings({ defaultWidth: 8.5 });
+
+        return <div>Widget</div>;
+      };
+      `
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/defaultWidth.*whole number/i);
+  }).timeout(30000);
+
+  it('rejects a non-whole-number defaultHeight', async () => {
+    writeProject(
+      cwd.get(),
+      `import { ToolJet } from '@tooljet/custom-component-sdk';
+
+      export const Widget = () => {
+        ToolJet.useComponentSettings({ defaultHeight: 4.2 });
+
+        return <div>Widget</div>;
+      };
+      `
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/defaultHeight.*whole number/i);
+  }).timeout(30000);
+
+  it('rejects zero or negative defaultWidth/defaultHeight', async () => {
+    writeProject(
+      cwd.get(),
+      `import { ToolJet } from '@tooljet/custom-component-sdk';
+
+      export const Widget = () => {
+        ToolJet.useComponentSettings({ defaultWidth: 0 });
+
+        return <div>Widget</div>;
+      };
+      `
+    );
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/defaultWidth.*positive whole number/i);
+
+    writeProject(
+      cwd.get(),
+      `import { ToolJet } from '@tooljet/custom-component-sdk';
+
+      export const Widget = () => {
+        ToolJet.useComponentSettings({ defaultHeight: -3 });
+
+        return <div>Widget</div>;
+      };
+      `
+    );
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/defaultHeight.*positive whole number/i);
+  }).timeout(30000);
+});
