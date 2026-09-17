@@ -1,7 +1,14 @@
 import { DataSource } from '@entities/data_source.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotImplementedException,
+  Optional,
+} from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
+import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, ILike } from 'typeorm';
@@ -21,6 +28,7 @@ import { OrganizationConstantsUtilService } from '@modules/organization-constant
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -32,8 +40,54 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService
+    protected readonly inMemoryCacheService: InMemoryCacheService,
+    @Optional() protected readonly customDomainCacheService?: CustomDomainCacheService
   ) {}
+
+  /**
+   * Resolves the host to use as the OAuth2 redirect_uri for datasource authorization
+   * flows (e.g. SharePoint). Datasources of this kind use a customer-owned OAuth app
+   * (their own Azure AD app registration), whose allowed redirect URI must match the
+   * one shown in the UI - which is the organization's active custom domain when one is
+   * configured. Falls back to TOOLJET_HOST when no active custom domain exists.
+   */
+  async resolveOAuthRedirectHost(organizationId?: string): Promise<string> {
+    if (organizationId && this.customDomainCacheService) {
+      try {
+        const activeDomain = await this.customDomainCacheService.getActiveDomainForOrg(organizationId);
+        if (activeDomain) return `https://${activeDomain}`;
+      } catch {
+        // Fall back to TOOLJET_HOST below
+      }
+    }
+    return process.env.TOOLJET_HOST as string;
+  }
+
+  /**
+   * Rewrites the host of the `redirect_uri` query param on an OAuth2 authorization URL
+   * a plugin's authUrl() returned (built with TOOLJET_HOST), to the given redirect host.
+   * Centralizing this here means individual plugins never need to know about custom
+   * domains - only the path/query the plugin chose for redirect_uri is preserved.
+   */
+  private overrideRedirectUriHost(authUrl: string, redirectHost: string): string {
+    try {
+      const url = new URL(authUrl);
+      const currentRedirectUri = url.searchParams.get('redirect_uri');
+      if (!currentRedirectUri) return authUrl;
+      const currentRedirectUrl = new URL(currentRedirectUri);
+      url.searchParams.set('redirect_uri', `${redirectHost}${currentRedirectUrl.pathname}${currentRedirectUrl.search}`);
+      return url.toString();
+    } catch {
+      return authUrl;
+    }
+  }
+
+  /** Reads `sourceOptions[key]`, unwrapping the `{ value, encrypted }` shape when present. */
+  private getOptionValue(sourceOptions: any, key: string): any {
+    const raw = sourceOptions?.[key];
+    if (raw && typeof raw === 'object' && 'value' in raw) return raw.value;
+    return raw;
+  }
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
@@ -58,7 +112,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         manager
       );
       await this.appEnvironmentUtilService.updateOptions(
-        await this.parseOptionsForCreate(createArgumentsDto.options, false, manager),
+        await this.parseOptionsForCreate(
+          createArgumentsDto.options,
+          false,
+          manager,
+          user.organizationId,
+          createArgumentsDto.environmentId
+        ),
         envToUpdate.id,
         dataSource.id,
         manager
@@ -71,7 +131,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         await Promise.all(
           envsToUpdate?.map(async (env) => {
             await this.appEnvironmentUtilService.updateOptions(
-              await this.parseOptionsForCreate(createArgumentsDto.options, true, manager),
+              await this.parseOptionsForCreate(
+                createArgumentsDto.options,
+                true,
+                manager,
+                user.organizationId,
+                createArgumentsDto.environmentId
+              ),
               env.id,
               dataSource.id,
               manager
@@ -96,10 +162,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   // IMPORTANT: Should not do any changes on this function. Its used in migrations
-  async parseOptionsForCreate(options: Array<object>, resetSecureData = false, manager?: EntityManager) {
+  async parseOptionsForCreate(
+    options: Array<object>,
+    resetSecureData = false,
+    manager?: EntityManager,
+    organizationId?: string,
+    environmentId?: string
+  ) {
     if (!options) return {};
     return await dbTransactionWrap(async (entityManager: EntityManager) => {
-      const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, resetSecureData);
+      const optionsWithOauth = await this.parseOptionsForOauthDataSource(
+        options,
+        resetSecureData,
+        undefined,
+        organizationId,
+        environmentId
+      );
       const parsedOptions = {};
 
       for (const option of optionsWithOauth) {
@@ -161,6 +239,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         );
       }
 
+      const redirectHost = await this.resolveOAuthRedirectHost(organizationId);
+      const optionsForAccessDetails = [
+        ...resolvedOptions,
+        { key: 'tj_redirect_host', value: redirectHost, encrypted: false },
+      ];
+
       let accessDetailsPromise: Promise<any>;
 
       const cacheKey = `${provider}_${authCode}`;
@@ -168,7 +252,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       if (this.inMemoryCacheService.has(cacheKey)) {
         accessDetailsPromise = this.inMemoryCacheService.get(cacheKey);
       } else {
-        accessDetailsPromise = queryService.accessDetailsFrom(authCode, resolvedOptions, resetSecureData);
+        accessDetailsPromise = queryService.accessDetailsFrom(authCode, optionsForAccessDetails, resetSecureData);
         this.inMemoryCacheService.set(cacheKey, accessDetailsPromise);
       }
       const accessDetails = await accessDetailsPromise;
@@ -288,19 +372,43 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async decrypt(options: Record<string, any>) {
-    const decryptedOptions = { ...options };
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ): Promise<{ valid: boolean; errors: any[] }> {
+    const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+    const storedOptions: Record<string, any> = dataSource.options || {};
 
+    // Convert options to plain data, decrypting only credential_ids that
+    // belong to this datasource (prevents cross-datasource credential reads).
+    const data: Record<string, any> = {};
     for (const [key, value] of Object.entries(options)) {
       if (value?.credential_id) {
-        decryptedOptions[key] = {
-          ...value,
-          value: await this.credentialService.getValue(value.credential_id),
-        };
+        const stored = storedOptions[key];
+        if (stored?.credential_id === value.credential_id) {
+          const decrypted = await this.credentialService.getValue(value.credential_id);
+          if (decrypted !== undefined && decrypted !== null && decrypted !== '') {
+            data[key] = decrypted;
+          }
+        }
+      } else if (value?.value !== undefined && value?.value !== null && value?.value !== '') {
+        data[key] = value.value;
       }
     }
 
-    return decryptedOptions;
+    const ajv = new Ajv2020({
+      strict: false,
+      allErrors: true,
+      removeAdditional: false,
+      validateSchema: false,
+      coerceTypes: true,
+    });
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    return { valid: !!valid, errors: validate.errors || [] };
   }
 
   async parseOptionsForUpdate(
@@ -404,6 +512,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       return parsedOptions;
     }, manager);
+  }
+
+  async findAllByOrganization(organizationId: string): Promise<Pick<DataSource, 'id' | 'name' | 'kind'>[]> {
+    return this.dataSourceRepository.find({
+      where: { organizationId },
+      select: ['id', 'name', 'kind'],
+    });
   }
 
   async findOneWithName(name: string, organizationId: string): Promise<DataSource> {
@@ -587,6 +702,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     } catch (error) {
       result = {
         status: 'failed',
+        ...(error instanceof NotImplementedException ? { category: 'unsupported', supported: false } : {}),
         message: `${error.message}${error?.description ? `: ${error.description}` : ''}
         ${error?.data ? ` - ${JSON.stringify(error.data)}` : ''}`,
       };
@@ -619,6 +735,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'xero',
         'bigquery',
         'databricks',
+        'asana',
+        'confluence',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(
@@ -626,7 +744,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         code,
         sourceOptions,
         isMultiAuthEnabled,
-        userId
+        userId,
+        organizationId
       );
       if (isMultiAuthEnabled) {
         const updatedTokenData = this.getCurrentToken(
@@ -646,7 +765,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         tokenOptions = newTokenData;
       }
     } else {
-      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
+      const newToken = await this.fetchOAuthToken(
+        sourceOptions,
+        code,
+        userId,
+        isMultiAuthEnabled,
+        dataSource,
+        organizationId
+      );
       const tokenData = this.getCurrentToken(
         isMultiAuthEnabled,
         dataSource.options['tokenData']?.value,
@@ -752,11 +878,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     code: string,
     userId: any,
     isMultiAuthEnabled: boolean,
-    dataSource: DataSource
+    dataSource: DataSource,
+    organizationId?: string
   ): Promise<any> {
-    const tooljetHost = process.env.TOOLJET_HOST;
+    const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+    const tooljetHost = isTooljetManagedApp
+      ? (process.env.TOOLJET_HOST as string)
+      : await this.resolveOAuthRedirectHost(organizationId);
     const accessTokenUrl = sourceOptions['access_token_url'];
-    if (sourceOptions['oauth_type'] === 'tooljet_app') {
+    if (isTooljetManagedApp) {
       const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
       const clientSecretKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_SECRET');
       sourceOptions['client_id'] = process.env[sourceOptions[clientIdKey]];
@@ -836,10 +966,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     code: string,
     sourceOptions: any,
     isMultiAuthEnabled: boolean,
-    userId: string
+    userId: string,
+    organizationId?: string
   ) {
     const queryService = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
-    const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
+    const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+    const redirectHost = isTooljetManagedApp
+      ? (process.env.TOOLJET_HOST as string)
+      : await this.resolveOAuthRedirectHost(organizationId);
+    const accessDetails = await queryService.accessDetailsFrom(code, {
+      ...sourceOptions,
+      tj_redirect_host: redirectHost,
+    });
     const options = [];
 
     if (isMultiAuthEnabled) {
@@ -990,14 +1128,23 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     } = getDataSourceOauthUrlDto;
     const service = await this.pluginsServiceSelector.getService(plugin_id || null, provider);
 
+    let resolvedSourceOptions = source_options;
     if (organization_id && environment_id) {
-      const resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
+      resolvedSourceOptions = await resolveSourceOptionsForOAuth(source_options, (value) =>
         this.resolveConstants(value, organization_id, environment_id)
       );
-      return { url: service.authUrl(resolvedSourceOptions) };
     }
 
-    return { url: service.authUrl(source_options) };
+    const authUrl = service.authUrl(resolvedSourceOptions);
+
+    // ToolJet-managed OAuth apps (e.g. Google Sheets, Slack) are registered centrally
+    // against TOOLJET_HOST and must never be redirected to a custom domain.
+    if (this.getOptionValue(resolvedSourceOptions, 'oauth_type') === 'tooljet_app') {
+      return { url: authUrl };
+    }
+
+    const redirectHost = await this.resolveOAuthRedirectHost(organization_id);
+    return { url: this.overrideRedirectUriHost(authUrl, redirectHost) };
   }
 
   async createDataSourceInAllEnvironments(

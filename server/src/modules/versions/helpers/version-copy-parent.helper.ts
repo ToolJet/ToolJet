@@ -63,3 +63,38 @@ export function remapParentIdForVersionCopy(
 
   return idMap[parentId] ?? (isGhostParent(parentId, validComponentIds) ? parentId : null);
 }
+
+/**
+ * Remap a FlexContainer's `childOrder` (an array of child component ids) on version copy.
+ *
+ * Each child gets a new UUID during the copy, but `childOrder` is stored as raw ids in
+ * `properties` and is not a `{{...}}` binding, so `updateEntityReferences` never touches it.
+ * Left unmapped, every id becomes stale and the editor drops the saved order, falling back
+ * to insertion order (issue #5153). Also used by app import/export
+ * (`updateEntityReferencesForImportedApp`) and page clone (`clonePageEventsAndComponents`).
+ * Mapped ids are replaced in place to preserve order; unknown ids are left untouched.
+ *
+ * Returns true when at least one id was remapped.
+ */
+export function remapFlexContainerChildOrder(
+  component: { properties?: { childOrder?: { value?: unknown } } },
+  idMap: Record<string, string>
+): boolean {
+  const childOrder = component?.properties?.childOrder?.value;
+  if (!Array.isArray(childOrder)) return false;
+
+  let changed = false;
+  const remapped = childOrder.map((childId) => {
+    const newId = idMap[childId as string];
+    if (newId && newId !== childId) {
+      changed = true;
+      return newId;
+    }
+    return childId;
+  });
+
+  if (changed) {
+    component.properties.childOrder.value = remapped;
+  }
+  return changed;
+}

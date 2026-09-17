@@ -17,9 +17,9 @@ import {
   verifyAppDelete,
 } from "Support/utils/dashboard";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
+import { dashboardText } from "Texts/platform/dashboard";
 import { logout } from "Support/utils/common";
 
 
@@ -310,7 +310,6 @@ describe("dashboard", () => {
       .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
 
-    cy.get(commonSelectors.editorAppNameInput).click();
     cy.renameApp(data.cloneAppName);
     cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
 

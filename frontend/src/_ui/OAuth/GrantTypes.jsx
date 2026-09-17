@@ -19,7 +19,7 @@ const CommonOAuthFields = ({
   isFieldAllowed,
 }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
-  const { client_id, client_secret, client_auth } = clientConfig;
+  const { client_id, client_secret, client_auth, company_id, site_url } = clientConfig;
   const { scopes } = authConfig;
   const { optionchanged, optionsChanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -154,6 +154,38 @@ const CommonOAuthFields = ({
             </div>
           )}
         </>
+      )}
+      {oauth_configs?.allowed_field_groups?.[grant_type]?.includes('company_id') && (
+        <div className="col-md-12" data-cy="company-id-section">
+          <label className="form-label mt-3" data-cy="label-company-id">
+            Company ID
+          </label>
+          <Input
+            data-cy="company-id-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('company_id', e.target.value)}
+            value={company_id}
+            workspaceConstants={workspaceConstants}
+            placeholder="Enter company ID"
+          />
+        </div>
+      )}
+      {oauth_configs?.allowed_field_groups?.[grant_type]?.includes('site_url') && (
+        <div className="col-md-12" data-cy="site-url-section">
+          <label className="form-label mt-3" data-cy="label-site-url">
+            Site URL
+          </label>
+          <Input
+            data-cy="site-url-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('site_url', e.target.value)}
+            value={site_url}
+            workspaceConstants={workspaceConstants}
+            placeholder="https://your-site.atlassian.net"
+          />
+        </div>
       )}
       {isFieldAllowed('scopes', grant_type, oauth_configs) && (
         <div className="col-md-12" data-cy="scope-section">

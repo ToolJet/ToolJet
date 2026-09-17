@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
@@ -51,6 +52,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import toast from 'react-hot-toast';
 import './EventManager.scss';
 
 export const EventManager = ({
@@ -63,6 +65,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  excludeRefEvents = false,
   callerQueryName,
   component,
 }) => {
@@ -97,23 +100,37 @@ export const EventManager = ({
       if (event.event.ref !== customEventRefs.ref) {
         return false;
       }
+    } else if (excludeRefEvents && event.event?.ref) {
+      // Hide sub-element (ref-scoped) events from a component-level panel,
+      // e.g. per-menu-item Navigation events should not appear at the component level.
+      return false;
     }
 
     return event.sourceId === sourceId && event.target === eventSourceType;
   });
+
+  // `index` is the source of truth for list position and trigger order, store array order is not
+  currentEvents?.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const lastFocusedEventIndex = useRef(null);
 
+  const {
+    autoOpenActionSelect,
+    markEventCreationPending,
+    cancelPendingEventCreation,
+    onEventHandlersUpdated,
+    dismissEventPopoverAutoOpen,
+  } = useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex);
+
   const { t } = useTranslation();
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
-
-    const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
-    setEvents(sortedEvents, moduleId);
+    onEventHandlersUpdated(currentEvents, events);
+    setEvents(currentEvents, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
@@ -375,8 +392,15 @@ export const EventManager = ({
     });
   }
 
-  function getDefaultEventName() {
-    return `Event #${events.length + 1}`;
+  function getDefaultEventName(sourceEvents) {
+    const existingNumbers = (sourceEvents ?? events)
+      .map((event) => {
+        const match = /^Event #(\d+)$/.exec(event?.name ?? '');
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((number) => number !== null);
+    const nextNumber = existingNumbers.length ? Math.max(...existingNumbers) + 1 : 1;
+    return `Event #${nextNumber}`;
   }
 
   function removeHandler(index) {
@@ -393,13 +417,20 @@ export const EventManager = ({
       event: deepClone(source.event),
       eventType: source.target,
       attachedTo: source.sourceId,
-      index: events.length,
+      // Positions can be sparse after deletes, so length would collide with an existing index
+      index: events.reduce((max, event) => (event.index > max ? event.index : max), -1) + 1,
     });
   }
 
-  function addHandler(eventId) {
-    let newEvents = events;
-    const eventIndex = newEvents.length;
+  async function addHandler(eventId) {
+    const sourceEvents = useStore
+      .getState()
+      .eventsSlice.getModuleEvents(moduleId)
+      .filter((event) => {
+        if (customEventRefs && event.event?.ref !== customEventRefs.ref) return false;
+        return event.sourceId === sourceId && event.target === eventSourceType;
+      });
+    const eventIndex = sourceEvents.reduce((max, event) => (event.index > max ? event.index : max), -1);
     const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
@@ -423,8 +454,8 @@ export const EventManager = ({
 
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
-    createAppVersionEventHandlers({
-      name: getDefaultEventName(),
+    markEventCreationPending();
+    const createdEvent = await createAppVersionEventHandlers({
       event: {
         eventId: selectedEventId,
         actionId: 'show-alert',
@@ -433,10 +464,13 @@ export const EventManager = ({
         component: eventMetaDefinition.name,
         ...customEventRefs,
       },
+      name: getDefaultEventName(sourceEvents),
       eventType: eventSourceType,
       attachedTo: sourceId,
-      index: eventIndex,
+      index: eventIndex + 1,
     });
+
+    if (!createdEvent) cancelPendingEventCreation();
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -560,7 +594,14 @@ export const EventManager = ({
                 <div data-cy="action-selection">
                   <RocketSelect
                     value={event.actionId}
-                    onValueChange={(value) => handlerChanged(index, 'actionId', value)}
+                    onValueChange={(value) => {
+                      dismissEventPopoverAutoOpen();
+                      handlerChanged(index, 'actionId', value);
+                    }}
+                    open={autoOpenActionSelect && index === focusedEventIndex ? true : undefined}
+                    onOpenChange={(open) => {
+                      if (!open && autoOpenActionSelect) dismissEventPopoverAutoOpen();
+                    }}
                   >
                     <SelectTrigger className="tw-w-full">
                       <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
@@ -715,7 +756,7 @@ export const EventManager = ({
               </FieldRow>
             )}
 
-            {['run-query', 'reset-query'].includes(event.actionId) && (
+            {['run-query', 'reset-query', 'abort-query'].includes(event.actionId) && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
                   <div data-cy="query-selection-field">
@@ -1073,7 +1114,7 @@ export const EventManager = ({
     );
   }
 
-  const reorderEvents = (startIndex, endIndex) => {
+  const reorderEvents = async (startIndex, endIndex) => {
     const result = deepClone(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -1085,13 +1126,27 @@ export const EventManager = ({
       };
     });
 
-    updateAppVersionEventHandlers(
-      reorderedEvents.map((event) => ({
-        event_id: event.id,
-        diff: event,
-      })),
-      'reorder'
-    );
+    // Save only the events whose index actually moved, comparing against the pre-drag indices
+    const previousIndexById = new Map(events.map((event) => [event.id, event.index]));
+    const changedEvents = reorderedEvents.filter((event) => previousIndexById.get(event.id) !== event.index);
+
+    // Reflect the new order right away, the store merge only catches up once the PUT resolves
+    const previousEvents = events;
+    setEvents(reorderedEvents);
+
+    try {
+      await updateAppVersionEventHandlers(
+        changedEvents.map((event) => ({
+          event_id: event.id,
+          diff: event,
+        })),
+        'reorder'
+      );
+    } catch (err) {
+      // Roll the optimistic update back, otherwise the list keeps showing an order the DB never accepted
+      setEvents(previousEvents);
+      toast.error(err?.error || 'An error occurred while reordering the event handlers');
+    }
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -1118,7 +1173,8 @@ export const EventManager = ({
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
                   // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                   return (
-                    <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
+                    // Keyed by event id, not position, so rows keep their identity across a reorder
+                    <Draggable key={event.id} draggableId={event.id} index={index}>
                       {renderDraggable((provided, snapshot) => {
                         if (snapshot.isDragging && focusedEventIndex !== null) {
                           setFocusedEventIndex(null);
@@ -1133,6 +1189,7 @@ export const EventManager = ({
                                 lastFocusedEventIndex.current = index;
                               } else {
                                 setFocusedEventIndex(null);
+                                dismissEventPopoverAutoOpen();
                               }
                               if (typeof popOverCallback === 'function') popOverCallback(showing);
                             }}
@@ -1308,7 +1365,7 @@ export const EventManager = ({
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',
-              'Add events to make your component interactive — like button clicks or form submissions'
+              'Add events to define how this component responds to user actions.'
             )}
           </EmptyDescription>
         </EmptyHeader>

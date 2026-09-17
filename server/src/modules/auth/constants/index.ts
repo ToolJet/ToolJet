@@ -14,6 +14,8 @@ export enum FEATURE_KEY {
   // Password Management
   FORGOT_PASSWORD = 'forgotPassword', // POST 'forgot-password'
   RESET_PASSWORD = 'resetPassword', // POST 'reset-password'
+  VERIFY_RESET_TOKEN = 'verifyResetToken', // GET 'reset-password/verify-token'
+  PASSWORD_EXPIRED_RESET = 'passwordExpiredReset', // POST 'password-expired-reset'
 
   // Oauth
   OAUTH_SIGN_IN = '/oauth/sign-in/:configId',
@@ -31,4 +33,7 @@ export enum FEATURE_KEY {
   // AI MFA
   AI_MFA_REQUEST_OTP = 'aiMfaRequestOtp', // GET 'request-otp/:identifier'
   AI_MFA_VERIFY_OTP = 'aiMfaVerifyOtp', // POST 'verify-otp/:identifier'
+
+  // Login MFA (authenticator app 2FA, EE only)
+  MFA_VERIFY = 'mfaVerify', // POST 'authenticate/mfa/verify'
 }

@@ -53,6 +53,7 @@ import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
+import { cascaderConfig } from './cascader';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
@@ -79,6 +80,7 @@ import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
 import { fileButtonConfig } from './fileButton';
 import { buttonGroupV2Config } from './buttonGroupV2';
+import { flexContainerConfig } from './flexContainer';
 
 export {
   buttonConfig,
@@ -143,6 +145,7 @@ export {
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -162,4 +165,5 @@ export {
   progressbarConfig,
   navigationConfig,
   fileButtonConfig,
+  flexContainerConfig,
 };

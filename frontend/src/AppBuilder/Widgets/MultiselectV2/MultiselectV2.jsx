@@ -14,10 +14,11 @@ import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/Dro
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const MultiselectV2 = ({
   id,
@@ -46,6 +47,7 @@ export const MultiselectV2 = ({
     showAllSelectedLabel,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
     maxLimit,
   } = properties;
   const {
@@ -66,6 +68,7 @@ export const MultiselectV2 = ({
     padding,
     accentColor,
     widthType,
+    labelFontSize,
   } = styles;
   const isInitialRender = useRef(true);
   const [selected, setSelected] = useState([]);
@@ -398,6 +401,8 @@ export const MultiselectV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  useFormClear(() => setInputValue([]));
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     return () => {
@@ -513,6 +518,7 @@ export const MultiselectV2 = ({
     menuPortal: (base) => ({ ...base, zIndex: 1040 }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   return (
     <>
       <div
@@ -552,6 +558,7 @@ export const MultiselectV2 = ({
           _width={_width}
           widthType={widthType}
           id={`${id}-label`}
+          fontSize={labelFontSizeValue}
         />
         <div
           className="px-0 h-100"
@@ -569,6 +576,7 @@ export const MultiselectV2 = ({
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -587,6 +595,7 @@ export const MultiselectV2 = ({
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             menuIsOpen={isMultiselectOpen}

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { dataqueryService } from '@/_services';
 import Select from '@/_ui/Select';
+import { PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS } from '@/_ui/DynamicSelector/constants';
+import { getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * ColumnSelect – a dropdown populated with columns fetched from the connected
@@ -29,9 +32,13 @@ const ColumnSelect = React.memo(function ColumnSelect({
   placeholder = 'Select column',
   darkMode = false,
   isMulti = false,
+  queryOptions = {},
 }) {
   const [columns, setColumns] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const getAllExposedValues = useStore((state) => state.getAllExposedValues);
+  const getComponentNameIdMapping = useStore((state) => state.getComponentNameIdMapping);
+  const getQueryNameIdMapping = useStore((state) => state.getQueryNameIdMapping);
 
   const canFetch = !!(selectedDataSource?.id && table);
 
@@ -39,9 +46,37 @@ const ColumnSelect = React.memo(function ColumnSelect({
     if (!canFetch) return;
     setIsLoading(true);
     try {
-      const args = { values: { schema: schema || 'public', table } };
+      const allowDynamicConnectionParameters =
+        selectedDataSource?.options?.allow_dynamic_connection_parameters?.value === true ||
+        selectedDataSource?.options?.allow_dynamic_connection_parameters === true;
+      const pluginDynamicParamKeys = PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS[selectedDataSource?.kind] ?? [];
+      const dynamicConnectionArgs =
+        allowDynamicConnectionParameters && pluginDynamicParamKeys.length > 0
+          ? Object.fromEntries(
+              pluginDynamicParamKeys
+                .map((key) => [key, queryOptions?.[key]?.value ?? queryOptions?.[key]])
+                .filter(([, paramValue]) => paramValue)
+            )
+          : {};
+
+      const queryState = getAllExposedValues();
+      const hasDynamicConnectionArgs = Object.keys(dynamicConnectionArgs).length > 0;
+      const resolvedOptions = hasDynamicConnectionArgs
+        ? getQueryVariables(dynamicConnectionArgs, queryState, {
+            components: getComponentNameIdMapping(),
+            queries: getQueryNameIdMapping(),
+          })
+        : {};
+
+      const args = { values: { schema: schema || 'public', table }, ...dynamicConnectionArgs };
       const environmentId = currentAppEnvironmentId != null ? String(currentAppEnvironmentId) : '';
-      const response = await dataqueryService.invoke(selectedDataSource.id, 'listColumns', environmentId, args);
+      const response = await dataqueryService.invoke(
+        selectedDataSource.id,
+        'listColumns',
+        environmentId,
+        args,
+        Object.keys(resolvedOptions).length > 0 ? resolvedOptions : undefined
+      );
       const payload = response?.data ?? response;
       const items = Array.isArray(payload) ? payload : payload?.data || [];
       setColumns(items);
@@ -50,7 +85,16 @@ const ColumnSelect = React.memo(function ColumnSelect({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDataSource?.id, currentAppEnvironmentId, schema, table, canFetch]);
+  }, [
+    selectedDataSource?.id,
+    selectedDataSource?.kind,
+    selectedDataSource?.options,
+    currentAppEnvironmentId,
+    schema,
+    table,
+    canFetch,
+    queryOptions,
+  ]);
 
   useEffect(() => {
     fetchColumns();

@@ -10,6 +10,8 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { components as RSComponents } from 'react-select';
 import Spinner from '@/_ui/Spinner';
+import { PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS } from './constants';
+import { getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 
 const DynamicSelector = ({
   operation,
@@ -37,6 +39,9 @@ const DynamicSelector = ({
   const isDependentField = dependsOn?.length > 0;
 
   const currentUser = useStore((state) => state.user);
+  const getAllExposedValues = useStore((state) => state.getAllExposedValues);
+  const getComponentNameIdMapping = useStore((state) => state.getComponentNameIdMapping);
+  const getQueryNameIdMapping = useStore((state) => state.getQueryNameIdMapping);
 
   const operationLabel = operation?.label || operation?.name || 'Fetch';
 
@@ -103,15 +108,45 @@ const DynamicSelector = ({
 
     try {
       const effectiveSearch = typeof searchOverride === 'string' ? searchOverride : searchTerm;
+
+      const allowDynamicConnectionParameters =
+        selectedDataSource?.options?.allow_dynamic_connection_parameters?.value === true ||
+        selectedDataSource?.options?.allow_dynamic_connection_parameters === true;
+      const pluginDynamicParamKeys = PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS[selectedDataSource?.kind] ?? [];
+      const dynamicConnectionArgs =
+        allowDynamicConnectionParameters && pluginDynamicParamKeys.length > 0
+          ? Object.fromEntries(
+              pluginDynamicParamKeys
+                .map((key) => [key, options?.[key]?.value ?? options?.[key]])
+                .filter(([, value]) => value)
+            )
+          : {};
+      const hasDynamicConnectionArgs = Object.keys(dynamicConnectionArgs).length > 0;
+
+      const queryState = getAllExposedValues();
+      const resolvedOptions = hasDynamicConnectionArgs
+        ? getQueryVariables(dynamicConnectionArgs, queryState, {
+            components: getComponentNameIdMapping(),
+            queries: getQueryNameIdMapping(),
+          })
+        : {};
+
       const args =
-        depKeys.length || pagination || effectiveSearch
+        depKeys.length || pagination || effectiveSearch || hasDynamicConnectionArgs
           ? {
               ...(depKeys.length ? { values: depValues } : {}),
               ...(pagination ? { page: currentPage, limit: pageSize } : {}),
               ...(effectiveSearch ? { search: effectiveSearch } : {}),
+              ...dynamicConnectionArgs,
             }
           : undefined;
-      const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
+      const response = await dataqueryService.invoke(
+        selectedDataSource.id,
+        invokeMethod,
+        environmentId,
+        args,
+        Object.keys(resolvedOptions).length > 0 ? resolvedOptions : undefined
+      );
       if (response?.status === 'failed') {
         setError(response?.errorMessage || 'Failed to fetch data');
         setFetchedData([]);
@@ -223,7 +258,7 @@ const DynamicSelector = ({
       }
     } catch (err) {
       console.error(`[DynamicSelector] Error fetching data for ${invokeMethod}:`, err);
-      setError(err?.message || 'Failed to fetch data');
+      setError(err?.error || err?.message || 'Failed to fetch data');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -316,6 +351,23 @@ const DynamicSelector = ({
     }
   }, [selectedDataSource]);
 
+  // Re-validate access whenever this (non-dependent) field's own value changes —
+  // e.g. typed directly in FX mode — instead of waiting for a remount to catch it.
+  useEffect(() => {
+    if (selectedDataSource?.kind !== 'googlesheetsv2') return;
+    if (isDependentField || autoFetch || !selectedDataSource) return;
+
+    const cacheKey = `${propertyKey}_cache`;
+    const existingCache = get(options, cacheKey) || {};
+    const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+    const userId = currentUser?.id;
+
+    const cachedData = isMultiAuth ? existingCache[userId]?.['nonDependentCache'] : existingCache['nonDependentCache'];
+
+    validateSelectedValue(cachedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options[propertyKey]?.value ?? options[propertyKey] ?? value]);
+
   useEffect(() => {
     if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
       const cacheKey = `${propertyKey}_cache`;
@@ -370,6 +422,27 @@ const DynamicSelector = ({
       }
     }
   }, [compositeDependencyKey]);
+
+  // Re-validate access whenever this (dependent) field's own value changes —
+  // e.g. typed directly in FX mode — instead of waiting for a remount/dependency
+  // change to catch it. Validates against the cache slot for the current parent
+  // value; does not trigger a network fetch.
+  useEffect(() => {
+    if (selectedDataSource?.kind !== 'googlesheetsv2') return;
+    if (!isDependentField || autoFetch || !selectedDataSource || !depsReady) return;
+
+    const cacheKey = `${propertyKey}_cache`;
+    const existingCache = get(options, cacheKey) || {};
+    const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+    const userId = currentUser?.id;
+
+    const cachedData = isMultiAuth
+      ? existingCache[userId]?.[compositeDependencyKey]
+      : existingCache[compositeDependencyKey];
+
+    validateSelectedValue(cachedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options[propertyKey]?.value ?? options[propertyKey] ?? value]);
 
   // Re-fetch when page changes (pagination mode)
   useEffect(() => {
@@ -755,7 +828,18 @@ const DynamicSelector = ({
       {error && (
         <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
           <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
-          <span>{error}</span>
+          <span
+            title={error}
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {error.length > 200 ? `${error.slice(0, 200)}…` : error}
+          </span>
         </div>
       )}
 

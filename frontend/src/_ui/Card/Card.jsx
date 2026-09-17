@@ -1,7 +1,6 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
-import AiBanner from '@/_ui/AiBanner';
 import LegacyBanner from '@/_ui/LegacyBanner';
 
 const Card = ({
@@ -50,8 +49,7 @@ const Card = ({
       >
         {tags && tags.includes('legacy') && <LegacyBanner />}
         <div className="card-body">
-          {tags && tags.includes('AI') && <AiBanner className="card-tag" />}
-          <center style={{ marginTop: tags.includes('AI') ? '0px' : '15px' }}>
+          <center style={{ marginTop: '15px' }}>
             <DisplayIcon src={src} />
             <br></br>
             <br></br>

@@ -1,10 +1,16 @@
 import React, { useMemo, useCallback, useRef } from 'react';
+import tinycolor from 'tinycolor2';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import { Button } from '@/components/ui/Button/Button';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePicker';
+import { getModifiedColor, getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import clsx from 'clsx';
+
+// Alpha applied to the configured background to render the disabled state. Fading (rather than
+// lightening/darkening) keeps the chosen hue and reads as disabled on both light and dark surfaces.
+const DISABLED_BG_ALPHA = 0.4;
 
 const fontWeightClass = {
   normal: 'tw-font-normal',
@@ -128,13 +134,26 @@ export const FileButton = (props) => {
 
   const buttonVariant = buttonType === 'outline' ? 'outline' : 'primary';
 
+  // Derive hover/pressed/disabled from the configured background so they don't fall back to the
+  // theme's brand-blue tokens. Hover/pressed mirror the Button widget (getModifiedColor); disabled
+  // fades the chosen color.
+  const computedHoverBgColor =
+    hoverBackgroundColor !== 'auto' ? hoverBackgroundColor : getModifiedColor(backgroundColor, 'hover');
+  const computedPressedBgColor = getModifiedColor(backgroundColor, 'active');
+  const resolvedBgColor = backgroundColor?.startsWith('var(')
+    ? getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor
+    : backgroundColor;
+  const computedDisabledBgColor = tinycolor(resolvedBgColor).setAlpha(DISABLED_BG_ALPHA).toRgbString();
+
   // Dynamic values that cannot be expressed as static Tailwind classes
   const buttonStyle = {
     borderRadius: `${borderRadius}px`,
     boxShadow,
     ...(buttonType === 'solid' && {
       '--button-primary': backgroundColor,
-      ...(hoverBackgroundColor !== 'auto' && { '--button-primary-hover': hoverBackgroundColor }),
+      '--button-primary-hover': computedHoverBgColor,
+      '--button-primary-pressed': computedPressedBgColor,
+      '--button-primary-disabled': computedDisabledBgColor,
     }),
     ...(buttonType === 'outline' && {
       background: 'transparent',

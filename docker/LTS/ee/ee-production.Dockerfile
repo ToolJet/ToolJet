@@ -1,3 +1,40 @@
+# Own stage (Debian 13, matches final stage) so node:22.15.1 builder stays untouched.
+FROM debian:13-slim AS python-builder
+
+# Unversioned python3 = trixie default (3.13).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create isolated Python environment
+RUN python3 -m venv /opt/python-runtime
+
+# Upgrade pip and install common packages
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==2.1.3 \
+    pandas==2.2.3 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.9.2 \
+    typing-extensions==4.12.2
+
+
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+FROM node:22.15.1 AS mcp-builder
+WORKDIR /mcp
+ARG CUSTOM_GITHUB_TOKEN
+ARG TOOLJET_MCP_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN npm ci && npm run build:plugin
+
+
 FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -25,29 +62,6 @@ RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
     cd nsjail && \
     make && \
     strip nsjail
-
-# Build Python runtime with pre-installed packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create isolated Python environment
-RUN python3.11 -m venv /opt/python-runtime
-
-# Upgrade pip and install common packages
-RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/python-runtime/bin/pip install --no-cache-dir \
-    numpy==1.26.4 \
-    pandas==2.2.1 \
-    requests==2.31.0 \
-    httpx==0.27.0 \
-    python-dateutil==2.9.0 \
-    pytz==2024.1 \
-    pydantic==2.6.4 \
-    typing-extensions==4.10.0
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -119,7 +133,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -131,20 +145,28 @@ RUN apt-get update && \
     xz-utils \
     tar \
     postgresql-client \
-    redis \
-    libaio1 \
+    libaio1t64 \
+    libxml2 \
     git \
     openssh-client \
     freetds-dev \
-    python3.11 \
-    python3.11-venv \
-    libprotobuf32 \
+    python3 \
+    python3-venv \
+    libprotobuf32t64 \
     libnl-route-3-200 \
     procps \
     libcap2-bin \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb trixie main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
+
+# Oracle Instant Client needs libaio.so.1; trixie ships it as .so.1t64 (amd64 path).
+RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
 
 
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
@@ -186,7 +208,7 @@ COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
 RUN chmod 4755 /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
-COPY --from=builder /opt/python-runtime /opt/python-runtime
+COPY --from=python-builder /opt/python-runtime /opt/python-runtime
 
 # Copy nsjail configuration file
 RUN mkdir -p /etc/nsjail
@@ -225,6 +247,12 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
+# tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
+
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 
@@ -234,6 +262,13 @@ RUN mkdir -p /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
+
+# Bake AWS RDS cert bundle as fallback for deployments with no outbound internet access
+RUN mkdir -p /home/appuser/certs \
+    && (wget -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+        || echo "Warning: bake-time RDS cert download failed, image will rely on runtime refresh only") \
+    && chown -R appuser:0 /home/appuser/certs \
+    && chmod -R g=u /home/appuser/certs
 
 # Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
 RUN mkdir -p /app/server/tooljet/gitsync \

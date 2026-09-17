@@ -146,8 +146,22 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     };
   };
 
+  // Delete orphaned handlers.
+  const cleanupItemEvents = (itemIds) => {
+    const { getModuleEvents, deleteAppVersionEventHandler } = useStore.getState().eventsSlice;
+    const events = getModuleEvents('canvas').filter(
+      (e) => e.sourceId === component?.id && e.event?.ref && itemIds.includes(e.event.ref)
+    );
+    if (events.length === 0) return;
+    Promise.all(events.map((e) => deleteAppVersionEventHandler(e.id))).catch((err) => {
+      console.error('[useMenuItemsManager] Failed to delete event handlers for item(s)', itemIds, err);
+    });
+  };
+
   const handleDeleteItem = (itemId, parentId = null) => {
     if (parentId) {
+      // Child item: only its own events (children can't have their own children).
+      cleanupItemEvents([itemId]);
       const newItems = menuItems.map((item) => {
         if (item.id === parentId && item.children) {
           return {
@@ -159,6 +173,10 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       });
       updateMenuItems(newItems);
     } else {
+      // Top-level: the item plus (if it's a group) every child that gets removed with it.
+      const deleted = menuItems.find((item) => item.id === itemId);
+      const affectedIds = [itemId, ...(deleted?.isGroup ? (deleted.children || []).map((c) => c.id) : [])];
+      cleanupItemEvents(affectedIds);
       const newItems = menuItems.filter((item) => item.id !== itemId);
       updateMenuItems(newItems);
     }

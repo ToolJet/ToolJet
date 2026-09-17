@@ -78,6 +78,7 @@ export class GroupPermissionsDuplicateService implements IGroupPermissionsDuplic
           );
           break;
         case ResourceType.WORKFLOWS:
+        case ResourceType.MODULE:
           await this.duplicationAppsPermissions(
             granularPermissionsToDuplicate.appsGroupPermissions,
             newGranularPermissionsId,

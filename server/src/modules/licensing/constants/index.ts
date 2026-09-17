@@ -126,6 +126,7 @@ export enum LICENSE_FIELD {
   APP_HISTORY = 'appHistoryEnabled',
   APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
   SCIM = 'scimEnabled',
+  MFA = 'mfaEnabled',
   PLAN = 'plan',
   MODULES = 'modulesEnabled',
   CUSTOM_GROUPS = 'customGroupsEnabled',
@@ -144,6 +145,7 @@ export enum LICENSE_FIELD {
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  PUBLIC_APP = 'publicAppEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

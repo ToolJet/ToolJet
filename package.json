@@ -55,6 +55,8 @@
     "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
     "plugins:reload": "npm --prefix server run plugins:reload",
     "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
+    "reset-superadmin": "npm --prefix server run reset-superadmin --",
+    "reset-mfa": "npm --prefix server run reset-mfa --",
     "rotate:keys": "npm --prefix server run rotate:keys --",
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
     "heroku-postbuild": "./heroku-postbuild.sh",

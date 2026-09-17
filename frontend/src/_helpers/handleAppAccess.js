@@ -60,6 +60,18 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
         case 403: {
           const errorObj = safelyParseJSON(error.data?.message);
           const currentSessionValue = authenticationService.currentSessionValue;
+
+          if (errorObj?.errorType === 'WORKSPACE_BANNED') {
+            redirectToErrorPage(ERROR_TYPES.WORKSPACE_SUSPENDED, {
+              workspaceName: errorObj.workspaceName || 'This workspace',
+            });
+            return;
+          }
+          if (errorObj?.errorType === 'WORKSPACE_ARCHIVED') {
+            redirectToErrorPage(ERROR_TYPES.WORKSPACE_ARCHIVED);
+            return;
+          }
+
           if (
             errorObj?.organizationId &&
             currentSessionValue.current_user &&
@@ -74,6 +86,10 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           }
           if (error?.data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
             redirectToErrorPage(ERROR_TYPES.RESTRICTED_PREVIEW);
+            return;
+          }
+          if (error?.data?.message === ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED) {
+            redirectToErrorPage(ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED);
             return;
           }
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);

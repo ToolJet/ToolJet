@@ -14,6 +14,19 @@ export const moduleContainerConfig = {
     properties: {
         inputItems: { type: 'array', displayName: 'Input' },
         outputItems: { type: 'array', displayName: 'Output' },
+        dynamicHeight: {
+            type: 'toggle',
+            displayName: 'Dynamic height',
+            validation: {
+                schema: { type: 'boolean' },
+                defaultValue: false,
+            },
+        },
+        collapseWhenHidden: {
+            type: 'toggle',
+            displayName: 'Collapse when hidden',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+        },
     },
     events: {},
     styles: {},
@@ -27,6 +40,8 @@ export const moduleContainerConfig = {
         properties: {
             inputItems: { value: [] },
             outputItems: { value: [] },
+            dynamicHeight: { value: '{{false}}' },
+            collapseWhenHidden: { value: '{{false}}' },
         },
         events: [],
         styles: {

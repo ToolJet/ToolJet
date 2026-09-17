@@ -1,7 +1,7 @@
 import { smtpConfig } from "Constants/constants/whitelabel";
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import {
   confirmInviteElements,
   fetchAndVisitInviteLinkViaMH,
@@ -15,9 +15,9 @@ import {
 } from "Support/utils/manageUsers";
 import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { usersText } from "Texts/manageUsers";
+import { usersText } from "Texts/platform/manageUsers";
 
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import {
   fillInputField,
   logout,
@@ -37,6 +37,10 @@ describe("user invite flow cases", () => {
       enableInstanceSignup();
     });
     cy.apiConfigureSmtp(smtpConfig);
+    // cy.mhDeleteAll();
+  });
+  after(() => {
+    cy.mhDeleteAll();
   });
 
   it("Should verify the user archive functionality", () => {
@@ -167,9 +171,9 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(7000);
+    cy.wait(5000);
     cy.apiLogout();
-    cy.wait(7000);
+    cy.wait(5000);
 
     fetchAndVisitInviteLinkViaMH(data.email);
     confirmInviteElements(data.email);

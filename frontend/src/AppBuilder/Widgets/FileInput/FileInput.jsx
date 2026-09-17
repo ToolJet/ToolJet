@@ -13,6 +13,7 @@ import RemoveRectangle from '@/_ui/Icon/bulkIcons/RemoveRectangle';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -61,7 +62,10 @@ export const FileInput = (props) => {
     icon = 'IconFileSearch',
     iconVisibility,
     iconColor = 'var(--cc-default-icon)',
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const label = properties.label ?? 'Label';
   const placeholder = properties.instructionText ?? 'Click to select file';
@@ -255,6 +259,7 @@ export const FileInput = (props) => {
           _width={_width}
           widthType={widthType}
           inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
         />
 

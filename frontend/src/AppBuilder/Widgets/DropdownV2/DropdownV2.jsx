@@ -19,10 +19,11 @@ import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -78,6 +79,7 @@ export const DropdownV2 = ({
     sort,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
   } = properties;
   const {
     selectedTextColor,
@@ -101,12 +103,13 @@ export const DropdownV2 = ({
     widthType,
     menuWidthMode,
     menuCustomWidth,
+    labelFontSize,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
+  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(advanced ? schema : options));
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
@@ -329,6 +332,8 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  useFormClear(() => setInputValue(null));
+
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
   const menuContentWidth = useMemo(() => {
@@ -374,7 +379,7 @@ export const DropdownV2 = ({
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
         borderColor: getInputBorderColor({
-          isFocused: state.isFocused,
+          isFocused: state.isFocused || state.menuIsOpen,
           isValid,
           fieldBorderColor,
           accentColor,
@@ -389,7 +394,18 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: getModifiedColor(fieldBorderColor, 24),
+          borderColor:
+            state.isFocused || state.menuIsOpen
+              ? getInputBorderColor({
+                  isFocused: true,
+                  isValid,
+                  fieldBorderColor,
+                  accentColor,
+                  isLoading: isDropdownLoading,
+                  isDisabled: isDropdownDisabled,
+                  userInteracted,
+                })
+              : getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -492,6 +508,7 @@ export const DropdownV2 = ({
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   return (
     <>
       <div
@@ -532,6 +549,7 @@ export const DropdownV2 = ({
           _width={_width}
           widthType={widthType}
           id={`${id}-label`}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
@@ -564,6 +582,7 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -581,6 +600,7 @@ export const DropdownV2 = ({
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}
@@ -599,6 +619,7 @@ export const DropdownV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
+            accentColor={accentColor}
             isSearchable={false}
             darkMode={darkMode}
             menuBackgroundColor={menuBackgroundColor}

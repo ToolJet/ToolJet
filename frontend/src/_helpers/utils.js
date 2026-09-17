@@ -315,27 +315,6 @@ export function getDynamicVariables(text) {
   return matchedParams;
 }
 
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
-  let found = false;
-  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
-  let currentNumber = currentComponentsForKind.length + 1;
-  let _componentName = '';
-  while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
-    if (
-      Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
-    ) {
-      found = true;
-    }
-    currentNumber = currentNumber + 1;
-  }
-
-  return _componentName;
-}
-
 export function computeActionName(actions) {
   const values = actions ? actions.value : [];
 
@@ -1435,11 +1414,13 @@ export const hasBuilderRole = (roleObj) => {
 };
 
 export function checkIfToolJetCloud(version) {
+  if (!version) return false;
   const parsed = version.split('-');
   return parsed[1] === 'cloud';
 }
 
 export function checkIfToolJetEE(version) {
+  if (!version) return false;
   const parsed = version.split('-');
   return parsed[1] === 'ee';
 }

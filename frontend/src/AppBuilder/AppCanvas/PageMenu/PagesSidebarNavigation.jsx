@@ -56,7 +56,13 @@ export const PagesSidebarNavigation = ({
   );
   const { appMode } = useStore((state) => state.globalSettings, shallow);
   const switchToHomePage = useStore((state) => state.switchToHomePage);
-  const switchPageWrapper = useStore((state) => state.switchPageWrapper);
+  const rawSwitchPageWrapper = useStore((state) => state.switchPageWrapper);
+  // Bound here, at the moduleId source, rather than threading moduleId as a prop through
+  // PageGroup's several nesting levels down to the actual click handler.
+  const switchPageWrapper = useCallback(
+    (page, currentPageId) => rawSwitchPageWrapper(page, currentPageId, moduleId),
+    [rawSwitchPageWrapper, moduleId]
+  );
 
   const navRef = useRef(null);
   const headerRef = useRef(null);

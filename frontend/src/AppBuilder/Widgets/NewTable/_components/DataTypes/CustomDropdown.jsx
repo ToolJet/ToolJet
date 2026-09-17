@@ -125,6 +125,7 @@ export const CustomDropdownColumn = ({
           value={sanitizedValue}
           renderValue={renderValue}
           search={false}
+          disabled={!isEditable}
           onChange={onChange}
           multiple={multiple}
           placeholder={t('globals.select', 'Select') + '...'}

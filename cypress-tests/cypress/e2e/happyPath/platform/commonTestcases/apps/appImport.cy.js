@@ -1,16 +1,16 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { importSelectors } from "Selectors/exportImport";
-import { versionSwitcherSelectors } from "Selectors/version";
-import { renameApp } from "Support/utils/editor/editorHeaderOperations";
+import { dashboardSelector } from "Selectors/platform/dashboard";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { versionSwitcherSelectors } from "Selectors/platform/version";
+import { renameApp } from "Support/utils/appBuilder/editorHeader";
 import {
   importAndVerifyApp,
   setupDataSourceWithConstants,
   verifyImportModalElements,
 } from "Support/utils/exportImport";
 import { switchVersionAndVerify } from "Support/utils/version";
-import { importText } from "Texts/exportImport";
+import { importText } from "Texts/platform/exportImport";
 
 describe("App Import", () => {
   const TEST_DATA = {

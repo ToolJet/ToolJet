@@ -16,6 +16,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  AiSources,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -101,7 +102,8 @@ class DataSourceManagerComponent extends React.Component {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        this.setState({ plugins: data, pluginsLoaded: true });
+        const sortedPlugins = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        this.setState({ plugins: sortedPlugins, pluginsLoaded: true });
       })
       .catch((error) => {
         this.setState({ pluginsLoaded: true });
@@ -276,6 +278,7 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -454,16 +457,14 @@ class DataSourceManagerComponent extends React.Component {
       }
       return acc;
     }, {});
-    this.setState({ validationMessages: errorMap });
-    const filteredValidationBanner = interactedFields
-      ? Object.keys(this.state.validationMessages)
-          .filter((key) => interactedFields.has(key))
-          .reduce((result, key) => {
-            result.push(this.state.validationMessages[key]);
-            return result;
-          }, [])
-      : Object.values(this.state.validationMessages);
-    this.setState({ validationError: filteredValidationBanner });
+    this.setState({ validationMessages: errorMap }, () => {
+      const filteredValidationBanner = interactedFields
+        ? Object.keys(this.state.validationMessages)
+            .filter((key) => interactedFields.has(key))
+            .map((key) => this.state.validationMessages[key])
+        : Object.values(this.state.validationMessages);
+      this.setState({ validationError: filteredValidationBanner });
+    });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
@@ -611,6 +612,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
@@ -643,6 +645,12 @@ class DataSourceManagerComponent extends React.Component {
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'AI',
+        key: '#ai',
+        list: allDataSourcesList.ais,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.ais, 'AI'),
       },
       {
         type: 'Plugins',
@@ -1008,6 +1016,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
@@ -1107,17 +1116,6 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     </ToolTip>
                   )}
-                  {this.props.tags &&
-                    this.props.tags.map((tag) => {
-                      if (tag === 'AI') {
-                        return (
-                          <div key={tag} className="tag-container">
-                            <SolidIcon name="AI-tag" />
-                            <span>{tag}</span>
-                          </div>
-                        );
-                      }
-                    })}
                 </div>
               </div>
               {!isSampleDb && (

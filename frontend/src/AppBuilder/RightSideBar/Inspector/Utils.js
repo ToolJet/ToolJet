@@ -3,6 +3,7 @@ import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -53,6 +54,7 @@ export function renderCustomStyles(
     componentConfig.component == 'Table' ||
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'Cascader' ||
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Button' ||
@@ -171,6 +173,9 @@ export function renderElement(
 
   if (
     componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
@@ -183,7 +188,8 @@ export function renderElement(
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'Tabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -251,3 +257,13 @@ export function renderElement(
     />
   );
 }
+
+export const goToModule = (moduleAppId) => {
+  const subpath = getSubpath();
+  const slug =
+    moduleAppId === undefined || moduleAppId === null || `${moduleAppId}`.trim() === '' ? '__invalid__' : moduleAppId;
+  const appPath = getPrivateRoute('editor', { slug });
+  const path = subpath ? `${subpath}${appPath}` : appPath;
+
+  window.open(path, '_blank', 'noopener,noreferrer');
+};

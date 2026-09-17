@@ -16,6 +16,8 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
+import { recordQueryMetric } from '@otel/audit-metrics';
+import { getOrganizationNameCached, getEnvironmentNameCached } from '@otel/org-name-cache';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
@@ -80,6 +82,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
     let appToUse: App;
+    let resolvedEnvironmentId: string | undefined;
 
     try {
       dataSource = dataQuery?.dataSource;
@@ -92,6 +95,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
       const environmentId = dataSourceOptions.environmentId;
+      resolvedEnvironmentId = environmentId;
 
       dataSource.options = dataSourceOptions.options;
 
@@ -104,6 +108,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         user,
         opts
       );
+
+      const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+      if (!isTooljetManagedApp) {
+        sourceOptions['tj_redirect_host'] = await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+      }
 
       // Determine whether query timeout is set, to initiate abort controller
       const queryTimeoutMs =
@@ -207,7 +216,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 const result = await this.dataSourceUtilService.getAuthUrl({
                   provider: dataSource.kind,
                   source_options: sourceOptions,
-                  plugin_id: undefined,
+                  plugin_id: dataSource.pluginId,
+                  organization_id: organizationId,
+                  environment_id: environmentId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -260,6 +271,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user,
               opts
             ));
+            if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+              sourceOptions['tj_redirect_host'] =
+                await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+            }
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
 
@@ -287,14 +302,18 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'||
-            dataSource.kind === 'googlesheetsv2'
+            dataSource.kind === 'zendesk' ||
+            dataSource.kind === 'googlesheetsv2' ||
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
               provider: dataSource.kind,
               source_options: sourceOptions,
-              plugin_id: undefined,
+              plugin_id: dataSource.pluginId,
+              organization_id: organizationId,
+              environment_id: environmentId,
             });
             return {
               status: 'needs_oauth',
@@ -322,9 +341,23 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
 
+      result['metadata'] = {
+        ...(result['metadata'] || {}),
+        ...queryStatus.getResponseMetadata(),
+      };
+
+      if (dataSource.kind === 'restapi' || dataSource.kind === 'grpcv2') {
+        const queryDefinition =
+          dataSource.kind === 'restapi'
+            ? (result as any)['metadata']?.['request']?.['url']
+            : dataQuery.options?.['raw_message'];
+        (result as any)['metadata']['queryDefinition'] = queryDefinition;
+      }
+
       return result;
     } catch (queryError) {
-      abortCtrl.cleanup();
+      // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
+      abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -333,7 +366,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
-      abortCtrl.cleanup();
+      abortCtrl?.cleanup();
       if (user) {
         // Get metadata from queryStatus
         const queryMetadata = queryStatus.getMetaData();
@@ -358,7 +391,64 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           },
         };
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
+
+        await this.emitQueryMetric(user, dataQuery, queryStatus, {
+          appId: appToUse?.id,
+          appName: appToUse?.name,
+          dataSourceType: dataSource?.kind,
+          appMode: mode,
+          environmentId: resolvedEnvironmentId,
+        });
       }
+    }
+  }
+
+  // Direct OTEL emission — metrics flow regardless of audit log licensing.
+  // Protected: the EE override of runQuery has its own finally block and calls this too.
+  protected async emitQueryMetric(
+    user: User,
+    dataQuery: any,
+    queryStatus: DataQueryStatus,
+    context: {
+      appId?: string;
+      appName?: string;
+      dataSourceType?: string;
+      appMode?: string;
+      environmentId?: string;
+    }
+  ): Promise<void> {
+    // Runs inside every query's finally block. Bail before the two cached name lookups so
+    // installs with OTel off pay nothing in the query path.
+    if (process.env.ENABLE_OTEL !== 'true') return;
+
+    try {
+      const { status, queryError, duration, parsedQueryOptions } = queryStatus.getMetaData();
+      const [organizationName, environment] = await Promise.all([
+        getOrganizationNameCached(user.organizationId),
+        context.environmentId ? getEnvironmentNameCached(context.environmentId) : Promise.resolve('unknown'),
+      ]);
+
+      recordQueryMetric({
+        userId: user.id,
+        organizationId: user.organizationId,
+        organizationName,
+        appId: context.appId || 'unknown',
+        appName: context.appName,
+        queryId: dataQuery?.id || 'unknown',
+        queryName: dataQuery?.name,
+        dataSourceType: context.dataSourceType || 'unknown',
+        appMode: context.appMode || 'unknown',
+        environment,
+        status,
+        duration,
+        error: (queryError as { message?: string })?.message,
+        queryText: parsedQueryOptions?.['query'] || '',
+        queryType: parsedQueryOptions?.['mode'] || 'unknown',
+        versionName: dataQuery?.appVersion?.name,
+      });
+    } catch (error) {
+      // Observability must never break query execution
+      console.error('[OTEL] Failed to emit query metric:', error);
     }
   }
 
@@ -551,11 +641,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Case 3: String
       if (typeof obj === 'string') {
-        let resolvedValue = obj.replace(/\n/g, ' ');
+        // Preserve newlines in the query text itself.
+        // A newline-flattened form is only used for whole-string map lookups.
+        // Flattening the query text here would collapse a multi-line query into a single line,
+        // so a leading `-- comment` would then comment out the entire query.
+        let resolvedValue = obj;
+        const flattenedForLookup = obj.replace(/\n/g, ' ');
 
         // a: Handle strings with both {{ }} and %% (%% - deprecated removed) TODO: CHECK IF ITS NEEDED
         if (typeof resolvedValue === 'string' && resolvedValue.includes('{{') && resolvedValue.includes('}}')) {
-          const resolvedVar = options[resolvedValue];
+          const resolvedVar = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedVar;
           }
@@ -587,7 +682,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               resolvedValue.endsWith('}}') &&
               (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
         ) {
-          resolvedValue = options[resolvedValue];
+          resolvedValue = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }

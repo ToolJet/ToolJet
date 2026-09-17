@@ -53,7 +53,7 @@ export const FieldItem = ({
     (listItem, menuOptionLabel) => {
       if (menuOptionLabel === 'Delete') {
         onRemove(index);
-      } else if (menuOptionLabel === 'copyField') {
+      } else if (menuOptionLabel === 'copyColumn') {
         onDuplicate(index);
       }
     },

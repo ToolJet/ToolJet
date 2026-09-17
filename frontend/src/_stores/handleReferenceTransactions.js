@@ -36,16 +36,24 @@ export function removeAppSuggestions(suggestionsArray, deleteAndReplaceArray) {
   return sortedSuggestionsArray;
 }
 
+const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 //* finding references and update within deeply nested objects using Depth-First Search (DFS) traversal
 export function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
+    // Match every standalone occurrence: the boundary guards keep a ref from matching
+    // inside a longer identifier (renaming `run` must not touch `runjs1`). `-` is included
+    // in the boundary classes because entity names may contain hyphens (validateQueryName
+    // allows [A-Za-z0-9_-]), so renaming `abc` must not rewrite a distinct `abc-def`.
+    const pattern = new RegExp(`(^|[^\\w$-])${escapeRegExp(oldRef)}(?![\\w$-])`, 'g');
     for (let key in node) {
       const value = node[key];
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
         const referenceExists = value.includes(oldRef);
 
         if (referenceExists) {
-          node[key] = value.replace(oldRef, newRef);
+          // Replacer function: a `$` inside newRef must stay literal, never a replacement pattern
+          node[key] = value.replace(pattern, (match, boundary) => boundary + newRef);
         }
       } else if (typeof value === 'object') {
         dfs(value, oldRef, newRef);

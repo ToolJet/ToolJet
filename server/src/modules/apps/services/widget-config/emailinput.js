@@ -12,6 +12,13 @@ export const emailinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -66,12 +73,27 @@ export const emailinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {
@@ -96,6 +118,12 @@ export const emailinputConfig = {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -303,6 +331,7 @@ export const emailinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter email' },
@@ -312,11 +341,13 @@ export const emailinputConfig = {
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },

@@ -14,6 +14,7 @@ export type QueryOptions = {
   update_condition: string;
   table_parameters: string;
   new_item_details: string;
+  expression_attribute_values?: [string, string][];
 };
 
 export type AssumeRoleCredentials = {

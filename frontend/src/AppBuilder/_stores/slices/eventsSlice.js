@@ -1,6 +1,6 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { debounce, replaceEntityReferencesWithIds } from '../utils';
+import { debounce, replaceQueryOptionsEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
@@ -93,6 +93,11 @@ export const createEventsSlice = (set, get) => ({
     fireEvent: (eventName, id, moduleId, customResolvables, options) => {
       const { eventsSlice, getCurrentMode, getEditorLoading } = get();
       const { handleEvent } = eventsSlice;
+      // A write made just before firing this event — by this component or another one entirely
+      // — may still be sitting in a pending batch; the event's actions could otherwise read a
+      // stale value. Resolve every pending write that isn't part of an explicit mount-time
+      // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
+      get().flushImplicitBatchEntries();
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -152,16 +157,16 @@ export const createEventsSlice = (set, get) => ({
       get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      appVersionService
-        .createAppVersionEventHandler(appId, versionId, event)
-        .then((response) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          get().eventsSlice.addEvent(response, moduleId);
-        })
-        .catch((err) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          toast.error(err?.error || 'An error occurred while creating the event handler');
-        });
+      try {
+        const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        get().eventsSlice.addEvent(response, moduleId);
+        return response;
+      } catch (err) {
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        toast.error(err?.error || 'An error occurred while creating the event handler');
+        return null;
+      }
     },
     bulkCreateAppVersionEventHandlers: async (events, moduleId) => {
       if (!events || events.length === 0) return [];
@@ -208,23 +213,27 @@ export const createEventsSlice = (set, get) => ({
       //! Revisit this
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      const newEvents = replaceEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
-      const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
-      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
-      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
-      set((state) => {
-        const eventsInState = state.eventsSlice.getModuleEvents('canvas');
-        const newEvents = eventsInState.map((event) => {
-          const updatedEvent = response.find((r) => r.id === event.id);
-          if (updatedEvent) {
-            return updatedEvent;
-          }
-          return event;
-        });
+      const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
+      try {
+        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        set((state) => {
+          const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
+          const newEvents = eventsInState.map((event) => {
+            const updatedEvent = response.find((r) => r.id === event.id);
+            if (updatedEvent) {
+              return updatedEvent;
+            }
+            return event;
+          });
 
-        // state.eventsSlice.setEvents(newEvents);
-        state.eventsSlice.module[moduleId].events = newEvents;
-      });
+          // state.eventsSlice.setEvents(newEvents);
+          state.eventsSlice.module[moduleId].events = newEvents;
+        });
+      } finally {
+        // In `finally` so a failed save cannot leave the loaders spinning forever
+        get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
+        get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
+      }
     },
     setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
@@ -338,6 +347,19 @@ export const createEventsSlice = (set, get) => ({
           }
         } else {
           console.log('No action is associated with this event');
+        }
+      }
+
+      // Precedence -> (item's event > component's event)
+      if (eventName === 'onNavigationItemClicked') {
+        const { itemId } = options;
+        const byIndex = (a, b) => (a?.index ?? 0) - (b?.index ?? 0);
+        const itemEvents = events.filter((e) => e?.event?.ref === itemId).sort(byIndex);
+        const componentEvents = events.filter((e) => !e?.event?.ref).sort(byIndex);
+        for (const event of [...itemEvents, ...componentEvents]) {
+          if (event?.event?.actionId && !event?.event?.disabled) {
+            await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+          }
         }
       }
 
@@ -645,6 +667,10 @@ export const createEventsSlice = (set, get) => ({
             const { queryId } = event;
             return get().queryPanel.resetQuery(queryId, moduleId);
           }
+          case 'abort-query': {
+            const { queryId } = event;
+            return get().queryPanel.abortQuery(queryId, moduleId);
+          }
           case 'logout': {
             return logoutAction();
           }
@@ -666,7 +692,11 @@ export const createEventsSlice = (set, get) => ({
                 (result, queryParam) => ({
                   ...result,
                   ...{
-                    [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
+                    [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
+                      queryParam[1],
+                      customVariables,
+                      moduleId
+                    ),
                   },
                 }),
                 {}
@@ -743,8 +773,6 @@ export const createEventsSlice = (set, get) => ({
             const key = getResolvedValue(event.key, customVariables, moduleId);
             const value = getResolvedValue(event.value, customVariables, moduleId);
 
-            console.log('here--- set-custom-variable', key, value, moduleId);
-
             setVariable(key, value, moduleId);
             return Promise.resolve();
             // customAppVariables[key] = value;
@@ -763,6 +791,17 @@ export const createEventsSlice = (set, get) => ({
 
             // return resp;
           }
+
+          // case 'set-custom-variables': {
+          //   const { setVariables } = get();
+          //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
+
+          //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
+          //     setVariables(variables, moduleId);
+          //   }
+
+          //   return Promise.resolve();
+          // }
 
           case 'get-custom-variable': {
             const { getVariable } = get();
@@ -1096,6 +1135,21 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      const abortQuery = (queryName = '') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+        if (query) {
+          return executeAction(
+            {
+              actionId: 'abort-query',
+              queryId: query.id,
+            },
+            mode,
+            {},
+            moduleId
+          );
+        }
+      };
+
       const setVariable = (key = '', value = '') => {
         if (key) {
           const event = {
@@ -1106,6 +1160,16 @@ export const createEventsSlice = (set, get) => ({
           return executeAction(event, mode, {}, moduleId);
         }
       };
+
+      // const setVariables = (variables = {}) => {
+      //   if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+
+      //   const event = {
+      //     actionId: 'set-custom-variables',
+      //     variables,
+      //   };
+      //   return executeAction(event, mode, {}, moduleId);
+      // };
 
       const getVariable = (key = '') => {
         if (key) {
@@ -1365,6 +1429,7 @@ export const createEventsSlice = (set, get) => ({
       return {
         runQuery,
         setVariable,
+        // setVariables,
         getVariable,
         unsetAllVariables,
         unSetVariable,
@@ -1386,6 +1451,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        abortQuery,
         scrollComponentInToView,
       };
     },

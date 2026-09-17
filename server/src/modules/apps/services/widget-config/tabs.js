@@ -110,6 +110,18 @@ export const tabsConfig = {
         defaultValue: false,
       },
     },
+    scrollToTopOnTabSwitch: {
+      type: 'toggle',
+      displayName: 'Scroll to top on tab switch',
+      section: 'additionalActions',
+      conditionallyRender: { key: 'renderOnlyActiveTab', value: false },
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -119,12 +131,30 @@ export const tabsConfig = {
       },
       section: 'additionalActions',
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
@@ -416,12 +446,14 @@ export const tabsConfig = {
       defaultTab: { value: '0' },
       hideTabs: { value: false },
       renderOnlyActiveTab: { value: false },
+      scrollToTopOnTabSwitch: { value: false },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {

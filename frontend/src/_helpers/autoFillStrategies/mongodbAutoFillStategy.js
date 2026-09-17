@@ -76,15 +76,16 @@ export const mongoDbAutoFillStrategy = {
       if (connectionType === 'string' && err.keyword === 'if') {
         return false;
       }
+      const errPath = err.instancePath || err.dataPath || '';
       if (
         connectionType === 'string' &&
-        err.dataPath === '.connection_string' &&
+        (errPath === '/connection_string' || errPath === '.connection_string') &&
         err.keyword === 'required' &&
         err.schemaPath.includes('allOf')
       ) {
         return false;
       }
-      if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
+      if (connectionType === 'manual' && errPath.includes('connection_string')) {
         return false;
       }
       return true;

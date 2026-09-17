@@ -11,67 +11,65 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        {
-          "value": "list_tables",
-          "name": "List Tables"
-        },
-        {
-          "value": "get_item",
-          "name": "Get Item"
-        },
-        {
-          "value": "query_table",
-          "name": "Query Table"
-        },
-        {
-          "value": "scan_table",
-          "name": "Scan Table"
-        },
-        {
-          "value": "delete_item",
-          "name": "Delete Item"
-        },
-        {
-          "value": "update_item",
-          "name": "Update Item"
-        },
-        {
-          "value": "describe_table",
-          "name": "Describe Table"
-        },
-        {
-          "value": "create_table",
-          "name": "Create Table"
-        },
-        {
-          "value": "put_item",
-          "name": "Put Item"
-        }
+        { "value": "list_tables",    "name": "List Tables" },
+        { "value": "get_item",       "name": "Get Item" },
+        { "value": "query_table",    "name": "Query Table" },
+        { "value": "scan_table",     "name": "Scan Table" },
+        { "value": "delete_item",    "name": "Delete Item" },
+        { "value": "update_item",    "name": "Update Item" },
+        { "value": "describe_table", "name": "Describe Table" },
+        { "value": "create_table",   "name": "Create Table" },
+        { "value": "put_item",       "name": "Put Item" }
       ]
     },
     "get_item": {
       "table": {
         "label": "Table",
         "key": "table",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table"
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to query",
+        "placeholder": "Select or type table name"
       },
       "key": {
-        "label": "Key name",
+        "label": "Key",
         "key": "key",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter key name",
+        "description": "Enter key",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     },
     "query_table": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to query",
+        "placeholder": "Select or type table name"
+      },
       "query_condition": {
         "label": "Query condition",
         "key": "query_condition",
@@ -80,9 +78,31 @@
         "description": "Enter query condition",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     },
     "scan_table": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to scan",
+        "placeholder": "Select or type table name"
+      },
       "scan_condition": {
         "label": "Scan condition",
         "key": "scan_condition",
@@ -91,44 +111,85 @@
         "description": "Enter scan condition",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     },
     "delete_item": {
       "table": {
         "label": "Table",
         "key": "table",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table"
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to delete from",
+        "placeholder": "Select or type table name"
       },
       "key": {
-        "label": "Key name",
+        "label": "Key",
         "key": "key",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter key name",
+        "description": "Enter key",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     },
     "update_item": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to update",
+        "placeholder": "Select or type table name"
+      },
       "update_condition": {
-        "label": "Update Condition",
+        "label": "Update condition",
         "key": "update_condition",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter update condition",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     },
     "create_table": {
       "table_parameters": {
-        "label": "Table Parameters",
+        "label": "Table parameters",
         "key": "table_parameters",
         "type": "codehinter",
         "mode": "javascript",
@@ -140,23 +201,49 @@
       "table": {
         "label": "Table",
         "key": "table",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter table",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter table"
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to describe",
+        "placeholder": "Select or type table name"
       }
     },
     "put_item": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "listTables",
+          "label": "Fetch Tables"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select the table to insert into",
+        "placeholder": "Select or type table name"
+      },
       "new_item_details": {
-        "label": "New Item Details",
+        "label": "New item details",
         "key": "new_item_details",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter new item details to insert",
         "height": "150px",
         "editorType": "extendedSingleLine"
+      },
+      "expression_attribute_values": {
+        "label": "Expression attribute values",
+        "key": "expression_attribute_values",
+        "type": "react-component-headers",
+        "description": "Key-value pairs for expression placeholders",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in expressions with colon notation e.g. :paramName"
       }
     }
   }

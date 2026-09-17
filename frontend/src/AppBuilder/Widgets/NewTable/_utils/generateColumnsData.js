@@ -27,6 +27,7 @@ import {
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
 import SelectSearch from 'react-select-search';
+import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
 // Module-level singleton for text measurement (avoids creating canvas on every call)
 let _measureCanvas = null;
@@ -76,6 +77,24 @@ const calculateButtonColumnWidth = (buttons, getResolvedValue) => {
   return Math.max(90, Math.ceil(totalWidth));
 };
 
+/**
+ * TableCell - Stable element type for every cell in every column.
+ *
+ *  - flexRender() turns columnDef.cell into the React element *type*.
+ *  - Building that as an inline arrow gave every rebuild of generateColumnsData a brand new type,
+ *    which React treats as a different component: the whole cell subtree unmounts and remounts.
+ *  - That destroys DOM focus and adapter state (e.g. StringColumnAdapter's isEditing) mid-edit,
+ *    which is why Tab could not carry a value from one cell to the next in the add-new-row popup.
+ *  — focusin/focusout are discrete priority, so the commit triggered by blurring cell A lands between
+ *    focusout on A and focusin on B, and B's node is detached before the browser can focus it.
+ *
+ * Delegating to columnDef.renderCell keeps the type constant while the renderer itself is still
+ * replaced on every rebuild, so nothing goes stale. Read through the live Column instance rather
+ * than a captured columnDef so the newest renderer is always the one invoked.
+ */
+const TableCell = (props) => props.cell.column.columnDef.renderCell(props);
+TableCell.displayName = 'TableCell';
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -91,8 +110,10 @@ export default function generateColumnsData({
   searchText,
   columnForAddNewRow = false,
   t,
+  moduleId = 'canvas',
 }) {
-  const getResolvedValue = useStore.getState().getResolvedValue;
+  const _getResolvedValue = useStore.getState().getResolvedValue;
+  const getResolvedValue = (value, customVariables = {}) => _getResolvedValue(value, customVariables, moduleId);
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
@@ -163,7 +184,7 @@ export default function generateColumnsData({
           pinPosition,
         },
 
-        cell: ({ cell, row }) => {
+        renderCell: ({ cell, row }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedFieldsOnIndex(id, row.index);
@@ -582,13 +603,12 @@ export default function generateColumnsData({
         },
       };
 
-      // Disable sorting, filtering, and resizing for button columns; auto-size to content
+      // Button columns: no sorting/filtering, auto-size to content unless a width is set explicitly
       if (columnType === 'button') {
         columnDef.enableSorting = false;
         columnDef.enableColumnFilter = false;
-        columnDef.enableResizing = false;
         const buttons = column.buttons || [];
-        columnDef.size = calculateButtonColumnWidth(buttons, getResolvedValue);
+        columnDef.size = columnSize || calculateButtonColumnWidth(buttons, getResolvedValue);
       }
 
       // Add sorting configuration for specific column types
@@ -610,7 +630,52 @@ export default function generateColumnsData({
           const dateB = moment(b);
           return dateA.isBefore(dateB) ? -1 : dateA.isAfter(dateB) ? 1 : 0;
         };
+      } else if (columnType === 'datepicker') {
+        // Datepicker cells hold the formatted display string (e.g. "12 May 2026, 5:30 PM"),
+        // Parse each value back into a real Date using the same logic the renderer uses to
+        // display it, then compare chronologically.
+        columnDef.sortingFn = (rowA, rowB, columnId) => {
+          const a = rowA.getValue(columnId);
+          const b = rowB.getValue(columnId);
+
+          const aIsEmpty = a === null || a === undefined || a === '';
+          const bIsEmpty = b === null || b === undefined || b === '';
+          if (aIsEmpty && bIsEmpty) return 0;
+          if (aIsEmpty) return 1;
+          if (bIsEmpty) return -1;
+
+          const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
+          const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
+          const isTwentyFourHrFormatEnabled = getResolvedValue(column?.isTwentyFourHrFormatEnabled) ?? false;
+
+          const parseOptions = {
+            parseDateFormat: getDateTimeFormat(
+              column?.parseDateFormat,
+              isTimeChecked,
+              isTwentyFourHrFormatEnabled,
+              isDateSelectionEnabled
+            ),
+            timeZoneValue: column?.timeZoneValue,
+            timeZoneDisplay: column?.timeZoneDisplay,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
+            parseInUnixTimestamp,
+            isTimeChecked,
+          };
+
+          const dateA = parseDate({ value: a, ...parseOptions });
+          const dateB = parseDate({ value: b, ...parseOptions });
+
+          // If a value can't be parsed into a date, push it to the bottom instead of breaking the sort.
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+
+          return dateA.getTime() - dateB.getTime();
+        };
       }
+
+      // Keep the element *type* constant across rebuilds; see TableCell.
+      columnDef.cell = TableCell;
 
       return columnDef;
     })

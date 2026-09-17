@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "IBM DB2 datasource",
+  "description": "A schema defining IBM DB2 datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        { "name": "SQL mode", "value": "sql" }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "editorType": "multiline",
+        "placeholder": "SELECT * FROM SYSIBM.SYSTABLES"
+      },
+      "query_params": {
+        "key": "query_params",
+        "label": "SQL Parameters",
+        "type": "react-component-headers",
+        "description": "Parameters for the SQL query",
+        "buttonText": "Add SQL parameter",
+        "tooltip": "Use these parameters in the SQL query using name notation < :parameter_name >"
+      }
+    }
+  }
+}

@@ -304,7 +304,7 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "description": "Enter an array of objects to update/insert. Example: [{\"id\":1,\"name\":\"John\"}]",
-        "placeholder": "{'ID': 1, 'Status': 'Done'}, {'ID': 2, 'Status': 'In Progress'}]"
+        "placeholder": "[{\"ID\": 1, \"Status\": \"Done\"}, {\"ID\": 2, \"Status\": \"In Progress\"}]"
       }
     },
     "copy_spreadsheet": {
@@ -657,7 +657,7 @@
         "key": "values",
         "type": "codehinter",
         "lineNumbers": false,
-        "placeholder": "[['new value 1', 'new value 2']]",
+        "placeholder": "[[\"new value 1\", \"new value 2\"]]",
         "description": "Enter Value",
         "width": "320px",
         "height": "36px",

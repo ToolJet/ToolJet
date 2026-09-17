@@ -17,6 +17,14 @@ export default function ErrorPage({ darkMode }) {
 
   const searchParams = new URLSearchParams(location.search);
   const appSlug = searchParams.get('appSlug');
+  const workspaceName = searchParams.get('workspaceName');
+
+  const resolvedErrorMsg = errorMsg
+    ? {
+        ...errorMsg,
+        message: workspaceName ? errorMsg.message?.replace('{workspaceName}', workspaceName) : errorMsg.message,
+      }
+    : errorMsg;
 
   const [isLoading, setLoading] = React.useState(true);
   const [isValidSession, setValidSession] = React.useState(null);
@@ -44,9 +52,9 @@ export default function ErrorPage({ darkMode }) {
       <ErrorModal
         errorMsg={
           isValidSession === true
-            ? errorMsg
+            ? resolvedErrorMsg
             : {
-                ...errorMsg,
+                ...resolvedErrorMsg,
                 cta: '',
               }
         }

@@ -5,6 +5,7 @@ import { FEATURE_KEY } from '../../constants';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 
 type Subjects = InferSubjects<typeof App> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -34,7 +35,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const appUpdateAllowed = userAppPermissions ? isAllAppsEditable || isEditableApp : false;
 
-    if (isAllAppsCreatable || isAdmin || superAdmin) {
+    // A module import must be gated on module-create, not app-create — a builder with app-create
+    // but without module-create may not import modules.
+    const importDefinition = requestContext.body?.app?.[0]?.definition;
+    const importedAppType = importDefinition?.appV2?.type ?? importDefinition?.type;
+    const isModuleImport = importedAppType === APP_TYPES.MODULE;
+    const canCreateForImport = isModuleImport ? !!userPermission?.moduleCreate : isAllAppsCreatable;
+
+    if (canCreateForImport || isAdmin || superAdmin) {
       can([FEATURE_KEY.APP_RESOURCE_IMPORT, FEATURE_KEY.APP_RESOURCE_EXPORT], App);
       if (appUpdateAllowed) {
         can([FEATURE_KEY.APP_RESOURCE_CLONE], App);

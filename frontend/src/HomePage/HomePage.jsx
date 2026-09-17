@@ -47,8 +47,6 @@ import {
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
-import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -57,6 +55,7 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
@@ -323,7 +322,7 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt) => {
+  createApp = async (appName, type, prompt, taggedResources) => {
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -347,7 +346,7 @@ class HomePageComponent extends React.Component {
 
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
-        state: { commitEnabled: this.state.commitEnabled, prompt },
+        state: { commitEnabled: this.state.commitEnabled, prompt, taggedResources },
       });
       this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
@@ -722,9 +721,32 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+    } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
+        const canReadModule =
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEdit;
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
+      return currentSession?.role?.name === 'builder';
     }
   }
 
@@ -791,7 +813,7 @@ class HomePageComponent extends React.Component {
         }
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+        toast.error(error ?? error.message ?? 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -1289,11 +1311,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
@@ -1859,12 +1877,6 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
-                  <CreateAppWithPrompt createApp={this.createApp} />
-                )}
-
-                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
-
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
@@ -1971,6 +1983,8 @@ class HomePageComponent extends React.Component {
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.appType === 'module'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
