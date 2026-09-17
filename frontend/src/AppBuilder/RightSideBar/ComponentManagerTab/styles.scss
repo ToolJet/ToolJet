@@ -69,6 +69,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
     cursor: pointer;
 
     .custom-library-section-title {
@@ -76,12 +77,18 @@
       font-weight: 500;
       line-height: 18px;
       color: var(--text-default);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0; // lets the title shrink/truncate instead of pushing the meta group out
+      flex: 1 1 auto;
     }
 
     .custom-library-section-meta {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     .custom-library-version-chip {

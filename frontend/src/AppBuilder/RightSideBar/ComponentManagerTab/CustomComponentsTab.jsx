@@ -10,6 +10,7 @@ import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDrop
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin, dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Container } from 'lucide-react';
 import {
   DropdownMenu,
@@ -109,7 +110,10 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
         onClick={() => setOpen((prev) => !prev)}
         data-cy={`custom-library-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
       >
-        <span className="custom-library-section-title">{library.name}</span>
+        <OverflowTooltip childrenClassName="custom-library-section-title" placement="top">
+          {library.name}
+        </OverflowTooltip>
+
         <div className="custom-library-section-meta">
           <VersionPicker library={library} />
           <TablerIcon
