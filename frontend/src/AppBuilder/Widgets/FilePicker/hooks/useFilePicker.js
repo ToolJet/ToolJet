@@ -527,11 +527,15 @@ export const useFilePicker = ({
       isValid: newIsValid,
     });
 
+    const minCountMessage = `Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`;
+
     if (isMandatory && selectedFiles.length === 0 && isTouched && !isDragActive) {
       setUiErrorMessage('This field is mandatory. Please select a file.');
+    } else if (!newIsMinCountMet && selectedFiles.length > 0 && !isDragActive) {
+      setUiErrorMessage(minCountMessage);
     } else if (
-      uiErrorMessage === 'This field is mandatory. Please select a file.' &&
-      (selectedFiles.length > 0 || !isMandatory || !isTouched || isDragActive)
+      (uiErrorMessage === 'This field is mandatory. Please select a file.' || uiErrorMessage === minCountMessage) &&
+      (newIsValid || isDragActive)
     ) {
       setUiErrorMessage('');
     }

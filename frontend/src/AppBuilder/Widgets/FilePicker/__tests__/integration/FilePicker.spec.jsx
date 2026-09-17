@@ -483,6 +483,21 @@ describe('FilePicker: validation', () => {
 
     await waitFor(() => expect(errorMessageEl(container)).not.toBeInTheDocument());
   });
+
+  test('[FilePicker-VAL-007] The minFileCount error message shows when mandatory is satisfied but the selection is still below the minimum', async () => {
+    const { container } = widget.render({
+      properties: { enableMultiple: binding('{{true}}') },
+      validation: { enableValidation: binding('{{true}}'), minFileCount: binding('{{2}}') },
+    });
+    await screen.findByText('Label', { exact: false });
+    const first = new File(['a'], 'first.txt', { type: 'text/plain' });
+
+    dropFiles(hiddenInput(container), first);
+    await waitFor(() => expect(files()).toHaveLength(1));
+
+    expect(widget.exposed().isValid).toBe(false);
+    await waitFor(() => expect(errorMessageEl(container)).toHaveTextContent('Please select at least 2 files.'));
+  });
 });
 
 describe('FilePicker: loading, disabled, and visibility states', () => {
