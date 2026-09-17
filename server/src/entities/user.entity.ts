@@ -1,3 +1,4 @@
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -228,9 +229,11 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
-  /* Session provenance, mirrored from the JWT. isPATLogin covers BOTH personal-access-token
-     species; patAppId is set only by the app-scoped embed flow, so `isPATLogin && !patAppId`
-     identifies a workspace PAT session. */
+  /* Session provenance, mirrored from the JWT. isPATLogin covers every personal-access-token
+     session; patScope says which KIND of token minted it and patAppId whether the session is
+     pinned to one app. The PAIR identifies the session kind — patAppId alone does not, because a
+     workspace token can now mint an app-pinned session too. See PatScopeInterceptor. */
   isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
   patAppId?: string;
 }

@@ -110,6 +110,9 @@ export class SessionUtilService {
         ...(isPatLogin ? { isPATLogin: true } : {}),
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
+        /* Which KIND of token minted this. PatScopeInterceptor needs it to tell an embed session
+           (app token) from an app-pinned workspace session, which look identical on appId alone. */
+        ...(isPatLogin && extraData?.patScope ? { patScope: extraData.patScope } : {}),
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 

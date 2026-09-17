@@ -2,11 +2,15 @@ import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import {
   PAT_ALLOWED_BUNDLES,
+  PAT_APP_VIEWER_MODULES,
+  PAT_APP_VIEWER_NEVER_GRANTABLE,
   PAT_BUNDLE_MODULES,
   PAT_NEVER_GRANTABLE,
   PAT_UNASSIGNED_MODULES,
+  patAppViewerCanAccess,
   patCanAccess,
 } from '@modules/personal-access-tokens/constants/scopes';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
 
@@ -101,10 +105,13 @@ describe('PAT scope definition', () => {
 describe('PatScopeInterceptor', () => {
   const nextHandler = { handle: () => 'HANDLED' } as any;
 
-  const contextFor = (user: any, type = 'http') =>
+  const APP_ID = '11111111-1111-1111-1111-111111111111';
+  const contextFor = (user: any, type = 'http', request: any = {}) =>
     ({
       getType: () => type,
-      switchToHttp: () => ({ getRequest: () => ({ user }) }),
+      switchToHttp: () => ({
+        getRequest: () => ({ user, method: 'GET', originalUrl: `/api/apps/${APP_ID}`, ...request }),
+      }),
       getClass: () => class {},
       getHandler: () => () => undefined,
     }) as any;
@@ -124,8 +131,33 @@ describe('PatScopeInterceptor', () => {
   it('exempts the app-scoped embed flow', () => {
     // An embedded app runs a whole viewer and legitimately needs more surface than an
     // automation client. Restricting it would regress a shipped feature.
-    const embedSession = { isPATLogin: true, patAppId: 'some-app-id' };
+    //
+    // Keyed on patScope, NOT on patAppId. The previous version of this test passed patAppId alone,
+    // which is exactly the confusion being fixed: a workspace token can pin a session to an app
+    // too, so "has an appId" no longer means "is an embed session".
+    const embedSession = { isPATLogin: true, patScope: PersonalAccessTokenScope.APP, patAppId: 'some-app-id' };
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(embedSession), nextHandler)).toBe('HANDLED');
+  });
+
+  it('still exempts a pre-patScope embed session', () => {
+    // Transitional. Sessions minted before patScope existed carry appId and nothing else; capping
+    // them mid-flight would break every live embed the moment this deploys. Safe because until
+    // this change ships, only the embed flow could put an appId on a JWT.
+    const legacyEmbed = { isPATLogin: true, patAppId: 'some-app-id' };
+    expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(legacyEmbed), nextHandler)).toBe('HANDLED');
+  });
+
+  it('does NOT exempt a workspace token merely because the session names an app', () => {
+    // The regression this whole change exists to prevent. Before, this reached git-sync, SMTP,
+    // licensing, audit logs and AI — everything the token owner's role allowed.
+    const renderSession = {
+      isPATLogin: true,
+      patScope: PersonalAccessTokenScope.WORKSPACE,
+      patAppId: APP_ID,
+    };
+    expect(() => interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(renderSession), nextHandler)).toThrow(
+      ForbiddenException
+    );
   });
 
   it('ignores non-HTTP contexts', () => {
@@ -157,5 +189,144 @@ describe('PatScopeInterceptor', () => {
   it('blocks a workspace PAT on a route with no module metadata', () => {
     const patSession = { isPATLogin: true };
     expect(() => interceptorFor(undefined).intercept(contextFor(patSession), nextHandler)).toThrow(ForbiddenException);
+  });
+});
+
+describe('PatScopeInterceptor — app-pinned render session', () => {
+  const nextHandler = { handle: () => 'HANDLED' } as any;
+  const APP_ID = '11111111-1111-1111-1111-111111111111';
+  const OTHER_APP_ID = '22222222-2222-2222-2222-222222222222';
+
+  const session = { isPATLogin: true, patScope: PersonalAccessTokenScope.WORKSPACE, patAppId: APP_ID };
+
+  const run = (module: MODULES | undefined, request: any = {}) =>
+    new PatScopeInterceptor({ get: () => module } as any).intercept(
+      {
+        getType: () => 'http',
+        switchToHttp: () => ({
+          getRequest: () => ({ user: session, method: 'GET', originalUrl: `/api/apps/${APP_ID}`, ...request }),
+        }),
+        getClass: () => class {},
+        getHandler: () => () => undefined,
+      } as any,
+      nextHandler
+    );
+
+  it('reaches /api/authorize, which an automation token may never touch', () => {
+    // The whole point: AUTH is on PAT_NEVER_GRANTABLE for an automation token, and without it the
+    // player redirects to /login and never renders.
+    expect(run(MODULES.AUTH)).toBe('HANDLED');
+  });
+
+  it('does not reach the rest of the credential surface', () => {
+    // Measured: the editor boot never called either. Granting them would widen the credential
+    // surface for nothing.
+    for (const module of [MODULES.SESSION, MODULES.PROFILE]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('reaches what the editor actually needs to paint', () => {
+    // Every one of these was observed on the measured boot; DATA_SOURCE and CUSTOM_STYLES were
+    // denied by the first draft of the list and had to be added.
+    for (const module of [
+      MODULES.APP,
+      MODULES.APP_ENVIRONMENTS,
+      MODULES.ORGANIZATION_CONSTANT,
+      MODULES.DATA_QUERY,
+      MODULES.GLOBAL_DATA_SOURCE,
+      MODULES.CUSTOM_STYLES,
+    ]) {
+      expect(run(module)).toBe('HANDLED');
+    }
+  });
+
+  it('does not reach what the editor asked for but the render does not need', () => {
+    // Observed on the boot and deliberately still refused: none of them changes what was painted.
+    for (const module of [MODULES.AI, MODULES.APP_GIT, MODULES.DATA_QUERY_FOLDERS]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('cannot reach workspace or instance administration', () => {
+    for (const module of [MODULES.GIT_SYNC, MODULES.SMTP, MODULES.LICENSING, MODULES.AUDIT_LOGS, MODULES.AI]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('cannot mint further tokens', () => {
+    // A viewer session that could mint would launder itself into an unscoped one and survive
+    // revocation of the workspace token it came from.
+    expect(() => run(MODULES.PERSONAL_ACCESS_TOKENS)).toThrow(ForbiddenException);
+  });
+
+  it('is pinned to its own app', () => {
+    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(ForbiddenException);
+    expect(run(MODULES.APP, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
+  });
+
+  it('names the app it refused, so the mismatch is debuggable', () => {
+    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
+      new RegExp(`scoped to a single app and cannot access ${OTHER_APP_ID}`)
+    );
+  });
+
+  it("is read-only, except for running the app's queries", () => {
+    // The player must execute queries to render anything, and that is a POST. Nothing else is.
+    expect(() => run(MODULES.APP, { method: 'POST' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, { method: 'DELETE' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, { method: 'PUT' })).toThrow(ForbiddenException);
+    expect(run(MODULES.DATA_QUERY, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe('HANDLED');
+    // The BUILDER run route, which is the one the render check actually uses — an unreleased app
+    // can only be opened in the editor. Measured: six of these on a single boot.
+    expect(
+      run(MODULES.DATA_QUERY, {
+        method: 'POST',
+        originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
+      })
+    ).toBe('HANDLED');
+    // Not every data-queries POST: creating or updating a query is still a write.
+    expect(() => run(MODULES.DATA_QUERY, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
+      ForbiddenException
+    );
+  });
+
+  it('fails closed on a route with no module metadata', () => {
+    expect(() => run(undefined)).toThrow(ForbiddenException);
+  });
+});
+
+describe('PAT app-viewer surface', () => {
+  it('keeps token minting unreachable', () => {
+    for (const module of PAT_APP_VIEWER_NEVER_GRANTABLE) {
+      expect(patAppViewerCanAccess(module)).toBe(false);
+      expect(PAT_APP_VIEWER_MODULES).not.toContain(module);
+    }
+  });
+
+  it('fails closed when a route carries no module metadata', () => {
+    expect(patAppViewerCanAccess(undefined)).toBe(false);
+  });
+
+  it('grants a non-empty set of modules', () => {
+    // An empty list would 403 the render check entirely — an outage no other test here catches.
+    expect(PAT_APP_VIEWER_MODULES.length).toBeGreaterThan(0);
+  });
+
+  it('stays narrower than the workspace allowlist on administration', () => {
+    // The viewer list is wider on the credential surface and MUST NOT be wider anywhere else.
+    for (const module of [
+      MODULES.GIT_SYNC,
+      MODULES.SMTP,
+      MODULES.LICENSING,
+      MODULES.AUDIT_LOGS,
+      MODULES.INSTANCE_SETTINGS,
+      MODULES.ORGANIZATIONS,
+      MODULES.GROUP_PERMISSIONS,
+      MODULES.AI,
+    ]) {
+      expect(patAppViewerCanAccess(module)).toBe(false);
+    }
   });
 });

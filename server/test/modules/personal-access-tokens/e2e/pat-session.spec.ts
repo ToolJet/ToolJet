@@ -37,7 +37,13 @@ describe('Personal access token session exchange', () => {
   };
 
   const createApp = async (name: string): Promise<string> => {
-    const owner = await getDefaultDataSource().getRepository(User).findOne({ where: { id: userId } });
+    const owner = await getDefaultDataSource()
+      .getRepository(User)
+      .findOne({ where: { id: userId } });
+    /* createApplication reads user.organizationId, which is NOT a DB column — createUser sets it in
+       memory and a findOne-loaded user therefore has none. Left undefined it violates
+       apps.organization_id NOT NULL, so set it explicitly from the workspace under test. */
+    owner.organizationId = orgId;
     const application = await createApplication(app, { name, user: owner });
     return application.id;
   };
@@ -119,8 +125,16 @@ describe('Personal access token session exchange', () => {
       const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
       expect(payload.isPATLogin).toBe(true);
       expect(payload.appId).toBe(appId);
-      expect(payload.scope).toBe('App');
       expect(payload.organizationIds).toEqual([orgId]);
+      /* The token's own kind, and it stays 'workspace'. This is the distinction PatScopeInterceptor
+         branches on: pinning a session to an app must NOT turn a workspace token into an app one,
+         which is what would hand it the embed flow's unrestricted exemption. */
+      expect(payload.patScope).toBe('workspace');
+    });
+
+    it('should reject a malformed appId with 400, not 500', async () => {
+      const { token } = await createPat('bad-app-id');
+      await exchange(token).send({ appId: 'not-a-uuid' }).expect(400);
     });
 
     it('should refuse an app in another workspace', async () => {
@@ -142,6 +156,7 @@ describe('Personal access token session exchange', () => {
       const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
       expect(payload.appId).toBeUndefined();
       expect(payload.scope).toBeUndefined();
+      expect(payload.patScope).toBe('workspace');
     });
 
     it('should reject an expired token', async () => {

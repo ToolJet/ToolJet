@@ -18,7 +18,13 @@ export class PersonalAccessTokensModule extends SubModule {
       module: PersonalAccessTokensModule,
       // SessionModule: the PAT -> session exchange mints a normal session via SessionUtilService.
       imports: [await SessionModule.register(configs)],
-      providers: [PersonalAccessTokensService, FeatureAbilityFactory, UserRepository, OrganizationRepository, AppsRepository],
+      providers: [
+        PersonalAccessTokensService,
+        FeatureAbilityFactory,
+        UserRepository,
+        OrganizationRepository,
+        AppsRepository,
+      ],
       controllers: isMainImport ? [PersonalAccessTokensController] : [],
       exports: [PersonalAccessTokensService],
     };
