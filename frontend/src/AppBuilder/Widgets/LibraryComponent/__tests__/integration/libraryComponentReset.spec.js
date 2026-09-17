@@ -18,6 +18,7 @@ describe('LibraryComponent exposed-variable reset', () => {
   const baseProps = {
     id: 'widget-1',
     setExposedVariable: jest.fn(),
+    setExposedVariables: jest.fn(),
     fireEvent: jest.fn(),
   };
 
@@ -52,5 +53,38 @@ describe('LibraryComponent exposed-variable reset', () => {
     );
 
     expect(resetExposedVariables).toHaveBeenCalledTimes(1);
+  });
+
+  it('[LibraryComponent-RESET-003] re-declares static exposed variables strictly after resetExposedVariables on an identity change', () => {
+    // Break this catches: re-declaring the statics in a *separate* effect textually
+    // before the reset effect (or with no relative-order guarantee at all) — passes
+    // call-count checks but would let the reset run last and wipe the re-declared
+    // keys again.
+    setPin('v1');
+    const calls = [];
+    const resetExposedVariables = jest.fn(() => calls.push('reset'));
+    const setExposedVariables = jest.fn(() => calls.push('setExposedVariables'));
+
+    const { rerender } = render(
+      <LibraryComponent
+        {...baseProps}
+        setExposedVariables={setExposedVariables}
+        properties={{ libraryId: 'lib-1', correlationId: CORRELATION_ID, componentName: 'Comp' }}
+        resetExposedVariables={resetExposedVariables}
+      />
+    );
+    calls.length = 0; // drop the mount-time setExposedVariables call
+
+    setPin('v2');
+    rerender(
+      <LibraryComponent
+        {...baseProps}
+        setExposedVariables={setExposedVariables}
+        properties={{ libraryId: 'lib-1', correlationId: CORRELATION_ID, componentName: 'Comp' }}
+        resetExposedVariables={resetExposedVariables}
+      />
+    );
+
+    expect(calls).toEqual(['reset', 'setExposedVariables']);
   });
 });

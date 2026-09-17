@@ -1,37 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import useStore from '@/AppBuilder/_stores/store';
+import Loader from '@/ToolJetUI/Loader/Loader';
 import { cn } from '@/lib/utils';
 import { libraryFileUrl } from '@/_helpers/customComponentLibrariesStoreUtils';
 import { useEffectiveLibraryRevision } from './hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from './hooks/useLibraryManifest';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 
 const DevBadge = ({ label }) => (
-  <div
-    style={{
-      position: 'absolute',
-      left: 0,
-      bottom: -22,
-      height: 20,
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '2px 4px',
-      borderRadius: '6px',
-      background: 'var(--background-success-strong, #1e823b)',
-      color: '#fff',
-      fontSize: '11px',
-      fontWeight: 500,
-      whiteSpace: 'nowrap',
-      pointerEvents: 'none',
-      zIndex: 1,
-    }}
-  >
+  <div className="tw-absolute tw-left-0 -tw-bottom-6 tw-h-5 tw-inline-flex tw-items-center tw-px-1 tw-py-0.5 tw-rounded-md tw-text-white tw-text-sm tw-font-medium tw-whitespace-nowrap tw-pointer-events-none tw-z-10 tw-bg-background-success-strong">
     dev: {label}
   </div>
 );
 
-const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName']);
+const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'visibility', 'loadingState']);
 
 /* sandboxed (opaque-origin) iframe — no parent DOM/cookie access, postMessage only:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
@@ -43,12 +27,70 @@ const LibraryComponent = ({
   styles = {},
   height,
   setExposedVariable,
+  setExposedVariables,
   resetExposedVariables,
   fireEvent,
   dataCy,
 }) => {
   const { libraryId, correlationId, componentName } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
+
+  // Mirrors every other widget's setVisibility/setLoading CSA — local state, flippable
+  // imperatively via the action, independent of the properties bindings WidgetWrapper reads.
+  const resolvedVisibility = properties.visibility ?? true;
+  const resolvedLoading = properties.loadingState ?? false;
+
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+    isVisible: resolvedVisibility,
+    isLoading: resolvedLoading,
+  });
+
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+
+  // Shared by the mount effect and the identity-reset effect below, so both declare
+  // the same static exposed variables. Reads resolvedVisibility/resolvedLoading, not
+  // exposedVariablesTemporaryState, to avoid a same-commit stale-state read.
+  const buildStaticExposedVariables = () => ({
+    isVisible: resolvedVisibility,
+    isLoading: resolvedLoading,
+    setVisibility: async function (value) {
+      setExposedVariable('isVisible', !!value);
+      updateExposedVariablesState('isVisible', !!value);
+    },
+    setLoading: async function (value) {
+      setExposedVariable('isLoading', !!value);
+      updateExposedVariablesState('isLoading', !!value);
+    },
+  });
+
+  useEffect(() => {
+    setExposedVariables(buildStaticExposedVariables());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Property bindings changing after mount — batched into one effect instead of
+  // one useEffect per property (see useBatchedUpdateEffectArray).
+  useBatchedUpdateEffectArray([
+    {
+      dep: resolvedVisibility,
+      sideEffect: () => {
+        setExposedVariable('isVisible', resolvedVisibility);
+        updateExposedVariablesState('isVisible', resolvedVisibility);
+      },
+    },
+    {
+      dep: resolvedLoading,
+      sideEffect: () => {
+        setExposedVariable('isLoading', resolvedLoading);
+        updateExposedVariablesState('isLoading', resolvedLoading);
+      },
+    },
+  ]);
 
   const currentMode = useStore((state) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
   const hasCustomComponentLibrariesAccess = useStore(
@@ -80,7 +122,18 @@ const LibraryComponent = ({
     }
 
     resetExposedVariables?.();
-  }, [devNonce, libraryId, effectiveRevision, componentName, resetExposedVariables]);
+    // Re-declare right after the (synchronous) reset, same effect, so ordering is guaranteed.
+    setExposedVariables(buildStaticExposedVariables());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    devNonce,
+    libraryId,
+    effectiveRevision,
+    componentName,
+    resetExposedVariables,
+    setExposedVariables,
+    setExposedVariable,
+  ]);
 
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
@@ -189,17 +242,14 @@ const LibraryComponent = ({
     return (
       <div
         data-cy={dataCy}
+        // tw-relative anchors the dev badge
+        className="tw-relative tw-items-center tw-justify-center tw-border tw-border-dashed tw-border-border-accent-strong tw-rounded tw-text-base tw-text-text-accent"
+        // display stays inline: toggled by isVisible at runtime, and jsdom's toHaveStyle
+        // (used in tests) only sees inline styles, not compiled Tailwind CSS.
         style={{
-          position: 'relative', // anchors the dev badge
-          height: safeHeight,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px dashed var(--cc-primary-brand)',
-          borderRadius: '4px',
           background: 'color-mix(in srgb, var(--cc-primary-brand) 8%, transparent)',
-          color: 'var(--cc-primary-brand)',
-          fontSize: '12px',
+          height: safeHeight,
+          display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
         }}
       >
         Slot
@@ -213,19 +263,26 @@ const LibraryComponent = ({
       className={cn('tw-relative tw-w-full', {
         'tw-opacity-50 tw-pointer-events-none': !hasCustomComponentLibrariesAccess && currentMode === 'edit',
       })}
-      style={{ height: safeHeight }}
+      style={{ height: safeHeight, display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none' }}
     >
-      <iframe
-        key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
-        ref={iframeRef}
-        src="/assets/custom-components/shell.html"
-        title={componentName}
-        data-cy={dataCy}
-        // Opaque origin: uploaded/dev-pushed bundle JS gets no window.parent DOM access and no
-        // shared cookies/storage — only the postMessage channel above. Do NOT add allow-same-origin.
-        sandbox="allow-scripts"
-        style={{ width: '100%', height: '100%', border: 'none', display: 'block', boxShadow: styles.boxShadow }}
-      />
+      {exposedVariablesTemporaryState.isLoading ? (
+        <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
+          <Loader width="16" absolute={false} />
+        </div>
+      ) : (
+        <iframe
+          key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
+          ref={iframeRef}
+          src="/assets/custom-components/shell.html"
+          title={componentName}
+          data-cy={dataCy}
+          // Opaque origin: uploaded/dev-pushed bundle JS gets no window.parent DOM access and no
+          // shared cookies/storage — only the postMessage channel above. Do NOT add allow-same-origin.
+          sandbox="allow-scripts"
+          className="tw-w-full tw-h-full tw-border-0 tw-block"
+          style={{ boxShadow: styles.boxShadow }}
+        />
+      )}
       {devBadge}
     </div>
   );
