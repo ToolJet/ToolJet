@@ -1,3 +1,4 @@
+/** @group platform */
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataQueriesUtilService } from '../../../../src/modules/data-queries/util.service';
 import { ConfigService } from '@nestjs/config';

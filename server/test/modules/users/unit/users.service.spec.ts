@@ -1,3 +1,4 @@
+/** @group platform */
 import { resetDB, initTestApp, createUser, findEntityOrFail, updateEntity } from 'test-helper';
 import { UsersService } from '@ee/users/service';
 import { INestApplication } from '@nestjs/common';

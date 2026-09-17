@@ -1,5 +1,4 @@
 /// <reference types="jest" />
-import { Ability, AbilityBuilder, AbilityClass } from '@casl/ability';
 import { FeatureAbility } from '@modules/versions/ability/index';
 import { defineAppVersionAbility } from '@modules/versions/ability/app-version.ability';
 import { FEATURE_KEY } from '@modules/versions/constants';
@@ -9,9 +8,12 @@ import { App } from '@entities/app.entity';
 import { UserAllPermissions } from '@modules/app/types';
 import { DEFAULT_USER_PERMISSIONS, DEFAULT_USER_APPS_PERMISSIONS } from '@modules/ability/constants';
 import { User } from '@entities/user.entity';
+import { makeAbilityBuilder } from 'test-helper';
 
-const makeBuilder = () => new AbilityBuilder<FeatureAbility>(Ability as AbilityClass<FeatureAbility>);
+const makeBuilder = () => makeAbilityBuilder<FeatureAbility>();
 
+// Local wrapper: this spec's matrix is driven by resourceType + granular flags,
+// a different shape than the shared buildPermissions() helper's Partial<UserAllPermissions>.
 const buildPermissions = (
   overrides: {
     superAdmin?: boolean;

@@ -123,13 +123,24 @@ describe('DataQueriesController', () => {
         expect(response.statusCode).toBe(201);
       });
 
-      // QUARANTINE(data-queries): failing since main CI rehab — see #17259
-      it.skip('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
+      it('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
         });
-        const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, { isAppPublic: true });
+        // jsonplaceholder (not GitHub) on purpose: GitHub's stargazers endpoint now requires
+        // auth for unauthenticated callers, which made this test fail regardless of ToolJet's
+        // own auth logic. jsonplaceholder needs no auth and `_limit` pins the array size.
+        const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, {
+          isAppPublic: true,
+          queryOptions: {
+            method: 'get',
+            url: 'https://jsonplaceholder.typicode.com/posts?_limit=30',
+            url_params: [],
+            headers: [],
+            body: [],
+          },
+        });
 
         const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 
@@ -208,6 +219,33 @@ describe('DataQueriesController', () => {
           // other failure (e.g. a flaky outbound call) is not what this test is checking.
           expect(err.message).not.toMatch(/Authentication required/);
         }
+      });
+    });
+
+    describe('GET /api/data-queries/:versionId | List queries', () => {
+      it("does not expose another organization app version's queries — 404, not the query list", async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await login(app, anotherOrgAdminUserData.user.email);
+        anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const { appVersion } = await createAppWithDependencies(app, adminUserData.user, {});
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/data-queries/${appVersion.id}`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
+
+        // ValidateAppVersionGuard resolves the app via findAppFromVersion(versionId, user.organizationId)
+        // — another org's user can never resolve this version, so it 404s before the list is built.
+        expect(response.statusCode).toBe(404);
       });
     });
   });

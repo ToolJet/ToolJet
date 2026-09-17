@@ -1043,7 +1043,7 @@ class BaseManageGranularAccess extends React.Component {
       hasChanges,
     } = this.state;
 
-    const { addableDs = [], resourcesOptions } = this.props;
+    const { resourcesOptions } = this.props;
 
     const currentGroupPermission = this.props?.groupPermission;
 

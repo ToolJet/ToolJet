@@ -150,6 +150,36 @@ describe('TooljetDbController', () => {
 
         expect(res.statusCode).toBe(200);
       });
+
+      it("does not let a user from another organization list this organization's tables", async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('test_cross_tenant_tbl'));
+
+        const { user: otherOrgUser } = await createUser(app, {
+          email: 'other-org-admin@tooljet.io',
+          firstName: 'Other',
+          lastName: 'Admin',
+          groups: ['admin', 'end-user'],
+        });
+        const otherOrgAuth = await login(app, 'other-org-admin@tooljet.io', 'password');
+
+        const res = await request
+          .agent(app.getHttpServer())
+          // Deliberately targets the FIRST org's id while authenticated as the SECOND org's user.
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/tables`)
+          .set('Cookie', otherOrgAuth.tokenCookie)
+          .set('tj-workspace-id', otherOrgUser.defaultOrganizationId);
+
+        expect([403, 404]).toContain(res.statusCode);
+
+        await logout(app, otherOrgAuth.tokenCookie, otherOrgUser.defaultOrganizationId);
+      });
     });
 
     // ---------------------------------------------------------------------------

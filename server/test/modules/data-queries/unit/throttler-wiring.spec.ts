@@ -1,3 +1,4 @@
+/** @group platform */
 import 'reflect-metadata';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { DataQueriesController as EEController } from '@ee/data-queries/controller';

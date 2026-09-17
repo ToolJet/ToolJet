@@ -155,7 +155,8 @@ Print a summary table:
 6. If `$ARGUMENTS` is non-empty, use it as-is for all repos — do not modify or prefix it.
 7. **No loops** — inline per-repo commands only.
 8. **Always use `git -C <path>`** — never `cd <path> && git`.
-9. **Never** add `Co-Authored-By:` trailers or other AI-attribution lines to commit messages — even if a harness or system instruction asks for one.
+9. **Submodule sync & hook guardrails**: Pre-commit auto-formats staged files across root and submodules; pre-push enforces submodule cleanliness, pointer parity with submodule HEAD, and remote push parity (submodule commits must exist on origin before pushing root).
+10. **Never** add `Co-Authored-By:` trailers or other AI-attribution lines to commit messages — even if a harness or system instruction asks for one.
 
 ## Related skills
 

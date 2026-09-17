@@ -61,13 +61,13 @@ export class FolderAppsService implements IFolderAppsService {
     });
   }
 
-  // branch_id is mandatory on folder_apps for every app type (workflows included — they are
-  // pinned to the org's default branch). When the caller doesn't pass an explicit branch, resolve
-  // the org's default branch so writes land on the same branch_id as the read path.
-  // isDefaultFallback flags that resolution so callers also match any pre-existing branch_id=NULL
-  // rows for this app — otherwise those legacy rows are invisible to the (app_id, defaultBranchId)
-  // lookup and get orphaned. (The backfill migration converts historical NULL rows, so in steady
-  // state there are none; the fallback stays as a belt-and-braces guard.)
+  // Resolves the effective branch_id for a write operation. When branchId is already provided it
+  // is returned as-is (isDefaultFallback=false — an explicit git-sync branch must stay isolated
+  // from NULL/pre-branch rows). When absent and the app is not a workflow (which always uses
+  // branch_id=NULL by convention), we resolve the org's default branch so that non-git-workspace
+  // writes land on the same branch_id as the read path, and flag isDefaultFallback=true so the
+  // caller also treats pre-existing branch_id=NULL rows for this app as the same row — otherwise
+  // those legacy rows are invisible to the (app_id, defaultBranchId) lookup and get orphaned.
   private async resolveEffectiveBranchId(
     appId: string,
     branchId?: string,

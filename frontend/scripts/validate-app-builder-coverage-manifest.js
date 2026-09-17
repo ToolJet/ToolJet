@@ -36,17 +36,22 @@ for (const absolute of eligible) {
   const appRelative = relative.replace('src/AppBuilder/', '');
   const override = manifest.overrides[relative];
   if (override && !subsystemIds.has(override)) errors.push(`Unknown override subsystem for ${relative}: ${override}`);
-  const matches = manifest.subsystems.filter(({ roots, files = [] }) =>
-    files.includes(appRelative) || roots.some((root) => appRelative === root || appRelative.startsWith(`${root}/`))
+  const matches = manifest.subsystems.filter(
+    ({ roots, files = [] }) =>
+      files.includes(appRelative) || roots.some((root) => appRelative === root || appRelative.startsWith(`${root}/`))
   );
-  const longest = Math.max(0, ...matches.flatMap(({ roots }) =>
-    roots.filter((root) => appRelative === root || appRelative.startsWith(`${root}/`)).map((root) => root.length)
-  ));
-  const mostSpecific = matches.filter(({ roots, files = [] }) =>
-    files.includes(appRelative) || roots.some((root) => root.length === longest)
+  const longest = Math.max(
+    0,
+    ...matches.flatMap(({ roots }) =>
+      roots.filter((root) => appRelative === root || appRelative.startsWith(`${root}/`)).map((root) => root.length)
+    )
+  );
+  const mostSpecific = matches.filter(
+    ({ roots, files = [] }) => files.includes(appRelative) || roots.some((root) => root.length === longest)
   );
   const assigned = override || (mostSpecific.length === 1 ? mostSpecific[0].id : null);
-  if (!assigned) errors.push(matches.length ? `Ambiguous subsystem roots match ${relative}` : `Unassigned source file: ${relative}`);
+  if (!assigned)
+    errors.push(matches.length ? `Ambiguous subsystem roots match ${relative}` : `Unassigned source file: ${relative}`);
   else counts[assigned] += 1;
 }
 
@@ -56,7 +61,16 @@ for (const [relative, subsystem] of Object.entries(manifest.overrides)) {
 }
 for (const exception of manifest.exceptions) {
   if (!exception.path || /[*?]/.test(exception.path)) errors.push('Coverage exceptions must use exact source paths');
-  for (const field of ['edition', 'category', 'rationale', 'evidence', 'accountableRole', 'approver', 'approvalDate', 'reviewDate']) {
+  for (const field of [
+    'edition',
+    'category',
+    'rationale',
+    'evidence',
+    'accountableRole',
+    'approver',
+    'approvalDate',
+    'reviewDate',
+  ]) {
     if (!exception[field]) errors.push(`Exception ${exception.path || '<unknown>'} is missing ${field}`);
   }
 }

@@ -8,8 +8,8 @@ const editionArg = args.find((arg) => arg.startsWith('--edition'));
 const edition = editionArg?.includes('=')
   ? editionArg.split('=')[1]
   : editionArg
-  ? args[args.indexOf(editionArg) + 1]
-  : undefined;
+    ? args[args.indexOf(editionArg) + 1]
+    : undefined;
 const forwarded = editionArg
   ? args.filter((arg, index) => arg !== editionArg && index !== args.indexOf(editionArg) + 1)
   : args;

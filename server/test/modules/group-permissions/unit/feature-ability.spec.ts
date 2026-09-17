@@ -1,10 +1,10 @@
-import { Ability, AbilityBuilder, AbilityClass } from '@casl/ability';
+/** @group platform */
 import { FeatureAbilityFactory, FeatureAbility } from '@modules/group-permissions/ability';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { FEATURE_KEY, GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 import { GroupPermissions } from '@entities/group_permissions.entity';
-
-const makeBuilder = () => new AbilityBuilder<FeatureAbility>(Ability as AbilityClass<FeatureAbility>);
+import { buildAbilityViaFactory, expectFeatures } from 'test-helper';
+import { UserAllPermissions } from '@modules/app/types';
 
 // All features granted to admins/superAdmins
 const ALL_ADMIN_FEATURES = [
@@ -91,21 +91,13 @@ const BUILDER_BLOCKED_FEATURES = [
 describe('FeatureAbilityFactory :: group permissions', () => {
   const factory = new FeatureAbilityFactory({} as AbilityService);
 
-  async function build(perms: Partial<typeof basePerms>, request?: any) {
-    const { can, build: buildAbility } = makeBuilder();
-    await (factory as any).defineAbilityFor(can, { ...basePerms, ...perms }, undefined, request);
-    return buildAbility();
-  }
-
-  const basePerms = {
-    superAdmin: false,
-    isAdmin: false,
-    isBuilder: false,
-    isEndUser: false,
-    user: { id: 'user-1', organizationId: 'org-1' },
-    userPermission: {} as any,
-    resource: [],
-  };
+  const build = (overrides: Partial<UserAllPermissions>, request?: unknown) =>
+    buildAbilityViaFactory<FeatureAbility>(
+      factory,
+      { user: { id: 'user-1', organizationId: 'org-1' } as any, ...overrides },
+      undefined,
+      request
+    );
 
   // ---------------------------------------------------------------------------
   // End-users
@@ -114,9 +106,7 @@ describe('FeatureAbilityFactory :: group permissions', () => {
   describe('end-user', () => {
     it('gets no group-permissions features whatsoever', async () => {
       const ability = await build({ isEndUser: true });
-      for (const feature of ALL_ADMIN_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: ALL_ADMIN_FEATURES });
     });
   });
 
@@ -127,9 +117,7 @@ describe('FeatureAbilityFactory :: group permissions', () => {
   describe('admin', () => {
     it('gets all features', async () => {
       const ability = await build({ isAdmin: true });
-      for (const feature of ALL_ADMIN_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
+      expectFeatures(ability, GroupPermissions, { allowed: ALL_ADMIN_FEATURES });
     });
   });
 
@@ -140,9 +128,7 @@ describe('FeatureAbilityFactory :: group permissions', () => {
   describe('superAdmin', () => {
     it('gets all features', async () => {
       const ability = await build({ superAdmin: true });
-      for (const feature of ALL_ADMIN_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
+      expectFeatures(ability, GroupPermissions, { allowed: ALL_ADMIN_FEATURES });
     });
   });
 
@@ -153,16 +139,12 @@ describe('FeatureAbilityFactory :: group permissions', () => {
   describe('builder — no group-admin assignments', () => {
     it('gets no features when tj_admin_groups is missing', async () => {
       const ability = await build({ isBuilder: true }, { params: {} });
-      for (const feature of ALL_ADMIN_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: ALL_ADMIN_FEATURES });
     });
 
     it('gets no features when tj_admin_groups is empty array', async () => {
       const ability = await build({ isBuilder: true }, { tj_admin_groups: [], params: {} });
-      for (const feature of ALL_ADMIN_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: ALL_ADMIN_FEATURES });
     });
   });
 
@@ -178,19 +160,19 @@ describe('FeatureAbilityFactory :: group permissions', () => {
 
     it('grants list-level features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_LIST_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
+      expectFeatures(ability, GroupPermissions, { allowed: BUILDER_LIST_FEATURES });
     });
 
     it('does not grant any group-specific or write features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_BLOCKED_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
-      expect(ability.can(FEATURE_KEY.GET_ONE, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.ADD_GROUP_USER, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.DELETE_GROUP_USER, GroupPermissions)).toBe(false);
+      expectFeatures(ability, GroupPermissions, {
+        denied: [
+          ...BUILDER_BLOCKED_FEATURES,
+          FEATURE_KEY.GET_ONE,
+          FEATURE_KEY.ADD_GROUP_USER,
+          FEATURE_KEY.DELETE_GROUP_USER,
+        ],
+      });
     });
   });
 
@@ -208,23 +190,17 @@ describe('FeatureAbilityFactory :: group permissions', () => {
 
     it('grants user-management features on the administered group', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_ADMIN_GROUP_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
+      expectFeatures(ability, GroupPermissions, { allowed: BUILDER_ADMIN_GROUP_FEATURES });
     });
 
     it('also retains list-level features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_LIST_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
+      expectFeatures(ability, GroupPermissions, { allowed: BUILDER_LIST_FEATURES });
     });
 
     it('never grants write/destructive or admin-escalation features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_BLOCKED_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: BUILDER_BLOCKED_FEATURES });
     });
   });
 
@@ -242,20 +218,20 @@ describe('FeatureAbilityFactory :: group permissions', () => {
 
     it('gets only list-level features, no group-specific access', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_LIST_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(true);
-      }
-      expect(ability.can(FEATURE_KEY.GET_ONE, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.ADD_GROUP_USER, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.DELETE_GROUP_USER, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.GET_ALL_GROUP_USER, GroupPermissions)).toBe(false);
+      expectFeatures(ability, GroupPermissions, {
+        allowed: BUILDER_LIST_FEATURES,
+        denied: [
+          FEATURE_KEY.GET_ONE,
+          FEATURE_KEY.ADD_GROUP_USER,
+          FEATURE_KEY.DELETE_GROUP_USER,
+          FEATURE_KEY.GET_ALL_GROUP_USER,
+        ],
+      });
     });
 
     it('never grants write or admin-escalation features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_BLOCKED_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: BUILDER_BLOCKED_FEATURES });
     });
   });
 
@@ -273,23 +249,21 @@ describe('FeatureAbilityFactory :: group permissions', () => {
 
     it('can read group details and list users/granular-permissions', async () => {
       const ability = await build({ isBuilder: true }, request);
-      expect(ability.can(FEATURE_KEY.GET_ONE, GroupPermissions)).toBe(true);
-      expect(ability.can(FEATURE_KEY.GET_ALL_GROUP_USER, GroupPermissions)).toBe(true);
-      expect(ability.can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions)).toBe(true);
+      expectFeatures(ability, GroupPermissions, {
+        allowed: [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_ALL_GROUP_USER, FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS],
+      });
     });
 
     it('cannot mutate users on a default group', async () => {
       const ability = await build({ isBuilder: true }, request);
-      expect(ability.can(FEATURE_KEY.ADD_GROUP_USER, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.DELETE_GROUP_USER, GroupPermissions)).toBe(false);
-      expect(ability.can(FEATURE_KEY.GET_ADDABLE_USERS, GroupPermissions)).toBe(false);
+      expectFeatures(ability, GroupPermissions, {
+        denied: [FEATURE_KEY.ADD_GROUP_USER, FEATURE_KEY.DELETE_GROUP_USER, FEATURE_KEY.GET_ADDABLE_USERS],
+      });
     });
 
     it('never grants write or admin-escalation features', async () => {
       const ability = await build({ isBuilder: true }, request);
-      for (const feature of BUILDER_BLOCKED_FEATURES) {
-        expect(ability.can(feature, GroupPermissions)).toBe(false);
-      }
+      expectFeatures(ability, GroupPermissions, { denied: BUILDER_BLOCKED_FEATURES });
     });
   });
 });

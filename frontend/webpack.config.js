@@ -288,8 +288,8 @@ module.exports = {
     environment === 'development'
       ? 'eval-source-map'
       : process.env.APM_VENDOR === 'sentry'
-      ? 'hidden-source-map'
-      : false,
+        ? 'hidden-source-map'
+        : false,
   module: {
     rules: [
       {
