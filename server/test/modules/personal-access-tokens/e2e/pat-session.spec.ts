@@ -6,6 +6,7 @@ import {
   closeTestApp,
   getDefaultDataSource,
   createCompleteWorkflow,
+  ensureAppEnvironments,
 } from 'test-helper';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 import { User } from '@entities/user.entity';
@@ -57,6 +58,7 @@ describe('Personal access token session exchange', () => {
     });
     orgId = organization.id;
     userId = user.id;
+    await ensureAppEnvironments(app, orgId);
     ({ tokenCookie } = await login(app));
   });
 
@@ -269,7 +271,7 @@ describe('Personal access token session exchange', () => {
         .get(`/api/workflow_executions/${executionId}/status`)
         .set(headers)
         .expect(200);
-      expect(status.body).toMatchObject({ status: expect.any(String) });
+      expect(status.body).toMatchObject({ status: expect.any(Boolean) });
 
       await request(app.getHttpServer()).get(`/api/workflow_executions/${executionId}/nodes`).set(headers).expect(200);
     });
