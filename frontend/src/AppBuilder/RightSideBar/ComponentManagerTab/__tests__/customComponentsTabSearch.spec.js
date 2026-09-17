@@ -36,6 +36,15 @@ const betaLibrary = {
 
 const setPins = (pins) => act(() => useStore.getState().setGlobalSettings({ customComponentLibraries: pins }));
 
+// jsdom has no ResizeObserver — OverflowTooltip (wrapping the library title) mounts one.
+global.ResizeObserver =
+  global.ResizeObserver ||
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+
 const withDnd = (searchQuery) => (
   <DndProvider backend={HTML5Backend}>
     <CustomComponentsTab searchQuery={searchQuery} />

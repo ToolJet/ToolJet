@@ -1,4 +1,11 @@
-import { hasLibraryContent, getLibrarySearchMatch, normalizedPinsMap, withId, initials } from '../utils';
+import {
+  hasLibraryContent,
+  getLibrarySearchMatch,
+  normalizedPinsMap,
+  withId,
+  initials,
+  manifestDefaultSize,
+} from '../utils';
 
 describe('hasLibraryContent', () => {
   it('[ComponentManagerTab-UTILS-001] is true for a library with at least one published revision', () => {
@@ -93,5 +100,17 @@ describe('initials', () => {
 
   it('[ComponentManagerTab-UTILS-014] falls back to the first two letters, uppercased, when the name has no uppercase letters', () => {
     expect(initials('gauge')).toBe('GA');
+  });
+});
+
+describe('manifestDefaultSize', () => {
+  it("[ComponentManagerTab-UTILS-015] converts the manifest's grid-row defaultHeight to pixels (×10)", () => {
+    // Break this catches: passing the manifest's defaultHeight straight through as
+    // pixels, which would render a "defaultHeight: 6" (6 grid rows) component at 6px tall.
+    expect(manifestDefaultSize({ defaultWidth: 8, defaultHeight: 6 })).toEqual({ width: 8, height: 60 });
+  });
+
+  it('[ComponentManagerTab-UTILS-016] defaults to a 12-column, 20-row (200px) size when the manifest omits both', () => {
+    expect(manifestDefaultSize({})).toEqual({ width: 12, height: 200 });
   });
 });

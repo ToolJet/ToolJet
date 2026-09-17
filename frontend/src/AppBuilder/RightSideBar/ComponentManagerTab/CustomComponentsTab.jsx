@@ -21,7 +21,14 @@ import {
 } from '@/components/ui/Rocket/shadcn/dropdown-menu';
 import { useLibraryCurrentRevision } from './hooks/useLibraryCurrentRevision';
 import { useResolvedManifest } from './hooks/useResolvedManifest';
-import { initials, hasLibraryContent, getLibrarySearchMatch, normalizedPinsMap, withId } from './utils';
+import {
+  initials,
+  hasLibraryContent,
+  getLibrarySearchMatch,
+  normalizedPinsMap,
+  withId,
+  manifestDefaultSize,
+} from './utils';
 
 export const CustomComponentsTab = ({ searchQuery = '' }) => {
   const libraries = useCustomComponentLibrariesStore((state) => state.libraries); // null = loading
@@ -253,11 +260,12 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
   );
   const { handleDrop } = useCanvasDropHandler() || noop;
 
-  const dragComponent = useMemo(
-    () => ({
+  const dragComponent = useMemo(() => {
+    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
+    return {
       component: 'LibraryComponent',
       displayName: name,
-      defaultSize: { width: defaultWidth ?? 12, height: defaultHeight ?? 200 },
+      defaultSize,
       libraryComponentInfo: {
         libraryId,
         correlationId,
@@ -265,11 +273,10 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
         componentName: name,
         revisionId,
         props,
-        defaultSize: { width: defaultWidth ?? 12, height: defaultHeight ?? 200 },
+        defaultSize,
       },
-    }),
-    [libraryId, correlationId, libraryName, name, revisionId, props, defaultWidth, defaultHeight]
-  );
+    };
+  }, [libraryId, correlationId, libraryName, name, revisionId, props, defaultWidth, defaultHeight]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({

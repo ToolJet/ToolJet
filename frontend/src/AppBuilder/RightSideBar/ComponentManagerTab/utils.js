@@ -22,6 +22,16 @@ export const getLibrarySearchMatch = (library, manifestComponents, searchQuery) 
   return { components, isVisible };
 };
 
+// Manifest defaultHeight is authored in grid rows (CLI's own convention, matching
+// defaultWidth's grid-column unit) — the canvas grid row height is 10px, so this
+// converts to the pixels defaultSize.height expects.
+const GRID_ROW_HEIGHT_PX = 10;
+
+export const manifestDefaultSize = ({ defaultWidth, defaultHeight } = {}) => ({
+  width: defaultWidth ?? 12,
+  height: (defaultHeight ?? 20) * GRID_ROW_HEIGHT_PX,
+});
+
 // Re-keys every stored pin to the dashless form, tolerating rows written before that
 // migration (dashed keys, or the older `{ revisionId }` object shape) — see pinKey's
 // own comment in libraryComponentRevision.js for why dashless keys are required.
