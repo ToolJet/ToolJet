@@ -13,7 +13,12 @@ import {
 
 const ID = 'casc1';
 const HANDLE = 'cascader1';
-const MOUNT_MS = 15000;
+const MOUNT_MS = 20000;
+
+// Cascader is React.lazy-loaded (editorHelpers.js); MOUNT_MS alone can't save a
+// slow chunk resolution under CI contention if Jest's own per-test timeout (default
+// 5000ms) kills the test first. Match FORM-001/002's existing 20000ms budget file-wide.
+jest.setTimeout(MOUNT_MS);
 
 function node(label, value, { children, visible = true, disable = false, isDefault } = {}) {
   return {
