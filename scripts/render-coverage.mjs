@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Coverage gate for full run-ci PR runs. Prints the "Coverage" PR-comment section and
-// exits 1 when the gate fails. No dependencies — ci-gate runs on the bare runner.
+// Coverage gate for full run-ci PR runs. Prints the PR-comment fragment (line 1: the
+// "Coverage" table cell; rest: optional uncovered-lines details) and exits 1 when the gate fails. No dependencies — ci-gate runs on the bare runner.
 //
 // Checks (server):
 //   1. Overall lines must not drop below the base branch (latest push run) − FLOOR_TOLERANCE.
@@ -24,7 +24,6 @@ import path from 'node:path';
 const PATCH_MIN = 80;
 const FLOOR_TOLERANCE = 0.1;
 const MAX_FILES = 15;
-const MAX_AREAS = 6;
 
 const dir = process.env.CI_RESULTS || '/tmp/ci-results';
 const readJson = (p) => {
@@ -69,70 +68,36 @@ function addedFiles(diff) {
   return added;
 }
 
-// Top two segments under server/ (src/modules, ee/licensing, …) — keeps the table short.
-function areaFor(filePath) {
-  const idx = filePath.lastIndexOf('/server/');
-  const rel = idx >= 0 ? filePath.slice(idx + '/server/'.length) : filePath;
-  return rel.split('/').filter(Boolean).slice(0, 2).join('/') || rel;
-}
-
 const summary = readJson('coverage/coverage-summary.json');
 const base = readJson('base/coverage-summary.json');
 const patch = readJson('patch.json');
 const diff = readText('lcov/pr.diff');
 
-const rows = [];
+const parts = [];
 let failed = false;
-const check = (name, result, target, ok) => {
+const check = (ok, text) => {
   if (ok === false) failed = true;
-  rows.push(`| ${name} | ${result} | ${target} | ${mark(ok)} |`);
+  parts.push(`${mark(ok)} ${text}`);
 };
 
-// 1. Overall floor
-const baseName = process.env.BASE_REF ? `\`${process.env.BASE_REF}\`` : 'base';
-const floorRule = `no more than ${FLOOR_TOLERANCE} pts below ${baseName}`;
-if (!summary?.total) {
-  check('Overall lines', 'coverage report missing', floorRule, false);
-} else {
-  const prPct = summary.total.lines.pct;
-  const basePct = base?.total?.lines?.pct;
-  if (basePct === undefined) {
-    check('Overall lines', `${pct(prPct)} (no ${baseName} coverage found)`, floorRule, null);
-  } else {
-    const delta = prPct - basePct;
-    const sign = delta >= 0 ? '+' : '−';
-    check(
-      'Overall lines',
-      `${pct(prPct)} (${sign}${Math.abs(delta).toFixed(2)} pts vs ${baseName} ${pct(basePct)})`,
-      `≥ ${pct(basePct - FLOOR_TOLERANCE)} (${baseName} − ${FLOOR_TOLERANCE} pts)`,
-      delta >= -FLOOR_TOLERANCE
-    );
-  }
-}
-
-// 2 + 3. Changed code and new files
+// 1. Changed code
 const uncovered = [];
 if (!patch || diff === null) {
-  check('Changed lines', 'patch report missing', `≥ ${PATCH_MIN}%`, false);
+  check(false, 'changed lines: patch report missing');
 } else {
   const total = patch.total_num_lines || 0;
   const missing = patch.total_num_violations || 0;
   if (total === 0) {
-    check('Changed lines', 'no executable lines changed', `≥ ${PATCH_MIN}%`, true);
+    check(true, 'no executable lines changed');
   } else {
     const p = patch.total_percent_covered;
-    check('Changed lines', `${p}% · ${fmtInt(total - missing)}/${fmtInt(total)} lines`, `≥ ${PATCH_MIN}%`, p >= PATCH_MIN);
+    check(p >= PATCH_MIN, `changed lines ${p}% (${fmtInt(total - missing)}/${fmtInt(total)}, min ${PATCH_MIN}%)`);
   }
 
   const added = addedFiles(diff);
   const stats = Object.entries(patch.src_stats || {});
   const untestedNew = stats.filter(([f, s]) => added.has(f) && s.covered_lines.length === 0 && s.violation_lines.length > 0);
-  check(
-    'New files with no coverage',
-    untestedNew.length ? untestedNew.map(([f]) => `\`${f}\``).join('<br>') : 'none',
-    'none',
-    untestedNew.length === 0
-  );
+  if (untestedNew.length) check(false, `${untestedNew.length} new file${untestedNew.length === 1 ? '' : 's'} with no tests`);
 
   for (const [file, s] of stats) {
     if (s.violation_lines.length) uncovered.push({ file, s, isNew: added.has(file) });
@@ -140,20 +105,33 @@ if (!patch || diff === null) {
   uncovered.sort((a, b) => b.s.violation_lines.length - a.s.violation_lines.length);
 }
 
-const out = [
-  `#### 🧪 Coverage (server) — ${failed ? '❌ gate failed' : '✅ gate passed'}`,
-  '',
-  '| Check | Result | Target | |',
-  '|---|---|---|:-:|',
-  ...rows,
-];
+// 2. Overall floor
+const baseName = process.env.BASE_REF ? `\`${process.env.BASE_REF}\`` : 'base';
+const report = process.env.COVERAGE_ARTIFACT_URL ? ` · [report ↗](${process.env.COVERAGE_ARTIFACT_URL})` : '';
+if (!summary?.total) {
+  check(false, 'overall: coverage report missing');
+} else {
+  const prPct = summary.total.lines.pct;
+  const basePct = base?.total?.lines?.pct;
+  if (basePct === undefined) {
+    check(null, `overall ${pct(prPct)} (no ${baseName} baseline found)${report}`);
+  } else {
+    const delta = prPct - basePct;
+    const sign = delta >= 0 ? '+' : '−';
+    check(
+      delta >= -FLOOR_TOLERANCE,
+      `overall ${pct(prPct)} (${sign}${Math.abs(delta).toFixed(2)} vs ${baseName}, min ${pct(basePct - FLOOR_TOLERANCE)})${report}`
+    );
+  }
+}
 
+// Line 1: cell for the "Coverage" row of the CI table. Rest: optional details.
+const out = [parts.join('<br>')];
 if (uncovered.length) {
   const shown = uncovered.slice(0, MAX_FILES);
   out.push(
-    '',
     '<details>',
-    `<summary>Uncovered changed lines · ${uncovered.length} file${uncovered.length === 1 ? '' : 's'}</summary>`,
+    `<summary><b>${failed ? '❌' : 'ℹ️'} Uncovered changed lines · ${uncovered.length} file${uncovered.length === 1 ? '' : 's'}</b></summary>`,
     '',
     '| File | Covered | Missing lines |',
     '|---|---:|---|',
@@ -162,37 +140,7 @@ if (uncovered.length) {
     ),
     ...(uncovered.length > MAX_FILES ? [`| _…${uncovered.length - MAX_FILES} more_ | | |`] : []),
     '',
-    '</details>'
-  );
-}
-
-if (summary?.total) {
-  const areas = new Map();
-  for (const [key, v] of Object.entries(summary)) {
-    if (key === 'total') continue;
-    const a = areas.get(areaFor(key)) || { covered: 0, total: 0 };
-    a.covered += v.lines.covered;
-    a.total += v.lines.total;
-    areas.set(areaFor(key), a);
-  }
-  const sorted = [...areas].sort((a, b) => b[1].covered - a[1].covered);
-  const areaRow = (name, c, t) => `| ${name} | ${fmtInt(c)}/${fmtInt(t)} | ${t ? ((c / t) * 100).toFixed(1) : '—'}% |`;
-  const rest = sorted.slice(MAX_AREAS);
-  out.push(
-    '',
-    '<details>',
-    `<summary>Overall coverage by area · ${fmtInt(summary.total.lines.covered)}/${fmtInt(summary.total.lines.total)} lines</summary>`,
-    '',
-    // markdown doesn't render inside <summary>, so the link lives in the body
-    ...(process.env.COVERAGE_ARTIFACT_URL ? [`[Full HTML report ↗](${process.env.COVERAGE_ARTIFACT_URL})`, ''] : []),
-    '| Area | Lines | % |',
-    '|---|---:|---:|',
-    ...sorted.slice(0, MAX_AREAS).map(([n, { covered, total }]) => areaRow(`\`${n}\``, covered, total)),
-    ...(rest.length
-      ? [areaRow(`_…${rest.length} more_`, rest.reduce((s, [, v]) => s + v.covered, 0), rest.reduce((s, [, v]) => s + v.total, 0))]
-      : []),
-    '',
-    '<sub>Unit + e2e merged, v8 line coverage. Excludes module/entity/dto/migrations (`server/test/jest-coverage.config.ts`).</sub>',
+    '<sub>Server unit + e2e + git-sync suites, v8 line coverage. Excludes module/entity/dto/migrations (`server/test/jest-coverage.config.ts`).</sub>',
     '</details>'
   );
 }
