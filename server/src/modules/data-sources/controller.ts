@@ -199,10 +199,8 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   // --- OpenAPI v2 spec processing ---
-  // Reuses UPDATE for mutating actions and TEST_CONNECTION for read/usage-time actions -
-  // both are already correctly distributed across every permission tier in FeatureAbilityFactory,
-  // matching how :id/invoke (the closest precedent - live data fetch while building a query)
-  // already reuses TEST_CONNECTION rather than defining new feature keys.
+  // Reuses UPDATE for mutations and TEST_CONNECTION for reads (like :id/invoke), which already
+  // cover every permission tier, instead of adding feature keys.
 
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
@@ -264,8 +262,7 @@ export class DataSourcesController implements IDataSourcesController {
   @Get(':id/openapi-spec/operations/:operationRecordId')
   async getOpenApiSpecOperation(
     @Param('id') dataSourceId: string,
-    // Route param is the openapi_spec_operations row's own `id`, not the spec's operationId
-    // (optional/non-unique) - named distinctly here since ':id' is already the datasource id.
+    // Row id, not the spec's operationId (optional, non-unique).
     @Param('operationRecordId') operationRecordId: string,
     @Query('environmentId') environmentId: string
   ) {

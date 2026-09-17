@@ -53,7 +53,6 @@ export class DataSourcesModule extends SubModule {
         await InMemoryCacheModule.register(configs),
         await AppPermissionsModule.register(configs!),
         TypeOrmModule.forFeature([OpenApiSpecOperation]),
-        // Registered in every edition - the OpenAPI v2 worker runs identically across CE/EE/Cloud.
         BullModule.registerQueue({ name: OPENAPI_SPEC_PROCESSING_QUEUE }),
         BullBoardModule.forFeature({ name: OPENAPI_SPEC_PROCESSING_QUEUE, adapter: BullMQAdapter }),
       ],
@@ -70,8 +69,7 @@ export class DataSourcesModule extends SubModule {
         FeatureAbilityFactory,
         OrganizationRepository,
         OpenApiSpecTerminationRegistry,
-        // Only the dedicated worker process actually consumes jobs (WORKER=true), matching the
-        // Workflows queue's split between HTTP-only and worker instances. No edition gating.
+        // Only WORKER=true instances consume jobs, like the Workflows queue.
         ...(isMainImport && process.env.WORKER === 'true' ? [OpenApiSpecProcessor] : []),
       ],
       controllers: isMainImport ? [DataSourcesController] : [],

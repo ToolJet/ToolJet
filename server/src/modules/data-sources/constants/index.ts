@@ -30,9 +30,7 @@ export enum DataSourceScopes {
 
 export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 
-// OpenAPI v2: worker-managed spec bookkeeping keys stored on data_source_options.options.
-// These are never read by a query run - parseSourceOptions must skip them so run() never
-// dereferences, decrypts, or constant-resolves the (potentially large) spec payload.
+// Option keys parseSourceOptions skips; never read by run().
 export const RUNTIME_EXCLUDED_OPTION_KEYS = [
   'raw_spec',
   'spec_metadata',

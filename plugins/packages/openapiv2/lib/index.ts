@@ -15,11 +15,8 @@ import { SourceOptions, QueryOptions, OpenApiV2Result } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import urrl from 'url';
 
-// run() is intentionally identical in shape to the legacy openapi plugin's - it never read
-// the spec either. What changed is everything upstream: the spec is now processed by a
-// background worker into a small operation index (see server @modules/openapi-spec), and the
-// query editor writes host/path/params/auth directly onto the query instead of walking a
-// full dereferenced spec client-side.
+// The spec is processed by a background worker into an operation index (see server
+// @modules/openapi-spec) - run() only uses the host/path/params/auth already on the query, no spec walk here.
 export default class OpenApiV2 implements QueryService {
   private resolvePathParams(params: any, path: string) {
     let newString = path;
@@ -63,7 +60,6 @@ export default class OpenApiV2 implements QueryService {
     const resolvedHost = sourceOptions.host || host;
     const url = new URL(resolvedHost + this.resolvePathParams(pathParams, path));
 
-    // SSRF Protection: Validate URL before making request
     await validateUrlForSSRF(url.toString());
 
     const parsedRequest = request ? this.parseRequest(request) : undefined;

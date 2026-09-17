@@ -118,9 +118,7 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
       })
     );
 
-    // No unique constraint on operation_id: it's optional per the OpenAPI 3.0/2.0 spec, and
-    // even when present a malformed spec could technically reuse it across operations.
-    // Identity/lookups instead go through this table's own generated `id`, scoped here.
+    // No unique constraint on operation_id: it is optional in the spec and may repeat.
     await queryRunner.createUniqueConstraint(
       'openapi_spec_operations',
       new TableUnique({
