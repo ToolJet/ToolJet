@@ -106,6 +106,33 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     });
   }
 
+  // Also reused by ee/organization-users/service.ts's archive() override.
+  protected buildMembershipAuditLogEntry(
+    user: User,
+    organizationUser: OrganizationUser,
+    organization: Organization,
+    action: 'archived' | 'unarchived'
+  ) {
+    return {
+      userId: user.id,
+      organizationId: organizationUser.organizationId,
+      resourceId: user.id,
+      resourceName: organizationUser.user.email,
+      resourceData: {
+        [`${action}_user`]: {
+          id: organizationUser.userId,
+          email: organizationUser.user.email,
+          first_name: organizationUser.user.firstName,
+          last_name: organizationUser.user.lastName,
+        },
+        [`${action}_user_workspace`]: {
+          workspace_name: organization.name,
+          workspace_id: organization.id,
+        },
+      },
+    };
+  }
+
   async archive(id: string, organizationId: string, user?: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOneOrFail(OrganizationUser, {
@@ -121,26 +148,11 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },
       });
-      const auditLogEntry = {
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        resourceId: user.id,
-        resourceName: organizationUser.user.email,
-        resourceData: {
-          archived_user: {
-            id: organizationUser.userId,
-            email: organizationUser.user.email,
-            first_name: organizationUser.user.firstName,
-            last_name: organizationUser.user.lastName,
-          },
-          archived_user_workspace: {
-            workspace_name: organization.name,
-            workspace_id: organization.id,
-          },
-        },
-      };
 
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+      RequestContext.setLocals(
+        AUDIT_LOGS_REQUEST_CONTEXT_KEY,
+        this.buildMembershipAuditLogEntry(user, organizationUser, organization, 'archived')
+      );
     });
   }
 
@@ -245,26 +257,11 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },
       });
-      const auditLogEntry = {
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        resourceId: user.id,
-        resourceName: organizationUser.user.email,
-        resourceData: {
-          unarchived_user: {
-            id: organizationUser.userId,
-            email: organizationUser.user.email,
-            first_name: organizationUser.user.firstName,
-            last_name: organizationUser.user.lastName,
-          },
-          unarchived_user_workspace: {
-            workspace_name: organization.name,
-            workspace_id: organization.id,
-          },
-        },
-      };
 
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+      RequestContext.setLocals(
+        AUDIT_LOGS_REQUEST_CONTEXT_KEY,
+        this.buildMembershipAuditLogEntry(user, organizationUser, organization, 'unarchived')
+      );
     });
 
     if (organizationUser.user.invitationToken) {

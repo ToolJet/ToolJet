@@ -78,9 +78,9 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_ARCHIVE)
   @Post(':id/archive')
-  async archive(@User() user: UserEntity, @Param('id') id: string, @Body() body) {
-    const organizationId = user.isPATLogin ? user.organizationId : body.organizationId || user.organizationId;
-    await this.organizationUsersService.archive(id, organizationId, user);
+  async archive(@User() user: UserEntity, @Param('id') id: string) {
+    // Scope is always the caller's own session organization — never client-supplied.
+    await this.organizationUsersService.archive(id, user.organizationId, user);
     return;
   }
 
@@ -110,9 +110,9 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_UNARCHIVE)
   @Post(':id/unarchive')
-  async unarchive(@User() user, @Param('id') id: string, @Body() body) {
-    const organizationId = user.isPATLogin ? user.organizationId : body.organizationId || user.organizationId;
-    await this.organizationUsersService.unarchive(user, id, organizationId);
+  async unarchive(@User() user, @Param('id') id: string) {
+    // See archive() above.
+    await this.organizationUsersService.unarchive(user, id, user.organizationId);
     return;
   }
 
