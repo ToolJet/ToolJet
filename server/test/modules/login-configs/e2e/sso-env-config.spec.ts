@@ -16,7 +16,9 @@ import { OidcEnvUtilService } from '@ee/organization-env/services/oidc.util.serv
 import { LoginConfigsService } from '@ee/login-configs/service';
 import { OauthService } from '@ee/auth/oauth/service';
 import { OidcOAuthService } from '@ee/auth/oauth/util-services/oidc-auth.service';
-import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
+import { LicenseInitService } from '@modules/licensing/interfaces/IService';
+import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
+import { SSOConfigs, SSOType, ConfigScope } from 'src/entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
@@ -454,6 +456,40 @@ describe('LoginConfigsController', () => {
         expect(rows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
       });
 
+      it('should reuse an existing untouched legacy row (no envConfigIndex) instead of creating a duplicate', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [TEST_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'id-1',
+              OIDC_CLIENT_SECRET: 'secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        const legacyRow = await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.OPENID,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const rows = await ssoConfigsRepository.find({ where: { sso: SSOType.OPENID, organizationId: orgId } });
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toBe(legacyRow.id);
+        expect(rows[0].useEnvConfig).toBe(true);
+        expect(rows[0].enabled).toBe(true);
+        expect((rows[0].configs as Record<string, unknown>)?.envConfigIndex).toBe(0);
+      });
+
       it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: [{ OIDC_CLIENT_ID: 'id-1', OIDC_NAME: 'first' }],
@@ -612,6 +648,59 @@ describe('LoginConfigsController', () => {
           app.get(LoginConfigsService).toggleSamlEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
+
+      it('should auto-enable even when an untouched, disabled placeholder row already exists', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.SAML,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.SAML);
+        expect(row?.useEnvConfig).toBe(true);
+        expect(row?.enabled).toBe(true);
+      });
+
+      it('should never re-enable a provider a human explicitly disabled, even after the config is fixed', async () => {
+        await runBootSequence();
+        const enabledRow = await getOrgRow(SSOType.SAML);
+        expect(enabledRow?.useEnvConfig).toBe(true);
+
+        await ssoConfigsRepository.update(enabledRow.id, {
+          useEnvConfig: false,
+          configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false },
+        });
+
+        await runBootSequence();
+
+        expect((await getOrgRow(SSOType.SAML))?.useEnvConfig).toBe(false);
+      });
+
+      it('should never take over a row already enabled by a human via the GUI', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.SAML,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: true,
+            useEnvConfig: false,
+            configs: { name: 'human-configured-saml' },
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.SAML);
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.name).toBe('human-configured-saml');
+      });
     });
 
     describe('workspace LDAP env config', () => {
@@ -652,6 +741,59 @@ describe('LoginConfigsController', () => {
 
         expect(ldapEntry?.configs?.basedns).toEqual(['LDAP_BASE_DN']);
       });
+
+      it('should auto-enable even when an untouched, disabled placeholder row already exists', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.LDAP,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.LDAP);
+        expect(row?.useEnvConfig).toBe(true);
+        expect(row?.enabled).toBe(true);
+      });
+
+      it('should never re-enable a provider a human explicitly disabled, even after the config is fixed', async () => {
+        await runBootSequence();
+        const enabledRow = await getOrgRow(SSOType.LDAP);
+        expect(enabledRow?.useEnvConfig).toBe(true);
+
+        await ssoConfigsRepository.update(enabledRow.id, {
+          useEnvConfig: false,
+          configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false },
+        });
+
+        await runBootSequence();
+
+        expect((await getOrgRow(SSOType.LDAP))?.useEnvConfig).toBe(false);
+      });
+
+      it('should never take over a row already enabled by a human via the GUI', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.LDAP,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: true,
+            useEnvConfig: false,
+            configs: { name: 'human-configured-ldap' },
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.LDAP);
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.name).toBe('human-configured-ldap');
+      });
     });
 
     describe('workspace config shape enforcement', () => {
@@ -686,6 +828,90 @@ describe('LoginConfigsController', () => {
           .set('tj-workspace-id', orgId)
           .send({ useEnvConfig: false })
           .expect(400);
+      });
+    });
+
+    describe('TJ_LICENSE freshness on auto-enable (sso-env)', () => {
+      const realTjLicense = process.env.TJ_LICENSE;
+
+      beforeEach(async () => {
+        await ssoConfigsRepository.update(
+          { sso: SSOType.OPENID, organizationId: IsNull() },
+          {
+            useEnvConfig: false,
+            enabled: false,
+            configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' },
+          }
+        );
+        await clearOrgRows(SSOType.OPENID);
+        await clearOrgRows(SSOType.SAML);
+        await clearOrgRows(SSOType.LDAP);
+      });
+
+      afterEach(async () => {
+        process.env.TJ_LICENSE = realTjLicense;
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        await clearOrgRows(SSOType.OPENID);
+        await clearOrgRows(SSOType.SAML);
+        await clearOrgRows(SSOType.LDAP);
+      });
+
+      it('should auto-enable instance AND workspace-level OIDC/SAML/LDAP once a TJ_LICENSE is added to .env after boot, without a server restart', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        app.get(LicenseInitService).setUseEnvLicense(false);
+        process.env.TJ_LICENSE = realTjLicense;
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
+
+        const instanceRow = await getInstanceOidcRow();
+        expect(instanceRow?.useEnvConfig).toBe(true);
+        expect(instanceRow?.enabled).toBe(true);
+
+        const workspaceOidcRows = await ssoConfigsRepository.find({
+          where: { sso: SSOType.OPENID, organizationId: orgId },
+        });
+        expect(workspaceOidcRows.length).toBeGreaterThan(0);
+        expect(workspaceOidcRows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
+
+        const samlRow = await getOrgRow(SSOType.SAML);
+        expect(samlRow?.useEnvConfig).toBe(true);
+        expect(samlRow?.enabled).toBe(true);
+
+        const ldapRow = await getOrgRow(SSOType.LDAP);
+        expect(ldapRow?.useEnvConfig).toBe(true);
+        expect(ldapRow?.enabled).toBe(true);
+      });
+
+      it('should stop using an env license that has since expired, on the next auto-enable pass', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2000-01-01' } as any);
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(false);
+      });
+
+      it('should leave license state untouched when TJ_LICENSE is invalid/undecryptable', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        process.env.TJ_LICENSE = 'garbage';
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockImplementation(() => {
+          throw new Error('bad license');
+        });
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
+      });
+
+      it('should do nothing when TJ_LICENSE is not set', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        delete process.env.TJ_LICENSE;
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
       });
     });
   });
