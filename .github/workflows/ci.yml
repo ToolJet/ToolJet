@@ -39,15 +39,22 @@ jobs:
       - uses: dorny/paths-filter@v4
         id: filter
         with:
+          # every: a file counts only if it matches ALL patterns of a filter, so the
+          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites
+          predicate-quantifier: 'every'
           filters: |
             server:
               - 'server/**'
+              - '!**/*.md'
             frontend:
               - 'frontend/**'
+              - '!**/*.md'
             plugins:
               - 'plugins/**'
+              - '!**/*.md'
             marketplace:
               - 'marketplace/**'
+              - '!**/*.md'
 
   # ---------------------------------------------------------------------------
   # 2. Build-check jobs — lint + build per folder
