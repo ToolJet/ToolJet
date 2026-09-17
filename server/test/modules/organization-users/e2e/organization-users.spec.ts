@@ -351,6 +351,40 @@ describe('OrganizationUsersController', () => {
         await viewerUserData.orgUser.reload();
         expect(viewerUserData.orgUser.status).toBe('archived');
       });
+
+      // Regression for tj-ee#5469 / GHSA-6r8x-87m7-59q3 and duplicates.
+      it("should not allow an admin to archive another organization's user via body.organizationId", async () => {
+        const orgAAdminData = await createUser(app, {
+          email: 'org-a-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgA = orgAAdminData.organization;
+        const orgASession = await buildTestSession(orgAAdminData.user, orgA.id);
+        orgAAdminData['tokenCookie'] = orgASession.tokenCookie;
+
+        const orgBAdminData = await createUser(app, {
+          email: 'org-b-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgB = orgBAdminData.organization;
+
+        const orgBViewerData = await createUser(app, {
+          email: 'org-b-viewer@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization: orgB,
+        });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/organization-users/${orgBViewerData.orgUser.id}/archive`)
+          .set('tj-workspace-id', orgAAdminData.user.defaultOrganizationId)
+          .set('Cookie', orgAAdminData['tokenCookie'])
+          .send({ organizationId: orgB.id });
+
+        expect(response.statusCode).not.toBe(201);
+
+        await orgBViewerData.orgUser.reload();
+        expect(orgBViewerData.orgUser.status).not.toBe('archived');
+      });
     });
 
     describe('POST /api/organization-users/:id/unarchive | Unarchive user', () => {
@@ -515,6 +549,41 @@ describe('OrganizationUsersController', () => {
 
         await developerUserData.orgUser.reload();
         expect(developerUserData.orgUser.status).toBe('invited');
+      });
+
+      // Regression for tj-ee#5469 / GHSA-6r8x-87m7-59q3 and duplicates.
+      it("should not allow an admin to unarchive another organization's user via body.organizationId", async () => {
+        const orgAAdminData = await createUser(app, {
+          email: 'org-a-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgA = orgAAdminData.organization;
+        const orgASession = await buildTestSession(orgAAdminData.user, orgA.id);
+        orgAAdminData['tokenCookie'] = orgASession.tokenCookie;
+
+        const orgBAdminData = await createUser(app, {
+          email: 'org-b-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgB = orgBAdminData.organization;
+
+        const orgBViewerData = await createUser(app, {
+          email: 'org-b-viewer@tooljet.io',
+          status: 'archived',
+          groups: ['viewer', 'end-user'],
+          organization: orgB,
+        });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/organization-users/${orgBViewerData.orgUser.id}/unarchive`)
+          .set('tj-workspace-id', orgAAdminData.user.defaultOrganizationId)
+          .set('Cookie', orgAAdminData['tokenCookie'])
+          .send({ organizationId: orgB.id });
+
+        expect(response.statusCode).not.toBe(201);
+
+        await orgBViewerData.orgUser.reload();
+        expect(orgBViewerData.orgUser.status).toBe('archived');
       });
     });
 
