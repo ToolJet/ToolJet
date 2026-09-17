@@ -128,4 +128,27 @@ describe('human node — flat suspend/resume', () => {
     const done = await findEntityOrFail(WorkflowExecution, { id: executionId });
     expect(done).toMatchObject({ executed: true, status: 'success' });
   });
+
+  it('accumulates logs across the suspend/resume boundary', async () => {
+    const { executionId, humanId } = await seedRun();
+    const first = await findEntityOrFail(WorkflowExecution, { id: executionId });
+    await expect(service.execute(first, { throwOnError: false })).rejects.toBeInstanceOf(WorkflowSuspendedSignal);
+
+    const reloaded = await findEntityOrFail(WorkflowExecution, { id: executionId });
+    await service.execute(reloaded, {
+      startNodeId: humanId,
+      injectedState: { __humanDecision: { outcome: 'approved', input: {} } },
+      throwOnError: false,
+    });
+
+    const done = await findEntityOrFail(WorkflowExecution, { id: executionId });
+    expect(done.logs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ message: expect.stringContaining('Waiting for human input at "approval1"') }),
+        expect.objectContaining({
+          message: expect.stringContaining('Human input received: "approved" at "approval1"'),
+        }),
+      ])
+    );
+  });
 });

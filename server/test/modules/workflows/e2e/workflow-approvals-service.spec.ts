@@ -1,7 +1,10 @@
 import { INestApplication } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { App } from '@entities/app.entity';
+import { User } from '@entities/user.entity';
 import {
   initTestApp,
   closeTestApp,
@@ -10,6 +13,7 @@ import {
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
+  NONEXISTENT_UUID,
 } from 'test-helper';
 import { WorkflowApprovalsService } from '@ee/workflows/services/workflow-approvals.service';
 import { WorkflowExecutionQueueService } from '@ee/workflows/services/workflow-execution-queue.service';
@@ -19,13 +23,17 @@ describe('WorkflowApprovalsService.resolve', () => {
   let app: INestApplication;
   let service: WorkflowApprovalsService;
   let queue: WorkflowExecutionQueueService;
+  let eventEmitter: EventEmitter2;
   let appVersionId: string;
   let userId: string;
+  let mainUser: User;
+  let approverUserId: string;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     service = app.get(WorkflowApprovalsService);
     queue = app.get(WorkflowExecutionQueueService);
+    eventEmitter = app.get(EventEmitter2);
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-resolve@tooljet.io',
       password: 'password',
@@ -33,16 +41,25 @@ describe('WorkflowApprovalsService.resolve', () => {
       lastName: 'Resolve',
     });
     userId = user.id;
+    mainUser = user;
     const workflowApp = await createWorkflowForUser(app, user, 'HITL resolve wf');
     appVersionId = (await createWorkflowApplicationVersion(app, workflowApp)).id;
+
+    const { user: approverUser } = await setupOrganizationAndUser(app, {
+      email: 'hitl-approver@tooljet.io',
+      password: 'password',
+      firstName: 'Hitl',
+      lastName: 'Approver',
+    });
+    approverUserId = approverUser.id;
   });
   afterAll(async () => {
     await closeTestApp(app);
   }, 60000);
 
-  async function seedPending(overrides: Partial<WorkflowApprovalRequest> = {}) {
+  async function seedPending(overrides: Partial<WorkflowApprovalRequest> = {}, overrideAppVersionId?: string) {
     const execution = await saveEntity(WorkflowExecution, {
-      appVersionId,
+      appVersionId: overrideAppVersionId ?? appVersionId,
       startNodeId: null,
       executed: false,
       status: 'waiting',
@@ -116,5 +133,88 @@ describe('WorkflowApprovalsService.resolve', () => {
     await expect(service.resolve('no-such-token', { outcome: 'approved', input: {} })).rejects.toMatchObject({
       status: 404,
     });
+  });
+
+  it('threads the acting user into resolvedByUserId and the resume payload (token-bypass, user present)', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const { req } = await seedPending();
+    const out = await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
+    expect(out).toMatchObject({ status: 'resolved' });
+    const updated = await findEntityOrFail(WorkflowApprovalRequest, { id: req.id });
+    expect(updated).toMatchObject({ status: 'resolved', resolvedByUserId: userId });
+    expect(enqueueSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        injectedState: { __humanDecision: { outcome: 'approved', input: {}, resolvedBy: userId } },
+      })
+    );
+    enqueueSpy.mockRestore();
+  });
+
+  it('rejects an anonymous resolve when tokenBypass is false (403)', async () => {
+    const { req } = await seedPending({
+      approversSnapshot: { users: [], groups: [], emails: [], tokenBypass: false },
+    });
+    await expect(service.resolve(req.token, { outcome: 'approved', input: {} })).rejects.toMatchObject({
+      status: 403,
+    });
+  });
+
+  it('rejects a resolve from a user who is not a listed approver (403)', async () => {
+    const { req } = await seedPending({
+      approversSnapshot: { users: [], groups: [], emails: [], tokenBypass: false },
+    });
+    await expect(
+      service.resolve(
+        req.token,
+        { outcome: 'approved', input: {} },
+        { id: NONEXISTENT_UUID, email: 'nobody@nowhere.test' }
+      )
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it('resolves for an approver named in approversSnapshot.users and records resolvedByUserId', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const { req } = await seedPending({
+      approversSnapshot: { users: [approverUserId], groups: [], emails: [], tokenBypass: false },
+    });
+    const out = await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: approverUserId });
+    expect(out).toMatchObject({ status: 'resolved' });
+    const updated = await findEntityOrFail(WorkflowApprovalRequest, { id: req.id });
+    expect(updated).toMatchObject({ status: 'resolved', resolvedByUserId: approverUserId });
+    enqueueSpy.mockRestore();
+  });
+
+  it('emits a WORKFLOW_APPROVAL_RESOLVED audit log entry on resolve', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const emitSpy = jest.spyOn(eventEmitter, 'emit');
+    const { req } = await seedPending();
+    await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
+    expect(emitSpy).toHaveBeenCalledWith(
+      'auditLogEntry',
+      expect.objectContaining({ actionType: 'WORKFLOW_APPROVAL_RESOLVED', resourceType: 'WORKFLOW' })
+    );
+    emitSpy.mockRestore();
+    enqueueSpy.mockRestore();
+  });
+
+  it('cancels the request and fails the execution when the workflow app is disabled while waiting (409)', async () => {
+    const disabledApp = await createWorkflowForUser(app, mainUser, 'HITL disabled wf');
+    await saveEntity(App, { id: disabledApp.id, isMaintenanceOn: false });
+    const disabledVersion = await createWorkflowApplicationVersion(app, disabledApp);
+    const { req, executionId } = await seedPending({}, disabledVersion.id);
+
+    await expect(service.resolve(req.token, { outcome: 'approved', input: {} })).rejects.toMatchObject({
+      status: 409,
+    });
+
+    const updatedReq = await findEntityOrFail(WorkflowApprovalRequest, { id: req.id });
+    expect(updatedReq).toMatchObject({ status: 'cancelled' });
+    const execution = await findEntityOrFail(WorkflowExecution, { id: executionId });
+    expect(execution).toMatchObject({ status: 'failure', executed: true });
   });
 });
