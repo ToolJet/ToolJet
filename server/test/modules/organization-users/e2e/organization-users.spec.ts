@@ -385,6 +385,60 @@ describe('OrganizationUsersController', () => {
         await orgBViewerData.orgUser.reload();
         expect(orgBViewerData.orgUser.status).not.toBe('archived');
       });
+
+      // The removed `isPATLogin` ternary already scoped PAT sessions to `user.organizationId`
+      // pre-fix; this pins that a real PAT-minted session still can't be steered cross-tenant
+      // now that both branches were collapsed into one expression.
+      it("should not allow a PAT session to archive another organization's user via body.organizationId", async () => {
+        const orgAAdminData = await createUser(app, {
+          email: 'pat-org-a-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgA = orgAAdminData.organization;
+        const orgASession = await buildTestSession(orgAAdminData.user, orgA.id);
+        orgAAdminData['tokenCookie'] = orgASession.tokenCookie;
+
+        const orgBAdminData = await createUser(app, {
+          email: 'pat-org-b-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const orgB = orgBAdminData.organization;
+
+        const orgBViewerData = await createUser(app, {
+          email: 'pat-org-b-viewer@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization: orgB,
+        });
+
+        const patResponse = await request(app.getHttpServer())
+          .post('/api/personal-access-tokens')
+          .set('Cookie', orgAAdminData['tokenCookie'])
+          .set('tj-workspace-id', orgA.id)
+          .send({
+            name: 'archive-idor-check',
+            organizationId: orgA.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+          .expect(201);
+
+        const sessionResponse = await request(app.getHttpServer())
+          .post('/api/personal-access-tokens/session')
+          .set('Authorization', `Bearer ${patResponse.body.token}`)
+          .expect(201);
+
+        const patCookie = `tj_auth_token=${sessionResponse.body.authToken}`;
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/organization-users/${orgBViewerData.orgUser.id}/archive`)
+          .set('tj-workspace-id', orgA.id)
+          .set('Cookie', patCookie)
+          .send({ organizationId: orgB.id });
+
+        expect(response.statusCode).not.toBe(201);
+
+        await orgBViewerData.orgUser.reload();
+        expect(orgBViewerData.orgUser.status).not.toBe('archived');
+      });
     });
 
     describe('POST /api/organization-users/:id/unarchive | Unarchive user', () => {
