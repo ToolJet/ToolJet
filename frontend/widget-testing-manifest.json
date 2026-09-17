@@ -109,12 +109,12 @@
     },
     {
       "componentType": "DropdownV2",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/DropdownV2/TESTING.md"
     },
     {
       "componentType": "MultiselectV2",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
@@ -123,7 +123,7 @@
     },
     {
       "componentType": "Checkbox",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/Checkbox/TESTING.md"
     },
     {
