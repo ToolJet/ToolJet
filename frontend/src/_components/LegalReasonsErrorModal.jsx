@@ -22,7 +22,6 @@ const LegalReasonsErrorModal = ({
   const handleClose = () => {
     setShowModal(false);
     toggleModal && toggleModal();
-    document.querySelector('.legal-reason-backdrop').remove();
   };
   const actionButtonAdmin =
     edition == 'ee'
