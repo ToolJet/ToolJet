@@ -158,6 +158,18 @@ export const chartConfig = {
         defaultValue: 50,
       },
     },
+    // Container (box) spacing — distinct from the inner plot `padding` above. Read by
+    // RenderWidget as `margin ?? padding`. Kept as its own key because `padding` is taken.
+    margin: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
     borderRadius: {
       type: 'number',
       displayName: 'Border radius',
@@ -239,6 +251,7 @@ export const chartConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
+      margin: { value: 'default' },
       borderRadius: { value: '{{6}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

@@ -180,6 +180,16 @@ export const navigationConfig = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 8 },
       accordian: 'Container',
     },
+    margin: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
+    },
   },
   exposedVariables: {
     selectedItem: null,
@@ -274,6 +284,7 @@ export const navigationConfig = {
     },
     events: [],
     styles: {
+      margin: { value: 'default' },
       unselectedTextColor: { value: 'var(--cc-primary-text)' },
       unselectedIconColor: { value: 'var(--cc-default-icon)' },
       hoverPillBackgroundColor: { value: 'var(--cc-surface3-surface)' },

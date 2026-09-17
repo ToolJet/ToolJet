@@ -293,7 +293,7 @@ export const statisticsConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: { schema: { type: 'string' }, defaultValue: 'default' },
       options: [
         { displayName: 'Default', value: 'default' },
