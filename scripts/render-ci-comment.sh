@@ -52,8 +52,15 @@ if [ "$MODE" = "full" ]; then
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
   echo "| **Cypress — Marketplace** | $(cell "$RESULT_CYPRESS_MARKETPLACE") |"
-  # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs)
-  [ -s "${COVERAGE_MD:-}" ] && echo "| **Coverage — server** | $(head -n 1 "$COVERAGE_MD") |"
+  # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs).
+  # No file = gate didn't run: no server code changed, or a suite already failed.
+  if [ -s "${COVERAGE_MD:-}" ]; then
+    echo "| **Coverage — server** | $(head -n 1 "$COVERAGE_MD") |"
+  elif [ "$RESULT_UNIT" = "skipped" ]; then
+    echo "| **Coverage — server** | ⏭️ skipped — no server code changed |"
+  else
+    echo "| **Coverage — server** | ⏭️ skipped — needs green server suites |"
+  fi
 else
   echo "| **Unit tests** | $(row unit "$RESULT_CHANGED") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_CHANGED") |"
