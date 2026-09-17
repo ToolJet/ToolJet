@@ -10,6 +10,7 @@ export interface ManifestProp {
   enumValues?: string[];
   enumLabels?: Record<string, string>;
   default?: unknown;
+  section?: string;
 }
 
 export interface ManifestEvent {

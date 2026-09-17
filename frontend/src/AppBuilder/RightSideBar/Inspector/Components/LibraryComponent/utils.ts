@@ -1,8 +1,35 @@
 import type { FieldMeta } from './types';
 import type { ManifestEvent, ManifestProp } from '@/AppBuilder/types/libraryComponent.types';
 
+const DEFAULT_PROPS_SECTION = 'Properties';
+
 export const filterVisibleProps = (props: ManifestProp[]): ManifestProp[] =>
   props.filter((prop) => prop.inspector !== 'hidden');
+
+
+// Groups manifest props into accordion sections by their author-declared `section`,
+// defaulting ungrouped props to "Properties" (today's single-section behavior). Section
+// order follows first appearance in the manifest, so authors control ordering by prop order.
+export interface PropSection {
+  title: string;
+  props: ManifestProp[];
+}
+
+export const groupPropsBySection = (props: ManifestProp[]): PropSection[] => {
+  const order: string[] = [];
+  const groups: Record<string, ManifestProp[]> = {};
+
+  for (const prop of props) {
+    const title = prop.section ?? DEFAULT_PROPS_SECTION;
+    if (!groups[title]) {
+      groups[title] = [];
+      order.push(title);
+    }
+    groups[title].push(prop);
+  }
+
+  return order.map((title) => ({ title, props: groups[title] }));
+};
 
 export const formatRevisionLabel = (revision: string | undefined): string | undefined =>
   revision?.startsWith?.('dev:') ? 'Dev preview' : revision;
