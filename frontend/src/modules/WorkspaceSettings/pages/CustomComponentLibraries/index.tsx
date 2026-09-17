@@ -5,6 +5,7 @@ import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 import Dialog from '@/components/ui/Dialog';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Button } from '@/components/ui/Button/Button';
 import { licenseService } from '@/_services/license.service';
 import { customComponentLibrariesService, type CustomComponentLibrary } from '@/_services/customComponentLibraries.service';
@@ -114,7 +115,10 @@ export default function CustomComponentLibraries({ darkMode }: CustomComponentLi
           <div className="libraries-table-body" data-cy="libraries-table">
             {libraries.map((library) => (
               <div className="libraries-row" key={library.id} data-cy={`library-row-${library.name}`}>
-                <div className="col-name">{library.name}</div>
+                <OverflowTooltip childrenClassName="col-name" placement="top">
+                  {library.name}
+                </OverflowTooltip>
+
                 <div className="col-version">
                   {library.revisions[0]?.version ?? (library.devBundles?.length ? 'dev' : '—')}
                 </div>
