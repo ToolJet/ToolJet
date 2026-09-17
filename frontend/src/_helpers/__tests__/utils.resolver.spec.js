@@ -337,30 +337,25 @@ describe('resolveReferences — whitespace inside the braces', () => {
     expect(resolveReferences('{{\tcomponents.c1.value\t}}', withComponent(7))).toBe(7);
   });
 
-  test.failing('a NEWLINE-padded binding must resolve — utils.js:1357,1371', () => {
-    // The `_helpers` copy of removeNestedDoubleCurlyBraces trims only `' '`:
-    //     if (transformedInput[iter] === ' ' && shouldRemoveSpace)
-    // The store copy trims `[' ', '\n', '\t']`. So here the newline survives, resolveCode
-    // builds `return \n components.c1.value \n`, and JavaScript's automatic semicolon
-    // insertion turns that into a bare `return;` — the expression is never evaluated and
-    // the binding resolves to `undefined`, silently.
+  test('a NEWLINE-padded binding resolves — utils.js:1357,1371', () => {
+    // removeNestedDoubleCurlyBraces trims `[' ', '\n', '\t']` in both copies of the
+    // resolver. Before that, the `_helpers` copy trimmed only `' '`, so the newline
+    // survived, resolveCode built `return \n components.c1.value \n`, and JavaScript's
+    // automatic semicolon insertion turned it into a bare `return;` — the expression was
+    // never evaluated and the binding resolved to `undefined`, silently.
     //
     // Multi-line bindings come out of the CodeEditor with real newlines, so this is
     // reachable by anyone who presses Enter inside `{{ }}` on a field that goes through
     // this resolver.
-    const result = resolveReferences('{{\n components.c1.value \n}}', withComponent(7));
-
-    // Actual today: undefined.
-    expect(result).toBe(7);
+    expect(resolveReferences('{{\n components.c1.value \n}}', withComponent(7))).toBe(7);
   });
 
-  test('a newline-padded binding embedded in text is not even recognised as a binding', () => {
-    // getDynamicVariables (utils.js:312) uses `/\{\{(.*?)\}\}/g`, and `.` does not match
-    // a newline — so the interpolation path leaves the raw text on screen. Pinned as the
-    // second half of the same defect.
-    expect(resolveReferences('x {{\n components.c1.value \n}} y', withComponent(7))).toBe(
-      'x {{\n components.c1.value \n}} y'
-    );
+  test('a newline-padded binding embedded in text resolves', () => {
+    // getDynamicVariables (utils.js:312) uses `/\{\{(.*?)\}\}/gs`. The `s` flag is what
+    // lets `.` match a newline, so the interpolation path finds the binding; the trim
+    // above is what lets it evaluate. Both halves are required — with the regex alone
+    // this returned 'x undefined y'.
+    expect(resolveReferences('x {{\n components.c1.value \n}} y', withComponent(7))).toBe('x 7 y');
   });
 });
 
