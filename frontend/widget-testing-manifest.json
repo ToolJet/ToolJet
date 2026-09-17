@@ -28,7 +28,8 @@
     },
     {
       "componentType": "KeyValuePair",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/KeyValuePair/TESTING.md"
     },
     {
       "componentType": "Form",
