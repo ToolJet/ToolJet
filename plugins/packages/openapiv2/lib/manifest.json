@@ -38,7 +38,8 @@
     "auth_type": {
       "type": "string",
       "title": "Authentication type",
-      "description": "Resolved from the selected security scheme (http/apiKey/oauth2)"
+      "description": "Resolved from the selected security scheme (http/apiKey/oauth2)",
+      "default": "none"
     },
     "username": {
       "type": "string",

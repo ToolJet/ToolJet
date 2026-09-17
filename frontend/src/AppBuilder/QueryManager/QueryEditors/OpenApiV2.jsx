@@ -85,6 +85,7 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
   const [loadingOperations, setLoadingOperations] = useState(false);
   const [operationSearchInput, setOperationSearchInput] = useState('');
   const debouncedOperationSearch = useDebounce(operationSearchInput, 300);
+  const [operationMenuIsOpen, setOperationMenuIsOpen] = useState(false);
 
   const localOptions = {
     path: options?.path,
@@ -191,6 +192,10 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
       operation: operation?.method,
       params: { path: {}, query: {}, header: {}, request: {} },
     });
+    // Clear the search text once an operation is picked, so the field shows the selected
+    // operation's own label instead of whatever was typed to find it.
+    setOperationSearchInput('');
+    setOperationMenuIsOpen(false);
   };
 
   const changeParam = (paramType, paramName, value) => {
@@ -303,12 +308,19 @@ const OpenApiV2 = ({ selectedDataSource, options = {}, optionsChanged, darkMode,
             }
             styles={queryManagerSelectComponentStyle(darkMode, '100%')}
             useCustomStyles={true}
-            isDisabled={loadingOperations}
-            // Options are already server-filtered (Tier 2), so client-side filtering is disabled.
+            isLoading={loadingOperations}
+            inputValue={operationSearchInput}
             onInputChange={(inputValue, meta) => {
-              if (meta.action === 'input-change') setOperationSearchInput(inputValue);
+              if (meta.action === 'input-change') {
+                setOperationSearchInput(inputValue);
+                setOperationMenuIsOpen(true);
+              }
             }}
             filterOption={() => true}
+            menuIsOpen={operationMenuIsOpen}
+            onMenuOpen={() => setOperationMenuIsOpen(true)}
+            onMenuClose={() => {}}
+            onBlur={() => setOperationMenuIsOpen(false)}
           />
           {operationDetail?.name && (
             <small
