@@ -15,6 +15,7 @@ import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
 import { OidcEnvUtilService } from '@ee/organization-env/services/oidc.util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
 import { OauthService } from '@ee/auth/oauth/service';
+import { OidcOAuthService } from '@ee/auth/oauth/util-services/oidc-auth.service';
 import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -334,6 +335,81 @@ describe('LoginConfigsController', () => {
           delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING;
           await app.get(OrganizationEnvUtilService).initialize();
           await groupSyncRepository.delete({ ssoConfigId: row.id });
+        }
+      });
+
+      it('should mask name and grantType to their env-var names, while exposing the real values as resolvedName/resolvedGrantType', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.OIDC_NAME = 'Instance OIDC';
+        process.env.OIDC_GRANT_TYPE = 'authorization_code';
+        try {
+          await runBootSequence();
+
+          const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+          const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+          expect(openidConfig?.configs?.name).toBe('OIDC_NAME');
+          expect(openidConfig?.configs?.resolvedName).toBe('Instance OIDC');
+          expect(openidConfig?.configs?.grantType).toBe('OIDC_GRANT_TYPE');
+          expect(openidConfig?.configs?.resolvedGrantType).toBe('authorization_code');
+        } finally {
+          process.env.OIDC_NAME = 'Instance OIDC';
+          process.env.OIDC_GRANT_TYPE = 'authorization_code';
+        }
+      });
+
+      it('should clear a stale GUI-configured custom scopes value once env-config is on, when OIDC_CUSTOM_SCOPES is not set', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        const savedCustomScopes = process.env.OIDC_CUSTOM_SCOPES;
+        delete process.env.OIDC_CUSTOM_SCOPES;
+        try {
+          await ssoConfigsRepository.update(
+            { sso: SSOType.OPENID, organizationId: IsNull() },
+            {
+              useEnvConfig: false,
+              enabled: false,
+              configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '', customScopes: 'stale-scope' },
+            }
+          );
+
+          await runBootSequence();
+
+          const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+          const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+          expect(openidConfig?.configs?.customScopes).toBeUndefined();
+        } finally {
+          if (savedCustomScopes === undefined) delete process.env.OIDC_CUSTOM_SCOPES;
+          else process.env.OIDC_CUSTOM_SCOPES = savedCustomScopes;
+        }
+      });
+
+      it('should use the DB-configured custom scopes at login time, not .env, when env-config is off', async () => {
+        const savedCustomScopes = process.env.OIDC_CUSTOM_SCOPES;
+        process.env.OIDC_CUSTOM_SCOPES = 'read write email';
+        try {
+          await ssoConfigsRepository.update(
+            { sso: SSOType.OPENID, organizationId: IsNull() },
+            {
+              useEnvConfig: false,
+              enabled: true,
+              configs: {
+                clientId: 'instance-client-id',
+                clientSecret: '',
+                name: 'Instance OIDC',
+                wellKnownUrl: 'https://instance-idp.example.com/.well-known/openid-configuration',
+                grantType: 'authorization_code',
+                customScopes: 'gui-configured-scope',
+              },
+            }
+          );
+
+          const ssoConfigs = await app.get(OidcOAuthService).getSsoConfigs(undefined as unknown as string);
+
+          expect(ssoConfigs?.customScopes).toBe('gui-configured-scope');
+        } finally {
+          if (savedCustomScopes === undefined) delete process.env.OIDC_CUSTOM_SCOPES;
+          else process.env.OIDC_CUSTOM_SCOPES = savedCustomScopes;
         }
       });
     });

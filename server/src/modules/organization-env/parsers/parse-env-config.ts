@@ -203,9 +203,11 @@ export function deriveOidcTemplate(
   if (has(k.CUSTOM_SCOPES)) config.customScopes = toTemplate(k.CUSTOM_SCOPES);
   if (has(k.CLAIM_NAME)) config.claimName = toTemplate(k.CLAIM_NAME);
   if (has(k.GROUP_MAPPING)) (config as { groupMapping?: unknown }).groupMapping = toTemplate(k.GROUP_MAPPING);
+  if (has(k.GRANT_TYPE)) config.grantType = toTemplate(k.GRANT_TYPE);
+  // Real grant type, normalized to the GUI enum, for the Client secret/Code verifier visibility check.
   if (has(k.GRANT_TYPE)) {
     const rawGrantType = get(k.GRANT_TYPE);
-    config.grantType = rawGrantType === 'pkce' ? 'authorization_code_pkce' : rawGrantType;
+    config.resolvedGrantType = rawGrantType === 'pkce' ? 'authorization_code_pkce' : rawGrantType;
   }
   if (has(k.CODE_VERIFIER)) config.codeVerifier = toTemplate(k.CODE_VERIFIER);
   return Object.keys(config).length ? config : null;
