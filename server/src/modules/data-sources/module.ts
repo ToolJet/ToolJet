@@ -82,8 +82,7 @@ export class DataSourcesModule extends SubModule {
         GitSyncDataSourceCreateGuard,
         GitSyncDataSourceEditGuard,
         OpenApiSpecTerminationRegistry,
-        // Only the dedicated worker process actually consumes jobs (WORKER=true), matching the
-        // Workflows queue's split between HTTP-only and worker instances. No edition gating.
+        // Only WORKER=true instances consume jobs, like the Workflows queue.
         ...(isMainImport && process.env.WORKER === 'true' ? [OpenApiSpecProcessor] : []),
       ],
       controllers: isMainImport ? [DataSourcesController] : [],

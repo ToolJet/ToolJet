@@ -134,8 +134,7 @@ export class CreateOpenApiSpecDto {
   @IsString()
   definition?: string;
 
-  // Explicit environment to (re)process. Omit to process every environment the
-  // organization has (fan-out behaviour depends on multi-environment licensing).
+  // Omit to process every environment in the organization.
   @IsOptional()
   @IsString()
   environmentId?: string;
@@ -158,7 +157,7 @@ export class OpenApiSpecOperationsQueryDto {
   @IsString()
   search?: string;
 
-  // 1-indexed, matching AppListDto/organization-users' pagination convention.
+  // 1-indexed.
   @IsOptional()
   @IsString()
   page?: string;

@@ -44,3 +44,4 @@ lerna-debug.log*
 /coverage-gitsync
 /coverage-gitsync-combined
 /coverage-gitsync-unit
+/test/modules/openapi-spec/__fixtures__/.cache/

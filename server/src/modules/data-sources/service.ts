@@ -105,8 +105,7 @@ export class DataSourcesService implements IDataSourcesService {
       }
 
       if (dataSource.kind === 'openapi') {
-        // Legacy plugin: `spec` holds the whole inline-dereferenced doc, with externally
-        // authored object keys (path segments, header names, etc.) that must survive verbatim.
+        // `spec` has user-authored keys (paths, header names) that must not be decamelized.
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
         const { spec, ...objExceptSpec } = options;
@@ -117,9 +116,7 @@ export class DataSourcesService implements IDataSourcesService {
       }
 
       if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
-        // New plugin: `spec_metadata` (worker-computed info/host/tags/services/securitySchemes)
-        // has the same externally authored key problem as legacy `spec`. `raw_spec` is a plain
-        // string, so it's unaffected and doesn't need the same guard.
+        // Same for `spec_metadata`.
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
         const { spec_metadata, ...objExceptSpecMetadata } = options;
@@ -250,11 +247,7 @@ export class DataSourcesService implements IDataSourcesService {
     }
 
     if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
-      // Must complete (or confirm nothing is running) before the row disappears underneath a
-      // still-active job - openapi_spec_operations rows cascade-delete with the datasource, and
-      // a job mid-persist for a datasource that no longer exists is exactly the
-      // interleaved/corrupted-write scenario termination exists to prevent. Throws (and aborts
-      // the delete) if a running job doesn't stop within its timeout.
+      // Throws, aborting the delete, if a running job doesn't stop in time.
       await this.dataSourcesUtilService.terminateOpenApiSpecJobsForDelete(dataSourceId);
     }
 
@@ -542,7 +535,7 @@ export class DataSourcesService implements IDataSourcesService {
     }
   }
 
-  // --- OpenAPI v2 spec processing (thin delegation, matching the rest of this class) -------
+  // --- OpenAPI v2 spec processing -------
 
   async createOrReplaceOpenApiSpec(dataSourceId: string, organizationId: string, dto: CreateOpenApiSpecDto) {
     return this.dataSourcesUtilService.createOrReplaceOpenApiSpec(dataSourceId, organizationId, dto);

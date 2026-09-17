@@ -641,10 +641,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
       });
     } finally {
-      // Defensive: reported as "this.inMemoryCacheService.clear is not a function" on save,
-      // despite the constructor wiring, compiled dist output, and decorator metadata all
-      // checking out correctly on inspection - root cause unconfirmed. Guarded so a datasource
-      // save can never 500 on cache invalidation; worst case is a stale OAuth cache entry.
+      // Guarded: "inMemoryCacheService.clear is not a function" was seen on save (root cause
+      // unknown). A stale OAuth cache entry is better than a 500.
       this.inMemoryCacheService?.clear?.();
     }
   }
@@ -733,9 +731,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             encrypted: dataSource.options[key].encrypted,
           };
         } else if (openApiSpecOptionKeys.includes(key)) {
-          // OpenAPI v2 bookkeeping (spec_metadata, spec_status, raw_spec, etc.) is written by
-          // the background worker, never by this form - it has no corresponding submitted
-          // `option` below, so without this it gets silently dropped on every ordinary save.
+          // Worker-managed spec keys are never submitted by the form; carry them over or a save wipes them.
           parsedOptions[key] = dataSource.options[key];
         }
       }
@@ -1333,8 +1329,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const constantMatcher = /\{\{(constants|secrets|globals.server)\..*?\}\}/g;
 
     for (const key of Object.keys(options)) {
-      // OpenAPI v2: raw_spec/spec_metadata/etc. are worker-managed bookkeeping, never read by run() -
-      // skip them so query runs never dereference, decrypt, or constant-resolve the spec.
+      // Never read by run(); skipping avoids resolving constants across a potentially huge raw spec.
       if (RUNTIME_EXCLUDED_OPTION_KEYS.includes(key)) continue;
 
       const currentOption = options[key]?.['value'];
@@ -1668,9 +1663,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
   // --- OpenAPI v2 spec processing -------------------------------------------------------
-  // Kept on DataSourcesUtilService (rather than a separate service) so the existing
-  // FeatureAbilityGuard/ValidateDataSourceGuard stack on DataSourcesController applies to
-  // these routes for free, and because this is fundamentally a datasource concern.
 
   async createOrReplaceOpenApiSpec(dataSourceId: string, organizationId: string, dto: CreateOpenApiSpecDto) {
     const batches = await this.resolveOpenApiSpecEnvironmentBatches(organizationId, dto.environmentId);
@@ -1735,14 +1727,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     await this.openApiSpecTerminationRegistry.requestTermination(dataSourceId, environmentId);
 
-    if (jobId) {
-      const job = await this.openApiSpecQueue.getJob(jobId);
-      // Only waiting/delayed jobs can be removed outright; an active job is left to observe
-      // the termination flag cooperatively (see OpenApiSpecProcessor).
-      if (job && ['waiting', 'delayed'].includes(await job.getState())) {
-        await job.remove();
-      }
-    }
+    await this.openApiSpecTerminationRegistry.removeIfQueued(jobId);
 
     await this.writeOpenApiSpecOptions(dataSourceId, organizationId, environmentId, {
       [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.CANCELLED,
@@ -1751,15 +1736,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return { status: OpenApiSpecStatus.CANCELLED };
   }
 
-  // Called before deleting an openapiv2 datasource - delete itself isn't environment-scoped, so
-  // this checks every environment's DataSourceOptions row for that datasource (a job can be
-  // in flight per environment independently) and, for any still PENDING/PROCESSING, requests
-  // termination and WAITS for confirmation (unlike cancelOpenApiSpecProcessing, which is
-  // fire-and-forget) - deleting while a job may still be mid-transaction, writing to
-  // openapi_spec_operations for a datasource whose row is about to disappear, risks exactly the
-  // interleaved/corrupted-write scenario OpenApiSpecTerminationRegistry exists to prevent.
-  // Throws (via terminateAndWait) if a job doesn't stop within its timeout - the caller should
-  // let that propagate and refuse the delete rather than proceeding regardless.
+  // Unlike cancel, waits for in-flight jobs in every environment to stop so none is still writing
+  // operations for a datasource being deleted. Throws on timeout; callers must abort the delete.
   async terminateOpenApiSpecJobsForDelete(dataSourceId: string): Promise<void> {
     const allOptions = await dbTransactionWrap((manager: EntityManager) =>
       manager.find(DataSourceOptions, { where: { dataSourceId } })
@@ -1774,11 +1752,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  // openapi_spec_operations is the sole source of truth for per-operation data - the processor
-  // no longer builds/stores a duplicate lightweight index in spec_metadata, so this queries the
-  // table directly instead of reading a JSON blob off DataSourceOptions. Only lightweight
-  // columns are selected (parameters/requestBodySchema/responseSchemas stay off this list,
-  // fetched only via getOpenApiSpecOperation's single-record lookup below).
+  // Excludes the heavy jsonb columns (parameters, requestBodySchema); see getOpenApiSpecOperation.
   async listOpenApiSpecOperations(
     dataSourceId: string,
     organizationId: string,
@@ -1809,13 +1783,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       qb.andWhere('operation.serviceId = :service', { service: query.service });
     }
     if (query.tag) {
-      // tags is a jsonb array column - `?` is Postgres's jsonb "does this array contain this
-      // string" containment operator.
+      // jsonb `?`: array contains this string.
       qb.andWhere('operation.tags ? :tag', { tag: query.tag });
     }
     if (query.search) {
-      // tags::text casts the jsonb array to its text representation (e.g. ["billing","v2"]) so
-      // ILIKE can substring-match within it - covers path/name/tag with the one search box.
       qb.andWhere(
         '(operation.name ILIKE :search OR operation.path ILIKE :search OR operation.tags::text ILIKE :search)',
         {
@@ -1841,9 +1812,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     };
   }
 
-  // Looked up by the row's own `id`, not operationId - operationId is optional in the spec
-  // (and not unique-constrained even when present), so it can't serve as the reference key.
-  // The frontend gets `id` from listOpenApiSpecOperations, which queries this same table.
+  // Keyed by row id: operationId is optional in the spec and not guaranteed unique.
   async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string) {
     const operation = await this.openApiSpecOperationsRepository.findOne({
       where: { dataSourceId, environmentId, id },
@@ -1852,13 +1821,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return operation;
   }
 
-  // Licensing-aware fan-out:
-  //  - multi-env licensed + specific environmentId requested -> single batch of one environment
-  //  - multi-env licensed + no environmentId ("all environments") -> N independent batches (jobs),
-  //    one per environment, so one broken URL/spec doesn't block the others
-  //  - multi-env not licensed -> a single batch containing every environment row, processed once
-  //    and duplicated across all of them (mirrors this service's own duplication behaviour for
-  //    ordinary data_source_options when unlicensed - see createDataSourceInAllEnvironments)
+  // Each inner array becomes one job. Unlicensed: one job shared by all environments (options are
+  // duplicated everywhere). Licensed: one job per environment so a broken spec doesn't block others.
   private async resolveOpenApiSpecEnvironmentBatches(
     organizationId: string,
     requestedEnvironmentId?: string

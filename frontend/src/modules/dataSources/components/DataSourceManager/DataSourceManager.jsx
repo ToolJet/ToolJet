@@ -277,10 +277,8 @@ class DataSourceManagerComponent extends React.Component {
     });
   };
 
-  // openapiv2 has no separate "process spec" action anymore - saving the datasource IS what
-  // starts the background processing job, mirroring how every other option just persists on
-  // Save. Fire-and-forget: this component doesn't block/wait on it, OpenApiV2Config's own
-  // status polling (useOpenApiSpecStatus) picks up PENDING/PROCESSING once this call lands.
+  // Fire-and-forget: doesn't block/wait - OpenApiV2Config's own status polling
+  // (useOpenApiSpecStatus) picks up PENDING/PROCESSING once this call lands.
   startOpenApiSpecProcessingIfNeeded = (dataSourceId, options, environmentId) => {
     if (this.state.selectedDataSource?.kind !== 'openapiv2') return;
     openApiSpecService
@@ -291,8 +289,7 @@ class DataSourceManagerComponent extends React.Component {
         environmentId,
       })
       .catch(() => {
-        // Surfaced to the user via the status badge/error text in OpenApiV2Config instead of a
-        // toast here - a failed upload call still leaves the datasource saved successfully.
+        // Silent: a failed upload still leaves the datasource saved; failure surfaces via OpenApiV2Config's status badge.
       });
   };
 

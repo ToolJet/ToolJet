@@ -13,10 +13,7 @@ import {
 import { DataSource } from './data_source.entity';
 import { AppEnvironment } from './app_environments.entity';
 
-// operationId is optional in the OpenAPI 3.0/2.0 spec (and even when present, a malformed spec
-// could technically reuse it across operations), so it is NOT part of the unique constraint -
-// this row's own generated `id`, scoped to (dataSourceId, environmentId), is the identity used
-// for lookups/references instead.
+// No unique constraint on operationId: it is optional in the spec and may repeat; `id` is the key.
 @Entity({ name: 'openapi_spec_operations' })
 @Unique('UQ_OPENAPI_SPEC_OPERATION', ['dataSourceId', 'environmentId', 'id'])
 @Index('IDX_OPENAPI_SPEC_OPERATION_SERVICE', ['dataSourceId', 'environmentId', 'serviceId'])
@@ -62,23 +59,6 @@ export class OpenApiSpecOperation extends BaseEntity {
 
   @Column({ name: 'request_body_schema', type: 'jsonb', nullable: true })
   requestBodySchema: Record<string, any> | null;
-
-  // Per-status-code response schemas, e.g. { "200": {...}, "404": {...} }. Only ever fetched via
-  // the single-operation lookup (getOpenApiSpecOperation, by row `id`) - listOpenApiSpecOperations
-  // deliberately selects a lightweight column subset that excludes this.
-  @Column({ name: 'response_schemas', type: 'jsonb', nullable: true })
-  responseSchemas: Record<string, any> | null;
-
-  // requestBodySchema/responseSchemas above are the pruned view (circular refs truncated to {}
-  // via pruneCircularRefs - see circular-ref.util.ts). These _raw counterparts preserve the
-  // reference expression instead of truncating (markCircularRefs), stored pre-stringified as
-  // text rather than jsonb since the point is preserving the exact reference structure as
-  // written, not letting the pg driver re-serialize it.
-  @Column({ name: 'request_body_schema_raw', type: 'text', nullable: true })
-  requestBodySchemaRaw: string | null;
-
-  @Column({ name: 'response_schemas_raw', type: 'text', nullable: true })
-  responseSchemasRaw: string | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

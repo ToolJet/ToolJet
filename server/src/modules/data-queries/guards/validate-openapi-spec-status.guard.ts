@@ -12,23 +12,11 @@ import {
 } from '@modules/openapi-spec/constants';
 
 /**
- * Blocks creating/updating a query against an OpenAPI v2 datasource (kind: 'openapiv2', a
- * separate connector from the legacy 'openapi' plugin - see OPENAPI_V2_DATASOURCE_KIND) while
- * a spec upload is still being processed, since the operation index the query editor builds
- * against would be incomplete/about to be replaced. Runs after ValidateQuerySourceGuard, which
- * attaches the resolved datasource to request.tj_data_source.
+ * Blocks creating/updating a query on an openapiv2 datasource while its spec is still processing.
+ * Runs after ValidateQuerySourceGuard, which sets request.tj_data_source.
  *
- * Deliberately has NO injected service dependencies (queries DataSourceOptions/AppEnvironment
- * directly via dbTransactionWrap) rather than going through DataSourcesUtilService/
- * AppEnvironmentUtilService. Those are edition-split (CE base + EE subclass resolved per
- * edition), but this guard is attached to create/updateDataQuery - routes defined on the CE
- * controller and simply inherited, unoverridden, by the EE controller. Since the @UseGuards
- * decorator on an inherited method is fixed to whatever class the CE file referenced, typing
- * this guard's constructor against the CE util service class would only ever resolve under CE
- * edition and throw UnknownDependenciesException under EE/Cloud, where the DI container has
- * the EE class registered instead. Matches the existing pattern: ValidateQuerySourceGuard/
- * ValidateDataSourceGuard (also attached to CE-defined/inherited routes) only depend on
- * plain, non-edition-split repositories - never on the *UtilService classes.
+ * Queries the DB directly instead of injecting edition-split *UtilService classes: these routes
+ * are inherited by the EE controller, so a CE-typed dependency throws UnknownDependenciesException under EE.
  */
 @Injectable()
 export class ValidateOpenApiSpecStatusGuard implements CanActivate {
