@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import i18next from 'i18next';
 
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
@@ -7,7 +8,14 @@ import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '@/AppBuilder/RightSideBar/Inspe
 import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
-import { additionalActionProps, buildEventMetaDefinition, fieldMeta, filterVisibleProps, formatRevisionLabel } from './utils';
+import {
+  additionalActionProps,
+  buildEventMetaDefinition,
+  fieldMeta,
+  filterVisibleProps,
+  formatRevisionLabel,
+  groupPropsBySection,
+} from './utils';
 
 import type { LibraryComponentPropertiesProps } from './types';
 
@@ -72,13 +80,13 @@ export const LibraryComponentProperties = ({
     ),
   });
 
-  if (visibleProps.length > 0) {
+  groupPropsBySection(visibleProps).forEach(({ title, props: sectionProps }) => {
     items.push({
-      title: 'Properties',
+      title,
       isOpen: true,
       children: (
         <>
-          {visibleProps.map((prop) =>
+          {sectionProps.map((prop) =>
             renderElement(
               component,
               componentMeta,
@@ -98,11 +106,11 @@ export const LibraryComponentProperties = ({
         </>
       ),
     });
-  }
+  });
 
   if (events.length > 0) {
     items.push({
-      title: 'Events',
+      title: `${i18next.t('widget.common.events', 'Events')}`,
       isOpen: true,
       children: (
         <EventManagerComponent
@@ -124,7 +132,7 @@ export const LibraryComponentProperties = ({
   if (staticProps.length > 0) {
     items.push({
       id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-      title: 'Additional Actions',
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
       isOpen: true,
       children: (
         <>
@@ -148,7 +156,7 @@ export const LibraryComponentProperties = ({
   }
 
   items.push({
-    title: 'Layout',
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
       <>

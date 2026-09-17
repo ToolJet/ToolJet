@@ -1,4 +1,4 @@
-import { fieldMeta, additionalActionProps } from '../utils';
+import { fieldMeta, additionalActionProps, groupPropsBySection } from '../utils';
 
 describe('fieldMeta', () => {
   it('[LibraryComponent-FIELDMETA-001] gives a boolean prop a boolean schema', () => {
@@ -75,5 +75,47 @@ describe('additionalActionProps', () => {
 
   it('[LibraryComponent-ADDITIONALACTIONS-003] returns an empty list when componentMeta has no properties', () => {
     expect(additionalActionProps({})).toEqual([]);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-004] picks out multiple properties in that section, in declaration order', () => {
+    // Break this catches: loadingState (added alongside visibility) being dropped from
+    // the "Additional Actions" panel because only the first/last match was picked out.
+    const componentMeta = {
+      properties: {
+        libraryId: { section: 'meta' },
+        visibility: { section: 'additionalActions' },
+        loadingState: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta)).toEqual(['visibility', 'loadingState']);
+  });
+});
+
+describe('groupPropsBySection', () => {
+  it('[LibraryComponent-SECTION-001] groups props with no section under a single "Properties" section', () => {
+    // Break this catches: manifests that never declare `section` (today's only case)
+    // splintering into multiple accordion items instead of the one they get today.
+    const props = [
+      { name: 'label', type: 'string' },
+      { name: 'count', type: 'number' },
+    ];
+    expect(groupPropsBySection(props)).toEqual([{ title: 'Properties', props }]);
+  });
+
+  it('[LibraryComponent-SECTION-002] groups props by their declared section, in first-seen order', () => {
+    const label = { name: 'label', type: 'string', section: 'Content' };
+    const color = { name: 'color', type: 'string', section: 'Style' };
+    const size = { name: 'size', type: 'number', section: 'Style' };
+    const count = { name: 'count', type: 'number' }; // no section
+
+    expect(groupPropsBySection([label, color, size, count])).toEqual([
+      { title: 'Content', props: [label] },
+      { title: 'Style', props: [color, size] },
+      { title: 'Properties', props: [count] },
+    ]);
+  });
+
+  it('[LibraryComponent-SECTION-003] returns [] for an empty prop list', () => {
+    expect(groupPropsBySection([])).toEqual([]);
   });
 });
