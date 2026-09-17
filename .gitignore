@@ -52,3 +52,4 @@ docs/superpowers/
 contexts/
 server/test/AUDIT_LEDGER.md
 memory/
+server/scripts/tjdb-*
