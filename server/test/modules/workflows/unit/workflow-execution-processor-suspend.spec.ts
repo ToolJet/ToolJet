@@ -17,7 +17,9 @@ describe('WorkflowExecutionProcessor — suspend handling', () => {
       }),
     };
     const logger: any = { log: jest.fn(), debug: jest.fn(), error: jest.fn() };
-    const processor = new WorkflowExecutionProcessor(service, {} as any, logger, manager);
+    // terminationRegistry mock: the processor's finally block always calls clear(executionId).
+    const terminationRegistry: any = { clear: jest.fn() };
+    const processor = new WorkflowExecutionProcessor(service, terminationRegistry, logger, manager);
 
     const job: any = {
       data: {

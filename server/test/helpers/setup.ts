@@ -5,6 +5,7 @@ import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
 import { AuditLogsModule } from '@ee/audit-logs/module';
+import { WorkflowsModule } from '@modules/workflows/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -528,6 +529,14 @@ export interface InitTestAppOptions {
    * The fresh app is NOT cached and will be properly closed by closeTestApp().
    */
   freshApp?: boolean;
+  /**
+   * When true, registers WorkflowsModule in the test app so workflow controllers and
+   * services are mounted/resolvable. AppModule omits WorkflowsModule under IS_GET_CONTEXT
+   * (the mode initTestApp uses), so workflow HTTP routes and `app.get(<workflow service>)`
+   * are unavailable by default. Opt-in — apps built with it get their own cache slot, so
+   * this never changes the app any other test receives. Default: false.
+   */
+  withWorkflows?: boolean;
 }
 
 export interface InitTestAppResult {
@@ -536,11 +545,12 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const { edition = 'ee', plan = 'enterprise', freshApp = false } = options ?? {};
+  const { edition = 'ee', plan = 'enterprise', freshApp = false, withWorkflows = false } = options ?? {};
 
-  // Cache key: only edition matters. Plan reconfigures the mock, not the app.
+  // Cache key: edition + whether WorkflowsModule is registered (a different app shape).
+  // Plan reconfigures the mock, not the app, so it stays out of the key.
   const isCacheable = !freshApp;
-  const cacheKey = isCacheable ? edition : undefined;
+  const cacheKey = isCacheable ? (withWorkflows ? `${edition}:wf` : edition) : undefined;
 
   if (cacheKey && _cache[cacheKey]) {
     const slot = _cache[cacheKey];
@@ -569,6 +579,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     imports: [
       await AppModule.register({ IS_GET_CONTEXT: true }),
       await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
+      // Opt-in: AppModule omits WorkflowsModule under IS_GET_CONTEXT, so register it
+      // explicitly here (isMainImport=true) when a workflow spec asks for it.
+      ...(withWorkflows ? [await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true)] : []),
     ],
   });
 

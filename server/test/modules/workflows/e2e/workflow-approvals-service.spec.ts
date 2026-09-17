@@ -30,9 +30,9 @@ describe('WorkflowApprovalsService.resolve', () => {
   let approverUserId: string;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    service = app.get(WorkflowApprovalsService);
-    queue = app.get(WorkflowExecutionQueueService);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    service = app.get(WorkflowApprovalsService, { strict: false });
+    queue = app.get(WorkflowExecutionQueueService, { strict: false });
     eventEmitter = app.get(EventEmitter2);
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-resolve@tooljet.io',
@@ -104,7 +104,7 @@ describe('WorkflowApprovalsService.resolve', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.anything(),
+      undefined, // timeout: the resume path lets enqueue apply its own default, so this arg is undefined
       expect.objectContaining({
         startNodeId: node.id,
         requestId: req.id,
@@ -147,7 +147,7 @@ describe('WorkflowApprovalsService.resolve', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.anything(),
+      undefined, // timeout (see above): undefined on the resume path
       expect.objectContaining({
         injectedState: { __humanDecision: { outcome: 'approved', input: {}, resolvedBy: userId } },
       })

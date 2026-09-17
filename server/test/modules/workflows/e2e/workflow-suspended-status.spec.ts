@@ -18,8 +18,8 @@ describe('WorkflowExecutionsService.saveSuspendedStatus', () => {
   let executionId: string;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    service = app.get(WorkflowExecutionsService);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    service = app.get(WorkflowExecutionsService, { strict: false });
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-suspend@tooljet.io',
       password: 'password',

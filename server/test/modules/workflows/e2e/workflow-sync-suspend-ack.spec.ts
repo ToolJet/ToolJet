@@ -28,7 +28,7 @@ describe('WorkflowExecutionsController', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
     });
 
     afterAll(async () => {

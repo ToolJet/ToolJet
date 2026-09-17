@@ -4,6 +4,7 @@ import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity'
 import { WorkflowExecutionEdge } from '@entities/workflow_execution_edge.entity';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { WorkflowSuspendedSignal } from '@modules/workflows/types';
+import { parse } from 'flatted';
 import {
   initTestApp,
   closeTestApp,
@@ -23,8 +24,8 @@ describe('human node — flat suspend/resume', () => {
   let userId: string;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    service = app.get(WorkflowExecutionsService);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    service = app.get(WorkflowExecutionsService, { strict: false });
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-node@tooljet.io',
       password: 'password',
@@ -118,7 +119,9 @@ describe('human node — flat suspend/resume', () => {
 
     const humanNode = await findEntityOrFail(WorkflowExecutionNode, { id: humanId });
     expect(humanNode.executed).toBe(true);
-    expect(JSON.parse(humanNode.result).data.outcome).toBe('approved');
+    // node.result is serialized with flatted (the engine uses flatted.stringify — it handles
+    // circular refs), so it must be read back with flatted.parse, not JSON.parse.
+    expect(parse(humanNode.result).data.outcome).toBe('approved');
 
     const okNode = await findEntityOrFail(WorkflowExecutionNode, { id: okId });
     const noNode = await findEntityOrFail(WorkflowExecutionNode, { id: noId });

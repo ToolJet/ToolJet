@@ -67,11 +67,21 @@ describe('WorkflowApprovalRequest entity', () => {
   });
 
   it('rejects a second pending request for the same (execution, node) via the partial unique index', async () => {
+    // Both inserts live in THIS test: the per-test SAVEPOINT is rolled back between
+    // tests, so a row created in another `it` would not survive to collide here.
+    await saveEntity(WorkflowApprovalRequest, {
+      workflowExecutionId: executionId,
+      executionNodeId: nodeId,
+      token: 'tok-entity-2a',
+      status: 'pending',
+      approversSnapshot: {},
+      expiresAt: null,
+    });
     await expect(
       saveEntity(WorkflowApprovalRequest, {
         workflowExecutionId: executionId,
         executionNodeId: nodeId,
-        token: 'tok-entity-2',
+        token: 'tok-entity-2b',
         status: 'pending',
         approversSnapshot: {},
         expiresAt: null,

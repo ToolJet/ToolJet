@@ -23,9 +23,9 @@ describe('WorkflowApprovalsService.expire', () => {
   let userId: string;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    service = app.get(WorkflowApprovalsService);
-    queue = app.get(WorkflowExecutionQueueService);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    service = app.get(WorkflowApprovalsService, { strict: false });
+    queue = app.get(WorkflowExecutionQueueService, { strict: false });
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-expire@tooljet.io',
       password: 'password',

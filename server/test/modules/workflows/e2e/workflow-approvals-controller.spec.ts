@@ -20,8 +20,8 @@ describe('workflow-approvals controller', () => {
   let userId: string;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    jest.spyOn(app.get(WorkflowExecutionQueueService), 'enqueue').mockResolvedValue(undefined);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    jest.spyOn(app.get(WorkflowExecutionQueueService, { strict: false }), 'enqueue').mockResolvedValue(undefined);
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-ctrl@tooljet.io',
       password: 'password',
@@ -96,7 +96,7 @@ describe('workflow-approvals controller — CE edition', () => {
   let ceApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: ceApp } = await initTestApp({ edition: 'ce' }));
+    ({ app: ceApp } = await initTestApp({ edition: 'ce', withWorkflows: true }));
   });
   afterAll(async () => {
     await closeTestApp(ceApp);

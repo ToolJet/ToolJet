@@ -1,9 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   initTestApp,
   closeTestApp,
   saveEntity,
+  getDefaultDataSource,
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
@@ -16,11 +19,27 @@ describe('schedule overlap guard', () => {
   let service: WorkflowExecutionsService;
   let appVersionId: string;
   let userId: string;
-  const scheduleId = '11111111-1111-1111-1111-111111111111';
+  let environmentId: string;
+  // schedule_id on workflow_executions is a FK to workflow_schedules(id); each test
+  // seeds a real schedule row and uses its generated id so the insert satisfies the FK.
+  let waitingScheduleId: string;
+  let completedScheduleId: string;
+
+  const seedSchedule = async (): Promise<string> => {
+    const schedule = await saveEntity(WorkflowSchedule, {
+      workflowId: appVersionId,
+      environmentId,
+      active: true,
+      type: 'interval',
+      timezone: 'UTC',
+      details: {},
+    });
+    return schedule.id;
+  };
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    service = app.get(WorkflowExecutionsService);
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
+    service = app.get(WorkflowExecutionsService, { strict: false });
     const { user } = await setupOrganizationAndUser(app, {
       email: 'hitl-overlap@tooljet.io',
       password: 'password',
@@ -30,6 +49,12 @@ describe('schedule overlap guard', () => {
     userId = user.id;
     const workflowApp = await createWorkflowForUser(app, user, 'HITL overlap wf');
     appVersionId = (await createWorkflowApplicationVersion(app, workflowApp)).id;
+    const devEnv = await getDefaultDataSource()
+      .getRepository(AppEnvironment)
+      .findOne({ where: { organizationId: workflowApp.organizationId, name: 'development' } });
+    environmentId = devEnv.id;
+    waitingScheduleId = await seedSchedule();
+    completedScheduleId = await seedSchedule();
   });
   afterAll(async () => {
     await closeTestApp(app);
@@ -43,13 +68,12 @@ describe('schedule overlap guard', () => {
       status: 'waiting',
       executingUserId: userId,
       logs: [],
-      scheduleId,
+      scheduleId: waitingScheduleId,
     });
-    expect(await service.hasNonTerminalRunForSchedule(scheduleId)).toBe(true);
+    expect(await service.hasNonTerminalRunForSchedule(waitingScheduleId)).toBe(true);
   });
 
   it('reports no non-terminal run when the only run for the schedule is completed', async () => {
-    const other = '22222222-2222-2222-2222-222222222222';
     await saveEntity(WorkflowExecution, {
       appVersionId,
       startNodeId: null,
@@ -57,8 +81,8 @@ describe('schedule overlap guard', () => {
       status: 'success',
       executingUserId: userId,
       logs: [],
-      scheduleId: other,
+      scheduleId: completedScheduleId,
     });
-    expect(await service.hasNonTerminalRunForSchedule(other)).toBe(false);
+    expect(await service.hasNonTerminalRunForSchedule(completedScheduleId)).toBe(false);
   });
 });
