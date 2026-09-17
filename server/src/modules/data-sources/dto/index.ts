@@ -1,8 +1,9 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined, Matches } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined, Matches, IsIn, ValidateIf } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { OpenApiSpecSourceType } from '@modules/openapi-spec/constants';
 
 export class CreateDataSourceDto {
   @IsUUID()
@@ -117,4 +118,52 @@ export class ValidateOptionsDto {
   @IsUUID()
   @IsOptional()
   environment_id?: string;
+}
+
+export class CreateOpenApiSpecDto {
+  @IsIn([OpenApiSpecSourceType.URL, OpenApiSpecSourceType.DEFINITION])
+  sourceType: OpenApiSpecSourceType;
+
+  @ValidateIf((dto) => dto.sourceType === OpenApiSpecSourceType.URL)
+  @IsNotEmpty()
+  @IsString()
+  url?: string;
+
+  @ValidateIf((dto) => dto.sourceType === OpenApiSpecSourceType.DEFINITION)
+  @IsNotEmpty()
+  @IsString()
+  definition?: string;
+
+  // Explicit environment to (re)process. Omit to process every environment the
+  // organization has (fan-out behaviour depends on multi-environment licensing).
+  @IsOptional()
+  @IsString()
+  environmentId?: string;
+}
+
+export class OpenApiSpecOperationsQueryDto {
+  @IsOptional()
+  @IsString()
+  environmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  service?: string;
+
+  @IsOptional()
+  @IsString()
+  tag?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // 1-indexed, matching AppListDto/organization-users' pagination convention.
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  perPage?: string;
 }

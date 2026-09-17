@@ -7,10 +7,13 @@ import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
 import { DataSourceScopes, DataSourceTypes } from './constants';
+import { OPENAPI_V2_DATASOURCE_KIND } from '@modules/openapi-spec/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
+  CreateOpenApiSpecDto,
   GetDataSourceOauthUrlDto,
+  OpenApiSpecOperationsQueryDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
@@ -102,11 +105,26 @@ export class DataSourcesService implements IDataSourcesService {
       }
 
       if (dataSource.kind === 'openapi') {
+        // Legacy plugin: `spec` holds the whole inline-dereferenced doc, with externally
+        // authored object keys (path segments, header names, etc.) that must survive verbatim.
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
         const { spec, ...objExceptSpec } = options;
         const decamelizedOptions = decamelizeKeys(objExceptSpec);
         decamelizedOptions['spec'] = spec;
+        tempDs['options'] = decamelizedOptions;
+        return tempDs;
+      }
+
+      if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
+        // New plugin: `spec_metadata` (worker-computed info/host/tags/services/securitySchemes)
+        // has the same externally authored key problem as legacy `spec`. `raw_spec` is a plain
+        // string, so it's unaffected and doesn't need the same guard.
+        const { options, ...objExceptOptions } = dataSource;
+        const tempDs = decamelizeKeys(objExceptOptions);
+        const { spec_metadata, ...objExceptSpecMetadata } = options;
+        const decamelizedOptions = decamelizeKeys(objExceptSpecMetadata);
+        decamelizedOptions['spec_metadata'] = spec_metadata;
         tempDs['options'] = decamelizedOptions;
         return tempDs;
       }
@@ -229,6 +247,15 @@ export class DataSourcesService implements IDataSourcesService {
     const result = await this.findQueriesLinkedToDatasource(dataSourceId, user.organizationId, branchId);
     if (result.dependent_queries) {
       throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
+    }
+
+    if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
+      // Must complete (or confirm nothing is running) before the row disappears underneath a
+      // still-active job - openapi_spec_operations rows cascade-delete with the datasource, and
+      // a job mid-persist for a datasource that no longer exists is exactly the
+      // interleaved/corrupted-write scenario termination exists to prevent. Throws (and aborts
+      // the delete) if a running job doesn't stop within its timeout.
+      await this.dataSourcesUtilService.terminateOpenApiSpecJobsForDelete(dataSourceId);
     }
 
     // Branch-aware deletion. On a FEATURE branch the delete is branch-scoped and mergeable,
@@ -513,6 +540,37 @@ export class DataSourcesService implements IDataSourcesService {
       }
       throw error;
     }
+  }
+
+  // --- OpenAPI v2 spec processing (thin delegation, matching the rest of this class) -------
+
+  async createOrReplaceOpenApiSpec(dataSourceId: string, organizationId: string, dto: CreateOpenApiSpecDto) {
+    return this.dataSourcesUtilService.createOrReplaceOpenApiSpec(dataSourceId, organizationId, dto);
+  }
+
+  async getOpenApiSpecStatus(dataSourceId: string, organizationId: string, environmentId: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecStatus(dataSourceId, organizationId, environmentId);
+  }
+
+  async cancelOpenApiSpecProcessing(dataSourceId: string, organizationId: string, environmentId: string) {
+    return this.dataSourcesUtilService.cancelOpenApiSpecProcessing(dataSourceId, organizationId, environmentId);
+  }
+
+  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecMetadata(dataSourceId, organizationId, environmentId);
+  }
+
+  async listOpenApiSpecOperations(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    query: OpenApiSpecOperationsQueryDto
+  ) {
+    return this.dataSourcesUtilService.listOpenApiSpecOperations(dataSourceId, organizationId, environmentId, query);
+  }
+
+  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecOperation(dataSourceId, environmentId, id);
   }
 
   protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {

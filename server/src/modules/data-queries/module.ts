@@ -16,6 +16,7 @@ import { AppHistoryModule } from '@modules/app-history/module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
+import { ValidateOpenApiSpecStatusGuard } from './guards/validate-openapi-spec-status.guard';
 
 function parsePositiveInt(raw: unknown, fallback: number): number {
   if (raw === undefined || raw === null || raw === '') return fallback;
@@ -70,6 +71,7 @@ export class DataQueriesModule extends SubModule {
         DataQueryFolderMappingRepository,
         AppScopedThrottlerGuard,
         GitSyncQueryEditGuard,
+        ValidateOpenApiSpecStatusGuard,
       ],
       exports: [DataQueriesUtilService],
       controllers: isMainImport ? [DataQueriesController] : [],

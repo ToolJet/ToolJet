@@ -18,6 +18,9 @@ export const getSchemaDetailsForRender = (schema) => {
       name: schema['tj:source'].name,
       kind: schema['tj:source'].kind,
       type: schema['tj:source'].type,
+      // Suppresses DataSourceManager's generic <TestConnection> footer button for plugins that
+      // render their own (e.g. openapiv2) - mirrors the old schema's `source.customTesting`.
+      customTesting: !!schema['tj:source'].customTesting,
       options: initialSourceValues,
     };
   }

@@ -1,6 +1,12 @@
 import React from 'react';
 import Skeleton from 'react-loading-skeleton';
-import { datasourceService, pluginsService, globalDatasourceService, libraryAppService } from '@/_services';
+import {
+  datasourceService,
+  pluginsService,
+  globalDatasourceService,
+  libraryAppService,
+  openApiSpecService,
+} from '@/_services';
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
@@ -271,6 +277,25 @@ class DataSourceManagerComponent extends React.Component {
     });
   };
 
+  // openapiv2 has no separate "process spec" action anymore - saving the datasource IS what
+  // starts the background processing job, mirroring how every other option just persists on
+  // Save. Fire-and-forget: this component doesn't block/wait on it, OpenApiV2Config's own
+  // status polling (useOpenApiSpecStatus) picks up PENDING/PROCESSING once this call lands.
+  startOpenApiSpecProcessingIfNeeded = (dataSourceId, options, environmentId) => {
+    if (this.state.selectedDataSource?.kind !== 'openapiv2') return;
+    openApiSpecService
+      .upload(dataSourceId, {
+        sourceType: options?.spec_source_type?.value || 'url',
+        url: options?.spec_url?.value,
+        definition: options?.raw_spec?.value,
+        environmentId,
+      })
+      .catch(() => {
+        // Surfaced to the user via the status badge/error text in OpenApiV2Config instead of a
+        // toast here - a failed upload call still leaves the datasource saved successfully.
+      });
+  };
+
   createDataSource = () => {
     const {
       appId,
@@ -360,6 +385,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentAppEnvironmentId,
           })
           .then(() => {
+            this.startOpenApiSpecProcessingIfNeeded(selectedDataSource.id, options, currentAppEnvironmentId);
             this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal(selectedDataSource);
@@ -393,6 +419,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentAppEnvironmentId,
           })
           .then((data) => {
+            this.startOpenApiSpecProcessingIfNeeded(data.id, options, currentAppEnvironmentId);
             this.setState({ isSaving: false, addingDataSource: false });
             this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(name);
 
@@ -1076,8 +1103,8 @@ class DataSourceManagerComponent extends React.Component {
       const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
         ? key
         : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
-          ? camelize(key)
-          : key;
+        ? camelize(key)
+        : key;
       if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
       if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
     });
@@ -1094,8 +1121,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
