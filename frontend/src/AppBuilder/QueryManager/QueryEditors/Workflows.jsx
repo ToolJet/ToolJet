@@ -56,7 +56,25 @@ export function Workflows({ options, optionsChanged, currentState }) {
     isOnMain && options.workflowVersionId === WORKFLOW_CURRENT_BRANCH_SENTINEL
       ? DEFAULT_BRANCH_DRAFT_SENTINEL
       : options.workflowVersionId;
-  const resolvedWorkflowVersionId = versionOptions.find((o) => o.value === displayVersionValue)?.value ?? null;
+
+  const isOrphanedVersionPin = !!displayVersionValue && !versionOptions.some((o) => o.value === displayVersionValue);
+  // Orphaned pin still resolves fine server-side by name; redirect to the existing
+  // sentinel option if one exists, else synthesize one — never duplicate.
+  const sentinelForThisBranch = isOnMain ? DEFAULT_BRANCH_DRAFT_SENTINEL : WORKFLOW_CURRENT_BRANCH_SENTINEL;
+  const sentinelOptionExists = versionOptions.some((o) => o.value === sentinelForThisBranch);
+  const versionSelectOptions =
+    isOrphanedVersionPin && isGitSyncEnabled && !sentinelOptionExists
+      ? [
+          ...versionOptions,
+          isOnMain
+            ? { value: displayVersionValue, label: defaultBranchName, badge: VERSION_BADGES.DRAFT }
+            : { value: displayVersionValue, label: 'Current branch' },
+        ]
+      : versionOptions;
+  const effectiveDisplayVersionValue =
+    isOrphanedVersionPin && isGitSyncEnabled && sentinelOptionExists ? sentinelForThisBranch : displayVersionValue;
+  const resolvedWorkflowVersionId =
+    versionSelectOptions.find((o) => o.value === effectiveDisplayVersionValue)?.value ?? null;
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -181,7 +199,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
           <label className="mb-1 mt-2">Version</label>
           <div data-cy="workflow-version-dropdown"></div>
           <Select
-            options={versionOptions}
+            options={versionSelectOptions}
             value={resolvedWorkflowVersionId}
             placeholder="Select version"
             onChange={(workflowVersionId) => {
