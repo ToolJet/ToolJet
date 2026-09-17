@@ -22,7 +22,8 @@
     },
     {
       "componentType": "Table",
-      "status": "not-started"
+      "status": "grilling",
+      "contract": "ee/test/app-builder/widgets/Table/TESTING.md"
     },
     {
       "componentType": "Chart",
