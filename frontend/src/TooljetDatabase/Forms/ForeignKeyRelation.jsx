@@ -418,8 +418,8 @@ function ForeignKeyRelation({
                 ? setOnChangeInForeignKey(true)
                 : handleEditForeignKeyInCreate()
               : newChangesInForeignKey?.length > 0
-              ? setOnChangeInForeignKey(true)
-              : handleEditForeignKey()
+                ? setOnChangeInForeignKey(true)
+                : handleEditForeignKey()
           }
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}

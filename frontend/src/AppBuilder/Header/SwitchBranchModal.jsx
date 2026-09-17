@@ -66,8 +66,8 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   const currentBranchName = workspaceActiveBranch?.name
     ? workspaceActiveBranch.name
     : selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch'
-    ? selectedVersion?.name
-    : currentBranch?.name || defaultBranchName;
+      ? selectedVersion?.name
+      : currentBranch?.name || defaultBranchName;
 
   useEffect(() => {
     if (show && appId && organizationId) {

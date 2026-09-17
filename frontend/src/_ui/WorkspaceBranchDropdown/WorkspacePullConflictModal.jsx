@@ -169,8 +169,8 @@ function ConflictRow({
                       {group.conflictField === 'slug' || group.conflictField === 'invalid_name'
                         ? item.name
                         : item.coRelationId
-                        ? `#${item.coRelationId.slice(0, 8)}`
-                        : item.name}
+                          ? `#${item.coRelationId.slice(0, 8)}`
+                          : item.name}
                     </span>
 
                     {/* invalid_name is one-sided — no counterpart for the badge to contrast against. */}
