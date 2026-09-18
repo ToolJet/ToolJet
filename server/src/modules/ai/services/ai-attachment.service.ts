@@ -151,7 +151,7 @@ export class AiAttachmentService implements OnModuleDestroy {
           );
         }
         const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
-        if (provider === 'anthropic' && !imageType && extension !== 'pdf') {
+        if (['anthropic', 'gemini'].includes(provider) && !imageType && extension !== 'pdf') {
           const { body } = await this.download(user, file.id);
           return [{ type: 'text', text: `${label}\n${await body.transformToString('utf-8')}` }];
         }
@@ -165,6 +165,12 @@ export class AiAttachmentService implements OnModuleDestroy {
           }),
           { expiresIn: 4 * 60 * 60 }
         );
+        if (provider === 'gemini') {
+          return [
+            { type: 'text', text: label },
+            { type: 'image_url', image_url: { url } },
+          ];
+        }
         if (provider === 'anthropic') {
           return [
             { type: 'text', text: label },

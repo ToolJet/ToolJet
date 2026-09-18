@@ -144,39 +144,41 @@ describe('AI attachment storage', () => {
     }
   );
 
-  it.each(['png', 'jpg', 'jpeg', 'webp', 'pdf'])('prepares fresh Claude URL blocks for %s files', async (extension) => {
-    const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
-    repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
-    (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/first');
-    (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/refreshed');
-    const first = await service.prepare(owner, [id], [], 'anthropic');
-    const followUp = await service.prepare(owner, [], [id], 'anthropic');
-    expect(first.content[1]).toEqual({
-      type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/first' },
+  describe.each(['anthropic', 'gemini'])('%s file preparation', (provider) => {
+    it.each(['png', 'jpg', 'jpeg', 'webp', 'pdf'])('prepares fresh image and document URL blocks for %s files', async (extension) => {
+      const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
+      repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
+      (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/first');
+      (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/refreshed');
+      const first = await service.prepare(owner, [id], [], provider);
+      const followUp = await service.prepare(owner, [], [id], provider);
+      expect(first.content[1]).toEqual(provider === 'gemini'
+        ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
+        : { type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/first' } });
+      expect(followUp.content[1]).toEqual(provider === 'gemini'
+        ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
+        : { type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/refreshed' } });
+      expect(followUp.attachments).toEqual([]);
+      expect(send).not.toHaveBeenCalled();
     });
-    expect(followUp.content[1]).toEqual({
-      type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/refreshed' },
+
+    it.each(['csv', 'tsv', 'txt', 'md', 'json'])('reads owned %s contents from S3 for the provider', async (extension) => {
+      const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
+      repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
+      send.mockResolvedValue({ Body: { transformToString: jest.fn().mockResolvedValue('aisle,boxes\nJuniper,27') } });
+      const result = await service.prepare(owner, [id], [], provider);
+      expect(result.content).toEqual([{ type: 'text', text: `Attached file: sample.${extension}\naisle,boxes\nJuniper,27` }]);
+      expect(GetObjectCommand).toHaveBeenCalledWith({ Bucket: 'fixture', Key: id });
+      expect(getSignedUrl).not.toHaveBeenCalled();
+      expect(JSON.stringify(result.attachments)).not.toContain('Juniper');
     });
-    expect(followUp.attachments).toEqual([]);
-    expect(send).not.toHaveBeenCalled();
-  });
 
-  it.each(['csv', 'tsv', 'txt', 'md', 'json'])('reads owned %s contents from S3 for Claude', async (extension) => {
-    const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
-    repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
-    send.mockResolvedValue({ Body: { transformToString: jest.fn().mockResolvedValue('aisle,boxes\nJuniper,27') } });
-    const result = await service.prepare(owner, [id], [], 'anthropic');
-    expect(result.content).toEqual([{ type: 'text', text: `Attached file: sample.${extension}\naisle,boxes\nJuniper,27` }]);
-    expect(GetObjectCommand).toHaveBeenCalledWith({ Bucket: 'fixture', Key: id });
-    expect(getSignedUrl).not.toHaveBeenCalled();
-    expect(JSON.stringify(result.attachments)).not.toContain('Juniper');
-  });
-
-  it('does not send a Claude text attachment whose S3 download failed', async () => {
-    const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
-    repository.findOne.mockResolvedValue({ id, name: 'sample.csv', size: 60 });
-    send.mockRejectedValue(new Error('Storage unavailable'));
-    await expect(service.prepare(owner, [id], [], 'anthropic')).rejects.toBeInstanceOf(BadGatewayException);
+    it('does not send a text attachment whose S3 download failed', async () => {
+      const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
+      repository.findOne.mockResolvedValue({ id, name: 'sample.csv', size: 60 });
+      send.mockRejectedValue(new Error('Storage unavailable'));
+      await expect(service.prepare(owner, [id], [], provider)).rejects.toBeInstanceOf(BadGatewayException);
+    });
   });
 
   it.each([null, 'file-id', ['not-a-uuid'], Array(6).fill('df0b465b-2345-4226-943f-81a6d6e2c497')])(
