@@ -21,13 +21,13 @@ const renderRatingColumn = (maxRating) => {
 };
 
 describe('RatingColumn max rating limit', () => {
-  it('caps the number of rendered icons at MAX_RATING_COUNT when maxRating is entered above the limit', () => {
+  it('[Table-COLTYPE-RATING-002] caps the number of rendered icons at MAX_RATING_COUNT when maxRating is entered above the limit', () => {
     const iconCount = renderRatingColumn(MAX_RATING_COUNT + 15);
 
     expect(iconCount).toBe(MAX_RATING_COUNT);
   });
 
-  it('renders the configured number of icons when maxRating is within the allowed range', () => {
+  it('[Table-COLTYPE-RATING-002] renders the configured number of icons when maxRating is within the allowed range', () => {
     const iconCount = renderRatingColumn(7);
 
     expect(iconCount).toBe(7);
