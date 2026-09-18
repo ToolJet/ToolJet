@@ -451,17 +451,22 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
-        // and modules — the module editor's Canvas styles fields read these, so gating this to
-        // non-modules left module mode/theme unpopulated.
-        const global_settings = mapKeys(
-          appData.editing_version?.global_settings || appData.global_settings,
-          (value, key) => camelCase(key)
-        );
-        if (!global_settings?.theme) {
-          global_settings.theme = baseTheme;
+        // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
+        // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
+        const isEmbeddedModuleInstance = mode === 'view' && moduleMode;
+
+        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
+        if (!isEmbeddedModuleInstance) {
+          const global_settings = mapKeys(
+            appData.editing_version?.global_settings || appData.global_settings,
+            (value, key) => camelCase(key)
+          );
+          if (!global_settings?.theme) {
+            global_settings.theme = baseTheme;
+          }
+          setGlobalSettings(global_settings);
         }
-        setGlobalSettings(global_settings);
+
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(
