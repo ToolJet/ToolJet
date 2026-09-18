@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { isUUID } from 'class-validator';
 import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
@@ -120,6 +122,57 @@ export class AiAttachmentService implements OnModuleDestroy {
 
   async get(user: AttachmentOwner, id: string) {
     return this.descriptor(await this.findOwned(user, id));
+  }
+
+  async prepare(user: AttachmentOwner, ids: unknown = [], previousIds: string[] = []) {
+    if (!Array.isArray(ids) || ids.length > 5 || ids.some((id) => typeof id !== 'string' || !isUUID(id))) {
+      throw new BadRequestException('Choose up to 5 uploaded files per message.');
+    }
+    const allIds = [...new Set([...previousIds, ...ids])];
+    if (allIds.length > 20 || allIds.some((id) => !isUUID(id))) {
+      throw new BadRequestException('Start a new chat to attach more files (20 files per chat).');
+    }
+    const files = await Promise.all(allIds.map((id) => this.findOwned(user, id)));
+    if (files.reduce((size, file) => size + file.size, 0) >= 50 * 1024 * 1024) {
+      throw new BadRequestException('Files in one chat must total less than 50 MB. Start a new chat.');
+    }
+    const content = await Promise.all(
+      files.map(async (file) => {
+        const extension = file.name.split('.').pop().toLowerCase();
+        const imageType = {
+          png: 'image/png',
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+          webp: 'image/webp',
+        }[extension];
+        if (!imageType && !/^(pdf|csv|tsv|txt|md|json)$/.test(extension)) {
+          throw new BadRequestException(
+            `“${file.name}” is not supported. Use PNG, JPEG, WebP, PDF, CSV, TSV, TXT, Markdown or JSON.`
+          );
+        }
+        const url = await getSignedUrl(
+          this.storage.client,
+          new GetObjectCommand({
+            Bucket: file.s3Bucket,
+            Key: file.s3Key,
+            ResponseContentType: imageType || (extension === 'pdf' ? 'application/pdf' : 'text/plain'),
+            ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(file.name).replace(/'/g, '%27')}`,
+          }),
+          { expiresIn: 4 * 60 * 60 }
+        );
+        return [
+          {
+            type: 'input_text',
+            text: `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`,
+          },
+          imageType ? { type: 'input_image', image_url: url } : { type: 'input_file', file_url: url },
+        ];
+      })
+    );
+    return {
+      attachments: files.filter((file) => ids.includes(file.id)).map((file) => this.descriptor(file)),
+      content: content.flat(),
+    };
   }
 
   async download(user: AttachmentOwner, id: string) {
