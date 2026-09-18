@@ -9,7 +9,6 @@ interface Features {
   [FEATURE_KEY.UPDATE_PROVIDER_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS]: FeatureConfig;
   [FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS]: FeatureConfig;
-  [FEATURE_KEY.GET_UNCOMMITTED_RESOURCES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

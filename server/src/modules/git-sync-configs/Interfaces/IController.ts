@@ -27,5 +27,4 @@ export interface IGitSyncConfigsController {
     updateBranchingEnabledDto: UpdateBranchingEnabledDto
   ): Promise<any>;
   deleteConfig(user: UserEntity, organizationGitId: string, gitType: string): Promise<any>;
-  getUncommittedResources(user: UserEntity, organizationId: string, branchId?: string, appId?: string): Promise<any>;
 }

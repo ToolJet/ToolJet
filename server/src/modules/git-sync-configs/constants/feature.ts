@@ -15,6 +15,5 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS]: {},
     // Deleting/disconnecting a provider must always be possible so the user can turn git off.
     [FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS]: {},
-    [FEATURE_KEY.GET_UNCOMMITTED_RESOURCES]: { license: LICENSE_FIELD.GIT_SYNC },
   },
 };
