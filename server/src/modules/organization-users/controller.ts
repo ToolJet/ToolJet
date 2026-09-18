@@ -29,7 +29,8 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { Response } from 'express';
 import { IOrganizationUsersController } from './interfaces/IController';
-import { UpdateOrgUserDto } from './dto';
+import { ArchiveOrgUserDto, UpdateOrgUserDto } from './dto';
+import { isSuperAdmin } from '@helpers/utils.helper';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization-users')
@@ -78,9 +79,14 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_ARCHIVE)
   @Post(':id/archive')
-  async archive(@User() user: UserEntity, @Param('id') id: string) {
-    // Scope is always the caller's own session organization — never client-supplied.
-    await this.organizationUsersService.archive(id, user.organizationId, user);
+  async archive(@User() user: UserEntity, @Param('id') id: string, @Body() body: ArchiveOrgUserDto) {
+    const organizationId = user.isPATLogin
+      ? user.organizationId
+      : isSuperAdmin(user) && body?.organizationId
+        ? body.organizationId
+        : user.organizationId;
+
+    await this.organizationUsersService.archive(id, organizationId, user);
     return;
   }
 
@@ -110,9 +116,14 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_UNARCHIVE)
   @Post(':id/unarchive')
-  async unarchive(@User() user, @Param('id') id: string) {
-    // See archive() above.
-    await this.organizationUsersService.unarchive(user, id, user.organizationId);
+  async unarchive(@User() user, @Param('id') id: string, @Body() body: ArchiveOrgUserDto) {
+    const organizationId = user.isPATLogin
+      ? user.organizationId
+      : isSuperAdmin(user) && body?.organizationId
+        ? body.organizationId
+        : user.organizationId;
+
+    await this.organizationUsersService.unarchive(user, id, organizationId);
     return;
   }
 
