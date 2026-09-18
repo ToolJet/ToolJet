@@ -20,7 +20,24 @@
     "ts-jest": "^29.0.5"
   },
   "overrides": {
-    "axios": "^1.16.1"
+    "tar": "^7.5.22",
+    "axios": "^1.20.0",
+    "websocket-driver": "^0.7.5",
+    "undici": "^6.28.1",
+    "protobufjs": "^7.6.5",
+    "ws": "^8.21.0",
+    "tmp": "^0.2.6",
+    "smol-toml": "^1.7.1",
+    "ip-address": "^10.7.2",
+    "browserslist": "^4.29.0",
+    "sigstore": "^4.1.1",
+    "nx": "^22.7.7",
+    "form-data": "^4.0.6",
+    "js-yaml@^3": "^3.15.2",
+    "js-yaml@^4": "^4.3.2",
+    "brace-expansion@^1.0.0": "^1.1.21",
+    "brace-expansion@^2.0.0": "^2.1.7",
+    "brace-expansion@^5.0.0": "^5.0.12"
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
