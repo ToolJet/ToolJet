@@ -3,9 +3,9 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
+import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
@@ -503,7 +503,12 @@ export const Inspector = ({
   const renderDocumentationLink = () => {
     return (
       <span className="widget-documentation-link">
-        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
+        <a
+          href={getDocsLink(componentMeta?.component)}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="widget-documentation-link"
+        >
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
@@ -746,28 +751,6 @@ export const Inspector = ({
   );
 };
 
-const getDocsLink = (componentMeta) => {
-  const component = componentMeta?.component ?? '';
-  switch (component) {
-    case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
-    case 'DropdownV2':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'DropDown':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'MultiselectV2':
-      return 'https://docs.tooljet.com/docs/widgets/multiselect';
-    case 'DaterangePicker':
-      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
-    case 'RangeSliderV2':
-      return 'https://docs.tooljet.com/docs/widgets/range-slider';
-    case 'ModuleViewer':
-    case 'ModuleContainer':
-      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
-    default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
-  }
-};
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [

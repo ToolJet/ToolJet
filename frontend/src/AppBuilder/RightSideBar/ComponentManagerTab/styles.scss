@@ -153,6 +153,9 @@
 }
 
 .custom-components-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 40px 16px;
   text-align: center;
 
@@ -257,13 +260,6 @@
     color: var(--primary-accent-strong);
     background: var(--background-accent-weak, #ecf0fe);
     flex-shrink: 0;
-  }
-
-  .version-menu-live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--status-success, #2fb344);
   }
 
   .version-menu-divider {
