@@ -62,11 +62,13 @@ const ViewerApp = () => {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          maxWidth: '400px',
           overflowWrap: 'anywhere',
         },
       }
     : {
         style: {
+          maxWidth: '400px',
           overflowWrap: 'anywhere',
         },
       };
