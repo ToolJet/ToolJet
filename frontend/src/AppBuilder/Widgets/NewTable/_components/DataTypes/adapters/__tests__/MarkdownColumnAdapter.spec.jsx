@@ -23,7 +23,7 @@ const renderMarkdownColumn = () => {
 };
 
 describe('MarkdownColumn editing', () => {
-  it('does not throw when an editable cell is focused', () => {
+  it('[Table-COLTYPE-MARKDOWN-001] does not throw when an editable cell is focused', () => {
     const editableCell = renderMarkdownColumn();
 
     expect(() => fireEvent.focus(editableCell)).not.toThrow();

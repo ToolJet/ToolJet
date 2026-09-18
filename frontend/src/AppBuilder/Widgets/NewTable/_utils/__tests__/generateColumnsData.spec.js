@@ -41,7 +41,7 @@ describe('generateColumnsData - json column', () => {
     return { jsonColumnDef, cell, row };
   };
 
-  it('passes the react-table cell object through to JsonColumn', () => {
+  it('[Table-COLTYPE-JSON-001] passes the react-table cell object through to JsonColumn', () => {
     const { jsonColumnDef, cell, row } = buildJsonColumnCell();
 
     const element = jsonColumnDef.renderCell({ cell, row });
