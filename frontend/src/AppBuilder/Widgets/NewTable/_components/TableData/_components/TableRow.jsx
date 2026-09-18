@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { getPinnedStyles } from '../pinColumnsUtils';
+import { createTableRowEventOptions } from '../../../_utils/tableEventUtils';
 
 export const TableRow = ({
   id,
@@ -54,7 +55,7 @@ export const TableRow = ({
         if (hasHoveredEvent) {
           const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
           setExposedVariables(hoveredRowDetails);
-          fireEvent('onRowHovered');
+          fireEvent('onRowHovered', createTableRowEventOptions(row.id));
         }
       }}
       data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
@@ -160,7 +161,7 @@ export const TableRow = ({
 
               if (keepsSelectionAndFires) {
                 e.stopPropagation();
-                fireEvent('onRowClicked');
+                fireEvent('onRowClicked', createTableRowEventOptions(row.index));
               }
             }}
           >

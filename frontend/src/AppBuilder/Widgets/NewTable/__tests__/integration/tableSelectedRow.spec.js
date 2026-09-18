@@ -42,6 +42,7 @@
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding, drainExposedValueBatch } from '@/test/app-builder';
+import { createTableRowEventOptions } from '@/AppBuilder/Widgets/NewTable/_utils/tableEventUtils';
 
 const state = () => useStore.getState();
 
@@ -101,7 +102,10 @@ describe('row click -> onRowClicked handler', () => {
   // MUST be afterEach, not a line at the end of a test: a failed assertion — and
   // a `test.failing` body throws by design — skips any inline cleanup, leaking an
   // open bracket into the next test. That leak cost me a confusing debug session.
-  afterEach(drainExposedValueBatch);
+  afterEach(() => {
+    drainExposedValueBatch();
+    jest.useRealTimers();
+  });
 
   test('the handler sees the row that was JUST clicked, not the previous one', () => {
     seedTableAndLabel();
@@ -135,6 +139,49 @@ describe('row click -> onRowClicked handler', () => {
     // a half-updated selection — hence asserting both keys together.
     expect(state().getExposedValueOfComponent('t1').selectedRow).toEqual(ROWS[1]);
     expect(state().getExposedValueOfComponent('t1').selectedRowId).toBe(1);
+  });
+
+  test('debounces repeated actions per row without dropping actions from another row', () => {
+    jest.useFakeTimers();
+    const observedRows = [];
+
+    seedApp({
+      t1: componentDefinition('t1', 'table1', 'Table'),
+      probe: componentDefinition('probe', 'probe1', 'Button'),
+    });
+    state().setEditorLoading(false, 'canvas');
+    state().setCurrentMode('edit', 'canvas');
+    state().setExposedValue('probe', 'recordRow', (rowIndex) => observedRows.push(rowIndex));
+    state().eventsSlice.setEvents(
+      [
+        {
+          id: 'evt-row-click',
+          name: 'onRowClicked',
+          index: 0,
+          sourceId: 't1',
+          target: 'component',
+          event: {
+            eventId: 'onRowClicked',
+            actionId: 'control-component',
+            componentId: 'probe',
+            componentSpecificActionHandle: 'recordRow',
+            componentSpecificActionParams: [{ handle: 'rowIndex', value: '{{rowIndex}}' }],
+            debounce: 100,
+          },
+        },
+      ],
+      'canvas'
+    );
+
+    const fireRow = (rowIndex) =>
+      state().eventsSlice.fireEvent('onRowClicked', 't1', 'canvas', { rowIndex }, createTableRowEventOptions(rowIndex));
+
+    fireRow(0);
+    fireRow(0);
+    fireRow(1);
+    jest.advanceTimersByTime(100);
+
+    expect(observedRows).toEqual([0, 1]);
   });
 
   test.failing('BUG: inside an open exposed-value bracket the handler reads the PREVIOUS row', () => {
