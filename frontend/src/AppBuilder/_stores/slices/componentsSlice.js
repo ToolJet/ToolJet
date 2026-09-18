@@ -1549,6 +1549,7 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      updateDependencyValues,
       checkIfParentIsFormAndDeleteField,
       getCurrentPageId,
       checkIfComponentIsModule,
@@ -1572,6 +1573,8 @@ export const createComponentsSlice = (set, get) => ({
     const flexChildOrderUpdates = {};
     const allComponents = getCurrentPageComponents(moduleId);
     const affectedFormIds = new Set(); // Track which Forms need their fields updated
+    // {id, keys}[] for deleted components, so dependents can be notified after the delete below commits.
+    const pendingDependencyUpdates = [];
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -1640,13 +1643,13 @@ export const createComponentsSlice = (set, get) => ({
           componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
+          pendingDependencyUpdates.push({ id, keys: Object.keys(componentsExposedValues[id] || {}) });
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
             get().clearSelectedComponents();
           }
-          removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
 
@@ -1656,6 +1659,14 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
+    // Run as top-level calls, not nested in the set() above — a set() called
+    // from inside another set()'s producer gets clobbered when the outer one
+    // commits. Update dependents before removeNode strips their graph edges.
+    pendingDependencyUpdates.forEach(({ id, keys }) => {
+      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId));
+      removeNode(`components.${id}`, moduleId);
+    });
 
     // Handle save after state update
     if (saveAfterAction) {
