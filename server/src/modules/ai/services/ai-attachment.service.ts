@@ -124,7 +124,7 @@ export class AiAttachmentService implements OnModuleDestroy {
     return this.descriptor(await this.findOwned(user, id));
   }
 
-  async prepare(user: AttachmentOwner, ids: unknown = [], previousIds: string[] = []) {
+  async prepare(user: AttachmentOwner, ids: unknown = [], previousIds: string[] = [], provider = 'openai') {
     if (!Array.isArray(ids) || ids.length > 5 || ids.some((id) => typeof id !== 'string' || !isUUID(id))) {
       throw new BadRequestException('Choose up to 5 uploaded files per message.');
     }
@@ -150,6 +150,11 @@ export class AiAttachmentService implements OnModuleDestroy {
             `“${file.name}” is not supported. Use PNG, JPEG, WebP, PDF, CSV, TSV, TXT, Markdown or JSON.`
           );
         }
+        const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
+        if (provider === 'anthropic' && !imageType && extension !== 'pdf') {
+          const { body } = await this.download(user, file.id);
+          return [{ type: 'text', text: `${label}\n${await body.transformToString('utf-8')}` }];
+        }
         const url = await getSignedUrl(
           this.storage.client,
           new GetObjectCommand({
@@ -160,10 +165,16 @@ export class AiAttachmentService implements OnModuleDestroy {
           }),
           { expiresIn: 4 * 60 * 60 }
         );
+        if (provider === 'anthropic') {
+          return [
+            { type: 'text', text: label },
+            { type: imageType ? 'image' : 'document', source: { type: 'url', url } },
+          ];
+        }
         return [
           {
             type: 'input_text',
-            text: `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`,
+            text: label,
           },
           imageType ? { type: 'input_image', image_url: url } : { type: 'input_file', file_url: url },
         ];
