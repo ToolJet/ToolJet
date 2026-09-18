@@ -1774,7 +1774,7 @@ export class AppImportExportService {
         slug: null,
         icon: null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
-        isPublic: null,
+        isPublic: false,
         co_relation_id: coRelationId,
         createdAt: new Date(),
         updatedAt: new Date(),

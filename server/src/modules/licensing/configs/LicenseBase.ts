@@ -21,6 +21,8 @@ export default class LicenseBase {
   private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isPublicApp: boolean;
+  private _isAutomaticSsoLogin: boolean;
   private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
@@ -83,6 +85,8 @@ export default class LicenseBase {
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
+      this._isPublicApp = true;
+      this._isAutomaticSsoLogin = true;
       this._isAi = true;
       this._aiPlan = 'credits';
       this._isExternalApis = true;
@@ -142,6 +146,10 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
+
+    // license with these set explicitly to true rather than being grandfathered in.
+    this._isPublicApp = this._app?.features?.['publicApp'] === true;
+    this._isAutomaticSsoLogin = this._features?.['automaticSsoLogin'] === true;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
@@ -246,6 +254,16 @@ export default class LicenseBase {
       return ''; //Not passed set to infinite for older licenses and trial
     }
     return this._app['pages']?.count;
+  }
+
+  public get appPageGroupsLimit(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || 5;
+    }
+    if (!this._app || this._app['pages']?.groupCount === undefined) {
+      return ''; //Not passed set to infinite for older licenses and trial
+    }
+    return this._app['pages']?.groupCount;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -465,6 +483,13 @@ export default class LicenseBase {
     return this._isMultiEnvironment;
   }
 
+  public get automaticSsoLogin(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.automaticSsoLogin;
+    }
+    return this._isAutomaticSsoLogin;
+  }
+
   public get customStyling(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.customStyling;
@@ -582,6 +607,7 @@ export default class LicenseBase {
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      automaticSsoLogin: this.automaticSsoLogin,
       gitSync: this.gitSync,
       gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
@@ -598,6 +624,7 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       appPagesLimit: this.appPagesLimit,
+      appPageGroupsLimit: this.appPageGroupsLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
       customDomain: this.customDomains,
       promote: this.canPromote,
@@ -680,13 +707,7 @@ export default class LicenseBase {
     return !!this._workflows?.['enabled'];
   }
   public get canPromote(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
-    }
-    if (this._app?.features?.promote === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.promote;
+    return this.canRelease;
   }
 
   public get canRelease(): boolean {
@@ -736,10 +757,6 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
     }
-
-    if (this._app?.features?.publicApp === undefined) {
-      return false;
-    }
-    return !!this._app?.features?.publicApp;
+    return this._isPublicApp;
   }
 }

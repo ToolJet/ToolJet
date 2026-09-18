@@ -40,6 +40,7 @@ export interface Terms {
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -53,6 +54,7 @@ export interface Terms {
     pages: {
       enabled: boolean;
       count: number | string;
+      groupCount?: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
@@ -70,7 +72,7 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
-      publicApp: boolean;
+      publicApp?: boolean;
     };
     components?: {
       navigation: boolean;
