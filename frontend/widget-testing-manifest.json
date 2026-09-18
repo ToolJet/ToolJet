@@ -20,7 +20,8 @@
     },
     {
       "componentType": "Table",
-      "status": "not-started"
+      "status": "approved",
+      "contract": "ee/test/app-builder/widgets/Table/TESTING.md"
     },
     {
       "componentType": "Chart",
