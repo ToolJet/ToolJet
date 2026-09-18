@@ -12,6 +12,7 @@ import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const reservedKeyword = ['app', 'window'];
 
@@ -141,6 +142,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
       console.log('the erro is', { error, code });
     }
   }
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 }
