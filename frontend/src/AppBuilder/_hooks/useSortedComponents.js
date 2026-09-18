@@ -16,6 +16,20 @@ const useSortedComponents = (components, currentLayout, id, moduleId, isFlexCont
     return { triggerUpdate: 0, containerId: null, shouldReorder: false };
   }, shallow);
 
+  // A FlexContainer's order is owned by its own `childOrder` property.
+  // Without this subscription a childOrder change that leaves the child list untouched,
+  // like undo/redo, a multiplayer echo, any programmatic reorder never re-runs the memo.
+  const flexChildOrder = useStore((state) => {
+    if (!isFlexContainer) return null;
+    const module = state.modules[moduleId];
+    const currentPageComponents = module?.pages;
+    const currentPageIndex = module?.currentPageIndex;
+    return (
+      currentPageComponents?.[currentPageIndex]?.components?.[id]?.component?.definition?.properties?.childOrder
+        ?.value ?? null
+    );
+  }, shallow);
+
   const prevForceUpdateRef = useRef(0);
   // Initialize to empty so the first render always triggers sorting.
   // else in viewer mode Grid.jsx is not rendered so setReorderContainerChildren
@@ -68,7 +82,14 @@ const useSortedComponents = (components, currentLayout, id, moduleId, isFlexCont
     prevComponentsOrder.current = newComponentsOrder;
     return newComponentsOrder;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [components, currentLayout, id, reorderContainerChildren.triggerUpdate, reorderContainerChildren.shouldReorder]);
+  }, [
+    components,
+    currentLayout,
+    id,
+    flexChildOrder,
+    reorderContainerChildren.triggerUpdate,
+    reorderContainerChildren.shouldReorder,
+  ]);
 
   return sortedComponents;
 };
