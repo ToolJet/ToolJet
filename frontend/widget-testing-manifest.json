@@ -22,7 +22,7 @@
     },
     {
       "componentType": "Table",
-      "status": "grilling",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/Table/TESTING.md"
     },
     {
