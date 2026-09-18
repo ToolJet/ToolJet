@@ -6,6 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
+import { authenticationService } from '@/_services/authentication.service';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
 import { normalizePin, dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
@@ -19,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/Rocket/shadcn/dropdown-menu';
+import { Button } from '@/components/ui/Button/Button';
 import { useLibraryCurrentRevision } from './hooks/useLibraryCurrentRevision';
 import { useResolvedManifest } from './hooks/useResolvedManifest';
 import {
@@ -29,6 +31,7 @@ import {
   withId,
   manifestDefaultSize,
 } from './utils';
+import { getDocsLink } from '../Inspector/Utils';
 
 export const CustomComponentsTab = ({ searchQuery = '' }) => {
   const libraries = useCustomComponentLibrariesStore((state) => state.libraries); // null = loading
@@ -82,13 +85,29 @@ export const CustomComponentsTab = ({ searchQuery = '' }) => {
 
 const NoResultsMessage = ({ searchQuery }) => (
   <div className="custom-components-empty">
-    <Container size={24} color="var(--text-placeholder)" strokeWidth={1.5} />
+    <div className="tw-flex tw-justify-center tw-items-center tw-size-8 tw-bg-background-surface-layer-02 tw-rounded-lg">
+      <Container size={20} color="var(--icon-default)" strokeWidth={1.5} />
+    </div>
+
     <p className="custom-components-empty-title">{searchQuery ? 'No results found' : 'No custom libraries yet'}</p>
     <p className="custom-components-empty-subtitle">
-      {searchQuery
+      {searchQuery?.length
         ? 'Try adjusting your search to find what you are looking for.'
         : 'Ask your admin or developer to deploy one using the ToolJet CLI.'}
     </p>
+
+    {!searchQuery?.length && (
+      <Button
+        size="medium"
+        variant="ghostBrand"
+        leadingIcon="student-icon"
+        className="tw-mt-3"
+        fill="var(--icon-brand)"
+        onClick={() => window.open(getDocsLink('LibraryComponent'), '_blank')}
+      >
+        Read documentation
+      </Button>
+    )}
   </div>
 );
 
@@ -154,6 +173,8 @@ const VersionPicker = ({ library }) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
 
+  const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+
   const { current, pin, latest } = useLibraryCurrentRevision(library);
   const isDevPin = Boolean(current?.startsWith?.('dev:'));
   const hasUpdate = Boolean(pin && pin !== latest);
@@ -218,7 +239,11 @@ const VersionPicker = ({ library }) => {
               {version === latest && hasUpdate && <span className="version-menu-new-badge">New</span>}
             </DropdownMenuItem>
           ))}
-          {library?.devBundles?.length > 0 && <DropdownMenuSeparator className="version-menu-divider" />}
+
+          {library?.devBundles?.length > 0 && library.revisions?.length > 0 && (
+            <DropdownMenuSeparator className="version-menu-divider" />
+          )}
+
           {library?.devBundles?.map(({ userId, userEmail }) => (
             <DropdownMenuItem key={userId} className="version-menu-row" onSelect={() => selectDevPreview(userId)}>
               <span className="version-menu-main">
@@ -235,10 +260,14 @@ const VersionPicker = ({ library }) => {
                 <span className="version-menu-text">
                   <span className="version-menu-title">
                     Dev preview
-                    <span className="version-menu-live-dot" />
+                    {current === `dev:${userId}` && currentUserId === userId && (
+                      <span className="before:tw-content-[''] before:tw-inline-block before:tw-size-2 before:tw-rounded-full before:tw-bg-background-success-strong before:tw-mr-1 tw-text-text-success">
+                        Live
+                      </span>
+                    )}
                   </span>
                   <span className="version-menu-subtitle">
-                    @{userEmail ?? userId}
+                    {userEmail ?? userId}
                     {current === `dev:${userId}` ? ' · current' : ''}
                   </span>
                 </span>
