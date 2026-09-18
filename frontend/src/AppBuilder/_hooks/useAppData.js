@@ -451,12 +451,8 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
-        // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
-        const isEmbeddedModuleInstance = mode === 'view' && moduleMode;
-
         // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
-        if (!isEmbeddedModuleInstance) {
+        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
           const global_settings = mapKeys(
             appData.editing_version?.global_settings || appData.global_settings,
             (value, key) => camelCase(key)
@@ -971,3 +967,9 @@ const useAppData = (
 };
 
 export default useAppData;
+
+export function isEmbeddedModuleInstance(mode, moduleMode) {
+  // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
+  // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
+  return mode === 'view' && moduleMode;
+}
