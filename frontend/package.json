@@ -315,6 +315,18 @@
     "draft-js": {
       "immutable": "3.8.4"
     },
+    "draft-js-export-html": {
+      "immutable": "3.8.4"
+    },
+    "draft-js-import-element": {
+      "immutable": "3.8.4"
+    },
+    "draft-js-import-html": {
+      "immutable": "3.8.4"
+    },
+    "draft-js-utils": {
+      "immutable": "3.8.4"
+    },
     "esbuild": "0.25.9",
     "eslint": {
       "js-yaml": "3.15.2"
