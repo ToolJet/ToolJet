@@ -66,7 +66,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.enabledSort = properties?.enabledSort ?? true;
         state.components[id].properties.columnSizes = properties?.columnSizes ?? {};
         state.components[id].properties.allowSelection =
-          properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow)
+          (properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow))
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };

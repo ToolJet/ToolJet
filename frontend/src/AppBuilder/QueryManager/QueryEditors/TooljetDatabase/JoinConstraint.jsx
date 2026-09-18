@@ -440,15 +440,15 @@ const JoinOn = ({
   const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
   const leftFieldOptions = leftFieldTableDetails?.table_name
-    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
+    ? (tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
         label: col.Header,
         value: col.Header,
         icon: col.dataType,
         columnId: col.column_id,
-      })) ?? []
+      })) ?? [])
     : [];
   const selectedLeftField = leftFieldTableDetails?.table_name
-    ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
+    ? (tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? [])
     : {};
 
   const rightFieldOptions = rightFieldTableDetails?.table_name
@@ -468,7 +468,7 @@ const JoinOn = ({
     : [];
 
   const selectedRightField = rightFieldTableDetails?.table_name
-    ? tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? []
+    ? (tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? [])
     : {};
 
   const _operators = [{ label: '=', value: '=' }];

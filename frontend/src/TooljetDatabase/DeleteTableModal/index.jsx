@@ -43,8 +43,8 @@ export default function DeleteTableModal({
             ? hasAppQueries && hasFKs
               ? 'Dependent queries and tables found'
               : hasAppQueries
-              ? 'Dependent queries found'
-              : 'Referencing tables found'
+                ? 'Dependent queries found'
+                : 'Referencing tables found'
             : 'Delete table'}
         </Modal.Title>
         <span className="cursor-pointer" onClick={onCancel} data-cy="delete-table-modal-close">
@@ -61,10 +61,10 @@ export default function DeleteTableModal({
               {hasAppQueries && hasFKs
                 ? 'in an app, module, or a workflow, and has tables referencing it.'
                 : hasAppQueries
-                ? 'in an app, module, or a workflow.'
-                : `by ${dependents.foreignKeyTables
-                    .map((t) => t.name)
-                    .join(', ')} via foreign keys. Drop or repoint their foreign keys first.`}
+                  ? 'in an app, module, or a workflow.'
+                  : `by ${dependents.foreignKeyTables
+                      .map((t) => t.name)
+                      .join(', ')} via foreign keys. Drop or repoint their foreign keys first.`}
             </div>
             <DependentsWarning dependents={dependents} foreignKeyTables={dependents?.foreignKeyTables} />
           </>
