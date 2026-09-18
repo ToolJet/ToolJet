@@ -10,6 +10,12 @@ import { DataSource } from 'typeorm';
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AiAttachmentService, MAX_AI_ATTACHMENT_BYTES } from '@modules/ai/services/ai-attachment.service';
+import { MAX_AI_ATTACHMENT_CONTENT_BYTES, renderAttachmentPdf } from '@modules/ai/services/ai-attachment-pdf';
+
+jest.mock('@modules/ai/services/ai-attachment-pdf', () => ({
+  MAX_AI_ATTACHMENT_CONTENT_BYTES: 20 * 1024 * 1024,
+  renderAttachmentPdf: jest.fn(),
+}));
 
 jest.mock('@aws-sdk/client-s3', () => ({
   S3Client: jest.fn(),
@@ -144,18 +150,18 @@ describe('AI attachment storage', () => {
     }
   );
 
-  describe.each(['anthropic', 'gemini'])('%s file preparation', (provider) => {
-    it.each(['png', 'jpg', 'jpeg', 'webp', 'pdf'])('prepares fresh image and document URL blocks for %s files', async (extension) => {
+  describe.each(['anthropic', 'gemini', 'deepseek'])('%s file preparation', (provider) => {
+    it.each(provider === 'deepseek' ? ['png', 'jpg', 'jpeg', 'webp'] : ['png', 'jpg', 'jpeg', 'webp', 'pdf'])('prepares fresh image and document URL blocks for %s files', async (extension) => {
       const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
       repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
       (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/first');
       (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/refreshed');
       const first = await service.prepare(owner, [id], [], provider);
       const followUp = await service.prepare(owner, [], [id], provider);
-      expect(first.content[1]).toEqual(provider === 'gemini'
+      expect(first.content[1]).toEqual(provider !== 'anthropic'
         ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
         : { type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/first' } });
-      expect(followUp.content[1]).toEqual(provider === 'gemini'
+      expect(followUp.content[1]).toEqual(provider !== 'anthropic'
         ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
         : { type: extension === 'pdf' ? 'document' : 'image', source: { type: 'url', url: 'https://files.example.test/refreshed' } });
       expect(followUp.attachments).toEqual([]);
@@ -179,6 +185,46 @@ describe('AI attachment storage', () => {
       send.mockRejectedValue(new Error('Storage unavailable'));
       await expect(service.prepare(owner, [id], [], provider)).rejects.toBeInstanceOf(BadGatewayException);
     });
+  });
+
+  it('renders owned DeepSeek PDFs again on follow-up, keeping page images out of saved metadata', async () => {
+    const id = 'f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11';
+    repository.findOne.mockResolvedValue({ id, name: 'specimens.pdf', size: 90, s3Bucket: 'fixture', s3Key: id });
+    const data = new Uint8Array([37, 80, 68, 70]);
+    send.mockResolvedValue({ Body: { transformToByteArray: jest.fn().mockResolvedValue(data) } });
+    const images = [{ type: 'image_url', image_url: { url: 'data:image/png;base64,c3ludGhldGlj' } }];
+    (renderAttachmentPdf as jest.Mock).mockResolvedValue(images);
+    const first = await service.prepare(owner, [id], [], 'deepseek');
+    const followUp = await service.prepare(owner, [], [id], 'deepseek');
+    expect(first.content).toEqual([{ type: 'text', text: 'Attached file: specimens.pdf' }, ...images]);
+    expect(followUp.content).toEqual([{ type: 'text', text: 'Previously attached file: specimens.pdf' }, ...images]);
+    expect(renderAttachmentPdf).toHaveBeenCalledTimes(2);
+    expect(renderAttachmentPdf).toHaveBeenCalledWith(data, 20, MAX_AI_ATTACHMENT_CONTENT_BYTES);
+    expect(JSON.stringify(first.attachments)).not.toContain('base64');
+    expect(followUp.attachments).toEqual([]);
+    expect(getSignedUrl).not.toHaveBeenCalled();
+    expect(repository.findOne).toHaveBeenCalledWith({
+      where: { id, organizationId: owner.organizationId, userId: owner.id, status: 'ready' },
+    });
+  });
+
+  it('shares the PDF page and content budgets across saved and new DeepSeek files', async () => {
+    const ids = ['f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11', '4d188f54-865f-47e6-b6e2-cbdf3c3fb274'];
+    repository.findOne.mockImplementation(async ({ where }) => ({ id: where.id, name: 'specimens.pdf', size: 90 }));
+    send.mockResolvedValue({ Body: { transformToByteArray: jest.fn().mockResolvedValue(new Uint8Array([1])) } });
+    const images = Array(12).fill({ type: 'image_url', image_url: { url: 'data:image/png;base64,c3ludGhldGlj' } });
+    (renderAttachmentPdf as jest.Mock).mockResolvedValueOnce(images).mockRejectedValueOnce(new BadRequestException('Page limit'));
+    await expect(service.prepare(owner, [ids[1]], [ids[0]], 'deepseek')).rejects.toThrow('Page limit');
+    const remaining = (renderAttachmentPdf as jest.Mock).mock.calls[1];
+    expect(remaining[1]).toBe(8);
+    expect(remaining[2]).toBeLessThan(MAX_AI_ATTACHMENT_CONTENT_BYTES);
+  });
+
+  it('counts JSON expansion of text in the DeepSeek gateway request budget', async () => {
+    const ids = ['f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11', '4d188f54-865f-47e6-b6e2-cbdf3c3fb274'];
+    repository.findOne.mockImplementation(async ({ where }) => ({ id: where.id, name: 'control.txt', size: 3 * 1024 * 1024 }));
+    send.mockResolvedValue({ Body: { transformToString: jest.fn().mockResolvedValue('\u0000'.repeat(3 * 1024 * 1024)) } });
+    await expect(service.prepare(owner, ids, [], 'deepseek')).rejects.toThrow('exceeds 20 MB');
   });
 
   it.each([null, 'file-id', ['not-a-uuid'], Array(6).fill('df0b465b-2345-4226-943f-81a6d6e2c497')])(

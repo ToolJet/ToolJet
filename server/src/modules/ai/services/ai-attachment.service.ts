@@ -13,6 +13,7 @@ import { isUUID } from 'class-validator';
 import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
+import { MAX_AI_ATTACHMENT_CONTENT_BYTES, renderAttachmentPdf } from './ai-attachment-pdf';
 
 export const MAX_AI_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 type AttachmentOwner = { id: string; organizationId: string };
@@ -136,59 +137,85 @@ export class AiAttachmentService implements OnModuleDestroy {
     if (files.reduce((size, file) => size + file.size, 0) >= 50 * 1024 * 1024) {
       throw new BadRequestException('Files in one chat must total less than 50 MB. Start a new chat.');
     }
-    const content = await Promise.all(
-      files.map(async (file) => {
-        const extension = file.name.split('.').pop().toLowerCase();
-        const imageType = {
-          png: 'image/png',
-          jpg: 'image/jpeg',
-          jpeg: 'image/jpeg',
-          webp: 'image/webp',
-        }[extension];
-        if (!imageType && !/^(pdf|csv|tsv|txt|md|json)$/.test(extension)) {
+    let pdfPages = 0;
+    let contentBytes = 0;
+    const prepareFile = async (file: AiAttachment) => {
+      const extension = file.name.split('.').pop().toLowerCase();
+      const imageType = {
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        webp: 'image/webp',
+      }[extension];
+      if (!imageType && !/^(pdf|csv|tsv|txt|md|json)$/.test(extension)) {
+        throw new BadRequestException(
+          `“${file.name}” is not supported. Use PNG, JPEG, WebP, PDF, CSV, TSV, TXT, Markdown or JSON.`
+        );
+      }
+      const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
+      if (['anthropic', 'gemini', 'deepseek'].includes(provider) && !imageType && extension !== 'pdf') {
+        const { body } = await this.download(user, file.id);
+        return [{ type: 'text', text: `${label}\n${await body.transformToString('utf-8')}` }];
+      }
+      if (provider === 'deepseek' && extension === 'pdf') {
+        const { body } = await this.download(user, file.id);
+        const pages = await renderAttachmentPdf(
+          await body.transformToByteArray(),
+          20 - pdfPages,
+          MAX_AI_ATTACHMENT_CONTENT_BYTES - contentBytes
+        );
+        pdfPages += pages.length;
+        return [{ type: 'text', text: label }, ...pages];
+      }
+      const url = await getSignedUrl(
+        this.storage.client,
+        new GetObjectCommand({
+          Bucket: file.s3Bucket,
+          Key: file.s3Key,
+          ResponseContentType: imageType || (extension === 'pdf' ? 'application/pdf' : 'text/plain'),
+          ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(file.name).replace(/'/g, '%27')}`,
+        }),
+        { expiresIn: 4 * 60 * 60 }
+      );
+      if (['gemini', 'deepseek'].includes(provider)) {
+        return [
+          { type: 'text', text: label },
+          { type: 'image_url', image_url: { url } },
+        ];
+      }
+      if (provider === 'anthropic') {
+        return [
+          { type: 'text', text: label },
+          { type: imageType ? 'image' : 'document', source: { type: 'url', url } },
+        ];
+      }
+      return [
+        {
+          type: 'input_text',
+          text: label,
+        },
+        imageType ? { type: 'input_image', image_url: url } : { type: 'input_file', file_url: url },
+      ];
+    };
+    const content = [];
+    if (provider === 'deepseek') {
+      // Bound rendering memory and the serialized gateway request across current and saved files.
+      for (const file of files) {
+        const parts = await prepareFile(file);
+        contentBytes += Buffer.byteLength(JSON.stringify(parts));
+        if (contentBytes > MAX_AI_ATTACHMENT_CONTENT_BYTES) {
           throw new BadRequestException(
-            `“${file.name}” is not supported. Use PNG, JPEG, WebP, PDF, CSV, TSV, TXT, Markdown or JSON.`
+            'DeepSeek attachment content exceeds 20 MB after rendering. Use smaller files.'
           );
         }
-        const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
-        if (['anthropic', 'gemini'].includes(provider) && !imageType && extension !== 'pdf') {
-          const { body } = await this.download(user, file.id);
-          return [{ type: 'text', text: `${label}\n${await body.transformToString('utf-8')}` }];
-        }
-        const url = await getSignedUrl(
-          this.storage.client,
-          new GetObjectCommand({
-            Bucket: file.s3Bucket,
-            Key: file.s3Key,
-            ResponseContentType: imageType || (extension === 'pdf' ? 'application/pdf' : 'text/plain'),
-            ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(file.name).replace(/'/g, '%27')}`,
-          }),
-          { expiresIn: 4 * 60 * 60 }
-        );
-        if (provider === 'gemini') {
-          return [
-            { type: 'text', text: label },
-            { type: 'image_url', image_url: { url } },
-          ];
-        }
-        if (provider === 'anthropic') {
-          return [
-            { type: 'text', text: label },
-            { type: imageType ? 'image' : 'document', source: { type: 'url', url } },
-          ];
-        }
-        return [
-          {
-            type: 'input_text',
-            text: label,
-          },
-          imageType ? { type: 'input_image', image_url: url } : { type: 'input_file', file_url: url },
-        ];
-      })
-    );
+        content.push(...parts);
+      }
+    } else {
+      content.push(...(await Promise.all(files.map(prepareFile))).flat());
+    }
     return {
       attachments: files.filter((file) => ids.includes(file.id)).map((file) => this.descriptor(file)),
-      content: content.flat(),
+      content,
     };
   }
 
