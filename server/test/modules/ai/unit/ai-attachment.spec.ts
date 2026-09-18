@@ -115,6 +115,35 @@ describe('AI attachment storage', () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it.each(['png', 'jpg', 'jpeg', 'webp', 'pdf', 'csv', 'tsv', 'txt', 'md', 'json'])(
+    'prepares fresh Grok URL blocks for owned %s files',
+    async (extension) => {
+      const id = '3204ab91-073a-4963-a469-bb3d029cb070';
+      repository.findOne.mockResolvedValue({ id, name: `inventory.${extension}`, size: 75, s3Bucket: 'fixture', s3Key: id });
+      (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/current');
+      (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/renewed');
+      const first = await service.prepare(owner, [id], [], 'grok');
+      const followUp = await service.prepare(owner, [], [id], 'grok');
+      const image = ['png', 'jpg', 'jpeg', 'webp'].includes(extension);
+      expect(first.content).toEqual([
+        { type: 'input_text', text: `Attached file: inventory.${extension}` },
+        image
+          ? { type: 'input_image', image_url: 'https://files.example.test/current' }
+          : { type: 'input_file', file_url: 'https://files.example.test/current' },
+      ]);
+      expect(followUp.content[1]).toEqual(
+        image
+          ? { type: 'input_image', image_url: 'https://files.example.test/renewed' }
+          : { type: 'input_file', file_url: 'https://files.example.test/renewed' }
+      );
+      expect(followUp.attachments).toEqual([]);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id, organizationId: owner.organizationId, userId: owner.id, status: 'ready' },
+      });
+      expect(send).not.toHaveBeenCalled();
+    }
+  );
+
   it.each(['png', 'jpg', 'jpeg', 'webp', 'pdf'])('prepares fresh Claude URL blocks for %s files', async (extension) => {
     const id = 'c4a3bfb4-5b7e-4921-af15-a0af4ebc0063';
     repository.findOne.mockResolvedValue({ id, name: `sample.${extension}`, size: 60, s3Bucket: 'fixture', s3Key: id });
