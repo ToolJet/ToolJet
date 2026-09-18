@@ -135,6 +135,17 @@ export async function initializeEnvConfigRegistry(app: NestExpressApplication, l
     const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
     await orgEnvUtilService.initialize();
     logger.log('✅ Environment config registry initialized successfully');
+
+    try {
+      const { LoginConfigsService } = await import(`${importPath}/login-configs/service`);
+      const loginConfigsService = app.get(LoginConfigsService, { strict: false });
+      await loginConfigsService.autoEnableEnvConfigs();
+      logger.log('✅ Auto-enabled env-managed SSO providers where eligible');
+    } catch (error) {
+      // Never let an auto-enable failure block app startup — env-config staying off just
+      // means an admin toggles it manually, same as before this existed.
+      logger.error('❌ Failed to auto-enable env-managed SSO providers:', error);
+    }
   } catch (error) {
     logger.error('❌ Failed to initialize environment config registry:', error);
     throw error;
@@ -202,10 +213,11 @@ export function initSentry(logger: any, configService: ConfigService) {
   try {
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DNS'),
-      tracesSampleRate: 1.0,
       environment: configService.get<string>('NODE_ENV') || 'development',
       debug: !!configService.get<string>('SENTRY_DEBUG'),
       sendDefaultPii: true,
+      // OTel SDK (otel/tracing.ts) owns tracing; else Sentry double-registers spans, splits every trace in two.
+      skipOpenTelemetrySetup: true,
     });
   } catch (error) {
     logger.error('❌ Failed to set Sentry options:', error);
@@ -599,9 +611,6 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`ORM logging level: ${configService.get<string>('ORM_LOGGING') || 'Not - configured'}`);
   logger.log(
     `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
-  );
-  logger.log(
-    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
   );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));

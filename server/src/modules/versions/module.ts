@@ -16,6 +16,7 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
+import { EncryptionModule } from '@modules/encryption/module';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -61,6 +62,7 @@ export class VersionModule extends SubModule {
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
+        await EncryptionModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
       ],

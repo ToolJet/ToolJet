@@ -851,7 +851,7 @@ describe('AppsController', () => {
 
         // The ability guard passes (admin has export permission), but clone service
         // fails when looking up the app in the cross-org context
-        expect(response.statusCode).toBe(500);
+        expect(response.statusCode).toBe(400);
 
         await logout(app, loggedUser.tokenCookie, anotherOrgAdminUserData.user.defaultOrganizationId);
       });
@@ -2565,7 +2565,7 @@ describe('AppsController', () => {
 
         // The ability guard passes (admin has export permission in their org),
         // but the export service filters by org and fails when the app isn't found
-        expect(response.statusCode).toBe(500);
+        expect(response.statusCode).toBe(400);
         await logout(app, anotherOrgAdminUserData['tokenCookie'], anotherOrgAdminUserData.user.defaultOrganizationId);
       });
 

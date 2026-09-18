@@ -6,10 +6,10 @@ import {
   instanceSettingsSelector,
   whiteLabellingSelectors,
 
-} from "Selectors/eeCommon";
-import { licenseSelectors } from "Selectors/license";
-import { groupsSelector } from "Selectors/manageGroups";
-import { usersSelector } from "Selectors/manageUsers";
+} from "Selectors/platform/eeCommon";
+import { licenseSelectors } from "Selectors/platform/license";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import * as common from "Support/utils/common";
 import {
   switchTabs,
@@ -23,9 +23,9 @@ import {
 } from "Support/utils/license";
 import { navigateToEditUser } from "Support/utils/manageUsers";
 import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
-import { licenseText } from "Texts/license";
-import { dashboardSelector } from "Selectors/dashboard";
-import { workflowSelector } from "Selectors/workflows";
+import { licenseText } from "Texts/platform/license";
+import { dashboardSelector } from "Selectors/platform/dashboard";
+import { workflowSelector } from "Selectors/platform/workflows";
 
 
 describe("License Page", () => {

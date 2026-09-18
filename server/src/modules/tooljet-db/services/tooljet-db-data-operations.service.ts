@@ -542,6 +542,16 @@ export class TooljetDbDataOperationsService implements QueryService {
     const query = [];
     const resolvedWhereFilters = await this.resolveFilterColumns(organizationId, tableId, whereFilters, environmentId);
     const whereQuery = buildPostgrestQuery(resolvedWhereFilters);
+
+    // filter has conditions but none are usable - updating without it would hit every row
+    if (isEmpty(whereQuery) && !isEmpty(whereFilters)) {
+      throw new QueryError(
+        'Incomplete where filter.',
+        'Every filter condition needs a column and an operator. Remove the conditions to update all rows.',
+        {}
+      );
+    }
+
     const colOptsList = Object.values<{ column: string; columnId?: string; value: any }>(columns);
     const resolvedColumnNames = await this.resolveColumnNames(organizationId, tableId, colOptsList, environmentId);
     const body = colOptsList.reduce((acc, colOpts, index) => {

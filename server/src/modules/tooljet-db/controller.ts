@@ -20,6 +20,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { OrganizationValidateGuard } from '@modules/app/guards/organization-validate.guard';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
 import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
@@ -84,7 +85,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.VIEW_TABLES)
   @Get('/organizations/:organizationId/tables')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async tables(@Param('organizationId') organizationId) {
     const result = await this.tableOperationsService.perform(organizationId, 'view_tables', {}, undefined);
     return decamelizeKeys({ result });
@@ -92,7 +93,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.VIEW_TABLES)
   @Get('/tables/limits/:organizationId')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async getTablesLimit(@Param('organizationId') organizationId) {
     const data = await this.tableOperationsService.getTablesLimit(organizationId);
     return data;
@@ -100,7 +101,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.VIEW_TABLE)
   @Get('/organizations/:organizationId/table/:tableName')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async table(
     @Body() body,
     @Param('organizationId') organizationId,
@@ -120,7 +121,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.CREATE_TABLE)
   @Post('/organizations/:organizationId/table')
-  @UseGuards(JwtAuthGuard, TableCountGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, TableCountGuard, FeatureAbilityGuard)
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
     const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto, undefined);
     return decamelizeKeys({ result });
@@ -128,7 +129,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.RENAME_TABLE)
   @Patch('/organizations/:organizationId/table/:tableName')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
     const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody, undefined);
     return decamelizeKeys({ result });
@@ -136,7 +137,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.DROP_TABLE)
   @Delete('/organizations/:organizationId/table/:tableName')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async dropTable(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -153,7 +154,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.ADD_COLUMN)
   @Post('/organizations/:organizationId/table/:tableName/column')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async addColumn(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -171,7 +172,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.DROP_COLUMN)
   @Delete('/organizations/:organizationId/table/:tableName/column/:columnName')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async dropColumn(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -191,7 +192,7 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.BULK_UPLOAD)
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async bulkUpload(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -223,7 +224,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.EDIT_COLUMN)
   @Patch('/organizations/:organizationId/table/:tableName/column')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async editColumn(
     @Body('column') columnDto: EditColumnTableDto,
     @Param('organizationId') organizationId,
@@ -243,7 +244,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.ADD_FOREIGN_KEY)
   @Post('/organizations/:organizationId/table/:tableName/foreignkey')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async createForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -262,7 +263,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.UPDATE_FOREIGN_KEY)
   @Put('/organizations/:organizationId/table/:tableName/foreignkey')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async updateForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
@@ -282,7 +283,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.DELETE_FOREIGN_KEY)
   @Delete('/organizations/:organizationId/table/:tableName/foreignkey/:foreignKeyId')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async deleteForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,

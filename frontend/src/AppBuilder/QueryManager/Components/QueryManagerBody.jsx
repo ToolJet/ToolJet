@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
+import { resolveQueryEditor } from '../utils';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -53,17 +54,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
   const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedQuery?.kind?.charAt(0).toUpperCase() + selectedQuery?.kind?.slice(1);
 
-  // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
-  // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
-  // is_dummy warning below already tells user to pull.
-  const isDummyDataSource = selectedDataSource?.is_dummy === true;
-  const ElementToRender = isDummyDataSource
-    ? null
-    : selectedQuery?.plugin_id
-    ? source
-    : allSources[sourcecomponentName];
+  const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
+  const ElementToRender =
+    editor.type === 'none' ? null : editor.type === 'plugin' ? source : allSources[editor.componentName];
+
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
@@ -249,9 +244,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
           <ElementToRender
             renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
-            pluginSchema={
-              selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
-            }
+            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
@@ -479,8 +472,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
