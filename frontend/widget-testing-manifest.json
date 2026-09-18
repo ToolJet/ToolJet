@@ -17,7 +17,8 @@
     },
     {
       "componentType": "FileButton",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileButton/TESTING.md"
     },
     {
       "componentType": "Table",
@@ -137,7 +138,8 @@
     },
     {
       "componentType": "FileInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileInput/TESTING.md"
     },
     {
       "componentType": "TreeSelect",
@@ -270,7 +272,8 @@
     },
     {
       "componentType": "FilePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FilePicker/TESTING.md"
     },
     {
       "componentType": "CodeEditor",
