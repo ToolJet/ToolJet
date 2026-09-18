@@ -243,12 +243,6 @@ describe('plotlyCompat: defaults Plotly 4 changed', () => {
     const { layout } = run([{ x: ['a'], y: [1], type: 'bar' }]);
     expect(layout.geo).toBeUndefined();
   });
-
-  test('splom axes are pinned unmatched, as in 2.x', () => {
-    const { layout } = run([{ type: 'splom', dimensions: [{ values: [1, 2] }] }], { xaxis: {}, yaxis: {} });
-    expect(layout.xaxis.matches).toBe(false);
-    expect(layout.yaxis.matches).toBe(false);
-  });
 });
 
 describe('plotlyCompat: leaves modern specs alone', () => {

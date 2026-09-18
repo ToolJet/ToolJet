@@ -646,15 +646,11 @@ export function applyPlotlyCompat(data: any, layout: any, tinycolor: any): Plotl
   // never mentioned these attributes still renders differently. Pin the 2.x
   // values unless the author chose one. (Listed in the v4.0.0 release notes;
   // a schema diff does not surface them, because the attributes still exist.)
-  if (traces.some((t) => t.type === 'splom')) {
-    for (const key of Object.keys(nextLayout)) {
-      if (!/^[xy]axis\d*$/.test(key) || !isObj(nextLayout[key])) continue;
-      if (nextLayout[key].matches === undefined) {
-        nextLayout[key].matches = false;
-        warnings.push(`layout.${key}: matches pinned to false (v4 defaults splom axes to matched)`);
-      }
-    }
-  }
+  // NOTE: Plotly 4 also changed `splom.axis.matches` from false to true, but it
+  // cannot be pinned back — Plotly overrides layout.xaxis.matches internally for
+  // splom traces, verified against 4.1.1. A scatter-plot-matrix will therefore
+  // have linked axes where 2.x left them independent. Documented rather than
+  // worked around; there is no supported way to restore the old behaviour.
 
   const hasGeoTrace = traces.some((t) => t.type === 'scattergeo' || t.type === 'choropleth');
   if ((hasGeoTrace || isObj(nextLayout.geo)) && !isObj(nextLayout.geo)) nextLayout.geo = {};
