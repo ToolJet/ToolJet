@@ -1,9 +1,17 @@
 import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
-import { resolveReferences } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import useStore from '@/AppBuilder/_stores/store';
+
+// Resolves against the live zustand store instead of the (stale/unsynced)
+// legacy `currentState`, so a conditionallyRender driver bound to another
+// component's value (e.g. `{{components.toggle1.value}}`) resolves correctly.
+function resolveLiveValue(propertyDefinition) {
+  if (!propertyDefinition) return propertyDefinition;
+  return { value: useStore.getState().getResolvedValue(propertyDefinition.value) };
+}
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -87,12 +95,10 @@ export function renderCustomStyles(
 
     const getResolvedValue = (key, parentObjectKey = 'styles') => {
       if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
-        return (
-          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
-        );
+        return resolveLiveValue(componentDefinition?.properties?.buttonType);
       }
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
-      return value && resolveReferences(value);
+      return resolveLiveValue(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -197,7 +203,7 @@ export function renderElement(
 
     const getResolvedValue = (key, parentObjectKey = paramType) => {
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
-      return value && resolveReferences(value);
+      return resolveLiveValue(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
