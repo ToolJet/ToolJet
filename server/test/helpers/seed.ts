@@ -608,12 +608,12 @@ export async function createUser(
   });
   if (!organization) {
     try {
-      organization = await organizationRepository.save(buildOrg());
+      organization = await organizationRepository.save(organizationRepository.create(buildOrg()));
     } catch (e: unknown) {
       // stray async server work can abort the suite TX between tests (#17333 3+4)
       if (!(e as Error).message?.includes('current transaction is aborted') || !(await recoverAbortedSuiteTx()))
         throw e;
-      organization = await organizationRepository.save(buildOrg());
+      organization = await organizationRepository.save(organizationRepository.create(buildOrg()));
     }
   }
 
