@@ -45,7 +45,7 @@ export class FoldersUtilService implements IFoldersUtilService {
     });
   }
 
-  async createFolder(user, createFolderDto: CreateFolderDto) {
+  async createFolder(user, createFolderDto: CreateFolderDto, manager?: EntityManager) {
     const folderName = createFolderDto.name;
     const type = createFolderDto.type;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -68,7 +68,20 @@ export class FoldersUtilService implements IFoldersUtilService {
       ]);
 
       return decamelizeKeys(folder);
-    });
+    }, manager);
+  }
+
+  async update(folder: Folder, name: string, manager?: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await catchDbException(async () => {
+        return manager.update(Folder, { id: folder.id }, { name });
+      }, [
+        {
+          dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE,
+          message: 'This folder name is already taken.',
+        },
+      ]);
+    }, manager);
   }
 
   private getAllFoldersQuery(
