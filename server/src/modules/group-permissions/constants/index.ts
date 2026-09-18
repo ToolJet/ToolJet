@@ -22,6 +22,7 @@ export enum ResourceType {
   MODULE = 'module',
   WORKFLOW_FOLDER = 'workflow_folder',
   MODULE_FOLDER = 'module_folder',
+  DATA_SOURCE_FOLDER = 'data_source_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -40,6 +41,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     moduleDelete: true,
     moduleFolderCreate: true,
     moduleFolderDelete: true,
+    dataSourceFolderCreate: true,
+    dataSourceFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -63,6 +66,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     moduleDelete: true,
     moduleFolderCreate: true,
     moduleFolderDelete: true,
+    dataSourceFolderCreate: true,
+    dataSourceFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -136,6 +141,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -201,6 +211,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.DATA_SOURCE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
 
@@ -236,6 +251,10 @@ export enum FEATURE_KEY {
   CREATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'create_granular_module_folder_permissions',
   UPDATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'update_granular_module_folder_permissions',
   DELETE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'delete_granular_module_folder_permissions',
+  GET_ADDABLE_DATA_SOURCE_FOLDERS = 'get_addable_data_source_folders',
+  CREATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'create_granular_data_source_folder_permissions',
+  UPDATE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'update_granular_data_source_folder_permissions',
+  DELETE_GRANULAR_DATA_SOURCE_FOLDER_PERMISSIONS = 'delete_granular_data_source_folder_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
   ASSIGN_GROUP_ADMIN = 'assign_group_admin',
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',
