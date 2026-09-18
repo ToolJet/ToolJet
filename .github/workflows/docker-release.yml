@@ -4,8 +4,17 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
+  release-vulnerability-gate:
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
   build-tooljet-image-for-ce-edtion:
+    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -83,6 +92,7 @@ jobs:
 
   build-tooljet-image-for-ee-edtion:
 
+    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -166,6 +176,7 @@ jobs:
 
   build-tooljet-image-for-cloud-edtion:
 
+    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
