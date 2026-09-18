@@ -74,7 +74,32 @@
     "typescript": "^4.9.5"
   },
   "overrides": {
-    "tar": "^7.5.3"
+    "tar": "^7.5.19",
+    "js-yaml@^3": "^3.15.2",
+    "js-yaml@^4": "^4.3.2",
+    "axios": "^1.20.0",
+    "@grpc/grpc-js": "^1.14.4",
+    "adm-zip": "^0.6.1",
+    "ip-address": "^10.7.2",
+    "fast-uri": "^3.1.6",
+    "browserslist": "^4.29.0",
+    "nx": "^22.7.7",
+    "sigstore": "^4.1.1",
+    "toml": "^4.3.0",
+    "brace-expansion@^1.0.0": "^1.1.21",
+    "brace-expansion@^2.0.0": "^2.1.7",
+    "brace-expansion@^5.0.0": "^5.0.12",
+    "form-data@^2.0.0": "^2.5.6",
+    "form-data@^3.0.0": "^3.0.5",
+    "@databricks/sql": {
+      "thrift": "0.24.0"
+    },
+    "fast-xml-parser": "^5.5.7",
+    "minio": {
+      "fast-xml-parser": "^5.5.7"
+    },
+    "protobufjs": "^7.6.5",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

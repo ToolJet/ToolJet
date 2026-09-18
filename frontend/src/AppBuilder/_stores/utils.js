@@ -14,7 +14,8 @@ export function debounce(func) {
 
   return (...args) => {
     const event = args[0] || {};
-    const eventId = uuidv4();
+    const moduleId = args[3] || 'canvas';
+    const eventId = moduleId + '-' + (event?.id || uuidv4());
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
@@ -355,6 +356,9 @@ export const extractAndReplaceReferencesFromString = (str = '', componentIdMap =
 };
 
 export const checkSubstringRegex = (mainString, subString) => {
+  // Optional chaining reads the same entity, so listItem?.a must match like listItem.a
+  const normalizedMainString = mainString.replace(/\?\./g, '.');
+
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -362,7 +366,7 @@ export const checkSubstringRegex = (mainString, subString) => {
   const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[])`);
 
   // Test the mainString against the regex
-  return regex.test(mainString);
+  return regex.test(normalizedMainString);
 };
 
 export const normalizePattern = (pattern) => {

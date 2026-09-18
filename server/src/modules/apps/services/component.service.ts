@@ -578,6 +578,22 @@ export class ComponentsService implements IComponentsService {
     // instead of being placed on the root canvas (parent: null).
     const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
     if (moduleContainerId) {
+      // A module cannot embed another module. The editor hides the Modules tab while
+      // editing a module, but direct API/MCP callers bypass that client-side guard —
+      // reject a ModuleViewer here so invalid module-in-module data can't be persisted.
+      // Such data later surfaces as "Module not found" when the embedded reference
+      // fails to resolve (the nested module is never bundled on export/import).
+      const nestedModuleViewer = newComponents.find((component) => component.type === 'ModuleViewer');
+      if (nestedModuleViewer) {
+        const exc = new BadRequestException({
+          message: `Component ${nestedModuleViewer.id} cannot be added because a module cannot contain another module.`,
+          code: 'NESTED_MODULE_NOT_ALLOWED',
+          componentId: nestedModuleViewer.id,
+        });
+        (exc as any).code = 'NESTED_MODULE_NOT_ALLOWED';
+        throw exc;
+      }
+
       for (const component of newComponents) {
         if (!component.parent && component.type !== 'ModuleContainer') {
           component.parent = moduleContainerId;
@@ -708,7 +724,13 @@ export class ComponentsService implements IComponentsService {
             componentData[column === 'others' ? 'displayPreferences' : column],
             updatedDefinition[column],
             (objValue, srcValue) => {
-              if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
+              if (
+                (componentData.type === 'Table' ||
+                  componentData.type === 'Form' ||
+                  componentData.type === 'KeyValuePair') &&
+                _.isArray(objValue)
+              ) {
+                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
                 return srcValue;
               } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
                 // Handle Form component with object srcValue like JSONData & JSONSchema

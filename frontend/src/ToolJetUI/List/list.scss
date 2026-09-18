@@ -71,6 +71,11 @@ button:focus:not(:focus-visible) {
       border-radius: 6px;
     }
 
+    .list-item-popover-menu-option-icon {
+      height: 16px;
+      line-height: normal;
+    }
+
     .list-item-option-menu-label {
       margin-top: 2px;
       margin-left: 6px
