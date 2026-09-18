@@ -75,6 +75,9 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switc
     '--nav-menu-border': !styles?.borderColor?.isDefault
       ? styles?.borderColor?.value
       : 'var(--cc-weak-border, #E4E7EB)',
+    '--app-title-color': !styles?.appTitleColor?.isDefault
+      ? styles?.appTitleColor?.value
+      : 'var(--cc-primary-text, #1B1F24)',
   };
 
   if ((isPagesSidebarHidden && headerHidden && logoHidden) || !isMobileDevice) {
