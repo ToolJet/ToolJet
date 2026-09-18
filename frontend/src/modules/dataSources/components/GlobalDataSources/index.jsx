@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
@@ -170,6 +171,20 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     filteredDsList.length >= 1 ? setSuggestingDataSource(false) : setSuggestingDataSource(true);
     setFilteredDataSources([...filtered]);
   };
+
+  // `?search=Google Sheets` lands the page on one connector instead of the whole catalogue, so a
+  // link can say which source to add — the AI builder sends people here when the source a build
+  // needs is not connected, and the query panel's "add" button could too. Deliberately only seeds
+  // the search box: adding a source writes a record, and a URL must not do that on its own.
+  const [searchParams] = useSearchParams();
+  const seededSearch = useRef(false);
+  useEffect(() => {
+    const term = searchParams.get('search');
+    if (!term || seededSearch.current) return;
+    seededSearch.current = true;
+    handleSearch({ target: { value: term } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const createDataSource = (dataSource) => {
     const { id } = dataSource;
