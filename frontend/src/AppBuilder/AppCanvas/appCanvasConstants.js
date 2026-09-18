@@ -1,4 +1,4 @@
-export const NO_OF_GRIDS = 43;
+export const NO_OF_GRIDS = 12;
 
 export const GRID_HEIGHT = 10;
 
