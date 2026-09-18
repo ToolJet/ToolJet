@@ -3,7 +3,7 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
-import { checkIfToolJetCloud, checkIfToolJetEE } from '@/_helpers/utils';
+import { checkIfToolJetCloud, getTooljetEditionFromVersion } from '@/_helpers/utils';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
@@ -41,19 +41,18 @@ const CommonOAuthFields = ({
   }, []);
 
   const oauthTypeOptions = React.useMemo(() => {
-    const isCloud = checkIfToolJetCloud(tooljetVersion);
+    const currentEdition = getTooljetEditionFromVersion(tooljetVersion);
+    const isCloud = currentEdition === 'cloud';
 
     const allOptions = [
       {
-        name: isCloud ? 'ToolJet app' : 'Use environment variables',
+        name: isCloud ? 'ToolJet-managed OAuth' : 'Use environment variables',
         value: 'tooljet_app',
       },
-      { name: 'Custom app', value: 'custom_app' },
+      { name: 'Your own OAuth', value: 'custom_app' },
     ];
 
     if (oauthTypes?.editions) {
-      const currentEdition = isCloud ? 'cloud' : checkIfToolJetEE(tooljetVersion) ? 'ee' : 'ce';
-
       const allowedValues = oauthTypes.editions[currentEdition] || [];
       return allOptions.filter((option) => allowedValues.includes(option.value));
     } else {
@@ -102,7 +101,7 @@ const CommonOAuthFields = ({
       {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
         <div className="col-md-12" data-cy="oauth-type-section">
           <label className="form-label mt-3" data-cy="oauth-type-label">
-            OAuth type
+            OAuth credentials
           </label>
           <Select
             options={oauthTypeOptions}

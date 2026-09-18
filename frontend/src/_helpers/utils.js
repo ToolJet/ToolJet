@@ -1413,16 +1413,60 @@ export const hasBuilderRole = (roleObj) => {
   return false;
 };
 
+// The edition suffix is appended to the version by the server's buildVersion():
+// `<rawVersion>-<edition>` (e.g. `3.21.71-cloud`, `3.21.71-beta-cloud`) and, for
+// LTS builds, `<baseVersion>-<edition>-lts` (e.g. `3.21.71-cloud-lts`). So the
+// edition is the last hyphen segment, except LTS puts it second-to-last. Parsing
+// a fixed index (previously [1]) broke whenever rawVersion carried a pre-release
+// tag like `-beta`, mis-detecting the edition as CE — which also disabled the
+// Cloud-only OAuth "ToolJet app" option on every beta build.
+function getEditionFromVersion(version) {
+  if (!version) return null;
+  const withoutLts = version.trim().replace(/-lts$/i, '');
+  const segments = withoutLts.split('-');
+  return segments[segments.length - 1]?.toLowerCase();
+}
+
+// Single source of truth for version-based edition detection. Returns
+// 'cloud' | 'ee' | 'ce' (anything unrecognised, including a versionless string,
+// resolves to 'ce'). checkIfToolJetCloud/EE, GrantTypes' allowed OAuth types, and
+// resolveEditionSpecificDefaults all delegate here, so a data source's seeded
+// default always agrees with the OAuth options the form offers.
+export function getTooljetEditionFromVersion(version) {
+  const edition = getEditionFromVersion(version);
+  return edition === 'cloud' || edition === 'ee' ? edition : 'ce';
+}
+
 export function checkIfToolJetCloud(version) {
-  if (!version) return false;
-  const parsed = version.split('-');
-  return parsed[1] === 'cloud';
+  return getTooljetEditionFromVersion(version) === 'cloud';
 }
 
 export function checkIfToolJetEE(version) {
-  if (!version) return false;
-  const parsed = version.split('-');
-  return parsed[1] === 'ee';
+  return getTooljetEditionFromVersion(version) === 'ee';
+}
+
+// When a data source is first created its options are seeded from the plugin
+// manifest's `defaults` block. A default entry may declare an `editions` map
+// ({ ce, ee, cloud }) to vary its seeded value by edition — e.g. Google Sheets
+// v2 defaults to Service Account auth on CE/EE (no Google OAuth app to set up)
+// and to the pre-built ToolJet OAuth app on Cloud. Edition is derived from the
+// installed version the same way GrantTypes resolves its allowed OAuth types, so
+// the seeded value always agrees with the options the form offers. Entries
+// without an `editions` map are returned untouched, so this is a no-op for every
+// other data source.
+export function resolveEditionSpecificDefaults(defaults, version) {
+  if (!defaults || typeof defaults !== 'object') return defaults;
+  const edition = getTooljetEditionFromVersion(version);
+  return Object.entries(defaults).reduce((acc, [key, entry]) => {
+    if (entry && typeof entry === 'object' && entry.editions && edition in entry.editions) {
+      // eslint-disable-next-line no-unused-vars
+      const { editions, ...rest } = entry;
+      acc[key] = { ...rest, value: entry.editions[edition] };
+    } else {
+      acc[key] = entry;
+    }
+    return acc;
+  }, {});
 }
 
 export const calculateDueDate = (currentPeriodEnd) => {
