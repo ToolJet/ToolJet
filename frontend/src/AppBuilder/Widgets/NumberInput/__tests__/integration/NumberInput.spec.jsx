@@ -327,12 +327,23 @@ describe('NumberInput: min and max', () => {
     expect(input()).toHaveAttribute('max', '10');
   });
 
-  test('[NumberInput-VAL-002] with no min/max configured the input carries no bounds at all', async () => {
+  // Break this catches: NumberInput.jsx replacing its `?? null` bound fallbacks with
+  // `||` or a truthiness test, which would turn an unset bound into a real one and
+  // silently constrain every app that never configured min/max.
+  //
+  // The attributes are present and EMPTY, not absent. The server merges each widget's
+  // registered `definition.validation` into every saved component on page read
+  // (util.service.ts mergeDefaultComponentData), so a real NumberInput always carries
+  // `minValue`/`maxValue` as `''` and renders `min=""`/`max=""`. An empty bound is not a
+  // valid floating-point number, so the browser ignores it for constraint validation and
+  // the field is unbounded in effect. This scenario previously asserted the attributes
+  // were absent, which only held because the test harness under-seeded the definition.
+  test('[NumberInput-VAL-002] with no min/max configured the input carries no effective bounds', async () => {
     widget.render();
 
     await waitFor(() => expect(input()).toBeInTheDocument());
-    expect(input()).not.toHaveAttribute('min');
-    expect(input()).not.toHaveAttribute('max');
+    expect(input()).toHaveAttribute('min', '');
+    expect(input()).toHaveAttribute('max', '');
   });
 
   test('[NumberInput-VAL-003] a value over the maximum exposes isValid false and shows the error on blur', async () => {
