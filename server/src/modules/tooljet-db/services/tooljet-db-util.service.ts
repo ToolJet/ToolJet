@@ -44,9 +44,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -214,9 +219,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -384,9 +394,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,

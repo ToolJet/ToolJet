@@ -40,6 +40,9 @@
       "@otel/*": [
         "src/otel/*"
       ],
+      "test-helper": [
+        "test/test.helper"
+      ]
     },
   },
   "exclude": [

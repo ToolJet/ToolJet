@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo, useEffect, useContext } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
@@ -7,47 +7,11 @@ import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
+import { TooljetDatabaseContext } from './context';
+import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
-export const TooljetDatabaseContext = createContext({
-  canEditTjdb: false,
-  organizationId: null,
-  setOrganizationId: () => {},
-  selectedTable: '',
-  setSelectedTable: () => {},
-  searchParam: '',
-  setSearchParam: () => {},
-  selectedTableData: [],
-  setSelectedTableData: () => {},
-  tables: [],
-  setTables: () => {},
-  columns: [],
-  setColumns: () => {},
-  totalRecords: 0,
-  setTotalRecords: () => {},
-  loadingState: false,
-  setLoadingState: () => {},
-  handleBuildFilterQuery: () => {},
-  handleBuildSortQuery: () => {},
-  buildPaginationQuery: () => {},
-  resetSortQuery: () => {},
-  resetFilterQuery: () => {},
-  queryFilters: {},
-  setQueryFilters: () => {},
-  sortFilters: {},
-  setSortFilters: () => {},
-  selectRows: [],
-  setSelectRows: () => {},
-  pageCount: 1,
-  setPageCount: () => {},
-  pageSize: 50,
-  setPageSize: () => {},
-  handleRefetchQuery: () => {},
-  foreignKeys: [],
-  configurations: {},
-  setForeignKeys: () => [],
-  setConfigurations: () => {},
-});
+export { TooljetDatabaseContext };
 
 export const TooljetDatabase = (props) => {
   const [organizationId, setOrganizationId] = useState(
@@ -58,17 +22,14 @@ export const TooljetDatabase = (props) => {
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
-  const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
 
   const [totalRecords, setTotalRecords] = useState(0);
   const [loadingState, setLoadingState] = useState(false);
 
-  const [queryFilters, setQueryFilters] = useState({});
-  const [sortFilters, setSortFilters] = useState({});
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
+  const { loadEnvironments } = useTjdbActions();
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -77,6 +38,8 @@ export const TooljetDatabase = (props) => {
   const { admin, user_permissions } = authenticationService.currentSessionValue;
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
+  const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
+  const canEditSchema = canEditTjdb && isDevelopmentEnvironment;
 
   if (!admin && !isBuilder) {
     navigate('/');
@@ -108,6 +71,7 @@ export const TooljetDatabase = (props) => {
   const value = useMemo(
     () => ({
       canEditTjdb,
+      canEditSchema,
       searchParam,
       setSearchParam,
       organizationId,
@@ -127,15 +91,7 @@ export const TooljetDatabase = (props) => {
       buildPaginationQuery,
       resetSortQuery,
       resetFilterQuery,
-      queryFilters,
-      setQueryFilters,
-      sortFilters,
-      setSortFilters,
       resetAll,
-      pageCount,
-      setPageCount,
-      pageSize,
-      setPageSize,
       handleRefetchQuery,
       loadingState,
       setLoadingState,
@@ -154,10 +110,9 @@ export const TooljetDatabase = (props) => {
       selectedTable,
       selectedTableData,
       totalRecords,
-      queryFilters,
-      sortFilters,
       foreignKeys,
       configurations,
+      canEditSchema,
     ]
   );
 
@@ -172,22 +127,30 @@ export const TooljetDatabase = (props) => {
   }, []);
 
   useEffect(() => {
+    loadEnvironments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
   }, [selectedTable]);
 
   return (
-    <Layout
-      switchDarkMode={props.switchDarkMode}
-      darkMode={props.darkMode}
-      enableCollapsibleSidebar={true}
-      collapseSidebar={collapseSidebar}
-      toggleCollapsibleSidebar={toggleCollapsibleSidebar}
-    >
-      <div className="page-wrapper tooljet-database">
-        <TooljetDatabaseContext.Provider value={value}>
+    // Wraps Layout (not just the page content) so Header - rendered by Layout above
+    // {children} - can also read this context: the environment switcher lives in the page header,
+    // next to the breadcrumb, not inside the table view.
+    <TooljetDatabaseContext.Provider value={value}>
+      <Layout
+        switchDarkMode={props.switchDarkMode}
+        darkMode={props.darkMode}
+        enableCollapsibleSidebar={true}
+        collapseSidebar={collapseSidebar}
+        toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+      >
+        <div className="page-wrapper tooljet-database">
           <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
-        </TooljetDatabaseContext.Provider>
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </TooljetDatabaseContext.Provider>
   );
 };

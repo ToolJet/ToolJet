@@ -1,0 +1,203 @@
+.tjdb-environment-switcher {
+  &__button,
+  &__history-button {
+    border: 1px solid var(--border-weak) !important;
+    background-color: var(--background-surface-layer-01) !important;
+    cursor: pointer;
+    outline: none !important;
+    transition:
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+
+    &:hover {
+      background: var(--button-outline-hover, rgba(136, 144, 153, 0.12)) !important;
+    }
+  }
+
+  &__button {
+    padding: 7px 12px;
+    gap: 6px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+
+    &.opened {
+      background: var(--button-outline-pressed, rgba(136, 144, 153, 0.18)) !important;
+    }
+  }
+
+  &__history-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--icon-default, var(--text-default));
+    padding: 0;
+
+    svg {
+      width: 16px !important;
+      height: 16px !important;
+      min-width: 16px;
+      min-height: 16px;
+      flex-shrink: 0;
+      display: block;
+    }
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.synced {
+      background-color: var(--background-accent-strong);
+    }
+
+    &.behind {
+      background-color: var(--background-warning-strong);
+    }
+
+    &.absent {
+      background-color: var(--icon-weak);
+    }
+  }
+
+  &__badge {
+    color: var(--text-default);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 16px;
+    flex-shrink: 0;
+    background-color: var(--border-weak);
+  }
+
+  &__name {
+    color: var(--text-placeholder);
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  &__popover {
+    width: 290px;
+    border-radius: 10px;
+    border: 1px solid var(--border-weak);
+    box-shadow: var(--elevation-400-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.12));
+
+    .popover-body {
+      padding: 8px;
+    }
+  }
+
+  &__row,
+  &__footer {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  &__row {
+    gap: 8px;
+    height: 32px;
+    padding: 0 8px;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      .tjdb-environment-switcher__row-name,
+      .tjdb-environment-switcher__row-badge {
+        color: var(--text-placeholder);
+      }
+    }
+
+    &-check {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 0 1 auto;
+    }
+
+    &-dot-wrap {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &-name {
+      color: var(--text-default);
+      font-size: 12px;
+      line-height: 18px;
+      letter-spacing: -0.24px;
+      flex-shrink: 0;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    &-badge {
+      color: var(--text-placeholder);
+      font-size: 12px;
+      line-height: 18px;
+      letter-spacing: -0.24px;
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: 130px;
+      margin-left: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
+  }
+
+  &__footer {
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-weak);
+    border-radius: 0;
+    color: var(--text-placeholder);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: -0.22px;
+
+    &:hover {
+      color: var(--text-default);
+    }
+  }
+}

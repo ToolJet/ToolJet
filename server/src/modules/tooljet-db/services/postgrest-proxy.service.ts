@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
@@ -8,10 +8,12 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import got from 'got';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
+import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { isSQLModeDisabled, validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
 import { QueryError } from '@modules/data-sources/types';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from '../types';
 import { maybeSetSubPath } from '@helpers/utils.helper';
+import { extractTableRefs, rewriteTableRefs } from '../helpers/postgrest-url-refs';
 
 @Injectable()
 export class PostgrestProxyService {
@@ -19,7 +21,8 @@ export class PostgrestProxyService {
     protected readonly manager: EntityManager,
     protected readonly configService: ConfigService,
     protected eventEmitter: EventEmitter2,
-    protected tableOperationsService: TooljetDbTableOperationsService
+    protected tableOperationsService: TooljetDbTableOperationsService,
+    protected relationResolverService: TooljetDbRelationResolverService
   ) {}
 
   // NOTE: This method forwards request directly to PostgREST Using express middleware
@@ -40,6 +43,7 @@ export class PostgrestProxyService {
 
     const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
 
+    const requestedAccept = req.headers['accept'];
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
     req.headers = {};
     req.headers['Authorization'] = authToken;
@@ -47,6 +51,9 @@ export class PostgrestProxyService {
     req.headers['Prefer'] = `count=exact, return=representation`;
     if (['GET', 'HEAD'].includes(req.method)) req.headers['Accept-Profile'] = dbSchema;
     if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) req.headers['Content-Profile'] = dbSchema;
+    // PostgREST renders text/csv natively; everything else stays JSON. Allowlisted rather than
+    // passed through, so an arbitrary client Accept can't reshape the proxy's responses.
+    if (requestedAccept === 'text/csv') req.headers['Accept'] = 'text/csv';
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
@@ -62,23 +69,30 @@ export class PostgrestProxyService {
       // });
     }
 
-    const tableId = req.url.split('?')[0].split('/').pop();
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: {
-        organizationId,
-        id: tableId,
-      },
-    });
+    // environment_id rides the querystring on this route (the editor's direct /proxy/* passthrough
+    // has no other channel for it) and must never reach PostgREST itself, or it's forwarded as a
+    // column filter. Strip it before replaceUrlForPostgrest/resolveAndRewrite see the url.
+    const { url: strippedUrl, environmentId } = extractAndStripEnvironmentId(req.url);
+    req.url = strippedUrl;
 
-    if (internalTable.tableName) {
-      const tableInfo = {};
-      tableInfo[tableId] = internalTable.tableName;
-
-      req.headers['tableInfo'] = tableInfo;
-    }
+    // replaceUrlForPostgrest strips the /api/tooljet-db/proxy prefix — resolveAndRewrite is
+    // written against the bare `/<uuid>?...` form (see its own doc comment).
+    const { url: rewrittenUrl, tableInfo } = await this.resolveAndRewrite(
+      replaceUrlForPostgrest(req.url),
+      organizationId,
+      environmentId
+    );
+    req.url = rewrittenUrl;
+    req.headers['tableInfo'] = tableInfo;
 
     if (['PATCH', 'POST'].includes(req.method)) {
-      const updatedRequestBody = await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+      const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
+      const updatedRequestBody = await this.validateJSONBInputs(
+        organizationId,
+        tableInfo[resolvedTableId],
+        req.body,
+        environmentId
+      );
       req.body = { ...req.body, ...updatedRequestBody };
     }
 
@@ -97,8 +111,19 @@ export class PostgrestProxyService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, any>,
-    body: Record<string, any> = {}
+    body: Record<string, any>,
+    environmentId: string | undefined
   ) {
+    // Outside the try: NotFoundException/BadRequestException from resolveAndRewrite must
+    // propagate as-is. The catch below is shaped for `got`'s HTTP error (error.response.rawBody)
+    // and would throw a masking TypeError if a Nest HttpException reached it instead.
+    const updatedPath = replaceUrlForPostgrest(url);
+    const { url: rewrittenPath, tableInfo } = await this.resolveAndRewrite(
+      updatedPath,
+      headers['tj-workspace-id'],
+      environmentId
+    );
+
     try {
       const { dbUser, dbSchema } = isSQLModeDisabled()
         ? {
@@ -111,33 +136,21 @@ export class PostgrestProxyService {
           };
 
       const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
-      const updatedPath = replaceUrlForPostgrest(url);
-      let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;
+      let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + rewrittenPath;
 
       if (!postgrestUrl.startsWith('http://') && !postgrestUrl.startsWith('https://')) {
         postgrestUrl = 'http://' + postgrestUrl;
       }
 
-      const tableId = postgrestUrl.split('?')[0].split('/').pop();
-      const internalTable = await this.manager.findOne(InternalTable, {
-        where: {
-          organizationId: headers['tj-workspace-id'],
-          id: tableId,
-        },
-      });
-
-      if (internalTable.tableName) {
-        const tableInfo = {};
-        tableInfo[tableId] = internalTable.tableName;
-
-        headers['tableinfo'] = tableInfo;
-      }
+      headers['tableinfo'] = tableInfo; // lowercase key — the error handler reads it below via error.options.headers.tableinfo
 
       if (['PATCH', 'POST'].includes(method)) {
+        const { path: resolvedTableId } = extractTableRefs(rewrittenPath);
         const updatedRequestBody = await this.validateJSONBInputs(
           headers['tj-workspace-id'],
-          internalTable.tableName,
-          body
+          tableInfo[resolvedTableId],
+          body,
+          environmentId
         );
         body = { ...body, ...updatedRequestBody };
       }
@@ -181,6 +194,64 @@ export class PostgrestProxyService {
 
       throw new QueryError('Query could not be completed', error.message, { message: error.message });
     }
+  }
+
+  /**
+   * The single tenancy gate for both entry points. Ownership decides first: a uuid owned by this
+   * workspace but absent from the requested (environment, branch) is a 404 in every position — it
+   * exists, just not here yet. Only once ownership is ruled out do positions decide the status code:
+   * an unowned uuid in the PATH is a table that does not exist here (404); an unresolvable uuid in
+   * the QUERYSTRING is a malformed request that must never reach PostgREST (400). Nothing is ever
+   * forwarded unrewritten.
+   *
+   * `url` must already be in the bare `/<uuid>?...` form (prefix stripped) — extractTableRefs
+   * anchors the path match to the whole string, so a caller must strip `/api/tooljet-db/proxy`
+   * (via replaceUrlForPostgrest) before calling this.
+   */
+  protected async resolveAndRewrite(
+    url: string,
+    organizationId: string,
+    environmentId: string | undefined
+  ): Promise<{ url: string; tableInfo: Record<string, string> }> {
+    const { path, embedded } = extractTableRefs(url);
+    if (!path) throw new NotFoundException('Table not found');
+
+    const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded], environmentId);
+
+    const missing = [path, ...embedded].filter((id) => !resolved.has(id));
+    if (missing.length) {
+      // Omission conflates two answers: not owned by this workspace (tenancy), or owned but not
+      // promoted into this (environment, branch). Only the second is a 404 in every position.
+      const owned = await this.manager.find(InternalTable, {
+        where: { organizationId, id: In(missing) },
+        select: ['id'],
+      });
+      const ownedIds = new Set(owned.map((table) => table.id));
+
+      const unpromoted = missing.filter((id) => ownedIds.has(id));
+      if (unpromoted.length) {
+        // Wording matches the join path's "have no relation" phrasing (DEV-89) - ids, not names,
+        // since this path resolves logical ids and has no table-name lookup at hand here.
+        throw new NotFoundException(`Table(s) "${unpromoted.join('", "')}" have no relation in this environment`);
+      }
+
+      // Not owned: keep the positional rule the fail-closed spec already pins.
+      if (!resolved.has(path)) throw new NotFoundException('Table not found');
+      throw new BadRequestException(`Unknown table reference: ${missing.join(', ')}`);
+    }
+
+    const internalTables = await this.manager.find(InternalTable, {
+      where: { organizationId, id: In([path, ...embedded]) },
+    });
+
+    // Keyed by RELATION id, not logical id: PostgREST error messages name the relation, and
+    // TooljetDatabaseError maps those ids back to human names for the user.
+    const tableInfo = internalTables.reduce(
+      (acc, table) => ({ ...acc, [resolved.get(table.id)]: table.tableName }),
+      {}
+    );
+
+    return { url: rewriteTableRefs(url, resolved), tableInfo };
   }
 
   protected httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
@@ -278,10 +349,15 @@ export class PostgrestProxyService {
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
-  protected async validateJSONBInputs(organizationId, tableName, body) {
-    const tableDetails = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      table_name: tableName,
-    });
+  protected async validateJSONBInputs(organizationId, tableName, body, environmentId: string | undefined) {
+    const tableDetails = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        table_name: tableName,
+      },
+      environmentId
+    );
 
     const jsonbColumns = tableDetails.columns
       .filter((column) => column.data_type === 'jsonb')
@@ -302,6 +378,25 @@ export class PostgrestProxyService {
     }
     return body;
   }
+}
+
+// Pulls `environment_id` off the querystring and returns the url with it removed. Surgical
+// find-and-remove on the raw pairs, not a URLSearchParams round-trip — a full parse/reserialize
+// would re-percent-encode PostgREST operator syntax (`in.(1,2,3)`, `select=a,b`) that's valid
+// unescaped on the wire today, silently changing every other param in the process.
+export function extractAndStripEnvironmentId(url: string): { url: string; environmentId: string | undefined } {
+  const [path, queryString] = url.split('?');
+  if (!queryString) return { url, environmentId: undefined };
+
+  let environmentId: string | undefined;
+  const remaining = queryString.split('&').filter((pair) => {
+    const [key, value] = pair.split('=');
+    if (decodeURIComponent(key) !== 'environment_id') return true;
+    environmentId = value ? decodeURIComponent(value) : undefined;
+    return false;
+  });
+
+  return { url: path + (remaining.length ? '?' + remaining.join('&') : ''), environmentId };
 }
 
 function replaceUrlForPostgrest(url: string) {

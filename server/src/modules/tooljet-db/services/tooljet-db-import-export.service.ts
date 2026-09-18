@@ -42,10 +42,19 @@ export class TooljetDbImportExportService {
       internalTable.co_relation_id = coRelationId;
     }
 
-    const { configurations = {} } = internalTable;
-    const { columns, foreign_keys } = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tjDbDto.table_id,
-    });
+    // Import/export has no environment on the wire - always resolves in development.
+    const {
+      columns,
+      foreign_keys,
+      configurations = {},
+    } = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        id: tjDbDto.table_id,
+      },
+      undefined
+    );
 
     columns.forEach((column) => {
       const columnUuid = configurations?.columns?.column_names?.[column.column_name];
@@ -111,6 +120,7 @@ export class TooljetDbImportExportService {
           };
         });
 
+        // Import/export has no environment on the wire - always resolves in development.
         await this.tableOperationsService.perform(
           importResourcesDto.organization_id,
           'create_foreign_key',
@@ -119,6 +129,7 @@ export class TooljetDbImportExportService {
             foreign_keys: foreignKeys,
             shouldDestroyDbConnection: false,
           },
+          undefined,
           connectionManagers
         );
       }
@@ -177,6 +188,7 @@ export class TooljetDbImportExportService {
 
     const { columns } = tjDbDto.schema;
 
+    // Import/export has no environment on the wire - always resolves in development.
     const createdTable = await this.tableOperationsService.perform(
       organizationId,
       'create_table',
@@ -184,6 +196,7 @@ export class TooljetDbImportExportService {
         table_name: tableName,
         ...{ columns, foreign_keys: [] },
       },
+      undefined,
       connectionManagers
     );
 
@@ -199,12 +212,14 @@ export class TooljetDbImportExportService {
   async isTableColumnsSubset(internalTable: InternalTable, tjDbDto: ImportTooljetDatabaseDto): Promise<boolean> {
     const dtoColumns = new Set<string>(tjDbDto.schema.columns.map((c) => c.column_name));
 
+    // Import/export has no environment on the wire - always resolves in development.
     const internalTableColumnSchema = await this.tableOperationsService.perform(
       internalTable.organizationId,
       'view_table',
       {
         id: internalTable.id,
-      }
+      },
+      undefined
     );
 
     const internalTableColumns = new Set<string>(internalTableColumnSchema.columns.map((c) => c.column_name));

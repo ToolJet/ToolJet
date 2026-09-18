@@ -137,6 +137,13 @@ export class CreatePostgrestTableDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestForeignKeyDto)
   foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  // Purely a display label for the migration this creates - optional, TooljetDbMigrationRecorderService
+  // generates a default when left blank.
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }
 
 export class PostgrestForeignKeyDto {
@@ -259,6 +266,11 @@ export class EditTableDto {
   @ValidateNested({ each: true })
   @Type(() => EditTableColumnsDto)
   columns: EditTableColumnsDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }
 
 export class EditColumnTableDto {
@@ -328,4 +340,9 @@ export class AddColumnDto {
   @ValidateNested({ each: true })
   @Type(() => PostgrestForeignKeyDto)
   foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }

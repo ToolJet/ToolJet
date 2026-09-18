@@ -2,16 +2,22 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@entities/user.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { OrganizationUser } from '../../entities/organization_user.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TrialUserDto } from '@modules/onboarding/dto/user.dto';
 import { LicenseCountsService } from '../licensing/services/count.service';
 import { LICENSE_TRIAL_API, ORGANIZATION_INSTANCE_KEY } from '../licensing/constants';
 import got from 'got/dist/source';
 import { HttpException } from '@nestjs/common';
-import { fullName, generateNextNameAndSlug, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
+import {
+  fullName,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+  getTooljetEdition,
+  seedOrgEnvironmentsAndDefaultBranch,
+} from 'src/helpers/utils.helper';
 import { NotAcceptableException } from '@nestjs/common';
-import { Organization } from '../../entities/organization.entity';
+import { Organization } from '@entities/organization.entity';
 import { EntityManager } from 'typeorm';
 import {
   getUserStatusAndSource,
@@ -387,6 +393,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
                 const { name, slug } = generateNextNameAndSlug('My workspace');
                 const defaultOrganization = await this.organizationRepository.createOne({ name, slug }, manager);
                 defaultOrganizationId = defaultOrganization.id;
+                await seedOrgEnvironmentsAndDefaultBranch(defaultOrganization.id, manager);
                 await this.organizationUserRepository.createOne(existingUser, defaultOrganization, true, manager);
               }
               await this.rolesUtilService.addUserRole(defaultOrganizationId, {
