@@ -1,0 +1,189 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Adanos datasource",
+  "description": "A schema defining Adanos datasource operations",
+  "type": "api",
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select Adanos sentiment operation",
+      "list": [
+        {
+          "value": "get_asset_sentiment",
+          "name": "Get Asset Sentiment"
+        },
+        {
+          "value": "get_trending_assets",
+          "name": "Get Trending Assets"
+        },
+        {
+          "value": "compare_assets",
+          "name": "Compare Assets"
+        },
+        {
+          "value": "get_market_sentiment",
+          "name": "Get Market Sentiment"
+        }
+      ]
+    },
+    "get_asset_sentiment": {
+      "symbol": {
+        "label": "Asset Symbol / Ticker",
+        "key": "symbol",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Ticker symbol (e.g., AAPL, TSLA, BTC)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "AAPL"
+      },
+      "source": {
+        "label": "Data Source",
+        "key": "source",
+        "type": "dropdown",
+        "description": "Sentiment data source channel",
+        "list": [
+          {
+            "value": "all",
+            "name": "All Sources"
+          },
+          {
+            "value": "reddit_stocks",
+            "name": "Reddit Stocks"
+          },
+          {
+            "value": "twitter_fintwit",
+            "name": "X / FinTwit"
+          },
+          {
+            "value": "news",
+            "name": "Financial News"
+          },
+          {
+            "value": "polymarket",
+            "name": "Polymarket"
+          },
+          {
+            "value": "reddit_crypto",
+            "name": "Reddit Crypto"
+          }
+        ]
+      },
+      "time_range": {
+        "label": "Time Window",
+        "key": "time_range",
+        "type": "dropdown",
+        "description": "Aggregation window",
+        "list": [
+          {
+            "value": "1h",
+            "name": "Last 1 Hour"
+          },
+          {
+            "value": "24h",
+            "name": "Last 24 Hours"
+          },
+          {
+            "value": "7d",
+            "name": "Last 7 Days"
+          },
+          {
+            "value": "30d",
+            "name": "Last 30 Days"
+          }
+        ]
+      }
+    },
+    "get_trending_assets": {
+      "category": {
+        "label": "Category",
+        "key": "category",
+        "type": "dropdown",
+        "description": "Asset category",
+        "list": [
+          {
+            "value": "stocks",
+            "name": "Stocks"
+          },
+          {
+            "value": "crypto",
+            "name": "Crypto"
+          },
+          {
+            "value": "all",
+            "name": "All Assets"
+          }
+        ]
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of trending assets to return (1-100)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "20"
+      }
+    },
+    "compare_assets": {
+      "symbols": {
+        "label": "Symbols (comma-separated or JSON array)",
+        "key": "symbols",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Symbols to compare (e.g. AAPL,MSFT,NVDA)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "AAPL, MSFT, NVDA"
+      },
+      "time_range": {
+        "label": "Time Window",
+        "key": "time_range",
+        "type": "dropdown",
+        "description": "Aggregation window",
+        "list": [
+          {
+            "value": "24h",
+            "name": "Last 24 Hours"
+          },
+          {
+            "value": "7d",
+            "name": "Last 7 Days"
+          },
+          {
+            "value": "30d",
+            "name": "Last 30 Days"
+          }
+        ]
+      }
+    },
+    "get_market_sentiment": {
+      "segment": {
+        "label": "Market Segment",
+        "key": "segment",
+        "type": "dropdown",
+        "description": "Market segment",
+        "list": [
+          {
+            "value": "us_equities",
+            "name": "US Equities"
+          },
+          {
+            "value": "crypto",
+            "name": "Cryptocurrency"
+          },
+          {
+            "value": "global",
+            "name": "Global Macro"
+          }
+        ]
+      }
+    }
+  }
+}
