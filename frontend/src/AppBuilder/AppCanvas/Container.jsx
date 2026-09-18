@@ -77,10 +77,10 @@ const Container = React.memo(
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
     const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
     const flexDirection = useStore(
-      (state) => (isFlexContainer ? (state.getResolvedComponent?.(id)?.properties?.direction ?? 'column') : 'column'),
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.direction ?? 'column' : 'column'),
       shallow
     );
-    const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
+    const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -281,8 +281,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
