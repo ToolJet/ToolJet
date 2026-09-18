@@ -840,12 +840,16 @@ describe('NumberInput: saved-app compatibility', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  test('[NumberInput-COMPAT-001] a definition predating disableStepControls/showClearBtn/legacyInputSize still renders with pre-feature defaults', async () => {
-    // Break this catches: NumberInput.jsx or useInput.js reading any of these
-    // three properties without a falsy-safe default (e.g. `properties.disableStepControls`
-    // instead of `!disableStepControls`), which would crash or misrender the
-    // moment a real, pre-migration saved app definition — one that simply
-    // never had this key — reaches the widget.
+  test('[NumberInput-COMPAT-001] a definition predating disableStepControls/showClearBtn renders with the backfilled registered defaults, which are the pre-feature behaviour', async () => {
+    // A saved app that never had these three keys does not reach the widget with
+    // them missing: the server backfills every registered default on page read
+    // (`buildComponentMetaDefinition`, server/src/modules/apps/util.service.ts),
+    // and the harness seeds the same way. So what actually protects those apps is
+    // that the REGISTERED DEFAULTS still describe pre-feature behaviour — steppers
+    // on, no clear button, not disabled.
+    // Break this catches: anyone changing one of those three defaults in
+    // WidgetManager/widgets/numberinput.js, which would silently change how every
+    // app predating the feature renders.
     const definition = componentDefinition(ID, NAME, 'NumberInput', {
       value: rawBinding('{{5}}'),
       label: rawBinding('Label'),
@@ -853,6 +857,9 @@ describe('NumberInput: saved-app compatibility', () => {
       decimalPlaces: rawBinding('{{2}}'),
       visibility: rawBinding('{{true}}'),
       // disableStepControls, showClearBtn, legacyInputSize deliberately omitted.
+      // legacyInputSize is backfilled too, but it is read only by the shared
+      // canvas-sizing utilities, so it is dispositioned none:computed-css and is
+      // not asserted here.
     });
     seedApp({ [ID]: definition }, { moduleId: MODULE_ID });
     store().setEditorLoading(false, MODULE_ID);
