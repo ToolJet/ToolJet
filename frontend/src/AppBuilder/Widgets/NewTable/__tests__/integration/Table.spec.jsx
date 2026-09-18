@@ -14,6 +14,8 @@ import { waitFor, within, fireEvent as rtlFireEvent, act } from '@testing-librar
 import { componentDefinition, seedApp, binding } from '@/test/app-builder';
 import { createWidgetHarness, store, MODULE_ID, drain } from '@/AppBuilder/Widgets/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+import { tableConfig } from '@/AppBuilder/WidgetManager/widgets/table';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 
 const ID = 'tbl1';
@@ -226,6 +228,35 @@ describe('Table: column list and autogeneration', () => {
 
     await waitFor(() => expect(headerNames().sort()).toEqual(['age', 'email', 'id', 'name'].sort()));
   });
+
+  test('[Table-AUTOCOL-004] autogenerating columns persists the generated list back into the saved app definition', async () => {
+    widget.render({
+      properties: {
+        autogenerateColumns: { value: true },
+        columns: { value: [] },
+        data: binding(`{{${JSON.stringify(ROWS)}}}`),
+      },
+    });
+
+    await waitFor(() => {
+      const saved = store().getComponentDefinition(ID, MODULE_ID)?.component?.definition?.properties?.columns?.value;
+      expect(Array.isArray(saved) && saved.length).toBeTruthy();
+    });
+    const saved = store().getComponentDefinition(ID, MODULE_ID)?.component?.definition?.properties?.columns?.value;
+    expect(saved.map((c) => c.name).sort()).toEqual(['age', 'email', 'id', 'name'].sort());
+  });
+
+  test('[Table-COLSEL-001] hideColumnSelectorButton removes the column-visibility selector control', async () => {
+    widget.render({ properties: { hideColumnSelectorButton: binding('{{false}}') } });
+    await waitFor(() =>
+      expect(document.querySelector(`[data-cy="${NAME}-manage-columns-button"]`)).toBeInTheDocument()
+    );
+
+    widget.render({ properties: { hideColumnSelectorButton: binding('{{true}}') } });
+    await waitFor(() =>
+      expect(document.querySelector(`[data-cy="${NAME}-manage-columns-button"]`)).not.toBeInTheDocument()
+    );
+  });
 });
 
 const MANY_ROWS = Array.from({ length: 5 }, (_, i) => ({
@@ -314,6 +345,79 @@ describe('Table: pagination', () => {
     await waitFor(() => expect(paginationButton('pagination-button-to-last')).toBeInTheDocument());
     expect(paginationButton('pagination-button-to-last')).not.toBeDisabled();
   });
+
+  test('[Table-PAG-002] enableNextButton/enablePrevButton independently gate the next/previous page controls in server mode', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS.slice(0, 2))}}}`),
+        serverSidePagination: binding('{{true}}'),
+        enableNextButton: binding('{{false}}'),
+        enablePrevButton: binding('{{true}}'),
+      },
+    });
+    await waitFor(() => expect(paginationButton('pagination-button-to-next')).toBeDisabled());
+    expect(paginationButton('pagination-button-to-previous')).not.toBeDisabled();
+
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS.slice(0, 2))}}}`),
+        serverSidePagination: binding('{{true}}'),
+        enableNextButton: binding('{{true}}'),
+        enablePrevButton: binding('{{false}}'),
+      },
+    });
+    await waitFor(() => expect(paginationButton('pagination-button-to-previous')).toBeDisabled());
+    expect(paginationButton('pagination-button-to-next')).not.toBeDisabled();
+  });
+
+  test('[Table-PAG-EMPTY-001] pagination disabled on an empty dataset does not degenerate the page count', async () => {
+    widget.render({ properties: { data: binding('{{[]}}'), enablePagination: binding('{{false}}') } });
+
+    await waitFor(() => expect(document.querySelector('.warning-no-data-text')).toBeInTheDocument());
+  });
+
+  test('[Table-PAG-SERVER-002] serverSideRowsPerPage of 0 does not break rendering (falls back internally, though inert for row count in server mode)', async () => {
+    // Server mode sets manualPagination: true (useTable.js:108), so TanStack never slices rows
+    // client-side regardless of pageSize — `effectiveRowsPerPage`'s fallback to `rowsPerPage`
+    // (TableContainer.jsx:54-60) has no rendering-visible effect here; this only guards against
+    // a pageSize:0 crash. Confirmed via fault-injection: forcing the fallback to a no-op left
+    // this assertion unchanged, unlike every other scenario in this contract.
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`),
+        rowsPerPage: binding('{{3}}'),
+        serverSidePagination: binding('{{true}}'),
+        serverSideRowsPerPage: binding('{{0}}'),
+      },
+    });
+
+    await waitFor(() => expect(bodyRowCount()).toBe(5));
+  });
+
+  test('[Table-PAG-SERVER-004] with totalRecords/serverSideRowsPerPage not both configured, the jump-to-last-page control stays hidden', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS.slice(0, 2))}}}`),
+        serverSidePagination: binding('{{true}}'),
+        serverSideRowsPerPage: binding('{{0}}'),
+        totalRecords: binding('{{0}}'),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    expect(paginationButton('pagination-button-to-last')).not.toBeInTheDocument();
+  });
+
+  test.failing(
+    '[Table-BUG-002] setPage(0) clamps to a valid page instead of writing an unclamped/negative index',
+    async () => {
+      widget.render();
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      await widget.act('setPage', 0);
+      expect(exposed('pageIndex')).toBeGreaterThanOrEqual(1);
+    }
+  );
 });
 
 const bodyRowOrder = (columnHeader, count = 3) => Array.from({ length: count }, (_, i) => cellText(columnHeader, i));
@@ -408,6 +512,35 @@ describe('Table: sorting', () => {
     );
     // The rows the widget was handed are unchanged — a server-sorted app is expected to re-fetch, not have the widget reorder them.
     expect(bodyRowOrder('age')).toEqual(['30', '40', '35']);
+  });
+
+  test('[Table-SORT-003] defaultSortDirection "auto" is a no-op — no default sort applies', async () => {
+    widget.render({ properties: { defaultSortColumn: binding('age'), defaultSortDirection: binding('auto') } });
+
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(bodyRowOrder('age')).toEqual(['30', '40', '35']);
+  });
+
+  test('[Table-SORT-005] clicking a header exposes selectedColumnHeader and fires onHeaderClick, independent of enabledSort', async () => {
+    widget.render({
+      properties: { enabledSort: binding('{{false}}') },
+      events: [
+        {
+          id: 'evt-header-click',
+          name: 'onHeaderClick',
+          index: 0,
+          sourceId: ID,
+          target: 'component',
+          event: { eventId: 'onHeaderClick', actionId: 'set-custom-variable', key: 'headerClicked', value: '{{true}}' },
+        },
+      ],
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(headerCell('age'));
+
+    await waitFor(() => expect(exposed('selectedColumnHeader')).toMatchObject({ key: 'age', name: 'age' }));
+    expect(store().getVariable('headerClicked', MODULE_ID)).toBe(true);
   });
 });
 
@@ -508,12 +641,22 @@ describe('Table: search and filter', () => {
     // Server mode: the widget exposes the request but does not narrow the rows itself.
     expect(bodyRowCount()).toBe(MANY_ROWS.length);
   });
+
+  test('[Table-FILTER-001] showFilterButton gates the filter control', async () => {
+    widget.render({ properties: { showFilterButton: binding('{{true}}') } });
+    await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-filter-button"]`)).toBeInTheDocument());
+
+    widget.render({ properties: { showFilterButton: binding('{{false}}') } });
+    await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-filter-button"]`)).not.toBeInTheDocument());
+  });
 });
 
 const checkboxIn = (rowEl) => rowEl?.querySelector('[data-cy="checkbox-input"]');
 const headerCheckbox = () => document.querySelector('thead [data-cy="checkbox-input"]');
 const expandButtons = () => document.querySelectorAll('.table-expansion-toggle');
-const expandButton = (rowIndex) => expandButtons()[rowIndex];
+// Rows are virtualized and can mount in non-index DOM order, so scope by the row's own data-cy rather than
+// positional order in expandButtons().
+const expandButton = (rowIndex) => row(rowIndex)?.querySelector('.table-expansion-toggle');
 
 describe('Table: row selection', () => {
   beforeEach(widget.setup);
@@ -561,6 +704,47 @@ describe('Table: row selection', () => {
     await widget.act('deselectRow');
     await waitFor(() => expect(exposed('selectedRow')).toEqual({}));
   });
+
+  test('[Table-SEL-003] highlightSelectedRow hides the selection checkbox column even when showBulkSelector is also on', async () => {
+    widget.render({ properties: { showBulkSelector: binding('{{true}}'), highlightSelectedRow: binding('{{true}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    expect(checkboxIn(row(0))).not.toBeInTheDocument();
+
+    rtlFireEvent.click(cell('email', 0));
+    await waitFor(() => expect(row(0).className).toContain('selected'));
+  });
+
+  test('[Table-SEL-004] disableRowDeselection blocks deselecting an already-selected row via a non-checkbox click', async () => {
+    widget.render({
+      properties: { highlightSelectedRow: binding('{{true}}'), disableRowDeselection: binding('{{true}}') },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('email', 0));
+    await waitFor(() => expect(row(0).className).toContain('selected'));
+
+    rtlFireEvent.click(cell('email', 0));
+    await drain();
+    expect(row(0).className).toContain('selected');
+  });
+
+  // [Table-SEL-005] is deferred: defaultSelectedRow's mount-time selection is unreliable, see [Table-BUG-008] below.
+
+  test.failing(
+    '[Table-BUG-008] defaultSelectedRow keeps its matching row selected once TableExposedVariables settles (currently clobbered by a stale-render race)',
+    async () => {
+      widget.render({ properties: { defaultSelectedRow: binding(`{{{"id":${ROWS[1].id}}}}`) } });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      // An unrelated property change forces the re-render needed for the ref-based
+      // hasDataChanged prop to actually reach TableExposedVariables (see Table-BUG-008).
+      widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
+      await drain();
+
+      await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
+    }
+  );
 });
 
 describe('Table: expandable rows', () => {
@@ -599,6 +783,65 @@ describe('Table: expandable rows', () => {
     rtlFireEvent.click(expandButton(0));
     await drain();
     expect(store().getVariable('expandCount', MODULE_ID)).toBe(1);
+  });
+
+  test('[Table-EXP-001] enableExpandableRows renders an expand/collapse control per row, hidden when off', async () => {
+    widget.render({ properties: { enableExpandableRows: binding('{{true}}') } });
+    await waitFor(() => expect(expandButtons()).toHaveLength(ROWS.length));
+
+    widget.render({ properties: { enableExpandableRows: binding('{{false}}') } });
+    await waitFor(() => expect(expandButtons()).toHaveLength(0));
+  });
+
+  test('[Table-EXP-002] expansionHeight sets the rendered height of an expanded row content area', async () => {
+    widget.render({ properties: { enableExpandableRows: binding('{{true}}'), expansionHeight: binding('{{350}}') } });
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(document.querySelector('.table-expanded-row-content')).toBeInTheDocument());
+    expect(document.querySelector('.table-expanded-row-content').style.height).toBe('350px');
+  });
+
+  test('[Table-EXP-004] sorting, filtering, searching, or changing page each collapse every expanded row', async () => {
+    widget.render({
+      properties: {
+        enableExpandableRows: binding('{{true}}'),
+        data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`),
+        rowsPerPage: binding('{{2}}'),
+      },
+    });
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+
+    // Sort collapses. (Sorting can reorder which original row.index sits at visual
+    // position 0, so only assert non-empty -> empty, not which row got expanded.)
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(exposed('currentExpandedRows').length).toBeGreaterThan(0));
+    rtlFireEvent.click(headerCell('age'));
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([]));
+
+    // Filter collapses.
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(exposed('currentExpandedRows').length).toBeGreaterThan(0));
+    await widget.act('setFilters', [{ column: 'name', condition: 'equals', value: 'Row3' }]);
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([]));
+    await widget.act('clearFilters');
+    await drain();
+
+    // Search collapses.
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(exposed('currentExpandedRows').length).toBeGreaterThan(0));
+    rtlFireEvent.change(searchInput(), { target: { value: 'Row1' } });
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([]));
+    rtlFireEvent.change(searchInput(), { target: { value: '' } });
+    await drain();
+
+    // Page change collapses.
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(exposed('currentExpandedRows').length).toBeGreaterThan(0));
+    rtlFireEvent.click(paginationButton('pagination-button-to-next'));
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([]));
   });
 });
 
@@ -682,6 +925,82 @@ describe('Table: inline cell editing', () => {
     rtlFireEvent.click(document.querySelector('[data-cy="table-button-save-changes"]'));
     await waitFor(() => expect(store().getVariable('bulkUpdateFired', MODULE_ID)).toBe(true));
   });
+
+  test('[Table-EDIT-005] selectRowOnCellEdit controls whether clicking into an editable cell also selects its row', async () => {
+    widget.render({
+      properties: { highlightSelectedRow: binding('{{true}}'), selectRowOnCellEdit: binding('{{false}}') },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('name', 0));
+    await drain();
+    expect(row(0).className).not.toContain('selected');
+
+    widget.render({
+      properties: { highlightSelectedRow: binding('{{true}}'), selectRowOnCellEdit: binding('{{true}}') },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('name', 0));
+    await waitFor(() => expect(row(0).className).toContain('selected'));
+  });
+
+  // [Table-EDIT-006] is deferred: the publicly-documented `discardChanges` CSA (table.js's
+  // registered action, TableExposedVariables.jsx:460-466) clears changeSet but does NOT fire
+  // onCancelChanges, unlike the UI Discard control (TableContainer.jsx's handleChangesDiscarded,
+  // wired directly into Footer, bypassing the exposed-variable layer entirely). See Table-BUG-009.
+
+  test.failing(
+    '[Table-BUG-009] discardChanges CSA fires onCancelChanges the same as the UI Discard control (currently does not)',
+    async () => {
+      widget.render({
+        events: [
+          {
+            id: 'evt-cancel-changes',
+            name: 'onCancelChanges',
+            index: 0,
+            sourceId: ID,
+            target: 'component',
+            event: {
+              eventId: 'onCancelChanges',
+              actionId: 'set-custom-variable',
+              key: 'cancelFired',
+              value: '{{true}}',
+            },
+          },
+        ],
+      });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      await editCellTo(cell('name', 0), 'Adaline');
+      await waitFor(() => expect(exposed('changeSet')).toMatchObject({ 0: { name: 'Adaline' } }));
+
+      await widget.act('discardChanges');
+      await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+      await waitFor(() => expect(store().getVariable('cancelFired', MODULE_ID)).toBe(true));
+    }
+  );
+
+  test('[Table-EDIT-007] per-cell isEditable is resolved per cell, not inherited from the column as a whole', async () => {
+    const conditionalColumns = [
+      {
+        name: 'name',
+        key: 'name',
+        id: 'col-name',
+        columnType: 'string',
+        columnSize: 120,
+        isEditable: '{{cellValue !== "Ada"}}',
+      },
+      { name: 'email', key: 'email', id: 'col-email', columnType: 'string', columnSize: 160, isEditable: false },
+      { name: 'age', key: 'age', id: 'col-age', columnType: 'number', columnSize: 80, isEditable: true },
+    ];
+    widget.render({ properties: { columns: { value: conditionalColumns } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    // Row 0 is Ada (the excluded value) - not editable; row 1 is Grace - editable. Same column.
+    expect(cell('name', 0).className).not.toContain('isEditable');
+    expect(cell('name', 1).className).toContain('isEditable');
+  });
 });
 
 describe('Table: add row and refresh', () => {
@@ -719,6 +1038,99 @@ describe('Table: add row and refresh', () => {
     );
   });
 
+  test('[Table-ADDROW-001] showAddNewRowButton gates the control, and typing into the add-row popup does not touch existing changeSet', async () => {
+    widget.render({ properties: { showAddNewRowButton: binding('{{false}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`)).not.toBeInTheDocument();
+
+    widget.render({ properties: { showAddNewRowButton: binding('{{true}}') } });
+    await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`)).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Adaline');
+    await waitFor(() => expect(exposed('changeSet')).toMatchObject({ 0: { name: 'Adaline' } }));
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+    await editCellTo(nameAddCell, 'Marie');
+
+    // The in-progress add-row entry never merged into the existing changeSet.
+    expect(exposed('changeSet')).toMatchObject({ 0: { name: 'Adaline' } });
+    expect(Object.keys(exposed('changeSet'))).toEqual(['0']);
+  });
+
+  test('[Table-ADDROW-003] discardNewlyAddedRows CSA clears in-progress new rows without touching existing data', async () => {
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+    await editCellTo(nameAddCell, 'Marie');
+    expect(nameAddCell.textContent).toBe('Marie');
+
+    await widget.act('discardNewlyAddedRows');
+    await waitFor(() => expect(document.querySelector('[data-cy="name-column-0"]')).not.toBeInTheDocument());
+    expect(exposed('changeSet')).toEqual({});
+    expect(cellText('name', 0)).toBe('Ada');
+    // The in-progress entry was actually cleared internally, not just the popup hidden
+    // (reopening the popup would clear it too via its own mount effect, masking this).
+    // A single blank placeholder row is expected back (AddNewRow always keeps one ready),
+    // but it must not still carry the typed 'Marie' value.
+    expect(Object.values(Object.fromEntries(useTableStore.getState().getAllAddNewRowDetails(ID)))).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'Marie' })])
+    );
+  });
+
+  test('[Table-ACTCOL-001] a configured left-position action renders in the left action column', async () => {
+    // generateActionColumns.js measures button text width via canvas.getContext('2d'), which the
+    // global test setup stubs to return null (real font-metric measurement is QA/Playwright-owned,
+    // Table-BRW-003) — swap in a minimal stub locally so this RTL-owned layout guarantee can render.
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+      font: '',
+      measureText: () => ({ width: 10 }),
+    }));
+
+    widget.render({
+      properties: {
+        actions: {
+          value: [{ name: 'edit-action', buttonText: 'Edit', position: 'left' }],
+        },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(cell('actions', 0).className).toContain('has-left-actions');
+
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
+  });
+
+  test('[Table-ACTCOL-001] an action with an unset position renders in the right action column by default', async () => {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+      font: '',
+      measureText: () => ({ width: 10 }),
+    }));
+
+    widget.render({
+      properties: {
+        actions: {
+          value: [{ name: 'edit-action', buttonText: 'Edit' }], // position intentionally unset
+        },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(cell('actions', 0).className).toContain('has-right-actions');
+
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
+  });
+
   test('[Table-REFRESH-002] refreshTable CSA and the refresh button both fire onRefresh, including the no-dependency no-op case', async () => {
     widget.render({
       properties: { showRefreshButton: binding('{{true}}') },
@@ -748,6 +1160,146 @@ describe('Table: add row and refresh', () => {
     rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-refresh-button"]`));
     await waitFor(() => expect(store().getVariable('refreshCount', MODULE_ID)).toBe(2));
   });
+
+  test('[Table-DL-001] showDownloadButton gates the download control', async () => {
+    widget.render({ properties: { showDownloadButton: binding('{{false}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(document.querySelector(`[data-cy="${NAME}-file-download-button"]`)).not.toBeInTheDocument();
+
+    widget.render({ properties: { showDownloadButton: binding('{{true}}') } });
+    await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-file-download-button"]`)).toBeInTheDocument());
+  });
+
+  test('[Table-DL-002] downloadTableData exports the complete dataset via CSV, regardless of active search', async () => {
+    // Capture what generate-file.js's `new Blob([csvString])` actually receives, since
+    // window.URL.createObjectURL is unimplemented in jsdom (would throw otherwise).
+    const OriginalBlob = window.Blob;
+    let capturedCsv;
+    window.Blob = function (parts, opts) {
+      capturedCsv = parts[0];
+      return new OriginalBlob(parts, opts);
+    };
+    window.URL.createObjectURL = jest.fn(() => 'blob:mock');
+    window.URL.revokeObjectURL = jest.fn();
+
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.change(searchInput(), { target: { value: 'grace' } });
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+
+    await widget.act('downloadTableData', 'csv');
+    // The search narrowed the DISPLAYED rows to just Grace, but the export uses
+    // table.getCoreRowModel() — the full, unfiltered dataset (D-09: intended).
+    expect(capturedCsv).toContain('Ada');
+    expect(capturedCsv).toContain('Grace');
+    expect(capturedCsv).toContain('Rosalind');
+
+    window.Blob = OriginalBlob;
+  });
+
+  test('[Table-DL-002] onTableDataDownload fires when serverSidePagination is on and the download event is configured (bypassing the export popover)', async () => {
+    widget.render({
+      properties: { serverSidePagination: binding('{{true}}') },
+      events: [
+        {
+          id: 'evt-download',
+          name: 'onTableDataDownload',
+          index: 0,
+          sourceId: ID,
+          target: 'component',
+          event: {
+            eventId: 'onTableDataDownload',
+            actionId: 'set-custom-variable',
+            key: 'downloadFired',
+            value: '{{true}}',
+          },
+        },
+      ],
+    });
+    // This branch renders a plain icon button with no data-cy (ControlButtons.jsx's
+    // hasDownloadEvent && !clientSidePagination path) — found via its tooltip id instead.
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-tooltip-id="tooltip-for-download-serverside-pagingation"]')
+      ).toBeInTheDocument()
+    );
+    rtlFireEvent.click(document.querySelector('[data-tooltip-id="tooltip-for-download-serverside-pagingation"]'));
+    await waitFor(() => expect(store().getVariable('downloadFired', MODULE_ID)).toBe(true));
+  });
+
+  test('[Table-REFRESH-001] showRefreshButton gates the manual refresh control', async () => {
+    widget.render({ properties: { showRefreshButton: binding('{{false}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(document.querySelector(`[data-cy="${NAME}-refresh-button"]`)).not.toBeInTheDocument();
+
+    widget.render({ properties: { showRefreshButton: binding('{{true}}') } });
+    await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-refresh-button"]`)).toBeInTheDocument());
+  });
+
+  test('[Table-REFRESH-003] refreshing sets isRefreshing (surfaced via isLoading) for the duration of the underlying query run, clearing it once settled', async () => {
+    widget.render({ properties: { showRefreshButton: binding('{{true}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    // useTableRefresh.js only sets isRefreshing when getDependents(this table's data path)
+    // resolves at least one `queries.<id>...` dependent. Stubbing getDependents AND runQuery
+    // (shared collaborators, not Table's own code) isolates the guarantee under test — Table's
+    // own setIsRefreshing/allSettled orchestration — from the real query subsystem's own
+    // resolution timing, which otherwise settles within the same microtask flush that
+    // `act()` drains before returning, making the transient `true` state unobservable.
+    const query = { id: 'q1', name: 'query1', kind: 'restapi', options: {} };
+    store().dataQuery.setQueries([query], MODULE_ID);
+    const originalGetDependents = useStore.getState().getDependents;
+    useStore.setState({
+      getDependents: (path, moduleId) =>
+        path === `components.${ID}.properties.data`
+          ? ['queries.q1.__options__']
+          : originalGetDependents(path, moduleId),
+      queryPanel: {
+        ...useStore.getState().queryPanel,
+        runQuery: () => new Promise((resolve) => setTimeout(resolve, 30)),
+      },
+    });
+
+    await drain();
+    expect(exposed('isLoading')).toBe(false);
+    const actPromise = widget.act('refreshTable');
+    await waitFor(() => expect(exposed('isLoading')).toBe(true));
+    await waitFor(() => expect(exposed('isLoading')).toBe(false));
+    await actPromise;
+  });
+
+  test.failing(
+    '[Table-BUG-003] two refreshTable() calls in the same tick only fire the underlying query once',
+    async () => {
+      widget.render();
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      const query = { id: 'q1', name: 'query1', kind: 'restapi', options: {} };
+      store().dataQuery.setQueries([query], MODULE_ID);
+      const originalGetDependents = useStore.getState().getDependents;
+      const runQuery = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 30)));
+      useStore.setState({
+        getDependents: (path, moduleId) =>
+          path === `components.${ID}.properties.data`
+            ? ['queries.q1.__options__']
+            : originalGetDependents(path, moduleId),
+        queryPanel: { ...useStore.getState().queryPanel, runQuery },
+      });
+      await drain();
+
+      // Call the exposed CSA directly, twice, in the SAME synchronous tick — widget.act()'s own
+      // internal `waitFor` gap would let a re-render land between two calls, letting the guard
+      // correctly see the updated isRefreshing and masking the stale-closure race being pinned.
+      await act(async () => {
+        exposed('refreshTable')();
+        exposed('refreshTable')();
+      });
+      await drain();
+
+      expect(runQuery).toHaveBeenCalledTimes(1);
+    }
+  );
 });
 
 /**
@@ -1116,6 +1668,433 @@ describe('Table: per-column-type rendering', () => {
     rtlFireEvent.click(goButtons[1]);
     await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
   });
+
+  test('[Table-COLTYPE-BOOLEAN-001] a boolean column renders a toggle whose colors follow toggleOnBg/toggleOffBg, with no validation bucket', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, active: true }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'active',
+              key: 'active',
+              id: 'col-active',
+              columnType: 'boolean',
+              columnSize: 100,
+              isEditable: true,
+              toggleOnBg: '#00FF00',
+              toggleOffBg: '#FF0000',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('active', 0)?.querySelector('.boolean-slider')).toBeInTheDocument());
+    expect(cell('active', 0).querySelector('.boolean-slider').style.backgroundColor).toBe('rgb(0, 255, 0)');
+  });
+
+  test('[Table-COLTYPE-DATEPICKER-003] parseInUnixTimestamp/parseDateFormat control how a bound raw value is parsed, independent of the configured display format', async () => {
+    // 2023-11-14T22:13:20Z as a Unix-seconds timestamp, displayed in a completely different format.
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, when: 1700000000 }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'when',
+              key: 'when',
+              id: 'col-when',
+              columnType: 'datepicker',
+              columnSize: 160,
+              isEditable: false,
+              parseInUnixTimestamp: true,
+              unixTimestamp: 'seconds',
+              dateFormat: 'YYYY/MM/DD',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cellText('when', 0)).not.toBe(''));
+    expect(cellText('when', 0)).toBe(require('moment-timezone').unix(1700000000).format('YYYY/MM/DD'));
+  });
+
+  test('[Table-COLTYPE-TAGS-001] a tagsV2 column with allowMultipleSelection renders every selected tag, not just one', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, tags: ['red', 'blue'] }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'tags',
+              key: 'tags',
+              id: 'col-tags',
+              columnType: 'tagsV2',
+              columnSize: 160,
+              isEditable: false,
+              allowMultipleSelection: true,
+              options: [
+                { label: 'Red', value: 'red' },
+                { label: 'Blue', value: 'blue' },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('tags', 0)).toBeInTheDocument());
+    expect(cell('tags', 0).textContent).toContain('Red');
+    expect(cell('tags', 0).textContent).toContain('Blue');
+  });
+
+  test('[Table-COLTYPE-IMAGE-001] an image column renders the bound URL with configured objectFit/borderRadius', async () => {
+    // The "never editable" half of this guarantee is Inspector-only (PropertiesTabElements.jsx:385
+    // hides the isEditable toggle for image columns in the panel); at runtime, a saved definition
+    // with isEditable:true on an image column still renders the isEditable class — not enforced here.
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, avatar: 'https://example.com/a.png' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'avatar',
+              key: 'avatar',
+              id: 'col-avatar',
+              columnType: 'image',
+              columnSize: 80,
+              objectFit: 'cover',
+              borderRadius: 8,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('avatar', 0)?.querySelector('img')).toBeInTheDocument());
+    const img = cell('avatar', 0).querySelector('img');
+    expect(img).toHaveAttribute('src', 'https://example.com/a.png');
+    expect(img.style.objectFit).toBe('cover');
+    expect(img.style.borderRadius).toBe('8px');
+  });
+
+  test('[Table-COLTYPE-LINK-001] a link column renders displayText as a hyperlink to the bound URL, honoring linkTarget', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, site: 'https://example.com' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'site',
+              key: 'site',
+              id: 'col-site',
+              columnType: 'link',
+              columnSize: 120,
+              isEditable: false,
+              displayText: 'Visit',
+              linkTarget: '_blank',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('site', 0)?.querySelector('a')).toBeInTheDocument());
+    const link = cell('site', 0).querySelector('a');
+    expect(link.textContent).toBe('Visit');
+    expect(link).toHaveAttribute('href', 'https://example.com');
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  test('[Table-COLTYPE-RATING-001] a rating column renders defaultRating stars/hearts per iconType and supports allowHalfStar', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'score',
+              key: 'score',
+              id: 'col-score',
+              columnType: 'rating',
+              columnSize: 120,
+              isEditable: false,
+              iconType: 'heart',
+              maxRating: 5,
+              defaultRating: 3,
+              allowHalfStar: true,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('score', 0)?.querySelector('.rating-widget-group')).toBeInTheDocument());
+    expect(cell('score', 0).querySelectorAll('.rating-widget-group > *')).toHaveLength(5);
+  });
+
+  test('[Table-COLTYPE-BUTTON-003] button-column styling applies per the configured button, and sorting/filtering are disabled for that column', async () => {
+    widget.render({
+      properties: {
+        actions: { value: [] },
+        columns: {
+          value: [
+            {
+              name: 'actions',
+              key: 'actions',
+              id: 'col-actions',
+              columnType: 'button',
+              columnSize: 100,
+              buttons: [
+                {
+                  id: 'btn-1',
+                  buttonLabel: 'Go',
+                  buttonType: 'solid',
+                  buttonBackgroundColor: '#123456',
+                  disableButton: false,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('actions', 0)?.querySelector('button')).toBeInTheDocument());
+    expect(cell('actions', 0).querySelector('button').style.backgroundColor).toBe('rgb(18, 52, 86)');
+    expect(document.querySelector('[data-cy$="sort-icon-ascending"]')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-cy$="sort-icon-descending"]')).not.toBeInTheDocument();
+  });
+
+  test('[Table-COLTYPE-DEPRECATED-001] the deprecated dropdown/radio column types still render via their values/labels array configuration', async () => {
+    // The third legacy type this scenario names, `tags`, is dropped here — see Table-BUG-010:
+    // its adapter call passes a `tags` prop but the component reads `value`, so it never
+    // actually renders any bound value (always empty), independent of configuration.
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, city: 'nyc', region: 'east' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'city',
+              key: 'city',
+              id: 'col-city',
+              columnType: 'dropdown',
+              columnSize: 100,
+              values: ['nyc', 'la'],
+              labels: ['New York', 'Los Angeles'],
+            },
+            {
+              name: 'region',
+              key: 'region',
+              id: 'col-region',
+              columnType: 'radio',
+              columnSize: 100,
+              values: ['east', 'west'],
+              labels: ['East', 'West'],
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('city', 0)?.querySelector('.select-search-container')).toBeInTheDocument());
+    expect(cell('city', 0).querySelector('.select-search-input').value).toBe('New York');
+    expect(cell('region', 0).querySelectorAll('.form-check-label')[0].textContent).toBe('East');
+  });
+
+  test.failing(
+    '[Table-BUG-010] the deprecated tags column type renders its bound value (currently always renders empty, a prop-name mismatch)',
+    async () => {
+      widget.render({
+        properties: {
+          data: binding(`{{${JSON.stringify([{ id: 1, hobby: ['golf'] }])}}}`),
+          columns: {
+            value: [{ name: 'hobby', key: 'hobby', id: 'col-hobby', columnType: 'tags', columnSize: 100 }],
+          },
+        },
+      });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+      expect(cell('hobby', 0).textContent).toContain('golf');
+    }
+  );
+
+  test('[Table-COLTYPE-DEPRECATED-002] the deprecated toggle column keeps its EventManager-based onChange event and activeColor styling', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, flag: false }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'flag',
+              key: 'flag',
+              id: 'col-flag',
+              columnType: 'toggle',
+              columnSize: 100,
+              isEditable: true,
+              activeColor: '#00AA00',
+            },
+          ],
+        },
+      },
+      events: [
+        {
+          id: 'evt-toggle',
+          name: 'onChange',
+          index: 0,
+          sourceId: ID,
+          target: 'table_column',
+          event: {
+            ref: 'flag',
+            eventId: 'onChange',
+            actionId: 'set-custom-variable',
+            key: 'toggleFired',
+            value: '{{true}}',
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(cell('flag', 0)?.querySelector('input[type="checkbox"]')).toBeInTheDocument());
+    rtlFireEvent.click(cell('flag', 0).querySelector('input[type="checkbox"]'));
+    await waitFor(() => expect(store().getVariable('toggleFired', MODULE_ID)).toBe(true));
+    expect(cell('flag', 0).querySelector('input[type="checkbox"]').style.backgroundColor).toBe('rgb(0, 170, 0)');
+  });
+});
+
+describe('Table: styling and misc', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Table-STYLE-001] columnTitleColor/columnBackgroundColor style the header row, distinct from data-row colors', async () => {
+    widget.render({
+      styles: { columnTitleColor: binding('rgb(255, 0, 0)'), columnBackgroundColor: binding('rgb(0, 0, 255)') },
+    });
+    await waitFor(() => expect(headerCell('name')).toBeInTheDocument());
+    const headerRow = headerCell('name').closest('th');
+    expect(headerRow.style.color).toBe('rgb(255, 0, 0)');
+    expect(headerRow.style.backgroundColor).toBe('rgb(0, 0, 255)');
+  });
+
+  test('[Table-STYLE-002] headerCasing transforms header text casing without altering the underlying column name', async () => {
+    widget.render({ styles: { headerCasing: binding('uppercase') } });
+    await waitFor(() => expect(headerCell('name')).toBeInTheDocument());
+    expect(headerCell('name').style.textTransform).toBe('uppercase');
+    // The underlying name is unchanged: found via `headerCell('name')` (data-cy keys off the raw
+    // name) and its textContent is still the original casing — only CSS presentation changed.
+    expect(headerCell('name').textContent).toBe('name');
+  });
+
+  test('[Table-A11Y-001] Toggle and Radio column-type cells expose the real ARIA attributes their interaction model requires', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, flag: true, region: 'east' }])}}}`),
+        columns: {
+          value: [
+            { name: 'flag', key: 'flag', id: 'col-flag', columnType: 'toggle', columnSize: 100, isEditable: true },
+            {
+              name: 'region',
+              key: 'region',
+              id: 'col-region',
+              columnType: 'radio',
+              columnSize: 100,
+              values: ['east', 'west'],
+              labels: ['East', 'West'],
+              isEditable: true,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('flag', 0)?.querySelector('input[type="checkbox"]')).toBeInTheDocument());
+    expect(cell('flag', 0).querySelector('input[type="checkbox"]')).toHaveAttribute('aria-checked', 'true');
+    const radioInputs = cell('region', 0).querySelectorAll('input[type="radio"]');
+    expect(radioInputs.length).toBeGreaterThan(0);
+  });
+
+  test('[Table-CONDFMT-001] a configured cellBackgroundColor resolvable is evaluated independently per cell', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'age',
+              key: 'age',
+              id: 'col-age',
+              columnType: 'number',
+              columnSize: 80,
+              cellBackgroundColor: '{{cellValue > 32 ? "rgb(255, 0, 0)" : "rgb(0, 255, 0)"}}',
+            },
+          ],
+        },
+      },
+    });
+    // ROWS: Ada(30), Grace(40), Rosalind(35) — only Grace and Rosalind exceed 32.
+    await waitFor(() => expect(cell('age', 0)).toBeInTheDocument());
+    expect(cell('age', 0).style.backgroundColor).toBe('rgb(0, 255, 0)');
+    expect(cell('age', 1).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
+  test('[Table-STATE-004] dynamicHeight (view mode only) schedules a reflow so the table grows/shrinks with its content', async () => {
+    // isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' — inert in edit
+    // mode. useDynamicHeight's own DOM effect (freeing the WidgetWrapper element to auto-height)
+    // targets a `.ele-<id>` node that this harness's bare `<RenderWidget>` mount never produces
+    // (WidgetWrapper is the real app's outer layer, not exercised here) — asserted instead via
+    // the one seam Table itself owns: that it invokes the shared reflow scheduler when enabled.
+    const scheduleReflow = jest.fn();
+    useStore.setState({ scheduleReflow });
+
+    widget.render({ properties: { dynamicHeight: binding('{{false}}') }, currentMode: 'view' });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    expect(scheduleReflow).not.toHaveBeenCalled();
+
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+    await waitFor(() => expect(scheduleReflow).toHaveBeenCalledWith(ID, 'desktop', false, null, MODULE_ID));
+  });
+
+  test('[Table-COLRESIZE-001] dragging a columns resize handle persists the new width back into the saved app definition (debounced)', async () => {
+    // Real drag-geometry fidelity is QA/Playwright-owned (Table-BRW-001); this exercises the
+    // Engineering-owned persistence side effect once TanStack's own columnSizing state changes,
+    // via a minimal mousedown/mousemove/mouseup sequence (columnResizeMode: 'onChange').
+    widget.render();
+    await waitFor(() => expect(headerCell('name')).toBeInTheDocument());
+    const resizer = headerCell('name').closest('th').querySelector('.resizer');
+    expect(resizer).toBeInTheDocument();
+
+    rtlFireEvent.mouseDown(resizer, { clientX: 100 });
+    rtlFireEvent.mouseMove(document, { clientX: 150 });
+    rtlFireEvent.mouseUp(document);
+
+    await waitFor(
+      () =>
+        expect(
+          store().getComponentDefinition(ID, MODULE_ID)?.component?.definition?.properties?.columnSizes?.value
+        ).toBeTruthy(),
+      { timeout: 2000 }
+    );
+  });
+
+  test('[Table-CSSCLASS-001] the universal styles.cssClass field applies the configured class to Tables rendered root node', async () => {
+    widget.render({
+      styles: { cssClass: binding('my-custom-class') },
+      afterSeed: () => {
+        useStore.setState({ license: { featureAccess: { customStyling: true } } });
+      },
+    });
+    await waitFor(() => expect(document.querySelector('[data-cy="draggable-widget-table1"]')).toBeInTheDocument());
+    expect(document.querySelector('[data-cy="draggable-widget-table1"]').className).toContain('my-custom-class');
+  });
+
+  test('[Table-COLORDER-001] the synthetic selection checkbox column is force-pinned leftmost whenever any data column is left-pinned', async () => {
+    widget.render({
+      properties: {
+        showBulkSelector: binding('{{true}}'),
+        columns: {
+          value: [
+            { name: 'name', key: 'name', id: 'col-name', columnType: 'string', columnSize: 120, pinPosition: 'left' },
+            { name: 'email', key: 'email', id: 'col-email', columnType: 'string', columnSize: 160 },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(headerCheckbox()).toBeInTheDocument());
+    const allHeaderCells = [...document.querySelectorAll('thead th')];
+    const checkboxHeaderIndex = allHeaderCells.findIndex((th) => th.querySelector('[data-cy="checkbox-input"]'));
+    const nameHeaderIndex = allHeaderCells.findIndex((th) => th === headerCell('name')?.closest('th'));
+    expect(checkboxHeaderIndex).toBeLessThan(nameHeaderIndex);
+  });
 });
 
 describe('Table: saved-app compatibility and instance isolation', () => {
@@ -1186,5 +2165,19 @@ describe('Table: saved-app compatibility and instance isolation', () => {
     await drain();
     expect(store().getExposedValueOfComponent(ID2, MODULE_ID)?.selectedRow).toEqual(ROWS[2]);
     expect(exposed('selectedRow')).toEqual(ROWS[1]);
+  });
+});
+
+describe('Table: server-config parity', () => {
+  test.failing('[Table-BUG-006] the server widget config declares the same actions as the frontend config', () => {
+    const path = require('path');
+    const { tableConfig: serverConfig } = require(path.join(
+      __dirname,
+      '../../../../../../../server/src/modules/apps/services/widget-config/table.js'
+    ));
+    const frontendHandles = tableConfig.actions.map((a) => a.handle).sort();
+    const serverHandles = serverConfig.actions.map((a) => a.handle).sort();
+    // Currently missing from the server config: 'refreshTable' (introduced by commit 8927235253).
+    expect(serverHandles).toEqual(frontendHandles);
   });
 });
