@@ -42,7 +42,7 @@ async function workspaceSchemas(client: Client): Promise<string[]> {
     host: process.env.TOOLJET_DB_HOST || 'localhost',
     port: Number(process.env.TOOLJET_DB_PORT) || 5432,
     user: process.env.TOOLJET_DB_USER,
-    password: process.env.TOOLJET_DB_PASSWORD || '',
+    password: process.env.TOOLJET_DB_PASS || '',
     database: process.env.TOOLJET_DB,
   });
   await client.connect();
