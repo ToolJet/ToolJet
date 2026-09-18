@@ -197,9 +197,12 @@ export const selectAllWidgets = () => {
 export const multiSelectWidgets = (widgetNames = []) => {
   cy.forceClickOnCanvas();
   widgetNames.forEach((name, i) => {
-    cy.get(commonWidgetSelector.draggableWidget(name)).click(
-      i === 0 ? { force: true } : { shiftKey: true, force: true }
-    );
+    // `.first()` — see the note on nudgeWidget/copyWidget: a widget may stamp
+    // `draggable-widget-<name>` on two elements (Table = outer wrapper + inner
+    // <table>), and `cy.click()` rejects a multi-element subject. No-op elsewhere.
+    cy.get(commonWidgetSelector.draggableWidget(name))
+      .first()
+      .click(i === 0 ? { force: true } : { shiftKey: true, force: true });
   });
   cy.wait(300);
 };

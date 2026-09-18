@@ -218,8 +218,11 @@ export const editAndVerifyWidgetName = (
   // the same WidgetWrapper (ConfigHandle.jsx:232-266, WidgetWrapper.jsx:211-225).
   // Verify the rename by hovering the widget and reading that label from the
   // enclosing wrapper.
-  cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
+  // `.first()` — a widget may stamp `draggable-widget-<name>` on two elements
+  // (Table = outer wrapper + inner <table>); `trigger`/`closest` need one subject.
+  cy.get(commonWidgetSelector.draggableWidget(name)).first().trigger("mouseover");
   cy.get(commonWidgetSelector.draggableWidget(name))
+    .first()
     .closest("[component-type]")
     .find(".config-handle .component-name-btn")
     .should("contain.text", name);

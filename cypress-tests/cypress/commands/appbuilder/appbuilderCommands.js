@@ -205,6 +205,11 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
+    // `.first()` — a widget may stamp `draggable-widget-<name>` on MORE THAN ONE
+    // element (the Table stamps it on both the outer RenderWidget wrapper and its
+    // inner <table>). `cy.trigger()` rejects a multi-element subject. The outer
+    // wrapper is the element that actually moves; no-op for single-match widgets.
+    .first()
     .trigger("mouseover", {
       force: true,
       log: false,

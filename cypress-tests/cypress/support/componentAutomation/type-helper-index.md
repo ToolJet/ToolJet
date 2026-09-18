@@ -134,7 +134,7 @@
 | - | `dataPdfAssertionHelper` | appBuilder/components/table.js | common | `dataPdfAssertionHelper(rows)` |
 | - | `dataCsvAssertionHelper` | appBuilder/components/table.js | common | `dataCsvAssertionHelper(rows)` |
 | - | `addFilter` | appBuilder/components/table.js | canvas | `addFilter([{ column: 'name', operation: 'contains', value: 'Sarah' }], true, 'table1')` |
-| - | `verifyTableExposedVars` | appBuilder/components/table.js | inspector | `verifyTableExposedVars([{ key: 'currentPageData', type: 'Array', value: '[...]' }], 'table1')` |
+| exposed | `verifyTableExposedVars` | appBuilder/components/table.js | inspector | `verifyTableExposedVars([{ key: 'currentPageData', type: 'Array', value: '[...]' }], 'table1')` |
 | - | `makeAllColumnsEditable` | appBuilder/components/table.js | inspector | `makeAllColumnsEditable()` |
 | - | `makeColumnEditable` | appBuilder/components/table.js | inspector | `makeColumnEditable('name')` |
 | - | `typeIntoEditableCell` | appBuilder/components/table.js | canvas | `typeIntoEditableCell(tableSelector.cell('name', 0, 'table1'), 'Alice')` |
@@ -147,6 +147,53 @@
 | - | `toggleRowCheckbox` | appBuilder/components/table.js | canvas | `toggleRowCheckbox(0, 'table1')` |
 | - | `verifySelectedRowCount` | appBuilder/components/table.js | canvas | `verifySelectedRowCount(2, 'table1')` |
 | - | `sortByColumn` | appBuilder/components/table.js | canvas | `sortByColumn('name')` |
+| - | `wireTableCSA` | appBuilder/components/table.js | csa | `wireTableCSA('Set page', [{ label: 'Page', value: '{{2}}' }], 'table1')` |
+| - | `triggerTableCSA` | appBuilder/components/table.js | csa | `triggerTableCSA(0, 'table1')` |
+| - | `columnCyLabel` | appBuilder/components/table.js | common | `columnCyLabel('Make editable')   // → 'make-editable'` |
+| - | `openColumnPopover` | appBuilder/components/table.js | inspector | `openColumnPopover('email')` |
+| - | `closeColumnPopover` | appBuilder/components/table.js | inspector | `closeColumnPopover('email')` |
+| - | `switchColumnTab` | appBuilder/components/table.js | inspector | `switchColumnTab(tableText.columnTabStyles)` |
+| - | `setColumnType` | appBuilder/components/table.js | inspector | `setColumnType('status', 'select')` |
+| - | `addColumnOfType` | appBuilder/components/table.js | inspector | `addColumnOfType('Status', 'select', 'status')` |
+| - | `duplicateColumn` | appBuilder/components/table.js | inspector | `duplicateColumn('email')` |
+| - | `deleteColumn` | appBuilder/components/table.js | inspector | `deleteColumn('email')` |
+| - | `setColumnProperty` | appBuilder/components/table.js | inspector | `setColumnProperty(tableText.labelVisibility, '{{false}}')` |
+| - | `verifyColumnProperty` | appBuilder/components/table.js | inspector | `verifyColumnProperty(tableText.labelVisibility, '{{false}}')` |
+| - | `setColumnCodeField` | appBuilder/components/table.js | inspector | `setColumnCodeField(tableSelector.columnTransformationField, '{{cellValue.toUpperCase()}}')` |
+| - | `verifyColumnCodeField` | appBuilder/components/table.js | inspector | `verifyColumnCodeField(tableSelector.columnTransformationField, '{{cellValue}}')` |
+| - | `toggleColumnProperty` | appBuilder/components/table.js | inspector | `toggleColumnProperty(tableText.labelMakeEditable)` |
+| colorSwatches | `setColumnColor` | appBuilder/components/table.js | inspector | `setColumnColor(tableText.labelTextColor, ['255','0','0','100'])` |
+| colorSwatches | `verifyColumnColor` | appBuilder/components/table.js | inspector | `verifyColumnColor(tableText.labelTextColor, '#ff0000ff')` |
+| - | `toggleColumnFx` | appBuilder/components/table.js | inspector | `toggleColumnFx(tableText.labelVisibility)` |
+| - | `verifyColumnFxAbsent` | appBuilder/components/table.js | inspector | `verifyColumnFxAbsent(tableText.labelDateFormat)` |
+| - | `setColumnValidation` | appBuilder/components/table.js | inspector | `setColumnValidation(tableText.labelMinLength, '{{3}}')` |
+| - | `verifyColumnValidation` | appBuilder/components/table.js | inspector | `verifyColumnValidation(tableText.labelMinLength, '{{3}}')` |
+| - | `setColumnAlignment` | appBuilder/components/table.js | inspector | `setColumnAlignment(tableText.alignCenter)` |
+| - | `setPinPosition` | appBuilder/components/table.js | inspector | `setPinPosition(tableText.pinLeft)` |
+| - | `verifyCellType` | appBuilder/components/table.js | canvas | `verifyCellType('status', 0, tableText.cellClassByType.select, 'table1')` |
+| - | `verifyCellValue` | appBuilder/components/table.js | canvas | `verifyCellValue('name', 0, 'Alice', 'table1')` |
+| - | `addColumnOption` | appBuilder/components/table.js | inspector | `addColumnOption(tableText.buttonAddNewOption)` |
+| - | `openColumnOption` | appBuilder/components/table.js | inspector | `openColumnOption('Option 1')` |
+| - | `setOptionLabelValue` | appBuilder/components/table.js | inspector | `setOptionLabelValue('Option 1', 'Active', 'active')` |
+| colorSwatches | `setOptionColor` | appBuilder/components/table.js | inspector | `setOptionColor('Option 1', tableText.labelOptionColor, ['255','0','0','100'])` |
+| - | `toggleMakeDefaultOption` | appBuilder/components/table.js | inspector | `toggleMakeDefaultOption('Option 1')` |
+| - | `toggleAutoAssignColors` | appBuilder/components/table.js | inspector | `toggleAutoAssignColors()` |
+| - | `toggleDynamicOptions` | appBuilder/components/table.js | inspector | `toggleDynamicOptions()` |
+| - | `toggleAllowMultipleSelection` | appBuilder/components/table.js | inspector | `toggleAllowMultipleSelection()` |
+| - | `setSortTags` | appBuilder/components/table.js | inspector | `setSortTags(tableText.sortTagsAsc)` |
+| - | `addActionButton` | appBuilder/components/table.js | inspector | `addActionButton()` |
+| - | `openActionButton` | appBuilder/components/table.js | inspector | `openActionButton('Button')` |
+| - | `backFromButtonDetail` | appBuilder/components/table.js | inspector | `backFromButtonDetail()` |
+| - | `setButtonProperty` | appBuilder/components/table.js | inspector | `setButtonProperty(tableText.labelButtonLabel, 'Approve', 0)` |
+| - | `setButtonStyle` | appBuilder/components/table.js | inspector | `setButtonStyle(tableText.labelBackground, ['255','0','0','100'], 'color')` |
+| - | `setDateFormat` | appBuilder/components/table.js | inspector | `setDateFormat(tableText.dateFormatMmDdYyyy)` |
+| - | `setParseDateFormat` | appBuilder/components/table.js | inspector | `setParseDateFormat(tableText.dateFormatMmDdYyyy)` |
+| - | `toggleDateFormatFx` | appBuilder/components/table.js | inspector | `toggleDateFormatFx()` |
+| - | `toggleParseDateFormatFx` | appBuilder/components/table.js | inspector | `toggleParseDateFormatFx()` |
+| - | `toggleEnableDate` | appBuilder/components/table.js | inspector | `toggleEnableDate()` |
+| - | `toggleEnableTime` | appBuilder/components/table.js | inspector | `toggleEnableTime()` |
+| - | `toggleParseUnixTimestamp` | appBuilder/components/table.js | inspector | `toggleParseUnixTimestamp()` |
+| - | `setTimeZone` | appBuilder/components/table.js | inspector | `setTimeZone('+05:30')` |
 | - | `selectFromDropDown` | appBuilder/components/dropdown.js | canvas | `selectFromDropDown('dropdown1', 'Option A')` |
 | - | `clearSelection` | appBuilder/components/dropdown.js | canvas | `clearSelection('dropdown1')` |
 | - | `verifySelectedOptionOnDropdown` | appBuilder/components/dropdown.js | canvas | `verifySelectedOptionOnDropdown('dropdown1', 'Option A')` |
