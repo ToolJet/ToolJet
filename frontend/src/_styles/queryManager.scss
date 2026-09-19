@@ -1915,15 +1915,23 @@ $border-radius: 4px;
   padding-top: 6px;
 }
 
-.restapi-key-value {
+.restapi-key-value,
+.graphql-key-value {
 
   .code-hinter-wrapper,
   .code-editor-basic-wrapper,
   .codehinter-container,
   .cm-codehinter,
   .code-editor-query-panel {
-    height: 100%;
     max-height: 100px;
+  }
+
+  .cm-editor {
+    max-height: 100px !important;
+  }
+
+  .cm-scroller {
+    overflow: auto !important;
   }
 }
 
