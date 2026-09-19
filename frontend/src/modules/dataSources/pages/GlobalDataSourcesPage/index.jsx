@@ -41,9 +41,11 @@ export const GlobalDataSourcesPage = (props) => {
   const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const lastDatasourcePushAt = useWorkspaceBranchesStore((state) => state.lastDatasourcePushAt);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const setHasUncommittedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUncommittedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
+  const prevDatasourcePushAtRef = useRef(lastDatasourcePushAt);
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
@@ -56,6 +58,14 @@ export const GlobalDataSourcesPage = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBranchId, environments]);
+
+  useEffect(() => {
+    if (lastDatasourcePushAt && prevDatasourcePushAtRef.current !== lastDatasourcePushAt) {
+      prevDatasourcePushAtRef.current = lastDatasourcePushAt;
+      fetchDataSources(false, selectedDataSource);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastDatasourcePushAt]);
 
   // Refetch datasources once a workspace pull actually completes. `pullWorkspace()` only
   // enqueues a background job and returns immediately — the pulled data isn't in the DB yet at

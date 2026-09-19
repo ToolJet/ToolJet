@@ -13,6 +13,7 @@ const initialState = {
   isPushing: false,
   isPulling: false,
   lastPullAt: null,
+  lastDatasourcePushAt: null,
   pullingModuleComponentId: null,
   remoteBranches: [],
   visibleCount: 10,
@@ -243,13 +244,14 @@ export const useWorkspaceBranchesStore = create(
               ...options,
               ...(scope && { scope }),
             });
-            // Clear immediately so the "Uncommitted changes" tag disappears without a hard
-            // reload — scope is 'datasource' (data-sources page) or 'app' (applications/modules
-            // page; the caller doesn't yet distinguish modules from apps here, so clear both).
             set({
               isPushing: false,
               ...(scope === 'datasource'
-                ? { hasUncommittedDatasources: false }
+                ? {
+                    hasUncommittedDatasources: false,
+                    ...(options.onlyUnsyncedDatasources && { hasUnsyncedDatasources: false }),
+                    lastDatasourcePushAt: Date.now(),
+                  }
                 : { hasUncommittedApps: false, hasUncommittedModules: false }),
             });
             return result;
