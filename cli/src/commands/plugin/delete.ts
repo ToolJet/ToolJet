@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const rimraf = require('rimraf');
 
+import { formatError } from '../../lib/log';
+
 export default class Delete extends Command {
   static description = 'Delete a tooljet plugin';
 
@@ -46,10 +48,7 @@ export default class Delete extends Command {
         ? fs.existsSync(pluginDocPath)
         : true)
     ) {
-      this.log(
-        '\x1b[41m%s\x1b[0m',
-        'Error : Plugin not found, make sure that you are running this command in Tooljet directory'
-      );
+      this.log(formatError('Plugin not found, make sure that you are running this command in Tooljet directory'));
       process.exit(1);
     }
 
