@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "server/package-lock.json",
-    "server/package.json"
+    "frontend/package-lock.json",
+    "frontend/package.json"
   ],
-  "baseSha": "4f82899c9197b37faf4ee45f3630ba6edf4fead7",
+  "baseSha": "bc9056586dbc9a656c66e5ac4fbc117e37989966",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "7acdd6bfd82d3c20",
+    "id": "d147bff0bfd35332",
     "lockArtifacts": [
-      "server/package-lock.json"
+      "frontend/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "server/package-lock.json"
+    "rootManifest": "frontend/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
+  "remediationKey": "1b46937957797102f43e1a1ac3da74822b955697259d9f1f1af395532b77752f",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,41 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "4f82899c9197b37faf4ee45f3630ba6edf4fead7",
+  "scanSha": "bc9056586dbc9a656c66e5ac4fbc117e37989966",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "q1BnUHRhQgusa8MjYPFOoA",
+  "stoExecutionId": "mFhSUeABTKC0HA2PkLLsvA",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "1.14.4"
+        "3.8.4"
       ],
       "coordinate": {
-        "normalisedName": "@grpc/grpc-js",
-        "purl": "pkg:npm/grpc/grpc-js@1.14.3"
+        "normalisedName": "immutable",
+        "purl": "pkg:npm/immutable@3.8.3"
       },
-      "fromVersion": "1.14.3",
+      "fromVersion": "3.8.3",
       "issueIds": [
-        "lcXnxRpLqNPmcsk1ImH8Ou"
+        "CDppPCOnN3uPra0UyFIS_x"
       ],
-      "minimumFixedVersion": "1.14.4",
-      "package": "@grpc/grpc-js"
-    },
-    {
-      "candidateVersions": [
-        "7.6.6"
-      ],
-      "coordinate": {
-        "normalisedName": "protobufjs",
-        "purl": "pkg:npm/protobufjs@7.6.1"
-      },
-      "fromVersion": "7.6.1",
-      "issueIds": [
-        "PEExdsa6hzVpm5-bzJ74nE"
-      ],
-      "minimumFixedVersion": "7.6.5",
-      "package": "protobufjs"
+      "minimumFixedVersion": "3.8.4",
+      "package": "immutable"
     }
   ]
 }
