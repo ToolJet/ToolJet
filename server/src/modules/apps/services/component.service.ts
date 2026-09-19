@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, Not } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
@@ -561,6 +561,60 @@ export class ComponentsService implements IComponentsService {
     return writes;
   }
 
+  /**
+   * Component names must be a valid identifier and unique within a page. The editor enforces
+   * this on rename (validateComponentName + validateQueryName in the frontend), but direct
+   * API/MCP callers bypass those checks, and a duplicate or malformed name silently breaks
+   * {{components.<name>}} reference resolution. Only non-empty names are validated so nothing
+   * the editor itself allows is rejected. Existing components being re-saved (same id) are
+   * excluded from the uniqueness check.
+   */
+  protected async assertValidComponentNames(
+    newComponents: Component[],
+    pageId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const nameRegex = /^[A-Za-z0-9_-]*$/;
+    const seen = new Set<string>();
+
+    for (const component of newComponents) {
+      const name = component.name;
+      if (!name) continue;
+      if (!nameRegex.test(name)) {
+        throw new BadRequestException({
+          message: `Invalid component name "${name}". Component names can only contain letters, numbers, hyphens and underscores.`,
+          code: 'INVALID_COMPONENT_NAME',
+          componentId: component.id,
+        });
+      }
+      if (seen.has(name)) {
+        throw new BadRequestException({
+          message: `Component name "${name}" is used more than once. Component names must be unique within a page.`,
+          code: 'DUPLICATE_COMPONENT_NAME',
+          componentId: component.id,
+        });
+      }
+      seen.add(name);
+    }
+
+    const names = [...seen];
+    if (names.length === 0) return;
+
+    const newIds = new Set(newComponents.map((c) => c.id));
+    const existingWithSameName = await manager.find(Component, {
+      where: { pageId, name: In(names) },
+      select: ['id', 'name'],
+    });
+    const conflict = existingWithSameName.find((c) => !newIds.has(c.id));
+    if (conflict) {
+      throw new BadRequestException({
+        message: `Component name "${conflict.name}" already exists on this page.`,
+        code: 'DUPLICATE_COMPONENT_NAME',
+        componentId: conflict.id,
+      });
+    }
+  }
+
   // Common methods used by both the original methods and batch operations
   protected async createComponentsAndLayouts(
     diff: object,
@@ -573,6 +627,9 @@ export class ComponentsService implements IComponentsService {
     });
 
     const newComponents = this.transformComponentData(diff);
+
+    // Component names must be a valid identifier and unique within the page.
+    await this.assertValidComponentNames(newComponents, pageId, manager);
 
     // For module apps, enforce that components are parented to the ModuleContainer
     // instead of being placed on the root canvas (parent: null).
@@ -676,7 +733,77 @@ export class ComponentsService implements IComponentsService {
     }
   }
 
+  /**
+   * Validate component renames coming through the update path. A rename sets a top-level
+   * `name` on the component (setComponentName in the editor sends { component: { name } }).
+   * The editor blocks invalid or duplicate names (validateComponentName + validateQueryName),
+   * but API/MCP callers reach updateComponents directly. components.name has no DB uniqueness
+   * or format constraint (only a non-unique lookup index), so a bad rename would persist and
+   * break {{components.<name>}} resolution. Validated as a pre-pass so no partial write happens.
+   * Only non-empty names are checked, so nothing the editor itself allows is rejected.
+   */
+  protected async assertValidComponentRenames(diff: object, manager: EntityManager): Promise<void> {
+    const nameRegex = /^[A-Za-z0-9_-]*$/;
+    const renames: { id: string; name: string }[] = [];
+    for (const componentId in diff) {
+      const component = diff[componentId]?.component;
+      // A rename carries a top-level `name`; property/definition edits and parent moves don't.
+      if (component && typeof component.name === 'string') {
+        renames.push({ id: componentId, name: component.name });
+      }
+    }
+    if (renames.length === 0) return;
+
+    // Format + within-batch duplicate check.
+    const seen = new Set<string>();
+    for (const { id, name } of renames) {
+      if (!name) continue;
+      if (!nameRegex.test(name)) {
+        throw new BadRequestException({
+          message: `Invalid component name "${name}". Component names can only contain letters, numbers, hyphens and underscores.`,
+          code: 'INVALID_COMPONENT_NAME',
+          componentId: id,
+        });
+      }
+      if (seen.has(name)) {
+        throw new BadRequestException({
+          message: `Component name "${name}" is used more than once. Component names must be unique within a page.`,
+          code: 'DUPLICATE_COMPONENT_NAME',
+          componentId: id,
+        });
+      }
+      seen.add(name);
+    }
+
+    // Per-page uniqueness vs components that are NOT part of this rename batch (so a rename
+    // that frees a name, or a swap of two names, still passes).
+    const renamedIds = renames.map((r) => r.id);
+    const renamedComponents = await manager.find(Component, {
+      where: { id: In(renamedIds) },
+      select: ['id', 'pageId'],
+    });
+    const pageIdById = new Map(renamedComponents.map((c) => [c.id, c.pageId]));
+
+    for (const { id, name } of renames) {
+      if (!name) continue;
+      const pageId = pageIdById.get(id);
+      if (!pageId) continue; // non-existent component; updateComponents reports that separately
+      const conflict = await manager.findOne(Component, {
+        where: { pageId, name, id: Not(In(renamedIds)) },
+        select: ['id'],
+      });
+      if (conflict) {
+        throw new BadRequestException({
+          message: `Component name "${name}" already exists on this page.`,
+          code: 'DUPLICATE_COMPONENT_NAME',
+          componentId: id,
+        });
+      }
+    }
+  }
+
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
+    await this.assertValidComponentRenames(diff, manager);
     const parentWrites = this.collectParentWritesFromDiff(diff as any);
     if (Object.keys(parentWrites).length > 0) {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -838,6 +965,19 @@ export class ComponentsService implements IComponentsService {
           message: `Components with ids ${componentIds} do not exist`,
         },
       };
+    }
+
+    // The ModuleContainer is a module's root canvas — deleting it orphans every child
+    // component and leaves the module unrenderable (resolveModuleContainerId then returns
+    // null, so any ModuleViewer embedding it breaks). The editor never offers this action;
+    // reject it for direct API/MCP callers.
+    const moduleContainer = components.find((component) => component.type === 'ModuleContainer');
+    if (moduleContainer) {
+      throw new BadRequestException({
+        message: 'The module container cannot be deleted.',
+        code: 'MODULE_CONTAINER_DELETE_NOT_ALLOWED',
+        componentId: moduleContainer.id,
+      });
     }
 
     if (!isComponentCut) {

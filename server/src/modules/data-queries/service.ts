@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -97,6 +97,18 @@ export class DataQueriesService implements IDataQueriesService {
     // No-op in CE, EE overrides to capture history
   }
 
+  /**
+   * Query name format — mirror of validateQueryName in frontend/src/_helpers/utils.js. The
+   * editor blocks invalid names on rename, but direct API/MCP callers bypass that, and a name
+   * with spaces or special characters breaks {{queries.<name>}} reference resolution.
+   */
+  protected assertValidQueryName(name: string): void {
+    if (name === undefined || name === null) return;
+    if (!/^[A-Za-z0-9_-]*$/.test(name)) {
+      throw new BadRequestException('Query name can only contain letters, numbers, hyphens and underscores');
+    }
+  }
+
   // Serialises name checks per app version so two concurrent creates/renames cannot
   // both pass the existence check. Lock auto-releases at txn end.
   protected async assertUniqueQueryName(
@@ -135,6 +147,7 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      this.assertValidQueryName(name);
       await this.assertUniqueQueryName(manager, appVersionId, name);
 
       const dataQuery = await this.dataQueryRepository.createOne(
@@ -175,6 +188,7 @@ export class DataQueriesService implements IDataQueriesService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (name !== undefined) {
+        this.assertValidQueryName(name);
         const existing = await manager.findOne(DataQuery, {
           where: { id: dataQueryId },
           select: ['id', 'appVersionId', 'name'],
@@ -249,7 +263,16 @@ export class DataQueriesService implements IDataQueriesService {
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
     // so the loaded options must NOT be written back.
-    if (mode !== 'view' && ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
+    // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
+    // this endpoint directly, so skip the write-back when the query's version is the released one.
+    // Only the authoring persist is gated — the query still executes below.
+    const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersion?.id === app.currentVersionId;
+    if (
+      mode !== 'view' &&
+      !isReleasedVersion &&
+      ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
+      !isEmpty(options)
+    ) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
