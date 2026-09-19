@@ -94,9 +94,6 @@
     "lerna": {
       "js-yaml": "4.3.2"
     },
-    "minimatch": {
-      "brace-expansion": "1.1.18"
-    },
     "nx": {
       "axios": "1.20.0"
     },
@@ -121,6 +118,15 @@
     },
     "woocommerce-rest-ts-api": {
       "axios": "1.20.0"
+    },
+    "minimatch@3": {
+      "brace-expansion": "1.1.18"
+    },
+    "minimatch@5": {
+      "brace-expansion": "2.1.4"
+    },
+    "minimatch@10": {
+      "brace-expansion": "5.0.9"
     }
   },
   "peerDependencies": {
