@@ -186,6 +186,19 @@ export const Tabs = function Tabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, parsedScrollToTopOnTabSwitch]);
 
+  // Auto-scroll the tab header into view when the active tab changes
+  useEffect(() => {
+    const tabsContainer = tabsRef.current;
+    if (!tabsContainer) return;
+    const raf = requestAnimationFrame(() => {
+      const activeItem = tabsContainer.querySelector('.nav-item.active');
+      if (activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [currentTab]);
+
   useEffect(() => {
     const exposedVariables = {
       setTab: async function (id) {
