@@ -41,6 +41,8 @@ test('renders ordered, bounded PDF pages and rejects unreadable or excessive con
       '-e',
       `
     const assert = require('node:assert/strict');
+    // Initialize the pixel-inspection canvas before PDF.js installs its canvas globals.
+    const { createCanvas, loadImage } = require('@napi-rs/canvas');
     const { PDFParse } = require('pdf-parse');
     const { renderAttachmentPdf } = require('./src/modules/ai/services/ai-attachment-pdf');
     const data = require('node:fs').readFileSync(0);
@@ -57,7 +59,6 @@ test('renders ordered, bounded PDF pages and rejects unreadable or excessive con
       });
       assert.deepEqual(dimensions, [[400, 200], [1600, 800]]);
       assert.notEqual(images[0].image_url.url, images[1].image_url.url);
-      const { createCanvas, loadImage } = require('@napi-rs/canvas');
       const canvas = createCanvas(400, 200);
       const context = canvas.getContext('2d');
       context.drawImage(await loadImage(images[0].image_url.url), 0, 0);
