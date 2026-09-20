@@ -806,6 +806,31 @@ describe('async lifecycle', () => {
     await waitFor(() => expect(callCount('focusCalls')).toBe(1));
     expect(callCount('blurCalls')).toBe(1);
   });
+
+  // A second mount under the same scenario ID, because harness.render() re-renders
+  // rather than remounts and this case needs a real unmount.
+  //
+  // CHARACTERIZATION of a leak, not a guarantee we want: handleFocus schedules
+  // fireEvent('onFocus') on a setTimeout that nothing ever cancels, and there is no
+  // mounted guard (useInput.js:326-332). So a field focused in the same tick the page
+  // navigates away still runs the builder's On focus handler after the widget is gone.
+  // This contract previously claimed the OPPOSITE and marked it verified with no test.
+  // Fixing it is a shared-hook change across seven widgets, so it is pinned here as a
+  // known gap awaiting a product decision rather than fixed under this contract.
+  //
+  // Break this catches: the day someone adds the clearTimeout or the mounted guard —
+  // which would be a real improvement — this fails and forces the guarantee, the
+  // contract row and D-03 to be revisited together rather than drifting.
+  test('[EmailInput-ASYNC-001] the deferred onFocus still fires after unmount', async () => {
+    const root = harness.render({ events: countInvocationsOn('ei1', 'onFocus', { key: 'focusCalls' }) });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    input().focus();
+    root.unmount(); // the React tree only; the store is left intact
+    await drain();
+
+    expect(callCount('focusCalls')).toBe(1);
+  });
 });
 
 describe('styles', () => {
