@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 
 import ComponentInit from '../../../src/commands/library/init';
 import { Auth } from '../../../src/lib/library/auth';
@@ -15,18 +15,20 @@ const BASE_URL = 'https://app.tooljet.test';
 
 describe('library init', () => {
   const cwd = withTempCwd();
-  afterEach(() => sinon.restore());
+  let scaffoldMock: ReturnType<typeof mock.method>;
+
+  afterEach(() => mock.restoreAll());
 
   beforeEach(() => {
-    sinon.stub(Auth, 'resolveOrExit').returns({
+    mock.method(Auth, 'resolveOrExit', () => ({
       workspaceId: 'org-1',
       apiToken: 'token-abc',
       url: BASE_URL,
-    });
-    sinon.stub(inquirer, 'prompt').resolves({ display_name: 'My Library' });
-    // scaffoldTemplate shells out to Hygen; stub it to just create the directory,
+    }));
+    mock.method(inquirer, 'prompt', async () => ({ display_name: 'My Library' }));
+    // scaffoldTemplate shells out to Hygen; mock it to just create the directory,
     // mirroring what the real template does without invoking Hygen for real.
-    sinon.stub(scaffolder, 'scaffoldTemplate').callsFake(async (name: string) => {
+    scaffoldMock = mock.method(scaffolder, 'scaffoldTemplate', async (name: string) => {
       fs.mkdirSync(name, { recursive: true });
     });
   });
@@ -64,8 +66,10 @@ describe('library init', () => {
   });
 
   it('rolls back the scaffolded directory when scaffoldTemplate fails', async () => {
-    (scaffolder.scaffoldTemplate as sinon.SinonStub).restore();
-    sinon.stub(scaffolder, 'scaffoldTemplate').rejects(new Error('hygen exploded'));
+    scaffoldMock.mock.restore();
+    mock.method(scaffolder, 'scaffoldTemplate', async () => {
+      throw new Error('hygen exploded');
+    });
 
     const result = await runCommand(ComponentInit, ['my-lib']);
 
@@ -91,7 +95,9 @@ describe('library init', () => {
       .post('/api/custom-component-libraries', { name: 'My Library' })
       .reply(201, { id: 'id-1', name: 'My Library', correlationId: 'corr-1' });
 
-    sinon.stub(scaffolder, 'writeLibraryConfig').throws(new Error('disk full'));
+    mock.method(scaffolder, 'writeLibraryConfig', () => {
+      throw new Error('disk full');
+    });
 
     const result = await runCommand(ComponentInit, ['my-lib']);
 

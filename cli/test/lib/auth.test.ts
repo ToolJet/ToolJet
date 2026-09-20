@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 
 // `Auth`'s CREDENTIALS_PATH (~/.tooljet/credentials.json) is computed once, at
 // module-load time, from os.homedir() — it is NOT re-read per call. A previous
@@ -11,13 +11,13 @@ import * as sinon from 'sinon';
 // so the stub had no effect and Auth.save() silently wrote to the real
 // ~/.tooljet/credentials.json on the machine running the tests.
 //
-// To truly isolate this, `os.homedir()` must be stubbed *before* a fresh copy of
+// To truly isolate this, `os.homedir()` must be mocked *before* a fresh copy of
 // the auth module is required, on every single test — so each test below busts
-// the require cache for auth.ts and re-requires it after stubbing os.homedir().
+// the require cache for auth.ts and re-requires it after mocking os.homedir().
 const AUTH_MODULE_PATH = require.resolve('../../src/lib/library/auth');
 
 function loadIsolatedAuth(homeDir: string): typeof import('../../src/lib/library/auth')['Auth'] {
-  sinon.stub(os, 'homedir').returns(homeDir);
+  mock.method(os, 'homedir', () => homeDir);
   delete require.cache[AUTH_MODULE_PATH];
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   return (require(AUTH_MODULE_PATH) as typeof import('../../src/lib/library/auth')).Auth;
@@ -35,8 +35,8 @@ describe('Auth', () => {
   });
 
   afterEach(() => {
-    sinon.restore();
-    delete require.cache[AUTH_MODULE_PATH]; // don't leak a homedir-stubbed instance into later tests
+    mock.restoreAll();
+    delete require.cache[AUTH_MODULE_PATH]; // don't leak a homedir-mocked instance into later tests
     fs.rmSync(homeDir, { recursive: true, force: true });
   });
 
@@ -119,8 +119,10 @@ describe('Auth', () => {
   describe('resolveOrExit', () => {
     it('logs the error and exits 1 when not authenticated', () => {
       const Auth = loadIsolatedAuth(homeDir);
-      sinon.stub(process, 'exit').throws(new Error('EXIT_1'));
-      sinon.stub(console, 'log');
+      mock.method(process, 'exit', () => {
+        throw new Error('EXIT_1');
+      });
+      mock.method(console, 'log', () => {});
 
       expect(() => Auth.resolveOrExit()).to.throw('EXIT_1');
     });

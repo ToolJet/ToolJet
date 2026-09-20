@@ -1,7 +1,7 @@
 import nock = require('nock');
 import { expect } from 'chai';
 import * as inquirer from 'inquirer';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 
 import Login from '../../src/commands/login';
 import { Auth } from '../../src/lib/library/auth';
@@ -10,18 +10,19 @@ import { runCommand } from '../helpers/run-command';
 const BASE_URL = 'https://app.tooljet.test';
 
 describe('login', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => mock.restoreAll());
 
   it('authenticates and saves credentials on success', async () => {
-    sinon.stub(inquirer, 'prompt').resolves({
+    mock.method(inquirer, 'prompt', async () => ({
       origin_url: `${BASE_URL}/some/path?x=1`,
       api_access_token: '  token-abc  ',
-    });
-    // Stubbed, not spied: Auth.save's real implementation writes to the developer's
+    }));
+    // The no-op implementation is mandatory, not stylistic: mock.method() without
+    // one calls through to the real Auth.save, which writes to the developer's
     // actual ~/.tooljet/credentials.json (its path is fixed at module-load time, so
     // no per-test home-dir override reaches it) — see test/lib/auth.test.ts for
     // coverage of the real file-writing behavior in full isolation.
-    const saveStub = sinon.stub(Auth, 'save');
+    const saveMock = mock.method(Auth, 'save', () => {});
 
     nock(BASE_URL)
       .get('/api/personal-access-tokens/validate')
@@ -33,15 +34,15 @@ describe('login', () => {
     expect(result.stdout).to.include('Authenticated as me@example.com');
     // Origin is normalized to protocol+host+port, dropping path/query/fragment,
     // and the token is trimmed.
-    expect(saveStub.calledWith('org-1', BASE_URL, 'token-abc', 'me@example.com')).to.be.true;
+    expect(saveMock.mock.calls[0].arguments).to.deep.equal(['org-1', BASE_URL, 'token-abc', 'me@example.com']);
   });
 
   it('exits 1 and does not save credentials when the API rejects the token', async () => {
-    sinon.stub(inquirer, 'prompt').resolves({
+    mock.method(inquirer, 'prompt', async () => ({
       origin_url: BASE_URL,
       api_access_token: 'bad-token',
-    });
-    const saveStub = sinon.stub(Auth, 'save');
+    }));
+    const saveMock = mock.method(Auth, 'save', () => {});
 
     nock(BASE_URL)
       .get('/api/personal-access-tokens/validate')
@@ -51,6 +52,6 @@ describe('login', () => {
 
     expect(result.exitCode).to.equal(1);
     expect(result.stdout).to.include('Invalid CLI token');
-    expect(saveStub.called).to.be.false;
+    expect(saveMock.mock.callCount()).to.equal(0);
   });
 });

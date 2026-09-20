@@ -1,7 +1,7 @@
 import nock = require('nock');
 import { expect } from 'chai';
 import * as inquirer from 'inquirer';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 
 import Dev from '../../../src/commands/library/dev';
 import { Auth } from '../../../src/lib/library/auth';
@@ -19,9 +19,9 @@ async function callResolveTarget(
   instance: Dev,
   flags: { url?: string; token?: string }
 ): Promise<{ result?: unknown; stdout: string; exitCode?: number }> {
-  const writeStub = sinon.stub(process.stdout, 'write').returns(true);
+  const writeMock = mock.method(process.stdout, 'write', () => true);
   let exitCode: number | undefined;
-  const exitStub = sinon.stub(process, 'exit').callsFake(((code?: number) => {
+  const exitMock = mock.method(process, 'exit', ((code?: number) => {
     exitCode = code ?? 0;
     throw new ExitSignal();
   }) as unknown as typeof process.exit);
@@ -33,24 +33,21 @@ async function callResolveTarget(
   } catch (err) {
     if (!(err instanceof ExitSignal)) throw err;
   } finally {
-    writeStub.restore();
-    exitStub.restore();
+    writeMock.mock.restore();
+    exitMock.mock.restore();
   }
 
-  const stdout = writeStub
-    .getCalls()
-    .map((c) => c.args[0])
-    .join('');
+  const stdout = writeMock.mock.calls.map((c) => c.arguments[0]).join('');
   return { result, stdout, exitCode };
 }
 
 describe('library dev - resolveTarget', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => mock.restoreAll());
 
   describe('stored login', () => {
     beforeEach(() => {
-      sinon.stub(Auth, 'resolveOrExit').returns({ workspaceId: 'org-1', apiToken: 'token-abc', url: BASE_URL });
-      sinon.stub(ProjectConfig, 'readFileOrExit').returns(CONFIG);
+      mock.method(Auth, 'resolveOrExit', () => ({ workspaceId: 'org-1', apiToken: 'token-abc', url: BASE_URL }));
+      mock.method(ProjectConfig, 'readFileOrExit', () => CONFIG);
     });
 
     it('resolves directly when the library exists', async () => {
@@ -69,7 +66,7 @@ describe('library dev - resolveTarget', () => {
     });
 
     it('creates the library after confirmation when missing', async () => {
-      sinon.stub(inquirer, 'prompt').resolves({ confirmed: true });
+      mock.method(inquirer, 'prompt', async () => ({ confirmed: true }));
       nock(BASE_URL).get('/api/custom-component-libraries/corr-1').reply(404);
       nock(BASE_URL)
         .post('/api/custom-component-libraries/find-or-create', { correlationId: 'corr-1', name: 'My Library' })
@@ -89,7 +86,7 @@ describe('library dev - resolveTarget', () => {
     });
 
     it('aborts when the user declines to create the missing library', async () => {
-      sinon.stub(inquirer, 'prompt').resolves({ confirmed: false });
+      mock.method(inquirer, 'prompt', async () => ({ confirmed: false }));
       nock(BASE_URL).get('/api/custom-component-libraries/corr-1').reply(404);
 
       const instance = await instantiateCommand(Dev);
@@ -110,10 +107,13 @@ describe('library dev - resolveTarget', () => {
     });
 
     it('bypasses stored login entirely', async () => {
-      sinon.stub(ProjectConfig, 'readFileOrExit').returns(CONFIG);
-      // Stubbed rather than spied: if this branch has a bug that calls it after all,
-      // a spy would fall through to the real implementation (real fs access).
-      const authSpy = sinon.stub(Auth, 'resolveOrExit');
+      mock.method(ProjectConfig, 'readFileOrExit', () => CONFIG);
+      // The no-op implementation is required: mock.method() without one calls
+      // through to the real Auth.resolveOrExit (real fs access) if this branch
+      // has a bug that reaches it.
+      const authMock = mock.method(Auth, 'resolveOrExit', () => {
+        throw new Error('Auth.resolveOrExit should not be called on the --url/--token path');
+      });
 
       nock(BASE_URL)
         .post('/api/custom-component-libraries/find-or-create', { correlationId: 'corr-1', name: 'My Library' })
@@ -135,13 +135,13 @@ describe('library dev - resolveTarget', () => {
         url: BASE_URL,
         config: CONFIG,
       });
-      expect(authSpy.called).to.be.false;
+      expect(authMock.mock.callCount()).to.equal(0);
     });
   });
 });
 
 describe('library dev - flag wiring', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => mock.restoreAll());
 
   // run() blocks forever once it starts the watcher (`await new Promise(() => {})`),
   // so flag parsing is checked directly via the instance's own parse() rather than

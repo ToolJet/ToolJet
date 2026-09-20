@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 
 import { ProjectConfig } from '../../src/lib/library/project-config';
 import { withTempCwd, writeProjectConfig } from '../helpers/fixtures';
@@ -38,13 +38,15 @@ describe('ProjectConfig.readFile', () => {
 
 describe('ProjectConfig.readFileOrExit', () => {
   const tmp = withTempCwd();
-  afterEach(() => sinon.restore());
+  afterEach(() => mock.restoreAll());
 
   it('exits the process and logs the error on failure', () => {
-    const exitStub = sinon.stub(process, 'exit').throws(new Error('EXIT_1'));
-    sinon.stub(console, 'log');
+    const exitMock = mock.method(process, 'exit', () => {
+      throw new Error('EXIT_1');
+    });
+    mock.method(console, 'log', () => {});
 
     expect(() => ProjectConfig.readFileOrExit(tmp.get())).to.throw('EXIT_1');
-    expect(exitStub.calledWith(1)).to.be.true;
+    expect(exitMock.mock.calls[0].arguments).to.deep.equal([1]);
   });
 });

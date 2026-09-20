@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as sinon from 'sinon';
+import { mock } from 'node:test';
 import { Config } from '@oclif/core';
 
 export const CLI_ROOT = path.join(__dirname, '..', '..');
@@ -34,9 +34,9 @@ export async function runCommand(
   CommandClass: { run: (argv?: string[], opts?: any) => PromiseLike<unknown> },
   argv: string[] = []
 ): Promise<RunResult> {
-  const writeStub = sinon.stub(process.stdout, 'write').returns(true);
+  const writeMock = mock.method(process.stdout, 'write', () => true);
   let exitCode: number | undefined;
-  const exitStub = sinon.stub(process, 'exit').callsFake(((code?: number) => {
+  const exitMock = mock.method(process, 'exit', ((code?: number) => {
     exitCode = code ?? 0;
     throw new ExitSignal();
   }) as unknown as typeof process.exit);
@@ -46,14 +46,11 @@ export async function runCommand(
   } catch (err) {
     if (!(err instanceof ExitSignal)) throw err;
   } finally {
-    writeStub.restore();
-    exitStub.restore();
+    writeMock.mock.restore();
+    exitMock.mock.restore();
   }
 
-  const stdout = writeStub
-    .getCalls()
-    .map((c) => c.args[0])
-    .join('');
+  const stdout = writeMock.mock.calls.map((c) => c.arguments[0]).join('');
 
   return { stdout, exitCode };
 }
