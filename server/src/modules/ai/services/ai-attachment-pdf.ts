@@ -2,16 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 
 export const MAX_AI_ATTACHMENT_CONTENT_BYTES = 20 * 1024 * 1024;
 
-// Render locally: sending a PDF to OpenRouter would invoke a separate parsing model.
+// Render PDFs as images for Chat Completions routes without document content parts.
 export async function renderAttachmentPdf(data: Uint8Array, maxPages: number, maxBytes: number) {
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data, isEvalSupported: false });
   try {
     const { total } = await parser.getInfo();
     if (total > maxPages) {
-      throw new BadRequestException(
-        'DeepSeek supports up to 20 PDF pages per chat. Split the PDF or start a new chat.'
-      );
+      throw new BadRequestException('Up to 20 PDF pages are supported per chat. Split the PDF or start a new chat.');
     }
     const { pages } = await parser.getInfo({ parsePageInfo: true });
     const images: { type: 'image_url'; image_url: { url: string } }[] = [];
@@ -28,7 +26,7 @@ export async function renderAttachmentPdf(data: Uint8Array, maxPages: number, ma
       const image = { type: 'image_url' as const, image_url: { url } };
       maxBytes -= Buffer.byteLength(JSON.stringify(image));
       if (maxBytes < 0) {
-        throw new BadRequestException('DeepSeek attachment content exceeds 20 MB after rendering. Use smaller files.');
+        throw new BadRequestException('Attachment content exceeds 20 MB. Use smaller files or start a new chat.');
       }
       images.push(image);
     }

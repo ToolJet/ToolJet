@@ -85,6 +85,30 @@ describe('AI build cancellation', () => {
     return { pending };
   };
 
+  it('uses the attachment routing snapshot even if the selected provider changed during preparation', async () => {
+    const routing = { provider: 'tooljet_managed', headers: { provider: 'gemini', model: 'fixture-model' } };
+    const pending = util.callAgent(
+      'deep-agent',
+      { thread_id: 'inventory-chat', user_id: 'builder-a' },
+      { id: 'builder-a' },
+      'workspace-a',
+      {},
+      'app',
+      routing
+    );
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    expect(util.resolveAgentRouting).not.toHaveBeenCalled();
+    expect(io).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        auth: expect.objectContaining(routing.headers),
+      })
+    );
+    await events.connect_error(new Error('Synthetic connection end'));
+    await pending;
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
   it('does not dispatch a build cancelled during connection setup', async () => {
     const { pending } = await start(util, jest.fn().mockResolvedValue(true));
     await events['ingest-complete']({ data: { message: 'ingested' } });

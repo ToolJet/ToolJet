@@ -57,6 +57,15 @@ test('renders ordered, bounded PDF pages and rejects unreadable or excessive con
       });
       assert.deepEqual(dimensions, [[400, 200], [1600, 800]]);
       assert.notEqual(images[0].image_url.url, images[1].image_url.url);
+      const { createCanvas, loadImage } = require('@napi-rs/canvas');
+      const canvas = createCanvas(400, 200);
+      const context = canvas.getContext('2d');
+      context.drawImage(await loadImage(images[0].image_url.url), 0, 0);
+      // The text is above the rectangle: colored pixels here prove base-14 glyphs rendered.
+      const pixels = context.getImageData(20, 35, 150, 30).data;
+      let ink = 0;
+      for (let i = 0; i < pixels.length; i += 4) if (pixels[i] < 150 && pixels[i + 3] > 0) ink++;
+      assert.ok(ink > 100, 'Expected visible Helvetica text above the artwork');
       assert.equal(destroyed, 1);
       await assert.rejects(renderAttachmentPdf(data, 20, 1), /exceeds 20 MB/);
       assert.equal(destroyed, 2);
@@ -64,7 +73,7 @@ test('renders ordered, bounded PDF pages and rejects unreadable or excessive con
       assert.equal(destroyed, 3);
       let renders = 0;
       PDFParse.prototype.getScreenshot = async () => { renders++; throw new Error('Internal renderer failure'); };
-      await assert.rejects(renderAttachmentPdf(data, 1, 1024 * 1024), /20 PDF pages per chat/);
+      await assert.rejects(renderAttachmentPdf(data, 1, 1024 * 1024), /20 PDF pages/);
       assert.equal(renders, 0);
       assert.equal(destroyed, 4);
       await assert.rejects(renderAttachmentPdf(data, 20, 1024 * 1024), /valid, unencrypted PDF/);

@@ -22,6 +22,33 @@ export type AiAttachmentUpload = { buffer: Buffer; originalname: string; mimetyp
 @Injectable()
 export class AiAttachmentService implements OnModuleDestroy {
   private client: S3Client;
+  private readonly inlineCache = new Map<string, { parts: any[]; bytes: number; expires: number }>();
+
+  // Files are immutable. Ownership is checked before every lookup; cache only transient content.
+  private async cachedInline(id: string, load: () => Promise<any[]>) {
+    const now = Date.now();
+    for (const [key, value] of this.inlineCache) {
+      if (value.expires <= now) this.inlineCache.delete(key);
+    }
+    const cached = this.inlineCache.get(id);
+    if (cached) {
+      this.inlineCache.delete(id);
+      this.inlineCache.set(id, cached);
+      return cached.parts;
+    }
+    const parts = await load();
+    const bytes = Buffer.byteLength(JSON.stringify(parts));
+    if (bytes <= MAX_AI_ATTACHMENT_CONTENT_BYTES) {
+      let used = [...this.inlineCache.values()].reduce((sum, entry) => sum + entry.bytes, 0);
+      for (const [key, entry] of this.inlineCache) {
+        if (used + bytes <= 64 * 1024 * 1024) break;
+        used -= entry.bytes;
+        this.inlineCache.delete(key);
+      }
+      this.inlineCache.set(id, { parts, bytes, expires: Date.now() + 5 * 60 * 1000 });
+    }
+    return parts;
+  }
 
   constructor(
     private readonly dataSource: DataSource,
@@ -79,19 +106,41 @@ export class AiAttachmentService implements OnModuleDestroy {
     if (type.length > 255) throw new BadRequestException('Invalid file type.');
     const { client, bucket } = this.storage;
     const id = randomUUID();
-    const attachment = await this.repository.save(
-      this.repository.create({
-        id,
-        organizationId: user.organizationId,
-        userId: user.id,
-        name,
-        type,
-        size: file.size,
-        s3Bucket: bucket,
-        s3Key: `ai-attachments/${user.organizationId}/${user.id}/${id}`,
-        status: 'pending',
-      })
-    );
+    const budget = Number(this.config.get('AI_ATTACHMENTS_MAX_WORKSPACE_BYTES') ?? 1024 * 1024 * 1024);
+    if (!Number.isSafeInteger(budget) || budget <= 0) {
+      throw new ServiceUnavailableException(
+        'Attachment storage limit is not configured correctly. Contact your administrator.'
+      );
+    }
+    const attachment = await this.dataSource.transaction(async (manager) => {
+      // Reserve quota with the pending row, serializing concurrent uploads in this workspace.
+      await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [
+        `ai-attachments:${user.organizationId}`,
+      ]);
+      const [usage] = await manager.query(
+        'SELECT COALESCE(SUM(size), 0) AS bytes, COUNT(*) AS count FROM ai_attachments WHERE organization_id = $1',
+        [user.organizationId]
+      );
+      // Failed/pending uploads count too: their S3 objects may still exist and are never deleted.
+      if (Number(usage.bytes) + file.size > budget || Number(usage.count) >= 10000) {
+        throw new BadRequestException(
+          'This workspace has reached its attachment storage limit. Contact your administrator.'
+        );
+      }
+      return manager.getRepository(AiAttachment).save(
+        this.repository.create({
+          id,
+          organizationId: user.organizationId,
+          userId: user.id,
+          name,
+          type,
+          size: file.size,
+          s3Bucket: bucket,
+          s3Key: `ai-attachments/${user.organizationId}/${user.id}/${id}`,
+          status: 'pending',
+        })
+      );
+    });
     try {
       await client.send(
         new PutObjectCommand({
@@ -152,20 +201,41 @@ export class AiAttachmentService implements OnModuleDestroy {
           `“${file.name}” is not supported. Use PNG, JPEG, WebP, PDF, CSV, TSV, TXT, Markdown or JSON.`
         );
       }
+      if (provider === 'grok' && extension === 'webp') {
+        throw new BadRequestException('Grok supports PNG and JPEG images. Convert WebP files before sending.');
+      }
       const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
       if (['anthropic', 'gemini', 'deepseek'].includes(provider) && !imageType && extension !== 'pdf') {
-        const { body } = await this.download(user, file.id);
-        return [{ type: 'text', text: `${label}\n${await body.transformToString('utf-8')}` }];
+        const parts = await this.cachedInline(file.id, async () => {
+          const { body } = await this.download(user, file.id);
+          return [{ type: 'text', text: await body.transformToString('utf-8') }];
+        });
+        return [{ type: 'text', text: `${label}\n${parts[0].text}` }];
       }
-      if (provider === 'deepseek' && extension === 'pdf') {
-        const { body } = await this.download(user, file.id);
-        const pages = await renderAttachmentPdf(
-          await body.transformToByteArray(),
-          20 - pdfPages,
-          MAX_AI_ATTACHMENT_CONTENT_BYTES - contentBytes
-        );
+      if (['deepseek', 'gemini'].includes(provider) && extension === 'pdf') {
+        const pages = await this.cachedInline(file.id, async () => {
+          const { body } = await this.download(user, file.id);
+          return renderAttachmentPdf(
+            await body.transformToByteArray(),
+            20 - pdfPages,
+            MAX_AI_ATTACHMENT_CONTENT_BYTES - contentBytes
+          );
+        });
         pdfPages += pages.length;
+        if (pdfPages > 20) {
+          throw new BadRequestException(
+            'Up to 20 PDF pages are supported per chat. Split the PDF or start a new chat.'
+          );
+        }
         return [{ type: 'text', text: label }, ...pages];
+      }
+      if (provider === 'gemini' && imageType) {
+        const parts = await this.cachedInline(file.id, async () => {
+          const { body } = await this.download(user, file.id);
+          const data = Buffer.from(await body.transformToByteArray()).toString('base64');
+          return [{ type: 'image_url', image_url: { url: `data:${imageType};base64,${data}` } }];
+        });
+        return [{ type: 'text', text: label }, ...parts];
       }
       const url = await getSignedUrl(
         this.storage.client,
@@ -198,15 +268,13 @@ export class AiAttachmentService implements OnModuleDestroy {
       ];
     };
     const content = [];
-    if (provider === 'deepseek') {
+    if (['anthropic', 'gemini', 'deepseek'].includes(provider)) {
       // Bound rendering memory and the serialized gateway request across current and saved files.
       for (const file of files) {
         const parts = await prepareFile(file);
         contentBytes += Buffer.byteLength(JSON.stringify(parts));
         if (contentBytes > MAX_AI_ATTACHMENT_CONTENT_BYTES) {
-          throw new BadRequestException(
-            'DeepSeek attachment content exceeds 20 MB after rendering. Use smaller files.'
-          );
+          throw new BadRequestException('Attachment content exceeds 20 MB. Use smaller files or start a new chat.');
         }
         content.push(...parts);
       }
@@ -232,6 +300,7 @@ export class AiAttachmentService implements OnModuleDestroy {
   }
 
   onModuleDestroy() {
+    this.inlineCache.clear();
     this.client?.destroy();
   }
 }
