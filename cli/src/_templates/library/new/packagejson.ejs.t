@@ -12,7 +12,7 @@ to: <%= name %>/package.json
     "lib:publish": "tooljet library publish"
   },
   "dependencies": {
-    "@tooljet/custom-component-sdk": "0.1.0-beta.0"
+    "@tooljet/custom-component-sdk": "0.1.0-beta.1"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
