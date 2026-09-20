@@ -5,7 +5,7 @@ import { useInput } from './BaseComponents/hooks/useInput';
 export const EmailInput = (props) => {
   const inputLogic = useInput(props);
   const additionalInputProps = {
-    autocomplete: 'email',
+    autoComplete: 'email',
     name: 'email',
   };
   const showClearBtn = props.properties?.showClearBtn;

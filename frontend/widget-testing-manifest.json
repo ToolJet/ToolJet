@@ -68,19 +68,23 @@
     },
     {
       "componentType": "TextInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextInput/TESTING.md"
     },
     {
       "componentType": "EmailInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/EmailInput/TESTING.md"
     },
     {
       "componentType": "PasswordInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
       "componentType": "RichTextEditor",
@@ -93,11 +97,13 @@
     },
     {
       "componentType": "PhoneInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PhoneInput/TESTING.md"
     },
     {
       "componentType": "CurrencyInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {
       "componentType": "RangeSliderV2",

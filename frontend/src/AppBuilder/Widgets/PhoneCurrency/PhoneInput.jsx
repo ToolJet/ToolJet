@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Input, { getCountries, getCountryCallingCode } from 'react-phone-number-input/input';
-import { getCountryCallingCodeSafe } from './utils';
+import { getCountryCallingCodeSafe, toE164 } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
@@ -71,14 +71,11 @@ export const PhoneInput = (props) => {
   const countryCode = getCountryCallingCodeSafe(country);
   const safeCountry = countryCode ? country : 'US'; // fall back to a valid country so the library never gets an unknown one.
 
-  // Normalize value to an E.164 value expected by library.
-  // prepend the calling code so the library never warns ("Expected E.164…") or fires a spurious onChange which leads to value flickering.
-  const inputValue = (() => {
-    const normalizedValue = `${value ?? ''}`.trim();
-    if (!normalizedValue) return '';
-    if (normalizedValue.startsWith('+')) return normalizedValue;
-    return countryCode ? `+${countryCode}${normalizedValue}` : normalizedValue;
-  })();
+  // Normalize to the E.164 value the library expects, so it never warns
+  // ("Expected E.164…") or fires a corrective onChange that flickers the value. This
+  // shares the same rule as every other write and is idempotent, so a value
+  // that has already been normalized passes through unchanged.
+  const inputValue = countryCode ? toE164(value, countryCode, countryCode) : `${value ?? ''}`.trim();
 
   const options = useMemo(
     () =>
@@ -105,14 +102,8 @@ export const PhoneInput = (props) => {
     const newCode = getCountryCallingCodeSafe(nextCountry);
     if (!newCode) return;
 
-    const oldCode = getCountryCallingCodeSafe(country);
-
-    let localNumber = `${value ?? ''}`.replace(/\D/g, '');
-    if (oldCode && localNumber.startsWith(`${oldCode}`)) {
-      localNumber = localNumber.slice(`${oldCode}`.length);
-    }
-
-    const nextValue = localNumber ? `+${newCode}${localNumber}` : '';
+    // Strip the PREVIOUS country's code, which is the one the current value carries.
+    const nextValue = toE164(value, newCode, getCountryCallingCodeSafe(country));
 
     // Return early so a re-resolved-but-unchanged country won't trigger re-renders.
     if (nextCountry === country && nextValue === value) return;

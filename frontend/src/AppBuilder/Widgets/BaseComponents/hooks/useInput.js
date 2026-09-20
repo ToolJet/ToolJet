@@ -4,6 +4,7 @@ import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widget
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -59,7 +60,7 @@ export const useInput = ({
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);
   const [loading, setLoading] = useState(loadingState);
-  const [disable, setDisable] = useState(disabledState || loadingState);
+  const [disable, setDisable] = useState(disabledState);
 
   const numberFormat = properties?.numberFormat;
   // Value handed to validation for the currency input: a canonical numeric STRING (e.g. "1234.56").
@@ -74,7 +75,6 @@ export const useInput = ({
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
-  const [iconVisibility, setIconVisibility] = useState(false);
   const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
   const { isValid, validationError } = validationStatus;
@@ -164,7 +164,8 @@ export const useInput = ({
   useEffect(() => {
     if (inputType === 'phone') {
       const code = getCountryCallingCodeSafe(country);
-      setPhoneInputValue(`+${code}${properties.value}`);
+      // The value belongs to the current country, so that is the only dial code we strip.
+      setPhoneInputValue(toE164(properties.value, code, code));
     } else if (inputType === 'currency') {
       setCurrencyInputValue(`${properties.value ?? ''}`);
     } else {
@@ -181,9 +182,9 @@ export const useInput = ({
       // Ignore an invalid country, and build the E.164 value from the TARGET country's calling code.
       const targetCountry = getCountryCallingCodeSafe(nextCountry) ? nextCountry : country;
       const code = getCountryCallingCodeSafe(targetCountry);
-      const nationalNumber = `${value ?? ''}`.replace(/\D/g, '');
       setCountry(targetCountry);
-      setPhoneInputValue(nationalNumber ? `+${code}${nationalNumber}` : '', targetCountry);
+      // The caller states the target country, so that is the code we strip if present.
+      setPhoneInputValue(toE164(value, code, code), targetCountry);
       fireEvent('onChange');
     });
   }, [inputType, country]);
@@ -353,8 +354,6 @@ export const useInput = ({
     setShowValidationError,
     isFocused,
     labelWidth,
-    iconVisibility,
-    setIconVisibility,
     isValid,
     validationError,
     isMandatory,

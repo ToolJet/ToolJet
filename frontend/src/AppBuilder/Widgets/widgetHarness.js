@@ -56,6 +56,13 @@ export function option(label, value, { visible = true, disable = false, isDefaul
   };
 }
 
+/**
+ * NOTE: per-widget default tables like this one are no longer required.
+ * `componentDefinition()` seeds a widget's OWN registered `definition`
+ * (see test/app-builder/seed.js), so a spec states only what it varies. This
+ * export is kept only because RenderWidgetTooltip.spec.jsx still passes it; it
+ * can be deleted once that spec drops it.
+ */
 export const radioButtonV2Defaults = {
   defaultProperties: {
     label: binding('Pick one'),
@@ -161,14 +168,28 @@ export function createWidgetHarness({
     afterSeed,
     also = defaultAlso,
   } = {}) {
-    const definition = componentDefinition(componentId, handle, componentType, {
-      ...defaultProperties,
-      ...properties,
-    });
-    definition.component.definition.styles = { ...defaultStyles, ...styles };
-    definition.component.definition.validation = { ...defaultValidation, ...validation };
+    const definition = componentDefinition(
+      componentId,
+      handle,
+      componentType,
+      { ...defaultProperties, ...properties },
+      { styles: { ...defaultStyles, ...styles }, validation: { ...defaultValidation, ...validation } }
+    );
 
-    seedApp({ [componentId]: definition, ...defaultExtraComponents, ...extraComponents }, { moduleId: MODULE_ID });
+    const seeded = { [componentId]: definition, ...defaultExtraComponents, ...extraComponents };
+    // `also` only mounts a RenderWidget; it does not seed. A RenderWidget for an
+    // id the store has never heard of renders nothing at all, which quietly turns
+    // any "two instances on a page" assertion into a one-instance no-op. Fail here
+    // instead, so the sibling must be seeded through `extraComponents`.
+    const unseeded = also.map(({ id: siblingId }) => siblingId).filter((siblingId) => !(siblingId in seeded));
+    if (unseeded.length) {
+      throw new Error(
+        `widgetHarness.render(): also[] names unseeded component id(s) ${unseeded.join(', ')}. ` +
+          `Seed them via extraComponents (componentDefinition from '@/test/app-builder') — ` +
+          `an unseeded sibling renders nothing and makes multi-instance assertions vacuous.`
+      );
+    }
+    seedApp(seeded, { moduleId: MODULE_ID });
     // Escape hatch for store mutations that must land between seeding and
     // mount, e.g. properties (like `validation.mandatory`) with no seed-time
     // argument — see componentDefinition() in test/app-builder/seed.js.
@@ -250,11 +271,20 @@ export function createWidgetHarness({
         loadingState: binding('{{false}}'),
         disabledState: binding('{{false}}'),
       });
-      const child = componentDefinition(id, handle, componentType, { ...defaultProperties, ...properties });
+      const child = componentDefinition(
+        id,
+        handle,
+        componentType,
+        { ...defaultProperties, ...properties },
+        {
+          styles: { ...defaultStyles },
+          validation: { ...defaultValidation, ...validation },
+          // Pinned rather than inherited: a Form child must be on the desktop
+          // layout for this seam regardless of the widget's own registered default.
+          others: { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') },
+        }
+      );
       child.component.parent = formId;
-      child.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
-      child.component.definition.styles = { ...defaultStyles };
-      child.component.definition.validation = { ...defaultValidation, ...validation };
       seedApp({ [formId]: form, [id]: child }, { moduleId: MODULE_ID });
       store().setEditorLoading(false, MODULE_ID);
       store().setCurrentMode('view', MODULE_ID);
@@ -275,6 +305,26 @@ export function createWidgetHarness({
     variables: () => store().resolvedStore.modules[MODULE_ID].exposedValues.variables,
     exposed,
   };
+}
+
+/**
+ * An event handler row that COUNTS its own invocations in `variables[key]`.
+ *
+ * `set-custom-variable` resolves its `value` against live exposed values, so a
+ * self-referential increment gives an exact call count — which is what lets a
+ * spec assert an event fired ONCE rather than at-least-once.
+ */
+export function countInvocationsOn(sourceId, eventId, { key = 'calls' } = {}) {
+  return [
+    {
+      id: `evt-${eventId}`,
+      index: 0,
+      sourceId,
+      name: `evt-${eventId}`,
+      target: 'component',
+      event: { eventId, actionId: 'set-custom-variable', key, value: `{{(variables.${key} ?? 0) + 1}}` },
+    },
+  ];
 }
 
 /** An event handler row wiring `eventId` to a `set-custom-variable` action writing `key`/`value`. */
