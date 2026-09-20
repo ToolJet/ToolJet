@@ -2,6 +2,7 @@ import * as chokidar from 'chokidar';
 import * as path from 'path';
 
 import { build, BuildResult } from './builder';
+import { formatError } from '../log';
 
 interface WatcherOptions {
   projectRoot: string;
@@ -73,6 +74,23 @@ export class DevWatcher {
         currentRun = runBuild(label);
       }, debounceMs);
     };
+
+    // An 'error' with no listener is an uncaught exception in Node, which would kill
+    // the watch silently. Permission errors apply to a single path (chokidar emits
+    // these unless ignorePermissionErrors is set) and leave the rest of src/ watchable,
+    // so they only warn; anything else — e.g. ENOSPC from the OS watcher limit — means
+    // the watcher is unusable.
+    watcher.on('error', (err) => {
+      const { code, message } = err as NodeJS.ErrnoException;
+
+      if (code === 'EPERM' || code === 'EACCES') {
+        console.log(formatError(`watcher skipped a path - ${message}`));
+        return;
+      }
+
+      console.log(formatError(`watcher failed - ${message}`));
+      process.exit(1);
+    });
 
     watcher.on('ready', () => schedule('Building initial version...'));
 

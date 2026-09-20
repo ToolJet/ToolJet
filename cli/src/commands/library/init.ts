@@ -11,6 +11,8 @@ interface InitAnswers {
   display_name: string;
 }
 
+const MAX_DISPLAY_NAME_LENGTH = 100;
+
 export default class ComponentInit extends Command {
   static description = 'Initialize a new custom component library';
 
@@ -46,10 +48,16 @@ export default class ComponentInit extends Command {
         message: 'Component library display name',
         type: 'input',
         validate: (input: string) => {
-          if (!input || input.trim().length === 0) return 'Display name is required';
+          const displayName = input?.trim() ?? '';
 
-          if (!/^[A-Za-z][A-Za-z0-9 ]*$/.test(input.trim())) {
-            return 'The display name must only contain letters and numbers, and must start with a letter. Spaces are allowed';
+          if (displayName.length === 0) return 'Display name is required';
+
+          if (displayName.length > MAX_DISPLAY_NAME_LENGTH) {
+            return `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or less`;
+          }
+
+          if (!/^[A-Za-z][A-Za-z0-9 _-]*$/.test(displayName)) {
+            return 'Display name must start with a letter and contain only letters, numbers, spaces, hyphens, and underscores';
           }
 
           return true;

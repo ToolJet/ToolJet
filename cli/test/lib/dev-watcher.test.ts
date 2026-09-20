@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import * as chokidar from 'chokidar';
+import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -154,5 +156,80 @@ describe('DevWatcher', () => {
     fs.writeFileSync(path.join(projectRoot, 'src', 'late.ts'), 'export {}');
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(onRebuild.mock.callCount()).to.equal(1);
+  });
+});
+
+describe('DevWatcher - watcher errors', () => {
+  let projectRoot: string;
+
+  // chokidar.watch is replaced with a bare emitter so 'error' can be raised on
+  // demand — the real conditions (ENOSPC, a permission-denied path) can't be
+  // provoked reliably from a test.
+  function startWithFakeWatcher(): {
+    emitError: (err: NodeJS.ErrnoException) => void;
+    stdout: () => string;
+    exitCodes: number[];
+  } {
+    const fakeWatcher = new EventEmitter() as EventEmitter & { close: () => Promise<void> };
+    fakeWatcher.close = async () => {};
+    mock.method(chokidar, 'watch', () => fakeWatcher);
+
+    const logMock = mock.method(console, 'log', () => {});
+    const exitCodes: number[] = [];
+    mock.method(process, 'exit', ((code?: number) => {
+      exitCodes.push(code ?? 0);
+    }) as unknown as typeof process.exit);
+
+    DevWatcher.start({ projectRoot, debounceMs: 10, onRebuild: async () => {} });
+
+    return {
+      emitError: (err) => fakeWatcher.emit('error', err),
+      stdout: () => logMock.mock.calls.map((c) => c.arguments[0]).join('\n'),
+      exitCodes,
+    };
+  }
+
+  beforeEach(() => {
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tooljet-cli-watch-err-'));
+    mock.method(builder, 'build', async () => fakeResult());
+  });
+
+  afterEach(() => {
+    mock.restoreAll();
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  });
+
+  it('exits 1 on a fatal watcher error such as ENOSPC', () => {
+    const watch = startWithFakeWatcher();
+
+    const err: NodeJS.ErrnoException = new Error('watch ENOSPC: file watcher limit reached');
+    err.code = 'ENOSPC';
+    watch.emitError(err);
+
+    expect(watch.exitCodes).to.deep.equal([1]);
+    expect(watch.stdout()).to.include('watcher failed - watch ENOSPC');
+  });
+
+  it('warns but keeps watching when a single path is unreadable', () => {
+    const watch = startWithFakeWatcher();
+
+    for (const code of ['EPERM', 'EACCES']) {
+      const err: NodeJS.ErrnoException = new Error(`${code}: permission denied, watch 'src/secret'`);
+      err.code = code;
+      watch.emitError(err);
+    }
+
+    expect(watch.exitCodes).to.deep.equal([]);
+    expect(watch.stdout()).to.include('watcher skipped a path - EPERM');
+    expect(watch.stdout()).to.include('watcher skipped a path - EACCES');
+  });
+
+  it('exits 1 on an error carrying no code at all', () => {
+    const watch = startWithFakeWatcher();
+
+    watch.emitError(new Error('something unexpected'));
+
+    expect(watch.exitCodes).to.deep.equal([1]);
+    expect(watch.stdout()).to.include('watcher failed - something unexpected');
   });
 });
