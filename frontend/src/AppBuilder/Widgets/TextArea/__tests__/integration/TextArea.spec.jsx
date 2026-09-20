@@ -914,4 +914,69 @@ describe('accessibility and async', () => {
     await waitFor(() => expect(callCount('focusCalls')).toBe(1));
     expect(callCount('blurCalls')).toBe(1);
   });
+
+  // A second mount under the same scenario ID, because harness.render() re-renders
+  // rather than remounts and this case needs a real unmount.
+  //
+  // CHARACTERIZATION of a leak, not a guarantee we want: handleFocus schedules
+  // fireEvent('onFocus') on a setTimeout that nothing ever cancels, and there is no
+  // mounted guard (useInput.js:326-332), so a field focused in the same tick the page
+  // navigates away still runs the builder's On focus handler after the widget is gone.
+  // Pinned as a known gap awaiting a product decision; fixing it is a shared-hook
+  // change across seven widgets.
+  //
+  // Break this catches: the day someone adds the clearTimeout or the mounted guard —
+  // which would be a real improvement — this fails and forces the guarantee, the
+  // contract row and the gap entry to be revisited together rather than drifting.
+  test('[TextArea-ASYNC-001] the deferred onFocus still fires after unmount', async () => {
+    const root = harness.render({ events: countInvocationsOn('ta1', 'onFocus', { key: 'focusCalls' }) });
+    await waitFor(() => expect(field()).toBeTruthy());
+
+    field().focus();
+    root.unmount(); // the React tree only; the store is left intact
+    await drain();
+
+    expect(callCount('focusCalls')).toBe(1);
+  });
+
+  // Break this catches: dropping the `!dynamicHeight` early return in useHeightObserver,
+  // so every textarea on a page pays for a ResizeObserver and a MutationObserver it does
+  // not use; or dropping the effect's cleanup, so those observers outlive the widget.
+  //
+  // The observers are the reason this dimension is APPLICABLE at all. Their EFFECT —
+  // the resulting pixel height — is browser-owned and belongs to TextArea-BRW-001/002,
+  // because jsdom reports zero for every measurement involved. What is assertable here
+  // is the lifecycle: attached only when the gate is open, released on unmount.
+  test('[TextArea-ASYNC-002] the height observers attach only with dynamic height on, and are released on unmount', async () => {
+    const observeSpy = jest.spyOn(window.ResizeObserver.prototype, 'observe');
+    const disconnectSpy = jest.spyOn(window.ResizeObserver.prototype, 'disconnect');
+    try {
+      // Gate closed on the canvas: nothing is observed.
+      harness.render({
+        properties: { value: binding('some text'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'edit',
+      });
+      await waitFor(() => expect(field()).toBeTruthy());
+      await drain();
+      expect(observeSpy).not.toHaveBeenCalled();
+
+      // Gate open in the Viewer: the element is observed.
+      const root = harness.render({
+        properties: { value: binding('some text'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(field()).toBeTruthy());
+      await drain();
+      expect(observeSpy).toHaveBeenCalled();
+
+      // Unmount releases it.
+      const disconnectsBefore = disconnectSpy.mock.calls.length;
+      root.unmount();
+      await drain();
+      expect(disconnectSpy.mock.calls.length).toBeGreaterThan(disconnectsBefore);
+    } finally {
+      observeSpy.mockRestore();
+      disconnectSpy.mockRestore();
+    }
+  });
 });
