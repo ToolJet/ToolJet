@@ -40,7 +40,8 @@
     },
     {
       "componentType": "Container",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Container/TESTING.md"
     },
     {
       "componentType": "FlexContainer",
@@ -48,7 +49,8 @@
     },
     {
       "componentType": "Accordion",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Accordion/TESTING.md"
     },
     {
       "componentType": "Tabs",
