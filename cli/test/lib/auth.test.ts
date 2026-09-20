@@ -81,6 +81,32 @@ describe('Auth', () => {
       expect(Object.keys(stored.workspaces)).to.have.members(['ws-1', 'ws-2']);
       expect(stored.default).to.equal('ws-2');
     });
+
+    it('overwrites the stored url/token/email when the same workspace is saved again', () => {
+      const Auth = loadIsolatedAuth(homeDir);
+
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-old', 'old@example.com');
+      Auth.save('ws-1', 'https://new.tooljet.ai', 'token-new', 'new@example.com');
+
+      const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
+      expect(Object.keys(stored.workspaces)).to.deep.equal(['ws-1']);
+      expect(stored.workspaces['ws-1']).to.deep.equal({
+        url: 'https://new.tooljet.ai',
+        apiToken: 'token-new',
+        email: 'new@example.com',
+      });
+    });
+
+    it('re-saving a non-default workspace makes it the new default', () => {
+      const Auth = loadIsolatedAuth(homeDir);
+
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
+      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com');
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
+
+      const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
+      expect(stored.default).to.equal('ws-1');
+    });
   });
 
   describe('resolve', () => {
@@ -106,6 +132,22 @@ describe('Auth', () => {
       const resolved = Auth.resolve({ url: 'http://localhost:3000', token: 'override-token' });
 
       expect(resolved).to.deep.equal({ workspaceId: 'ws-1', apiToken: 'override-token', url: 'http://localhost:3000' });
+    });
+
+    it('resolves a specific stored workspaceId rather than the default', () => {
+      const Auth = loadIsolatedAuth(homeDir);
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
+      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com');
+
+      // ws-2 is the default after the second save, so asking for ws-1 proves the
+      // workspaceId flag is honoured instead of silently falling back.
+      const resolved = Auth.resolve({ workspaceId: 'ws-1' });
+
+      expect(resolved).to.deep.equal({
+        workspaceId: 'ws-1',
+        apiToken: 'token-1',
+        url: 'https://app.tooljet.ai',
+      });
     });
 
     it('throws when a specific workspaceId flag is requested but not stored', () => {

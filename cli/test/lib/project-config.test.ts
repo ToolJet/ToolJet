@@ -34,6 +34,43 @@ describe('ProjectConfig.readFile', () => {
 
     expect(() => ProjectConfig.readFile(tmp.get())).to.throw(/malformed or missing/);
   });
+
+  // Present-but-empty is a distinct branch from absent: the field passes the
+  // typeof check and is rejected only by the truthiness check after it.
+  it('throws when libraryName is present but empty', () => {
+    writeProjectConfig(tmp.get(), { libraryName: '', correlationId: 'corr-123' });
+
+    expect(() => ProjectConfig.readFile(tmp.get())).to.throw(/malformed or missing/);
+  });
+
+  it('throws when correlationId is present but empty', () => {
+    writeProjectConfig(tmp.get(), { libraryName: 'My Library', correlationId: '' });
+
+    expect(() => ProjectConfig.readFile(tmp.get())).to.throw(/malformed or missing/);
+  });
+
+  it('throws when a required field is present but not a string', () => {
+    fs.mkdirSync(path.join(tmp.get(), '.tooljet'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmp.get(), '.tooljet', 'config.json'),
+      JSON.stringify({ libraryName: 'My Library', correlationId: 42 })
+    );
+
+    expect(() => ProjectConfig.readFile(tmp.get())).to.throw(/malformed or missing/);
+  });
+
+  it('throws when the config file holds a JSON array instead of an object', () => {
+    fs.mkdirSync(path.join(tmp.get(), '.tooljet'), { recursive: true });
+    fs.writeFileSync(path.join(tmp.get(), '.tooljet', 'config.json'), JSON.stringify([]));
+
+    expect(() => ProjectConfig.readFile(tmp.get())).to.throw(/malformed or missing/);
+  });
+
+  it('defaults to the current working directory when no projectRoot is given', () => {
+    writeProjectConfig(tmp.get(), { libraryName: 'Cwd Library', correlationId: 'corr-cwd' });
+
+    expect(ProjectConfig.readFile()).to.deep.equal({ libraryName: 'Cwd Library', correlationId: 'corr-cwd' });
+  });
 });
 
 describe('ProjectConfig.readFileOrExit', () => {
