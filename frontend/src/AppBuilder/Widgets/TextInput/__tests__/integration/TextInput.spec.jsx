@@ -11,6 +11,7 @@ import {
   countInvocationsOn,
   drain,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
 import {
   getLabelFontSize,
   getLabelHeight,
@@ -981,5 +982,53 @@ describe('accessibility', () => {
     harness.render({ properties: { label: binding('Full name') }, styles: { auto: binding('{{true}}') } });
     await waitFor(() => expect(input()).toBeTruthy());
     expect(input()).not.toHaveAttribute('aria-label');
+  });
+});
+
+describe('async lifecycle and instance isolation', () => {
+  // Break this catches: dropping the deferred dispatch, or letting the synchronous
+  // blur cancel a focus that has not drained yet — a builder wiring both handlers
+  // would silently lose On focus whenever the user tabbed straight through.
+  test('[TextInput-ASYNC-001] a fast focus-then-blur delivers both handlers', async () => {
+    harness.render({
+      events: [
+        ...countInvocationsOn('ti1', 'onFocus', { key: 'focusCalls' }),
+        ...countInvocationsOn('ti1', 'onBlur', { key: 'blurCalls' }),
+      ],
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    input().focus();
+    fireEvent.blur(input());
+    await drain();
+
+    // Both are delivered; their relative order is deliberately not asserted.
+    await waitFor(() => expect(callCount('focusCalls')).toBe(1));
+    expect(callCount('blurCalls')).toBe(1);
+  });
+
+  // Break this catches: hoisting useInput's value state out of the component so
+  // every instance shares it — two Text Inputs on a page would type into each
+  // other. The published variable is asserted alongside the rendered field
+  // because the two can diverge: shared render state still leaves each id's
+  // exposed `value` looking untouched.
+  test('[TextInput-TYPE-001] two Text Inputs stay independent', async () => {
+    // The sibling is BOTH seeded (extraComponents) and rendered (also): `also`
+    // alone mounts a RenderWidget for an id the store has never heard of, which
+    // renders nothing and would make every assertion below vacuous.
+    harness.render({
+      properties: { value: binding('first') },
+      extraComponents: {
+        ti2: componentDefinition('ti2', 'textinput2', 'TextInput', { value: binding('second') }),
+      },
+      also: [{ id: 'ti2', componentType: 'TextInput' }],
+    });
+    await waitFor(() => expect(document.querySelectorAll('input')).toHaveLength(2));
+
+    await harness.act('setText', 'changed');
+
+    expect([...document.querySelectorAll('input')].map((i) => i.value)).toEqual(['changed', 'second']);
+    expect(harness.exposed('ti1').value).toBe('changed');
+    expect(harness.exposed('ti2').value).toBe('second');
   });
 });
