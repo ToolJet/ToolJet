@@ -309,6 +309,11 @@ export const currencyinputConfig = {
       ],
     },
     {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
+    },
+    {
       handle: 'clear',
       displayName: 'Clear',
     },

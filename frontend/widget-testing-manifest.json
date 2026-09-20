@@ -117,11 +117,13 @@
     },
     {
       "componentType": "DropdownV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/DropdownV2/TESTING.md"
     },
     {
       "componentType": "MultiselectV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
       "componentType": "TagsInput",
@@ -129,7 +131,8 @@
     },
     {
       "componentType": "Checkbox",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Checkbox/TESTING.md"
     },
     {
       "componentType": "ToggleSwitchV2",
@@ -145,11 +148,13 @@
     },
     {
       "componentType": "TreeSelect",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/TreeSelect/TESTING.md"
     },
     {
       "componentType": "Cascader",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Cascader/TESTING.md"
     },
     {
       "componentType": "DatePickerV2",
@@ -242,7 +247,8 @@
     },
     {
       "componentType": "Timeline",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Timeline/TESTING.md"
     },
     {
       "componentType": "Timer",
@@ -250,7 +256,8 @@
     },
     {
       "componentType": "Spinner",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Spinner/TESTING.md"
     },
     {
       "componentType": "JSONExplorer",
@@ -262,7 +269,8 @@
     },
     {
       "componentType": "Html",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Html/TESTING.md"
     },
     {
       "componentType": "IFrame",

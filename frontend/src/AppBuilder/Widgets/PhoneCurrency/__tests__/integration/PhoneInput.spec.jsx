@@ -1142,6 +1142,80 @@ describe('accessibility, async and identity', () => {
     expect(callCount('blurCalls')).toBe(1);
   });
 
+  // A second mount under the same scenario ID, because harness.render() re-renders
+  // rather than remounts and this case needs a real unmount.
+  //
+  // CHARACTERIZATION of a leak, not a guarantee we want: handleFocus schedules
+  // fireEvent('onFocus') on a setTimeout that nothing ever cancels, and there is no
+  // mounted guard (useInput.js:326-332), so a field focused in the same tick the page
+  // navigates away still runs the builder's On focus handler after the widget is gone.
+  // Pinned as a known gap awaiting a product decision; fixing it is a shared-hook
+  // change across seven widgets.
+  //
+  // Break this catches: the day someone adds the clearTimeout or the mounted guard —
+  // which would be a real improvement — this fails and forces the guarantee, the
+  // contract row and the gap entry to be revisited together rather than drifting.
+  test('[PhoneInput-ASYNC-001] the deferred onFocus still fires after unmount', async () => {
+    const root = harness.render({ events: countInvocationsOn('ph1', 'onFocus', { key: 'focusCalls' }) });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    input().focus();
+    root.unmount(); // the React tree only; the store is left intact
+    await drain();
+
+    expect(callCount('focusCalls')).toBe(1);
+  });
+
+  // Break this catches: dropping the effect's cleanup in CountrySelect.jsx:42-44, or
+  // attaching the listener unconditionally instead of only while the menu is open.
+  // This listener IS cleaned up correctly today, so the scenario protects working
+  // behaviour rather than pinning a leak. CountrySelect is shared with CurrencyInput;
+  // re-derived here rather than cited, because the two widgets pass it different props
+  // (isCurrencyInput, country-change gating) and a divergence should surface on both.
+  test('[PhoneInput-ASYNC-002] the click-outside listener closes the menu and is detached on unmount', async () => {
+    const root = harness.render();
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    fireEvent.mouseDown(document.querySelector('.country-ph1__control'), { button: 0 });
+    await drain();
+    expect(document.querySelector('.country-ph1__menu')).toBeTruthy();
+
+    fireEvent.mouseDown(document.body);
+    await drain();
+    expect(document.querySelector('.country-ph1__menu')).toBeNull();
+
+    // Detach: every mousedown listener this component attaches must be removed again
+    // by the time it unmounts. Counting add/remove on document is the oracle because
+    // React 18 no longer warns about a state update on an unmounted component, so a
+    // leaked listener has no other observable consequence at this layer.
+    const added = [];
+    const removed = [];
+    const realAdd = document.addEventListener.bind(document);
+    const realRemove = document.removeEventListener.bind(document);
+    jest.spyOn(document, 'addEventListener').mockImplementation((type, fn, opts) => {
+      if (type === 'mousedown') added.push(fn);
+      return realAdd(type, fn, opts);
+    });
+    jest.spyOn(document, 'removeEventListener').mockImplementation((type, fn, opts) => {
+      if (type === 'mousedown') removed.push(fn);
+      return realRemove(type, fn, opts);
+    });
+    try {
+      fireEvent.mouseDown(document.querySelector('.country-ph1__control'), { button: 0 });
+      await drain();
+      expect(document.querySelector('.country-ph1__menu')).toBeTruthy();
+      expect(added.length).toBeGreaterThan(0);
+
+      root.unmount();
+      await drain();
+
+      expect(added.filter((fn) => !removed.includes(fn))).toEqual([]);
+    } finally {
+      document.addEventListener.mockRestore();
+      document.removeEventListener.mockRestore();
+    }
+  });
+
   // Break this catches: reverting 12031273ec's `international={true}`, which would make
   // the library render the raw stored value instead of the country's grouping.
   test('[PhoneInput-TYPE-001] the control is the library input, rendering international formatting', async () => {
