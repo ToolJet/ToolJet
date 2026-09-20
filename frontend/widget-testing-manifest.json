@@ -308,7 +308,8 @@
     },
     {
       "componentType": "JSONEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONEditor/TESTING.md"
     },
     {
       "componentType": "Modal",
