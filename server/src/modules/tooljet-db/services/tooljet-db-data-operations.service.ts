@@ -436,8 +436,51 @@ export class TooljetDbDataOperationsService implements QueryService {
 
       this.parseTableNameInAST(ast, internalTableNameToIdMap);
       const validSql = await sqlParser.sqlify(ast);
-      const results = await tooljetDbTenantConnection.query(validSql);
-      return { status: 'ok', data: { results } };
+
+      if (!containsInsert) {
+        const results = await tooljetDbTenantConnection.query(validSql);
+        return { status: 'ok', data: { results } };
+      }
+
+      // A single INSERT can add many rows at once, so the pre-check above isn't enough.
+      // Roll back if the post-insert total exceeds the cap - counted via this same
+      // connection so it sees the rows it just wrote.
+      const queryRunner = tooljetDbTenantConnection.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.query(`SET search_path TO "${tenantSchema}"`);
+      await queryRunner.startTransaction();
+      try {
+        const results = await queryRunner.query(validSql);
+
+        const tables: { tablename: string }[] = await queryRunner.query(
+          `SELECT tablename FROM pg_tables WHERE schemaname = $1`,
+          [tenantSchema]
+        );
+        const unionQuery = tables
+          .map((table) => `SELECT COUNT(*)::int AS count FROM "${tenantSchema}"."${table.tablename}"`)
+          .join(' UNION ALL ');
+        const countResult = unionQuery
+          ? await queryRunner.query(`SELECT COALESCE(SUM(count), 0)::int AS total FROM (${unionQuery}) counts`)
+          : [{ total: 0 }];
+        const totalRowsAfterInsert = countResult[0]?.total ?? 0;
+
+        if (await this.tableOperationsService.isRowCountOverLimit(organizationId, totalRowsAfterInsert)) {
+          await queryRunner.rollbackTransaction();
+          return {
+            status: 'failed',
+            errorMessage: "You've reached your limit of rows in ToolJet database tables. Upgrade for more.",
+            data: {},
+          };
+        }
+
+        await queryRunner.commitTransaction();
+        return { status: 'ok', data: { results } };
+      } catch (error) {
+        if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction();
+        throw error;
+      } finally {
+        await queryRunner.release();
+      }
     } catch (error) {
       const modifiedErrorObj = modifyTjdbErrorObject(error);
       const errorObj = new QueryFailedError(error, [], new PostgrestError(modifiedErrorObj));

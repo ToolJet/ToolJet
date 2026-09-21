@@ -926,6 +926,14 @@ export class TooljetDbTableOperationsService {
     return (await this.getRemainingRowCapacity(organizationId)) <= 0;
   }
 
+  // For callers that already know the row count to check (e.g. a post-insert total computed
+  // inside a transaction, which this org's cached/committed count wouldn't reflect yet).
+  async isRowCountOverLimit(organizationId: string, rowCount: number): Promise<boolean> {
+    const rowLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TJDB_ROW_COUNT, organizationId);
+    if (rowLimit === LICENSE_LIMIT.UNLIMITED) return false;
+    return rowCount > rowLimit;
+  }
+
   async getRowsLimit(organizationId: string) {
     const licenseTerms = await this.licenseTermsService.getLicenseTerms(
       [LICENSE_FIELD.TJDB_ROW_COUNT, LICENSE_FIELD.STATUS],
