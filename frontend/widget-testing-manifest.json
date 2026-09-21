@@ -267,7 +267,8 @@
     },
     {
       "componentType": "CustomComponent",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CustomComponent/TESTING.md"
     },
     {
       "componentType": "Html",
