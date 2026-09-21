@@ -45,7 +45,7 @@ describe("Tabs — csa facet", { testIsolation: false, retries: 1 }, () => {
   //
   // Handles with dynamic-select params wired separately (see subsequent it-blocks):
   //   setTabDisable, setTabLoading, setTabVisibility — source: tabs.js:335,355,373
-  it.only("should verify setVisibility, setDisable, setLoading, setTab CSAs from tabs (On click)", () => {
+  it("should verify setVisibility, setDisable, setLoading, setTab CSAs from tabs (On click)", () => {
     const actions = [
       // button1: hide the widget — setVisibility(false) — source: tabs.js:320
       { event: "On click", action: "Set visibility", valueToggle: "{{false}}" },
