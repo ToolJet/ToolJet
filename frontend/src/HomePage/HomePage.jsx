@@ -2109,8 +2109,8 @@ class HomePageComponent extends React.Component {
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                    ? 'homePage.deleteAppAndData'
-                    : deleteModuleText,
+                      ? 'homePage.deleteAppAndData'
+                      : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2442,8 +2442,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2464,8 +2464,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -2707,8 +2707,8 @@ class HomePageComponent extends React.Component {
                             !moduleEnabled
                               ? 'Modules are not available on your current plan.'
                               : this.isGitSyncLicenseLocked()
-                              ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
-                              : "You don't have permission to create a module."
+                                ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
+                                : "You don't have permission to create a module."
                           }
                           placement="bottom"
                         >
@@ -2725,8 +2725,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}
