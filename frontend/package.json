@@ -310,7 +310,7 @@
     "test:unit": "jest",
     "test:unit:changed": "jest --onlyChanged",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "test:ci": "jest --ci --coverage --maxWorkers=2 --workerIdleMemoryLimit=1GB",
     "test:layout": "node scripts/validate-test-layout.js",
     "test:unit:only": "jest --testPathIgnorePatterns '/node_modules/' '/__tests__/integration/'",
     "test:integration": "jest --testPathPattern \"__tests__/integration\"",

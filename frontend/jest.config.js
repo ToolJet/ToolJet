@@ -126,6 +126,15 @@ module.exports = {
   // assets/libs and build/assets/libs both ship a pyodide package.json, which
   // collides in jest-haste-map. Neither is ever imported by a test.
   modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/assets/libs/'],
+  // Default 'babel' coverage instruments every file with babel-plugin-istanbul
+  // counters that accumulate in memory for a worker's whole lifetime. Over a
+  // long --coverage run (73 suites / 1288 tests) that shows up as the whole
+  // worker process getting progressively slower — real GitHub Actions runs
+  // have shown a suite taking 10-15x longer than its local time late in a
+  // run, timing out tests that are otherwise fast and passing. 'v8' uses
+  // V8's own native coverage tracking instead of source instrumentation —
+  // no growing per-file counter state, substantially less memory/GC pressure.
+  coverageProvider: 'v8',
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageDirectory: `<rootDir>/coverage/app-builder/${edition}/jest`,
   collectCoverageFrom: [
