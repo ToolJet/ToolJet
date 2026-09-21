@@ -40,9 +40,12 @@ What it does (all idempotent — safe to re-run):
      ->
         data-sources/<name>/data-source.json
      where <name> is the datasource's `name` field with `/` replaced by `-`.
-     Content is rewritten in the server's canonical form (recursively sorted
-     keys) so the first real push produces no spurious diff. ERRORS OUT if two
-     datasources resolve to the same folder name (duplicate names would collide).
+     The `name` field is then dropped from the file — the reader derives the name
+     from the directory (mirroring apps/modules), and the server no longer writes
+     it, so keeping it would let the two diverge and dirty the first push. Content
+     is rewritten in the server's canonical form (recursively sorted keys) so the
+     first real push produces no spurious diff. ERRORS OUT if two datasources
+     resolve to the same folder name (duplicate names would collide).
 
   5. Deletes the .meta/ directory (appMeta.json, moduleMeta.json,
      dataSourceMeta.json) — no longer read or written.
@@ -507,16 +510,22 @@ def migrate_data_sources(repo: str, entries: list, dry_run: bool) -> int:
             "migrating:\n" + "\n".join(lines)
         )
 
-    # Second pass: move + canonicalize. The name inside the file has to follow the
-    # folder — pull reads the datasource's name from `content.name`, not the path.
+    # Second pass: move + canonicalize. The datasource's name is carried by the
+    # folder, not a field in the file — pull derives it from the directory and the
+    # server's writer never emits `name` (see ee/git-sync/data-source-fs.util.ts and
+    # workspace-git-sync-adapter.ts). Drop any legacy `name` so the migrated file is
+    # byte-identical to what the server writes and the first real push diffs clean.
     changed = 0
     for rel, folder, content in planned:
         target_rel = f"{DS_DIR}/{folder}/{DS_FILE}"
-        if content.get("name") != folder:
-            content["name"] = folder
+        content.pop("name", None)
         if target_rel == rel:
+            # No trailing newline — the server writes JSON.stringify(..., null, 2)
+            # verbatim (no final "\n"), so matching it byte-for-byte keeps the first
+            # real push clean. A file left with a legacy trailing newline won't match
+            # here and gets rewritten without one.
             with open(to_abs(repo, rel), "r", encoding="utf-8") as fh:
-                if fh.read() == canonical_json(content) + "\n":
+                if fh.read() == canonical_json(content):
                     continue  # already migrated
             log(f"  ~ {rel} (rewrite)")
         else:
@@ -527,7 +536,6 @@ def migrate_data_sources(repo: str, entries: list, dry_run: bool) -> int:
             os.makedirs(os.path.dirname(target_abs), exist_ok=True)
             with open(target_abs, "w", encoding="utf-8") as fh:
                 fh.write(canonical_json(content))
-                fh.write("\n")
             if target_rel != rel:
                 source_dir = rel.rsplit("/", 1)[0]
                 os.remove(to_abs(repo, rel))
