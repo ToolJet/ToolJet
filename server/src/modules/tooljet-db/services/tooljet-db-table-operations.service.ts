@@ -896,6 +896,62 @@ export class TooljetDbTableOperationsService {
     };
   }
 
+  async getRowsCount(organizationId: string): Promise<number> {
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tables =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager.find(InternalTable, { where: { organizationId }, select: ['id'] })
+        : await this.manager.find(InternalTable, { select: ['id'] });
+
+    if (!tables.length) return 0;
+
+    const tenantSchema = findTenantSchema(organizationId);
+    const unionQuery = tables
+      .map((table) => `SELECT COUNT(*)::int AS count FROM "${tenantSchema}"."${table.id}"`)
+      .join(' UNION ALL ');
+    const result = await this.tooljetDbManager.query(
+      `SELECT COALESCE(SUM(count), 0)::int AS total FROM (${unionQuery}) counts`
+    );
+    return result[0]?.total ?? 0;
+  }
+
+  // Infinity when unlimited; otherwise how many more rows this org can add across all TJDB tables.
+  async getRemainingRowCapacity(organizationId: string): Promise<number> {
+    const rowLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TJDB_ROW_COUNT, organizationId);
+    if (rowLimit === LICENSE_LIMIT.UNLIMITED) return Infinity;
+    return rowLimit - (await this.getRowsCount(organizationId));
+  }
+
+  async isRowLimitReached(organizationId: string): Promise<boolean> {
+    return (await this.getRemainingRowCapacity(organizationId)) <= 0;
+  }
+
+  async getRowsLimit(organizationId: string) {
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TJDB_ROW_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
+    if (licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return {
+        rowsCount: generatePayloadForLimits(
+          0,
+          licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.ROWS
+        ),
+      };
+    }
+    const rowCount = await this.getRowsCount(organizationId);
+    return {
+      rowsCount: generatePayloadForLimits(
+        rowCount,
+        licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.ROWS
+      ),
+    };
+  }
+
   protected async joinTable(organizationId: string, params: Record<string, any>) {
     const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
     if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");

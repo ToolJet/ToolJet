@@ -190,11 +190,20 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async createRow(queryOptions, context): Promise<QueryResult> {
+    const { organization_id: organizationId } = context.app;
+
+    if (await this.tableOperationsService.isRowLimitReached(organizationId)) {
+      return {
+        status: 'failed',
+        errorMessage: "You've reached your limit of rows in ToolJet database tables. Upgrade for more.",
+        data: {},
+      };
+    }
+
     const columns = Object.values(queryOptions.create_row).reduce((acc, colOpts: { column: string; value: any }) => {
       if (isEmpty(colOpts.column)) return acc;
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
-    const { organization_id: organizationId } = context.app;
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
 
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
