@@ -169,6 +169,8 @@ export const RangeSliderV2 = ({
     } else {
       onRangeChange([min, min]);
     }
+    // A Form clear changes the value, so it announces it like the input widgets already do.
+    fireEvent('onChange');
   });
 
   const rangeStyles = {
@@ -293,7 +295,7 @@ export const RangeSliderV2 = ({
                 max={max}
                 defaultValue={defaultRangeValue}
                 onChange={onRangeChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 value={defaultRangeValue}
                 ref={sliderRef}
                 id={`component-${id}`}
@@ -339,7 +341,7 @@ export const RangeSliderV2 = ({
                 ariaLabelledByForHandle={`${id}-label`}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 onChange={onSliderChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
