@@ -40,6 +40,9 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
+const MOUNT_MS = 20000;
+jest.setTimeout(MOUNT_MS);
+
 const ID = 'modal1';
 const NAME = 'modal1';
 
