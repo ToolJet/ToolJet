@@ -52,7 +52,15 @@ Cypress.Commands.add(
       // renderer's intercept state; without this the first drag goes cold and
       // the plugin's retry loop can overrun the 15s task timeout. Priming here
       // lands the drag on the first attempt.
+      // The wait gives the CDP intercept time to arm before the drag task fires.
+      // Without it, cy.get(source) + cy.get(target) complete in <1 ms and the
+      // drag fires before the intercept is ready — causing "No dragIntercepted"
+      // on consecutive drags (e.g. addCSA dropping N buttons in a loop).
+      // 800ms (up from 500ms): the CSA spec drops 7 buttons in a loop; the
+      // Tabs widget's sub-canvases + event intercepts add CDP traffic that can
+      // push warmup settlement past 500ms.
       cy.realDragRewarm();
+      cy.wait(800);
       cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
         targetX: positionX,
         targetY: positionY,
@@ -108,7 +116,11 @@ Cypress.Commands.add(
  * @tjUsage cy.forceClickOnCanvas()
  */
 Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click("topRight", { force: true });
+  // [data-cy="real-canvas"][data-parentid="canvas"] targets only the root canvas.
+  // Container widgets (Tabs, Listview, etc.) render sub-canvases that also carry
+  // data-cy="real-canvas" but with a component-UUID data-parentid, so the bare
+  // data-cy selector matches N+1 elements and cy.click() throws "single element".
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').click("topRight", { force: true });
 });
 
 /**
@@ -214,7 +226,11 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
       force: true,
       log: false,
     });
-  cy.get(commonSelectors.canvas, { log: false })
+  // [data-cy="real-canvas"][data-parentid="canvas"] — root canvas only.
+  // Sub-canvases inside container widgets carry data-cy="real-canvas" too but
+  // with a component-UUID data-parentid; the bare selector matches N+1 elements
+  // and cy.trigger() throws "can only be called on a single element".
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]', { log: false })
     .trigger("mousemove", {
       which: 1,
       // #real-canvas is overlaid by #main-editor-canvas, so an un-forced

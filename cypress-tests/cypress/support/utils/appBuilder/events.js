@@ -82,7 +82,11 @@ export const selectEvent = (
   }
 
   ensureHandlerCardOpen(eventIndex);
-  cy.get('[data-cy="popover-card"]').should("be.visible");
+  // should("exist") not should("be.visible"): the popover-card is position:fixed
+  // (z-index:1042) but lives in the same CSS transform stacking context as the
+  // Tabs tab-pane (width/height:100% overflow:hidden), which paints over it in
+  // Cypress's visibility check even though the popover is fully interactive.
+  cy.get('[data-cy="popover-card"]').should("exist");
 
   selectListboxOption('[data-cy="action-selection"]', action);
   
@@ -94,16 +98,21 @@ export const selectEvent = (
 };
 
 // Pick an option from a Radix Select (RocketSelect) by visible label.
-// Opens via KEYBOARD {downarrow}: the trigger sits inside a scroll-locked popover
-// (`body { pointer-events: none }`) where pointer clicks are swallowed, and the select
-// may be controlled-open, so a click can toggle it shut. Gated on `data-state`.
+// Opens via click({ force: true }): the trigger sits inside a scroll-locked popover
+// (`body { pointer-events: none }`) where normal clicks are swallowed, but force:true
+// bypasses both the pointer-events check and the coverage check from container widgets
+// (Tabs, Listview) whose tab-pane overlays the combobox in the CSS transform stacking
+// context. Gated on `data-state` so we never click-to-close an already-open select.
+// Prior approach (focus + {downarrow}) failed when the element was covered: focus
+// succeeds with force but keyboard dispatch does not open a covered Radix trigger.
 const selectListboxOption = (triggerSelector, label) => {
   cy.get(triggerSelector)
     .find('button[role="combobox"]')
-    .should("be.visible")
+    .scrollIntoView()
+    .should("exist")
     .then(($trigger) => {
       if ($trigger.attr("data-state") !== "open") {
-        cy.wrap($trigger).focus().type("{downarrow}", { force: true });
+        cy.wrap($trigger).click({ force: true });
       }
     });
   cy.get('[role="option"]', { timeout: 15000 }).should("exist");
@@ -118,7 +127,9 @@ const selectListboxOption = (triggerSelector, label) => {
 // The ComboboxInput nests more than one <input>, so typing is scoped to the first
 // visible one — `.find("input").type()` would throw "single element" here.
 const selectSearchableOption = (fieldSelector, label) => {
-  cy.get(fieldSelector).scrollIntoView().click();
+  // force: true — body has pointer-events:none when a Radix popover is open
+  // (data-scroll-locked="1" via Radix scroll-lock); regular click is swallowed.
+  cy.get(fieldSelector).scrollIntoView().click({ force: true });
   cy.get(`${fieldSelector} input`)
     .filter(":visible")
     .first()
