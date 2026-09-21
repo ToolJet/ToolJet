@@ -66,11 +66,14 @@ export const Rating = ({
   );
 
   // Generate unique ID for ARIA labelling
-  const ratingId = React.useMemo(() => `rating-${Math.random().toString(36).substr(2, 9)}`, []);
   const [announceValue, setAnnounceValue] = React.useState('');
-  const _maxRating = !maxRating || maxRating < 0 ? 0 : maxRating;
+  // Whole icons only: a fractional count cannot size the animation trail and throws out of render.
+  const _maxRating = !maxRating || maxRating < 0 ? 0 : Math.floor(maxRating);
 
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
+  // The radiogroup is named by whichever label arm renders one; without this it ships anonymous.
+  const labelElementId = `${id}-label`;
+  const hasRenderedLabel = !!label && (labelStyle === 'legacy' || auto || labelWidth > 0);
   const animatedStars = useTrail(_maxRating, {
     config: {
       friction: 22,
@@ -130,6 +133,9 @@ export const Rating = ({
       let numericValue;
 
       if (typeof value === 'number') {
+        if (!Number.isFinite(value)) {
+          return; // Reject NaN and Infinity, like every other unusable input below
+        }
         numericValue = value;
       } else if (typeof value === 'string') {
         // Check if string represents a valid number
@@ -205,6 +211,7 @@ export const Rating = ({
         <div
           role="radiogroup"
           id={`component-${id}`}
+          aria-labelledby={hasRenderedLabel ? labelElementId : undefined}
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           aria-required="false"
           aria-disabled={isDisabled}
@@ -270,14 +277,14 @@ export const Rating = ({
         data-cy={dataCy}
       >
         <span
-          id={`${ratingId}-label`}
+          id={labelElementId}
           className={label && `label form-check-label col-auto`}
           style={{ color: labelColorStyle }}
         >
           {label}
         </span>
         <div className="col px-1 py-0 mt-0">
-          {loadingState ? (
+          {isLoading ? (
             <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
           ) : (
             _renderRatingWidget()
@@ -318,6 +325,7 @@ export const Rating = ({
         widthType={widthType}
         top={alignment !== 'top' && '1px'}
         inputId={`component-${id}`}
+        id={labelElementId}
         fontSize={labelFontSizeValue}
       />
 
