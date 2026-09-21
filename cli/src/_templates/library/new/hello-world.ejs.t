@@ -9,7 +9,7 @@ export const HelloWorld: React.FC = () => {
 
   // defaultWidth/defaultHeight must be positive whole numbers: defaultWidth is in grid
   // columns, defaultHeight is in grid rows.
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 6 });
+  ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 11 });
 
   ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, () => {
     setFirstName('John');
