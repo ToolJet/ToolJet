@@ -4,7 +4,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import useStore from '@/AppBuilder/_stores/store';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
-import { CustomComponentsTab } from '../CustomComponentsTab';
+import { CustomComponentsTab } from '../../CustomComponentsTab';
 
 const CORRELATION_ID = '11111111-1111-1111-1111-111111111111';
 const DASHLESS = CORRELATION_ID.replace(/-/g, '');

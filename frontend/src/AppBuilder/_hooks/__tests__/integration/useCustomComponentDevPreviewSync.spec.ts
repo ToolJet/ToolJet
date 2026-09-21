@@ -9,7 +9,7 @@ jest.mock('@/modules/common/helpers/utils', () => ({
 }));
 
 // eslint-disable-next-line import/first
-import useCustomComponentDevPreviewSync from '../useCustomComponentDevPreviewSync';
+import useCustomComponentDevPreviewSync from '../../useCustomComponentDevPreviewSync';
 
 const DASHLESS = 'aaaaaaaabbbbccccddddeeeeeeeeeeee';
 
