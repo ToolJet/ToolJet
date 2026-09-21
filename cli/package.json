@@ -1,7 +1,7 @@
 {
   "name": "@tooljet/cli",
   "description": "tooljet cli tool",
-  "version": "0.0.15-beta.0",
+  "version": "0.0.15-beta.1",
   "bin": {
     "tooljet": "./bin/run"
   },
