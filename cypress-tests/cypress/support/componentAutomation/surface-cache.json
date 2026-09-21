@@ -86,6 +86,41 @@
         "selector": "[data-cy=<W>]",
         "learnedFrom": "toggleswitchv2@2808f427",
         "note": "flex-row-reverse ('right', default) vs flex-row ('left') \u2014 ToggleV2.jsx:253"
+      },
+      "tabs_headerBackground": {
+        "element": "[data-cy='tabs1'] > div:first-child",
+        "property": "background-color"
+      },
+      "tabs_divider": {
+        "element": "[data-cy='tabs1'] > div:first-child",
+        "property": "border-bottom-color"
+      },
+      "tabs_unselectedText": {
+        "element": "[data-cy='tabs1'] .nav-item:not(.active) span",
+        "property": "color",
+        "note": "RESOLVE-LIVE"
+      },
+      "tabs_selectedText": {
+        "element": "[data-cy='tabs1'] .nav-item.active span",
+        "property": "color",
+        "note": "RESOLVE-LIVE"
+      },
+      "tabs_accent": {
+        "element": "[data-cy='tabs1'] .nav-item.active",
+        "property": "border-bottom-color"
+      },
+      "tabs_borderRadius": {
+        "element": "[data-cy='tabs1']",
+        "property": "border-radius"
+      },
+      "tabs_border": {
+        "element": "[data-cy='tabs1']",
+        "property": "--cc-tabs-border-color",
+        "type": "cssVar"
+      },
+      "tabs_boxShadow": {
+        "element": "[data-cy='tabs1']",
+        "property": "box-shadow"
       }
     }
   },
@@ -172,6 +207,59 @@
         "covered": 55,
         "note": "52 field/action/exposed/definition items + defaultSize + 2 code-field placeholders. The last 3 were found by a mechanical re-derive from the config AFTER the coverage gate passed at 52/52 \u2014 the gate audits against the supplied inventory, so a plan omission is invisible to it."
       }
+    },
+    "tabs": {
+      "configHash": "65d563a1",
+      "runtimeName": "tabs1",
+      "facets": {
+        "basics": {
+          "status": "gates_pass"
+        },
+        "properties": {
+          "status": "gates_pass"
+        },
+        "propertiesFx": {
+          "status": "gates_pass"
+        },
+        "styles": {
+          "status": "gates_pass"
+        },
+        "stylesFx": {
+          "status": "gates_pass"
+        },
+        "events": {
+          "status": "gates_pass"
+        },
+        "csa": {
+          "status": "gates_pass"
+        },
+        "inspector": {
+          "status": "gates_pass"
+        },
+        "canvas": {
+          "status": "gates_pass"
+        },
+        "contexts": {
+          "status": "gates_pass"
+        },
+        "userflow": {
+          "status": "gates_pass"
+        },
+        "customerIssues": {
+          "status": "stub"
+        }
+      },
+      "exposedVarDrift": {},
+      "helperOverrides": {},
+      "notAutomatable": [
+        "hoverBackground_runtime_hover_effect \u2014 hover-state CSS only observable via realHover(); swatch assertion is the proxy (tabs.js:198)",
+        "unselectedIcon_rendered_color \u2014 icon not visible unless iconVisibility=true per tab item (tabs.js:207); swatch proxy used",
+        "selectedIcon_rendered_color \u2014 same as unselectedIcon (tabs.js:216)",
+        "scrollToTopOnTabSwitch_scroll_effect \u2014 scroll behaviour only observable in preview with tall content (tabs.js:113); toggle-state assertion is the proxy",
+        "setTabDisable_aria_disabled \u2014 RESOLVE-LIVE: [role='tab'] aria-disabled selector needs live confirmation (tabs.js:335)",
+        "setTabLoading_per_tab_loader \u2014 RESOLVE-LIVE: .tj-tab-loader selector on tab nav-item needs live confirmation (tabs.js:355)",
+        "setTabVisibility_nav_item_hidden \u2014 RESOLVE-LIVE: [role='tab'] visibility in preview needs live confirmation (tabs.js:373)"
+      ]
     }
   }
 }

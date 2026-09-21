@@ -73,7 +73,7 @@ export const copyWidget = (widgetName) => {
  *           pasteWidget('[data-cy="draggable-widget-container1"]>')  // into a container
  * @tjDom    focus paste target → Cmd/Ctrl+V → pasted clone appears
  */
-export const pasteWidget = (targetSelector = '[data-cy="real-canvas"]') => {
+export const pasteWidget = (targetSelector = '[data-cy="real-canvas"][data-parentid="canvas"]') => {
   cy.get(targetSelector).realPress([modKey(), "v"]);
   // The clone lands on top of the original; give the editor a beat to render it.
   cy.wait(1000);
@@ -125,7 +125,11 @@ export const openComponentInspectorMenu = (widgetName) => {
  */
 export const selectComponentInspectorMenuOption = (widgetName, option) => {
   openComponentInspectorMenu(widgetName);
-  cy.get(`[data-cy="component-inspector-${option}-button"]`).click();
+  // The ⋮ dropdown animates in — wait for the option to be visible before
+  // clicking, otherwise the click lands on the still-animating overlay and misses.
+  cy.get(`[data-cy="component-inspector-${option}-button"]`)
+    .should('be.visible')
+    .click();
 };
 
 /**
@@ -182,7 +186,10 @@ export const deleteWidgetFromMenu = (widgetName) => {
  */
 export const selectAllWidgets = () => {
   cy.forceClickOnCanvas();
-  cy.get('[data-cy="real-canvas"]')
+  // data-parentid="canvas" scopes to the root canvas only — sub-canvases inside
+  // container widgets (Tabs, Listview, etc.) share data-cy="real-canvas" but carry
+  // a component-UUID data-parentid, so the bare selector matches N+1 elements.
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]')
     .click("topLeft", { force: true })
     .realPress([modKey(), "a"]);
   cy.wait(500);
@@ -219,7 +226,7 @@ export const verifySelectedWidgetCount = (expectedCount) => {
  * @tjDom    focus canvas → Cmd/Ctrl+Z
  */
 export const undo = () => {
-  cy.get('[data-cy="real-canvas"]').realPress([modKey(), "z"]);
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').realPress([modKey(), "z"]);
   cy.wait(500);
 };
 
@@ -229,7 +236,7 @@ export const undo = () => {
  * @tjDom    focus canvas → Cmd/Ctrl+Shift+Z
  */
 export const redo = () => {
-  cy.get('[data-cy="real-canvas"]').realPress([modKey(), "Shift", "z"]);
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').realPress([modKey(), "Shift", "z"]);
   cy.wait(500);
 };
 

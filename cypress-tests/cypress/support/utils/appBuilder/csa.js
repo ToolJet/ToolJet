@@ -20,6 +20,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/appBuilder/components/button";
 import { commonWidgetText } from "Texts/common";
+import { verifyAndModifyParameter } from "Support/utils/appBuilder/properties";
 
 import {
   addSupportCSAData,
@@ -147,13 +148,30 @@ export const addCSA = (componentName, actions) => {
   actions.forEach((action, index) => {
     cy.forceClickOnCanvas();
     cy.wait(200);
-    const xOffset = 100 + (index % 6) * 150;
-    const yOffset = 300 + Math.floor(index / 6) * 100;
+    // Vertical single column on the far-left of the canvas. The previous
+    // 6-wide horizontal grid placed columns at x=550,700,850 which land
+    // inside wide container widgets (Tabs, Listview) dropped near center-x.
+    // A fixed x=50 keeps every button clear of the component under test.
+    const xOffset = 50;
+    const yOffset = 100 + index * 80;
+    // External rewarm before each drag: container widgets (Tabs, Listview) have
+    // multiple sub-canvases whose listener registration + event wiring (selectEvent,
+    // selectCSA, waitForAutoSave) generate enough CDP traffic to push the intercept
+    // past the 800ms internal settle window. Without this, consecutive drags in the
+    // loop throw "No Input.dragIntercepted" on the 2nd+ button. The overhead
+    // (~1s per iteration) is the cost of reliability on container-widget CSA specs.
+    cy.realDragRewarm();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
     // `add-event-handler` only renders once the dropped button's inspector is
     // open (a bare drop no longer auto-opens it). Buttons auto-name button1..N
     // in drop order, so index+1 is the one just dropped.
     openEditorSidebar(`button${index + 1}`);
+    // Set the button's display label to the action name so it's readable in
+    // preview (e.g. "Set visibility" instead of the default "Button").
+    // Properties panel is open by default after openEditorSidebar; selectEvent
+    // below handles switching to the Events tab. Button.text has displayName
+    // "Label" → selector: [data-cy="label-input-field"] — source: button.js:17
+    verifyAndModifyParameter("Label", action.action);
     selectEvent(action.event, "Control Component");
     selectCSA(componentName, action.action);
     cy.waitForAutoSave();

@@ -29,7 +29,7 @@ export const selectAndVerifyDate = (
 ) => {
   const splitDate = date.split("/");
   const month = moment(splitDate[1]).format("MMMM");
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').click({ force: true });
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .click()
     .within(() => {
@@ -67,7 +67,7 @@ export const verifyDate = (widgetName, date, format = "DD/MM/YYYY") => {
  * @tjDom    rendered widget → calendar time input, types then asserts its value
  */
 export const selectAndVerifyTime = (widgetName, time) => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').click({ force: true });
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .scrollIntoView()
     .click()

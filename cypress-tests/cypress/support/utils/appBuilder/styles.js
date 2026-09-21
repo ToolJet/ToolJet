@@ -42,17 +42,32 @@ export const selectColourFromColourPicker = (
   } else {
     cy.get(commonWidgetSelector.stylePicker(paramName)).eq(hasIndex).click();
   }
-  // The style colour popover now opens on a Theme/Color-picker ToggleGroup
-  // (ee/modules/Appbuilder/components/ColorSwatches/ColorSwatches.jsx:99-118).
-  // It can default to the "Theme" swatches view, which renders no
-  // react-color SketchPicker (no rc-editable-input fields). Click the
-  // "Color picker" toggle (`togglr-button-color`, ToggleGroupItem.jsx:13) so
-  // the editable hex/rgba inputs are present before we type into them.
+  // The style colour popover may default to a "Theme" swatches view with no
+  // react-color SketchPicker (no rc-editable-input fields). We need to be in
+  // "Color picker" mode so the hex/rgba inputs are present.
+  //
+  // Guard: check for the ABSENCE of rc-editable-input fields — not for the
+  // presence of togglr-button-color. Checking togglr-button-color visibility
+  // was doubly wrong:
+  //   1. The jQuery snapshot runs before the popover animation completes, so
+  //      the button is in the DOM but not yet `:visible` → check returns false
+  //      even when in swatches mode.
+  //   2. Clicking togglr-button-color when the picker is ALREADY in color mode
+  //      (button is the active one) switches it OFF → swatches mode replaces
+  //      the SketchPicker, removing the inputs.
+  // Checking `rc-editable-input` absence is safe in both modes: present means
+  // we are already in color mode (no click needed); absent means we are in
+  // swatches mode and clicking the toggle is correct.
   cy.get("body").then(($b) => {
-    if ($b.find('[data-cy="togglr-button-color"]:visible').length > 0) {
+    const hasInputs = $b.find('[id*="rc-editable-input-"]').length > 0;
+    if (!hasInputs && $b.find('[data-cy="togglr-button-color"]').length > 0) {
       cy.get('[data-cy="togglr-button-color"]').click();
     }
   });
+  // Wait for the SketchPicker's editable inputs to be in the DOM before typing.
+  // Without this, the forEach loop starts before the picker has rendered its
+  // input fields (race between the toggle click re-render and the cy.get chain).
+  cy.get('[id*="rc-editable-input-"]', { timeout: 5000 }).should('have.length.at.least', 2);
   cy.get(parent)
     .eq(index)
     .then(() => {
@@ -79,7 +94,9 @@ export const selectColourFromColourPicker = (
   // selectColourFromColourPicker's swatch click fail ("covered by another
   // element"). Dismiss it by clicking the canvas (a real mousedown OUTSIDE the
   // popover, which the OverlayTrigger's rootClose listens for) before returning.
-  cy.get(commonSelectors.canvas).click("topRight", { force: true });
+  // data-parentid="canvas" scopes to the root canvas — sub-canvases in container
+  // widgets share data-cy="real-canvas" but use a component-UUID data-parentid.
+  cy.get('[data-cy="real-canvas"][data-parentid="canvas"]').click("topRight", { force: true });
 };
 
 /**
