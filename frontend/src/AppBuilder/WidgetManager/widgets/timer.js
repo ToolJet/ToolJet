@@ -32,6 +32,12 @@ export const timerConfig = {
         defaultValue: 'countUp',
       },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   validation: {},
   events: {
@@ -75,6 +81,7 @@ export const timerConfig = {
       type: {
         value: 'countUp',
       },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     defaults: [
       {

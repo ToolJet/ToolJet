@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  setCurrentAppName,
+  setCurrentAppMeta,
+  markAppLoadStart,
+  markAppLoaded,
+} from '@/_services/frontend-metrics.service';
+import {
   appEnvironmentService,
   appService,
   appsService,
@@ -61,6 +67,10 @@ const useAppData = (
   // module read is happening in the context of an app the user can edit, even when they have
   // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
+  // Slug of the top-level host app for an embedded module. Constants are org-scoped, so an
+  // anonymous public viewer (no JWT) fetches the module's constants through the parent's
+  // public slug — the same anonymous-safe /public/:slug path the host app itself uses.
+  const parentAppSlug = useStore((state) => state.appStore?.modules?.['canvas']?.app?.slug);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
@@ -173,9 +183,38 @@ const useAppData = (
     return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
   });
 
+  useEffect(() => {
+    setCurrentAppName(appName || '');
+    return () => setCurrentAppName('');
+  }, [appName]);
+
+  useEffect(() => {
+    setCurrentAppMeta({
+      environment: selectedEnvironment?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+    });
+    return () => setCurrentAppMeta({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.name, selectedVersion?.display_name, selectedVersion?.displayName, selectedVersion?.name]);
+
+  useEffect(() => {
+    markAppLoadStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isComponentLayoutReady) markAppLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComponentLayoutReady]);
+
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
   const previousRestoreTimestamp = usePrevious(restoreTimestamp);
+  // Used to trigger the same refresh in place, without unmounting the editor chrome
+  const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
+  const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
+  const setCanvasReloading = useStore((state) => state.setCanvasReloading);
+  const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
   const location = useRouter().location;
 
@@ -390,8 +429,17 @@ const useAppData = (
             // on the module's slug. ModuleViewer already resolved the parent's environment
             // id/name — reuse them instead of re-resolving.
             editorEnvironment = { id: environmentId, name: environmentName };
+            // An anonymous viewer of a public host app has no JWT, so the auth-gated
+            // /environment/:id endpoint 401s and the module's constants come back empty.
+            // Constants are org-scoped and the module shares the host's org, so fetch them
+            // through the host's public slug instead. Authenticated viewers keep the JWT
+            // path — the public slug would 403 for a private host app.
+            const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
             try {
-              constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId);
+              constantsResp =
+                isUnauthenticated && parentAppSlug
+                  ? await orgEnvironmentConstantService.getConstantsFromPublicApp(parentAppSlug, environmentId)
+                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId);
             } catch (error) {
               console.error('Error fetching module constants:', error);
             }
@@ -477,8 +525,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -537,16 +585,17 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        if (!moduleMode || moduleId === 'canvas') {
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
+        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
+        // and modules — the module editor's Canvas styles fields read these, so gating this to
+        // non-modules left module mode/theme unpopulated.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
         }
+        setGlobalSettings(global_settings);
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
           setPageSettings(
@@ -665,7 +714,9 @@ const useAppData = (
           );
         }
 
-        if (mode === 'edit' && !moduleMode && setFolders) {
+        const ownsEditableCanvas = !moduleMode || moduleId === 'canvas';
+
+        if (mode === 'edit' && ownsEditableCanvas && setFolders) {
           const versionId = appData.editing_version?.id || appData.current_version_id;
           dataQueryFolderService
             .getAll(versionId)
@@ -675,8 +726,9 @@ const useAppData = (
             })
             .catch(() => {});
         } else if (moduleMode && moduleId === 'canvas' && setFolders) {
-          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
-          // renders the flat query list instead of returning null while waiting for fetch.
+          // View/preview mode inside the module editor: no folder tree needed, just signal
+          // foldersReady so the EE QueryFolderTree renders the flat query list instead of
+          // returning null while it waits.
           setFolders([]);
           setFolderMappings([]);
         }
@@ -913,7 +965,10 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
+    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
     // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
     // env-dropdown init) are written by two independent async flows. On clone -> editor
@@ -923,8 +978,17 @@ const useAppData = (
     // only the stale cross-app window.
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
-    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isAppHistoryChanged) {
-      setEditorLoading(true, moduleId);
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
+      if (isHotReload) {
+        setCanvasReloading(true, moduleId);
+        // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
+        // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
+        // true once the rebuilt canvas settles — that transition is what re-runs the on-load
+        // queries, onPageLoad events and JS libraries.
+        setIsComponentLayoutReady(false, moduleId);
+      } else {
+        setEditorLoading(true, moduleId);
+      }
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
@@ -951,8 +1015,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -973,8 +1037,20 @@ const useAppData = (
           computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
         );
         const homePageId = appData.editing_version.homePageId || appData.editing_version.home_page_id;
-        let startingPage = appData.pages.find((page) => page.id === homePageId) || appData.pages[0];
-        setCurrentPageId(startingPage.id, moduleId);
+        const startingPage = appData.pages.find((page) => page.id === homePageId) || appData.pages[0];
+        // A hot reload keeps the user where they are; everything else lands on the home page
+        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
+        setCurrentPageId(pageToLoad.id, moduleId);
+        if (isHotReload) {
+          // We're staying on the same page, and the refresh may have renamed it — so refresh the
+          // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
+          // hot reload to leave the version/env/history flows behaving exactly as before.
+          setCurrentPageHandle(pageToLoad?.handle, moduleId);
+          setResolvedPageConstants(
+            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
+            moduleId
+          );
+        }
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
         setLinkedApps(appData.linkedApps ?? {}, moduleId);
@@ -1008,7 +1084,7 @@ const useAppData = (
         } else if (isVersionChanged) {
           // Re-fetch datasources on version/branch switch (branch may have different active datasources)
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
-        } else if (isAppHistoryChanged) {
+        } else if (isForceRefreshTriggered) {
           // Re-fetch datasources after app-editor git pull (dummy → real DS swap, or freshly
           // pulled DSes). Without this, queries point to new DS ids but the cached dataSources
           // slice still has stale rows, so the query setup panel shows an empty Source.
@@ -1067,10 +1143,20 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
+        if (isHotReload) {
+          // The canvas stayed mounted, so pair the batch the same way initial load does: open it
+          // before the rebuilt canvas settles and let the layout-ready effect flush it.
+          startExposedValueBatch();
+          // Datasources/modules may be new in this definition (the env branch above only covers
+          // datasources, and only when the environment changed).
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+          if (appData.modules) setModuleDefinition(appData.modules);
+        }
+        setCanvasReloading(false, moduleId);
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

@@ -43,11 +43,11 @@ describe('App name length validation (DTO)', () => {
   });
 });
 
-// '/' is a filesystem path separator once the app (or module — modules are Apps with
-// type='module' and share this DTO) is serialized to git (server/ee/git-sync): a name
-// containing it splits into nested git folders and silently vanishes on the next pull.
+// '/' and '\' are filesystem path separators once the app (or module — modules are Apps
+// with type='module' and share this DTO) is serialized to git (server/ee/git-sync): a name
+// containing either splits into nested git folders and silently vanishes on the next pull.
 /** @group platform */
-describe('App name "/" restriction (DTO)', () => {
+describe('App name path-separator restriction (DTO)', () => {
   const nameError = async (dto: object) => {
     const errors = await validate(dto);
     return errors.find((error) => error.property === 'name');
@@ -59,7 +59,12 @@ describe('App name "/" restriction (DTO)', () => {
       expect((await nameError(dto))?.constraints).toHaveProperty('matches');
     });
 
-    it('should accept a slash-free name', async () => {
+    it('should reject a name containing "\\"', async () => {
+      const dto = plainToInstance(AppCreateDto, { name: 'local\\snowflake', type: 'front-end' });
+      expect((await nameError(dto))?.constraints).toHaveProperty('matches');
+    });
+
+    it('should accept a separator-free name', async () => {
       const dto = plainToInstance(AppCreateDto, { name: 'local-snowflake', type: 'front-end' });
       expect(await nameError(dto)).toBeUndefined();
     });
@@ -71,7 +76,12 @@ describe('App name "/" restriction (DTO)', () => {
       expect((await nameError(dto))?.constraints).toHaveProperty('matches');
     });
 
-    it('should accept a slash-free rename', async () => {
+    it('should reject a rename containing "\\"', async () => {
+      const dto = plainToInstance(AppUpdateDto, { name: 'abc\\appname' });
+      expect((await nameError(dto))?.constraints).toHaveProperty('matches');
+    });
+
+    it('should accept a separator-free rename', async () => {
       const dto = plainToInstance(AppUpdateDto, { name: 'abc-appname' });
       expect(await nameError(dto)).toBeUndefined();
     });
