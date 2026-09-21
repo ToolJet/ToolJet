@@ -137,7 +137,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organizationId,
         environmentId,
         user,
-        opts
+        opts,
+        dataSourceOptions.id
       );
 
       const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
@@ -301,7 +302,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               organizationId,
               environmentId,
               user,
-              opts
+              opts,
+              dataSourceOptions.id
             ));
             if (sourceOptions['oauth_type'] !== 'tooljet_app') {
               sourceOptions['tj_redirect_host'] =
@@ -336,7 +338,17 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'slack' ||
             dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2' ||
-            dataSource.kind === 'servicenow'
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'salesforce' ||
+            dataSource.kind === 'googlecalendar' ||
+            dataSource.kind === 'snowflake' ||
+            dataSource.kind === 'microsoft_graph' ||
+            dataSource.kind === 'hubspot' ||
+            dataSource.kind === 'xero' ||
+            dataSource.kind === 'bigquery' ||
+            dataSource.kind === 'databricks' ||
+            dataSource.kind === 'asana' ||
+            dataSource.kind === 'gmail'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
@@ -510,7 +522,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       {},
       organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      undefined,
+      dataSourceOptions.id
     );
 
     return await service.listTables(
@@ -534,13 +548,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id,
     environmentId = undefined,
     user = undefined,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    dataSourceOptionId = undefined
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
       environmentId,
-      user
+      user,
+      dataSourceOptionId
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
