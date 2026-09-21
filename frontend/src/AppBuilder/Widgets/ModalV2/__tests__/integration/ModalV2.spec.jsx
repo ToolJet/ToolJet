@@ -40,7 +40,14 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
-const MOUNT_MS = 20000;
+// Confirmed via explicit per-step waitFor timeouts (openModal()) that the
+// portal/render itself isn't stuck — each step completes, RTL never throws
+// its own "unable to find X" error. The suite is just genuinely, sometimes
+// severely slower under real CI load than locally (v8 coverageProvider and
+// --workerIdleMemoryLimit on test:ci did not resolve it), so this budget
+// gives real, completing work room to finish instead of chasing removed
+// overhead down to fit under a smaller ceiling.
+const MOUNT_MS = 60000;
 jest.setTimeout(MOUNT_MS);
 
 const ID = 'modal1';
