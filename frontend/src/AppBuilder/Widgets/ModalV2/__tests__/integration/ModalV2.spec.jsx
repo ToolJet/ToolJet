@@ -153,7 +153,7 @@ const handlerSaw = () => store().getVariable('seen', MODULE_ID);
 // expiring with no indication of which step never resolved.
 async function openModal() {
   await waitFor(() => expect(triggerButton()).toBeInTheDocument(), { timeout: 5000 });
-  await widget.session.user.click(triggerButton());
+  rtlFireEvent.click(triggerButton()); // already imported
   await waitFor(() => expect(modalBody()).toBeInTheDocument(), { timeout: 5000 });
 }
 
