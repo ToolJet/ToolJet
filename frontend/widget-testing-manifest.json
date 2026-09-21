@@ -232,11 +232,13 @@
     },
     {
       "componentType": "Divider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Divider/TESTING.md"
     },
     {
       "componentType": "VerticalDivider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/VerticalDivider/TESTING.md"
     },
     {
       "componentType": "Statistics",

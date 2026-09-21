@@ -16,9 +16,9 @@
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { paginationConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/pagination';
-import { paginationConfig as serverConfig } from '../../../../../../server/src/modules/apps/services/widget-config/pagination';
+import { paginationConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/pagination';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, setVariableOn, binding, store, MODULE_ID } from './widgetHarness';
+import { createWidgetHarness, setVariableOn, binding, store, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'pag1';
 const HANDLE = 'pagination1';

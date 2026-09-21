@@ -2,8 +2,13 @@ import { waitFor, within } from '@testing-library/react';
 import { circularProgressbarConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/circularProgressbar';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, binding, store, MODULE_ID } from './widgetHarness';
-import { circularProgressbarConfig as serverConfig } from '../../../../../../server/src/modules/apps/services/widget-config/circularProgressbar';
+import {
+  createWidgetHarness,
+  binding,
+  store,
+  MODULE_ID,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { circularProgressbarConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/circularProgressbar';
 
 const ID = 'circle1';
 const HANDLE = 'circularprogressbar1';
