@@ -6,7 +6,7 @@ import { build } from '../../lib/library/builder';
 import { ApiClient } from '../../lib/library/api-client';
 import { ProjectConfig } from '../../lib/library/project-config';
 import { validateOriginUrl, validateApiToken } from '../../lib/library/target-validation';
-import { formatError, formatSuccess, formatDuration } from '../../lib/log';
+import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
 
 interface ResolvedTarget {
   workspaceId: string;
@@ -74,6 +74,7 @@ export default class ComponentPublish extends Command {
       const result = await build(currentDir, { env: 'production' });
 
       this.log(formatSuccess(`Manifest generated: dist/manifest.json (${result.componentCount} components)`));
+      for (const warning of result.warnings) this.log(formatWarning(warning));
       this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
 
       if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));

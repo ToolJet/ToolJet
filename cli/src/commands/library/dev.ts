@@ -6,7 +6,7 @@ import { ApiClient } from '../../lib/library/api-client';
 import { ProjectConfig } from '../../lib/library/project-config';
 import { DevWatcher } from '../../lib/library/dev-watcher';
 import { validateOriginUrl, validateApiToken } from '../../lib/library/target-validation';
-import { formatError, formatSuccess, formatDuration } from '../../lib/log';
+import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
 
 interface ResolvedTarget {
   workspaceId: string;
@@ -58,6 +58,7 @@ export default class Dev extends Command {
         }
 
         this.log(`  ${formatSuccess(`Built in ${formatDuration(result.buildMs)}`)}`);
+        for (const warning of result.warnings) this.log(`  ${formatWarning(warning)}`);
 
         if (result.tsErrors > 0) {
           this.log(`  ${formatError(`TypeScript compiled (${result.tsErrors} errors)`)}`);

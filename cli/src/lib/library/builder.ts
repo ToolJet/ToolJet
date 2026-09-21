@@ -13,6 +13,7 @@ export interface BuildResult {
   tsErrors: number;
   tsErrorReport: string;
   componentCount: number;
+  warnings: string[];
 }
 
 // esbuild plugin: replaces @tooljet/custom-component-sdk import
@@ -65,7 +66,7 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   });
 
   // Manifest generation via TS Compiler API
-  const { manifest, tsErrorCount, tsErrorReport } = await generateManifest(projectRoot);
+  const { manifest, tsErrorCount, tsErrorReport, warnings } = await generateManifest(projectRoot);
   fs.writeFileSync(
     path.join(distDir, 'manifest.json'),
     isProduction ? JSON.stringify(manifest) : JSON.stringify(manifest, null, 2)
@@ -83,5 +84,6 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
     tsErrors: tsErrorCount,
     tsErrorReport,
     componentCount: Object.keys(manifest.components).length,
+    warnings,
   };
 }

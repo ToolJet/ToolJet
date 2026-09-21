@@ -3,6 +3,11 @@ export function formatError(message: string): string {
   return `\n\x1b[1;31m✗ Error\x1b[0m : ${message}\n`;
 }
 
+// Only the "⚠ Warning" label is colored yellow
+export function formatWarning(message: string): string {
+  return `\x1b[1;33m⚠ Warning\x1b[0m : ${message}`;
+}
+
 // only the "✓" icon is colored, so the message itself stays default-colored and readable in any terminal theme.
 export function formatSuccess(message: string): string {
   return `\x1b[1;32m✓\x1b[0m ${message}`;

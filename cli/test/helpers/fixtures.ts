@@ -112,6 +112,15 @@ export function writeTsErrorProjectFixture(dir: string): void {
   );
 }
 
+// initialValue computed at runtime, so the manifest generator warns instead of recording a default.
+export function writeManifestWarningProjectFixture(dir: string): void {
+  writeValidProjectFixture(dir);
+  fs.writeFileSync(
+    path.join(dir, 'src', 'components', 'HelloWorld', 'index.tsx'),
+    HELLO_WORLD_TSX.replace(`initialValue: 'John'`, `initialValue: String(Date.now())`)
+  );
+}
+
 export function writeEmptyProjectFixture(dir: string): void {
   fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'src', 'global.d.ts'), GLOBAL_DTS);

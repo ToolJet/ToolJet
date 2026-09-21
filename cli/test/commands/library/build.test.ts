@@ -9,6 +9,7 @@ import {
   writeValidProjectFixture,
   writeTsErrorProjectFixture,
   writeEmptyProjectFixture,
+  writeManifestWarningProjectFixture,
 } from '../../helpers/fixtures';
 
 describe('library build', () => {
@@ -37,6 +38,20 @@ describe('library build', () => {
     expect(result.exitCode).to.be.undefined;
     expect(process.exitCode).to.equal(1);
     expect(result.stdout).to.match(/TypeScript compiled \(\d+ errors\)/);
+
+    process.exitCode = originalExitCode;
+  }).timeout(30000);
+
+  it('prints manifest warnings without failing the build', async () => {
+    writeManifestWarningProjectFixture(cwd.get());
+    const originalExitCode = process.exitCode;
+
+    const result = await runCommand(Build);
+
+    expect(result.exitCode).to.be.undefined;
+    expect(process.exitCode).to.not.equal(1);
+    expect(result.stdout).to.include('Warning');
+    expect(result.stdout).to.include(`Prop "firstName" in component "HelloWorld": initialValue isn't a static literal`);
 
     process.exitCode = originalExitCode;
   }).timeout(30000);
