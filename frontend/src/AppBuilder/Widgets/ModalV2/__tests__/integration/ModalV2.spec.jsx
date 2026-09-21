@@ -803,16 +803,16 @@ describe('ModalV2: canvas scroll lock', () => {
 
   const canvasContent = () => document.querySelector('.canvas-content');
 
-  // BUG (unfixed, characterized per D-02, decision recorded 2026-09-15): with
-  // loadingState/disabledTrigger/disabledModal all configured — the widget's
-  // own normal default state, present on every real ModalV2 instance —
-  // `useExposeState`'s several on-mount sync effects push the modal's portal
-  // attachment to a later render pass than `ModalV2.jsx`'s own
-  // `onShowSideEffects` effect (tied only to `[showModal]`). That effect never
-  // reruns, so if it fires before the portal exists, the canvas scroll lock
-  // silently never engages. Reproduced via a clean bisection: present with all
-  // three of those properties configured together, absent with any one or two.
-  test.failing('[ModalV2-SCROLL-001] opening locks canvas scroll; closing it restores scroll', async () => {
+  // Fixed (previously characterized per D-02, decision recorded 2026-09-15):
+  // `ModalV2.jsx`'s `container` prop was resolved eagerly at render time
+  // (`document.getElementsByClassName('tj-canvas-area')?.[0] || ...`), which
+  // returns nothing on the render before the canvas has committed. That raced
+  // `onShowSideEffects` (tied only to `[showModal]`, never reruns) against
+  // `@restart/ui`'s own portal-target resolution, so the canvas scroll lock
+  // could silently never engage. Passing `container` as a function instead
+  // lets `@restart/ui`'s `useWaitForDOMRef` resolve it lazily, post-commit,
+  // exactly as that hook is designed to be used — removing the race.
+  test('[ModalV2-SCROLL-001] opening locks canvas scroll; closing it restores scroll', async () => {
     renderModal();
     expect(canvasContent()).not.toHaveStyle({ overflow: 'hidden' });
 

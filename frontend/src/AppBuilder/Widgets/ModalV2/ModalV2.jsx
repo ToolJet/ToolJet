@@ -313,7 +313,7 @@ export const ModalV2 = function Modal({
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={
+        container={() =>
           document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
         }
         size={size}
