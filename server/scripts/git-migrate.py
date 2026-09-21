@@ -31,9 +31,11 @@ What it does (all idempotent — safe to re-run):
      dashboard folder name) becomes `-`, directories are moved to the flattened
      path and app.json's `name` is rewritten to match.
 
-  3. Strips the transitional `updatedAt` field from every apps/**/app/app.json and
-     modules/**/app/app.json if present. Change detection now uses git's own tree
-     SHAs (computed at pull time), so no per-resource token lives in the files.
+  3. Strips transitional fields from every apps/**/app/app.json and
+     modules/**/app/app.json: `updatedAt` (change detection now uses git's own tree
+     SHAs, computed at pull time, so no per-resource token lives in the files) and
+     `name` (the on-disk directory is the sole source of truth for a resource's
+     name; the server neither writes nor reads app.json's `name` anymore).
 
   4. Restructures data sources:
         data-sources/<co_relation_id>.json
@@ -131,10 +133,6 @@ def to_abs(repo: str, rel: str) -> str:
 def sanitize(value: str) -> str:
     """Resource name → directory-safe name. `/` is the on-disk separator."""
     return value.replace("/", "-").replace("\\", "-")
-
-
-def has_separator(value: str) -> bool:
-    return "/" in value or "\\" in value
 
 
 def prune_empty_dirs(repo: str, start_rel: str, stop_rel: str) -> None:
@@ -410,7 +408,7 @@ def assert_no_path_clashes(resources: list, plans: list) -> None:
 
 
 def apply_name_fixes(repo: str, resource_folder: str, plans: list, dry_run: bool) -> int:
-    for resource, new_path, new_name in plans:
+    for resource, new_path, _new_name in plans:
         src, dst = to_abs(repo, resource.path), to_abs(repo, new_path)
         log(f"  ~ {resource.path} -> {new_path}")
         if not dry_run:
@@ -419,17 +417,20 @@ def apply_name_fixes(repo: str, resource_folder: str, plans: list, dry_run: bool
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.move(src, dst)
             prune_empty_dirs(repo, resource.path.rsplit("/", 1)[0], resource_folder)
-
-            app_json_path = os.path.join(dst, "app", "app.json")
-            app_json = read_app_json(repo, new_path)
-            if app_json is not None and isinstance(app_json.get("name"), str) and has_separator(app_json["name"]):
-                app_json["name"] = new_name
-                write_app_json(app_json_path, app_json)
+            # app.json's `name` is not rewritten here — step 3 strips it entirely,
+            # since the server names a resource from its directory, not app.json.
         resource.path = new_path
     return len(plans)
 
 
-# ── 3. strip app.json updatedAt ──────────────────────────────────────────────
+# ── 3. strip app.json transitional fields (updatedAt, name) ──────────────────
+
+# Fields the meta-free server no longer emits and never reads back, so they are
+# dead weight the first real push would strip anyway (a spurious diff):
+#   - updatedAt: change detection now uses git tree SHAs, not a per-file token.
+#   - name:      the on-disk directory is the sole source of truth for a resource's
+#                name (see getAppMetadata / validateAppJsonForImport on the server).
+APP_JSON_STALE_FIELDS = ("updatedAt", "name")
 
 
 def iter_app_jsons(repo: str):
@@ -451,12 +452,16 @@ def migrate_app_jsons(repo: str, dry_run: bool) -> int:
         except (json.JSONDecodeError, OSError) as exc:
             log(f"  ! skipping unreadable {app_json_path}: {exc}")
             continue
-        if not isinstance(data, dict) or "updatedAt" not in data:
+        if not isinstance(data, dict):
+            continue
+        stale = [field for field in APP_JSON_STALE_FIELDS if field in data]
+        if not stale:
             continue  # nothing to strip
 
-        del data["updatedAt"]
+        for field in stale:
+            del data[field]
         rel = os.path.relpath(app_json_path, repo)
-        log(f"  - updatedAt -> {rel}")
+        log(f"  - {', '.join(stale)} -> {rel}")
         if not dry_run:
             write_app_json(app_json_path, data)
         changed += 1
@@ -588,7 +593,7 @@ def run(repo: str, dry_run: bool) -> None:
         renamed += apply_name_fixes(repo, folder, plans, dry_run)
     log(f"   {renamed} app/module director{'y' if renamed == 1 else 'ies'} flattened\n")
 
-    log("3. strip app.json updatedAt")
+    log("3. strip app.json transitional fields (updatedAt, name)")
     app_changes = migrate_app_jsons(repo, dry_run)
     log(f"   {app_changes} app.json file(s) updated\n")
 
