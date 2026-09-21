@@ -1,2 +1,2 @@
-npx lint-staged
+npx lint-staged --no-stash
 bash scripts/sync-skills.sh --check

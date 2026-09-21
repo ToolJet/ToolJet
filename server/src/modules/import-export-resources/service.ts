@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
@@ -85,6 +85,11 @@ export class ImportExportResourcesService {
     isTemplateApp = false,
     manager?: EntityManager
   ) {
+    // Reject cross-org organization_id (tj-ee#5465).
+    if (importResourcesDto.organization_id !== user.organizationId) {
+      throw new ForbiddenException('Cannot import resources into a different organization.');
+    }
+
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
     const importingVersion = importResourcesDto.tooljet_version;
@@ -119,7 +124,7 @@ export class ImportExportResourcesService {
 
       if (!isEmpty(importResourcesDto.app)) {
         for (const appImportDto of importResourcesDto.app) {
-          user.organizationId = importResourcesDto.organization_id;
+          // organization_id is already validated == user.organizationId above — no override needed.
           const createdApp = await this.appImportExportService.import(
             user,
             appImportDto.definition,
@@ -158,6 +163,11 @@ export class ImportExportResourcesService {
   }
 
   async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }], branchId }: CloneResourcesDto) {
+    // Same check as import() — export() below reads tooljet_database before that check would run.
+    if (organization_id !== user.organizationId) {
+      throw new ForbiddenException('Cannot clone resources into a different organization.');
+    }
+
     const tablesForApp = await this.internalTableRepository.findTables(appId);
     const exportResourcesDto: ExportResourcesDto = {
       organization_id,

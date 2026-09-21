@@ -138,7 +138,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
-      RedisModule.forRoot(),
+      RedisModule.forRoot(configs),
     ];
 
     // Add OpenTelemetry Module if enabled

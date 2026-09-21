@@ -36,6 +36,7 @@ import { WhiteLabellingModule } from '@modules/white-labelling/module';
 import { EmailModule } from '@modules/email/module';
 import { OrganizationConstantModule } from '@modules/organization-constants/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
+import { FolderDataSourcesModule } from '@modules/folder-data-sources/module';
 import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AppsModule } from '@modules/apps/module';
@@ -118,6 +119,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await InstanceSettingsModule.register(configs, true),
       await FoldersModule.register(configs, true),
       await FolderAppsModule.register(configs, true),
+      await FolderDataSourcesModule.register(configs, true),
       await DataQueryFoldersModule.register(configs, true),
       await PersonalAccessTokensModule.register(configs, true),
       await SMTPModule.register(configs, true),
