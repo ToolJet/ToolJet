@@ -109,11 +109,13 @@
     },
     {
       "componentType": "RangeSliderV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RangeSliderV2/TESTING.md"
     },
     {
       "componentType": "StarRating",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/StarRating/TESTING.md"
     },
     {
       "componentType": "DropdownV2",
