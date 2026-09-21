@@ -6,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, dataCy, currentMode } = props;
+  const { height, properties, styles, id, setExposedVariable, dataCy, componentName, currentMode } = props;
   const { moduleId } = useModuleContext();
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
@@ -171,6 +171,7 @@ export const CustomComponent = (props) => {
       data-cy={dataCy}
     >
       <iframe
+        title={componentName}
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}
         ref={iFrameRef}
