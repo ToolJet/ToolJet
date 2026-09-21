@@ -3,9 +3,11 @@ import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, dataCy } = props;
+  const { height, properties, styles, id, setExposedVariable, dataCy, currentMode } = props;
+  const { moduleId } = useModuleContext();
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
@@ -50,7 +52,7 @@ export const CustomComponent = (props) => {
             const requestId = e.data.requestId;
             // Run the query and post the result back to the iframe
             // Result structure matches queries.queryName.run() — always resolves with { status, data, ... }
-            onEvent('onTrigger', [], options)
+            onEvent('onTrigger', [], options, currentMode, moduleId)
               .then((result) => {
                 if (iFrameRef.current?.contentWindow) {
                   iFrameRef.current.contentWindow.postMessage(
@@ -114,7 +116,7 @@ export const CustomComponent = (props) => {
         }
       }
     };
-  }, [id, onEvent]);
+  }, [id, onEvent, currentMode, moduleId]);
 
   const sendMessageToIframe = ({ message }) => {
     if (!iFrameRef.current) return;
