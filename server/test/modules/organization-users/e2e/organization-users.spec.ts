@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -548,6 +549,196 @@ describe('OrganizationUsersController', () => {
           .send();
 
         expect(developerRequestResponse.statusCode).toBe(403);
+      });
+    });
+
+    describe('PUT /api/organization-users/:id | Update user', () => {
+      it('should allow an admin to update a user and emit an audit log entry', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceId: targetUserData.user.id,
+          resourceName: targetUserData.user.email,
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              metadata: { department: 'finance' },
+            },
+          },
+        });
+      });
+
+      it('should record the new role in the audit log entry when only role is changed', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin-role@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target-role@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ role: 'builder' })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              role: 'builder',
+            },
+          },
+        });
+        // Metadata wasn't part of this request — shouldn't be fabricated in the audit entry.
+        expect(payload.resourceData.updated_user).not.toHaveProperty('metadata');
+      });
+
+      it('should return 403 for non-admin users', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin2@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const developerUserData = await createUser(app, {
+          email: 'update-developer@tooljet.io',
+          groups: ['developer', 'end-user'],
+          organization,
+        });
+        const developerSession = await buildTestSession(developerUserData.user, organization.id);
+        developerUserData['tokenCookie'] = developerSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target2@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(403);
+      });
+    });
+
+    describe('POST /api/organization-users/upload-csv | Bulk upload users', () => {
+      it('should emit an audit log entry for a bulk-uploaded user', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent = 'first name,last name,email,user role,group\nBulk,User,bulk-csv-user@tooljet.io,End User,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceName: 'bulk-csv-user@tooljet.io',
+        });
+      });
+
+      it('should emit one audit log entry per user when uploading multiple rows', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin-multi@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent =
+          'first name,last name,email,user role,group\n' +
+          'Amara,Chen,amara-bulk@tooljet.io,End User,\n' +
+          'Diego,Silva,diego-bulk@tooljet.io,Builder,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+        expect(auditEmits).toHaveLength(2);
+
+        const resourceNames = auditEmits.map((entry) => entry.resourceName).sort();
+        expect(resourceNames).toEqual(['amara-bulk@tooljet.io', 'diego-bulk@tooljet.io']);
+
+        for (const entry of auditEmits) {
+          expect(entry).toMatchObject({
+            userId: adminUserData.user.id,
+            actionType: 'USER_INVITE',
+            resourceType: 'OrganizationUser',
+          });
+        }
       });
     });
   });

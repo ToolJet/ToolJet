@@ -23,5 +23,10 @@
       "fileMatch": ["/*.manifest.json"],
       "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
     }
-  ]
+  ],
+  "CodeGPT.apiKey": "CodeGPT Plus Beta",
+  // jest.config.js lives in frontend/, not the repo root — without this the
+  // Jest extension silently finds no tests.
+  "jest.rootPath": "frontend",
+  "jest.runMode": "on-demand"
 }

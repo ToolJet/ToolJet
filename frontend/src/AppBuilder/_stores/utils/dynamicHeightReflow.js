@@ -598,7 +598,10 @@ export const resolveContainerHeight = ({
     return 0;
   }
 
-  if (!visibility) {
+  // A ModalV2's `visibility` property ("Modal trigger visibility") controls the trigger BUTTON, not the modal body.
+  // The modal can be opened programmatically while its trigger is hidden, so its body height must still be derived from children.
+  // Every other container is genuinely hidden when `visibility` is false and keeps its static height.
+  if (!visibility && componentType !== 'ModalV2') {
     return containerHeight;
   }
 

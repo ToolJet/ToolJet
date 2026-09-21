@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { logout } from "Support/utils/common";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 import {
