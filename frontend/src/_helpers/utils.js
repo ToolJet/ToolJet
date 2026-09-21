@@ -12,6 +12,7 @@ import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const reservedKeyword = ['app', 'window'];
 
@@ -141,6 +142,7 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
       console.log('the erro is', { error, code });
     }
   }
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 }
@@ -148,7 +150,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   let resolvedStr = str;
 
   // Resolve {{object}}
-  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeRegex = /(\{\{.+?\}\})/gs;
   const codeMatches = resolvedStr.match(codeRegex);
 
   if (codeMatches) {
@@ -311,7 +313,7 @@ export function resolveReferences(
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 }
 
@@ -1354,7 +1356,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = 0;
   let shouldRemoveSpace = true;
   while (iter < str.length) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'le') {
       shouldRemoveSpace = true;
@@ -1368,7 +1370,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = str.length - 1;
   shouldRemoveSpace = true;
   while (iter >= 0) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'ri') {
       shouldRemoveSpace = true;
