@@ -17,12 +17,15 @@ export interface ManifestEvent {
   name: string;
 }
 
+// Mirrors ActionParamDef.type in @tooljet/custom-component-sdk; each maps to an EventManager param renderer.
+const ACTION_PARAM_TYPES = ['code', 'toggle', 'select', 'switch', 'color'] as const;
+
 export interface ManifestActionParam {
   handle: string;
   displayName?: string;
   defaultValue?: unknown;
-  type?: 'text' | 'toggle' | 'select';
-  options?: { name: string; value: string }[]; // only present when type === 'select'
+  type?: (typeof ACTION_PARAM_TYPES)[number];
+  options?: { name: string; value: string }[]; // only present when type is 'select' or 'switch'
 }
 
 export interface ManifestAction {
@@ -56,10 +59,17 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateEnumeration: 'enumeration',
 };
 
+// Exposed variables the builder's LibraryComponent always sets; a prop or action with one of these names would clobber it.
+const RESERVED_EXPOSED_NAMES = new Set(['isVisible', 'isLoading', 'setVisibility', 'setLoading']);
+
+// Marks a value that can't be worked out without running the component.
+const NOT_STATIC = Symbol('NOT_STATIC');
+
 export interface ManifestResult {
   manifest: Manifest;
   tsErrorCount: number;
   tsErrorReport: string;
+  warnings: string[];
 }
 
 export async function generateManifest(projectRoot: string): Promise<ManifestResult> {
@@ -77,6 +87,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
   const checker = program.getTypeChecker();
 
   const components: Record<string, ManifestComponent> = {};
+  const warnings: string[] = [];
 
   // Walk exports of src/index.ts
   const sourceFile = program.getSourceFile(entryFile);
@@ -103,7 +114,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
     const decl = resolvedSymbol.declarations?.[0];
     if (!decl) continue;
 
-    const component = walkComponentDeclaration(decl, checker, componentName);
+    const component = walkComponentDeclaration(decl, checker, componentName, warnings);
     if (component) components[componentName] = component;
   }
 
@@ -118,13 +129,19 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
         })
       : '';
 
-  return { manifest: { components }, tsErrorCount: tsErrors.length, tsErrorReport };
+  return {
+    manifest: { components },
+    tsErrorCount: tsErrors.length,
+    tsErrorReport,
+    warnings,
+  };
 }
 
 function walkComponentDeclaration(
   decl: ts.Declaration,
   checker: ts.TypeChecker,
-  componentName: string
+  componentName: string,
+  warnings: string[]
 ): ManifestComponent | null {
   // Only treat exports that look like React components as components — anything
   // else (types, constants, plain helper functions) is skipped rather than showing
@@ -134,18 +151,221 @@ function walkComponentDeclaration(
     return null;
   }
 
-  // Find the function body of the exported component
-  // Walk call expressions matching ToolJet.useStateXxx / useEventCallback / useComponentSettings
+  // Walk call expressions matching ToolJet.useStateXxx / useEventCallback / useAction / useComponentSettings.
   // Constraint: only top-level calls in function body (not inside nested functions/callbacks)
 
   const props: ManifestProp[] = [];
   const events: ManifestEvent[] = [];
   const actions: ManifestAction[] = [];
-  const propNames = new Set<string>();
   const eventNames = new Set<string>();
-  const actionNames = new Set<string>();
+  // Props and actions both land on the component's exposed variables, so they share one namespace.
+  const exposedNames = new Map<string, 'prop' | 'action'>();
   let defaultWidth = 6;
   let defaultHeight = 5;
+
+  const claimExposedName = (name: string, kind: 'prop' | 'action') => {
+    if (RESERVED_EXPOSED_NAMES.has(name)) {
+      throw new Error(`Name "${name}" in component "${componentName}" is reserved by ToolJet.`);
+    }
+    const owner = exposedNames.get(name);
+    if (owner === kind) {
+      throw new Error(`Duplicate ${kind} name "${name}" in component "${componentName}".`);
+    }
+    if (owner) {
+      throw new Error(`Name "${name}" in component "${componentName}" is used by both a prop and an action.`);
+    }
+    exposedNames.set(name, kind);
+  };
+
+  const readOptions = (arg: ts.Expression | undefined, hookContext: string) => {
+    const options = arg && resolveObjectLiteral(arg, checker);
+    if (!options) {
+      throw new Error(`${hookContext}: options must be an object literal or a const object.`);
+    }
+    return options;
+  };
+
+  const readName = (options: ts.ObjectLiteralExpression, hookContext: string) => {
+    const name = readStringProp(options, 'name', checker, hookContext);
+    if (!name) {
+      throw new Error(`${hookContext} is missing a "name".`);
+    }
+    return name;
+  };
+
+  // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'code', ... })
+  const collectProp = (node: ts.CallExpression, method: string, hookContext: string) => {
+    const options = readOptions(node.arguments[0], hookContext);
+    const name = readName(options, hookContext);
+    const propContext = `${hookContext}, prop "${name}"`;
+    claimExposedName(name, 'prop');
+
+    const label = readStringProp(options, 'label', checker, propContext);
+    const description = readStringProp(options, 'description', checker, propContext);
+    const inspector = readStringProp(options, 'inspector', checker, propContext);
+    const section = readStringProp(options, 'section', checker, propContext);
+
+    let defaultValue: unknown;
+    const initialValueNode = getPropNode(options, 'initialValue', checker);
+    if (initialValueNode) {
+      const value = evalLiteralNode(initialValueNode, checker);
+      // Not an error: the component falls back to its own initialValue at runtime, only the builder default is lost.
+      if (value === NOT_STATIC) {
+        warnings.push(
+          `Prop "${name}" in component "${componentName}": initialValue isn't a static literal, so the builder shows no default. The component still uses it at runtime.`
+        );
+      } else {
+        defaultValue = value;
+      }
+    }
+
+    let enumValues: string[] | undefined;
+    const enumDefNode = getPropNode(options, 'enumDefinition', checker); // useStateEnumeration only
+    if (enumDefNode) {
+      const values = evalLiteralNode(enumDefNode, checker);
+      if (!Array.isArray(values)) {
+        throw new Error(`${propContext}: "enumDefinition" must be an array literal or a const array.`);
+      }
+      if (values.some((v) => typeof v !== 'string')) {
+        throw new Error(
+          `Invalid enumDefinition in component "${componentName}", prop "${name}": all values must be string literals.`
+        );
+      }
+      enumValues = values;
+    }
+
+    let enumLabels: Record<string, string> | undefined;
+    const enumLabelsNode = getPropNode(options, 'enumLabels', checker); // useStateEnumeration only
+    if (enumLabelsNode) {
+      const labels = evalLiteralNode(enumLabelsNode, checker);
+      if (!isPlainObject(labels)) {
+        throw new Error(`${propContext}: "enumLabels" must be an object literal or a const object.`);
+      }
+      enumLabels = labels as Record<string, string>;
+    }
+
+    props.push({
+      name,
+      type: HOOK_TYPE_MAP[method],
+      default: defaultValue,
+      ...(label ? { label } : {}),
+      ...(description ? { description } : {}),
+      ...(inspector ? { inspector } : {}),
+      ...(enumValues ? { enumValues } : {}),
+      ...(enumLabels ? { enumLabels } : {}),
+      ...(section ? { section } : {}),
+    });
+  };
+
+  // ToolJet.useEventCallback({ name: 'onClick' })
+  const collectEvent = (node: ts.CallExpression, hookContext: string) => {
+    const name = readName(readOptions(node.arguments[0], hookContext), hookContext);
+    if (eventNames.has(name)) {
+      throw new Error(`Duplicate event name "${name}" in component "${componentName}".`);
+    }
+    eventNames.add(name);
+    events.push({ name });
+  };
+
+  // ToolJet.useAction({ name: 'setValue', params: [{ handle: 'value', type: 'code' }] }, handler)
+  const collectAction = (node: ts.CallExpression, hookContext: string) => {
+    const options = readOptions(node.arguments[0], hookContext);
+    const name = readName(options, hookContext);
+    const actionContext = `${hookContext}, action "${name}"`;
+    claimExposedName(name, 'action');
+
+    const displayName = readStringProp(options, 'displayName', checker, actionContext);
+    const paramsNode = getPropNode(options, 'params', checker);
+    if (paramsNode && !ts.isArrayLiteralExpression(paramsNode)) {
+      throw new Error(`${actionContext}: "params" must be an array literal or a const array.`);
+    }
+
+    const params = paramsNode?.elements.map((el) => collectActionParam(el, name, actionContext));
+
+    actions.push({
+      name,
+      ...(displayName ? { displayName } : {}),
+      ...(params?.length ? { params } : {}),
+    });
+  };
+
+  const collectActionParam = (el: ts.Expression, actionName: string, actionContext: string): ManifestActionParam => {
+    const invalidParams = `Invalid params in component "${componentName}", action "${actionName}"`;
+
+    const param = resolveObjectLiteral(el, checker);
+    if (!param) {
+      throw new Error(`${invalidParams}: each param must be an object literal.`);
+    }
+    const handle = readStringProp(param, 'handle', checker, actionContext);
+    if (!handle) {
+      throw new Error(`${invalidParams}: each param needs a string "handle".`);
+    }
+    const paramContext = `${actionContext}, param "${handle}"`;
+
+    const paramDisplayName = readStringProp(param, 'displayName', checker, paramContext);
+    const type = readStringProp(param, 'type', checker, paramContext);
+    if (type && !(ACTION_PARAM_TYPES as readonly string[]).includes(type)) {
+      const expected = ACTION_PARAM_TYPES.map((t) => `"${t}"`).join(', ');
+      throw new Error(`${invalidParams}: param "${handle}" has type "${type}", expected one of ${expected}.`);
+    }
+
+    const defaultValueNode = getPropNode(param, 'defaultValue', checker);
+    const defaultValue = defaultValueNode && evalLiteralNode(defaultValueNode, checker);
+    if (defaultValue === NOT_STATIC) {
+      throw new Error(`${paramContext}: "defaultValue" must be a static literal.`);
+    }
+
+    const optionsNode = getPropNode(param, 'options', checker);
+    let options: { name: string; value: string }[] | undefined;
+    if (optionsNode) {
+      if (!ts.isArrayLiteralExpression(optionsNode)) {
+        throw new Error(`${invalidParams}: param "${handle}"'s "options" must be an array literal or a const array.`);
+      }
+      options = optionsNode.elements.map((optEl) => {
+        const option = resolveObjectLiteral(optEl, checker);
+        const optionName = option && readStringProp(option, 'name', checker, paramContext);
+        const optionValue = option && readStringProp(option, 'value', checker, paramContext);
+        if (typeof optionName !== 'string' || typeof optionValue !== 'string') {
+          throw new Error(
+            `${invalidParams}: param "${handle}"'s "options" entries must be object literals with string "name" and "value".`
+          );
+        }
+        return { name: optionName, value: optionValue };
+      });
+    }
+
+    if ((type === 'select' || type === 'switch') && !options?.length) {
+      throw new Error(`${invalidParams}: param "${handle}" has type "${type}" but no non-empty "options" array.`);
+    }
+
+    return {
+      handle,
+      ...(paramDisplayName ? { displayName: paramDisplayName } : {}),
+      ...(defaultValueNode ? { defaultValue } : {}),
+      ...(type ? { type: type as ManifestActionParam['type'] } : {}),
+      ...(options ? { options } : {}),
+    };
+  };
+
+  // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
+  const applySettings = (node: ts.CallExpression, hookContext: string) => {
+    const [settingsArg] = node.arguments;
+    if (!settingsArg) return;
+
+    const settings = readOptions(settingsArg, hookContext);
+    for (const key of ['defaultWidth', 'defaultHeight'] as const) {
+      const valueNode = getPropNode(settings, key, checker);
+      if (!valueNode) continue;
+
+      const val = evalLiteralNode(valueNode, checker);
+      if (typeof val !== 'number' || !Number.isInteger(val) || val <= 0) {
+        throw new Error(`Invalid "${key}" in component "${componentName}": must be a positive whole number.`);
+      }
+
+      if (key === 'defaultWidth') defaultWidth = val;
+      else defaultHeight = val;
+    }
+  };
 
   const visitor = (node: ts.Node) => {
     if (ts.isCallExpression(node)) {
@@ -156,182 +376,12 @@ function walkComponentDeclaration(
         const method = expr.name.getText();
 
         if (obj === 'ToolJet' && isToolJetSdkIdentifier(expr.expression, checker)) {
-          if (HOOK_TYPE_MAP[method]) {
-            // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'text', ... })
-            const [optionsArg] = node.arguments;
-            if (ts.isObjectLiteralExpression(optionsArg)) {
-              const name = getStringProp(optionsArg, 'name');
-              const label = getStringProp(optionsArg, 'label');
-              const description = getStringProp(optionsArg, 'description');
-              const inspector = getStringProp(optionsArg, 'inspector');
-              const section = getStringProp(optionsArg, 'section');
-              const initialValue = getPropNode(optionsArg, 'initialValue');
-              const enumDef = getPropNode(optionsArg, 'enumDefinition'); // useStateEnumeration only
-              const enumLabelsNode = getPropNode(optionsArg, 'enumLabels'); // useStateEnumeration only
+          const hookContext = `ToolJet.${method} in component "${componentName}"`;
 
-              if (name) {
-                if (propNames.has(name)) {
-                  throw new Error(`Duplicate prop name "${name}" in component "${componentName}".`);
-                }
-                propNames.add(name);
-
-                let enumValues: string[] | undefined;
-                if (enumDef && ts.isArrayLiteralExpression(enumDef)) {
-                  const invalid = enumDef.elements.find((e) => !ts.isStringLiteral(e));
-                  if (invalid) {
-                    throw new Error(
-                      `Invalid enumDefinition in component "${componentName}", prop "${name}": all values must be string literals.`
-                    );
-                  }
-                  enumValues = enumDef.elements.map((e) => (e as ts.StringLiteral).text);
-                }
-
-                let enumLabels: Record<string, string> | undefined;
-                if (enumLabelsNode && ts.isObjectLiteralExpression(enumLabelsNode)) {
-                  enumLabels = evalLiteralNode(enumLabelsNode) as Record<string, string>;
-                }
-
-                props.push({
-                  name,
-                  type: HOOK_TYPE_MAP[method],
-                  default: initialValue ? evalLiteralNode(initialValue) : undefined,
-                  ...(label ? { label } : {}),
-                  ...(description ? { description } : {}),
-                  ...(inspector ? { inspector } : {}),
-                  ...(enumValues ? { enumValues } : {}),
-                  ...(enumLabels ? { enumLabels } : {}),
-                  ...(section ? { section } : {}),
-                });
-              }
-            }
-          }
-
-          if (method === 'useEventCallback') {
-            // ToolJet.useEventCallback({ name: 'onClick' })
-            const [optionsArg] = node.arguments;
-            if (ts.isObjectLiteralExpression(optionsArg)) {
-              const name = getStringProp(optionsArg, 'name');
-
-              if (name) {
-                if (eventNames.has(name)) {
-                  throw new Error(`Duplicate event name "${name}" in component "${componentName}".`);
-                }
-                eventNames.add(name);
-                events.push({ name });
-              }
-            }
-          }
-
-          if (method === 'useAction') {
-            const [optionsArg] = node.arguments;
-            if (ts.isObjectLiteralExpression(optionsArg)) {
-              const name = getStringProp(optionsArg, 'name');
-              const displayName = getStringProp(optionsArg, 'displayName');
-              const paramsNode = getPropNode(optionsArg, 'params');
-
-              if (name) {
-                if (actionNames.has(name)) {
-                  throw new Error(`Duplicate action name "${name}" in component "${componentName}".`);
-                }
-                actionNames.add(name);
-
-                let params: ManifestActionParam[] | undefined;
-                if (paramsNode && ts.isArrayLiteralExpression(paramsNode)) {
-                  params = [];
-                  for (const el of paramsNode.elements) {
-                    if (!ts.isObjectLiteralExpression(el)) {
-                      throw new Error(
-                        `Invalid params in component "${componentName}", action "${name}": each param must be an object literal.`
-                      );
-                    }
-                    const handle = getStringProp(el, 'handle');
-                    if (!handle) {
-                      throw new Error(
-                        `Invalid params in component "${componentName}", action "${name}": each param needs a string "handle".`
-                      );
-                    }
-                    const paramDisplayName = getStringProp(el, 'displayName');
-                    const defaultValueNode = getPropNode(el, 'defaultValue');
-                    const type = getStringProp(el, 'type');
-                    if (type && type !== 'text' && type !== 'toggle' && type !== 'select') {
-                      throw new Error(
-                        `Invalid params in component "${componentName}", action "${name}": param "${handle}" has type "${type}", expected "text", "toggle", or "select".`
-                      );
-                    }
-
-                    const optionsNode = getPropNode(el, 'options');
-                    let options: { name: string; value: string }[] | undefined;
-                    if (optionsNode) {
-                      if (!ts.isArrayLiteralExpression(optionsNode)) {
-                        throw new Error(
-                          `Invalid params in component "${componentName}", action "${name}": param "${handle}"'s "options" must be an array literal.`
-                        );
-                      }
-                      options = optionsNode.elements.map((optEl) => {
-                        if (
-                          !ts.isObjectLiteralExpression(optEl) ||
-                          typeof getStringProp(optEl, 'name') !== 'string' ||
-                          typeof getStringProp(optEl, 'value') !== 'string'
-                        ) {
-                          throw new Error(
-                            `Invalid params in component "${componentName}", action "${name}": param "${handle}"'s "options" entries must be object literals with string "name" and "value".`
-                          );
-                        }
-                        return {
-                          name: getStringProp(optEl, 'name') as string,
-                          value: getStringProp(optEl, 'value') as string,
-                        };
-                      });
-                    }
-
-                    if (type === 'select' && !options?.length) {
-                      throw new Error(
-                        `Invalid params in component "${componentName}", action "${name}": param "${handle}" has type "select" but no non-empty "options" array.`
-                      );
-                    }
-
-                    params.push({
-                      handle,
-                      ...(paramDisplayName ? { displayName: paramDisplayName } : {}),
-                      ...(defaultValueNode ? { defaultValue: evalLiteralNode(defaultValueNode) } : {}),
-                      ...(type ? { type: type as ManifestActionParam['type'] } : {}),
-                      ...(options ? { options } : {}),
-                    });
-                  }
-                }
-
-                actions.push({
-                  name,
-                  ...(displayName ? { displayName } : {}),
-                  ...(params?.length ? { params } : {}),
-                });
-              }
-            }
-          }
-
-          if (method === 'useComponentSettings') {
-            // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
-            const [settingsArg] = node.arguments;
-            if (ts.isObjectLiteralExpression(settingsArg)) {
-              for (const prop of settingsArg.properties) {
-                if (ts.isPropertyAssignment(prop)) {
-                  const key = (prop.name as ts.Identifier).text;
-
-                  if (key === 'defaultWidth' || key === 'defaultHeight') {
-                    const val = evalLiteralNode(prop.initializer);
-                    if (typeof val !== 'number' || !Number.isInteger(val) || val <= 0) {
-                      throw new Error(
-                        `Invalid "${key}" in component "${componentName}": must be a positive whole number.`
-                      );
-                    }
-
-                    if (key === 'defaultWidth') defaultWidth = val;
-                    else defaultHeight = val;
-                  }
-                }
-              }
-            }
-          }
+          if (HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext);
+          else if (method === 'useEventCallback') collectEvent(node, hookContext);
+          else if (method === 'useAction') collectAction(node, hookContext);
+          else if (method === 'useComponentSettings') applySettings(node, hookContext);
         }
       }
     }
@@ -407,23 +457,97 @@ function isToolJetSdkIdentifier(expr: ts.Expression, checker: ts.TypeChecker): b
   );
 }
 
-function getPropNode(obj: ts.ObjectLiteralExpression, key: string): ts.Expression | undefined {
-  for (const prop of obj.properties) {
-    if (!ts.isPropertyAssignment(prop)) continue;
+// Follows parentheses, `as const`/`satisfies` and const bindings (including imports) back to
+// the expression they name. Anything else (let, calls, parameters) is returned unchanged.
+function resolveStaticNode(node: ts.Expression, checker: ts.TypeChecker): ts.Expression {
+  if (
+    ts.isParenthesizedExpression(node) ||
+    ts.isAsExpression(node) ||
+    ts.isSatisfiesExpression(node) ||
+    ts.isTypeAssertionExpression(node)
+  ) {
+    return resolveStaticNode(node.expression, checker);
+  }
 
-    const propName = prop.name;
-    const propKey = ts.isIdentifier(propName) || ts.isStringLiteral(propName) ? propName.text : undefined;
+  if (ts.isIdentifier(node)) {
+    return resolveConstSymbol(checker.getSymbolAtLocation(node), checker) ?? node;
+  }
 
-    if (propKey === key) return prop.initializer;
+  return node;
+}
+
+function resolveConstSymbol(symbol: ts.Symbol | undefined, checker: ts.TypeChecker): ts.Expression | undefined {
+  const target = symbol && symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+  const decl = target?.declarations?.[0];
+
+  if (
+    decl &&
+    ts.isVariableDeclaration(decl) &&
+    decl.initializer &&
+    ts.getCombinedNodeFlags(decl) & ts.NodeFlags.Const
+  ) {
+    return resolveStaticNode(decl.initializer, checker);
   }
 
   return undefined;
 }
 
-function getStringProp(obj: ts.ObjectLiteralExpression, key: string): string | undefined {
-  const node = getPropNode(obj, key);
+// Resolves `node` to an object literal whose spreads all resolve too, so every key can be read statically.
+function resolveObjectLiteral(node: ts.Expression, checker: ts.TypeChecker): ts.ObjectLiteralExpression | undefined {
+  const resolved = resolveStaticNode(node, checker);
+  if (!ts.isObjectLiteralExpression(resolved)) return undefined;
 
-  return node && ts.isStringLiteral(node) ? node.text : undefined;
+  const spreadsResolve = resolved.properties.every(
+    (prop) => !ts.isSpreadAssignment(prop) || resolveObjectLiteral(prop.expression, checker)
+  );
+
+  return spreadsResolve ? resolved : undefined;
+}
+
+function getPropertyKey(prop: ts.ObjectLiteralElementLike): string | undefined {
+  const name = prop.name;
+  return name && (ts.isIdentifier(name) || ts.isStringLiteral(name)) ? name.text : undefined;
+}
+
+// The resolved value of a `key: value` or shorthand `{ key }` property; undefined for methods and accessors.
+function getPropertyValue(prop: ts.ObjectLiteralElementLike, checker: ts.TypeChecker): ts.Expression | undefined {
+  if (ts.isPropertyAssignment(prop)) return resolveStaticNode(prop.initializer, checker);
+
+  if (ts.isShorthandPropertyAssignment(prop)) {
+    return resolveConstSymbol(checker.getShorthandAssignmentValueSymbol(prop), checker) ?? prop.name;
+  }
+
+  return undefined;
+}
+
+// Expects `obj` from resolveObjectLiteral, so every spread in it resolves. Later keys win, as in JS.
+function getPropNode(obj: ts.ObjectLiteralExpression, key: string, checker: ts.TypeChecker): ts.Expression | undefined {
+  for (const prop of [...obj.properties].reverse()) {
+    if (ts.isSpreadAssignment(prop)) {
+      const spread = resolveObjectLiteral(prop.expression, checker);
+      const found = spread && getPropNode(spread, key, checker);
+      if (found) return found;
+    } else if (getPropertyKey(prop) === key) {
+      return getPropertyValue(prop, checker);
+    }
+  }
+
+  return undefined;
+}
+
+// Returns undefined when `key` is absent and throws when it is present but not a static string.
+function readStringProp(
+  obj: ts.ObjectLiteralExpression,
+  key: string,
+  checker: ts.TypeChecker,
+  context: string
+): string | undefined {
+  const node = getPropNode(obj, key, checker);
+  if (!node) return undefined;
+
+  if (ts.isStringLiteralLike(node)) return node.text;
+
+  throw new Error(`${context}: "${key}" must be a string literal or a const string.`);
 }
 
 function toDisplayName(name: string): string {
@@ -434,8 +558,15 @@ function toDisplayName(name: string): string {
     .trim();
 }
 
-function evalLiteralNode(node: ts.Node): unknown {
-  if (ts.isStringLiteral(node)) return node.text;
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+// Folds a literal (or const-bound) expression to its JSON value, or NOT_STATIC if any part of it needs the code to run.
+function evalLiteralNode(expression: ts.Expression, checker: ts.TypeChecker): unknown {
+  const node = resolveStaticNode(expression, checker);
+
+  if (ts.isStringLiteralLike(node)) return node.text;
 
   if (ts.isNumericLiteral(node)) return parseFloat(node.text);
 
@@ -456,25 +587,42 @@ function evalLiteralNode(node: ts.Node): unknown {
 
   if (node.kind === ts.SyntaxKind.NullKeyword) return null;
 
+  if (ts.isIdentifier(node) && node.text === 'undefined') return undefined;
+
   if (ts.isObjectLiteralExpression(node)) {
     const result: Record<string, unknown> = {};
     for (const prop of node.properties) {
-      if (!ts.isPropertyAssignment(prop)) continue;
+      if (ts.isSpreadAssignment(prop)) {
+        const spread = evalLiteralNode(prop.expression, checker);
+        if (!isPlainObject(spread)) return NOT_STATIC;
+        Object.assign(result, spread);
+        continue;
+      }
 
-      const propName = prop.name;
-      const key = ts.isIdentifier(propName) || ts.isStringLiteral(propName) ? propName.text : undefined;
-      if (key === undefined) continue;
+      const key = getPropertyKey(prop);
+      const valueNode = getPropertyValue(prop, checker);
+      if (key === undefined || !valueNode) return NOT_STATIC;
 
-      result[key] = evalLiteralNode(prop.initializer);
+      const value = evalLiteralNode(valueNode, checker);
+      if (value === NOT_STATIC) return NOT_STATIC;
+      result[key] = value;
     }
     return result;
   }
 
   if (ts.isArrayLiteralExpression(node)) {
-    return node.elements.map((e) => evalLiteralNode(e));
+    const result: unknown[] = [];
+    for (const element of node.elements) {
+      const value = evalLiteralNode(ts.isSpreadElement(element) ? element.expression : element, checker);
+      if (value === NOT_STATIC) return NOT_STATIC;
+
+      if (!ts.isSpreadElement(element)) result.push(value);
+      else if (Array.isArray(value)) result.push(...value);
+      else return NOT_STATIC;
+    }
+    return result;
   }
 
-  // Non-literal expression (identifier, call, spread, ...) — value can't be
-  // statically determined.
-  return undefined;
+  // Calls, arithmetic, let bindings, parameters, ... — can't be known without running the component.
+  return NOT_STATIC;
 }

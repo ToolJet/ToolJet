@@ -313,7 +313,7 @@ export const Widget = () => {
     }
   }).timeout(30000);
 
-  it('leaves default undefined when initialValue is not a statically evaluable literal', async () => {
+  it('leaves default undefined and warns when initialValue is not a statically evaluable literal', async () => {
     writeProject(
       cwd.get(),
       `${SDK_IMPORT}
@@ -327,9 +327,11 @@ export const Widget = () => {
 `
     );
 
-    const { manifest } = await generateManifest(cwd.get());
+    const { manifest, warnings } = await generateManifest(cwd.get());
 
     expect(manifest.components.Widget.props[0].default).to.be.undefined;
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.match(/Prop "title" in component "Widget": initialValue isn't a static literal/);
   }).timeout(30000);
 
   it('throws on a duplicate prop name within the same component', async () => {
@@ -528,8 +530,18 @@ export const Widget = () => {
       name: 'configure',
       displayName: 'Configure',
       params: [
-        { handle: 'label', displayName: 'Label', type: 'text', defaultValue: 'Hi' },
+        { handle: 'label', displayName: 'Label', type: 'code', defaultValue: 'Hi' },
         { handle: 'enabled', type: 'toggle', defaultValue: true },
+        { handle: 'tint', type: 'color', defaultValue: '#ff0000' },
+        {
+          handle: 'mode',
+          type: 'switch',
+          defaultValue: 'on',
+          options: [
+            { name: 'On', value: 'on' },
+            { name: 'Off', value: 'off' },
+          ],
+        },
         {
           handle: 'size',
           type: 'select',
@@ -557,8 +569,18 @@ export const Widget = () => {
         name: 'configure',
         displayName: 'Configure',
         params: [
-          { handle: 'label', displayName: 'Label', defaultValue: 'Hi', type: 'text' },
+          { handle: 'label', displayName: 'Label', defaultValue: 'Hi', type: 'code' },
           { handle: 'enabled', defaultValue: true, type: 'toggle' },
+          { handle: 'tint', defaultValue: '#ff0000', type: 'color' },
+          {
+            handle: 'mode',
+            defaultValue: 'on',
+            type: 'switch',
+            options: [
+              { name: 'On', value: 'on' },
+              { name: 'Off', value: 'off' },
+            ],
+          },
           {
             handle: 'size',
             defaultValue: 'sm',
@@ -621,7 +643,7 @@ export const Widget = () => {
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(/each param must be an object literal/);
   }).timeout(30000);
 
-  it('throws on a param type outside text/toggle/select', async () => {
+  it('throws on a param type outside code/toggle/select/switch/color', async () => {
     writeProject(
       cwd.get(),
       `${SDK_IMPORT}
@@ -634,8 +656,24 @@ export const Widget = () => {
     );
 
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(
-      /type "checkbox", expected "text", "toggle", or "select"/
+      /type "checkbox", expected one of "code", "toggle", "select", "switch", "color"/
     );
+  }).timeout(30000);
+
+  // 'text' has no EventManager renderer, so accepting it would crash the builder.
+  it('throws on the legacy "text" param type', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useAction({ name: 'reset', params: [{ handle: 'label', type: 'text' }] }, () => undefined);
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/type "text", expected one of/);
   }).timeout(30000);
 
   it('throws when a select param has no options', async () => {
@@ -651,6 +689,21 @@ export const Widget = () => {
     );
 
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(/type "select" but no non-empty "options"/);
+  }).timeout(30000);
+
+  it('throws when a switch param has no options', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useAction({ name: 'reset', params: [{ handle: 'mode', type: 'switch' }] }, () => undefined);
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(/type "switch" but no non-empty "options"/);
   }).timeout(30000);
 
   it('throws when a select param has an empty options array', async () => {
@@ -686,7 +739,7 @@ export const Widget = () => {
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(/string "name" and "value"/);
   }).timeout(30000);
 
-  it('throws when options is not an array literal', async () => {
+  it('resolves options from a const array', async () => {
     writeProject(
       cwd.get(),
       `${SDK_IMPORT}
@@ -694,6 +747,25 @@ const SIZES = [{ name: 'Small', value: 'sm' }];
 
 export const Widget = () => {
   ToolJet.useAction({ name: 'reset', params: [{ handle: 'size', type: 'select', options: SIZES }] }, () => undefined);
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.actions[0].params?.[0].options).to.deep.equal([{ name: 'Small', value: 'sm' }]);
+  }).timeout(30000);
+
+  it('throws when options is not an array literal or a const array', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+const getSizes = () => [{ name: 'Small', value: 'sm' }];
+
+export const Widget = () => {
+  ToolJet.useAction({ name: 'reset', params: [{ handle: 'size', type: 'select', options: getSizes() }] }, () => undefined);
 
   return <div>Widget</div>;
 };
@@ -718,6 +790,63 @@ export const Widget = () => {
 
     await expect(generateManifest(cwd.get())).to.be.rejectedWith(/Duplicate action name "reset"/);
   }).timeout(30000);
+
+  // Props and actions share the component's exposed-variable namespace, so one would overwrite the other.
+  it('throws when a prop and an action share a name', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStateString({ name: 'value' });
+  ToolJet.useAction({ name: 'value' }, () => undefined);
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    await expect(generateManifest(cwd.get())).to.be.rejectedWith(
+      /Name "value" in component "Widget" is used by both a prop and an action/
+    );
+  }).timeout(30000);
+
+  it('allows an event to share a name with a prop', async () => {
+    writeProject(
+      cwd.get(),
+      `${SDK_IMPORT}
+export const Widget = () => {
+  ToolJet.useStateString({ name: 'change' });
+  ToolJet.useEventCallback({ name: 'change' });
+
+  return <div>Widget</div>;
+};
+`
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.events).to.deep.equal([{ name: 'change' }]);
+  }).timeout(30000);
+
+  for (const [kind, hook] of [
+    ['a prop', `ToolJet.useStateBoolean({ name: 'isVisible' });`],
+    ['an action', `ToolJet.useAction({ name: 'setLoading' }, () => undefined);`],
+  ]) {
+    it(`throws when ${kind} uses a name reserved by the builder`, async () => {
+      writeProject(
+        cwd.get(),
+        `${SDK_IMPORT}
+export const Widget = () => {
+  ${hook}
+
+  return <div>Widget</div>;
+};
+`
+      );
+
+      await expect(generateManifest(cwd.get())).to.be.rejectedWith(/in component "Widget" is reserved by ToolJet/);
+    }).timeout(30000);
+  }
 });
 
 describe('generateManifest - component discovery', () => {
@@ -854,5 +983,174 @@ export { a, b };
     expect(tsErrorReport).to.include('index.tsx');
     // TS errors are reported, not fatal — the manifest is still produced.
     expect(manifest.components).to.have.property('Widget');
+  }).timeout(30000);
+});
+
+// Wraps hook calls (plus any module-level declarations) in a minimal Widget component.
+const widgetWith = (body: string, preamble = '') =>
+  `${SDK_IMPORT}${preamble}
+export const Widget = () => {
+  ${body}
+
+  return <div>Widget</div>;
+};
+`;
+
+describe('generateManifest - static value resolution', () => {
+  const cwd = withTempCwd();
+
+  it('resolves a name from a const, a template literal, shorthand, hoisted options and a spread', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(
+        `const name = 'short';
+  ToolJet.useStateString({ name: KEY });
+  ToolJet.useStateString({ name: \`caption\` });
+  ToolJet.useStateString({ name });
+  ToolJet.useStateString(OPTS);
+  ToolJet.useStateString({ ...BASE, label: 'Sub' });`,
+        `const KEY = 'title';
+const OPTS = { name: 'hoisted' };
+const BASE = { name: 'spread' };
+`
+      )
+    );
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props.map((p) => p.name)).to.deep.equal([
+      'title',
+      'caption',
+      'short',
+      'hoisted',
+      'spread',
+    ]);
+    expect(manifest.components.Widget.props[4].label).to.equal('Sub');
+  }).timeout(30000);
+
+  it('resolves a const imported from another file', async () => {
+    writeProjectFiles(cwd.get(), {
+      'index.ts': `export { Widget } from './Widget';\n`,
+      'constants.ts': `export const SIZE_KEY = 'size';\n`,
+      'Widget.tsx': widgetWith(
+        `ToolJet.useStateNumber({ name: SIZE_KEY });`,
+        `import { SIZE_KEY } from './constants';\n`
+      ),
+    });
+
+    const { manifest } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props.map((p) => p.name)).to.deep.equal(['size']);
+  }).timeout(30000);
+
+  it('resolves const initialValue, params, enumDefinition, as const and enumLabels', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(
+        `ToolJet.useStateString({ name: 's', initialValue: DEFAULT_NAME });
+  ToolJet.useStateEnumeration({ name: 'variant', enumDefinition: VARIANTS, enumLabels: LABELS });
+  ToolJet.useStateEnumeration({ name: 'size', enumDefinition: ['sm', 'lg'] as const });
+  ToolJet.useAction({ name: 'go', params: PARAMS }, () => undefined);`,
+        `const DEFAULT_NAME = 'Ada';
+const VARIANTS = ['bar', 'radial'] as const;
+const LABELS = { bar: 'Bar', radial: 'Radial' };
+const PARAMS = [{ handle: 'v', displayName: 'V' }];
+`
+      )
+    );
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+    const [s, variant, size] = manifest.components.Widget.props;
+
+    expect(s.default).to.equal('Ada');
+    expect(variant.enumValues).to.deep.equal(['bar', 'radial']);
+    expect(variant.enumLabels).to.deep.equal({ bar: 'Bar', radial: 'Radial' });
+    expect(size.enumValues).to.deep.equal(['sm', 'lg']);
+    expect(manifest.components.Widget.actions).to.deep.equal([
+      { name: 'go', params: [{ handle: 'v', displayName: 'V' }] },
+    ]);
+    expect(warnings).to.deep.equal([]);
+  }).timeout(30000);
+
+  const rejections: [string, string, string, RegExp][] = [
+    [
+      'a let name',
+      `ToolJet.useStateString({ name: key });`,
+      `let key = 'title';\n`,
+      /ToolJet\.useStateString in component "Widget": "name" must be a string literal or a const string/,
+    ],
+    [
+      'a name from a function call',
+      `ToolJet.useEventCallback({ name: getKey() });`,
+      `const getKey = () => 'k';\n`,
+      /ToolJet\.useEventCallback in component "Widget": "name" must be a string literal or a const string/,
+    ],
+    [
+      'options from a function call',
+      `ToolJet.useStateString(buildOptions());`,
+      `const buildOptions = () => ({ name: 'x' });\n`,
+      /ToolJet\.useStateString in component "Widget": options must be an object literal or a const object/,
+    ],
+    [
+      'an unresolvable spread',
+      `ToolJet.useStateString({ ...extra, name: 'x' });`,
+      `declare const extra: { label: string };\n`,
+      /ToolJet\.useStateString in component "Widget": options must be an object literal or a const object/,
+    ],
+    [
+      'a missing name',
+      `ToolJet.useAction({ displayName: 'Go' } as any, () => undefined);`,
+      '',
+      /ToolJet\.useAction in component "Widget" is missing a "name"/,
+    ],
+    [
+      'params from a function call',
+      `ToolJet.useAction({ name: 'go', params: makeParams() }, () => undefined);`,
+      `const makeParams = () => [{ handle: 'v' }];\n`,
+      /action "go": "params" must be an array literal or a const array/,
+    ],
+    [
+      'a label from a function call',
+      `ToolJet.useStateString({ name: 's', label: t('Title') });`,
+      `const t = (s: string) => s;\n`,
+      /ToolJet\.useStateString in component "Widget", prop "s": "label" must be a string literal or a const string/,
+    ],
+    [
+      'an enumDefinition from a function call',
+      `ToolJet.useStateEnumeration({ name: 'e', enumDefinition: getVariants() });`,
+      `const getVariants = () => ['a'];\n`,
+      /prop "e": "enumDefinition" must be an array literal or a const array/,
+    ],
+    [
+      'a param defaultValue from a function call',
+      `ToolJet.useAction({ name: 'go', params: [{ handle: 'v', defaultValue: now() }] }, () => undefined);`,
+      `const now = () => 'x';\n`,
+      /action "go", param "v": "defaultValue" must be a static literal/,
+    ],
+  ];
+
+  for (const [label, body, preamble, error] of rejections) {
+    it(`throws on ${label}`, async () => {
+      writeProject(cwd.get(), widgetWith(body, preamble));
+
+      await expect(generateManifest(cwd.get())).to.be.rejectedWith(error);
+    }).timeout(30000);
+  }
+
+  // The shell falls back to the component's own initialValue, so a computed one still works at runtime.
+  it('warns, without failing, on each initialValue that is not static', async () => {
+    writeProject(
+      cwd.get(),
+      widgetWith(`ToolJet.useStateString({ name: 'createdAt', initialValue: new Date().toISOString() });
+  ToolJet.useStateNumber({ name: 'n', initialValue: 2 + 3 });`)
+    );
+
+    const { manifest, warnings } = await generateManifest(cwd.get());
+
+    expect(manifest.components.Widget.props.map((p) => p.name)).to.deep.equal(['createdAt', 'n']);
+    expect(manifest.components.Widget.props.map((p) => p.default)).to.deep.equal([undefined, undefined]);
+    expect(warnings).to.have.length(2);
+    expect(warnings[0]).to.include('Prop "createdAt" in component "Widget"');
+    expect(warnings[1]).to.include('Prop "n" in component "Widget"');
   }).timeout(30000);
 });

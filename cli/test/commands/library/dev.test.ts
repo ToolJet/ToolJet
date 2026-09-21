@@ -235,6 +235,7 @@ function buildResult(overrides: Partial<BuildResult> = {}): BuildResult {
     tsErrors: 0,
     tsErrorReport: '',
     componentCount: 1,
+    warnings: [],
     ...overrides,
   };
 }
@@ -302,6 +303,18 @@ describe('library dev - run() wiring', () => {
 
     expect(dev.stdout()).to.include('TypeScript compiled (2 errors)');
     expect(dev.stdout()).to.include('TS2322: not assignable');
+    expect(uploadMock.mock.callCount()).to.equal(1);
+  }).timeout(30000);
+
+  it('prints manifest warnings but still uploads', async () => {
+    const uploadMock = mock.method(ApiClient.prototype, 'uploadDev', async () => ({ devUploadedAt: 'now' }));
+    const dev = await startDev();
+    cleanupSignals = dev.signalListeners;
+
+    await dev.onRebuild(buildResult({ warnings: ['Prop "x" in component "C": initialValue is computed'] }));
+
+    expect(dev.stdout()).to.include('Warning');
+    expect(dev.stdout()).to.include('Prop "x" in component "C": initialValue is computed');
     expect(uploadMock.mock.callCount()).to.equal(1);
   }).timeout(30000);
 

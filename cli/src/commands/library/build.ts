@@ -1,7 +1,7 @@
 import { Command } from '@oclif/core';
 
 import { build } from '../../lib/library/builder';
-import { formatError, formatSuccess, formatDuration } from '../../lib/log';
+import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
 
 export default class Build extends Command {
   static description = 'Build the component library locally to dist/ (no upload, no auth required)';
@@ -22,6 +22,7 @@ export default class Build extends Command {
       this.log(result.tsErrors > 0 ? formatError(tsCompiledMsg) : formatSuccess(tsCompiledMsg));
       if (result.tsErrors > 0) this.log(`\n${result.tsErrorReport}`);
       this.log(formatSuccess(`Manifest generated: dist/manifest.json (${result.componentCount} components)`));
+      for (const warning of result.warnings) this.log(formatWarning(warning));
       this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
 
       if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));
