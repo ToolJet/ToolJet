@@ -140,10 +140,14 @@ const ON_OPEN_CAPTURE = setVariableOn(ID, 'onOpen');
 const ON_CLOSE_CAPTURE = setVariableOn(ID, 'onClose');
 const handlerSaw = () => store().getVariable('seen', MODULE_ID);
 
+// Explicit (rather than the silent 1000ms) timeouts: on a genuine stuck
+// render, this reports RTL's own "unable to find X" + DOM snapshot at the
+// step that actually failed, instead of the test's outer 20000ms budget
+// expiring with no indication of which step never resolved.
 async function openModal() {
-  await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+  await waitFor(() => expect(triggerButton()).toBeInTheDocument(), { timeout: 5000 });
   await widget.session.user.click(triggerButton());
-  await waitFor(() => expect(modalBody()).toBeInTheDocument());
+  await waitFor(() => expect(modalBody()).toBeInTheDocument(), { timeout: 5000 });
 }
 
 describe('ModalV2: default rendering', () => {
