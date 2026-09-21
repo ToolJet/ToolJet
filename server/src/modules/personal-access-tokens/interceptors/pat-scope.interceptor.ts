@@ -126,7 +126,7 @@ export class PatScopeInterceptor implements NestInterceptor {
       return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
     }
 
-    if (!patAppViewerCanAccess(module)) {
+    if (!patAppViewerCanAccess(module, feature)) {
       return (
         `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
         `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`

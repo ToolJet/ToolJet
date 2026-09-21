@@ -13,6 +13,9 @@ import {
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
+import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
+import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
+import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -85,6 +88,37 @@ describe('PAT scope definition', () => {
     const classified = new Set([...allBundledModules(), ...PAT_UNASSIGNED_MODULES]);
     const unclassified = Object.values(MODULES).filter((m) => !classified.has(m));
     expect(unclassified).toEqual([]);
+  });
+
+  it('never lets naming an app WIDEN the session', () => {
+    /* The invariant the whole design rests on: an app-pinned session is a narrowing. Any feature
+       the viewer surface grants must ALSO be reachable by the same token without an appId, OR be a
+       deliberate viewer-only exception listed here — the boot calls a workspace token has no
+       business making. ORGANIZATION_CONSTANT is why this test exists: granting the module reached
+       plaintext workspace secrets that the same token could not otherwise touch at all. */
+    const VIEWER_ONLY: Array<[MODULES, string | undefined]> = [
+      [MODULES.AUTH, AUTH_FEATURE.AUTHORIZE],
+      [MODULES.ORGANIZATION_CONSTANT, ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP],
+      [MODULES.ORGANIZATION_CONSTANT, ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT],
+      [MODULES.CUSTOM_STYLES, undefined],
+    ];
+    const isViewerOnly = (module: MODULES, feature?: string) =>
+      VIEWER_ONLY.some(([m, f]) => m === module && f === feature);
+
+    // Everything the viewer surface can decrypt, mint or switch with must be denied.
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_DECRYPTED_CONSTANTS,
+      ORGANIZATION_CONSTANT_FEATURE.GET_SECRETS,
+    ]) {
+      expect(patAppViewerCanAccess(MODULES.ORGANIZATION_CONSTANT, feature)).toBe(false);
+      expect(patCanAccess(MODULES.ORGANIZATION_CONSTANT, feature)).toBe(false);
+    }
+    expect(patAppViewerCanAccess(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toBe(false);
+
+    for (const module of PAT_APP_VIEWER_MODULES) {
+      if (isViewerOnly(module, undefined) || VIEWER_ONLY.some(([m]) => m === module)) continue;
+      expect(patCanAccess(module)).toBe(true);
+    }
   });
 
   it('grants a non-empty set of modules', () => {
@@ -199,8 +233,11 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
 
   const session = { isPATLogin: true, patScope: PersonalAccessTokenScope.WORKSPACE, patAppId: APP_ID };
 
-  const run = (module: MODULES | undefined, request: any = {}) =>
-    new PatScopeInterceptor({ get: () => module } as any).intercept(
+  /* The reflector is asked for 'tjModuleId' off the class and 'tjFeatureId' off the handler, so the
+     stub has to answer differently per key — the feature-narrowed modules cannot be exercised with
+     a reflector that returns the same value for both. */
+  const run = (module: MODULES | undefined, feature?: string, request: any = {}) =>
+    new PatScopeInterceptor({ get: (key: string) => (key === 'tjFeatureId' ? feature : module) } as any).intercept(
       {
         getType: () => 'http',
         switchToHttp: () => ({
@@ -215,7 +252,40 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   it('reaches /api/authorize, which an automation token may never touch', () => {
     // The whole point: AUTH is on PAT_NEVER_GRANTABLE for an automation token, and without it the
     // player redirects to /login and never renders.
-    expect(run(MODULES.AUTH)).toBe('HANDLED');
+    expect(run(MODULES.AUTH, AUTH_FEATURE.AUTHORIZE)).toBe('HANDLED');
+  });
+
+  it('reaches /api/authorize and nothing else on AUTH', () => {
+    /* switchWorkspace is a GET on a workspace-level path, so neither the app pin nor the read-only
+       rule touches it: a session pinned to one app could mint its way into another workspace. */
+    expect(() => run(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toThrow(ForbiddenException);
+  });
+
+  it('reads constants by app and environment, but never decrypts them', () => {
+    /* The module as a whole reaches GET /organization-constants/decrypted?type=Secret — plaintext
+       secrets for the entire workspace. No /apps/<uuid> in the path so the app pin does not fire,
+       and it is a GET so read-only does not either. The same token WITHOUT an appId cannot reach
+       this module at all, so granting it wholesale would mean naming an app WIDENED the session. */
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP,
+      ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT,
+    ]) {
+      expect(run(MODULES.ORGANIZATION_CONSTANT, feature)).toBe('HANDLED');
+    }
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_DECRYPTED_CONSTANTS,
+      ORGANIZATION_CONSTANT_FEATURE.GET_SECRETS,
+    ]) {
+      expect(() => run(MODULES.ORGANIZATION_CONSTANT, feature)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('fetches the app definition on a versioned boot', () => {
+    /* useAppData only calls GET /v2/apps/:id/versions/:versionId when the URL carries ?version=,
+       which the measured boot did not — so VERSION read as "never called" and was dropped. A
+       versioned boot 403s without it. */
+    expect(run(MODULES.VERSION, VERSION_FEATURE.GET_ONE)).toBe('HANDLED');
+    expect(() => run(MODULES.VERSION, VERSION_FEATURE.APP_VERSION_UPDATE)).toThrow(ForbiddenException);
   });
 
   it('does not reach the rest of the credential surface', () => {
@@ -232,7 +302,6 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     for (const module of [
       MODULES.APP,
       MODULES.APP_ENVIRONMENTS,
-      MODULES.ORGANIZATION_CONSTANT,
       MODULES.DATA_QUERY,
       MODULES.GLOBAL_DATA_SOURCE,
       MODULES.CUSTOM_STYLES,
@@ -261,33 +330,37 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('is pinned to its own app', () => {
-    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(ForbiddenException);
-    expect(run(MODULES.APP, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
+    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(
+      ForbiddenException
+    );
+    expect(run(MODULES.APP, undefined, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
   });
 
   it('names the app it refused, so the mismatch is debuggable', () => {
-    expect(() => run(MODULES.APP, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
+    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
       new RegExp(`scoped to a single app and cannot access ${OTHER_APP_ID}`)
     );
   });
 
   it("is read-only, except for running the app's queries", () => {
     // The player must execute queries to render anything, and that is a POST. Nothing else is.
-    expect(() => run(MODULES.APP, { method: 'POST' })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, { method: 'DELETE' })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, { method: 'PUT' })).toThrow(ForbiddenException);
-    expect(run(MODULES.DATA_QUERY, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe('HANDLED');
+    expect(() => run(MODULES.APP, undefined, { method: 'POST' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, undefined, { method: 'DELETE' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, undefined, { method: 'PUT' })).toThrow(ForbiddenException);
+    expect(run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe(
+      'HANDLED'
+    );
     // The BUILDER run route, which is the one the render check actually uses — an unreleased app
     // can only be opened in the editor. Measured: six of these on a single boot.
     expect(
-      run(MODULES.DATA_QUERY, {
+      run(MODULES.DATA_QUERY, undefined, {
         method: 'POST',
         originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
       })
     ).toBe('HANDLED');
     // Not every data-queries POST: creating or updating a query is still a write.
-    expect(() => run(MODULES.DATA_QUERY, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
+    expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
       ForbiddenException
     );
   });
