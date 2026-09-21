@@ -393,6 +393,16 @@ export class TooljetDbDataOperationsService implements QueryService {
       };
     }
 
+    // SQL mode can INSERT directly (bypassing createRow's proxy path), so gate it the same way.
+    const containsInsert = Array.isArray(ast) ? ast.some((stmt) => stmt?.type === 'insert') : ast?.type === 'insert';
+    if (containsInsert && (await this.tableOperationsService.isRowLimitReached(organizationId))) {
+      return {
+        status: 'failed',
+        errorMessage: "You've reached your limit of rows in ToolJet database tables. Upgrade for more.",
+        data: {},
+      };
+    }
+
     const internalTableInfo = [];
 
     try {
