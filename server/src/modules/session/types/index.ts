@@ -1,6 +1,7 @@
 import { FeatureConfig } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { MODULES } from '@modules/app/constants/modules';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 
 export type JWTPayload = {
   sessionId: string;
@@ -14,6 +15,9 @@ export type JWTPayload = {
   isPATLogin?: boolean;
   token?: string;
   appId?: string;
+  /* Which KIND of token minted this session. isPATLogin marks any PAT session; appId says it is
+     pinned to one app. Neither alone identifies the session kind — see PatScopeInterceptor. */
+  patScope?: PersonalAccessTokenScope;
   tj_api_source?: string;
 };
 
