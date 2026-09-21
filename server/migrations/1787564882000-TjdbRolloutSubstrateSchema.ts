@@ -157,6 +157,17 @@ export class TjdbRolloutSubstrateSchema1787564882000 implements MigrationInterfa
     await queryRunner.query(
       `CREATE INDEX internal_table_migrations_table_id_sequence_idx ON internal_table_migrations (internal_table_id, sequence)`
     );
+    // A table's baseline chain gets exactly one sequence-1 "create" migration per branch. Without
+    // this constraint, two concurrent repairBaseline() calls (TooljetDbEnvironmentAssignmentService)
+    // can both pass the service's in-memory idempotency check before either writes, and both insert
+    // a sequence=1 baseline row — a promote replaying that chain then runs CREATE TABLE twice. The
+    // index turns the second concurrent writer into a loud constraint-violation error instead of a
+    // silent duplicate.
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX internal_table_migrations_baseline_sequence_uniq
+      ON internal_table_migrations (internal_table_id, branch_id, sequence)
+      WHERE kind = 'baseline'
+    `);
   }
 
   private async createMigrationApplicationsTable(queryRunner: QueryRunner): Promise<void> {
