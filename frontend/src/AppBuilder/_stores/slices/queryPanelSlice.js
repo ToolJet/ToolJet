@@ -24,7 +24,7 @@ const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
+  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
   previewPanelHeight: 0,
   selectedDataSource: null,
@@ -542,7 +542,7 @@ export const createQueryPanelSlice = (set, get) => ({
             moduleId
           );
 
-          if (finalData.status === 'failed') {
+          if (finalData?.status === 'failed') {
             handleFailure(finalData);
             return finalData;
           }
@@ -626,15 +626,15 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                 }
               : query.kind === 'restapi'
-                ? {
-                    metadata: errorData?.metadata,
-                    request: errorData?.data?.requestObject,
-                    response: errorData?.data?.responseObject,
-                    responseHeaders: errorData?.data?.responseHeaders,
-                  }
-                : query.kind === 'workflows'
-                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
-                  : {}),
+              ? {
+                  metadata: errorData?.metadata,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
+                  responseHeaders: errorData?.data?.responseHeaders,
+                }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+              : {}),
           },
           moduleId
         );
@@ -805,7 +805,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Handle synchronous queries (original code)
 
             let queryStatusCode = data?.status ?? null;
-            const promiseStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
+            const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             // Note: Need to move away from statusText -> statusCode
             if (
               promiseStatus === 'failed' ||
@@ -1041,7 +1041,7 @@ export const createQueryPanelSlice = (set, get) => ({
                       'edit',
                       moduleId
                     );
-                    if (finalData.status === 'failed') {
+                    if (finalData?.status === 'failed') {
                       setPreviewLoading(false);
                       setIsPreviewQueryLoading(false);
                       if (!calledFromQuery) setPreviewData(finalData);
@@ -1078,7 +1078,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     'edit',
                     moduleId
                   );
-                  if (finalData.status === 'failed') {
+                  if (finalData?.status === 'failed') {
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     if (!calledFromQuery) setPreviewData(finalData);
@@ -1127,7 +1127,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
             let finalData = data.data;
             let queryStatusCode = data?.status ?? null;
-            const queryStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
+            const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             switch (true) {
               case queryStatus === 'Bad Request' ||
                 queryStatus === 'Not Found' ||
@@ -1389,6 +1389,13 @@ export const createQueryPanelSlice = (set, get) => ({
       moduleId = 'canvas'
     ) => {
       const data = rawData;
+      // A transformation with no code is a no-op — pass the data through untouched. Without this,
+      // a malformed query (e.g. one created via the API/MCP with enableTransformation set but a
+      // null/empty transformation) builds `Function([...], null)`, whose body is the no-op string
+      // "null" that returns `undefined`; callers then read `result.status` and crash the app.
+      if (typeof transformation !== 'string' || transformation.trim() === '') {
+        return data;
+      }
       const {
         queryPanel: { runPythonTransformation },
         getResolvedState,

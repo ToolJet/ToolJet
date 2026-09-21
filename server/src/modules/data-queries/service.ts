@@ -130,6 +130,29 @@ export class DataQueriesService implements IDataQueriesService {
     }
   }
 
+  /**
+   * The editor always stamps a valid transformationLanguage on any query that supports a
+   * post-processing transformation (getDefaultOptions in the client). A PAT/MCP caller writes
+   * query options directly and can leave it null/absent, which makes the client's runTransformation
+   * fall through both language branches and return `{}` — the transformation is silently dropped and
+   * the query's data is lost. Normalise it here so the persisted query is never malformed: default
+   * to javascript, keep an explicit python. Only queries that already carry transformation config are
+   * touched, so runjs (which has none) and config-less queries are left untouched.
+   */
+  protected normalizeQueryTransformationOptions(options: any): any {
+    if (!options || typeof options !== 'object') return options;
+    const hasTransformationConfig =
+      'enableTransformation' in options ||
+      'transformationLanguage' in options ||
+      'transformation' in options ||
+      'transformations' in options;
+    if (!hasTransformationConfig) return options;
+    return {
+      ...options,
+      transformationLanguage: options.transformationLanguage === 'python' ? 'python' : 'javascript',
+    };
+  }
+
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
     return { data_queries: serializeDataQueries(queries) };
@@ -153,7 +176,7 @@ export class DataQueriesService implements IDataQueriesService {
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
-          options,
+          options: this.normalizeQueryTransformationOptions(options),
           dataSourceId: dataSource.id,
           appVersionId,
         },
@@ -197,7 +220,11 @@ export class DataQueriesService implements IDataQueriesService {
           await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
         }
       }
-      await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
+      await this.dataQueryRepository.updateOne(
+        dataQueryId,
+        { name, options: this.normalizeQueryTransformationOptions(options) },
+        manager
+      );
     });
 
     const operationTimestamp = Date.now();
