@@ -327,6 +327,68 @@ describe('AI attachment storage', () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
+  it.each(['csv', 'tsv', 'txt', 'md', 'json'])(
+    'prepares OpenRouter %s files as text for text-only models',
+    async (extension) => {
+      const id = '239af413-5f27-40b8-a20a-c4f22a84280e';
+      repository.findOne.mockResolvedValue({ id, name: `harvest.${extension}`, size: 40 });
+      send.mockResolvedValue({ Body: { transformToString: jest.fn().mockResolvedValue('crop,crates\npea,17') } });
+      const result = await service.prepare(owner, [id], [], 'openrouter', {
+        name: 'Text Fixture',
+        inputModalities: ['text'],
+      });
+      expect(result.content).toEqual([
+        { type: 'text', text: `Attached file: harvest.${extension}\ncrop,crates\npea,17` },
+      ]);
+      expect(getSignedUrl).not.toHaveBeenCalled();
+    }
+  );
+
+  it('prepares OpenRouter PDFs as file parts, including for text-only models and follow-ups', async () => {
+    const id = '239af413-5f27-40b8-a20a-c4f22a84280e';
+    repository.findOne.mockResolvedValue({ id, name: 'harvest.pdf', size: 80 });
+    const model = { name: 'Text Fixture', inputModalities: ['text'] };
+    for (const current of [true, false]) {
+      const result = await service.prepare(owner, current ? [id] : [], current ? [] : [id], 'openrouter', model);
+      expect(result.content).toEqual([
+        { type: 'text', text: `${current ? 'Attached' : 'Previously attached'} file: harvest.pdf` },
+        { type: 'file', file: { filename: 'harvest.pdf', file_data: 'https://files.example.test/signed' } },
+      ]);
+    }
+    expect(renderAttachmentPdf).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it.each(['png', 'jpg', 'jpeg', 'webp'])(
+    'prepares OpenRouter %s images only when the selected model supports vision',
+    async (extension) => {
+      const id = '239af413-5f27-40b8-a20a-c4f22a84280e';
+      repository.findOne.mockResolvedValue({ id, name: `harvest.${extension}`, size: 80 });
+      const result = await service.prepare(owner, [id], [], 'openrouter', {
+        name: 'Vision Fixture',
+        inputModalities: ['text', 'image'],
+      });
+      expect(result.content[1]).toEqual({ type: 'image_url', image_url: { url: 'https://files.example.test/signed' } });
+      expect(send).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([undefined, { name: 'Text Fixture', inputModalities: ['text'] }])(
+    'rejects current and saved images before storage access when OpenRouter vision is unavailable: %p',
+    async (model) => {
+      const id = '239af413-5f27-40b8-a20a-c4f22a84280e';
+      repository.findOne.mockResolvedValue({ id, name: 'harvest.PNG', size: 80 });
+      await expect(service.prepare(owner, [id], [], 'openrouter', model)).rejects.toThrow(
+        'does not support image attachments'
+      );
+      await expect(service.prepare(owner, [], [id], 'openrouter', model)).rejects.toThrow(
+        'does not support image attachments'
+      );
+      expect(getSignedUrl).not.toHaveBeenCalled();
+      expect(send).not.toHaveBeenCalled();
+    }
+  );
+
   it('expires cached PDF pages and revalidates ownership even on cache hits', async () => {
     const id = '48b2d150-3edf-44eb-afb7-26cbb1ac97c8';
     repository.findOne.mockResolvedValue({ id, name: 'plots.pdf', size: 10 });

@@ -174,7 +174,13 @@ export class AiAttachmentService implements OnModuleDestroy {
     return this.descriptor(await this.findOwned(user, id));
   }
 
-  async prepare(user: AttachmentOwner, ids: unknown = [], previousIds: string[] = [], provider = 'openai') {
+  async prepare(
+    user: AttachmentOwner,
+    ids: unknown = [],
+    previousIds: string[] = [],
+    provider = 'openai',
+    model?: { name: string; inputModalities: string[] }
+  ) {
     if (!Array.isArray(ids) || ids.length > 5 || ids.some((id) => typeof id !== 'string' || !isUUID(id))) {
       throw new BadRequestException('Choose up to 5 uploaded files per message.');
     }
@@ -185,6 +191,15 @@ export class AiAttachmentService implements OnModuleDestroy {
     const files = await Promise.all(allIds.map((id) => this.findOwned(user, id)));
     if (files.reduce((size, file) => size + file.size, 0) >= 50 * 1024 * 1024) {
       throw new BadRequestException('Files in one chat must total less than 50 MB. Start a new chat.');
+    }
+    if (
+      provider === 'openrouter' &&
+      !model?.inputModalities.includes('image') &&
+      files.some((file) => /\.(png|jpe?g|webp)$/i.test(file.name))
+    ) {
+      throw new BadRequestException(
+        `${model?.name || 'This OpenRouter model'} does not support image attachments. Choose an OpenRouter vision model or remove the image.`
+      );
     }
     let pdfPages = 0;
     let contentBytes = 0;
@@ -205,7 +220,7 @@ export class AiAttachmentService implements OnModuleDestroy {
         throw new BadRequestException('Grok supports PNG and JPEG images. Convert WebP files before sending.');
       }
       const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
-      if (['anthropic', 'gemini', 'deepseek'].includes(provider) && !imageType && extension !== 'pdf') {
+      if (['anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider) && !imageType && extension !== 'pdf') {
         const parts = await this.cachedInline(file.id, async () => {
           const { body } = await this.download(user, file.id);
           return [{ type: 'text', text: await body.transformToString('utf-8') }];
@@ -247,7 +262,14 @@ export class AiAttachmentService implements OnModuleDestroy {
         }),
         { expiresIn: 4 * 60 * 60 }
       );
-      if (['gemini', 'deepseek'].includes(provider)) {
+      if (provider === 'openrouter' && extension === 'pdf') {
+        // OpenRouter parses PDFs for models without native file input, including text-only models.
+        return [
+          { type: 'text', text: label },
+          { type: 'file', file: { filename: file.name, file_data: url } },
+        ];
+      }
+      if (['gemini', 'deepseek', 'openrouter'].includes(provider)) {
         return [
           { type: 'text', text: label },
           { type: 'image_url', image_url: { url } },
@@ -268,7 +290,7 @@ export class AiAttachmentService implements OnModuleDestroy {
       ];
     };
     const content = [];
-    if (['anthropic', 'gemini', 'deepseek'].includes(provider)) {
+    if (['anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider)) {
       // Bound rendering memory and the serialized gateway request across current and saved files.
       for (const file of files) {
         const parts = await prepareFile(file);

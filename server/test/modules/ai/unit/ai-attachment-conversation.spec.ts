@@ -18,6 +18,15 @@ describe('conversation attachment preparation', () => {
       aiUtilService: {
         resolveAgentRouting: jest.fn().mockResolvedValue(routing),
         resolveConversationLlmSelection: jest.fn().mockResolvedValue({ provider: 'gemini' }),
+        listCompatibleOpenRouterModels: jest.fn().mockResolvedValue([
+          {
+            id: 'fixture/vision-model',
+            name: 'Fixture Vision',
+            inputModalities: ['text', 'image'],
+            contextWindow: 240000,
+          },
+          { id: 'fixture/text-model', name: 'Fixture Text', inputModalities: ['text'], contextWindow: 240000 },
+        ]),
         createNewConversation: jest.fn().mockResolvedValue({ id: 'continuation-chat' }),
         handoffThread: jest.fn().mockResolvedValue({ summary: 'A synthetic workshop inventory.' }),
       },
@@ -64,11 +73,33 @@ describe('conversation attachment preparation', () => {
     expect(service.aiUtilService.resolveAgentRouting).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['openrouter', 'openai-agents', 'anthropic-agents'])(
-    'rejects unsupported %s before downloading',
-    async (provider) => {
-      routing.headers.provider = provider;
-      await expect(service.prepareAttachments(user, 'chat', [current])).rejects.toThrow('builder chats');
+  it.each(['openai-agents', 'anthropic-agents'])('rejects unsupported %s before downloading', async (provider) => {
+    routing.headers.provider = provider;
+    await expect(service.prepareAttachments(user, 'chat', [current])).rejects.toThrow('builder chats');
+    expect(service.attachmentService.prepare).not.toHaveBeenCalled();
+  });
+
+  it.each(['vision', 'text'])(
+    'uses the pinned OpenRouter %s model capabilities for current and saved files',
+    async (kind) => {
+      routing.headers = { provider: 'openrouter', model: `fixture/${kind}-model` };
+      service.aiConversationRepository.findOne.mockResolvedValue({ metadata: { attachmentIds: [earlier] } });
+      const result = await service.prepareAttachments(user, 'chat', [current]);
+      expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [current], [earlier], 'openrouter', {
+        name: kind === 'vision' ? 'Fixture Vision' : 'Fixture Text',
+        inputModalities: kind === 'vision' ? ['text', 'image'] : ['text'],
+      });
+      expect(result.routing).toBe(routing);
+    }
+  );
+
+  it.each([undefined, 'fixture/missing-model'])(
+    'rejects an unavailable OpenRouter selection before preparing files: %s',
+    async (model) => {
+      routing.headers = { provider: 'openrouter', model };
+      await expect(service.prepareAttachments(user, 'chat', [current])).rejects.toThrow(
+        'Choose an available OpenRouter model'
+      );
       expect(service.attachmentService.prepare).not.toHaveBeenCalled();
     }
   );
