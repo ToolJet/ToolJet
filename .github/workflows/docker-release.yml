@@ -9,7 +9,6 @@ permissions:
 
 jobs:
  build-tooljet-image-for-ce-edtion:
-    needs: release-vulnerability-gate
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
