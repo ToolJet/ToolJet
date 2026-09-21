@@ -44,7 +44,8 @@ export class TooljetDbDataOperationsService implements QueryService {
    * Resolves colOpts.columnId (when present) to the column's current name via the relation
    * resolver, falling back to colOpts.column when there's no id, or the id no longer resolves
    * (column deleted/renamed away since the query was saved) - same fail-soft-to-caller contract
-   * as the resolver itself. Options with no columnId (queries saved before Task 4) are untouched.
+   * as the resolver itself. Options with no columnId (queries saved before this resolution existed)
+   * are untouched.
    */
   private async resolveColumnName(
     organizationId: string,

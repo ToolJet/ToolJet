@@ -107,12 +107,20 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
 
       for (const twin of twins) {
         const schema = findTenantSchema(twin.organization_id);
-        await tjdbQueryRunner.query(`DROP TABLE IF EXISTS "${schema}"."${twin.twin_id}" CASCADE`);
+        // Physical DROP runs on a separate connection outside this migration's transaction, so it
+        // can't be rolled back. Do the transactional app-DB writes first, drop only once both
+        // succeeded — this iteration alone can't leave a real inconsistency. Across the whole run
+        // (migrationsTransactionMode: 'all') a LATER twin's failure still rolls back every
+        // app-DB write this loop already made, including this iteration's, while this iteration's
+        // physical DROP stays applied. Not a live bug: the app-DB rows are back exactly as they
+        // were pre-run, so a retry re-selects the same twins and re-runs the whole loop from
+        // scratch, and DROP TABLE IF EXISTS makes redoing an already-dropped twin's drop a no-op.
         await queryRunner.query(`DELETE FROM internal_table_relations WHERE id = $1`, [twin.twin_id]);
         await queryRunner.query(`UPDATE internal_table_relations SET environment_id = $1 WHERE id = $2`, [
           twin.dev_env_id,
           twin.a_relation_id,
         ]);
+        await tjdbQueryRunner.query(`DROP TABLE IF EXISTS "${schema}"."${twin.twin_id}" CASCADE`);
       }
     } finally {
       await tjdbQueryRunner.release();
@@ -160,7 +168,11 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
             );
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
           } catch (error) {
+            // ROLLBACK TO SAVEPOINT leaves the savepoint on the stack; RELEASE is what pops it —
+            // both loops swallow the error and continue, so without this every failed table leaks
+            // one subtransaction for the rest of the workspace's run.
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
+            await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
             console.error(
               `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
               error
@@ -180,6 +192,7 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
           } catch (error) {
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
+            await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
             console.error(
               `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
               error

@@ -1,7 +1,7 @@
 /**
- * Task B1: raw SQL migration steps. `POST .../table/:tableId/migrations/sql` runs the caller's SQL
+ * Raw SQL migration steps. `POST .../table/:tableId/migrations/sql` runs the caller's SQL
  * as the workspace's own tenant role (never the TJDB admin), reconciles column identity, then
- * records the migration - after success, with no pending window (Correction 2 in the H7 plan).
+ * records the migration - after success, with no pending window.
  *
  * Every test here opens its own real, separate Postgres connection as the tenant role
  * (createTooljetDatabaseConnection) - it cannot see anything still sitting inside this spec file's

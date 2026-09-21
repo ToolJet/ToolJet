@@ -793,19 +793,19 @@ export class VersionUtilService implements IVersionUtilService {
    * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
    * runtime, so promote blocks instead. Offender lookup is one query (relationResolverService.resolve
    * batches on IN), not one per table. A soft-deleted table is invisible to findTooljetDbTables
-   * already, so it never blocks.
+   * already, so it never blocks. `versionId` scopes findTooljetDbTables to the version being
+   * promoted, same as checkModulesPromotableToEnvironment scopes on it — an abandoned draft's stale
+   * table reference must never block a different version's promote.
    *
    * Once every table clears the hard block, a second, additive pass warns (never blocks) on tables
    * that resolve in the target but are missing migrations there - "resolves" only means a relation
-   * row exists, not that it is caught up. `sourceEnvironmentId` is the version's `currentEnvironmentId`
-   * (@modules/versions AGENTS.md: "each version carries currentEnvironmentId", the established source
-   * of truth for which environment an app's queries actually run against) - the same relation the
-   * app is promoting FROM, reusing `computeMissingMigrations`'s existing set-difference contract rather
-   * than inventing a new one. A table with no relation in the source environment yet (e.g. created
-   * directly in a higher environment) has nothing to compare against and is silently skipped.
+   * row exists, not that it is caught up. A table with no relation in the source environment yet
+   * (e.g. created directly in a higher environment) has nothing to compare against and is silently
+   * skipped.
    */
   async checkTablesPromotableToEnvironment(
     appId: string,
+    versionId: string,
     targetEnvironmentId: string,
     targetEnvironmentName: string,
     sourceEnvironmentId: string,
@@ -813,7 +813,7 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<{ warnings: TableBehindWarning[] }> {
     try {
-      const tables = await this.appsUtilService.findTooljetDbTables(appId);
+      const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
       if (!tables.length) return { warnings: [] };
 
       const tableIds = tables.map((t) => t.table_id);
@@ -831,7 +831,7 @@ export class VersionUtilService implements IVersionUtilService {
         const message =
           names.length === 1
             ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
-            : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}. ${tableList}`;
+            : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
         throw new BadRequestException({
           message: { error: message, details: tableList },
         });
@@ -849,13 +849,6 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  /**
-   * Warning-only pass, kept out of checkTablesPromotableToEnvironment's body so the hard-block
-   * logic above reads as a single, unbroken concern. `targetResolved` is the same
-   * (tableId -> relationId) map the hard-block pass already computed - reused, not re-queried.
-   * Never throws: a table missing from the source environment (nothing to compare against) or with
-   * zero migration gap is simply omitted from the result.
-   */
   private async findTablesBehindTarget(
     organizationId: string,
     sourceEnvironmentId: string,
@@ -870,23 +863,25 @@ export class VersionUtilService implements IVersionUtilService {
       manager
     );
 
-    const relationIds = tableIds
-      .filter((id) => sourceResolved.has(id))
-      .flatMap((id) => [sourceResolved.get(id), targetResolved.get(id)]);
-    if (!relationIds.length) return [];
+    const pairs = tableIds.flatMap((tableId) => {
+      const sourceRelationId = sourceResolved.get(tableId);
+      return sourceRelationId ? [{ tableId, sourceRelationId, targetRelationId: targetResolved.get(tableId) }] : [];
+    });
+    if (!pairs.length) return [];
 
+    const relationIds = pairs.flatMap((pair) => [pair.sourceRelationId, pair.targetRelationId]);
     const relations = await manager.find(InternalTableRelation, { where: { id: In(relationIds) } });
     const relationById = new Map(relations.map((r) => [r.id, r]));
 
-    const tablesToCheck = tableIds.filter((id) => sourceResolved.has(id));
-    if (!tablesToCheck.length) return [];
-    const internalTables = await manager.find(InternalTable, { where: { id: In(tablesToCheck) } });
+    const internalTables = await manager.find(InternalTable, {
+      where: { id: In(pairs.map((pair) => pair.tableId)) },
+    });
     const tableNameById = new Map(internalTables.map((t) => [t.id, t.tableName]));
 
     const warnings: TableBehindWarning[] = [];
-    for (const tableId of tablesToCheck) {
-      const sourceRelation = relationById.get(sourceResolved.get(tableId));
-      const targetRelation = relationById.get(targetResolved.get(tableId));
+    for (const { tableId, sourceRelationId, targetRelationId } of pairs) {
+      const sourceRelation = relationById.get(sourceRelationId);
+      const targetRelation = relationById.get(targetRelationId);
       if (!sourceRelation || !targetRelation) continue;
 
       const missing = await computeMissingMigrations(tableId, sourceRelation, targetRelation, manager);

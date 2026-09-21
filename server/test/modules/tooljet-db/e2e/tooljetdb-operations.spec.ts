@@ -57,8 +57,8 @@ describe('TooljetDbController', () => {
     }
 
     // `createUser` seeds Organization/User rows directly, bypassing SetupOrganizationsUtilService
-    // - the real onboarding path that calls createTooljetDbTenantSchemaAndRole. Task B0's ownership
-    // transfer needs the tenant role to actually exist, so tests exercising it provision the role
+    // - the real onboarding path that calls createTooljetDbTenantSchemaAndRole. Ownership transfer
+    // needs the tenant role to actually exist, so tests exercising it provision the role
     // themselves, same workaround shape as ensureWorkspaceSchema above.
     async function ensureTenantRole(orgId: string): Promise<boolean> {
       const tjds = getTooljetDbDataSource();
@@ -94,7 +94,7 @@ describe('TooljetDbController', () => {
         if (!schemaReady) tooljetDbAvailable = false;
       }
 
-      // Ensure the tenant role exists - Task B0's ownership transfer needs it to be a real role.
+      // Ensure the tenant role exists - ownership transfer needs it to be a real role.
       if (tooljetDbAvailable) {
         const roleReady = await ensureTenantRole(adminOrgId);
         if (!roleReady) tooljetDbAvailable = false;
@@ -1264,6 +1264,46 @@ describe('TooljetDbController', () => {
           expect(byAction['drop_column'].name).toBe('Drop the note column');
           expect(byAction['delete_foreign_key'].name).toBe('Remove foreign key on "named_deletes_tbl"');
           expect(byAction['drop_table'].name).toBe('Drop named_deletes_tbl');
+        });
+
+        it('should 400 a malformed drop_table migration_name instead of recording it as-is', async function () {
+          // Regression: dropTable used to read migration_name via a raw `@Body('migration_name')`
+          // param, which the global ValidationPipe's whitelist/type checks never touch (they only
+          // apply to a `@Body()` bound to a DTO class) - unlike every other structured-migration
+          // route in this controller, which all validate migration_name the same way (@IsString,
+          // @MaxLength(120)) through a DTO.
+          expect(tooljetDbAvailable).toBe(true);
+
+          await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+            .set('Cookie', adminCookie)
+            .set('tj-workspace-id', adminOrgId)
+            .send(buildCreateTablePayload('drop_validation_tbl'))
+            .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+          await request
+            .agent(app.getHttpServer())
+            .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/drop_validation_tbl`)
+            .set('Cookie', adminCookie)
+            .set('tj-workspace-id', adminOrgId)
+            .send({ migration_name: { nested: 'object' } })
+            .expect((res) => expect(res.statusCode).toBe(400));
+
+          await request
+            .agent(app.getHttpServer())
+            .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/drop_validation_tbl`)
+            .set('Cookie', adminCookie)
+            .set('tj-workspace-id', adminOrgId)
+            .send({ migration_name: 'x'.repeat(121) })
+            .expect((res) => expect(res.statusCode).toBe(400));
+
+          // Table must still be there - both malformed attempts were rejected before dropping it.
+          const appManager = getDefaultDataSource().manager;
+          const stillThere = await appManager.findOne(InternalTable, {
+            where: { organizationId: adminOrgId, tableName: 'drop_validation_tbl' },
+          });
+          expect(stillThere).not.toBeNull();
         });
 
         it('should have a create_table request carrying foreign keys record one migration, and a follow-up op on the same table get a distinct, larger sequence', async function () {

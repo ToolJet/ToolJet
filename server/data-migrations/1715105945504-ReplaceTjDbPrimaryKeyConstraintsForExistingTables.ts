@@ -13,6 +13,9 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 // migration sits earlier in the chain than migrations that add columns to
 // internal_table, so selecting through the live entity would pull in
 // columns that don't exist on the table yet during a fresh migration run.
+// Only affects a fresh replay of the full chain - TypeORM's migrations
+// table marks this one complete on every deployment where it already ran,
+// so it never re-executes there regardless of this change.
 export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 1000;

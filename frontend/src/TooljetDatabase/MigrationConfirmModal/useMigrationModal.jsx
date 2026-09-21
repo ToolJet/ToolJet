@@ -12,6 +12,10 @@ const emptyState = {
   // Collapsed behind an "Add migration" button until opened - or already open when `initialSql`
   // prefills it (the column type-change cast case), so there's nothing to click through.
   sqlOpen: false,
+  // Set only by call sites where the SQL step isn't an optional add-on but the mechanism for part
+  // of the change (e.g. a type-change cast the structured request deliberately doesn't apply) -
+  // see EditColumnForm's `needsGeneratedSql`. Blocks confirm instead of silently skipping the step.
+  sqlRequired: false,
   error: null,
   submitting: false,
   // `structuredApplied`: set once the request built by the call site's `run:` thunk has
@@ -67,6 +71,7 @@ export default function useMigrationModal() {
         isOpen: true,
         sql: options.initialSql || '',
         sqlOpen: !!options.initialSql,
+        sqlRequired: !!options.sqlRequired,
         depsLoading: !!options.tableId,
       });
 
@@ -86,6 +91,15 @@ export default function useMigrationModal() {
   const handleConfirm = useCallback(async () => {
     const options = optionsRef.current;
     if (!options) return;
+
+    if (state.sqlRequired && !state.sql.trim()) {
+      setState((prev) => ({
+        ...prev,
+        error: 'This change requires the SQL step below - it performs the actual change, not just a record of it.',
+      }));
+      return;
+    }
+
     setState((prev) => ({ ...prev, submitting: true, error: null }));
 
     try {
@@ -133,7 +147,7 @@ export default function useMigrationModal() {
     } catch (err) {
       setState((prev) => ({ ...prev, submitting: false, error: err?.message ?? 'Failed to run migration' }));
     }
-  }, [state.title, state.sql, state.structuredApplied, organizationId, close, bumpMigrations]);
+  }, [state.title, state.sql, state.sqlRequired, state.structuredApplied, organizationId, close, bumpMigrations]);
 
   const onOpenSql = useCallback(() => setState((prev) => ({ ...prev, sqlOpen: true })), []);
 
@@ -148,6 +162,7 @@ export default function useMigrationModal() {
       changes={optionsRef.current?.changes || []}
       banner={optionsRef.current?.banner}
       showSqlEditor={!!optionsRef.current?.showSqlEditor}
+      sqlRequired={state.sqlRequired}
       sqlOpen={state.sqlOpen}
       onOpenSql={onOpenSql}
       sql={state.sql}

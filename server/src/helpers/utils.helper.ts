@@ -701,6 +701,12 @@ export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
     return obj.map((item) => decamelizeKeysExcept(item, ignoreKeys));
   }
 
+  // A Date has no own enumerable properties, so the `for...in` below would silently turn it into
+  // `{}` — humps' decamelizeKeys (used elsewhere in this file) already guards against exactly this
+  // for Date/RegExp/Boolean/Function; this hand-rolled variant needs the same guard for the one
+  // type that actually reaches it (entity timestamp columns).
+  if (obj instanceof Date) return obj;
+
   if (obj !== null && typeof obj === 'object') {
     const result: Record<string, any> = {};
     for (const key in obj) {

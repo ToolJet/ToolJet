@@ -7,6 +7,7 @@ import { TooljetDbImportExportService } from '@modules/tooljet-db/services/toolj
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
+import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import {
   resetDB,
@@ -94,6 +95,7 @@ describe('TooljetDbImportExportService', () => {
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
+          InternalTableRepository,
         ],
       })
         .overrideProvider(LicenseService)

@@ -1,10 +1,10 @@
 /**
- * DEV-83's headline release bar: a table authored through the real `perform()` path and promoted
- * through the real `/promote` endpoint introspects **identically** to its source - columns, type
- * modifiers, defaults, nullability, primary-key column order, unique constraints, indexes, and
- * foreign keys. Run twice, on a structured chain (authored after this feature) and a baseline
- * chain (shaped like a pre-existing table migration A carried over) - they reach the same shape by
- * different paths, and only running both proves either.
+ * The headline release bar for TJDB environments: a table authored through the real `perform()`
+ * path and promoted through the real `/promote` endpoint introspects **identically** to its
+ * source - columns, type modifiers, defaults, nullability, primary-key column order, unique
+ * constraints, indexes, and foreign keys. Run twice, on a structured chain (authored after this
+ * feature) and a baseline chain (shaped like a pre-existing table migration A carried over) - they
+ * reach the same shape by different paths, and only running both proves either.
  *
  * @group database
  */
@@ -69,7 +69,7 @@ describe('TooljetDb replay equivalence', () => {
           await getTooljetDbDataSource().query(`CREATE SCHEMA IF NOT EXISTS "${tenantSchema}"`);
 
           // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path
-          // that calls createTooljetDbTenantSchemaAndRole), so the tenant role Task B0's ownership
+          // that calls createTooljetDbTenantSchemaAndRole), so the tenant role the ownership
           // transfer needs at replay time does not exist unless provisioned here.
           const [existingRole] = await getTooljetDbDataSource().query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [
             `user_${orgId}`,
@@ -383,7 +383,7 @@ describe('TooljetDb replay equivalence', () => {
 
         expect(await fullTypesByColumn(stagingRelation.id)).toEqual(await fullTypesByColumn(relationId));
 
-        // Task B0: this is the one path where a legacy/baselined table's physical CREATE TABLE
+        // This is the one path where a legacy/baselined table's physical CREATE TABLE
         // executes live, outside migration A/B - the replayed table must come out owned by the
         // workspace's tenant role, same as a freshly authored create_table.
         const [owner] = await tjdb.query(`SELECT tableowner FROM pg_tables WHERE schemaname = $1 AND tablename = $2`, [

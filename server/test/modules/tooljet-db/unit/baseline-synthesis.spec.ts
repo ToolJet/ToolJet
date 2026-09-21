@@ -1,10 +1,15 @@
 /** @group database */
+import { QueryRunner } from 'typeorm';
 import {
   buildCreateTableDdl,
+  buildForeignKeyDdl,
   rewriteSerialDefaults,
   synthesizeBaseline,
 } from '@modules/tooljet-db/helpers/baseline-synthesis';
-import { TableSchemaSnapshotColumn } from '@modules/tooljet-db/helpers/table-schema-snapshot';
+import {
+  TableSchemaSnapshotColumn,
+  TableSchemaSnapshotForeignKey,
+} from '@modules/tooljet-db/helpers/table-schema-snapshot';
 
 const SCHEMA = 'tenant_org';
 const TABLE_ID = '11111111-1111-4111-8111-111111111111';
@@ -24,6 +29,13 @@ const nameColumn = {
 
 // A minimal Queryable stand-in that routes by a distinctive substring in the SQL, matching the
 // shape `synthesizeBaseline` expects from a real QueryRunner (only `.query()` is ever called).
+// Only used for synthesizeBaseline's own top-level branching (relation exists / does not) - the
+// three pure builders it delegates to (buildCreateTableDdl, rewriteSerialDefaults,
+// buildForeignKeyDdl) are tested directly below instead of through this double, and the
+// composite-primary-key-blocks-baseline branch is covered against real tables in
+// tjdb-baseline-repair.spec.ts (testing.md: internal branching a util owns is unit-tested, but a
+// double that has to re-route five different queries by substring to reach it just pins this spec
+// to another file's exact SQL wording).
 function fakeTjdbQueryRunner() {
   return {
     query: jest.fn((sql: string) => {
@@ -35,11 +47,11 @@ function fakeTjdbQueryRunner() {
       if (sql.includes(`c.contype = 'f'`)) return Promise.resolve([]);
       throw new Error(`unexpected query in test double: ${sql}`);
     }),
-  } as any;
+  } as unknown as QueryRunner;
 }
 
 function fakeAppQueryRunner() {
-  return { query: jest.fn() } as any;
+  return { query: jest.fn() } as unknown as QueryRunner;
 }
 
 describe('baseline-synthesis', () => {
@@ -71,7 +83,7 @@ describe('baseline-synthesis', () => {
           if (sql.includes('to_regclass')) return Promise.resolve([{ oid: null }]);
           throw new Error(`unexpected query: ${sql}`);
         }),
-      } as any;
+      } as unknown as QueryRunner;
 
       await expect(
         synthesizeBaseline(fakeAppQueryRunner(), tjdbQueryRunner, SCHEMA, TABLE_ID, {
@@ -134,7 +146,12 @@ describe('baseline-synthesis', () => {
   });
 
   describe('buildCreateTableDdl', () => {
-    it('should call through to rewriteSerialDefaults so a serial default in the emitted DDL is {{self}}-derived', () => {
+    // buildCreateTableDdl is a pure function from 4 arguments to a string - one exact `toBe` on
+    // the full output covers every clause (columns, PRIMARY KEY, every UNIQUE), where a handful of
+    // `toContain` checks would hide whichever clause nobody thought to assert on. Confirmed against
+    // the reviewer's own mutation table: this exact assertion fails if the PRIMARY KEY clause, the
+    // UNIQUE loop, or the sequence rewrite is dropped from the implementation.
+    it('should emit CREATE TABLE with a {{self}}-derived serial default, a composite primary key, and every unique constraint', () => {
       const columns: TableSchemaSnapshotColumn[] = [
         {
           name: 'id',
@@ -144,13 +161,51 @@ describe('baseline-synthesis', () => {
           default: `nextval('"${SCHEMA}"."${TABLE_ID}_id_seq"'::regclass)`,
           is_primary_key: true,
         },
+        {
+          name: 'tenant_id',
+          uuid: 'col-tenant-uuid',
+          data_type: 'integer',
+          is_nullable: false,
+          default: null,
+          is_primary_key: true,
+        },
+        {
+          name: 'email',
+          uuid: 'col-email-uuid',
+          data_type: 'text',
+          is_nullable: true,
+          default: null,
+          is_primary_key: false,
+        },
       ];
 
-      const ddl = buildCreateTableDdl(SCHEMA, TABLE_ID, columns, ['id']);
+      const ddl = buildCreateTableDdl(
+        SCHEMA,
+        TABLE_ID,
+        columns,
+        ['id', 'tenant_id'],
+        [
+          { name: 'users_email_key', column_names: ['email'] },
+          { name: 'users_id_tenant_key', column_names: ['id', 'tenant_id'] },
+        ]
+      );
 
-      expect(ddl).toContain(`CREATE SEQUENCE "${SCHEMA}"."{{self}}_id_seq"`);
-      expect(ddl).toContain(`DEFAULT nextval('"${SCHEMA}"."{{self}}_id_seq"'::regclass)`);
-      expect(ddl).not.toContain(TABLE_ID);
+      expect(ddl).toBe(
+        [
+          `CREATE SEQUENCE "${SCHEMA}"."{{self}}_id_seq"`,
+          [
+            `CREATE TABLE "${SCHEMA}"."{{self}}" (`,
+            `  "id" integer NOT NULL DEFAULT nextval('"${SCHEMA}"."{{self}}_id_seq"'::regclass),`,
+            `  "tenant_id" integer NOT NULL,`,
+            `  "email" text,`,
+            `  PRIMARY KEY ("id", "tenant_id"),`,
+            `  UNIQUE ("email"),`,
+            `  UNIQUE ("id", "tenant_id")`,
+            `)`,
+          ].join('\n'),
+          `ALTER SEQUENCE "${SCHEMA}"."{{self}}_id_seq" OWNED BY "${SCHEMA}"."{{self}}"."id"`,
+        ].join(';\n')
+      );
     });
 
     it('should emit valid array-type DDL, not the bare word ARRAY', () => {
@@ -173,6 +228,90 @@ describe('baseline-synthesis', () => {
 
       expect(ddl).toContain('"tags" text[]');
       expect(ddl).not.toContain('"tags" ARRAY');
+    });
+  });
+
+  describe('buildForeignKeyDdl', () => {
+    // Never reached through synthesizeBaseline's own double above (which always returns [] for
+    // foreign keys) - tested directly instead, against a real return shape for its one query
+    // (a single parameterized SELECT by id, not five routed by SQL substring).
+    function fakeInternalTablesQueryRunner(coRelationIdByTableId: Record<string, string>) {
+      const query = jest.fn((sql: string, params: string[]) => {
+        const [tableId] = params;
+        const coRelationId = coRelationIdByTableId[tableId];
+        return Promise.resolve(coRelationId ? [{ co_relation_id: coRelationId }] : []);
+      });
+      return { runner: { query } as unknown as QueryRunner, query };
+    }
+
+    function foreignKey(overrides: Partial<TableSchemaSnapshotForeignKey> = {}): TableSchemaSnapshotForeignKey {
+      return {
+        name: 'fk_orders_customer',
+        column_names: ['customer_id'],
+        referenced_table: 'customers-relation-id',
+        referenced_column_names: ['id'],
+        ...overrides,
+      };
+    }
+
+    it('should emit an ALTER TABLE referencing the {{ref}} placeholder and resolve it to the co_relation_id', async () => {
+      const { runner, query } = fakeInternalTablesQueryRunner({ 'customers-relation-id': 'customers-co-relation-id' });
+      const refs: Record<string, string> = {};
+
+      const ddl = await buildForeignKeyDdl(runner, SCHEMA, [foreignKey()], refs);
+
+      expect(ddl).toBe(
+        `ALTER TABLE "${SCHEMA}"."{{self}}" ADD CONSTRAINT "fk_orders_customer" FOREIGN KEY ("customer_id") REFERENCES "${SCHEMA}"."{{ref_0}}" ("id")`
+      );
+      expect(refs).toEqual({ ref_0: 'customers-co-relation-id' });
+      expect(query).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reuse the same placeholder, and query only once, for two foreign keys to the same table', async () => {
+      const { runner, query } = fakeInternalTablesQueryRunner({ 'customers-relation-id': 'customers-co-relation-id' });
+      const refs: Record<string, string> = {};
+      const foreignKeys = [
+        foreignKey({ name: 'fk_orders_customer', column_names: ['customer_id'] }),
+        foreignKey({ name: 'fk_orders_billing_customer', column_names: ['billing_customer_id'] }),
+      ];
+
+      const ddl = await buildForeignKeyDdl(runner, SCHEMA, foreignKeys, refs);
+
+      const statements = ddl.split(';\n');
+      expect(statements).toHaveLength(2);
+      expect(statements.every((s) => s.includes('{{ref_0}}'))).toBe(true);
+      expect(refs).toEqual({ ref_0: 'customers-co-relation-id' });
+      expect(query).toHaveBeenCalledTimes(1);
+    });
+
+    it('should assign distinct placeholders for foreign keys to different tables', async () => {
+      const { runner } = fakeInternalTablesQueryRunner({
+        'customers-relation-id': 'customers-co-relation-id',
+        'warehouses-relation-id': 'warehouses-co-relation-id',
+      });
+      const refs: Record<string, string> = {};
+      const foreignKeys = [
+        foreignKey({ name: 'fk_orders_customer', referenced_table: 'customers-relation-id' }),
+        foreignKey({
+          name: 'fk_orders_warehouse',
+          referenced_table: 'warehouses-relation-id',
+          column_names: ['warehouse_id'],
+        }),
+      ];
+
+      const ddl = await buildForeignKeyDdl(runner, SCHEMA, foreignKeys, refs);
+
+      expect(ddl).toContain('{{ref_0}}');
+      expect(ddl).toContain('{{ref_1}}');
+      expect(refs).toEqual({ ref_0: 'customers-co-relation-id', ref_1: 'warehouses-co-relation-id' });
+    });
+
+    it('should throw when the foreign key references an internal table id that no longer exists', async () => {
+      const { runner } = fakeInternalTablesQueryRunner({});
+
+      await expect(buildForeignKeyDdl(runner, SCHEMA, [foreignKey()], {})).rejects.toThrow(
+        /references unknown internal table/
+      );
     });
   });
 });

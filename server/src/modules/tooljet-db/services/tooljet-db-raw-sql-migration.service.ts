@@ -18,6 +18,25 @@ import { StructuredMigrationPayload, TooljetDbMigrationRecorderService } from '.
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
 import { RawSqlMigrationDto } from '../dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from '../dto/revert-migration.dto';
+import { TooljetDbMigrationSqlCompilerService } from './tooljet-db-migration-sql-compiler.service';
+
+/**
+ * The public shape for a recorded/reverted migration - matches `getTableMigrations`' per-item
+ * shape (minus `migrationNumber`, meaningless for a single-migration response). Deliberately NOT
+ * the raw `InternalTableMigration` entity: `payload`/`resultingSchema` are internal bookkeeping -
+ * resultingSchema in particular embeds physical relation ids in its `foreign_keys[].referenced_table`
+ * (the actual Postgres table name in the tenant schema), which nothing outside this module should
+ * see directly. `sql` goes through the same compiler `getTableMigrations` uses instead.
+ */
+export interface RawSqlMigrationResult {
+  id: string;
+  kind: InternalTableMigration['kind'];
+  name: string | null;
+  sequence: string;
+  createdAt: Date;
+  createdBy: string | null;
+  sql: string | null;
+}
 
 /** A relation the type gate inspects. `tableLabel` is absent for the migrated table itself. */
 type TouchedTable = { relationId: string; columnNames: Record<string, string>; tableLabel?: string };
@@ -37,14 +56,15 @@ export class TooljetDbRawSqlMigrationService {
     protected readonly manager: EntityManager,
     protected readonly relationResolverService: TooljetDbRelationResolverService,
     protected readonly migrationRecorderService: TooljetDbMigrationRecorderService,
-    protected readonly tableOperationsService: TooljetDbTableOperationsService
+    protected readonly tableOperationsService: TooljetDbTableOperationsService,
+    protected readonly migrationSqlCompilerService: TooljetDbMigrationSqlCompilerService
   ) {}
 
   async recordRawSqlMigration(
     organizationId: string,
     tableId: string,
     dto: RawSqlMigrationDto
-  ): Promise<InternalTableMigration> {
+  ): Promise<RawSqlMigrationResult> {
     const internalTable = await this.manager.findOne(InternalTable, { where: { id: tableId, organizationId } });
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableId);
 
@@ -145,7 +165,15 @@ export class TooljetDbRawSqlMigrationService {
       await tjdbQueryRunner.query("NOTIFY pgrst, 'reload schema'");
 
       await tjdbQueryRunner.commitTransaction();
-      return result;
+      return {
+        id: result.id,
+        kind: result.kind,
+        name: result.name,
+        sequence: result.sequence,
+        createdAt: result.createdAt,
+        createdBy: result.createdBy,
+        sql: this.migrationSqlCompilerService.compile(result),
+      };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
 
@@ -179,7 +207,7 @@ export class TooljetDbRawSqlMigrationService {
     tableId: string,
     migrationId: string,
     dto: RevertMigrationDto
-  ): Promise<InternalTableMigration> {
+  ): Promise<RawSqlMigrationResult> {
     // Org-scope before anything else: recordRawSqlMigration below re-checks this itself, but
     // deciding whether to reveal the destructive-column warning on `targetMigration` first would
     // leak that column's name to a caller who supplied someone else's org id.

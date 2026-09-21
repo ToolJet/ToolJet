@@ -4,6 +4,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import {
   TooljetDbMigrationRecorderService,
@@ -201,6 +202,7 @@ describe('TooljetDbMigrationRecorderService', () => {
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
+          InternalTableRepository,
         ],
       })
         .overrideProvider(LicenseService)
@@ -719,6 +721,31 @@ describe('TooljetDbMigrationRecorderService', () => {
           })
         ).toBeNull();
         expect(await appManager.findOne(InternalTableMigration, { where: { id: migration.id } })).not.toBeNull();
+      });
+
+      it('should not delete an already-confirmed application - discardApplications only removes pending rows', async () => {
+        // The docstring promises "removes the pending rows", but nothing in the query enforces
+        // that - today it holds only because every caller happens to pass ids that are still
+        // pending (applyMigrations' remainingIds bookkeeping). This pins the invariant at the
+        // query itself so a future caller mistake can't silently un-apply a migration that
+        // already committed.
+        const { internalTable, relation } = await usersTableAndRelation();
+        const migration = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+        const target = await replayTargetRelation(internalTable.id, relation);
+        await service.recordApplications([migration.id], target);
+        await service.confirmApplications([migration.id], target);
+
+        await service.discardApplications([migration.id], target);
+
+        const application = await appManager.findOne(InternalTableMigrationApplication, {
+          where: { migrationId: migration.id, relationId: target.id },
+        });
+        expect(application).not.toBeNull();
+        expect(application.appliedAt).not.toBeNull();
       });
     });
 

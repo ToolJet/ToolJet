@@ -2,8 +2,9 @@
  * @group database
  */
 import { BadRequestException, ForbiddenException, INestApplication, NotFoundException } from '@nestjs/common';
-import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
+import { DataSource as TypeOrmDataSource, EntityManager, In } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { PostgrestProxyService } from '@modules/tooljet-db/services/postgrest-proxy.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
@@ -86,6 +87,7 @@ describe('TooljetDbRelationResolverService', () => {
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
+          InternalTableRepository,
         ],
       })
         .overrideProvider(LicenseService)
@@ -252,8 +254,12 @@ describe('TooljetDbRelationResolverService', () => {
         expect(resolved.has(table.id)).toBe(false);
       });
 
-      it('should resolve every id in one call without dropping any', async () => {
+      it('should resolve every id in one call, each to its own relation, without dropping or mixing any up', async () => {
         const tables = await appManager.find(InternalTable, { where: { organizationId } });
+        const relations = await appManager.find(InternalTableRelation, {
+          where: { internalTableId: In(tables.map((t) => t.id)) },
+        });
+        const relationByTableId = new Map(relations.map((r) => [r.internalTableId, r.id]));
 
         const resolved = await service.resolve(
           organizationId,
@@ -261,6 +267,9 @@ describe('TooljetDbRelationResolverService', () => {
         );
 
         expect(resolved.size).toBe(tables.length);
+        for (const table of tables) {
+          expect(resolved.get(table.id)).toBe(relationByTableId.get(table.id));
+        }
       });
     });
 
@@ -324,6 +333,43 @@ describe('TooljetDbRelationResolverService', () => {
 
         await expect(service.getRelation(organizationId, table.id)).rejects.toThrow(NotFoundException);
       });
+
+      it("should throw NotFoundException, not return another workspace's relation, for a foreign internalTableId", async () => {
+        // Unlike .resolve() and .resolveAndRewrite() above, getRelation()'s tenancy predicate
+        // (it.organization_id = :organizationId) had no direct test - this pins it the same way.
+        const { table: foreignTable } = await createForeignTableWithRelation('foreign_get_relation');
+
+        await expect(service.getRelation(organizationId, foreignTable.id)).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('.resolveSiblingByCoRelationId | falsy co_relation_id', () => {
+      // Regression: TypeORM drops an `undefined` property from a `where` clause instead of
+      // filtering on it, so an unguarded call used to silently match whatever table came back
+      // first for this org - wiring a foreign key or a raw SQL {{table.x}} ref to an arbitrary,
+      // unrelated table - instead of throwing. `null` hit the same fallthrough despite
+      // co_relation_id being NOT NULL at the DB level, since the predicate was never reached.
+      it('should throw NotFoundException for an undefined co_relation_id, not silently match an unrelated row', async () => {
+        await expect(
+          service.resolveSiblingByCoRelationId(
+            organizationId,
+            undefined as unknown as string,
+            adminEnvironmentId,
+            adminBranchId
+          )
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('should throw NotFoundException for a null co_relation_id, not silently match an unrelated row', async () => {
+        await expect(
+          service.resolveSiblingByCoRelationId(
+            organizationId,
+            null as unknown as string,
+            adminEnvironmentId,
+            adminBranchId
+          )
+        ).rejects.toThrow(NotFoundException);
+      });
     });
 
     describe('.resolveColumnName / .resolveColumnNames | column identity resolution', () => {
@@ -378,8 +424,8 @@ describe('TooljetDbRelationResolverService', () => {
 
     /**
      * PostgrestProxyService.resolveAndRewrite() disambiguates two reasons an id can be missing
-     * from resolve()'s map: not owned by this workspace (tenancy - H2's fail-closed positional
-     * rule), or owned but not promoted into the requested (environment, branch) - always 404,
+     * from resolve()'s map: not owned by this workspace (tenancy - position decides the status
+     * code), or owned but not promoted into the requested (environment, branch) - always 404,
      * regardless of position.
      */
     describe('PostgrestProxyService.resolveAndRewrite | tenancy vs promotion disambiguation', () => {
@@ -415,6 +461,20 @@ describe('TooljetDbRelationResolverService', () => {
         ).rejects.toThrow(/have no relation in this environment/);
       });
 
+      it('should return 404, not 400, when the table this workspace owns but has not promoted is the PATH reference itself', async () => {
+        // Same fact pattern as the embedded-reference test above, but the unpromoted table is the
+        // primary path segment rather than an embedded querystring ref - pins that ownership decides
+        // the status code "regardless of position" (this file's own docstring), not just for the
+        // embedded case the other tests already cover.
+        const stagingEnvId = (await appManager.findOne(AppEnvironment, { where: { organizationId, priority: 2 } })).id;
+        // Owned by this workspace but only ever promoted to development - absent from staging.
+        const { table: unpromotedTable } = await createOwnTableWithRelation('path_dev_only', adminEnvironmentId);
+
+        await expect(resolveAndRewrite(`/${unpromotedTable.id}?select=name`, stagingEnvId)).rejects.toThrow(
+          /have no relation in this environment/
+        );
+      });
+
       it('should still return 400 for an embedded reference to another workspace uuid', async () => {
         const { table: pathTable } = await createOwnTableWithRelation('owns_this_one', adminEnvironmentId);
         const { table: foreignTable } = await createForeignTableWithRelation('foreign_embedded');
@@ -443,9 +503,9 @@ describe('TooljetDbRelationResolverService', () => {
     });
 
     /**
-     * Task 7 (DEV-89): the licence x request matrix end to end. This is the entire safety
-     * argument for environment isolation now that a Postgres schema boundary no longer exists -
-     * every row pins one cell so a regression in resolveEnvironmentId or resolve()/getRelation's
+     * The licence x request matrix end to end. This is the entire safety argument for
+     * environment isolation now that a Postgres schema boundary no longer exists - every row
+     * pins one cell so a regression in resolveEnvironmentId or resolve()/getRelation's
      * predicates fails here first, not in a later module that merely calls this one.
      */
     describe('.resolve/.getRelation | environment-aware fail-closed matrix', () => {
@@ -535,10 +595,10 @@ describe('TooljetDbRelationResolverService', () => {
       });
 
       /**
-       * Task 6 (DEV-90): a workspace licensed at upgrade time has its data at the highest priority
-       * and an empty relation at development. If the licence lapses, resolveEnvironmentId pins
-       * development for every unnamed request - the shape of every released app's bare run route -
-       * so the request resolves cleanly against the empty development relation: 200 with zero rows,
+       * A workspace licensed at upgrade time has its data at the highest priority and an empty
+       * relation at development. If the licence lapses, resolveEnvironmentId pins development
+       * for every unnamed request - the shape of every released app's bare run route - so the
+       * request resolves cleanly against the empty development relation: 200 with zero rows,
        * indistinguishable from data loss. The workspace cannot address its own data; that is a
        * licence answer (403), not a promotion answer (404) and never a silent empty success.
        */
@@ -560,8 +620,8 @@ describe('TooljetDbRelationResolverService', () => {
 
       // Regression guard: every ordinary CE workspace has exactly one (development) relation per
       // table. Unlicensed must still resolve normally when there is no sibling to be locked out of -
-      // this is the case at 'unlicensed + names nothing' above, restated here to pin it against this
-      // task's condition explicitly (single relation, no higher-priority sibling -> no 403).
+      // this is the case at 'unlicensed + names nothing' above, restated here to pin it against the
+      // sibling-relation precondition explicitly (single relation, no higher-priority sibling -> no 403).
       it('should resolve normally with no throw when unlicensed and no sibling relation exists', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });

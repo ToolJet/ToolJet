@@ -93,7 +93,7 @@ export class TooljetDbEnvironmentAssignmentService {
    * that's production — the empty `LIKE`-cloned development twin is a structural copy, never the
    * source of truth for "what does this table actually look like right now".
    *
-   * No licence gate (Task 7, step 3) — real logic in CE. An unlicensed workspace needs this most:
+   * Deliberately no licence gate — real logic in CE. An unlicensed workspace needs this most:
    * buying a licence later should not leave them with a table they still can't promote.
    */
   async repairBaseline(internalTableId: string, organizationId: string): Promise<RepairBaselineResult> {
@@ -121,12 +121,26 @@ export class TooljetDbEnvironmentAssignmentService {
         : highest
     );
 
-    // Idempotent: nothing to repair if this relation's chain is already intact. Without this guard
-    // a second call (or a call on a table that was never broken) would re-synthesize and insert a
-    // duplicate baseline chain — there is no uniqueness constraint on (internal_table_id, sequence)
-    // to catch it.
-    if (dataRelation.baselineError === null) {
+    // Idempotent: nothing to repair if every relation's chain is already intact — checking only
+    // dataRelation (the highest-priority one) would leave a lower-priority twin's baseline_error
+    // stuck forever whenever that twin happens to be the broken one (listBaselineErrors reports per
+    // relation, this repairs by table).
+    if (relations.every((relation) => relation.baselineError === null)) {
       return { baseline_error: null, migrations_recorded: 0 };
+    }
+
+    // A table can pick up live structured/raw-SQL migrations after Migration A's rollout left it
+    // baseline_error'd (nothing gates schema edits on baselineError) — repair here would synthesize
+    // a baseline from the table's *current* shape and insert it at the reserved sequence 1, which
+    // always sorts before those already-recorded migrations' epoch-ms sequences. Replaying the chain
+    // from scratch would then re-apply changes the baseline already contains. Unsafe to auto-repair;
+    // surface it instead of building an inconsistent chain.
+    const existingMigrations = await this.manager.count(InternalTableMigration, { where: { internalTableId } });
+    if (existingMigrations > 0) {
+      throw new BadRequestException(
+        `Table already has ${existingMigrations} recorded migration(s); repairing would insert a baseline ` +
+          `that sorts ahead of them. This table needs manual reconciliation, not automatic repair.`
+      );
     }
 
     const schema = findTenantSchema(organizationId);
@@ -145,31 +159,57 @@ export class TooljetDbEnvironmentAssignmentService {
           dataRelation.configurations
         );
       } catch (error) {
-        await this.manager.update(InternalTableRelation, { id: dataRelation.id }, { baselineError: error.message });
-        throw new BadRequestException(error.message);
+        const baselineError = error instanceof Error ? error.message : String(error);
+        // Every relation on this branch, not just the one synthesis was attempted against - same
+        // reasoning as the success path below: a stale message on an untouched twin would show two
+        // different reasons for one table in the baseline error report.
+        await this.manager.update(
+          InternalTableRelation,
+          { internalTableId, branchId: dataRelation.branchId },
+          { baselineError }
+        );
+        throw new BadRequestException(baselineError);
       }
 
-      await this.manager.transaction(async (transactionManager) => {
-        for (const migration of migrations) {
-          const saved = await transactionManager.save(
-            transactionManager.create(InternalTableMigration, {
-              internalTableId,
-              sequence: String(migration.sequence),
-              branchId: dataRelation.branchId,
-              kind: 'baseline',
-              payload: migration.payload,
-              resultingSchema: migration.resultingSchema,
-              tooljetVersion: globalThis.TOOLJET_VERSION || null,
-            })
+      try {
+        await this.manager.transaction(async (transactionManager) => {
+          for (const migration of migrations) {
+            const saved = await transactionManager.save(
+              transactionManager.create(InternalTableMigration, {
+                internalTableId,
+                sequence: String(migration.sequence),
+                branchId: dataRelation.branchId,
+                kind: 'baseline',
+                payload: migration.payload,
+                resultingSchema: migration.resultingSchema,
+                tooljetVersion: globalThis.TOOLJET_VERSION || null,
+              })
+            );
+            await this.migrationRecorderService.recordApplications([saved.id], dataRelation, transactionManager);
+            await this.migrationRecorderService.confirmApplications([saved.id], dataRelation, transactionManager);
+          }
+          // Every relation on this branch, not just the one just repaired — a baseline_error on the
+          // migration-B twin (copied verbatim from the relation this just re-baselined) describes the
+          // same table, and is equally stale now that the chain exists. Branch-scoped to match the
+          // read at the top of this method: branching isn't shipped for TJDB yet, so today every
+          // relation this table has lives on the default branch anyway, but a stale relation left
+          // behind under a non-default branch (e.g. after a default-branch switch) must never have
+          // its error cleared by a repair that never looked at it.
+          await transactionManager.update(
+            InternalTableRelation,
+            { internalTableId, branchId: dataRelation.branchId },
+            { baselineError: null }
           );
-          await this.migrationRecorderService.recordApplications([saved.id], dataRelation, transactionManager);
-          await this.migrationRecorderService.confirmApplications([saved.id], dataRelation, transactionManager);
+        });
+      } catch (error) {
+        // internal_table_migrations_baseline_sequence_uniq (migrations/…AddUniqueBaselineSequence…)
+        // — a concurrent repair of the same table won this race; nothing was recorded twice, treat
+        // it the same as the idempotent early-return above rather than surfacing a 500.
+        if (error?.driverError?.code === '23505') {
+          return { baseline_error: null, migrations_recorded: 0 };
         }
-        // Every relation for this table, not just the one just repaired — a baseline_error on the
-        // migration-B twin (copied verbatim from the relation this just re-baselined) describes the
-        // same table, and is equally stale now that the chain exists.
-        await transactionManager.update(InternalTableRelation, { internalTableId }, { baselineError: null });
-      });
+        throw error;
+      }
 
       return { baseline_error: null, migrations_recorded: migrations.length };
     } finally {
@@ -448,7 +488,7 @@ export class TooljetDbEnvironmentAssignmentService {
       await tjdbQueryRunner.query(createStatement);
 
       // The sequence is created as the TJDB admin (this connection), never the twin table's new
-      // owner (Task B0) - `ALTER SEQUENCE ... OWNED BY` below requires both to match, or Postgres
+      // owner - `ALTER SEQUENCE ... OWNED BY` below requires both to match, or Postgres
       // refuses with "sequence must have same owner as table it is linked to". Skipped, same as
       // transferTableOwnershipToTenant, when the tenant role doesn't exist (pre-per-tenant-role
       // workspace) - the twin table's own transfer above already left it admin-owned in that case,

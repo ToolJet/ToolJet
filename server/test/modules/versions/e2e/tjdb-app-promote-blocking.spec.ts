@@ -160,6 +160,52 @@ describe('An app cannot be promoted past its tables', () => {
       expect(reloaded.currentEnvironmentId).toBe(devEnv.id);
     });
 
+    it('should not block on a table only an abandoned, different version references', async () => {
+      const { user, organization, cookie, devEnv } = await seedOrg('tjdb-promote-stale-version@tooljet.io');
+      const staleTable = await seedTable(organization.id, 'scratch_table', [devEnv]); // no relation in staging
+      const currentTable = await seedTable(organization.id, 'orders', [devEnv]); // also missing in staging
+
+      const app = await createApplication(nestApp, { name: 'App-StaleVersion', user, type: 'front-end' });
+      // One workspace-global tooljetdb data source (queryTable's own constraint: only one static/
+      // global data source per org) with a data query per version, referencing different tables.
+      const ds = await saveEntity(DataSourceEntity, {
+        name: 'tooljetdb',
+        kind: 'tooljetdb',
+        type: 'static',
+        scope: 'global',
+        organizationId: organization.id,
+      } as any);
+
+      // An abandoned draft that once referenced scratch_table - never promoted, never revisited.
+      const staleVersion = await createApplicationVersion(nestApp, app as any);
+      await saveEntity(DataQuery, {
+        name: 'getRows',
+        options: { table_id: staleTable.id, operation: 'list_rows' },
+        dataSourceId: ds.id,
+        appVersionId: staleVersion.id,
+      } as any);
+
+      // The version actually being promoted references a different table entirely.
+      const version = await createApplicationVersion(nestApp, app as any);
+      await saveEntity(DataQuery, {
+        name: 'getRows',
+        options: { table_id: currentTable.id, operation: 'list_rows' },
+        dataSourceId: ds.id,
+        appVersionId: version.id,
+      } as any);
+      await updateEntity(App, app.id, { currentVersionId: version.id } as any);
+
+      const response = await promote(app as any, version, cookie, organization.id, devEnv.id);
+
+      // Blocked on 'orders' (the version being promoted), never on 'scratch_table' - staleVersion's
+      // reference must not leak into this version's promote check (findTooljetDbTables must be
+      // scoped to versionId, not every version the app has ever had).
+      expect(response.statusCode).toBe(400);
+      const message = response.body.message.error ?? response.body.message;
+      expect(message).toContain('orders');
+      expect(message).not.toContain('scratch_table');
+    });
+
     it('should allow the promote once the table has been promoted to the target environment first', async () => {
       const { user, organization, cookie, devEnv, stagingEnv } = await seedOrg('tjdb-promote-allow@tooljet.io');
       const table = await seedTable(organization.id, 'orders', [devEnv, stagingEnv]); // promoted already

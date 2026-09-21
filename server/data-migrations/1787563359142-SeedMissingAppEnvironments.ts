@@ -11,29 +11,27 @@ const MIGRATION_NAME = 'SeedMissingAppEnvironments1787563359142';
 // default branch unconditionally for every org — this does the same for environments.
 export class SeedMissingAppEnvironments1787563359142 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`
-      SELECT COUNT(*) FROM organizations o
-      WHERE NOT EXISTS (SELECT 1 FROM app_environments ae WHERE ae.organization_id = o.id)
+    console.log(`${MIGRATION_NAME}: [START] Backfilling missing app_environments rows`);
+
+    // Row-level (not org-level): an org holding only one of the three rows is still missing the
+    // other two. No ON CONFLICT — no unique constraint exists on (organization_id, name) or
+    // (organization_id, priority) to target (the entity's @Unique decorators are decorative;
+    // ormconfig runs with synchronize: false), so the predicate does the deduplication instead.
+    const inserted = await queryRunner.query(`
+      INSERT INTO app_environments (organization_id, name, "default", priority)
+      SELECT o.id, e.name, e.is_default, e.priority
+      FROM organizations o
+      CROSS JOIN (
+        VALUES ('development', false, 1), ('staging', false, 2), ('production', true, 3)
+      ) AS e(name, is_default, priority)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM app_environments ae
+        WHERE ae.organization_id = o.id AND ae.priority = e.priority
+      )
+      RETURNING organization_id
     `);
-    const total = parseInt(count, 10);
-    console.log(`${MIGRATION_NAME}: [START] Organizations missing app_environments: ${total}`);
 
-    if (total > 0) {
-      await queryRunner.query(`
-        INSERT INTO app_environments (organization_id, name, "default", priority)
-        SELECT o.id, e.name, e.is_default, e.priority
-        FROM organizations o
-        CROSS JOIN (
-          VALUES ('development', false, 1), ('staging', false, 2), ('production', true, 3)
-        ) AS e(name, is_default, priority)
-        WHERE NOT EXISTS (
-          SELECT 1 FROM app_environments ae WHERE ae.organization_id = o.id
-        )
-        ON CONFLICT (organization_id, name) DO NOTHING;
-      `);
-    }
-
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfilled app_environments for ${total} organization(s).`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfilled ${inserted.length} app_environments row(s).`);
   }
 
   public async down(_queryRunner: QueryRunner): Promise<void> {

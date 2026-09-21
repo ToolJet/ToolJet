@@ -273,6 +273,18 @@ export class EditTableDto {
   migration_name?: string;
 }
 
+// dropTable's request body - just the optional migration label, same validation every other
+// structured-migration DTO in this file gives migration_name. Previously read via a raw
+// `@Body('migration_name')` param, which the global ValidationPipe never touches (whitelist/type
+// checks only apply to a `@Body()` bound to a DTO class) - a caller could send any JSON type, not
+// just a string, straight through to the recorded migration's name.
+export class DropTableDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
 export class EditColumnTableDto {
   @IsOptional()
   @IsString()

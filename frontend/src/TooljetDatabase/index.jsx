@@ -29,7 +29,7 @@ export const TooljetDatabase = (props) => {
   const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
-  const { loadEnvironments } = useTjdbActions();
+  const { loadEnvironments, resetStore } = useTjdbActions();
 
   const toggleCollapsibleSidebar = () => {
     setCollapseSidebar(!collapseSidebar);
@@ -128,6 +128,9 @@ export const TooljetDatabase = (props) => {
 
   useEffect(() => {
     loadEnvironments();
+    // Store is a module-level singleton, not scoped to this route - reset it on unmount so the
+    // selected environment doesn't leak into App Builder's TJDB query editor after navigating away.
+    return () => resetStore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

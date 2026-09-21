@@ -204,9 +204,10 @@ export class TooljetDbRelationResolverService {
   }
 
   /**
-   * Phase 1 writes the workspace default branch everywhere and never reads it as a discriminator;
-   * the predicate exists so phase 1.5 only has to change what this returns (user.branchId).
-   * CE's WorkspaceBranchService is a NotFoundException stub — do not call it.
+   * Today every relation is written against the workspace default branch and this always resolves
+   * to it - branch is written everywhere but never read as a discriminator yet. The predicate
+   * exists as the one seam a future branch-aware caller (user.branchId) needs to change, not a
+   * dead abstraction. CE's WorkspaceBranchService is a NotFoundException stub — do not call it.
    */
   protected async resolveBranch(organizationId: string, manager: EntityManager): Promise<string> {
     const branch = await manager.findOne(WorkspaceBranch, {
@@ -246,6 +247,14 @@ export class TooljetDbRelationResolverService {
     branchId: string,
     manager?: EntityManager
   ): Promise<InternalTableRelation> {
+    // A falsy coRelationId (undefined/null/'') must fail closed here, not reach the query: TypeORM
+    // drops an undefined property from the WHERE clause entirely rather than filtering on it, and
+    // co_relation_id is NOT NULL at the DB level, so `null` never matches a real row either way -
+    // but `findOne` with the predicate silently dropped returns whatever row comes back first for
+    // this organizationId, wiring a foreign key or {{table.x}} raw SQL reference to an arbitrary,
+    // unrelated table instead of failing loudly.
+    if (!coRelationId) throw new NotFoundException(`Referenced table not found for reference ${coRelationId}`);
+
     const entityManager = manager || this.manager;
     const internalTable = await entityManager.findOne(InternalTable, {
       where: { organizationId, co_relation_id: coRelationId },

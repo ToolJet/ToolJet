@@ -123,7 +123,8 @@ export class TooljetDbTableOperationsService {
     protected licenseTermsService: LicenseTermsService,
     protected readonly configService: ConfigService,
     protected readonly relationResolverService: TooljetDbRelationResolverService,
-    protected readonly migrationRecorderService: TooljetDbMigrationRecorderService
+    protected readonly migrationRecorderService: TooljetDbMigrationRecorderService,
+    protected readonly internalTableRepository: InternalTableRepository
   ) {}
 
   /**
@@ -674,6 +675,14 @@ export class TooljetDbTableOperationsService {
         tjdbManager: tjdbQueryRunner.manager,
       });
 
+      // Unlike every other op, confirm() here must run AFTER commit, not before: create_table is
+      // the one action whose migration row is folded into this handler's own queryRunner
+      // transaction (see record()'s call above), not independently committed at record() time - so
+      // it isn't visible yet to confirm()'s own separate connection until this commits. The
+      // adjudicatePending race confirm()'s throw guards against needs its target row older than the
+      // grace window (1 minute); a row this handler itself just inserted can't be that old the
+      // instant its own commit finishes, so the theoretical post-commit throw here has no real
+      // window to land in.
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
@@ -736,15 +745,12 @@ export class TooljetDbTableOperationsService {
     const { table_name: tableName } = params;
     const { internalTable, relation } = await this.normalizeDropTable(organizationId, tableName);
 
-    // Same check the /dependents route reports as a soft warning - constructed directly rather
-    // than injected, since `InternalTableRepository` needs only the DataSource this.manager already
-    // carries (TypeORM 0.3's own pattern for a custom repository outside the DI graph). `relation`
-    // here is already the development relation (resolveTable resolved it with environmentId:
-    // undefined), so no second resolve is needed for the foreign-key lookup.
-    const internalTableRepository = new InternalTableRepository(this.manager.connection);
+    // Same check the /dependents route reports as a soft warning. `relation` here is already the
+    // development relation (resolveTable resolved it with environmentId: undefined), so no second
+    // resolve is needed for the foreign-key lookup.
     const [{ count: appQueryCount }, foreignKeyTables] = await Promise.all([
-      internalTableRepository.findDependents(internalTable.id, organizationId),
-      internalTableRepository.findForeignKeyDependents(organizationId, relation.id, this.tooljetDbManager),
+      this.internalTableRepository.findDependents(internalTable.id, organizationId),
+      this.internalTableRepository.findForeignKeyDependents(organizationId, relation.id, this.tooljetDbManager),
     ]);
 
     if (appQueryCount) {
@@ -784,9 +790,10 @@ export class TooljetDbTableOperationsService {
         tjdbManager: tjdbQueryRunner.manager,
       });
 
+      // confirm() runs BEFORE commit - see the identical comment in create_table above.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       return true;
     } catch (err) {
       await this.migrationRecorderService.discard(migration, relation);
@@ -1085,10 +1092,11 @@ export class TooljetDbTableOperationsService {
         await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: payload.newTableName });
       }
 
+      // confirm() runs BEFORE commit - see the identical comment in create_table above.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.release();
       await queryRunner.release();
     } catch (error) {
@@ -1240,10 +1248,11 @@ export class TooljetDbTableOperationsService {
         tjdbManager: tjdbQueryRunnner.manager,
       });
 
+      // confirm() runs BEFORE commit - see the identical comment in create_table above.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
       await queryRunner.commitTransaction();
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
       await queryRunner.release();
       await tjdbQueryRunnner.release();
     } catch (err) {
@@ -1346,10 +1355,11 @@ export class TooljetDbTableOperationsService {
         tjdbManager: tjdbQueryRunnner.manager,
       });
 
+      // confirm() runs BEFORE commit - see the identical comment in create_table above.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
       await tjdbQueryRunnner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
 
       return result;
     } catch (error) {
@@ -1409,7 +1419,7 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson: rawJoinQueryJson, dataQuery, user, environmentId } = params;
+    const { joinQueryJson: rawJoinQueryJson, environmentId } = params;
     if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
     const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
@@ -1479,8 +1489,8 @@ export class TooljetDbTableOperationsService {
     const logicalIdsWithoutRelation = tableIdList.filter((tableId) => !relationIdByLogicalId.has(tableId));
     if (logicalIdsWithoutRelation.length) {
       const namesWithoutRelation = logicalIdsWithoutRelation.map((tableId) => internalTableIdToNameMap[tableId]);
-      // DEV-89: an (env, branch) with no relation is a 404, not a 400 - the table exists, it just
-      // isn't promoted here.
+      // An (env, branch) with no relation is a 404, not a 400 - the table exists, it just isn't
+      // promoted here.
       throw new NotFoundException(
         `Table(s) "${namesWithoutRelation.join('", "')}" have no relation in this environment`
       );
@@ -1516,17 +1526,6 @@ export class TooljetDbTableOperationsService {
       throw new QueryError(alteredErrorMessage, alteredErrorMessage, {});
     } finally {
       await tooljetDbTenantConnection.destroy();
-      if (!isEmpty(dataQuery) && !isEmpty(user)) {
-        // this.eventEmitter.emit('auditLogEntry', {
-        //   userId: user.id,
-        //   organizationId,
-        //   resourceId: dataQuery.id,
-        //   resourceName: dataQuery.name,
-        //   resourceType: ResourceTypes.DATA_QUERY,
-        //   actionType: ActionTypes.DATA_QUERY_RUN,
-        //   metadata: {},
-        // });
-      }
     }
   }
 
@@ -1955,10 +1954,11 @@ export class TooljetDbTableOperationsService {
         tjdbManager: tjdbQueryRunner.manager,
       });
 
+      // confirm() runs BEFORE commit - see the identical comment in create_table above.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.release();
       await queryRunner.release();
     } catch (error) {
@@ -2091,7 +2091,7 @@ export class TooljetDbTableOperationsService {
         // Tenancy validation above already proved this table belongs to the caller; a missing
         // relation here means it has no relation in this (environment, branch) - fail closed rather
         // than let a logical id leak through as a physical name.
-        // DEV-89: an (env, branch) with no relation is a 404, not a 400 - same rule as the join path.
+        // An (env, branch) with no relation is a 404, not a 400 - same rule as the join path.
         if (!relationId) throw new NotFoundException(`Table "${tableName}" has no relation in this environment`);
         referenced_tables_info[tableName] = relationId;
       }
@@ -2249,7 +2249,7 @@ export class TooljetDbTableOperationsService {
       foreign_keys: FkSpec[];
     },
     connectionManagers: Record<string, EntityManager>,
-    migration: InternalTableMigration
+    migration: InternalTableMigration | null
   ) {
     const { internalTable, relation, physicalName, shouldDestroyDbConnection, foreign_keys } = normalized;
     const { appManager, tjdbManager } = connectionManagers;
@@ -2279,9 +2279,13 @@ export class TooljetDbTableOperationsService {
           })
       );
       await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
+      // confirm() runs BEFORE commit, still on this same connection/transaction, so its own
+      // introspection sees the not-yet-committed DDL (same-connection visibility) and, if it loses
+      // its race with a peer's adjudicatePending (see confirm()'s own comment), the catch below
+      // rolls back a transaction that is genuinely still open - never a commit already durable.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
       if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
 
@@ -2298,7 +2302,13 @@ export class TooljetDbTableOperationsService {
 
       if (shouldDestroyDbConnection) {
         await tjdbQueryRunner.rollbackTransaction();
-        await tjdbQueryRunner.release();
+        // Same nesting guard as the success path above - a runner reused from a caller's shared
+        // transaction (replay) is not this call's to release; only a runner this call created
+        // itself (transactionDepth < 1) gets torn down here.
+        //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+        if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) {
+          await tjdbQueryRunner.release();
+        }
 
         const referencedColumnInfoForError = [...referencedRelations.values()].map(({ relationId, tableName }) => ({
           id: relationId,
@@ -2319,7 +2329,14 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-  protected async updateForeignKey(organizationId: string, params) {
+  protected async updateForeignKey(
+    organizationId: string,
+    params,
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
+  ) {
     const normalized = await this.normalizeUpdateForeignKey(organizationId, params);
     await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
     const migration = await this.migrationRecorderService.record(
@@ -2327,7 +2344,7 @@ export class TooljetDbTableOperationsService {
       normalized.internalTable,
       normalized.relation
     );
-    return this.applyUpdateForeignKey(organizationId, normalized, migration);
+    return this.applyUpdateForeignKey(organizationId, normalized, connectionManagers, migration);
   }
 
   /**
@@ -2396,25 +2413,27 @@ export class TooljetDbTableOperationsService {
       target: FkSpec;
       foreign_keys: FkSpec[];
     },
-    migration: InternalTableMigration
+    connectionManagers: Record<string, EntityManager>,
+    migration: InternalTableMigration | null
   ) {
     const { internalTable, relation, physicalName, tenantSchema, target, foreign_keys } = normalized;
+    const { appManager, tjdbManager } = connectionManagers;
 
     const referencedRelations = await this.resolveFkReferencedRelations(
       organizationId,
       foreign_keys,
       relation,
-      this.manager
+      appManager
     );
     const constraintName = await this.resolveFkConstraintName(
       organizationId,
       tenantSchema,
       relation,
       target,
-      this.manager
+      appManager
     );
 
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
 
@@ -2434,10 +2453,15 @@ export class TooljetDbTableOperationsService {
       );
       await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
 
+      // confirm() runs BEFORE commit, still on this same connection/transaction, so its own
+      // introspection sees the not-yet-committed DDL (same-connection visibility) and, if it loses
+      // its race with a peer's adjudicatePending (see confirm()'s own comment), the catch below
+      // rolls back a transaction that is genuinely still open - never a commit already durable.
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
-      await tjdbQueryRunner.release();
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
       return {
         statusCode: 200,
         message: 'Foreign key relation created successfully!',
@@ -2445,7 +2469,8 @@ export class TooljetDbTableOperationsService {
     } catch (err) {
       await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
       const referencedColumnInfoForError = [...referencedRelations.values()].map(({ relationId, tableName }) => ({
         id: relationId,
         tableName,
@@ -2464,7 +2489,14 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-  protected async deleteForeignKey(organizationId: string, params) {
+  protected async deleteForeignKey(
+    organizationId: string,
+    params,
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
+  ) {
     const normalized = await this.normalizeDeleteForeignKey(organizationId, params);
     await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
     const migration = await this.migrationRecorderService.record(
@@ -2472,7 +2504,7 @@ export class TooljetDbTableOperationsService {
       normalized.internalTable,
       normalized.relation
     );
-    return this.applyDeleteForeignKey(organizationId, normalized, migration);
+    return this.applyDeleteForeignKey(organizationId, normalized, connectionManagers, migration);
   }
 
   /**
@@ -2497,8 +2529,9 @@ export class TooljetDbTableOperationsService {
   }
 
   /**
-   * No transaction: a single DROP CONSTRAINT is already atomic, and this handler never had one to
-   * begin with - later recording work uses its own separate transaction, not this one.
+   * No transaction of its own: a single DROP CONSTRAINT is already atomic on the live path. During
+   * replay `tjdbManager.queryRunner` is the batch's own already-open transaction, so the statement
+   * still lands inside it and rolls back with the rest of the batch on a later migration's failure.
    */
   protected async applyDeleteForeignKey(
     organizationId: string,
@@ -2509,18 +2542,20 @@ export class TooljetDbTableOperationsService {
       tenantSchema: string;
       target: FkSpec;
     },
-    migration: InternalTableMigration
+    connectionManagers: Record<string, EntityManager>,
+    migration: InternalTableMigration | null
   ) {
     const { internalTable, relation, physicalName, tenantSchema, target } = normalized;
+    const { appManager, tjdbManager } = connectionManagers;
     const constraintName = await this.resolveFkConstraintName(
       organizationId,
       tenantSchema,
       relation,
       target,
-      this.manager
+      appManager
     );
 
-    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
 
     try {
       await tjdbQueryRunner.connect();
@@ -2543,6 +2578,12 @@ export class TooljetDbTableOperationsService {
         },
         error
       );
+    } finally {
+      // Same nesting guard as create/update foreign key - a runner reused from a caller's shared
+      // transaction (replay) is not this call's to release; only a runner this call created itself
+      // (transactionDepth < 1) gets torn down here.
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
     }
   }
 
@@ -2974,7 +3015,7 @@ export class TooljetDbTableOperationsService {
    * replay path uses. This is the one place replay must not reuse the ambient admin connection every
    * other `apply*`/`replay*` method gets handed, since raw SQL's whole reason for existing is to
    * never run as admin, including on replay. Column reconciliation calls the exact same
-   * `reconcileColumns` Task B1's live-authoring path (`tooljet-db-raw-sql-migration.service.ts`) uses,
+   * `reconcileColumns` the live-authoring path (`tooljet-db-raw-sql-migration.service.ts`) uses,
    * so replay can't drift from what authoring already recorded.
    */
   private async replayRawSqlMigration(
@@ -3169,8 +3210,8 @@ export class TooljetDbTableOperationsService {
             shouldDestroyDbConnection: true,
             foreign_keys,
           },
-          { appManager: this.manager, tjdbManager: this.tooljetDbManager },
-          this.replayDummyMigration(targetInternalTable.id)
+          connectionManagers,
+          null
         );
         return;
       }
@@ -3198,7 +3239,8 @@ export class TooljetDbTableOperationsService {
             target,
             foreign_keys,
           },
-          this.replayDummyMigration(targetInternalTable.id)
+          connectionManagers,
+          null
         );
         return;
       }
@@ -3214,7 +3256,8 @@ export class TooljetDbTableOperationsService {
         await this.applyDeleteForeignKey(
           organizationId,
           { internalTable: targetInternalTable, relation: targetRelation, physicalName, tenantSchema, target },
-          this.replayDummyMigration(targetInternalTable.id)
+          connectionManagers,
+          null
         );
         return;
       }
@@ -3228,18 +3271,6 @@ export class TooljetDbTableOperationsService {
     appManager: EntityManager
   ): Promise<InternalTable> {
     return appManager.findOne(InternalTable, { where: { id: targetRelation.internalTableId }, withDeleted: true });
-  }
-
-  /**
-   * The three foreign-key ops confirm/discard their own `migration` argument internally (they own
-   * their own transaction, unlike the other six - see AGENTS.md). Replay's own bookkeeping is
-   * applications-only against the real source migrations, so this hands them an unpersisted
-   * stand-in instead: their internal confirm()/discard() calls become no-op updates/deletes
-   * against a row that was never inserted, and the real DDL still runs exactly as it does on the
-   * live path.
-   */
-  private replayDummyMigration(internalTableId: string): InternalTableMigration {
-    return { id: uuidv4(), internalTableId } as InternalTableMigration;
   }
 
   /**

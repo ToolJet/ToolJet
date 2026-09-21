@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager, In, IsNull, QueryRunner } from 'typeorm';
 import { isEmpty } from 'lodash';
@@ -308,11 +308,16 @@ export class TooljetDbMigrationRecorderService {
    * is already soft-deleted, so the lookup has to tolerate that.
    */
   async confirm(
-    migration: InternalTableMigration,
+    migration: InternalTableMigration | null,
     relation: InternalTableRelation,
     tjdbQueryRunner: QueryRunner,
     manager?: EntityManager
   ): Promise<void> {
+    // The three foreign-key ops pass null during replay - their own bookkeeping is
+    // applications-only against the real source migrations, so there's no migration row here to
+    // confirm. See AGENTS.md on why those three own their transaction and this argument.
+    if (!migration) return;
+
     const appManager = manager ?? this.manager;
     const internalTable = await appManager.findOne(InternalTable, {
       where: { id: migration.internalTableId },
@@ -322,7 +327,17 @@ export class TooljetDbMigrationRecorderService {
     const columnNames = relation.configurations?.columns?.column_names ?? {};
     const resultingSchema = await buildTableSchemaSnapshot(tjdbQueryRunner, schema, relation.id, columnNames);
 
-    await appManager.update(InternalTableMigration, { id: migration.id }, { resultingSchema: resultingSchema as any });
+    const updated = await appManager.update(
+      InternalTableMigration,
+      { id: migration.id },
+      { resultingSchema: resultingSchema as any }
+    );
+    // adjudicatePending's grace window can still lose this race on a long enough DDL - refuse to
+    // silently accept it: a no-op update here means discard() already deleted this row out from
+    // under a DDL that has now, in fact, succeeded. The column exists, nothing records it.
+    if (!updated.affected) {
+      throw new InternalServerErrorException(`Migration ${migration.id} was discarded while its DDL was still running`);
+    }
     await appManager.update(
       InternalTableMigrationApplication,
       { migrationId: migration.id, relationId: relation.id },
@@ -341,10 +356,12 @@ export class TooljetDbMigrationRecorderService {
    * error, not whatever this cleanup itself produces.
    */
   async discard(
-    migration: InternalTableMigration,
+    migration: InternalTableMigration | null,
     relation: InternalTableRelation,
     manager?: EntityManager
   ): Promise<void> {
+    if (!migration) return;
+
     // `relation` is unused here - kept for symmetry with confirm()'s signature, which every call
     // site already has both arguments in hand for.
     await (manager ?? this.manager).delete(InternalTableMigration, { id: migration.id });
@@ -402,6 +419,7 @@ export class TooljetDbMigrationRecorderService {
     await (manager ?? this.manager).delete(InternalTableMigrationApplication, {
       migrationId: In(migrationIds),
       relationId: relation.id,
+      appliedAt: IsNull(),
     });
   }
 
@@ -417,7 +435,7 @@ export class TooljetDbMigrationRecorderService {
    * crash recovery, which only ever runs "the next time someone touches this relation" - anywhere
    * from seconds to days later.
    */
-  private static readonly ADJUDICATION_GRACE_WINDOW = '3 seconds';
+  private static readonly ADJUDICATION_GRACE_WINDOW = '1 minute';
 
   /**
    * Crash recovery: resolves every application still pending against this relation by asking each
@@ -455,6 +473,7 @@ export class TooljetDbMigrationRecorderService {
 
     const pendingMigrations = await appManager.find(InternalTableMigration, {
       where: { id: In(eligibleIds) },
+      order: { sequence: 'ASC', id: 'ASC' },
     });
 
     const schema = findTenantSchema(internalTable.organizationId);
@@ -484,7 +503,19 @@ export class TooljetDbMigrationRecorderService {
         }
 
         if (matches) {
-          await this.confirm(migration, relation, tjdbQueryRunner, manager);
+          try {
+            await this.confirm(migration, relation, tjdbQueryRunner, manager);
+          } catch (error) {
+            // confirm() throws when its update affects 0 rows - meaning this exact migration was
+            // deleted between the `pendingMigrations` read above and this call. That's not always
+            // the bug confirm()'s own guard exists to catch: a concurrent adjudicatePending run on
+            // the same relation reaches the same verdict independently, and whichever one gets
+            // here second finds nothing left to update. Confirm the row is simply gone (already
+            // resolved by that peer) before treating this as the real divergence confirm() means to
+            // surface - still gone means nothing more for this recovery pass to do here.
+            if (!(await appManager.findOne(InternalTableMigration, { where: { id: migration.id } }))) continue;
+            throw error;
+          }
         } else {
           await this.discard(migration, relation, manager);
         }

@@ -1,6 +1,6 @@
 /**
- * Task B3: revert. `POST .../table/:tableId/migrations/:migrationId/revert` is a thin wrapper over
- * Task B1's raw SQL step creation - the target id comes from the URL (never the body), and an
+ * Revert. `POST .../table/:tableId/migrations/:migrationId/revert` is a thin wrapper over the
+ * raw SQL step creation path - the target id comes from the URL (never the body), and an
  * `add_column` target requires `confirmed: true` since undoing it drops the column and its data.
  *
  * Same isolation model as tjdb-raw-sql-migration.spec.ts: every test opens its own real, separate
@@ -220,6 +220,45 @@ describe('TooljetDb revert migration', () => {
       }
     });
 
+    it('should 403 (guard-rejected, not service-rejected) when the URL organizationId is not the caller session organization', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      let otherOrganizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          // Victim workspace: its table is the target of the forged URL.
+          const otherWorkspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
+          otherOrganizationId = otherWorkspace.organizationId;
+          await createTable(otherOrganizationId, otherWorkspace.cookie, 'revert_guard_scope_tbl');
+          const foreignTable = await internalTableFor(otherOrganizationId, 'revert_guard_scope_tbl');
+
+          // Caller workspace: owns the session/cookie the request actually authenticates as.
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'revert' });
+          organizationId = workspace.organizationId;
+          const { cookie } = workspace;
+
+          // Built by hand rather than through headers()/revertMigration(): both helpers derive the
+          // tj-workspace-id header and the URL's :organizationId from the same variable, so they can
+          // never construct the one request OrganizationValidateGuard exists to reject - the URL's
+          // :organizationId (the victim's) diverging from the caller's own session organization.
+          // FeatureAbilityGuard alone can't catch this: it resolves org as
+          // app?.organizationId || user?.organizationId || reqOrg, i.e. from the caller's own
+          // session, never validated against the path param.
+          const res = await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${otherOrganizationId}/table/${foreignTable.id}/migrations/sql`)
+            .set({ Cookie: cookie, 'tj-workspace-id': organizationId })
+            .send({ sql: 'ALTER TABLE "{{self}}" ADD COLUMN probe integer', refs: {} });
+
+          expect(res.statusCode).toBe(403);
+        });
+      } finally {
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
+        if (otherOrganizationId) await cleanupTjdbWorkspace(app, otherOrganizationId);
+      }
+    });
+
     it('should require confirmed:true to revert an add_column migration, with the exact warning text, and succeed once confirmed', async () => {
       expect(tjdbAvailable).toBe(true);
 
@@ -347,7 +386,7 @@ describe('TooljetDb revert migration', () => {
           });
           expect(revertMigrationRow.revertsMigrationId).toBe(addColumnMigration.id);
 
-          // Promote: replay into a fresh relation in another environment, through Task B2's replay
+          // Promote: replay into a fresh relation in another environment, through the replay
           // path - proves the appended revert migration promotes forward like any other raw SQL
           // migration, not just that its row exists. Two calls, structured migrations then the
           // revert, mirroring how TooljetDbPromoteService.promoteTable always promotes only the

@@ -37,6 +37,25 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     }
 
     // Only safe once every internal_tables row has a relation carrying its configurations.
+    // repairAndBaselineOneTable can return (missing dev env/branch) or throw (per-row failure,
+    // caught in the caller) without ever writing that row's relation — enforce the precondition
+    // instead of trusting it, so a bad row rolls back the whole run (migrationsTransactionMode:
+    // 'all') instead of silently losing that table's column identity forever.
+    const orphans: { id: string; table_name: string; organization_id: string }[] = await queryRunner.query(`
+      SELECT it.id, it.table_name, it.organization_id
+      FROM internal_tables it
+      WHERE NOT EXISTS (SELECT 1 FROM internal_table_relations r WHERE r.internal_table_id = it.id)
+      ORDER BY it.organization_id, it.table_name
+      LIMIT 50
+    `);
+    if (orphans.length) {
+      throw new Error(
+        `${MIGRATION_NAME}: ${orphans.length} internal_tables row(s) have no relation; refusing to drop ` +
+          `internal_tables.configurations. Each is also logged above by id/org, matched here by name for ` +
+          `triage (showing up to 50): ${JSON.stringify(orphans)}`
+      );
+    }
+
     // No IF EXISTS: migrationsTransactionMode: 'all' rolls back everything above on any failure,
     // so a retry always starts with the column still present.
     await queryRunner.query(`ALTER TABLE internal_tables DROP COLUMN configurations`);
@@ -76,16 +95,38 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     await queryRunner.query(
       `UPDATE internal_tables SET co_relation_id = gen_random_uuid() WHERE co_relation_id IS NULL`
     );
-    await queryRunner.query(`
-      WITH ranked AS (
-        SELECT id, ROW_NUMBER() OVER (PARTITION BY organization_id, co_relation_id ORDER BY created_at, id) AS rn
-        FROM internal_tables
+
+    // co_relation_id is git-sync's cross-instance identity for a table (AGENTS.md: "do not
+    // repurpose it") — reassigning a collision's value, not just deleting it, orphans that table
+    // from the repo entry tracking it: the next pull looks it up by the old co_relation_id, finds
+    // no match, and creates a duplicate table instead (tooljet-db-import-export.service.ts:163-206).
+    // There's no principled way to pick which side of a collision git-sync actually tracks, so
+    // surface it to an operator instead of guessing.
+    const collisions = await queryRunner.query(`
+      SELECT id, organization_id, table_name, co_relation_id
+      FROM internal_tables it
+      WHERE EXISTS (
+        SELECT 1 FROM internal_tables other
+        WHERE other.organization_id = it.organization_id
+          AND other.co_relation_id = it.co_relation_id
+          AND other.id != it.id
       )
-      UPDATE internal_tables it
-      SET co_relation_id = gen_random_uuid()
-      FROM ranked
-      WHERE it.id = ranked.id AND ranked.rn > 1
+      ORDER BY organization_id, co_relation_id, created_at
     `);
+    if (collisions.length > 0) {
+      const list = collisions
+        .map(
+          (row) =>
+            `  table=${row.id} (${row.table_name}) org=${row.organization_id} co_relation_id=${row.co_relation_id}`
+        )
+        .join('\n');
+      throw new Error(
+        `${MIGRATION_NAME}: ${collisions.length} internal_tables row(s) share a co_relation_id with ` +
+          `another table in the same organization — resolve manually before re-running, ` +
+          `git-sync identity cannot be safely reassigned automatically:\n${list}`
+      );
+    }
+
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET NOT NULL`);
     await queryRunner.query(`
       ALTER TABLE internal_tables
@@ -159,7 +200,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     try {
       migrations = await synthesizeBaseline(queryRunner, tjdbQueryRunner, schema, row.id, configurations);
     } catch (error) {
-      baselineError = error.message;
+      baselineError = error instanceof Error ? error.message : String(error);
     }
 
     // Everything below writes to the app DB, which — per migrationsTransactionMode: 'all' — shares
@@ -205,7 +246,12 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       }
       await queryRunner.query(`RELEASE SAVEPOINT relation_repair`);
     } catch (error) {
+      // ROLLBACK TO SAVEPOINT undoes the changes but leaves the savepoint on the stack — RELEASE
+      // is what actually pops it. Without it, every failed row leaks one subtransaction for the
+      // rest of this migration's run (past 64, Postgres's subxid cache overflows and every
+      // concurrent reader starts consulting pg_subtrans).
       await queryRunner.query(`ROLLBACK TO SAVEPOINT relation_repair`);
+      await queryRunner.query(`RELEASE SAVEPOINT relation_repair`);
       throw error;
     }
   }

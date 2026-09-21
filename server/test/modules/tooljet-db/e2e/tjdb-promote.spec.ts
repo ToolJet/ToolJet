@@ -23,6 +23,8 @@ import {
   withRealTransactions,
   setUpTjdbWorkspace,
   cleanupTjdbWorkspace,
+  saveEntity,
+  updateEntity,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -30,6 +32,12 @@ import { InternalTableMigrationApplication } from '@entities/internal_table_migr
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { User } from '@entities/user.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
+import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
+import { APP_TYPES } from '@modules/apps/constants';
 import { buildTableSchemaSnapshot } from '@modules/tooljet-db/helpers/table-schema-snapshot';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 // EE tokens: getProviders() registers the edition-resolved class as the DI token.
@@ -119,8 +127,8 @@ describe('TooljetDb promote', () => {
           await getTooljetDbDataSource().query(`CREATE SCHEMA IF NOT EXISTS "${tenantSchema}"`);
 
           // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path
-          // that calls createTooljetDbTenantSchemaAndRole), so Task B0's ownership transfer needs
-          // the tenant role provisioned here instead.
+          // that calls createTooljetDbTenantSchemaAndRole), so the physical-table ownership
+          // transfer needs the tenant role provisioned here instead.
           const [existingRole] = await getTooljetDbDataSource().query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [
             `user_${orgId}`,
           ]);
@@ -182,10 +190,17 @@ describe('TooljetDb promote', () => {
 
         const promoteRes = await promote(adminCookie, tableId, devEnvId);
         expect([200, 201]).toContain(promoteRes.statusCode);
-        expect(promoteRes.body.result).toMatchObject({ promoted_to: 'staging', applied_migrations: 3 });
 
         const stagingRelation = await relationFor(tableId, stagingEnvId);
         expect(stagingRelation).toBeTruthy();
+        // environment_id/relation_id were previously unasserted anywhere in this file - either could
+        // silently drop off PromoteResult with nothing here to catch it.
+        expect(promoteRes.body.result).toMatchObject({
+          promoted_to: 'staging',
+          environment_id: stagingEnvId,
+          relation_id: stagingRelation.id,
+          applied_migrations: 3,
+        });
         expect(await confirmedApplicationCount(stagingRelation.id)).toBe(3);
 
         const tjdb = getTooljetDbDataSource();
@@ -227,6 +242,63 @@ describe('TooljetDb promote', () => {
         expect(pending).toBe(0);
       });
 
+      it("should point a promoted foreign key at the target environment's own parent relation, not an arbitrary sibling", async () => {
+        // stripNames above deliberately drops `referenced_table` from the physical-shape comparison
+        // (it's a physical relation id, always different between dev and staging by construction) -
+        // which means that comparison alone can never catch resolveRefPlaceholders resolving a
+        // promoted FK to the wrong table. Assert it directly instead.
+        expect(tjdbAvailable).toBe(true);
+
+        await createTable(adminCookie, 'fk_parent_ok', [idColumn]);
+        await createTable(adminCookie, 'fk_child_ok', [
+          idColumn,
+          {
+            column_name: 'parent_id',
+            data_type: 'integer',
+            constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+          },
+        ]);
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${orgId}/table/fk_child_ok/foreignkey`)
+          .set(headers(adminCookie))
+          .send({
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'fk_parent_ok',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        const parentId = await internalTableId('fk_parent_ok');
+        const childId = await internalTableId('fk_child_ok');
+
+        // Parent first, so the child's FK has somewhere to point when it promotes.
+        await promote(adminCookie, parentId, devEnvId);
+        const res = await promote(adminCookie, childId, devEnvId);
+        expect([200, 201]).toContain(res.statusCode);
+
+        const stagingParent = await relationFor(parentId, stagingEnvId);
+        const stagingChild = await relationFor(childId, stagingEnvId);
+
+        const tjdb = getTooljetDbDataSource();
+        const childSnapshot = await buildTableSchemaSnapshot(
+          tjdb.createQueryRunner(),
+          tenantSchema,
+          stagingChild.id,
+          stagingChild.configurations.columns.column_names
+        );
+        expect(childSnapshot.foreign_keys).toHaveLength(1);
+        // The one assertion stripNames' physical-shape comparison structurally cannot make: the
+        // constraint's physical target is staging's own parent relation, not dev's.
+        expect(childSnapshot.foreign_keys[0].referenced_table).toBe(stagingParent.id);
+      });
+
       it('should resolve pending applications left by a crashed prior promote before computing what is missing, and confirm them rather than delete them', async () => {
         expect(tjdbAvailable).toBe(true);
 
@@ -239,8 +311,8 @@ describe('TooljetDb promote', () => {
 
         // Simulate the crash window: DDL committed (staging's physical table already matches the
         // create_table migration), but the tick to "confirmed" never happened. Back-date the
-        // migration's created_at past ADJUDICATION_GRACE_WINDOW so adjudicatePending is willing to
-        // touch it instead of deferring to a still-in-flight request.
+        // migration's created_at past ADJUDICATION_GRACE_WINDOW (1 minute) so adjudicatePending is
+        // willing to touch it instead of deferring to a still-in-flight request.
         const applications = await getDefaultDataSource().manager.find(InternalTableMigrationApplication, {
           where: { relationId: stagingRelation.id },
         });
@@ -248,7 +320,7 @@ describe('TooljetDb promote', () => {
         await getDefaultDataSource().manager.update(
           InternalTableMigration,
           { id: migrationIds[0] },
-          { createdAt: new Date(Date.now() - 10_000) }
+          { createdAt: new Date(Date.now() - 70_000) }
         );
         await getDefaultDataSource().manager.update(
           InternalTableMigrationApplication,
@@ -334,6 +406,74 @@ describe('TooljetDb promote', () => {
         expect(res.statusCode).toBe(403);
       });
 
+      it('should 403 (not 404) for a table id that does not exist, when the caller has no target-environment access', async () => {
+        // Regression for the ordering bug: resolveSourceRelation (table existence, baseline-error
+        // text) must run AFTER the target-environment access check, not before it - otherwise a
+        // caller with no access to the target environment could distinguish "table doesn't exist"
+        // (404) from "table exists but I lack access" (403) purely from the response, which is an
+        // enumeration oracle sitting in front of an authorization check.
+        const ability = app.get(AbilityService);
+        jest.spyOn(ability, 'resourceActionsPermission').mockResolvedValue({
+          APP: { environmentAccess: { development: true, staging: false, production: false, released: false } },
+        } as any);
+
+        const res = await promote(adminCookie, uuidv4(), devEnvId);
+        expect(res.statusCode).toBe(403);
+      });
+
+      it('should 403 then 200 as a real group is denied then granted staging access - not a mock that ignores its arguments', async () => {
+        expect(tjdbAvailable).toBe(true);
+        await createTable(adminCookie, 'env_denied_real_tbl', [idColumn]);
+        const tableId = await internalTableId('env_denied_real_tbl');
+
+        const { user: scopedUser } = await createUser(app, {
+          email: 'tjdb-env-scoped@tooljet.io',
+          groups: ['end-user'],
+          organization: adminOrg,
+        });
+
+        // Custom group: tjdbCRUD clears the earlier gate; an isAll:true APP granular permission
+        // grants development but withholds staging - the exact { organizationId, resources }
+        // shape assertEnvironmentAccess passes to the real AbilityService.resourceActionsPermission.
+        const group = await saveEntity(GroupPermissions, {
+          organizationId: orgId,
+          name: 'tjdb-env-scoped',
+          type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+          tjdbCRUD: true,
+        });
+        await saveEntity(GroupUsers, { groupId: group.id, userId: scopedUser.id });
+        const granular = await saveEntity(GranularPermissions, {
+          groupId: group.id,
+          name: 'App permissions',
+          type: ResourceType.APP,
+          isAll: true,
+        });
+        const appsPermission = await saveEntity(AppsGroupPermissions, {
+          granularPermissionId: granular.id,
+          appType: APP_TYPES.FRONT_END,
+          canEdit: false,
+          canView: false,
+          hideFromDashboard: false,
+          canAccessDevelopment: true,
+          canAccessStaging: false,
+          canAccessProduction: false,
+          canAccessReleased: false,
+        });
+
+        const { tokenCookie: scopedCookie } = await buildTestSession(scopedUser as unknown as User, orgId);
+
+        // Denied: this real group has development but not staging.
+        const denied = await promote(scopedCookie, tableId, devEnvId);
+        expect(denied.statusCode).toBe(403);
+
+        // Allowed once the same group is granted staging - if the real call site ever dropped its
+        // { organizationId, resources } argument, environmentAccess would resolve to undefined and
+        // this branch would 403 too, catching what a mock ignoring its own arguments cannot.
+        await updateEntity(AppsGroupPermissions, appsPermission.id, { canAccessStaging: true });
+        const allowed = await promote(scopedCookie, tableId, devEnvId);
+        expect([200, 201]).toContain(allowed.statusCode);
+      });
+
       it('should 403 when the target environment name is not a known access key', async () => {
         expect(tjdbAvailable).toBe(true);
         await createTable(adminCookie, 'renamed_env_tbl', [idColumn]);
@@ -389,7 +529,7 @@ describe('TooljetDb promote', () => {
         expect(res.statusCode).toBe(400);
       });
 
-      it('should 400 and leave nothing behind when a foreign key cannot replay in this order', async () => {
+      it('should 400 but keep the target relation and its already-confirmed migrations for a resumable retry', async () => {
         expect(tjdbAvailable).toBe(true);
         await createTable(adminCookie, 'fk_parent', [idColumn]);
         await createTable(adminCookie, 'fk_child', [
@@ -423,9 +563,20 @@ describe('TooljetDb promote', () => {
         expect(res.statusCode).toBe(400);
         expect(res.body.message).toMatch(/has no relation in this environment/);
 
-        // Nothing left behind: no staging relation, no applications.
+        // The relation itself is NOT deleted on failure - its id is the physical table name, so
+        // deleting it would orphan whatever already committed (create_table here) with nothing left
+        // to find or resume it. Exactly one migration (create_table) got confirmed before the FK
+        // replay failed; the FK migration itself was never confirmed.
         const stagingChild = await relationFor(childId, stagingEnvId);
-        expect(stagingChild).toBeNull();
+        expect(stagingChild).not.toBeNull();
+        expect(await confirmedApplicationCount(stagingChild.id)).toBe(1);
+
+        // A retried promote resumes instead of starting over: only the still-missing foreign key is
+        // attempted, and this time it succeeds because fk_parent has since been promoted too.
+        await promote(adminCookie, await internalTableId('fk_parent'), devEnvId);
+        const retry = await promote(adminCookie, childId, devEnvId);
+        expect([200, 201]).toContain(retry.statusCode);
+        expect(await confirmedApplicationCount(stagingChild.id)).toBe(2);
       });
 
       it('should 400 with the raw Postgres message and the failing statement when the cause is a real QueryFailedError', async () => {
@@ -541,6 +692,11 @@ describe('TooljetDb promote', () => {
         expect(res.body.result.missing_migrations[0].migration_number).toBe(2);
       });
 
+      // Real-service coverage for this denial (not a mock that ignores its own arguments) lives on
+      // promote's "should 403 then 200" test above: preview calls the same private
+      // assertEnvironmentAccess as promote, so re-proving the real AbilityService wiring here would
+      // just duplicate that test against the same code path. This mock is left as cheap coverage of
+      // the 403 branch itself.
       it('should 403 when environmentAccess denies the target environment, same as promote', async () => {
         expect(tjdbAvailable).toBe(true);
         await createTable(adminCookie, 'preview_env_denied_tbl', [idColumn]);
@@ -819,7 +975,9 @@ describe('TooljetDb promote', () => {
 
           const secondPromote = await promoteRawSqlWorkspace(organizationId, cookie, internalTable.id, devEnvId);
           expect(secondPromote.statusCode).toBe(400);
-          expect(JSON.stringify(secondPromote.body)).toMatch(/null/i);
+          // Was `toMatch(/null/i)` against the whole stringified body - passes on any "null" anywhere
+          // in the response (e.g. a null field elsewhere), not just this specific constraint failure.
+          expect(secondPromote.body.message).toMatch(/contains null values/i);
 
           // m1-m4 stayed confirmed (m4 committed before m5 even started replaying); m5/m6 got no
           // row at all - recordApplications' pending rows for them were discarded, not left
@@ -851,6 +1009,77 @@ describe('TooljetDb promote', () => {
         });
       } finally {
         if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
+      }
+    });
+  });
+
+  // Same constraint as the raw-SQL-interleaved block above: this test builds a second workspace
+  // inside withRealTransactions, which rolls back and restarts the shared suite transaction - the
+  // EE block's adminOrg fixtures would roll back with it, and its blanket per-test afterEach
+  // (logout of that shared session) would then 403 right after this test ran. Its own app/beforeAll
+  // /afterAll instead.
+  describe('EE (plan: enterprise) | cross-tenant guard', () => {
+    let app: INestApplication;
+    let tjdbAvailable: boolean;
+
+    const idColumn = {
+      column_name: 'id',
+      data_type: 'integer',
+      constraints_type: { is_not_null: true, is_primary_key: true, is_unique: false },
+    };
+
+    beforeAll(async () => {
+      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      tjdbAvailable = !!getTooljetDbDataSource();
+    });
+
+    afterAll(async () => {
+      await closeTestApp(app);
+    }, 60_000);
+
+    it('should 403 (guard-rejected, not service-rejected) when the URL organizationId is not the caller session organization', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      let organizationId: string | undefined;
+      let otherOrganizationId: string | undefined;
+      try {
+        await withRealTransactions(async () => {
+          // Victim workspace: its table is the target of the forged URL.
+          const otherWorkspace = await setUpTjdbWorkspace(app, { prefix: 'promote' });
+          otherOrganizationId = otherWorkspace.organizationId;
+          await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${otherOrganizationId}/table`)
+            .set({ Cookie: otherWorkspace.cookie, 'tj-workspace-id': otherOrganizationId })
+            .send({ table_name: 'promote_guard_scope_tbl', columns: [idColumn], foreign_keys: [] })
+            .expect((res) => expect([200, 201]).toContain(res.statusCode));
+          const foreignTable = await getDefaultDataSource().manager.findOneOrFail(InternalTable, {
+            where: { organizationId: otherOrganizationId, tableName: 'promote_guard_scope_tbl' },
+          });
+
+          // Caller workspace: owns the session/cookie the request actually authenticates as.
+          const workspace = await setUpTjdbWorkspace(app, { prefix: 'promote' });
+          organizationId = workspace.organizationId;
+          const { cookie } = workspace;
+
+          // Built by hand rather than through a shared headers()/promote() helper: both would derive
+          // the tj-workspace-id header and the URL's :organizationId from the same variable, so they
+          // can never construct the one request OrganizationValidateGuard exists to reject - the
+          // URL's :organizationId (the victim's) diverging from the caller's own session
+          // organization. FeatureAbilityGuard alone can't catch this: it resolves org as
+          // app?.organizationId || user?.organizationId || reqOrg, i.e. from the caller's own
+          // session, never validated against the path param.
+          const res = await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${otherOrganizationId}/table/${foreignTable.id}/promote`)
+            .set({ Cookie: cookie, 'tj-workspace-id': organizationId })
+            .send({ environment_id: workspace.environments.find((e) => e.priority === 1).id });
+
+          expect(res.statusCode).toBe(403);
+        });
+      } finally {
+        if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
+        if (otherOrganizationId) await cleanupTjdbWorkspace(app, otherOrganizationId);
       }
     });
   });

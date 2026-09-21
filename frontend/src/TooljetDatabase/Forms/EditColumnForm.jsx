@@ -556,12 +556,16 @@ const ColumnForm = ({
       showSqlEditor: true,
       // The structured request runs first (see useMigrationModal's run sequence), so if this save
       // also renames the column, the cast has to name the column by its new name.
+      // `sqlRequired`: the structured request above resends the *old* type for this cast - the SQL
+      // step is the only thing that performs it, so an empty box here must block submission, not
+      // silently skip the cast while still reporting success.
       ...(needsGeneratedSql && {
         initialSql: buildTypeChangeSql({
           columnName: isRenamed ? columnName : selectedColumn?.Header,
           targetType: dataType.value,
           hasDefault: !!defaultValue || !!selectedColumn?.column_default,
         }),
+        sqlRequired: true,
       }),
       run: (migrationName) => {
         const reqConfigurations = {};
@@ -745,16 +749,12 @@ const ColumnForm = ({
     return matchingColumn;
   }
 
-  const [disabledSaveButton, setDisabledSaveButton] = useState(true);
-
-  useEffect(() => {
-    setDisabledSaveButton(columnName === '');
-  }, [columnName]);
-
-  useEffect(() => {
-    const shouldDisableForNullValue = dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue);
-    setDisabledSaveButton(shouldDisableForNullValue);
-  }, [isNotNull, defaultValue, dataType]);
+  // Derived, not state written from three separate places (two effects + handleInputError below) -
+  // whichever of those last ran used to clobber what the others had decided, e.g. clearing the
+  // column name and then toggling NOT NULL would re-enable Save with an empty name.
+  const [inputError, setInputError] = useState(false);
+  const disabledSaveButton =
+    columnName === '' || inputError || (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue));
 
   useEffect(() => {
     const currentType = selectedColumn?.dataType;
@@ -800,9 +800,15 @@ const ColumnForm = ({
         }
 
         // Raw array since commit 026740b242 ("return raw array for join_tables and sql_execution").
-        // COUNT(*) comes back as a numeric-looking string, not a number.
+        // COUNT(*) comes back as a numeric-looking string, not a number. `|| 0` used to turn a
+        // missing/reshaped row into "0 will fail" - the exact wrong answer the comment above bans -
+        // Number(...) + Number.isFinite catches that instead of masking it.
         const rows = Array.isArray(result?.data) ? result.data : [];
-        const count = parseInt(rows[0]?.count, 10) || 0;
+        const count = Number(rows[0]?.count);
+        if (!Number.isFinite(count)) {
+          setCastReport({ status: 'error', message: 'Could not check existing values' });
+          return;
+        }
         // probe/columnName travel with the report so "Show rows" doesn't have to re-derive `cast`
         // from dataType/selectedColumn a second time - it uses exactly what this check ran against.
         setCastReport({ status: 'done', count, probe: cast.probe, columnName: selectedColumn?.Header });
@@ -827,7 +833,7 @@ const ColumnForm = ({
   };
 
   const handleInputError = (bool = false) => {
-    setDisabledSaveButton(bool);
+    setInputError(bool);
   };
 
   const codehinterCallback = React.useCallback(() => {

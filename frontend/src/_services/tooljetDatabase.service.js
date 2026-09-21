@@ -13,8 +13,10 @@ const tooljetAdapter = new HttpClient();
 // callers that need a specific, non-selected environment (the CSV export modal's per-environment
 // row counts and downloads) can override it explicitly via `environmentIdOverride`.
 // When nothing is selected/overridden the param is omitted rather than thrown on: the App Builder's
-// TJDB query editor (SelectBox.jsx, ToolJetDbOperations.jsx) calls these functions with the TJDB
-// store never mounted, and the backend already defaults a missing environment_id to development.
+// TJDB query editor (SelectBox.jsx, ToolJetDbOperations.jsx) calls these functions expecting no
+// selection to be live, and the backend already defaults a missing environment_id to development.
+// The store is a module-level singleton, not scoped to the TJDB admin route, so this only holds
+// because TooljetDatabase/index.jsx resets it on unmount - see tjdbStore.js's `resetStore`.
 function proxyUrl(tableId, query = '', environmentIdOverride) {
   const environmentId = environmentIdOverride ?? currentEnvironmentId();
   const envQuery = environmentId ? `environment_id=${environmentId}` : '';

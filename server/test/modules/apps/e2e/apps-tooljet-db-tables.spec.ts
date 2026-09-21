@@ -34,8 +34,10 @@ import {
   createApplicationVersion,
   createDataSource,
   createDataQuery,
+  updateEntity,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
+import { App } from '@entities/app.entity';
 
 describe('AppsUtilService.findTooljetDbTables', () => {
   let app: INestApplication;
@@ -126,8 +128,9 @@ describe('AppsUtilService.findTooljetDbTables', () => {
 
     const application = await createApplication(app, { name: 'TjdbTablesApp', user: adminUser }, false);
 
-    // Stale (non-latest) version: its query references dropped_tbl, but drop_table's guard
-    // only inspects the latest version, so this reference is invisible to it.
+    // Stale version: not the app's current_version_id and never released, so drop_table's guard
+    // (InternalTableRepository.findDependents: av.id = a.current_version_id OR
+    // av.released_at IS NOT NULL) never sees this version's reference to dropped_tbl.
     const staleVersion = await createApplicationVersion(app, application, { name: 'stale' });
     const staleDataSource = await createDataSource(app, {
       appVersion: staleVersion,
@@ -140,26 +143,20 @@ describe('AppsUtilService.findTooljetDbTables', () => {
       options: { table_id: droppedTable.id },
     });
 
-    // Latest version: only references surviving_tbl, so drop_table's guard sees no reference
+    // Current version: only references surviving_tbl, so drop_table's guard sees no reference
     // to dropped_tbl and allows the drop.
-    const latestVersion = await createApplicationVersion(app, application, { name: 'latest' });
-    const latestDataSource = await createDataSource(app, {
-      appVersion: latestVersion,
+    const currentVersion = await createApplicationVersion(app, application, { name: 'current' });
+    const currentDataSource = await createDataSource(app, {
+      appVersion: currentVersion,
       kind: 'tooljetdb',
-      name: 'tooljetdb_latest',
+      name: 'tooljetdb_current',
     });
     await createDataQuery(app, {
-      dataSource: latestDataSource,
-      appVersion: latestVersion,
+      dataSource: currentDataSource,
+      appVersion: currentVersion,
       options: { table_id: survivingTable.id },
     });
-
-    // drop_table's "latest version" guard orders by created_at, which lands in the same
-    // millisecond for both versions when seeded back-to-back in a fast test run — force a
-    // deterministic order so the guard reliably treats latestVersion as latest.
-    await manager.query(`UPDATE app_versions SET created_at = created_at - interval '1 minute' WHERE id = $1`, [
-      staleVersion.id,
-    ]);
+    await updateEntity(App, application.id, { currentVersionId: currentVersion.id });
 
     // drop_table soft-deletes: the internal_tables row survives with deleted_at set.
     const dropRes = await request

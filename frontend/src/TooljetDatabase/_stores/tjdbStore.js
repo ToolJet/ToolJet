@@ -120,6 +120,17 @@ export const useTjdbStore = create(
           });
           await get().onEnvironmentSwitch?.();
         },
+
+        // Called on TooljetDatabase unmount (leaving the admin panel). This store is a module-level
+        // singleton, not React state scoped to that route - without this, `selectedEnvironment`
+        // survives client-side navigation into App Builder, where `currentEnvironmentId()` is read
+        // as the ambient default for TJDB data-source queries (tooljetDatabase.service.js). An admin
+        // who last had staging/production selected here would otherwise have App Builder's TJDB
+        // query editor silently read that environment's schema instead of development's.
+        resetStore: () =>
+          set((state) => {
+            Object.assign(state, initialState);
+          }),
       },
     })),
     { name: 'TJDB Store' }

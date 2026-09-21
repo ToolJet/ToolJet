@@ -6,6 +6,7 @@ import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
+import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments, setupTestTables } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -71,6 +72,7 @@ describe('TooljetDbTableOperationsService', () => {
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
+          InternalTableRepository,
         ],
       })
         .overrideProvider(LicenseService)
@@ -421,7 +423,7 @@ describe('TooljetDbTableOperationsService', () => {
           },
         };
 
-        // DEV-89: an (env, branch) with no relation is a 404, never a 400.
+        // An (env, branch) with no relation is a 404, never a 400.
         await expect(service.perform(organizationId, 'join_tables', joinParams, undefined)).rejects.toThrow(
           new NotFoundException('Table(s) "orders" have no relation in this environment')
         );

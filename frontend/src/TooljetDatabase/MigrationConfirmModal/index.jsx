@@ -58,6 +58,7 @@ export default function MigrationConfirmModal({
   changes = [],
   banner,
   showSqlEditor,
+  sqlRequired,
   sqlOpen,
   onOpenSql,
   sql,
@@ -111,7 +112,7 @@ export default function MigrationConfirmModal({
         {showSqlEditor && (
           <div className="mb-3">
             <div className="form-label">
-              SQL <span className="tw-text-muted-foreground">(Optional)</span>
+              SQL {!sqlRequired && <span className="tw-text-muted-foreground">(Optional)</span>}
             </div>
             {sqlOpen ? (
               <>
@@ -126,7 +127,11 @@ export default function MigrationConfirmModal({
                   value={sql}
                   onChange={onSqlChange}
                   height="15vh"
-                  placeholder={'-- Optional: an accompanying data step, e.g. UPDATE "{{self}}" SET column = value;'}
+                  placeholder={
+                    sqlRequired
+                      ? '-- Required: this step performs the change, e.g. the type cast.'
+                      : '-- Optional: an accompanying data step, e.g. UPDATE "{{self}}" SET column = value;'
+                  }
                   dataCy="migration-confirm-sql-editor"
                   allowTableRef
                   tableNames={tableNames}

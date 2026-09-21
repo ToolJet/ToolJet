@@ -7,6 +7,7 @@ import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/too
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
+import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments, setupTestTables } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -70,6 +71,7 @@ describe('TooljetDbDataOperationsService', () => {
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
+          InternalTableRepository,
         ],
       })
         .overrideProvider(LicenseService)
@@ -247,10 +249,10 @@ describe('TooljetDbDataOperationsService', () => {
     });
   });
 
-  // Task 2: resolve columnId -> current column name before building the PostgREST/join call.
-  // Fully mocked - no DB, no Nest module - since the resolver itself (Task 1) already has its
-  // own unit tests, and nothing sends `columnId` from the frontend yet (Task 4), so there's no
-  // integration path to exercise here.
+  // Resolves columnId -> current column name before building the PostgREST/join call.
+  // Fully mocked - no DB, no Nest module - since the resolver itself already has its own unit
+  // tests, and nothing sends `columnId` from the frontend yet, so there's no integration path to
+  // exercise here.
   describe('Column identity resolution (mocked)', () => {
     const organizationId = 'org-1';
     const environmentId = 'env-1';

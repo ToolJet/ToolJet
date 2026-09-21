@@ -42,7 +42,7 @@ export const ListItemPopover = ({
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         {wrapIfEnvBlocked(
-          <div className={ddlRowClass} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+          <div className={ddlRowClass} style={!canEditSchema ? { opacity: 0.5 } : {}}>
             <div className="col-auto" data-cy="edit-option-icon">
               <EditIcon />
             </div>
@@ -51,6 +51,7 @@ export const ListItemPopover = ({
               data-cy="rename-table-option"
               onClick={(event) => {
                 event.stopPropagation();
+                if (!canEditSchema) return;
                 closeMenu();
                 onEdit();
               }}
@@ -60,7 +61,7 @@ export const ListItemPopover = ({
           </div>
         )}
         {wrapIfEnvBlocked(
-          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5 } : {}}>
             <div className="col-auto" data-cy="add-new-column-icon">
               <SolidIcon name="column" width="14" />
             </div>
@@ -69,6 +70,7 @@ export const ListItemPopover = ({
               data-cy="add-new-column-option"
               onClick={(event) => {
                 event.stopPropagation();
+                if (!canEditSchema) return;
                 closeMenu();
                 onAddNewColumnBtnClick();
               }}
@@ -114,7 +116,7 @@ export const ListItemPopover = ({
           <div className="col text-truncate">Duplicate</div>
         </div> */}
         {wrapIfEnvBlocked(
-          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+          <div className={`mt-3 ${ddlRowClass}`} style={!canEditSchema ? { opacity: 0.5 } : {}}>
             <div className="col-auto" data-cy="delete-table-option-icon">
               <DeleteIcon />
             </div>
@@ -122,6 +124,7 @@ export const ListItemPopover = ({
               className={ddlItemClass}
               data-cy="delete-table-option"
               onClick={() => {
+                if (!canEditSchema) return;
                 closeMenu();
                 onDelete();
               }}

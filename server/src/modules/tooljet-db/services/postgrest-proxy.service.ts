@@ -57,18 +57,6 @@ export class PostgrestProxyService {
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
-    if (!isEmpty(req.dataQuery) && !isEmpty(req.user)) {
-      // this.eventEmitter.emit('auditLogEntry', {
-      //   userId: req.user.id,
-      //   organizationId,
-      //   resourceId: req.dataQuery.id,
-      //   resourceName: req.dataQuery.name,
-      //   resourceType: MODULES.DATA_QUERY,
-      //   actionType: MODULE_INFO.DATA_QUERY.DATA_QUERY_RUN,
-      //   metadata: {},
-      // });
-    }
-
     // environment_id rides the querystring on this route (the editor's direct /proxy/* passthrough
     // has no other channel for it) and must never reach PostgREST itself, or it's forwarded as a
     // column filter. Strip it before replaceUrlForPostgrest/resolveAndRewrite see the url.
@@ -230,8 +218,8 @@ export class PostgrestProxyService {
 
       const unpromoted = missing.filter((id) => ownedIds.has(id));
       if (unpromoted.length) {
-        // Wording matches the join path's "have no relation" phrasing (DEV-89) - ids, not names,
-        // since this path resolves logical ids and has no table-name lookup at hand here.
+        // Wording matches the join path's "have no relation" phrasing - ids, not names, since
+        // this path resolves logical ids and has no table-name lookup at hand here.
         throw new NotFoundException(`Table(s) "${unpromoted.join('", "')}" have no relation in this environment`);
       }
 
@@ -380,6 +368,13 @@ export class PostgrestProxyService {
   }
 }
 
+// Nothing reserves this name for TJDB table columns, so a table can legitimately have a column
+// called `environment_id` too. PostgREST's own filter syntax always prefixes a value with an
+// operator (`eq.`, `gt.`, `in.(...)`, `is.null`, ...) - there is no bare `column=value` shorthand -
+// so a value that isn't a plain uuid can never be a real environment id, only a column filter that
+// happens to share the reserved name. This is what tells the two apart.
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Pulls `environment_id` off the querystring and returns the url with it removed. Surgical
 // find-and-remove on the raw pairs, not a URLSearchParams round-trip — a full parse/reserialize
 // would re-percent-encode PostgREST operator syntax (`in.(1,2,3)`, `select=a,b`) that's valid
@@ -392,7 +387,11 @@ export function extractAndStripEnvironmentId(url: string): { url: string; enviro
   const remaining = queryString.split('&').filter((pair) => {
     const [key, value] = pair.split('=');
     if (decodeURIComponent(key) !== 'environment_id') return true;
-    environmentId = value ? decodeURIComponent(value) : undefined;
+    const decoded = value ? decodeURIComponent(value) : undefined;
+    // Not a real environment id (e.g. `eq.5` from a user column also named environment_id) -
+    // leave this pair alone so it reaches PostgREST as the filter it actually is.
+    if (decoded && !UUID_PATTERN.test(decoded)) return true;
+    environmentId = decoded;
     return false;
   });
 

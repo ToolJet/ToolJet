@@ -25,7 +25,14 @@ import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
 import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 
-import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
+import {
+  CreatePostgrestTableDto,
+  EditTableDto,
+  EditColumnTableDto,
+  PostgrestForeignKeyDto,
+  AddColumnDto,
+  DropTableDto,
+} from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from './dto/revert-migration.dto';
@@ -141,12 +148,12 @@ export class TooljetDbController {
   async dropTable(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('migration_name') migrationName?: string
+    @Body() dropTableDto: DropTableDto
   ) {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'drop_table',
-      { table_name: tableName, migration_name: migrationName },
+      { table_name: tableName, migration_name: dropTableDto.migration_name },
       undefined
     );
     return decamelizeKeys({ result });
@@ -303,7 +310,7 @@ export class TooljetDbController {
   // display name is not one.
   @InitFeature(FEATURE_KEY.PROMOTE_TABLE)
   @Post('/organizations/:organizationId/table/:tableId/promote')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async promoteTable(
     @User() user: UserEntity,
     @Param('organizationId') organizationId: string,
@@ -316,7 +323,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.PROMOTE_TABLE_PREVIEW)
   @Get('/organizations/:organizationId/table/:tableId/promote/preview')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async previewPromoteTable(
     @User() user: UserEntity,
     @Param('organizationId') organizationId: string,
@@ -330,7 +337,7 @@ export class TooljetDbController {
   // No licence gate here — repair is real logic in CE, not a promotion.
   @InitFeature(FEATURE_KEY.REPAIR_BASELINE)
   @Post('/organizations/:organizationId/table/:tableId/baseline/repair')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async repairBaseline(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.repairBaseline(tableId, organizationId);
     return decamelizeKeys({ result });
@@ -340,7 +347,7 @@ export class TooljetDbController {
   // "baseline report" view can point at all of them at once, repair links included.
   @InitFeature(FEATURE_KEY.BASELINE_REPORT)
   @Get('/organizations/:organizationId/baseline-report')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async baselineReport(@Param('organizationId') organizationId: string) {
     const result = await this.environmentAssignmentService.listBaselineErrors(organizationId);
     return decamelizeKeys({ result });
@@ -351,7 +358,7 @@ export class TooljetDbController {
   // baseline-skip reason if it has one.
   @InitFeature(FEATURE_KEY.TABLE_MIGRATIONS)
   @Get('/organizations/:organizationId/table/:tableId/migrations')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async tableMigrations(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.getTableMigrations(tableId, organizationId);
     return decamelizeKeys({ result });
@@ -361,7 +368,7 @@ export class TooljetDbController {
   // current draft or an ever-released version. See InternalTableRepository.findDependents.
   @InitFeature(FEATURE_KEY.TABLE_DEPENDENTS)
   @Get('/organizations/:organizationId/table/:tableId/dependents')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async tableDependents(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.getDependents(tableId, organizationId);
     // foreignKeyTables rides through as-is - the frontend's dependents warning reads it camelCase,
@@ -373,7 +380,7 @@ export class TooljetDbController {
   // identity operation, not a display-name one.
   @InitFeature(FEATURE_KEY.ADD_RAW_SQL_MIGRATION)
   @Post('/organizations/:organizationId/table/:tableId/migrations/sql')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async recordRawSqlMigration(
     @Param('organizationId') organizationId: string,
     @Param('tableId') tableId: string,
@@ -385,7 +392,7 @@ export class TooljetDbController {
 
   @InitFeature(FEATURE_KEY.REVERT_MIGRATION)
   @Post('/organizations/:organizationId/table/:tableId/migrations/:migrationId/revert')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async revertMigration(
     @Param('organizationId') organizationId: string,
     @Param('tableId') tableId: string,
@@ -403,7 +410,7 @@ export class TooljetDbController {
   // table reference is rejected by seedDataSqlExecution.
   @InitFeature(FEATURE_KEY.SQL_EXECUTION)
   @Post('/organizations/:organizationId/table/:tableId/sql')
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async sqlExecution(
     @Param('organizationId') organizationId: string,
     @Param('tableId') tableId: string,
