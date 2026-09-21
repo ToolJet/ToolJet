@@ -80,6 +80,45 @@ describe('OAuthController', () => {
               .expect(401);
           });
 
+          it('should return 401 when the SSO config has no clientId, without accepting any Google-issued token (GHSA-xfj2)', async () => {
+            await ssoConfigsRepository.update(sso_configs.id, { configs: { clientId: undefined } });
+            const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+            googleVerifyMock.mockImplementation(() => ({
+              getPayload: () => ({
+                sub: 'someSSOId',
+                email: 'ssouser@tooljet.io',
+                name: 'SSO User',
+                hd: 'tooljet.io',
+              }),
+            }));
+
+            await request(app.getHttpServer())
+              .post('/api/oauth/sign-in/' + sso_configs.id)
+              .send({ token })
+              .expect(401);
+
+            expect(googleVerifyMock).not.toHaveBeenCalled();
+            await ssoConfigsRepository.update(sso_configs.id, { configs: { clientId: 'client-id' } });
+          });
+
+          it('should return 401 when Google reports the email as unverified (GHSA-7g4q)', async () => {
+            const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+            googleVerifyMock.mockImplementation(() => ({
+              getPayload: () => ({
+                sub: 'someSSOId',
+                email: 'unverified-ssouser@tooljet.io',
+                email_verified: false,
+                name: 'SSO User',
+                hd: 'tooljet.io',
+              }),
+            }));
+
+            await request(app.getHttpServer())
+              .post('/api/oauth/sign-in/' + sso_configs.id)
+              .send({ token })
+              .expect(401);
+          });
+
           it('should return 401 when the user does not exist and sign up is disabled', async () => {
             await orgRepository.update(current_organization.id, { enableSignUp: false });
             const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
@@ -88,6 +127,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'ssouser@tooljet.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -105,6 +145,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'ssouser@tooljett.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -122,6 +163,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'ssouser@tooljet.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -148,6 +190,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'ssouser@tooljet.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -173,6 +216,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'ssouser@tooljet.io',
                 name: '',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -206,6 +250,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'anotheruser1@tooljet.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
@@ -244,6 +289,7 @@ describe('OAuthController', () => {
                 sub: 'someSSOId',
                 email: 'anotheruser1@tooljet.io',
                 name: 'SSO User',
+                email_verified: true,
                 hd: 'tooljet.io',
               }),
             }));
