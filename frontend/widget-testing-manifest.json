@@ -38,7 +38,7 @@
     },
     {
       "componentType": "ModalV2",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/ModalV2/TESTING.md"
     },
     {
