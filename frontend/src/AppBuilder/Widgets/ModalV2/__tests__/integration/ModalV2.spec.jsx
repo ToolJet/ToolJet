@@ -40,16 +40,6 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
-// Confirmed via explicit per-step waitFor timeouts (openModal()) that the
-// portal/render itself isn't stuck — each step completes, RTL never throws
-// its own "unable to find X" error. The suite is just genuinely, sometimes
-// severely slower under real CI load than locally (v8 coverageProvider and
-// --workerIdleMemoryLimit on test:ci did not resolve it), so this budget
-// gives real, completing work room to finish instead of chasing removed
-// overhead down to fit under a smaller ceiling.
-const MOUNT_MS = 60000;
-jest.setTimeout(MOUNT_MS);
-
 const ID = 'modal1';
 const NAME = 'modal1';
 
@@ -147,13 +137,17 @@ const ON_OPEN_CAPTURE = setVariableOn(ID, 'onOpen');
 const ON_CLOSE_CAPTURE = setVariableOn(ID, 'onClose');
 const handlerSaw = () => store().getVariable('seen', MODULE_ID);
 
-// Explicit (rather than the silent 1000ms) timeouts: on a genuine stuck
-// render, this reports RTL's own "unable to find X" + DOM snapshot at the
-// step that actually failed, instead of the test's outer 20000ms budget
-// expiring with no indication of which step never resolved.
+// fireEvent.click (a single synchronous DOM event), not userEvent's
+// click (a chained pointerover/pointerdown/mousedown/.../click sequence,
+// each hop a separate act()-wrapped event-loop yield). That chain was
+// intermittently timing out in real CI under load — each individual
+// waitFor below always succeeded on its own, but the accumulated cost of
+// userEvent's many yields between them pushed the whole test over Jest's
+// per-test budget. A single synchronous dispatch has no such chain for
+// that slowness to compound across.
 async function openModal() {
   await waitFor(() => expect(triggerButton()).toBeInTheDocument(), { timeout: 5000 });
-  rtlFireEvent.click(triggerButton()); // already imported
+  rtlFireEvent.click(triggerButton());
   await waitFor(() => expect(modalBody()).toBeInTheDocument(), { timeout: 5000 });
 }
 
