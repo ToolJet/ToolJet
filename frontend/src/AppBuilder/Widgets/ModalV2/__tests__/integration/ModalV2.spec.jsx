@@ -40,9 +40,6 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
-const MOUNT_MS = 20000;
-jest.setTimeout(MOUNT_MS);
-
 const ID = 'modal1';
 const NAME = 'modal1';
 
@@ -140,10 +137,18 @@ const ON_OPEN_CAPTURE = setVariableOn(ID, 'onOpen');
 const ON_CLOSE_CAPTURE = setVariableOn(ID, 'onClose');
 const handlerSaw = () => store().getVariable('seen', MODULE_ID);
 
+// fireEvent.click (a single synchronous DOM event), not userEvent's
+// click (a chained pointerover/pointerdown/mousedown/.../click sequence,
+// each hop a separate act()-wrapped event-loop yield). That chain was
+// intermittently timing out in real CI under load — each individual
+// waitFor below always succeeded on its own, but the accumulated cost of
+// userEvent's many yields between them pushed the whole test over Jest's
+// per-test budget. A single synchronous dispatch has no such chain for
+// that slowness to compound across.
 async function openModal() {
-  await waitFor(() => expect(triggerButton()).toBeInTheDocument());
-  await widget.session.user.click(triggerButton());
-  await waitFor(() => expect(modalBody()).toBeInTheDocument());
+  await waitFor(() => expect(triggerButton()).toBeInTheDocument(), { timeout: 5000 });
+  rtlFireEvent.click(triggerButton());
+  await waitFor(() => expect(modalBody()).toBeInTheDocument(), { timeout: 5000 });
 }
 
 describe('ModalV2: default rendering', () => {
@@ -803,16 +808,16 @@ describe('ModalV2: canvas scroll lock', () => {
 
   const canvasContent = () => document.querySelector('.canvas-content');
 
-  // BUG (unfixed, characterized per D-02, decision recorded 2026-09-15): with
-  // loadingState/disabledTrigger/disabledModal all configured — the widget's
-  // own normal default state, present on every real ModalV2 instance —
-  // `useExposeState`'s several on-mount sync effects push the modal's portal
-  // attachment to a later render pass than `ModalV2.jsx`'s own
-  // `onShowSideEffects` effect (tied only to `[showModal]`). That effect never
-  // reruns, so if it fires before the portal exists, the canvas scroll lock
-  // silently never engages. Reproduced via a clean bisection: present with all
-  // three of those properties configured together, absent with any one or two.
-  test.failing('[ModalV2-SCROLL-001] opening locks canvas scroll; closing it restores scroll', async () => {
+  // Fixed (previously characterized per D-02, decision recorded 2026-09-15):
+  // `ModalV2.jsx`'s `container` prop was resolved eagerly at render time
+  // (`document.getElementsByClassName('tj-canvas-area')?.[0] || ...`), which
+  // returns nothing on the render before the canvas has committed. That raced
+  // `onShowSideEffects` (tied only to `[showModal]`, never reruns) against
+  // `@restart/ui`'s own portal-target resolution, so the canvas scroll lock
+  // could silently never engage. Passing `container` as a function instead
+  // lets `@restart/ui`'s `useWaitForDOMRef` resolve it lazily, post-commit,
+  // exactly as that hook is designed to be used — removing the race.
+  test('[ModalV2-SCROLL-001] opening locks canvas scroll; closing it restores scroll', async () => {
     renderModal();
     expect(canvasContent()).not.toHaveStyle({ overflow: 'hidden' });
 
