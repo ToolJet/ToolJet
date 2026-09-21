@@ -76,6 +76,36 @@ describe('resolveManifestActions', () => {
     ]);
   });
 
+  it('[LibraryComponent-ACTIONS-004] labels switch options by displayName, leaving select options untouched', () => {
+    // Break this catches: the Switch element renders option.displayName, so passing the
+    // manifest's { name, value } through unchanged leaves every switch button blank.
+    const options = [
+      { name: 'On', value: 'on' },
+      { name: 'Off', value: 'off' },
+    ];
+    const manifest = {
+      components: {
+        Widget: {
+          actions: [
+            {
+              name: 'configure',
+              params: [
+                { handle: 'mode', type: 'switch', options },
+                { handle: 'size', type: 'select', options },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    const [{ params }] = resolveManifestActions(manifest, 'Widget');
+    expect(params[0].options).toEqual([
+      { displayName: 'On', value: 'on' },
+      { displayName: 'Off', value: 'off' },
+    ]);
+    expect(params[1].options).toEqual(options);
+  });
+
   it('[LibraryComponent-ACTIONS-003] returns [] for a missing manifest, missing component, or no actions', () => {
     expect(resolveManifestActions(null, 'Widget')).toEqual([]);
     expect(resolveManifestActions({ components: {} }, 'Widget')).toEqual([]);

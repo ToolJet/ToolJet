@@ -22,7 +22,7 @@ export interface ManifestActionParam {
   displayName?: string;
   defaultValue?: unknown;
   type?: string;
-  options?: unknown;
+  options?: { name: string; value: string }[];
 }
 
 export interface ManifestAction {
