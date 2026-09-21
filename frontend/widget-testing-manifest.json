@@ -8,7 +8,8 @@
     },
     {
       "componentType": "ButtonGroupV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ButtonGroupV2/TESTING.md"
     },
     {
       "componentType": "PopoverMenu",
@@ -170,7 +171,8 @@
     },
     {
       "componentType": "Link",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Link/TESTING.md"
     },
     {
       "componentType": "Steps",
@@ -178,7 +180,8 @@
     },
     {
       "componentType": "Pagination",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Pagination/TESTING.md"
     },
     {
       "componentType": "Icon",
@@ -190,7 +193,8 @@
     },
     {
       "componentType": "SvgImage",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/SvgImage/TESTING.md"
     },
     {
       "componentType": "PDF",
@@ -218,21 +222,21 @@
     },
     {
       "componentType": "CircularProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CircularProgressBar/TESTING.md"
     },
     {
       "componentType": "ProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ProgressBar/TESTING.md"
     },
     {
       "componentType": "Divider",
-      "status": "partial",
-      "contract": "ee/test/app-builder/widgets/Divider/TESTING.md"
+      "status": "not-started"
     },
     {
       "componentType": "VerticalDivider",
-      "status": "partial",
-      "contract": "ee/test/app-builder/widgets/VerticalDivider/TESTING.md"
+      "status": "not-started"
     },
     {
       "componentType": "Statistics",
