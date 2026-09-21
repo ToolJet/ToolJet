@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 
 export const MAX_AI_ATTACHMENT_CONTENT_BYTES = 20 * 1024 * 1024;
 
-// Render PDFs as images for Chat Completions routes without document content parts.
+// Render PDFs as images for provider routes without document content parts.
 export async function renderAttachmentPdf(data: Uint8Array, maxPages: number, maxBytes: number) {
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data, isEvalSupported: false });

@@ -220,14 +220,21 @@ export class AiAttachmentService implements OnModuleDestroy {
         throw new BadRequestException('Grok supports PNG and JPEG images. Convert WebP files before sending.');
       }
       const label = `${ids.includes(file.id) ? 'Attached' : 'Previously attached'} file: ${file.name}`;
-      if (['anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider) && !imageType && extension !== 'pdf') {
+      const textType = provider === 'openai' ? 'input_text' : 'text';
+      if (
+        ['openai', 'anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider) &&
+        !imageType &&
+        extension !== 'pdf'
+      ) {
         const parts = await this.cachedInline(file.id, async () => {
           const { body } = await this.download(user, file.id);
           return [{ type: 'text', text: await body.transformToString('utf-8') }];
         });
-        return [{ type: 'text', text: `${label}\n${parts[0].text}` }];
+        return [{ type: textType, text: `${label}\n${parts[0].text}` }];
       }
-      if (['deepseek', 'gemini'].includes(provider) && extension === 'pdf') {
+      // OpenAI's hosted Agents input accepts text and images, unlike Responses' input_file.
+      // Prepare content that both routes can read; route selection stays in the agent.
+      if (['openai', 'deepseek', 'gemini'].includes(provider) && extension === 'pdf') {
         const pages = await this.cachedInline(file.id, async () => {
           const { body } = await this.download(user, file.id);
           return renderAttachmentPdf(
@@ -242,7 +249,12 @@ export class AiAttachmentService implements OnModuleDestroy {
             'Up to 20 PDF pages are supported per chat. Split the PDF or start a new chat.'
           );
         }
-        return [{ type: 'text', text: label }, ...pages];
+        return [
+          { type: textType, text: label },
+          ...(provider === 'openai'
+            ? pages.map((page) => ({ type: 'input_image', image_url: page.image_url.url }))
+            : pages),
+        ];
       }
       if (provider === 'gemini' && imageType) {
         const parts = await this.cachedInline(file.id, async () => {
@@ -290,7 +302,7 @@ export class AiAttachmentService implements OnModuleDestroy {
       ];
     };
     const content = [];
-    if (['anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider)) {
+    if (['openai', 'anthropic', 'gemini', 'deepseek', 'openrouter'].includes(provider)) {
       // Bound rendering memory and the serialized gateway request across current and saved files.
       for (const file of files) {
         const parts = await prepareFile(file);

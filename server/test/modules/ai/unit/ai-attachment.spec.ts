@@ -107,21 +107,22 @@ describe('AI attachment storage', () => {
       s3Bucket: 'private-fixture',
       s3Key: where.id,
     }));
+    send.mockResolvedValue({ Body: { transformToString: async () => 'item,units\nfolder,19' } });
     const result = await service.prepare(owner, [imageId], [csvId, imageId]);
     expect(result.attachments.map((file) => file.id)).toEqual([imageId]);
     expect(result.content).toEqual(
       expect.arrayContaining([
         { type: 'input_image', image_url: 'https://files.example.test/signed' },
-        { type: 'input_file', file_url: 'https://files.example.test/signed' },
+        { type: 'input_text', text: 'Previously attached file: stock.csv\nitem,units\nfolder,19' },
       ])
     );
     expect(JSON.stringify(result.attachments)).not.toMatch(/signed|s3Bucket|s3Key/);
-    expect(repository.findOne).toHaveBeenCalledTimes(2);
+    expect(repository.findOne).toHaveBeenCalledTimes(3);
     expect(repository.findOne).toHaveBeenCalledWith({
       where: { id: csvId, organizationId: owner.organizationId, userId: owner.id, status: 'ready' },
     });
     expect(getSignedUrl).toHaveBeenCalledWith(expect.anything(), expect.any(GetObjectCommand), { expiresIn: 14400 });
-    expect(send).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it.each(['png', 'jpg', 'jpeg', 'pdf', 'csv', 'tsv', 'txt', 'md', 'json'])(
@@ -159,7 +160,7 @@ describe('AI attachment storage', () => {
     }
   );
 
-  describe.each(['anthropic', 'gemini', 'deepseek'])('%s file preparation', (provider) => {
+  describe.each(['openai', 'anthropic', 'gemini', 'deepseek'])('%s file preparation', (provider) => {
     it.each(provider === 'anthropic' ? ['png', 'jpg', 'jpeg', 'webp', 'pdf'] : ['png', 'jpg', 'jpeg', 'webp'])(
       'prepares image and document content for %s files',
       async (extension) => {
@@ -190,20 +191,24 @@ describe('AI attachment storage', () => {
           expect(getSignedUrl).not.toHaveBeenCalled();
         } else {
           expect(first.content[1]).toEqual(
-            provider === 'deepseek'
-              ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
-              : {
-                  type: extension === 'pdf' ? 'document' : 'image',
-                  source: { type: 'url', url: 'https://files.example.test/first' },
-                }
+            provider === 'openai'
+              ? { type: 'input_image', image_url: 'https://files.example.test/first' }
+              : provider === 'deepseek'
+                ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
+                : {
+                    type: extension === 'pdf' ? 'document' : 'image',
+                    source: { type: 'url', url: 'https://files.example.test/first' },
+                  }
           );
           expect(followUp.content[1]).toEqual(
-            provider === 'deepseek'
-              ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
-              : {
-                  type: extension === 'pdf' ? 'document' : 'image',
-                  source: { type: 'url', url: 'https://files.example.test/refreshed' },
-                }
+            provider === 'openai'
+              ? { type: 'input_image', image_url: 'https://files.example.test/refreshed' }
+              : provider === 'deepseek'
+                ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
+                : {
+                    type: extension === 'pdf' ? 'document' : 'image',
+                    source: { type: 'url', url: 'https://files.example.test/refreshed' },
+                  }
           );
           expect(send).not.toHaveBeenCalled();
         }
@@ -225,7 +230,10 @@ describe('AI attachment storage', () => {
         send.mockResolvedValue({ Body: { transformToString: jest.fn().mockResolvedValue('aisle,boxes\nJuniper,27') } });
         const result = await service.prepare(owner, [id], [], provider);
         expect(result.content).toEqual([
-          { type: 'text', text: `Attached file: sample.${extension}\naisle,boxes\nJuniper,27` },
+          {
+            type: provider === 'openai' ? 'input_text' : 'text',
+            text: `Attached file: sample.${extension}\naisle,boxes\nJuniper,27`,
+          },
         ]);
         expect(GetObjectCommand).toHaveBeenCalledWith({ Bucket: 'fixture', Key: id });
         expect(getSignedUrl).not.toHaveBeenCalled();
@@ -241,7 +249,7 @@ describe('AI attachment storage', () => {
     });
   });
 
-  it.each(['gemini', 'deepseek'])(
+  it.each(['openai', 'gemini', 'deepseek'])(
     'caches owned %s PDF pages for follow-up, keeping images out of metadata',
     async (provider) => {
       const id = 'f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11';
@@ -252,8 +260,11 @@ describe('AI attachment storage', () => {
       (renderAttachmentPdf as jest.Mock).mockResolvedValue(images);
       const first = await service.prepare(owner, [id], [], provider);
       const followUp = await service.prepare(owner, [], [id], provider);
-      expect(first.content).toEqual([{ type: 'text', text: 'Attached file: specimens.pdf' }, ...images]);
-      expect(followUp.content).toEqual([{ type: 'text', text: 'Previously attached file: specimens.pdf' }, ...images]);
+      const expectedImages =
+        provider === 'openai' ? images.map((page) => ({ type: 'input_image', image_url: page.image_url.url })) : images;
+      const type = provider === 'openai' ? 'input_text' : 'text';
+      expect(first.content).toEqual([{ type, text: 'Attached file: specimens.pdf' }, ...expectedImages]);
+      expect(followUp.content).toEqual([{ type, text: 'Previously attached file: specimens.pdf' }, ...expectedImages]);
       expect(renderAttachmentPdf).toHaveBeenCalledTimes(1);
       expect(renderAttachmentPdf).toHaveBeenCalledWith(data, 20, MAX_AI_ATTACHMENT_CONTENT_BYTES);
       expect(JSON.stringify(first.attachments)).not.toContain('base64');
@@ -262,6 +273,10 @@ describe('AI attachment storage', () => {
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id, organizationId: owner.organizationId, userId: owner.id, status: 'ready' },
       });
+      // Cached PDF pages must retain their provider-neutral shape when the user changes models.
+      const switched = await service.prepare(owner, [], [id], 'deepseek');
+      expect(switched.content.slice(1)).toEqual(images);
+      expect(renderAttachmentPdf).toHaveBeenCalledTimes(1);
     }
   );
 
@@ -279,7 +294,7 @@ describe('AI attachment storage', () => {
     expect(remaining[2]).toBeLessThan(MAX_AI_ATTACHMENT_CONTENT_BYTES);
   });
 
-  it.each(['anthropic', 'gemini', 'deepseek'])(
+  it.each(['openai', 'anthropic', 'gemini', 'deepseek', 'openrouter'])(
     'counts JSON expansion of text in the %s request budget',
     async (provider) => {
       const ids = ['f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11', '4d188f54-865f-47e6-b6e2-cbdf3c3fb274'];
@@ -421,7 +436,9 @@ describe('AI attachment storage', () => {
       Array(12).fill({ type: 'image_url', image_url: { url: 'data:image/png;base64,eA==' } })
     );
     for (const id of ids) await service.prepare(owner, [id], [], 'gemini');
-    await expect(service.prepare(owner, [], ids, 'gemini')).rejects.toThrow('20 PDF pages');
+    for (const provider of ['openai', 'gemini', 'deepseek']) {
+      await expect(service.prepare(owner, [], ids, provider)).rejects.toThrow('20 PDF pages');
+    }
     expect(renderAttachmentPdf).toHaveBeenCalledTimes(2);
   });
 
