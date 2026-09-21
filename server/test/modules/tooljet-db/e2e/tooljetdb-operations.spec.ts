@@ -1236,7 +1236,7 @@ describe('TooljetDbController', () => {
             .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl/column/note`)
             .set('Cookie', adminCookie)
             .set('tj-workspace-id', adminOrgId)
-            .send({ migration_name: 'Drop the note column' })
+            .query({ migration_name: 'Drop the note column' })
             .expect((res) => expect(res.statusCode).toBe(200));
 
           // delete_foreign_key, name omitted - falls back to defaultMigrationName.
@@ -1253,7 +1253,7 @@ describe('TooljetDbController', () => {
             .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/named_deletes_tbl`)
             .set('Cookie', adminCookie)
             .set('tj-workspace-id', adminOrgId)
-            .send({ migration_name: 'Drop named_deletes_tbl' })
+            .query({ migration_name: 'Drop named_deletes_tbl' })
             .expect((res) => expect(res.statusCode).toBe(200));
 
           const migrations = await appManager.find(InternalTableMigration, {
@@ -1269,9 +1269,10 @@ describe('TooljetDbController', () => {
         it('should 400 a malformed drop_table migration_name instead of recording it as-is', async function () {
           // Regression: dropTable used to read migration_name via a raw `@Body('migration_name')`
           // param, which the global ValidationPipe's whitelist/type checks never touch (they only
-          // apply to a `@Body()` bound to a DTO class) - unlike every other structured-migration
-          // route in this controller, which all validate migration_name the same way (@IsString,
-          // @MaxLength(120)) through a DTO.
+          // apply to a `@Body()`/`@Query()` bound to a DTO class) - unlike every other
+          // structured-migration route in this controller, which all validate migration_name the
+          // same way (@IsString, @MaxLength(120)) through a DTO. Now on the querystring, not the
+          // body, since a body on DELETE has no defined HTTP semantics and proxies drop it.
           expect(tooljetDbAvailable).toBe(true);
 
           await request
@@ -1287,7 +1288,10 @@ describe('TooljetDbController', () => {
             .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/drop_validation_tbl`)
             .set('Cookie', adminCookie)
             .set('tj-workspace-id', adminOrgId)
-            .send({ migration_name: { nested: 'object' } })
+            // A querystring value is always a string on its own - the one way to hand this DTO
+            // something other than a string is to repeat the key, which the query parser turns
+            // into an array.
+            .query({ migration_name: ['first', 'second'] })
             .expect((res) => expect(res.statusCode).toBe(400));
 
           await request
@@ -1295,7 +1299,7 @@ describe('TooljetDbController', () => {
             .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/drop_validation_tbl`)
             .set('Cookie', adminCookie)
             .set('tj-workspace-id', adminOrgId)
-            .send({ migration_name: 'x'.repeat(121) })
+            .query({ migration_name: 'x'.repeat(121) })
             .expect((res) => expect(res.statusCode).toBe(400));
 
           // Table must still be there - both malformed attempts were rejected before dropping it.

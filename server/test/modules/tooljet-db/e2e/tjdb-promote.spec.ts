@@ -474,14 +474,18 @@ describe('TooljetDb promote', () => {
         expect([200, 201]).toContain(allowed.statusCode);
       });
 
-      it('should 403 when the target environment name is not a known access key', async () => {
+      it('should 400, not a misleading 403, when the target environment name is not a known access key', async () => {
+        // A renamed/custom environment name isn't a permission problem - no grant exists for a key
+        // EnvironmentPermissionSet doesn't have, so the old blanket 403 ("you do not have access")
+        // told an admin a permission change would fix it, which was never true here.
         expect(tjdbAvailable).toBe(true);
         await createTable(adminCookie, 'renamed_env_tbl', [idColumn]);
         const tableId = await internalTableId('renamed_env_tbl');
 
         await getDefaultDataSource().manager.update(AppEnvironment, { id: stagingEnvId }, { name: 'qa' });
         const res = await promote(adminCookie, tableId, devEnvId);
-        expect(res.statusCode).toBe(403);
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toMatch(/does not support the "qa" environment/i);
       });
 
       it('should 400 when the active branch is not the default', async () => {

@@ -12,6 +12,7 @@ import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironment
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { OrganizationTjdbConfigurations } from '@entities/organization_tjdb_configurations.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { encryptTooljetDatabasePassword } from '@helpers/tooljet_db.helper';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
@@ -149,6 +150,58 @@ describe('TooljetDbTableOperationsService', () => {
           where: { internalTableId: usersTable.id },
         });
         expect(relation.configurations.columns.configurations['undefined']).toBeUndefined();
+      });
+
+      it('should write a column display-setting change to the current branch only, not a relation on another branch', async () => {
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const columnUuid = devRelation.configurations.columns.column_names['name'];
+
+        const otherBranch = await appManager.save(
+          appManager.create(WorkspaceBranch, { organizationId, name: `other-branch-${uuidv4()}`, isDefault: false })
+        );
+        const decoyRelation = await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: usersTable.id,
+            environmentId: devRelation.environmentId,
+            branchId: otherBranch.id,
+            // Same column uuid the real relation has - if the write-through weren't branch-scoped,
+            // this row is exactly the shape it would (wrongly) also match and update.
+            configurations: JSON.parse(JSON.stringify(devRelation.configurations)),
+          })
+        );
+
+        await service.perform(
+          organizationId,
+          'edit_column',
+          {
+            table_name: 'users',
+            column: {
+              column_name: 'name',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: true },
+              configurations: { display_name: 'Full Name' },
+            },
+          },
+          undefined
+        );
+
+        const reloadedDevRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { id: devRelation.id },
+        });
+        expect(reloadedDevRelation.configurations.columns.configurations[columnUuid]).toMatchObject({
+          display_name: 'Full Name',
+        });
+
+        const reloadedDecoyRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { id: decoyRelation.id },
+        });
+        expect(reloadedDecoyRelation.configurations.columns.configurations[columnUuid]?.display_name).toBeUndefined();
       });
     });
 

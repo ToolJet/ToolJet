@@ -273,12 +273,14 @@ export class EditTableDto {
   migration_name?: string;
 }
 
-// dropTable's request body - just the optional migration label, same validation every other
-// structured-migration DTO in this file gives migration_name. Previously read via a raw
-// `@Body('migration_name')` param, which the global ValidationPipe never touches (whitelist/type
-// checks only apply to a `@Body()` bound to a DTO class) - a caller could send any JSON type, not
-// just a string, straight through to the recorded migration's name.
-export class DropTableDto {
+// Optional migration label for the three DELETE routes (drop_table, drop_column,
+// delete_foreign_key) - same validation every other structured-migration DTO in this file gives
+// migration_name. Read via `@Query()`, not `@Body()`: a body on DELETE has no defined HTTP
+// semantics, proxies and some clients drop it, so a body-bound param silently arrives as
+// undefined with nothing erroring. The global ValidationPipe only whitelist/type-checks a
+// `@Body()`/`@Query()` bound to a DTO class - a raw `@Body('migration_name')`/`@Query('migration_name')`
+// param extraction bypasses it entirely and lets any JSON type through to the recorded migration's name.
+export class MigrationNameQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(120, { message: 'Migration name must be less than 120 characters' })

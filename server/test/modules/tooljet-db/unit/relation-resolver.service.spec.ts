@@ -21,6 +21,7 @@ import {
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
@@ -271,6 +272,58 @@ describe('TooljetDbRelationResolverService', () => {
           expect(resolved.get(table.id)).toBe(relationByTableId.get(table.id));
         }
       });
+
+      // Every test above shares one branch (adminBranchId) - the branch half of the
+      // (environment, branch) identity tuple this module is built on has had zero coverage,
+      // unlike the environment half, which gets its own dedicated matrix further down.
+      it('should omit a table whose only relation sits on a different branch', async () => {
+        const otherBranch = await appManager.save(
+          appManager.create(WorkspaceBranch, { organizationId, name: `other-branch-${uuidv4()}`, isDefault: false })
+        );
+        const table = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId,
+            tableName: 'other_branch_only',
+            co_relation_id: uuidv4(),
+          })
+        );
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: adminEnvironmentId,
+            branchId: otherBranch.id,
+          })
+        );
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+
+        expect(resolved.has(table.id)).toBe(false);
+      });
+
+      it('should still resolve to the default-branch relation when a same-table, same-environment relation exists on another branch', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const devRelation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+        const otherBranch = await appManager.save(
+          appManager.create(WorkspaceBranch, { organizationId, name: `other-branch-${uuidv4()}`, isDefault: false })
+        );
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: adminEnvironmentId,
+            branchId: otherBranch.id,
+          })
+        );
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+
+        expect(resolved.get(table.id)).toBe(devRelation.id);
+      });
     });
 
     describe('.resolveLogicalIds | reverse resolution', () => {
@@ -340,6 +393,29 @@ describe('TooljetDbRelationResolverService', () => {
         const { table: foreignTable } = await createForeignTableWithRelation('foreign_get_relation');
 
         await expect(service.getRelation(organizationId, foreignTable.id)).rejects.toThrow(NotFoundException);
+      });
+
+      it('should throw NotFoundException, not return a relation from a different branch', async () => {
+        const otherBranch = await appManager.save(
+          appManager.create(WorkspaceBranch, { organizationId, name: `other-branch-${uuidv4()}`, isDefault: false })
+        );
+        const table = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId,
+            tableName: 'get_relation_other_branch_only',
+            co_relation_id: uuidv4(),
+          })
+        );
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: adminEnvironmentId,
+            branchId: otherBranch.id,
+          })
+        );
+
+        await expect(service.getRelation(organizationId, table.id)).rejects.toThrow(NotFoundException);
       });
     });
 

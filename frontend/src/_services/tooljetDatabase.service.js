@@ -176,9 +176,11 @@ function createForeignKey(organizationId, tableName, data = [], migrationName = 
 }
 
 function deleteForeignKey(organizationId, tableName, id, migrationName = '') {
+  // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
+  // semantics and proxies/some clients drop it silently.
+  const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
   return tooljetAdapter.delete(
-    `/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}`,
-    migrationName ? { migration_name: migrationName } : null
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/foreignkey/${id}${query}`
   );
 }
 
@@ -199,17 +201,19 @@ function deleteRows(tableId, query = '') {
 }
 
 function deleteColumn(organizationId, tableName, columnName, migrationName = '') {
+  // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
+  // semantics and proxies/some clients drop it silently.
+  const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
   return tooljetAdapter.delete(
-    `/tooljet-db/organizations/${organizationId}/table/${tableName}/column/${columnName}`,
-    migrationName ? { migration_name: migrationName } : null
+    `/tooljet-db/organizations/${organizationId}/table/${tableName}/column/${columnName}${query}`
   );
 }
 
 function deleteTable(organizationId, tableName, migrationName = '') {
-  return tooljetAdapter.delete(
-    `/tooljet-db/organizations/${organizationId}/table/${tableName}`,
-    migrationName ? { migration_name: migrationName } : null
-  );
+  // migration_name rides the querystring, not the body - a body on DELETE has no defined HTTP
+  // semantics and proxies/some clients drop it silently.
+  const query = migrationName ? `?migration_name=${encodeURIComponent(migrationName)}` : '';
+  return tooljetAdapter.delete(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
 }
 
 function getTableDependents(organizationId, tableId) {

@@ -1787,20 +1787,28 @@ export class TooljetDbTableOperationsService {
 
   /**
    * Display-settings-only change - not schema, has nothing to promote, and its pre-feature
-   * behaviour was that one setting applies everywhere. Writes through to every relation of this
-   * internal table that currently holds this column uuid, keyed by uuid rather than by whatever
-   * name that relation happens to use. Never called from apply(): apply only ever touches the one
-   * relation it was handed, and this touches every relation the column has one.
+   * behaviour was that one setting applies everywhere. Writes through to every *environment's*
+   * relation of this internal table that currently holds this column uuid, keyed by uuid rather
+   * than by whatever name that relation happens to use - crossing environments here is
+   * deliberate. Never called from apply(): apply only ever touches the one relation it was
+   * handed, and this touches every relation the column has one.
+   *
+   * Branch-scoped to the editing request's own `branchId`, unlike the environment fan-out: a
+   * column setting changed on one branch must not silently land on a relation belonging to a
+   * different branch. Branching isn't shipped for TJDB yet (every relation lives on the default
+   * branch today), so this is currently a no-op distinction - but it stops being one the moment
+   * it isn't, matching every other branch-aware read/write in this module.
    */
   protected async writeThroughColumnConfigurations(
     internalTableId: string,
+    branchId: string,
     columnUuid: string,
     configurationsPatch: Record<string, unknown> | undefined,
     appManager: EntityManager
   ): Promise<void> {
     if (isEmpty(configurationsPatch)) return;
 
-    const relations = await appManager.find(InternalTableRelation, { where: { internalTableId } });
+    const relations = await appManager.find(InternalTableRelation, { where: { internalTableId, branchId } });
     for (const rel of relations) {
       const columnNames = rel.configurations?.columns?.column_names || {};
       if (!Object.values(columnNames).includes(columnUuid)) continue;
@@ -1944,6 +1952,7 @@ export class TooljetDbTableOperationsService {
     try {
       await this.writeThroughColumnConfigurations(
         internalTable.id,
+        relation.branchId,
         payload.columnUuid,
         column?.configurations,
         queryRunner.manager

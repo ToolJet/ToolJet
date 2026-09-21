@@ -31,7 +31,7 @@ import {
   EditColumnTableDto,
   PostgrestForeignKeyDto,
   AddColumnDto,
-  DropTableDto,
+  MigrationNameQueryDto,
 } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
@@ -148,12 +148,12 @@ export class TooljetDbController {
   async dropTable(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body() dropTableDto: DropTableDto
+    @Query() query: MigrationNameQueryDto
   ) {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'drop_table',
-      { table_name: tableName, migration_name: dropTableDto.migration_name },
+      { table_name: tableName, migration_name: query.migration_name },
       undefined
     );
     return decamelizeKeys({ result });
@@ -184,12 +184,12 @@ export class TooljetDbController {
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Param('columnName') columnName,
-    @Body('migration_name') migrationName?: string
+    @Query() query: MigrationNameQueryDto
   ) {
     const params = {
       table_name: tableName,
       column: { column_name: columnName },
-      migration_name: migrationName,
+      migration_name: query.migration_name,
     };
 
     const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params, undefined);
@@ -295,12 +295,12 @@ export class TooljetDbController {
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Param('foreignKeyId') foreignKeyId: string,
-    @Body('migration_name') migrationName?: string
+    @Query() query: MigrationNameQueryDto
   ) {
     const params = {
       table_name: tableName,
       foreign_key_id: foreignKeyId,
-      migration_name: migrationName,
+      migration_name: query.migration_name,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params, undefined);
     return decamelizeKeys({ result });
