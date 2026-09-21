@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import useStore from '@/AppBuilder/_stores/store';
-import { useEffectiveLibraryRevision } from '../../hooks/useEffectiveLibraryRevision';
+import { useEffectiveLibraryRevision } from '../../../hooks/useEffectiveLibraryRevision';
 
 const setPins = (pins) => {
   act(() => {

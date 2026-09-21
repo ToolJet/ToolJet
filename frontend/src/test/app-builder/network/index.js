@@ -2,10 +2,13 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
 export function defineNetworkScenario(routes) {
-  return routes.map(({ method = 'get', url, status = 200, json }) => {
+  return routes.map(({ method = 'get', url, status = 200, json, body }) => {
     const factory = http[method.toLowerCase()];
     if (!factory || !url) throw new Error(`Invalid network route: ${method} ${url || ''}`.trim());
-    return factory(url, () => HttpResponse.json(json, { status }));
+    // `json` may be a function so a route can answer differently across a
+    // single test — e.g. a licence endpoint the test flips between calls,
+    // which is the only public way to move `license.featureAccess`.
+    return factory(url, () => HttpResponse.json(typeof json === 'function' ? json() : json, { status }));
   });
 }
 

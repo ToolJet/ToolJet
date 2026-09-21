@@ -25,7 +25,8 @@ const componentDef = (overrides = {}) => ({
 });
 
 describe('getLibraryComponentIdentity', () => {
-  it('[LibraryComponent-IDENTITY-001] reads libraryId/correlationId/componentName off definition.properties', () => {
+  it('[LibraryComponent-IDENT-002] reads libraryId/correlationId/componentName off definition.properties', () => {
+    // Break this catches: returning the `{ value }` wrapper instead of the value, which breaks every manifest lookup keyed by it.
     expect(getLibraryComponentIdentity(componentDef())).toEqual({
       libraryId: LIBRARY_ID,
       correlationId: CORRELATION_ID,
@@ -33,7 +34,8 @@ describe('getLibraryComponentIdentity', () => {
     });
   });
 
-  it('[LibraryComponent-IDENTITY-002] returns all-undefined for a non-LibraryComponent definition shape', () => {
+  it('[LibraryComponent-IDENT-003] returns all-undefined for a non-LibraryComponent definition shape', () => {
+    // Break this catches: throwing on a definition without identity properties, crashing EventManager for any non-library target.
     expect(getLibraryComponentIdentity({})).toEqual({
       libraryId: undefined,
       correlationId: undefined,
@@ -43,14 +45,15 @@ describe('getLibraryComponentIdentity', () => {
 });
 
 describe('resolveManifestActions', () => {
-  it("[LibraryComponent-ACTIONS-001] normalizes a manifest action's `name` to `handle`, defaulting displayName to it", () => {
+  it("[LibraryComponent-ACTIONMAP-001] normalizes a manifest action's `name` to `handle`, defaulting displayName to it", () => {
     // Break this catches: leaking the manifest's raw `name` key through instead of the
     // `handle` the action picker/param UI reads — EventManager's dropdown would break.
     const manifest = { components: { Widget: { actions: [{ name: 'reset' }] } } };
     expect(resolveManifestActions(manifest, 'Widget')).toEqual([{ handle: 'reset', displayName: 'reset', params: [] }]);
   });
 
-  it('[LibraryComponent-ACTIONS-002] normalizes each param, keeping optional type/options only when present', () => {
+  it('[LibraryComponent-ACTIONMAP-002] normalizes each param, keeping optional type/options only when present', () => {
+    // Break this catches: dropping the param displayName fallback or emitting `type`/`options: undefined` keys the param UI treats as set.
     const manifest = {
       components: {
         Widget: {
@@ -76,7 +79,38 @@ describe('resolveManifestActions', () => {
     ]);
   });
 
-  it('[LibraryComponent-ACTIONS-003] returns [] for a missing manifest, missing component, or no actions', () => {
+  it('[LibraryComponent-ACTIONMAP-004] labels switch options by displayName, leaving select options untouched', () => {
+    // Break this catches: the Switch element renders option.displayName, so passing the
+    // manifest's { name, value } through unchanged leaves every switch button blank.
+    const options = [
+      { name: 'On', value: 'on' },
+      { name: 'Off', value: 'off' },
+    ];
+    const manifest = {
+      components: {
+        Widget: {
+          actions: [
+            {
+              name: 'configure',
+              params: [
+                { handle: 'mode', type: 'switch', options },
+                { handle: 'size', type: 'select', options },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    const [{ params }] = resolveManifestActions(manifest, 'Widget');
+    expect(params[0].options).toEqual([
+      { displayName: 'On', value: 'on' },
+      { displayName: 'Off', value: 'off' },
+    ]);
+    expect(params[1].options).toEqual(options);
+  });
+
+  it('[LibraryComponent-ACTIONMAP-003] returns [] for a missing manifest, missing component, or no actions', () => {
+    // Break this catches: returning undefined instead of [] for a missing manifest/component, crashing callers that map over it.
     expect(resolveManifestActions(null, 'Widget')).toEqual([]);
     expect(resolveManifestActions({ components: {} }, 'Widget')).toEqual([]);
     expect(resolveManifestActions({ components: { Widget: {} } }, 'Widget')).toEqual([]);
@@ -121,6 +155,7 @@ describe('resolveLibraryComponentActions', () => {
   });
 
   it('[LibraryComponent-RESOLVE-004] returns [] when there is no pin for the library at all', () => {
+    // Break this catches: falling back to some default revision when no pin exists, offering actions for a bundle that is not rendered.
     expect(resolveLibraryComponentActions(componentDef(), manifests, {})).toEqual([]);
   });
 });

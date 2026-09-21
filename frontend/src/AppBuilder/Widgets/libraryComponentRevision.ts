@@ -62,6 +62,9 @@ export const getLibraryComponentIdentity = (component: ComponentDefinitionLike):
   };
 };
 
+// The Switch element labels options by `displayName`; select and the manifest use `name`.
+const toSwitchOption = ({ name, value }: { name: string; value: string }) => ({ displayName: name, value });
+
 // EventManager's action picker/param UI expects a normalized `handle` (not the manifest's
 // `name`) on both the action and each param — this is the one place that shape gets
 // produced, shared by anyone reading actions off a resolved manifest.
@@ -78,7 +81,7 @@ export const resolveManifestActions = (
       displayName: p.displayName ?? p.handle,
       defaultValue: p.defaultValue,
       ...(p.type ? { type: p.type } : {}),
-      ...(p.options ? { options: p.options } : {}),
+      ...(p.options ? { options: p.type === 'switch' ? p.options.map(toSwitchOption) : p.options } : {}),
     })),
   }));
 };

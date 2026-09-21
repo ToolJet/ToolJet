@@ -51,4 +51,40 @@ describe('LibraryComponent drop-time identity stamping', () => {
     expect(props.componentName.value).toBe('StatusBadge');
     expect(props.revisionId).toBeUndefined();
   });
+
+  it('[LibraryComponent-DROP-001] applies manifest prop defaults and the manifest default size, falling back to 12 x 200', () => {
+    // Break this catches: dropping the manifest-defaults loop or the defaultSize override —
+    // the Inspector would open with empty fields, and every component would land at 12 x 200
+    // regardless of the size its author declared.
+    const baseInfo = {
+      libraryId: 'lib-42',
+      correlationId: '11111111-2222-3333-4444-555555555555',
+      libraryName: 'My UI Library',
+      componentName: 'StatusBadge',
+    };
+
+    const sized = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      ...baseInfo,
+      props: [
+        { name: 'label', type: 'string', default: 'Hi' },
+        { name: 'count', type: 'number', default: 3 },
+        { name: 'isOpen', type: 'boolean', default: true },
+        { name: 'isCompact', type: 'boolean' },
+      ],
+      defaultSize: { width: 6, height: 300 },
+    });
+
+    const props = sized.component.definition.properties;
+    expect(props.label.value).toBe('Hi');
+    expect(props.count.value).toBe('{{3}}');
+    expect(props.isOpen.value).toBe('{{true}}');
+    expect(props.isCompact.value).toBe('{{false}}');
+    expect(sized.layouts.desktop).toMatchObject({ width: 6, height: 300 });
+
+    const unsized = addNewWidgetToTheEditor('LibraryComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      ...baseInfo,
+      props: [],
+    });
+    expect(unsized.layouts.desktop).toMatchObject({ width: 12, height: 200 });
+  });
 });
