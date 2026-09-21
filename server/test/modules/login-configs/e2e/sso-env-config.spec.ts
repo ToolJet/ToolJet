@@ -340,6 +340,35 @@ describe('LoginConfigsController', () => {
         }
       });
 
+      it('should match the workspace name across hyphen/underscore/space variants in the env var name token', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        // Org name is "SSO Env Config Test Org" (spaces) — env var names can't contain spaces, so an
+        // admin typing hyphens instead of underscores must still resolve to the same workspace.
+        process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_CLAIM_NAME'] = 'groups';
+        process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_MAPPING'] = JSON.stringify({
+          engineering: 'from-env-hyphen',
+        });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const mappings = await app.get(OidcEnvUtilService).getInstanceGroupSyncMappings();
+          const orgMapping = mappings.find((m) => m.organizationId === orgId);
+
+          expect(orgMapping).toMatchObject({
+            claimName: 'groups',
+            groupMapping: { engineering: 'from-env-hyphen' },
+          });
+        } finally {
+          delete process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_CLAIM_NAME'];
+          delete process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_MAPPING'];
+          await app.get(OrganizationEnvUtilService).initialize();
+        }
+      });
+
       it('should mask name and grantType to their env-var names, while exposing the real values as resolvedName/resolvedGrantType', async () => {
         jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
         process.env.OIDC_NAME = 'Instance OIDC';
