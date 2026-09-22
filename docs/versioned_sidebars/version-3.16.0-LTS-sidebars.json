@@ -791,6 +791,7 @@
                 "marketplace/plugins/marketplace-plugin-microsoft_graph",
                 "marketplace/plugins/marketplace-plugin-mistral_ai",
                 "marketplace/plugins/marketplace-plugin-openai",
+                "marketplace/plugins/marketplace-plugin-openrouter",
                 "marketplace/plugins/marketplace-plugin-pinecone",
                 "marketplace/plugins/marketplace-plugin-plivo",
                 "marketplace/plugins/marketplace-plugin-pocketbase",
