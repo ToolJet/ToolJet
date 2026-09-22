@@ -35,12 +35,11 @@ export default function Sidebar({ collapseSidebar }) {
   const tablesTriggered = isNearingOrReached(tablesLimit);
   const rowsTriggered = isNearingOrReached(rowsLimit);
 
-  // Show a single "database" banner (with a Tables/Rows breakdown) only when BOTH limits are
-  // nearing/reached at once; otherwise show the standalone banner for whichever one is.
+  // Always show the combined banner (both counters) when either limit is nearing/reached.
   let bannerType = null;
   let bannerLimits = {};
   let bannerBreakdown = [];
-  if (tablesTriggered && rowsTriggered) {
+  if (tablesTriggered || rowsTriggered) {
     const canAddUnlimited = (tablesLimit?.canAddUnlimited ?? true) && (rowsLimit?.canAddUnlimited ?? true);
     bannerType = 'database';
     bannerLimits = {
@@ -58,12 +57,6 @@ export default function Sidebar({ collapseSidebar }) {
         value: rowsLimit?.canAddUnlimited ? 'Unlimited' : `${rowsLimit?.current ?? 0}/${rowsLimit?.total ?? 0}`,
       },
     ];
-  } else if (tablesTriggered) {
-    bannerType = 'tables';
-    bannerLimits = tablesLimit;
-  } else if (rowsTriggered) {
-    bannerType = 'rows';
-    bannerLimits = rowsLimit;
   }
 
   const isResourceLimitReached =
