@@ -28,6 +28,11 @@ export interface GitSyncEditGuardParams {
   status?: AppVersionStatus | string;
   // Used in the error message, e.g. 'version', 'component', 'query', 'data source'.
   resourceLabel?: string;
+  // Set when the caller has verified every changed field is a secret/encrypted value (e.g. a
+  // data source's client_secret) — those can never be carried by git sync in the first place
+  // (sanitizeOptionsForGit drops them), so blocking their edit on a synced default branch only
+  // locks users out of ever completing setup, without protecting anything git sync tracks.
+  secretsOnly?: boolean;
 }
 
 /**
@@ -42,8 +47,16 @@ export interface GitSyncEditGuardParams {
  * No-op when git sync is off.
  */
 export function assertGitSyncEditAllowed(params: GitSyncEditGuardParams): void {
-  const { isGitSyncEnabled, isMultiBranchingEnabled, defaultBranchId, branchId, isSynced, status, resourceLabel } =
-    params;
+  const {
+    isGitSyncEnabled,
+    isMultiBranchingEnabled,
+    defaultBranchId,
+    branchId,
+    isSynced,
+    status,
+    resourceLabel,
+    secretsOnly,
+  } = params;
   if (!isGitSyncEnabled) return;
 
   const label = resourceLabel || 'resource';
@@ -59,7 +72,7 @@ export function assertGitSyncEditAllowed(params: GitSyncEditGuardParams): void {
   }
 
   const isDraft = status === undefined ? true : status === AppVersionStatus.DRAFT;
-  if (onDefaultBranch && isDraft && isSynced === true) {
+  if (onDefaultBranch && isDraft && isSynced === true && !secretsOnly) {
     throw new ForbiddenException(
       `This ${label} is synced with git on the default branch. Create a feature branch to make changes.`
     );
@@ -120,7 +133,12 @@ export async function assertNotGitLicenseLocked(resolver: GitDetailsResolver, or
 export async function assertGitSyncEditAllowedForOrg(
   resolver: GitDetailsResolver,
   organizationId: string,
-  target: { branchId: string | null | undefined; isSynced: boolean; status?: AppVersionStatus | string },
+  target: {
+    branchId: string | null | undefined;
+    isSynced: boolean;
+    status?: AppVersionStatus | string;
+    secretsOnly?: boolean;
+  },
   resourceLabel: string
 ): Promise<void> {
   await assertNotGitLicenseLocked(resolver, organizationId);
@@ -133,6 +151,7 @@ export async function assertGitSyncEditAllowedForOrg(
     isSynced: target.isSynced,
     status: target.status,
     resourceLabel,
+    secretsOnly: target.secretsOnly,
   });
 }
 
