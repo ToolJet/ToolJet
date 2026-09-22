@@ -2,23 +2,6 @@
  * @group platform
  */
 
-/**
- * External API v2 — Users (`api-spec-viewer.html` §1, platform-wide only — the "Workspace
- * Users" sub-resource under §2 is out of scope for this file).
- *
- * Routes under /api/v2/ext/users (EE, gated by FEATURE_KEY.*_USER*_V2, license EXTERNAL_API).
- * Unlike Apps/Modules/Workflows/Folders, this resource is platform-wide, not workspace-scoped —
- * there is no :workspaceIdentifier anywhere in these routes.
- *
- * Known, deliberate spec deviations:
- *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
- *   2. Archive/unarchive are symmetric: both the dedicated archive/unarchive endpoints and a
- *      PATCH status change cascade to every OrganizationUser row the user has, not just their
- *      default workspace (a deliberate product decision, not a v1 parity bug).
- *   3. POST .../archive and .../unarchive return 201, not the spec's 200 — NestJS's default for
- *      POST, kept as-is rather than overridden with @HttpCode(200).
- */
-
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

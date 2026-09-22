@@ -2,25 +2,6 @@
  * @group platform
  */
 
-/**
- * External API v2 — Workspace Users (`api-spec-viewer.html` §2, Workspace Users sub-resource —
- * platform-wide Workspaces themselves are covered in workspaces-v2.e2e-spec.ts, and platform-wide
- * Users in users-v2.e2e-spec.ts).
- *
- * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/users (EE, gated by
- * FEATURE_KEY.*WORKSPACE_USER*_V2, license EXTERNAL_API). Nested under a workspace — every route
- * is additionally scoped to workspace membership, unlike the platform-wide Users v2 resource.
- *
- * Known, deliberate spec deviations:
- *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
- *   2. Bulk create accepts EITHER a JSON { users: [...] } body OR a multipart CSV upload on the
- *      SAME route (POST .../users/bulk) — CSV columns map directly to name/email/password/role,
- *      with no userDetails support (JSON-only for that field).
- *   3. Both bulk routes (create and update) return 207 Multi-Status — every bulk request reports
- *      a per-entry created/updated + errors breakdown, so the status always reflects a mixed
- *      outcome rather than a single all-or-nothing success code.
- */
-
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

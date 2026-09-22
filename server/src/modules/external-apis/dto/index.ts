@@ -655,8 +655,6 @@ export class ListUserWorkspacesV2QueryDto {
   per_page?: number = 20;
 }
 
-// --- v2 Response DTOs: strict, @Exclude-by-default, only @Expose'd fields are ever serialized ---
-
 @Exclude()
 export class PaginationV2ResponseDto {
   @Expose()
@@ -723,8 +721,6 @@ export class ListUserWorkspacesV2ResponseDto {
   @Type(() => PaginationV2ResponseDto)
   pagination: PaginationV2ResponseDto;
 }
-
-// --- Workspaces v2 ---
 
 export class CreateWorkspaceV2Dto {
   @IsString()
@@ -822,8 +818,6 @@ export class ListWorkspacesV2ResponseDto {
   @Type(() => PaginationV2ResponseDto)
   pagination: PaginationV2ResponseDto;
 }
-
-// --- Workspace Users v2 ---
 
 export class CreateWorkspaceUserV2Dto {
   @IsString()

@@ -2,24 +2,6 @@
  * @group platform
  */
 
-/**
- * External API v2 — Workspaces (`api-spec-viewer.html` §2, Workspaces only — the "Workspace
- * Users" sub-resource is a separate file, workspace-users-v2.e2e-spec.ts).
- *
- * Routes under /api/v2/ext/workspaces (EE, gated by FEATURE_KEY.*_WORKSPACE_V2/*_WORKSPACES_V2,
- * license EXTERNAL_API). Platform-wide, like Users v2 — no further scoping above a workspace.
- *
- * Known, deliberate spec deviations:
- *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
- *   2. "The default workspace cannot be archived" is enforced both on the dedicated
- *      POST .../archive endpoint and on PATCH with status: 'archived' — the spec states the rule
- *      once but its own PATCH section repeats it, so both paths check it.
- *
- * The "first workspace on the platform is automatically default" tests rely on per-test
- * SAVEPOINT isolation (docs/testing.md) giving each test a workspace-free starting point — they
- * must not assume anything about workspaces created by other tests in this file.
- */
-
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -261,7 +243,27 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
         .expect(422);
     });
 
-    it('should reject default: true on an archived workspace, or together with status: archived', async () => {
+    it('should reject making a workspace default while archiving it in the same request', async () => {
+      const suffix = Date.now();
+      await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `Default${suffix}`, slug: `default-${suffix}` })
+        .expect(201);
+      const other = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `Other${suffix}`, slug: `other-${suffix}` })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .patch(`${BASE}/${other.body.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ default: true, status: 'archived' })
+        .expect(422);
+    });
+
+    it('should reject making an already-archived workspace the default', async () => {
       const suffix = Date.now();
       const defaultWorkspace = await request(app.getHttpServer())
         .post(BASE)
@@ -274,14 +276,6 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
         .send({ name: `Other${suffix}`, slug: `other-${suffix}` })
         .expect(201);
 
-      // together with status: archived in the same request
-      await request(app.getHttpServer())
-        .patch(`${BASE}/${other.body.id}`)
-        .set('Authorization', getExtAuth())
-        .send({ default: true, status: 'archived' })
-        .expect(422);
-
-      // already archived
       await request(app.getHttpServer())
         .patch(`${BASE}/${other.body.id}`)
         .set('Authorization', getExtAuth())
