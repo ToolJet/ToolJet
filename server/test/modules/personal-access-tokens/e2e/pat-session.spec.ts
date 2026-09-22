@@ -13,7 +13,6 @@ import { createApplication } from '../../../helpers/seed';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
-import { User } from '@entities/user.entity';
 import * as request from 'supertest';
 
 /**
@@ -28,6 +27,7 @@ describe('Personal access token session exchange', () => {
   let tokenCookie: string[];
   let orgId: string;
   let userId: string;
+  let owner: User;
 
   const futureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 
@@ -47,13 +47,6 @@ describe('Personal access token session exchange', () => {
   };
 
   const createApp = async (name: string): Promise<string> => {
-    const owner = await getDefaultDataSource()
-      .getRepository(User)
-      .findOne({ where: { id: userId } });
-    /* createApplication reads user.organizationId, which is NOT a DB column — createUser sets it in
-       memory and a findOne-loaded user therefore has none. Left undefined it violates
-       apps.organization_id NOT NULL, so set it explicitly from the workspace under test. */
-    owner.organizationId = orgId;
     const application = await createApplication(app, { name, user: owner });
     return application.id;
   };
@@ -85,6 +78,9 @@ describe('Personal access token session exchange', () => {
     });
     orgId = organization.id;
     userId = user.id;
+    // organizationId is in-memory only; a findOne-loaded user lacks it, apps.organization_id NOT NULL
+    owner = user;
+    owner.organizationId = orgId;
     await ensureAppEnvironments(app, orgId);
     ({ tokenCookie } = await login(app));
   });
@@ -134,13 +130,8 @@ describe('Personal access token session exchange', () => {
       const res = await exchange(token).send({ appId }).expect(201);
 
       const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
-      expect(payload.isPATLogin).toBe(true);
-      expect(payload.appId).toBe(appId);
-      expect(payload.organizationIds).toEqual([orgId]);
-      /* The token's own kind, and it stays 'workspace'. This is the distinction PatScopeInterceptor
-         branches on: pinning a session to an app must NOT turn a workspace token into an app one,
-         which is what would hand it the embed flow's unrestricted exemption. */
-      expect(payload.patScope).toBe('workspace');
+      // patScope stays 'workspace': pinning to an app must not hand it the embed flow's exemption.
+      expect(payload).toMatchObject({ isPATLogin: true, appId, organizationIds: [orgId], patScope: 'workspace' });
     });
 
     it('should reject a malformed appId with 400, not 500', async () => {
@@ -311,8 +302,7 @@ describe('Personal access token session exchange', () => {
     });
 
     it('should execute a workflow and read its status and nodes with a workspace PAT session', async () => {
-      const user = await getDefaultDataSource().getRepository(User).findOneByOrFail({ id: userId });
-      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, owner, {
         name: 'PAT execution',
         nodes: [
           {

@@ -3,6 +3,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import {
   PAT_ALLOWED_BUNDLES,
+  PAT_APP_VIEWER_FEATURES,
   PAT_APP_VIEWER_MODULES,
   PAT_APP_VIEWER_NEVER_GRANTABLE,
   PAT_BUNDLE_MODULES,
@@ -130,11 +131,8 @@ describe('PAT scope definition', () => {
   });
 
   it('never lets naming an app WIDEN the session', () => {
-    /* The invariant the whole design rests on: an app-pinned session is a narrowing. Any feature
-       the viewer surface grants must ALSO be reachable by the same token without an appId, OR be a
-       deliberate viewer-only exception listed here — the boot calls a workspace token has no
-       business making. ORGANIZATION_CONSTANT is why this test exists: granting the module reached
-       plaintext workspace secrets that the same token could not otherwise touch at all. */
+    /* Any feature the viewer surface grants must ALSO be reachable by the same token without an
+       appId, OR be a deliberate viewer-only exception listed here. */
     const VIEWER_ONLY: Array<[MODULES, string | undefined]> = [
       [MODULES.AUTH, AUTH_FEATURE.AUTHORIZE],
       [MODULES.ORGANIZATION_CONSTANT, ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP],
@@ -144,7 +142,6 @@ describe('PAT scope definition', () => {
     const isViewerOnly = (module: MODULES, feature?: string) =>
       VIEWER_ONLY.some(([m, f]) => m === module && f === feature);
 
-    // Everything the viewer surface can decrypt, mint or switch with must be denied.
     for (const feature of [
       ORGANIZATION_CONSTANT_FEATURE.GET_DECRYPTED_CONSTANTS,
       ORGANIZATION_CONSTANT_FEATURE.GET_SECRETS,
@@ -155,8 +152,14 @@ describe('PAT scope definition', () => {
     expect(patAppViewerCanAccess(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toBe(false);
 
     for (const module of PAT_APP_VIEWER_MODULES) {
-      if (isViewerOnly(module, undefined) || VIEWER_ONLY.some(([m]) => m === module)) continue;
-      expect(patCanAccess(module)).toBe(true);
+      const features = PAT_APP_VIEWER_FEATURES[module];
+      if (!features) {
+        if (!isViewerOnly(module)) expect(patCanAccess(module)).toBe(true);
+        continue;
+      }
+      for (const feature of features) {
+        if (!isViewerOnly(module, feature)) expect(patCanAccess(module, feature)).toBe(true);
+      }
     }
   });
 
@@ -213,27 +216,17 @@ describe('PatScopeInterceptor', () => {
   });
 
   it('exempts the app-scoped embed flow', () => {
-    // An embedded app runs a whole viewer and legitimately needs more surface than an
-    // automation client. Restricting it would regress a shipped feature.
-    //
-    // Keyed on patScope, NOT on patAppId. The previous version of this test passed patAppId alone,
-    // which is exactly the confusion being fixed: a workspace token can pin a session to an app
-    // too, so "has an appId" no longer means "is an embed session".
+    // Keyed on patScope, NOT on patAppId: a workspace token can pin a session to an app too.
     const embedSession = { isPATLogin: true, patScope: PersonalAccessTokenScope.APP, patAppId: 'some-app-id' };
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(embedSession), nextHandler)).toBe('HANDLED');
   });
 
   it('still exempts a pre-patScope embed session', () => {
-    // Transitional. Sessions minted before patScope existed carry appId and nothing else; capping
-    // them mid-flight would break every live embed the moment this deploys. Safe because until
-    // this change ships, only the embed flow could put an appId on a JWT.
     const legacyEmbed = { isPATLogin: true, patAppId: 'some-app-id' };
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(legacyEmbed), nextHandler)).toBe('HANDLED');
   });
 
   it('does NOT exempt a workspace token merely because the session names an app', () => {
-    // The regression this whole change exists to prevent. Before, this reached git-sync, SMTP,
-    // licensing, audit logs and AI — everything the token owner's role allowed.
     const renderSession = {
       isPATLogin: true,
       patScope: PersonalAccessTokenScope.WORKSPACE,
@@ -317,22 +310,16 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     );
 
   it('reaches /api/authorize, which an automation token may never touch', () => {
-    // The whole point: AUTH is on PAT_NEVER_GRANTABLE for an automation token, and without it the
-    // player redirects to /login and never renders.
     expect(run(MODULES.AUTH, AUTH_FEATURE.AUTHORIZE)).toBe('HANDLED');
   });
 
   it('reaches /api/authorize and nothing else on AUTH', () => {
-    /* switchWorkspace is a GET on a workspace-level path, so neither the app pin nor the read-only
-       rule touches it: a session pinned to one app could mint its way into another workspace. */
+    // switchWorkspace is a GET on a workspace-level path: neither the pin nor read-only catches it.
     expect(() => run(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toThrow(ForbiddenException);
   });
 
   it('reads constants by app and environment, but never decrypts them', () => {
-    /* The module as a whole reaches GET /organization-constants/decrypted?type=Secret — plaintext
-       secrets for the entire workspace. No /apps/<uuid> in the path so the app pin does not fire,
-       and it is a GET so read-only does not either. The same token WITHOUT an appId cannot reach
-       this module at all, so granting it wholesale would mean naming an app WIDENED the session. */
+    // The module as a whole reaches plaintext workspace secrets on a path neither narrowing catches.
     for (const feature of [
       ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP,
       ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT,
@@ -348,24 +335,17 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('fetches the app definition on a versioned boot', () => {
-    /* useAppData only calls GET /v2/apps/:id/versions/:versionId when the URL carries ?version=,
-       which the measured boot did not — so VERSION read as "never called" and was dropped. A
-       versioned boot 403s without it. */
     expect(run(MODULES.VERSION, VERSION_FEATURE.GET_ONE)).toBe('HANDLED');
     expect(() => run(MODULES.VERSION, VERSION_FEATURE.APP_VERSION_UPDATE)).toThrow(ForbiddenException);
   });
 
   it('does not reach the rest of the credential surface', () => {
-    // Measured: the editor boot never called either. Granting them would widen the credential
-    // surface for nothing.
     for (const module of [MODULES.SESSION, MODULES.PROFILE]) {
       expect(() => run(module)).toThrow(ForbiddenException);
     }
   });
 
   it('reaches what the editor actually needs to paint', () => {
-    // Every one of these was observed on the measured boot; DATA_SOURCE and CUSTOM_STYLES were
-    // denied by the first draft of the list and had to be added.
     for (const module of [
       MODULES.APP,
       MODULES.APP_ENVIRONMENTS,
@@ -378,7 +358,6 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('does not reach what the editor asked for but the render does not need', () => {
-    // Observed on the boot and deliberately still refused: none of them changes what was painted.
     for (const module of [MODULES.AI, MODULES.APP_GIT, MODULES.DATA_QUERY_FOLDERS]) {
       expect(() => run(module)).toThrow(ForbiddenException);
     }
@@ -391,8 +370,6 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('cannot mint further tokens', () => {
-    // A viewer session that could mint would launder itself into an unscoped one and survive
-    // revocation of the workspace token it came from.
     expect(() => run(MODULES.PERSONAL_ACCESS_TOKENS)).toThrow(ForbiddenException);
   });
 
@@ -404,6 +381,23 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     expect(run(MODULES.APP, undefined, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
   });
 
+  it('is pinned on routes that carry no app uuid, via the app the guard resolved', () => {
+    // Slug lookups and query runs never put the uuid in the path; without tj_app they slipped the pin.
+    expect(() =>
+      run(MODULES.APP, undefined, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
+    ).toThrow(ForbiddenException);
+    expect(() =>
+      run(MODULES.DATA_QUERY, undefined, {
+        method: 'POST',
+        originalUrl: '/api/data-queries/abc-123/run',
+        tj_app: { id: OTHER_APP_ID },
+      })
+    ).toThrow(ForbiddenException);
+    expect(run(MODULES.APP, undefined, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: APP_ID } })).toBe(
+      'HANDLED'
+    );
+  });
+
   it('names the app it refused, so the mismatch is debuggable', () => {
     expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
       new RegExp(`scoped to a single app and cannot access ${OTHER_APP_ID}`)
@@ -411,15 +405,13 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it("is read-only, except for running the app's queries", () => {
-    // The player must execute queries to render anything, and that is a POST. Nothing else is.
     expect(() => run(MODULES.APP, undefined, { method: 'POST' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, undefined, { method: 'DELETE' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, undefined, { method: 'PUT' })).toThrow(ForbiddenException);
     expect(run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe(
       'HANDLED'
     );
-    // The BUILDER run route, which is the one the render check actually uses — an unreleased app
-    // can only be opened in the editor. Measured: six of these on a single boot.
+    // The BUILDER run route, the one the render check uses: an unreleased app opens only in the editor.
     expect(
       run(MODULES.DATA_QUERY, undefined, {
         method: 'POST',
@@ -455,7 +447,6 @@ describe('PAT app-viewer surface', () => {
   });
 
   it('stays narrower than the workspace allowlist on administration', () => {
-    // The viewer list is wider on the credential surface and MUST NOT be wider anywhere else.
     for (const module of [
       MODULES.GIT_SYNC,
       MODULES.SMTP,

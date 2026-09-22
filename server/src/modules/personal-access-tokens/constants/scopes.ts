@@ -18,9 +18,8 @@ import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
  * capability ("should tokens be able to administer the workspace?") instead of a judgement about
  * internal identifiers nobody can weigh in review.
  *
- * This does NOT apply to the app-scoped embed flow (patScope='app'), which runs a whole app viewer
- * and legitimately needs far more than an automation client, nor to an app-pinned session minted
- * from a workspace token, which gets PAT_APP_VIEWER_MODULES instead — see below.
+ * Applies to workspace tokens without an appId only; the other session kinds are described in this
+ * module's AGENTS.md.
  */
 export enum PAT_BUNDLE {
   APPS = 'apps',
@@ -130,88 +129,44 @@ export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [
  * What an APP-PINNED session minted from a WORKSPACE token may reach — the browser-render check,
  * which boots the real player against one app and lints the DOM.
  *
- * Deliberately NOT a PAT_BUNDLE. A bundle is a capability group an automation client might be
- * granted, and the bundles partition the module space: no module appears in two, and none may
- * contain the credential surface. The viewer surface is a different axis — it is "what the player
- * needs in order to boot", so it necessarily overlaps the APPS bundle (APP, VERSION) and
- * necessarily includes the credential surface the SPA bootstraps through (AUTH, SESSION, PROFILE).
- * Modelling it as a bundle would either break those invariants or force the module space into a
- * partition that does not describe reality.
+ * MEASURED from a real editor boot with PAT_SCOPE_AUDIT=true, not guessed. Re-measure rather than
+ * extend by reasoning.
  *
- * The exchange between the two is that this list buys its wider reach with a hard narrowing the
- * workspace allowlist does not have: the session is pinned to ONE app, enforced per-request, and
- * is read-only. It cannot roam the workspace and it cannot write.
- *
- * MEASURED, not guessed. Derived from a real editor boot with PAT_SCOPE_AUDIT=true
- * (.agent-work/pat-viewer-audit.py): 23 requests, every one logged with the module its route
- * carries. Re-measure rather than extend by reasoning.
- *
- * The EDITOR, not the viewer: an AI-built app has not been released, and /applications/<id>
- * therefore renders "App URL Unavailable" without reaching the app at all. render_lint.app_url
- * already opens the editor route for this reason.
+ * The EDITOR, not the viewer: an AI-built app has not been released, so /applications/<id> renders
+ * "App URL Unavailable" without reaching the app at all.
  */
 export const PAT_APP_VIEWER_MODULES: MODULES[] = [
-  // Observed on the measured boot.
-  MODULES.AUTH, // /api/authorize — the SPA's boot call; without it the page redirects to login
+  MODULES.AUTH,
   MODULES.APP,
   MODULES.APP_ENVIRONMENTS,
   MODULES.ORGANIZATION_CONSTANT,
   MODULES.DATA_QUERY,
-  MODULES.GLOBAL_DATA_SOURCE, // the queries cannot run without their datasource
+  MODULES.GLOBAL_DATA_SOURCE,
   MODULES.CUSTOM_STYLES, // changes how the app PAINTS — linting the DOM without it measures a lie
 
-  /* Not observed on the measured boot, and required anyway: useAppData only fetches
-     GET /v2/apps/:id/versions/:versionId when the URL carries ?version=, and the measured boot had
-     none. A versioned boot 403s without this. Narrowed to the single read below; the route is
-     /apps/:id/versions/:versionId, so the app pin covers it and the PUTs are already read-only. */
+  // ?version= boots hit GET versions/:id; not on every boot
   MODULES.VERSION,
 
-  /* Not observed, and deliberately kept: their absence is explained by the measured app's CONTENT,
-     not by the player not needing them. That app has no custom theme and no file component, so
-     these routes had nothing to fetch. An app that has them would 403 mid-render, and the render
-     check would report a defect that does not exist. Confirm with an app that uses both, then trim
-     whatever still does not appear.
-     ORGANIZATION_VARIABLE was here too and is gone: no controller declares it, so no route can
-     carry it and no request could ever have matched. */
+  // Not observed: the measured app has no custom theme and no file component. An app that has them
+  // would 403 mid-render.
   MODULES.ORGANIZATION_THEMES,
   MODULES.FILE,
-
-  /* Deliberately NOT here, though the editor asked for them — the render check lints what the app
-     painted, and none of these change that:
-       AI              (getLlmPreference, getCreditsBalance) — the builder panel, and it spends money
-       AppGit          (get_app_git_configs) — editor chrome
-       DATA_QUERY_FOLDERS — sidebar organisation
-     Also dropped from the first draft of this list, having never been called at all: SESSION and
-     PROFILE. Leaving the credential surface out is worth more than the symmetry. */
 ];
 
 /**
  * Feature-level narrowing WITHIN PAT_APP_VIEWER_MODULES. A module listed here is reachable only
  * through these features; a module absent from this map is reachable in full.
  *
- * This exists because module granularity is not safe for every module on the list. The session's
- * other two narrowings do not help: the app pin only fires on routes that carry /apps/<uuid>, and
- * read-only only bars writes. A module with a dangerous GET on a workspace-level path escapes both.
- *
- * ORGANIZATION_CONSTANT is the case that forced this. Granting the module reaches
- * GET /organization-constants/decrypted?type=Secret and /secrets — plaintext secrets for the whole
- * workspace, every environment. The same token WITHOUT an appId cannot touch that module at all
- * (it sits in WORKSPACE_ADMIN, which is not in PAT_ALLOWED_BUNDLES), so granting it here would mean
- * naming an app WIDENED the session. The player only ever needs the two by-app/by-environment reads.
+ * Module granularity is not safe for every module on the list: the app pin only fires on routes
+ * that carry an app, and read-only only bars writes, so a dangerous GET on a workspace-level path
+ * escapes both.
  */
-const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
-  // authorize only. SWITCH_WORKSPACE is a GET on a workspace-level path and would let a session
-  // pinned to one app mint its way into another workspace.
+export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
   [MODULES.AUTH]: new Set<string>([AUTH_FEATURE.AUTHORIZE]),
-
-  // Reads by app and by environment. NEVER get_decrypted or get_secrets: a render check looks at
-  // what the app painted and has no business decrypting anything.
   [MODULES.ORGANIZATION_CONSTANT]: new Set<string>([
     ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP,
     ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT,
   ]),
-
-  // The single app-definition fetch a versioned boot makes.
   [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.GET_ONE]),
 };
 

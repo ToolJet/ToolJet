@@ -39,8 +39,6 @@ export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
   listPats(userId: string): Promise<PatView[]>;
   deletePat(userId: string, id: string): Promise<void>;
-  /* `appId` mints an app-scoped session instead of a workspace one, for an app in the token's own
-     workspace. */
   createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession>;
   /* Find-or-create the single service token for (user, workspace, name). Returns the ENTITY, with
      `user` populated, because the caller mints a session from it in-process via createSessionFromPat
