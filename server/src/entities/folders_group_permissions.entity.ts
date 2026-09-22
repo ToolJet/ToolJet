@@ -31,6 +31,13 @@ export class FoldersGroupPermissions extends BaseEntity {
   @Column({ name: 'can_view_apps', nullable: false, default: false })
   canViewApps: boolean;
 
+  // Restrict-query-run flag. Only consumed for data-source folders (ResourceType.DATA_SOURCE_FOLDER):
+  // when false, users in the group cannot run queries on data sources inside the granted folders
+  // (enforced at query-execution time, see server/ee/data-queries/util.service.ts). Defaults true
+  // (no restriction) and is unused for app/workflow/module folders.
+  @Column({ name: 'can_run_query', nullable: false, default: true })
+  canRunQuery: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

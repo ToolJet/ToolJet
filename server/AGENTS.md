@@ -113,6 +113,7 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
+- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
 
 ## Module context files

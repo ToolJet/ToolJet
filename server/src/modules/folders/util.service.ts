@@ -3,6 +3,7 @@ import { EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { FolderDataSource } from '@entities/folder_data_source.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { IFoldersUtilService } from './interfaces/IUtilService';
 import { CreateFolderDto } from './dto';
@@ -28,6 +29,24 @@ export class FoldersUtilService implements IFoldersUtilService {
       .select('DISTINCT folder_apps.branchId', 'branchId')
       .where('folder_apps.folderId = :folderId', { folderId })
       .andWhere('folder_apps.branchId IS NOT NULL')
+      .getRawMany();
+    const branchIds = rows.map((row) => row.branchId).filter(Boolean);
+    if (branchIds.length === 0) return [];
+
+    const branches = await manager.find(WorkspaceBranch, {
+      where: { id: In(branchIds) },
+      select: ['name'],
+    });
+    return branches.map((branch) => branch.name);
+  }
+
+  // Data-source-folder analogue of findBranchNamesWithApps. branch_id is NOT NULL on
+  // folder_data_sources, so no IS NULL guard is needed.
+  async findBranchNamesWithDataSources(folderId: string, manager: EntityManager): Promise<string[]> {
+    const rows = await manager
+      .createQueryBuilder(FolderDataSource, 'folder_data_sources')
+      .select('DISTINCT folder_data_sources.branchId', 'branchId')
+      .where('folder_data_sources.folderId = :folderId', { folderId })
       .getRawMany();
     const branchIds = rows.map((row) => row.branchId).filter(Boolean);
     if (branchIds.length === 0) return [];
