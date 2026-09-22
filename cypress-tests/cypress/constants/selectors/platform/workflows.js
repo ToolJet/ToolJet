@@ -43,4 +43,13 @@ export const workflowSelector = {
 
   simpleInputField: (fieldName) => `[data-cy="${cyParamName(fieldName)}"]`,
   nodeHandleRight: (node) => `[data-cy="${node}-node-handle-right"]`,
+
+  previewButton: '[data-cy="preview-button"]',
+  responseNodeName: '[data-cy="response1-node-name"]',
+  outputTab: '[data-cy="tab-output"]',
+
+  // The shared card-menu popover body. Needed to assert an option is ABSENT —
+  // appCardOptions(text) builds a per-option selector, which cannot express
+  // "no clone control exists".
+  cardOptions: '[data-cy="card-options"]',
 };
