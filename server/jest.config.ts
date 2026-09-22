@@ -46,7 +46,10 @@ const config: Config.InitialOptions = {
   testTimeout: 30000,
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
+    // thrift's nested uuid dependency ships an ESM-only build; both names must be
+    // whitelisted since node_modules/ appears twice in that nested path and each
+    // occurrence is checked independently.
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object|thrift|uuid)/)',
   ],
 };
 
