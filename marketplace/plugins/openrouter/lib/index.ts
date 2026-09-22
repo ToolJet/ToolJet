@@ -55,9 +55,15 @@ export default class OpenRouter implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     try {
-      const response = await client.models.list();
-      if (!response?.data?.length) {
-        throw new QueryError('Connection could not be established', 'The models list is empty', {});
+      const baseUrl = (sourceOptions.baseUrl?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, '');
+      if (baseUrl === DEFAULT_BASE_URL) {
+        // OpenRouter's model catalogue is public, so listing it does not validate the key.
+        await client.get('/key');
+      } else {
+        const response = await client.models.list();
+        if (!response?.data?.length) {
+          throw new QueryError('Connection could not be established', 'The models list is empty', {});
+        }
       }
       return { status: 'ok' };
     } catch (error) {
