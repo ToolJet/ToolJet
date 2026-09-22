@@ -60,6 +60,17 @@ http
     ssl_certificate /etc/fallback-certs/resty-auto-ssl-fallback.crt;
     ssl_certificate_key /etc/fallback-certs/resty-auto-ssl-fallback.key;
 
+    location /assets/custom-components/
+    {
+      # The custom-component shell iframe is sandboxed (opaque origin), so its
+      # import()/fetch() of these files sends `Origin: null` and needs an explicit ACAO —
+      # see server/ee/custom-component-libraries/controller.ts for the matching header on
+      # the bundle/css serve routes.
+      root /var/www;
+      add_header Access-Control-Allow-Origin null always;
+      try_files $uri =404;
+    }
+
     location /
     {
       root /var/www;
@@ -107,6 +118,17 @@ http
       {
         auto_ssl:challenge_server()
       }
+    }
+
+    location /assets/custom-components/
+    {
+      # The custom-component shell iframe is sandboxed (opaque origin), so its
+      # import()/fetch() of these files sends `Origin: null` and needs an explicit ACAO —
+      # see server/ee/custom-component-libraries/controller.ts for the matching header on
+      # the bundle/css serve routes.
+      root /var/www;
+      add_header Access-Control-Allow-Origin null always;
+      try_files $uri =404;
     }
 
     location /
