@@ -13,11 +13,13 @@
     },
     {
       "componentType": "PopoverMenu",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PopoverMenu/TESTING.md"
     },
     {
       "componentType": "FileButton",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileButton/TESTING.md"
     },
     {
       "componentType": "Table",
@@ -37,7 +39,8 @@
     },
     {
       "componentType": "ModalV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ModalV2/TESTING.md"
     },
     {
       "componentType": "Container",
@@ -137,7 +140,8 @@
     },
     {
       "componentType": "FileInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileInput/TESTING.md"
     },
     {
       "componentType": "TreeSelect",
@@ -167,7 +171,8 @@
     },
     {
       "componentType": "Navigation",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Navigation/TESTING.md"
     },
     {
       "componentType": "Link",
@@ -269,6 +274,11 @@
       "status": "not-started"
     },
     {
+      "componentType": "LibraryComponent",
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
+    },
+    {
       "componentType": "Html",
       "status": "verified",
       "contract": "ee/test/app-builder/widgets/Html/TESTING.md"
@@ -279,7 +289,8 @@
     },
     {
       "componentType": "FilePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FilePicker/TESTING.md"
     },
     {
       "componentType": "CodeEditor",
