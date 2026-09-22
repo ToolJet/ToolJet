@@ -75,6 +75,12 @@ export const createDependencySlice = (set, get) => {
         return { ...state };
       }),
 
+    removePropertyNodes: (path, moduleId = 'canvas') =>
+      set((state) => {
+        state.dependencyGraph.modules[moduleId].graph.removePropertyNodes(path);
+        return { ...state };
+      }),
+
     getNodeData: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getNodeData(path),
 
     getDependencies: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getDependencies(path),

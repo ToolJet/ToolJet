@@ -74,7 +74,16 @@
     "typescript": "^4.9.5"
   },
   "overrides": {
-    "tar": "^7.5.3"
+    "tar": "^7.5.19",
+    "@databricks/sql": {
+      "thrift": "0.24.0"
+    },
+    "fast-xml-parser": "^5.5.7",
+    "minio": {
+      "fast-xml-parser": "^5.5.7"
+    },
+    "protobufjs": "^7.6.5",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

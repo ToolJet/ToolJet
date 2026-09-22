@@ -497,7 +497,7 @@ export default class Asana implements QueryService {
     const clientId = this.getOptionValue(options.client_id) as string;
     const clientSecret = this.getOptionValue(options.client_secret) as string;
 
-    const host = process.env.TOOLJET_HOST || '';
+    const host = (this.getOptionValue(options.tj_redirect_host) as string) || process.env.TOOLJET_HOST || '';
     const subpath = process.env.SUB_PATH || '';
     const fullUrl = `${host}${subpath || '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

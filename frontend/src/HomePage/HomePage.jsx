@@ -47,8 +47,6 @@ import {
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
-import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -1500,8 +1498,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
+                  ? 'homePage.deleteAppAndData'
+                  : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1748,8 +1746,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1768,8 +1766,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -1879,12 +1877,6 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
-                  <CreateAppWithPrompt createApp={this.createApp} />
-                )}
-
-                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
-
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
@@ -1992,8 +1984,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

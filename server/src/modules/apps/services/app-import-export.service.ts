@@ -25,6 +25,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -114,7 +115,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -168,6 +170,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -259,6 +262,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -313,6 +327,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -1517,8 +1532,10 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
+            // Deduplicate layouts by type to prevent duplicate layout rows on import
+            const uniqueLayouts = deduplicateLayoutsByType(componentLayout);
             await Promise.all(
-              componentLayout.map(async (layout) => {
+              uniqueLayouts.map(async (layout) => {
                 const newLayout = new Layout();
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
@@ -2872,6 +2889,10 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };

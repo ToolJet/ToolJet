@@ -4,6 +4,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 var _ = require('lodash');
 
@@ -14,7 +15,8 @@ export function debounce(func) {
 
   return (...args) => {
     const event = args[0] || {};
-    const eventId = uuidv4();
+    const moduleId = args[3] || 'canvas';
+    const eventId = moduleId + '-' + (event?.id || uuidv4());
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
@@ -181,6 +183,7 @@ export const resolveCode = (
     }
   }
 
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 };
@@ -189,8 +192,7 @@ export const resolveCode = (
 // Eg, input: "Hello, {{name}}! Welcome to {{city}}."
 //     output: ["{{name}}", "{{city}}"]
 export const getDynamicVariables = (text) => {
-  /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 };
 

@@ -145,6 +145,18 @@ export const statisticsConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     // Renders first in the Additional Actions section. Its displayName is the
     // visible "Tooltip" label for the whole pair; the `tooltip` code field below
     // hides its own label via showLabel:false so we don't get a duplicate.
@@ -342,6 +354,8 @@ export const statisticsConfig = {
       iconDirection: { value: 'right' },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+      dynamicHeight: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
     },

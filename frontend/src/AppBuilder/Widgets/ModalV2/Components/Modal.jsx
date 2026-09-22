@@ -112,7 +112,7 @@ export const ModalWidget = ({ ...restProps }) => {
             setNeedsBodyScroll(totalHeight > maxModalHeightPx);
           } else {
             modalContent.style.setProperty('height', _modalHeight, 'important');
-            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : _modalHeight, 'important');
             setNeedsBodyScroll(false);
           }
         } else {

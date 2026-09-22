@@ -36,6 +36,7 @@ const currentSessionSubject = new BehaviorSubject({
 
 export const authenticationService = {
   login,
+  verifyMfa,
   superAdminLogin,
   signup,
   verifyToken,
@@ -104,6 +105,16 @@ function login(email, password, organizationId) {
     });
 }
 
+function verifyMfa(mfaToken, otp) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ mfa_token: mfaToken, otp }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/authenticate/mfa/verify`, requestOptions).then(handleResponseWithoutValidation);
+}
+
 function superAdminLogin(email, password) {
   const requestOptions = {
     method: 'POST',
@@ -114,7 +125,9 @@ function superAdminLogin(email, password) {
   return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
+      if (!user?.mfa_required) {
+        authenticationService.updateCurrentSession(user);
+      }
       return user;
     });
 }

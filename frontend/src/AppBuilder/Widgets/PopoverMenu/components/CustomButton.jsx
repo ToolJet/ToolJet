@@ -13,6 +13,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     height,
     exposedVariablesTemporaryState,
     updateExposedVariablesState,
+    openPopoverOnHover,
+    scheduleClosePopoverOnHover,
     transformedOptions,
     trigger,
     label,
@@ -57,7 +59,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       : textColor;
 
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (buttonType === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
+    'var(--cc-surface1-surface)' === loaderColor
+      ? buttonType === 'primary'
+        ? loaderColor
+        : 'var(--cc-primary-brand)'
+      : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
@@ -65,8 +71,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : buttonType === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedHoverBgColor =
     buttonType === 'primary'
@@ -143,13 +149,10 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         position: 'relative',
       }}
       ref={forwardedRef}
-      {...(trigger === 'hover' &&
-        !exposedVariablesTemporaryState.isDisabled &&
-        !exposedVariablesTemporaryState.isLoading && {
-          onMouseOver: () => {
-            updateExposedVariablesState('showPopover', true);
-          },
-        })}
+      {...(trigger === 'hover' && {
+        onMouseEnter: openPopoverOnHover,
+        onMouseLeave: scheduleClosePopoverOnHover,
+      })}
     >
       <button
         className={cx(

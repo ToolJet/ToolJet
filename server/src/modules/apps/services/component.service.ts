@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -211,11 +212,27 @@ export class ComponentsService implements IComponentsService {
   }
 
   async getAllComponents(pageId: string, externalManager?: EntityManager) {
+    const componentsByPage = await this.getAllComponentsForPages([pageId], externalManager);
+    return componentsByPage[pageId] ?? {};
+  }
+
+  /**
+   * Batched variant of getAllComponents: loads the components of many pages in a
+   * single query (one transaction, one pool connection) instead of one query per
+   * page. Large apps used to fan out `pages × (transaction + query)` in parallel,
+   * starving the pool and 500ing GET /api/apps/:id. Returns a map keyed by pageId;
+   * pages without components are absent from the map.
+   */
+  async getAllComponentsForPages(
+    pageIds: string[],
+    externalManager?: EntityManager
+  ): Promise<Record<string, Record<string, any>>> {
+    if (pageIds.length === 0) return {};
     return dbTransactionWrap(async (manager: EntityManager) => {
       const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
-        .where('component.pageId = :pageId', { pageId })
+        .where('component.pageId IN (:...pageIds)', { pageIds })
         .andWhere('layout.type IN (:...types)', {
           types: ['desktop', 'mobile'],
         })
@@ -223,39 +240,59 @@ export class ComponentsService implements IComponentsService {
         .addOrderBy('layout.updatedAt', 'DESC')
         .getMany();
 
-      const result: Record<string, any> = {};
+      const componentsByPage: Record<string, Record<string, any>> = {};
       const layoutsToUpdate: Layout[] = [];
 
       for (const component of rawComponents) {
-        const processedLayoutsForComponent: Layout[] = [];
+        const { transformedData, layoutsNeedingUpdate } = this.transformComponentWithResolvedLayouts(component);
+        layoutsToUpdate.push(...layoutsNeedingUpdate);
 
-        (component.layouts || []).forEach((layout) => {
-          if (layout && layout.type) {
-            const currentLayout = { ...layout };
-
-            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
-              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
-              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              layoutsToUpdate.push(currentLayout);
-            }
-            processedLayoutsForComponent.push(currentLayout);
-          }
-        });
-
-        const relevantLayouts = processedLayoutsForComponent
-          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
-          .slice(0, 2);
-
-        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
-        result[component.id] = transformedData[component.id];
+        componentsByPage[component.pageId] = componentsByPage[component.pageId] ?? {};
+        componentsByPage[component.pageId][component.id] = transformedData[component.id];
       }
 
       if (layoutsToUpdate.length > 0) {
         await manager.save(Layout, layoutsToUpdate);
       }
 
-      return result;
+      return componentsByPage;
     }, externalManager);
+  }
+
+  /**
+   * Shared per-component transform: resolves legacy PERCENT layouts to grid COUNT
+   * units (returning those layouts so callers can persist the migration), keeps the
+   * two most recently updated layouts, and shapes the component for the definition
+   * payload via createComponentWithLayout.
+   */
+  protected transformComponentWithResolvedLayouts(component: Component): {
+    transformedData: Record<string, any>;
+    layoutsNeedingUpdate: Layout[];
+  } {
+    const layoutsNeedingUpdate: Layout[] = [];
+    const processedLayoutsForComponent: Layout[] = [];
+
+    (component.layouts || []).forEach((layout) => {
+      if (layout && layout.type) {
+        const currentLayout = { ...layout };
+
+        if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+          currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
+          currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+          layoutsNeedingUpdate.push(currentLayout);
+        }
+        processedLayoutsForComponent.push(currentLayout);
+      }
+    });
+
+    const relevantLayouts = processedLayoutsForComponent
+      .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+      .slice(0, 2);
+
+    return {
+      transformedData: this.createComponentWithLayout(component, relevantLayouts),
+      layoutsNeedingUpdate,
+    };
   }
 
   transformComponentData(data: object): Component[] {
@@ -601,7 +638,34 @@ export class ComponentsService implements IComponentsService {
       }
     });
 
-    await manager.save(Layout, componentLayouts);
+    // Upsert: check for existing layouts with the same (componentId, type) and update instead of insert
+    const layoutsToInsert: Layout[] = [];
+    for (const layout of componentLayouts) {
+      const componentId = layout.component?.id ?? layout.componentId;
+      if (componentId) {
+        const existing = await manager.findOne(Layout, {
+          where: { componentId, type: layout.type },
+        });
+        if (existing) {
+          await manager.update(Layout, { id: existing.id }, {
+            top: layout.top,
+            left: layout.left,
+            width: layout.width,
+            height: layout.height,
+            widthPx: layout.widthPx,
+            fillWidth: layout.fillWidth,
+            dimensionUnit: layout.dimensionUnit,
+          });
+        } else {
+          layoutsToInsert.push(layout);
+        }
+      } else {
+        layoutsToInsert.push(layout);
+      }
+    }
+    if (layoutsToInsert.length > 0) {
+      await manager.save(Layout, layoutsToInsert);
+    }
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {

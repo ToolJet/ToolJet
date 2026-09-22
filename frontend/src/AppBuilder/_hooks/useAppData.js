@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  setCurrentAppName,
+  setCurrentAppMeta,
+  markAppLoadStart,
+  markAppLoaded,
+} from '@/_services/frontend-metrics.service';
+import {
   appEnvironmentService,
   appService,
   appsService,
@@ -91,7 +97,6 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
@@ -148,9 +153,38 @@ const useAppData = (
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
+  useEffect(() => {
+    setCurrentAppName(appName || '');
+    return () => setCurrentAppName('');
+  }, [appName]);
+
+  useEffect(() => {
+    setCurrentAppMeta({
+      environment: selectedEnvironment?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+    });
+    return () => setCurrentAppMeta({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.name, selectedVersion?.display_name, selectedVersion?.displayName, selectedVersion?.name]);
+
+  useEffect(() => {
+    markAppLoadStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isComponentLayoutReady) markAppLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComponentLayoutReady]);
+
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
   const previousRestoreTimestamp = usePrevious(restoreTimestamp);
+  // Used to trigger the same refresh in place, without unmounting the editor chrome
+  const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
+  const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
+  const setCanvasReloading = useStore((state) => state.setCanvasReloading);
+  const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
   const location = useRouter().location;
 
@@ -189,10 +223,11 @@ const useAppData = (
     }
   };
 
+  // Only observes pageSwitchInProgress — must not reset it. Ownership of that flag's
+  // lifecycle belongs solely to appSlice.js's switchPage/doSwitch.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
-      setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
 
@@ -236,6 +271,11 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    // Guards against a Module unmounted mid-load by rapid page switching: its stale promise
+    // would otherwise still call startExposedValueBatch() below, opening a batch nothing
+    // will ever flush (its own layout-ready cycle belongs to a fresh mount that already
+    // ran its own load-and-flush) — an orphaned +1 that leaves the shared batch stuck open.
+    let isCancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -321,7 +361,12 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (!moduleMode && setConversation && setDocsConversation) {
+        // Modules go through the same AI init as apps: the server always returns an ai_conversation
+        // for every app/module (see server ee apps service), and getCreditBalance() sets
+        // aiFeaturesEnabled which gates the AI sidebar trigger. Gating this behind !moduleMode left
+        // modules without a conversation (crash on open) and without the credit fetch (trigger hidden
+        // unless the singleton store happened to be primed by the create-with-prompt flow).
+        if (setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
@@ -351,8 +396,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -405,15 +450,18 @@ const useAppData = (
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
         }
+        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
+        // and modules — the module editor's Canvas styles fields read these, so gating this to
+        // non-modules left module mode/theme unpopulated.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
+        }
+        setGlobalSettings(global_settings);
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(
@@ -598,6 +646,10 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        // This instance was torn down (e.g. its Module got unmounted by a rapid page
+        // switch) before its own load finished — skip opening a batch nobody will flush.
+        if (isCancelled) return;
+
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
@@ -612,6 +664,10 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
@@ -664,10 +720,10 @@ const useAppData = (
           // Apps that need data refresh on navigation should trigger queries from the
           // onPageLoad event instead of relying on runOnPageLoad.
           isPageSwitchRef.current = false;
-          handleEvent('onPageLoad', currentPageEvents, {});
+          handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
         } else {
           runOnLoadQueries(moduleId).then(() => {
-            handleEvent('onPageLoad', currentPageEvents, {});
+            handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
           });
         }
       };
@@ -720,16 +776,28 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
+    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
-      setEditorLoading(true, moduleId);
+    if (isEnvChanged || isVersionChanged || isForceRefreshTriggered || isHotReload) {
+      if (isHotReload) {
+        setCanvasReloading(true, moduleId);
+        // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
+        // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
+        // true once the rebuilt canvas settles — that transition is what re-runs the on-load
+        // queries, onPageLoad events and JS libraries.
+        setIsComponentLayoutReady(false, moduleId);
+      } else {
+        setEditorLoading(true, moduleId);
+      }
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -750,8 +818,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -773,7 +841,19 @@ const useAppData = (
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
-        setCurrentPageId(startingPage.id, moduleId);
+        // A hot reload keeps the user where they are; everything else lands on the home page
+        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
+        setCurrentPageId(pageToLoad.id, moduleId);
+        if (isHotReload) {
+          // We're staying on the same page, and the refresh may have renamed it — so refresh the
+          // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
+          // hot reload to leave the version/env/history flows behaving exactly as before.
+          setCurrentPageHandle(pageToLoad?.handle, moduleId);
+          setResolvedPageConstants(
+            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
+            moduleId
+          );
+        }
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
@@ -846,10 +926,20 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
+        if (isHotReload) {
+          // The canvas stayed mounted, so pair the batch the same way initial load does: open it
+          // before the rebuilt canvas settles and let the layout-ready effect flush it.
+          startExposedValueBatch();
+          // Datasources/modules may be new in this definition (the env branch above only covers
+          // datasources, and only when the environment changed).
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+          if (appData.modules) setModuleDefinition(appData.modules);
+        }
+        setCanvasReloading(false, moduleId);
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

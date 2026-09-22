@@ -6,7 +6,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -67,7 +67,10 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Cascader',
   'ModalV2',
   'Container',
+  'Timeline',
 ];
+
+const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
 
 const RenderWidget = ({
   id,
@@ -257,14 +260,21 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, moduleId, customResolvables?.[effectiveSubContainerIndex] ?? {}, options);
+      fireEvent(
+        eventName,
+        id,
+        moduleId,
+        customResolvables?.[effectiveSubContainerIndex] ?? {},
+        options,
+        resolveIndex ?? null
+      );
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
-  setDefaultExposedValues(id, parentId, componentType);
+  setDefaultExposedValues(id, parentId, componentType, moduleId);
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
@@ -297,7 +307,8 @@ const RenderWidget = ({
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
-  const hasUserTooltip = !!userTooltipContent?.toString().trim();
+  const hasUserTooltip = !!String(userTooltipContent ?? '').trim();
+  const selfScopesTooltip = WIDGETS_WITH_PORTALED_CONTENT.includes(component?.component);
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
@@ -343,6 +354,9 @@ const RenderWidget = ({
           currentMode={currentMode}
           subContainerIndex={subContainerIndex}
           componentType={componentType}
+          {...(selfScopesTooltip && {
+            tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
+          })}
         />
       </TrackedSuspense>
     </div>
@@ -353,21 +367,43 @@ const RenderWidget = ({
   // tooltip surfaces the widget's *description*, not user-authored content.
   if (inCanvas) {
     return (
-      <ErrorBoundary>
-        <WidgetTooltip
-          content={userTooltipContent}
-          format={userTooltipFormat}
-          show={hasUserTooltip}
-          darkMode={darkMode}
-        >
-          {innerWidget}
-        </WidgetTooltip>
-      </ErrorBoundary>
+      <FallbackBoundary
+        variant="inline"
+        label={componentName}
+        location={`Component ${componentName}`}
+        canRetry
+        canReport={currentMode === 'edit'}
+        darkMode={darkMode}
+        resetKeys={[id]}
+        widgetType={componentType}
+      >
+        {selfScopesTooltip ? (
+          innerWidget
+        ) : (
+          <WidgetTooltip
+            content={userTooltipContent}
+            format={userTooltipFormat}
+            show={hasUserTooltip}
+            darkMode={darkMode}
+          >
+            {innerWidget}
+          </WidgetTooltip>
+        )}
+      </FallbackBoundary>
     );
   }
 
   return (
-    <ErrorBoundary>
+    <FallbackBoundary
+      variant="inline"
+      label={componentName}
+      location={`Component ${componentName}`}
+      canRetry
+      canReport={currentMode === 'edit'}
+      darkMode={darkMode}
+      resetKeys={[id]}
+      widgetType={componentType}
+    >
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}
@@ -380,7 +416,7 @@ const RenderWidget = ({
       >
         {innerWidget}
       </OverlayTrigger>
-    </ErrorBoundary>
+    </FallbackBoundary>
   );
 };
 

@@ -1,3 +1,13 @@
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+FROM node:22.15.1 AS mcp-builder
+WORKDIR /mcp
+ARG CUSTOM_GITHUB_TOKEN
+ARG TOOLJET_MCP_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN npm ci && npm run build:plugin
+
+
 FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -86,7 +96,6 @@ RUN apt-get update && \
         xz-utils \
         tar \
         postgresql-client \
-        redis \
         libaio1 \
         libxml2 \
         git \
@@ -95,6 +104,11 @@ RUN apt-get update && \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
 
 
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
@@ -156,6 +170,12 @@ COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/pre-release/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+
+# tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
 
 
 # Create directory /home/appuser and set ownership to appuser

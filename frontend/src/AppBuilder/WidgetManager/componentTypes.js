@@ -15,6 +15,7 @@ const universalProps = {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
   },
   definition: {
+    properties: {},
     others: {},
     events: [],
     styles: {

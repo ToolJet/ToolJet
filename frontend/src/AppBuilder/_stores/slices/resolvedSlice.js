@@ -59,28 +59,43 @@ const buildExposedValueMutation = (componentId, property, value, moduleId) => (s
 };
 
 export const createResolvedSlice = (set, get) => {
+  // Explicit bracket only — ListView/Form row-mount coalescing, page-switch. Untouched by the
+  // implicit mechanism below; nothing here changes what this instance has always done.
   const _exposedValueBatch = createBatchManager(set, get);
 
-  // Implicit microtask batch: coalesces dep cascades from setVariable / setExposedValue
-  // calls that happen outside an explicit batch window (ListView/Form bracket).
-  // Store writes are synchronous (reads work immediately in the same runJS context);
-  // only the dep resolution is deferred.
-  let _implicitBatchScheduled = false;
+  // Implicit microtask batch: coalesces dep-cascade recomputes from setVariable / setExposedValue
+  // calls that happen outside an explicit batch window (ListView/Form/page-switch bracket).
+  // Tracked entirely independently of _exposedValueBatch — writes are always synchronous here
+  // (reads work immediately in the same runJS context); only the dep resolution is deferred, and
+  // resolving it early can never affect an explicit bracket's own pending state.
+  let _implicitDepPaths = [];
+  let _implicitScheduled = false;
+
+  const flushImplicit = () => {
+    if (_implicitDepPaths.length === 0) return;
+    _implicitScheduled = false;
+    const depPaths = _implicitDepPaths;
+    _implicitDepPaths = [];
+    const seen = new Set();
+    depPaths.forEach(({ path, moduleId }) => {
+      const key = `${path}|${moduleId}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      get().updateDependencyValues(path, moduleId);
+    });
+  };
+
   const scheduleDependencyUpdate = (depPath, moduleId) => {
     if (_exposedValueBatch.isBatching()) {
       // Explicit batch already open — add the dep path to it
       _exposedValueBatch.bufferDepPath(depPath, moduleId);
       return;
     }
-    if (!_implicitBatchScheduled) {
-      _implicitBatchScheduled = true;
-      _exposedValueBatch.startBatch();
-      queueMicrotask(() => {
-        _implicitBatchScheduled = false;
-        _exposedValueBatch.flush('implicitMicrotaskBatch');
-      });
+    if (!_implicitScheduled) {
+      _implicitScheduled = true;
+      queueMicrotask(() => flushImplicit('implicitMicrotaskBatch'));
     }
-    _exposedValueBatch.bufferDepPath(depPath, moduleId);
+    _implicitDepPaths.push({ path: depPath, moduleId });
   };
 
   return {
@@ -105,14 +120,27 @@ export const createResolvedSlice = (set, get) => {
       _exposedValueBatch.flush('flushExposedValueBatch');
     },
 
-    isExposedValueBatching: () => _exposedValueBatch.isBatching(),
-
-    bufferExposedValueMutation: (mutation, depPaths) => {
-      _exposedValueBatch.bufferMutation(mutation, depPaths);
+    // Discards only moduleId's own buffered entries instead of applying everything —
+    // see cancelBatch() in batchManager.ts.
+    cancelExposedValueBatch: (moduleId = 'canvas') => {
+      _exposedValueBatch.cancelBatch(moduleId);
     },
 
-    bufferExposedValuePostFlush: (cb, dedupeKey) => {
-      _exposedValueBatch.bufferPostFlushCallback(cb, dedupeKey);
+    // Resolves every pending implicit dep-path recompute early — any component, any path. Never
+    // touches _exposedValueBatch (the explicit bracket), so it can't affect an open ListView/Form/
+    // page-switch coalescing window. Safe to call unconditionally; no-ops if nothing is pending.
+    flushImplicitBatchEntries: () => {
+      flushImplicit('flushImplicitBatchEntries');
+    },
+
+    isExposedValueBatching: () => _exposedValueBatch.isBatching(),
+
+    bufferExposedValueMutation: (mutation, moduleId, depPaths) => {
+      _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
+    },
+
+    bufferExposedValuePostFlush: (cb, moduleId, dedupeKey) => {
+      _exposedValueBatch.bufferPostFlushCallback(cb, moduleId, dedupeKey);
     },
 
     setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
@@ -467,12 +495,14 @@ export const createResolvedSlice = (set, get) => {
       const depPaths = typeof value !== 'function' ? [{ path: `components.${componentId}.${property}`, moduleId }] : [];
 
       if (_exposedValueBatch.isBatching()) {
-        _exposedValueBatch.bufferMutation(mutation, depPaths);
+        _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
+        get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
         return;
       }
 
       set(mutation, false, { type: 'setExposedValue', payload: { componentId, property, value, moduleId } });
       depPaths.forEach(({ path }) => scheduleDependencyUpdate(path, moduleId));
+      get().refreshComponentHintsIfShapeChanged(componentId, moduleId);
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
@@ -483,13 +513,18 @@ export const createResolvedSlice = (set, get) => {
             depPaths.push({ path: `components.${id}.${key}`, moduleId });
           }
         });
-        _exposedValueBatch.bufferMutation((state) => {
-          Object.entries(values).forEach(([key, value]) => {
-            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
-              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
-            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
-          });
-        }, depPaths);
+        _exposedValueBatch.bufferMutation(
+          (state) => {
+            Object.entries(values).forEach(([key, value]) => {
+              if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+                state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+              else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+            });
+          },
+          moduleId,
+          depPaths
+        );
+        if (type === 'components') get().refreshComponentHintsIfShapeChanged(id, moduleId);
         return;
       }
 
@@ -526,6 +561,9 @@ export const createResolvedSlice = (set, get) => {
         if (typeof value !== 'function' && !skipKeys.has(key))
           scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
       });
+      // Nothing written when every value already matched, so hints cannot have gone stale.
+      if (type === 'components' && skipKeys.size !== Object.keys(values).length)
+        get().refreshComponentHintsIfShapeChanged(id, moduleId);
     },
 
     setDefaultExposedValues: (id, parentId, componentType, moduleId = 'canvas') => {
@@ -711,7 +749,7 @@ export const createResolvedSlice = (set, get) => {
       }
       return data;
     },
-    getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
+    getExposedValueOfComponent: (componentId, moduleId = 'canvas', subContainerIndex = null) => {
       try {
         const components = get().getCurrentPageComponents(moduleId);
         const {
@@ -726,7 +764,27 @@ export const createResolvedSlice = (set, get) => {
             );
           }
         }
-        return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+        const data = get().resolvedStore.modules[moduleId].exposedValues.components[componentId];
+        if (Array.isArray(data)) {
+          // Row-scoped component (e.g. inside a Table's expanded row / ListView) — its exposed
+          // values are stored per-row. Navigate to the row of the component that fired the event,
+          // the same way getResolvedComponent walks subContainerIndex above.
+          const indices =
+            subContainerIndex !== null
+              ? Array.isArray(subContainerIndex)
+                ? subContainerIndex
+                : [subContainerIndex]
+              : [0];
+          let current = data;
+          for (let i = 0; i < indices.length; i++) {
+            if (!Array.isArray(current)) break;
+            const value = current?.[indices[i]];
+            current = value !== undefined ? value : current?.[0];
+            if (current === undefined) break;
+          }
+          return current || {};
+        }
+        return data || {};
       } catch (error) {
         return {};
       }
