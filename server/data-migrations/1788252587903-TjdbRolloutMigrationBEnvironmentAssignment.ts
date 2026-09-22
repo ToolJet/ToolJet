@@ -2,9 +2,10 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
-import { getImportPath } from '@modules/app/constants';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { LicenseTermsService, LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 import { MigrationProgress } from '@helpers/migration.helper';
 import { findTenantSchema } from '@helpers/tooljet_db.helper';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -12,8 +13,14 @@ import { InternalTableRelation } from '@entities/internal_table_relation.entity'
 // edition-specific DI token (mirrors SeedPushModulesBranch1776600000000).
 import type { TooljetDbEnvironmentAssignmentService } from '@modules/tooljet-db/services/tooljet-db-environment-assignment.service';
 import type { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import type LicenseBase from '@modules/licensing/configs/LicenseBase';
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1788252587903';
+
+// ponytail: wall-clock bound, not a real cancellation - see the boot-time deadlock note in the
+// class docblock. A real hang here can't be un-stuck from outside (no handle on the blocked
+// query), so this only converts "hangs the deploy forever" into "fails fast with a clear cause".
+const NEST_BOOT_TIMEOUT_MS = 120_000;
 
 /**
  * "Migration B": corrects migration A's unconditional development placement for licensed
@@ -34,14 +41,49 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1788252587903'
  * B is a data migration under `migrationsTransactionMode: 'all'` - it shares migration A's single
  * uncommitted transaction on `queryRunner`. All `internal_table*` work therefore goes through
  * `queryRunner.manager`, exactly as migration A does, with a `SAVEPOINT` per table for row
- * isolation. The Nest context is booted only to resolve the edition-correct service classes and to
- * read the per-workspace licence (`licenseInitService.init()` reads `instance_settings` / the
- * `TJ_LICENSE` env var and an in-memory `License.Instance()` - it never touches `internal_table*`
- * and never lock-waits).
+ * isolation.
+ *
+ * Boot-time deadlock risk: `NestFactory.createApplicationContext()` eagerly instantiates every
+ * provider AND runs every `OnModuleInit`/`OnApplicationBootstrap` across the whole bootstrapped
+ * `AppModule` graph before it returns (`instanceLoader.createInstancesOfDependencies()` +
+ * `context.init()` in `@nestjs/core`'s `nest-factory.js`/`nest-application-context.js`) - this is
+ * unconditional, before any `nestApp.get(...)` call below, so it is not narrowed to just the two
+ * service classes' own dependency trees. Migration A (immediately before this one, same
+ * transaction) holds `ACCESS EXCLUSIVE` on `internal_tables` until the *entire run* commits. If
+ * anything on that boot path ever reads `internal_table*` on its own connection, this call
+ * deadlocks forever: the lock can't release until this migration finishes, and this migration
+ * can't finish until the boot does. Audited every `OnModuleInit`/`OnApplicationBootstrap`
+ * reachable from `AppModule.register({ IS_GET_CONTEXT: true })` - none read `internal_table*`
+ * today - but that's incidental, not structural, and won't survive the next module someone adds
+ * to that graph.
+ *
+ * Hand-constructing `EnvironmentAssignmentClass`/`TableOperationsClass` to skip DI entirely was
+ * considered and rejected: each drags 6+ further injectables (repositories, other services,
+ * `EntityManager`s) transitively wired to `DataSource`s/config/event emitters - a hand-maintained
+ * shadow DI graph that silently rots the first time any of those constructors change. So the boot
+ * itself can't be avoided; instead it's wrapped in a bounded timeout below: a future regression
+ * fails fast with a clear error naming the risk, instead of hanging the deploy indefinitely on a
+ * lock wait with no indication why.
+ *
+ * Separately (not a fix for the above - the licence check never touched `internal_table*`): the
+ * self-hosted licence check reads via `LicenseInitService.initForMigration(queryRunner.manager)`
+ * rather than resolving `LicenseTermsService` and calling its runtime `getLicenseTerms()`, whose
+ * `init()` path opens its own connection through `LicenseRepository`'s own transaction wrap -
+ * a second connection competing for the same pool while this migration is holding one open for the
+ * whole run. Cloud still goes through `LicenseTermsService.getLicenseTerms()` (its licence lives in
+ * `organization_license`, fetched over HTTP, not `instance_settings`, and `initForMigration`
+ * explicitly doesn't support Cloud).
  */
 export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const nestApp = await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.withTimeout(
+      NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true })),
+      NEST_BOOT_TIMEOUT_MS,
+      `${MIGRATION_NAME}: Nest boot exceeded ${NEST_BOOT_TIMEOUT_MS}ms. This almost always means an ` +
+        `OnModuleInit/OnApplicationBootstrap somewhere in the AppModule graph is blocked waiting on a ` +
+        `lock held by migration A's ACCESS EXCLUSIVE on internal_tables (see class docblock) - check ` +
+        `for a provider newly reading internal_table* on boot.`
+    );
     const tjdbConnection = new DataSource({ ...tooljetDbOrmconfig, name: `${MIGRATION_NAME}Tjdb` } as any);
     await tjdbConnection.initialize();
     const tjdbQueryRunner = tjdbConnection.createQueryRunner();
@@ -55,9 +97,12 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       const { TooljetDbTableOperationsService: TableOperationsClass } = await import(
         `${importPath}/tooljet-db/services/tooljet-db-table-operations.service`
       );
+      const { default: License } = await import(`${importPath}/licensing/configs/License`);
 
       await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
         licenseTermsService: nestApp.get(LicenseTermsService, { strict: false }),
+        licenseInitService: nestApp.get(LicenseInitService, { strict: false }),
+        License,
         environmentAssignmentService: nestApp.get(EnvironmentAssignmentClass, { strict: false }),
         tableOperationsService: nestApp.get(TableOperationsClass, { strict: false }),
         appManager: queryRunner.manager,
@@ -129,6 +174,53 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
   }
 
   /**
+   * Races `promise` against `ms` and rejects with `message` on timeout, so a real hang surfaces as
+   * a fast, actionable error instead of hanging the migration run forever - see the boot-time
+   * deadlock note above. A static method, not a standalone top-level export, for the same reason
+   * as `runMigrationB` below: TypeORM's migration loader treats every top-level function export in
+   * this directory as a migration class to instantiate, so a bare `export function` here blows up
+   * `migration:run` with "TypeError: ... is not a constructor".
+   */
+  public static withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(message)), ms);
+      promise.then(
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(timer);
+          reject(error);
+        }
+      );
+    });
+  }
+
+  /**
+   * Self-hosted (CE/EE): reads the instance licence through `queryRunner.manager` via
+   * `initForMigration` - no DI, no separate connection competing with this migration's own
+   * transaction for the pool. `initForMigration` checks `TJ_LICENSE` itself (decrypts it inline)
+   * before falling back to the DB-stored `instance_settings.LICENSE_KEY` row, so this is correct
+   * for both env- and DB-licensed self-hosted instances without depending on `onModuleInit` having
+   * run first - see `LicenseInitService.initForMigration`'s own comment. Cloud licences live in
+   * `organization_license`/HTTP, not `instance_settings`, and `initForMigration` explicitly doesn't
+   * support Cloud, so Cloud keeps going through `LicenseTermsService.getLicenseTerms()` (its
+   * existing, unrelated cost - see class docblock).
+   */
+  private static async isMultiEnvironmentLicensed(
+    organizationId: string,
+    deps: Pick<MigrationBDeps, 'licenseTermsService' | 'licenseInitService' | 'License' | 'appManager'>
+  ): Promise<boolean> {
+    const { licenseTermsService, licenseInitService, License, appManager } = deps;
+    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+      return licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+    }
+    await licenseInitService.initForMigration(appManager);
+    return licenseInitService.getLicenseFieldValue(LICENSE_FIELD.MULTI_ENVIRONMENT, License.Instance());
+  }
+
+  /**
    * The workspace loop. A static method (not a standalone top-level export) so the e2e suite can
    * drive it with a real (non-proxied) QueryRunner's manager instead of booting a second Nest
    * context inside Jest - TypeORM's migration loader treats every top-level function export in
@@ -136,8 +228,15 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
    * blows up `migration:run` with "TypeError: ... is not a constructor".
    */
   public static async runMigrationB(deps: MigrationBDeps): Promise<void> {
-    const { licenseTermsService, environmentAssignmentService, tableOperationsService, appManager, tjdbQueryRunner } =
-      deps;
+    const {
+      licenseTermsService,
+      licenseInitService,
+      License,
+      environmentAssignmentService,
+      tableOperationsService,
+      appManager,
+      tjdbQueryRunner,
+    } = deps;
 
     const organizations: Array<{ id: string }> = await appManager.query(`SELECT id FROM organizations`);
     console.log(
@@ -147,7 +246,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
 
     for (const { id: organizationId } of organizations) {
       try {
-        const licensed = await licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+        const licensed = await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.isMultiEnvironmentLicensed(
+          organizationId,
+          { licenseTermsService, licenseInitService, License, appManager }
+        );
         if (!licensed) continue;
 
         const tables: Array<{ id: string }> = await appManager.query(
@@ -212,6 +314,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
 
 interface MigrationBDeps {
   licenseTermsService: LicenseTermsService;
+  licenseInitService: LicenseInitService;
+  // Edition-resolved License config class (dynamically imported, same as EnvironmentAssignmentClass
+  // below) - only its static Instance() accessor is used, so the generic LicenseBase shape suffices.
+  License: { Instance(): LicenseBase };
   environmentAssignmentService: TooljetDbEnvironmentAssignmentService;
   tableOperationsService: TooljetDbTableOperationsService;
   appManager: EntityManager;

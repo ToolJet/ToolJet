@@ -19,12 +19,12 @@ import {
   withRealTransactions,
 } from 'test-helper';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LicenseTermsService, LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthesis';
 // EE tokens: getProviders() registers the edition-resolved class as the DI token.
 import { TooljetDbEnvironmentAssignmentService } from '@ee/tooljet-db/services/tooljet-db-environment-assignment.service';
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
+import License from '@ee/licensing/configs/License';
 import { TjdbRolloutMigrationBEnvironmentAssignment1788252587903 } from '../../../../data-migrations/1788252587903-TjdbRolloutMigrationBEnvironmentAssignment';
 
 describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
@@ -34,6 +34,7 @@ describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
     let service: TooljetDbEnvironmentAssignmentService;
     let tableOperationsService: TooljetDbTableOperationsService;
     let licenseTermsService: LicenseTermsService;
+    let licenseInitService: LicenseInitService;
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
@@ -41,6 +42,7 @@ describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
       service = app.get(TooljetDbEnvironmentAssignmentService);
       tableOperationsService = app.get(TooljetDbTableOperationsService);
       licenseTermsService = app.get(LicenseTermsService);
+      licenseInitService = app.get(LicenseInitService);
     });
 
     afterEach(() => {
@@ -361,19 +363,20 @@ describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
       const licensed = await seedMigrationATable(licensedOrgId, 'gate_licensed');
       const unlicensed = await seedMigrationATable(unlicensedOrgId, 'gate_unlicensed');
 
-      const original = licenseTermsService.getLicenseTerms.bind(licenseTermsService);
+      // Self-hosted licensing is instance-wide (see runMigrationB's isMultiEnvironmentLicensed),
+      // so a real per-org difference can't exist within one EE instance - mock the gate decision
+      // itself to exercise "licensed org processed, unlicensed org skipped" in one run.
       jest
-        .spyOn(licenseTermsService, 'getLicenseTerms')
-        .mockImplementation(async (field: any, organizationId?: any) => {
-          if (field === LICENSE_FIELD.MULTI_ENVIRONMENT) return organizationId === licensedOrgId;
-          return original(field, organizationId);
-        });
+        .spyOn(TjdbRolloutMigrationBEnvironmentAssignment1788252587903 as any, 'isMultiEnvironmentLicensed')
+        .mockImplementation(async (organizationId: any) => organizationId === licensedOrgId);
 
       const tjdbQueryRunner = getTooljetDbDataSource().createQueryRunner();
       await tjdbQueryRunner.connect();
       try {
         await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
           licenseTermsService,
+          licenseInitService,
+          License,
           environmentAssignmentService: service,
           tableOperationsService,
           appManager: appManager(),
@@ -414,6 +417,8 @@ describe('TjdbRolloutMigrationBEnvironmentAssignment1788252587903', () => {
         try {
           await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
             licenseTermsService,
+            licenseInitService,
+            License,
             environmentAssignmentService: service,
             tableOperationsService,
             appManager: appManager(),
