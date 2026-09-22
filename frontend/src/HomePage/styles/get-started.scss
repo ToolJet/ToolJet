@@ -102,32 +102,6 @@
   }
 }
 
-div[role="listbox"].example-prompts-dropdown__content {
-  width: 220px !important;
-  padding: 8px !important;
-  gap: 4px !important;
-
-  div[role="option"] {
-    padding: 8px 6px !important;
-    font-size: var(--font-size-large) !important;
-    height: 30px !important;
-    cursor: pointer;
-
-    &:hover {
-      outline: 0px !important;
-      border: 0px !important;
-      box-shadow: none !important;
-    }
-
-    > span {
-      width: 100% !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-    }
-  }
-}
-
 .slot-placeholder {
   &-outer {
     position: absolute;
@@ -147,6 +121,8 @@ div[role="listbox"].example-prompts-dropdown__content {
   }
 
   &-line {
+    // Anchors the caret below, which must not take part in the flex layout.
+    position: relative;
     display: flex;
     align-items: center;
     opacity: 0.3;
@@ -160,10 +136,15 @@ div[role="listbox"].example-prompts-dropdown__content {
   }
 
   &-caret {
-    display: inline-block;
+    // Out of flow: as an inline box it pushed the placeholder text 3px right on focus, so the line
+    // jumped every time the composer gained or lost focus. Sits where CodeMirror draws its own
+    // caret, at the content's left edge.
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
     width: 1px;
     height: 1em;
-    margin-right: 2px;
     background-color: var(--text-default);
     animation: slot-placeholder-caret-blink 1s step-end infinite;
   }
