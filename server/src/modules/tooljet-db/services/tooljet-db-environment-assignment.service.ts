@@ -54,22 +54,6 @@ export type TableMigrationsResult = {
   environments: EnvironmentMigrationState[];
 };
 
-/**
- * Rollout migration B's per-table routine, factored out so migration B can loop it and task 7 can
- * call it for a single repaired table. See ~/Documents/Obsidian/.mind/feature/tjdb-environments-architecture.md.
- *
- * Connection model: every `internal_table*` app-DB statement runs on the `appManager` the caller
- * passes - the migration passes `queryRunner.manager` (its own transaction), task 7's live caller
- * passes its injected manager. There is NO `this.manager` in the write path and NO local
- * transaction: migration B and migration A are both data migrations under
- * `migrationsTransactionMode: 'all'`, so B's writes share A's single uncommitted transaction; a
- * second pool cannot see A's rows and would deadlock on the `internal_tables` lock A holds for its
- * `DROP COLUMN`. Row isolation is the caller's `SAVEPOINT` per table, mirroring migration A.
- *
- * The tenant-schema DDL (`CREATE TABLE ... LIKE`, serial rewrite) runs on `tjdbQueryRunner`, a
- * separate physical database - same non-transactional tradeoff migration A accepts, mitigated by
- * `IF NOT EXISTS` guards so a re-run after a crash is a clean no-op.
- */
 @Injectable()
 export class TooljetDbEnvironmentAssignmentService {
   constructor(
@@ -350,6 +334,16 @@ export class TooljetDbEnvironmentAssignmentService {
    *
    * Returns `null` only when there is nothing to do: no migration-A relation for this table, or the
    * workspace is not multi-environment.
+   *
+   * Runs entirely on the caller's `appManager` - no `this.manager`, no local transaction: this and
+   * migration A are both data migrations under `migrationsTransactionMode: 'all'`, sharing A's
+   * single uncommitted transaction. A second pool can't see A's rows and would deadlock on the
+   * `internal_tables` lock A holds for its `DROP COLUMN`. Row isolation is the caller's `SAVEPOINT`
+   * per table, mirroring migration A.
+   *
+   * The tenant-schema DDL (`CREATE TABLE ... LIKE`, serial rewrite) runs on `tjdbQueryRunner`, a
+   * separate physical database - same non-transactional tradeoff, mitigated by `IF NOT EXISTS`
+   * guards so a re-run after a crash is a clean no-op.
    */
   async assignExistingTableToEnvironments(
     internalTableId: string,
@@ -392,7 +386,7 @@ export class TooljetDbEnvironmentAssignmentService {
 
     // 4. Insert the empty development twin. Configurations + baseline_error copied verbatim - the
     // twin carries the same column identity, and a baseline_error table still gets a twin (it just
-    // cannot be promoted until task 7 repairs it).
+    // cannot be promoted until repairBaseline repairs it).
     await appManager.query(
       `INSERT INTO internal_table_relations
          (id, internal_table_id, environment_id, branch_id, configurations, baseline_error, created_at)

@@ -17,9 +17,9 @@ import type LicenseBase from '@modules/licensing/configs/LicenseBase';
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1788252587903';
 
-// ponytail: wall-clock bound, not a real cancellation - see the boot-time deadlock note in the
-// class docblock. A real hang here can't be un-stuck from outside (no handle on the blocked
-// query), so this only converts "hangs the deploy forever" into "fails fast with a clear cause".
+// Wall-clock bound, not a real cancellation - see the boot-time deadlock note in the class
+// docblock. A real hang here can't be un-stuck from outside (no handle on the blocked query), so
+// this only converts "hangs the deploy forever" into "fails fast with a clear cause".
 const NEST_BOOT_TIMEOUT_MS = 120_000;
 
 /**
