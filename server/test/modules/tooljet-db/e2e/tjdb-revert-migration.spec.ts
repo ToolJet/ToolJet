@@ -333,6 +333,11 @@ describe('TooljetDb revert migration', () => {
             sql: 'SELECT 1',
           });
           expect([200, 201]).toContain(res.statusCode);
+          expect(res.body).toMatchObject({
+            result: { id: expect.any(String), kind: 'raw_sql', sequence: expect.any(String) },
+          });
+          expect(res.body.result.branch_id).toBeUndefined();
+          expect(res.body.result.resulting_schema).toBeUndefined();
         });
       } finally {
         if (organizationId) await cleanupTjdbWorkspace(app, organizationId);
