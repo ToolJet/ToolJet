@@ -34,6 +34,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
     handleAddItemToGroup,
     handleReorder,
     getResolvedValue,
+    validateItemId,
   } = useMenuItemsManager(component, paramUpdated);
 
   // Property organization
@@ -60,6 +61,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
         onMouseLeave={() => setHoveredItemIndex(null)}
         onDeleteItem={handleDeleteItem}
         onItemChange={handleItemChange}
+        validateItemId={validateItemId}
         onAddItem={handleAddItem}
         onAddGroup={handleAddGroup}
         onAddItemToGroup={handleAddItemToGroup}

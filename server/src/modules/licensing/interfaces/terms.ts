@@ -70,6 +70,7 @@ export interface Terms {
       history: boolean;
       jsLibraries: boolean;
       publicApp: boolean;
+      customComponentLibraries?: boolean;
     };
   };
   modules?: {

@@ -10,7 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../../../ormconfig';
 import { RequestContextModule } from '@modules/request-context/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { join, sep } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
@@ -153,6 +153,15 @@ export class AppModuleLoader {
           // Have to remove trailing slash of SUB_PATH.
           serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
           rootPath: join(__dirname, '../../../../../', 'frontend/build'),
+          serveStaticOptions: {
+            setHeaders: (res, filePath) => {
+              // Sandboxed shell iframe sends `Origin: null` — see
+              // ee/custom-component-libraries/controller.ts's allowSandboxedIframeOrigin.
+              if (filePath.includes(`${sep}custom-components${sep}`)) {
+                res.setHeader('Access-Control-Allow-Origin', 'null');
+              }
+            },
+          },
         })
       );
     }
