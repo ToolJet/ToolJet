@@ -1,3 +1,5 @@
+@import "../../../../_styles/mixins.scss";
+
 .PopoverContent {
     &.page {
         min-height: unset !important;
@@ -455,6 +457,7 @@
         .page-events-list {
             max-height: 220px;
             overflow-y: auto;
+            @include hover-reveal-scrollbar;
         }
     }
 }

@@ -1,6 +1,8 @@
 // Navigation Inspector Styles - Matching Figma Design
 // Using design tokens for colors
 
+@import "../../../../../_styles/mixins.scss";
+
 // ==========================================
 // Nav Tree Item Wrapper (matches TreeItem.module.css .Wrapper)
 // ==========================================
@@ -542,6 +544,7 @@
     .nav-item-popover-events-section {
       max-height: 220px;
       overflow-y: auto;
+      @include hover-reveal-scrollbar;
     }
   }
   
