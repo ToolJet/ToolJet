@@ -142,9 +142,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     fetchDataSources(resetSelection, dataSource);
   };
 
-  const handleSearch = (e) => {
-    const searchQuery = e.target.value;
-    setQueryString(searchQuery);
+  const handleSearch = (e) => setQueryString(e.target.value);
+
+  const filterDataSources = (searchQuery) => {
 
     let arr = [];
 
@@ -172,19 +172,18 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     setFilteredDataSources([...filtered]);
   };
 
-  // `?search=Google Sheets` lands the page on one connector instead of the whole catalogue, so a
-  // link can say which source to add — the AI builder sends people here when the source a build
-  // needs is not connected, and the query panel's "add" button could too. Deliberately only seeds
-  // the search box: adding a source writes a record, and a URL must not do that on its own.
+  // Reapply URL searches on navigation, and refresh results as installed plugins arrive.
   const [searchParams] = useSearchParams();
-  const seededSearch = useRef(false);
+  const urlSearch = searchParams.get('search') ?? '';
   useEffect(() => {
-    const term = searchParams.get('search');
-    if (!term || seededSearch.current) return;
-    seededSearch.current = true;
-    handleSearch({ target: { value: term } });
+    setQueryString(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    filterDataSources(queryString);
+    // Filtering depends on the catalogue as well as the user's current search.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [queryString, plugins, isCloudEdition]);
 
   const createDataSource = (dataSource) => {
     const { id } = dataSource;

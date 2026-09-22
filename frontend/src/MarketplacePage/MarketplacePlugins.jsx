@@ -13,6 +13,8 @@ export const MarketplacePlugins = () => {
   // when a build needs a source whose plugin is not installed yet.
   const [searchParams] = useSearchParams();
   const [query, setQuery] = React.useState(searchParams.get('search') ?? '');
+  const urlSearch = searchParams.get('search') ?? '';
+  React.useEffect(() => setQuery(urlSearch), [urlSearch]);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const visiblePlugins = React.useMemo(() => {
