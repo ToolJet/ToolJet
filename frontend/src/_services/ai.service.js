@@ -3,6 +3,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
+  uploadAttachment,
+  downloadAttachment,
   sendMessage,
   voteMessage,
   getCopilotSuggestion,
@@ -23,6 +25,28 @@ export const aiService = {
   getOpenRouterModels,
   getProviderModels,
 };
+
+function uploadAttachment(file, signal) {
+  const body = new FormData();
+  body.append('file', file);
+  return fetch(`${config.apiUrl}/ai/attachments`, {
+    method: 'POST',
+    headers: authHeader(true),
+    credentials: 'include',
+    body,
+    signal,
+  }).then(handleAITextResponse);
+}
+
+async function downloadAttachment(id, signal) {
+  const response = await fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content`, {
+    headers: authHeader(true),
+    credentials: 'include',
+    signal,
+  });
+  if (!response.ok) throw new Error('Unable to load attachment');
+  return response.blob();
+}
 
 function handleAITextResponse(response) {
   return response.text().then((text) => {
@@ -117,7 +141,7 @@ async function sendMessage(body, onMessage, isDocs = false) {
       },
       onerror: (error) => {
         console.log(error);
-        throw new Error(error);
+        throw error instanceof Error ? error : new Error(error);
       },
       onclose: () => {
         console.log('Connection closed');
