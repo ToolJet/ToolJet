@@ -176,7 +176,8 @@
     },
     {
       "componentType": "Steps",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Steps/TESTING.md"
     },
     {
       "componentType": "Pagination",
@@ -185,7 +186,8 @@
     },
     {
       "componentType": "Icon",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Icon/TESTING.md"
     },
     {
       "componentType": "Image",
