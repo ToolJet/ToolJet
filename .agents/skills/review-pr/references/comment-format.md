@@ -43,10 +43,13 @@ Severity is the closed set from `references/lenses.md`.
 The author reads the comment once, between other work. Every sentence says what breaks for whom,
 in words the author would use on a call.
 
-- No review vocabulary: "discriminator", "ceiling", "exemption", "narrowing", "widening
-  invariant", "surface". Say the field, the limit, the branch, the rule.
-- The PR author's own jargon ("measured boot", "viewer surface") is not shared vocabulary.
-  Expand it once in the reader's terms or avoid it.
+- Simple words. Name the concrete thing: the field, the check, the branch, the route, the
+  table. Abstract nouns that describe the reviewer's model rather than the code are a sign the
+  finding is not yet understood in the author's terms.
+- Domain terms come from `UBIQUITOUS_LANGUAGE.md`: Workspace not Organization, Component not
+  Widget, End User not Viewer, Data Source never `ds`. A term the glossary does not have and the
+  code does not name is not shared vocabulary; say what it means in plain words the first time
+  or avoid it. That includes the PR author's own coinages from the description.
 - Paragraphs of one or two sentences, separated by a blank line. Bullets only for a list the
   reader scans rather than reads: routes, files, parallel cases. A causal chain stays prose so
   every "because" survives.

@@ -119,9 +119,9 @@ Standing tone rules, every finding, every tier:
 
 - Address the author, "we" voice, suggestion tone. `suggestion` blocks when the change sits on
   the anchored lines.
-- Plain English. Short paragraphs, no review vocabulary, the PR author's jargon expanded or
-  avoided. Bullets only for lists the reader scans. A diagram (mermaid or ascii) whenever the
-  point is a flow or two paths converging.
+- Plain English. Short paragraphs, simple words, domain terms from `UBIQUITOUS_LANGUAGE.md`,
+  anything else explained in plain words on first use. Bullets only for lists the reader scans.
+  A diagram (mermaid or ascii) whenever the point is a flow or two paths converging.
 - An `Impact.` paragraph, written as the scenario the user or operator hits, whenever the
   finding reaches past the codebase. Omitted otherwise.
 - No em dashes. No meta-commentary about how the review was done. No praise padding; a decision
