@@ -202,6 +202,72 @@ describe('WorkflowApprovalsService.resolve', () => {
     enqueueSpy.mockRestore();
   });
 
+  it('lets a workspace admin override-resolve a request they are not a listed approver for (tokenBypass false)', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const emitSpy = jest.spyOn(eventEmitter, 'emit');
+    // userId (mainUser) is the admin of the workflow's org but is NOT in the approver list.
+    const { req } = await seedPending({
+      approversSnapshot: { users: [approverUserId], groups: [], emails: [], tokenBypass: false },
+    });
+    const out = await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
+    expect(out).toMatchObject({ status: 'resolved' });
+    const updated = await findEntityOrFail(WorkflowApprovalRequest, { id: req.id });
+    expect(updated).toMatchObject({ status: 'resolved', resolvedByUserId: userId });
+    expect(emitSpy).toHaveBeenCalledWith(
+      'auditLogEntry',
+      expect.objectContaining({
+        actionType: 'WORKFLOW_APPROVAL_RESOLVED',
+        metadata: expect.objectContaining({ via: 'workspace-admin', adminOverride: true }),
+      })
+    );
+    emitSpy.mockRestore();
+    enqueueSpy.mockRestore();
+  });
+
+  it('lets an instance super admin override-resolve a request they are not a listed approver for', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const emitSpy = jest.spyOn(eventEmitter, 'emit');
+    const { req } = await seedPending({
+      approversSnapshot: { users: [], groups: [], emails: [], tokenBypass: false },
+    });
+    // approverUserId is a real user (FK-safe) but admin of a different org — authorized here
+    // only by userType 'instance' (super admin).
+    const out = await service.resolve(
+      req.token,
+      { outcome: 'approved', input: {} },
+      { id: approverUserId, userType: 'instance' }
+    );
+    expect(out).toMatchObject({ status: 'resolved' });
+    expect(emitSpy).toHaveBeenCalledWith(
+      'auditLogEntry',
+      expect.objectContaining({
+        actionType: 'WORKFLOW_APPROVAL_RESOLVED',
+        metadata: expect.objectContaining({ via: 'super-admin', adminOverride: true }),
+      })
+    );
+    emitSpy.mockRestore();
+    enqueueSpy.mockRestore();
+  });
+
+  it('credits an admin who is also a listed approver as a normal approver, not an override', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const emitSpy = jest.spyOn(eventEmitter, 'emit');
+    // userId is both the workspace admin AND explicitly listed — allowlist wins (checked first).
+    const { req } = await seedPending({
+      approversSnapshot: { users: [userId], groups: [], emails: [], tokenBypass: false },
+    });
+    await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
+    expect(emitSpy).toHaveBeenCalledWith(
+      'auditLogEntry',
+      expect.objectContaining({
+        actionType: 'WORKFLOW_APPROVAL_RESOLVED',
+        metadata: expect.objectContaining({ via: 'allowlist', adminOverride: false }),
+      })
+    );
+    emitSpy.mockRestore();
+    enqueueSpy.mockRestore();
+  });
+
   it('cancels the request and fails the execution when the workflow app is disabled while waiting (409)', async () => {
     const disabledApp = await createWorkflowForUser(app, mainUser, 'HITL disabled wf');
     await saveEntity(App, { id: disabledApp.id, isMaintenanceOn: false });
