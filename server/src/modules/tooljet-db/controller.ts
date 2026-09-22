@@ -24,6 +24,8 @@ import { OrganizationValidateGuard } from '@modules/app/guards/organization-vali
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
 import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
+import { plainToInstance, instanceToPlain } from 'class-transformer';
+import { TableMigrationsResponseDto } from './dto/table-migrations-response.dto';
 
 import {
   CreatePostgrestTableDto,
@@ -356,7 +358,10 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async tableMigrations(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.getTableMigrations(tableId, organizationId);
-    return decamelizeKeys({ result });
+    const whitelisted = instanceToPlain(
+      plainToInstance(TableMigrationsResponseDto, result, { excludeExtraneousValues: true })
+    );
+    return decamelizeKeys({ result: whitelisted });
   }
 
   // A floor, not a "will break" count - only finds query references, and only through the app's
