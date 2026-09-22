@@ -1,8 +1,9 @@
 import { expect } from 'chai';
+import FormData = require('form-data');
 import * as fs from 'fs';
-import * as http from 'http';
 import * as os from 'os';
 import * as path from 'path';
+import { Writable } from 'stream';
 
 import { buildUploadFormData } from '../../src/lib/library/upload-form';
 
@@ -13,37 +14,25 @@ function writeDist(distDir: string, opts: { css?: boolean } = {}): void {
   if (opts.css) fs.writeFileSync(path.join(distDir, 'index.css'), 'body{}');
 }
 
-// Submits the built FormData to a throwaway local HTTP server and inspects the
-// multipart fields it actually receives — form-data doesn't expose its field
-// list for direct inspection, so posting it is the most reliable way to assert
-// what's on the wire.
-function collectMultipartFieldNames(form: import('form-data')): Promise<string[]> {
+// form-data doesn't expose its field list, so drain the multipart stream in memory
+// (no HTTP server, so a stalled socket can't leave the test hanging until timeout).
+function collectMultipartFieldNames(form: FormData): Promise<string[]> {
   return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const busboyLike: string[] = [];
-      let body = Buffer.alloc(0);
-      req.on('data', (chunk) => (body = Buffer.concat([body, chunk])));
-      req.on('end', () => {
-        const boundaryMatch = /boundary=(.+)$/.exec(req.headers['content-type'] || '');
-        const boundary = boundaryMatch ? boundaryMatch[1] : '';
-        const parts = body.toString('latin1').split(`--${boundary}`);
-        for (const part of parts) {
-          const nameMatch = /name="([^"]+)"/.exec(part);
-          if (nameMatch) busboyLike.push(nameMatch[1]);
-        }
-        res.end('ok');
-        server.close();
-        resolve(busboyLike);
-      });
+    const chunks: Buffer[] = [];
+    const sink = new Writable({
+      write(chunk: Buffer, _encoding, callback) {
+        chunks.push(chunk);
+        callback();
+      },
     });
 
-    server.listen(0, () => {
-      const address = server.address();
-      const port = typeof address === 'object' && address ? address.port : 0;
-      form.submit(`http://127.0.0.1:${port}/`, (err) => {
-        if (err) reject(err);
-      });
+    sink.on('finish', () => {
+      const parts = Buffer.concat(chunks).toString('latin1').split(`--${form.getBoundary()}`);
+      const names = parts.map((part) => /name="([^"]+)"/.exec(part)?.[1]).filter((name): name is string => !!name);
+      resolve(names);
     });
+    form.on('error', reject);
+    form.pipe(sink);
   });
 }
 
