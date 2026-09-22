@@ -126,6 +126,7 @@ export const listViewComponentSlice = (set, get) => {
             }
             current[lastIdx][property] = value;
           },
+          moduleId,
           isUpdate ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
         );
         // _deriveListviewChain reads from the store — it must run after all buffered mutations
@@ -135,6 +136,7 @@ export const listViewComponentSlice = (set, get) => {
         if (nearestListviewId) {
           get().bufferExposedValuePostFlush(
             () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+            moduleId,
             `${nearestListviewId}|${indices.join(',')}|${moduleId}`
           );
         }
@@ -158,29 +160,34 @@ export const listViewComponentSlice = (set, get) => {
           : Object.keys(values)
               .filter((key) => typeof values[key] !== 'function')
               .map((key) => ({ path: `components.${componentId}.${key}`, moduleId }));
-        get().bufferExposedValueMutation((state) => {
-          const components = state.resolvedStore.modules[moduleId].exposedValues.components;
-          if (!Array.isArray(components[componentId])) components[componentId] = [];
-          let current = components[componentId];
-          for (let i = 0; i < indices.length - 1; i++) {
-            const idx = indices[i];
-            if (!current[idx]) current[idx] = [];
-            else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
-            current = current[idx];
-          }
-          const lastIdx = indices[indices.length - 1];
-          if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
-            current[lastIdx] = {};
-          }
-          Object.entries(values).forEach(([key, value]) => {
-            current[lastIdx][key] = value;
-          });
-        }, depPaths);
+        get().bufferExposedValueMutation(
+          (state) => {
+            const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+            if (!Array.isArray(components[componentId])) components[componentId] = [];
+            let current = components[componentId];
+            for (let i = 0; i < indices.length - 1; i++) {
+              const idx = indices[i];
+              if (!current[idx]) current[idx] = [];
+              else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
+              current = current[idx];
+            }
+            const lastIdx = indices[indices.length - 1];
+            if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
+              current[lastIdx] = {};
+            }
+            Object.entries(values).forEach(([key, value]) => {
+              current[lastIdx][key] = value;
+            });
+          },
+          moduleId,
+          depPaths
+        );
         const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
         const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
         if (nearestListviewId) {
           get().bufferExposedValuePostFlush(
             () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+            moduleId,
             `${nearestListviewId}|${indices.join(',')}|${moduleId}`
           );
         }

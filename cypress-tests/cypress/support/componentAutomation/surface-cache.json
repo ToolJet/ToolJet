@@ -5,43 +5,94 @@
       "var(--cc-primary-text)": "Text/Primary",
       "var(--cc-default-border)": "Border/Default",
       "var(--cc-primary-brand)": "Brand/Primary",
-      "var(--cc-surface1-surface)": "Surface/Surface1"
+      "var(--cc-surface1-surface)": "Surface/Surface1",
+      "var(--cc-surface3-surface)": "Surface/Surface3"
     },
     "cssPropertyMap": {
       "colorSwatches:textColor": {
         "cssProp": "color",
         "selector": ".form-check-label",
         "learnedFrom": "checkbox@aab3ba41",
-        "note": "SOURCE-DERIVED — inline style on OverflowTooltip div; Task 4 runtime must confirm computed value resolves the CSS var default"
+        "note": "SOURCE-DERIVED \u2014 inline style on OverflowTooltip div; Task 4 runtime must confirm computed value resolves the CSS var default"
       },
       "colorSwatches:borderColor": {
         "cssProp": "border-color",
         "selector": "div[style*='border']",
         "learnedFrom": "checkbox@aab3ba41",
-        "note": "SOURCE-DERIVED — inline borderColor on checkboxStyle div; default '#CCD1D5' is swapped to 'transparent'(checked) or 'var(--borders-default)'(unchecked) by a conditional; Task 4 must confirm actual computed value"
+        "note": "SOURCE-DERIVED \u2014 inline borderColor on checkboxStyle div; default '#CCD1D5' is swapped to 'transparent'(checked) or 'var(--borders-default)'(unchecked) by a conditional; Task 4 must confirm actual computed value"
       },
       "colorSwatches:checkboxColor": {
         "cssProp": "background-color",
         "selector": "div[style*='background-color']",
         "learnedFrom": "checkbox@aab3ba41",
-        "note": "SOURCE-DERIVED — inline backgroundColor on checkboxStyle div when checked===true; Task 4 runtime must confirm checked state selector"
+        "note": "SOURCE-DERIVED \u2014 inline backgroundColor on checkboxStyle div when checked===true; Task 4 runtime must confirm checked state selector"
       },
       "colorSwatches:uncheckedColor": {
         "cssProp": "background-color",
         "selector": "div[style*='background-color']",
         "learnedFrom": "checkbox@aab3ba41",
-        "note": "SOURCE-DERIVED — same element as checkboxColor but when checked===false; selector is the same div; Task 4 must confirm with unchecked state"
+        "note": "SOURCE-DERIVED \u2014 same element as checkboxColor but when checked===false; selector is the same div; Task 4 must confirm with unchecked state"
       },
       "colorSwatches:handleColor": {
         "cssProp": "stroke",
         "selector": "svg.icon-tabler-check",
         "learnedFrom": "checkbox@aab3ba41",
-        "note": "SOURCE-DERIVED — SVG stroke attribute (not CSS property) on the checkmark SVG; only visible when checked===true; Task 4 must confirm whether getComputedStyle or attr() is needed"
+        "note": "SOURCE-DERIVED \u2014 SVG stroke attribute (not CSS property) on the checkmark SVG; only visible when checked===true; Task 4 must confirm whether getComputedStyle or attr() is needed"
+      },
+      "toggleswitchv2:textColor": {
+        "cssProp": "color",
+        "selector": "[data-cy=<W>] div:has(> label)",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "inline on the OverflowTooltip-rendered div (ToggleV2.jsx:274)"
+      },
+      "toggleswitchv2:borderColor": {
+        "cssProp": "outline-color",
+        "selector": "[data-cy=<W>] > div > div.d-flex > span",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "written as the `outline` SHORTHAND (ToggleV2.jsx:48) \u2014 read the outline-color longhand, not border-color"
+      },
+      "toggleswitchv2:toggleSwitchColor": {
+        "cssProp": "background-color",
+        "selector": "[data-cy=<W>] > div > div.d-flex > span",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "slider background while on===true (ToggleV2.jsx:45); needs Default state On"
+      },
+      "toggleswitchv2:uncheckedColor": {
+        "cssProp": "background-color",
+        "selector": "[data-cy=<W>] > div > div.d-flex > span",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "same element as toggleSwitchColor but while on===false (the drop default)"
+      },
+      "toggleswitchv2:handleColor": {
+        "cssProp": "background-color",
+        "selector": "[data-cy=<W>] > div > div.d-flex > span > span",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "circleStyle knob (ToggleV2.jsx:58,91)"
+      },
+      "toggleswitchv2:boxShadow": {
+        "cssProp": "box-shadow",
+        "selector": "[data-cy=<W>]",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "inline on the inner flex wrapper (ToggleV2.jsx:256)"
+      },
+      "toggleswitchv2:padding": {
+        "cssProp": "padding-top",
+        "selector": "[data-cy=draggable-widget-<W>]",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "RenderWidget.jsx:320 \u2014 'none' -> 0px else BOX_PADDING 2px (appCanvasConstants.js:57)"
+      },
+      "toggleswitchv2:alignment": {
+        "cssProp": "class",
+        "selector": "[data-cy=<W>]",
+        "learnedFrom": "toggleswitchv2@2808f427",
+        "note": "flex-row-reverse ('right', default) vs flex-row ('left') \u2014 ToggleV2.jsx:253"
       }
     }
   },
   "components": {
-    "richTextarea": { "runtimeName": "richtexteditor1" },
+    "richTextarea": {
+      "runtimeName": "richtexteditor1"
+    },
     "checkbox": {
       "runtimeName": "checkbox1",
       "configHash": "aab3ba41",
@@ -53,7 +104,74 @@
           "note": "isValid is set via setExposedVariables(...) at mount (Checkbox.jsx:159) and again via setExposedVariable at runtime (lines 110, 186); exposed from first frame but is NOT listed in checkbox.js config exposedVariables (line 169-176); runtime-only"
         }
       ],
-      "fxFormatNote": "RUNTIME-CONFIRMED 2026-09-01: Boolean toggle fx defaults render WITH {{}} wrapper in .cm-line (e.g. '{{false}}' not 'false'). Use the config default verbatim in verifyAndModifyToggleFx — pass '{{false}}' or '{{true}}' per the source config, NOT the unwrapped raw value."
+      "fxFormatNote": "RUNTIME-CONFIRMED 2026-09-01: Boolean toggle fx defaults render WITH {{}} wrapper in .cm-line (e.g. '{{false}}' not 'false'). Use the config default verbatim in verifyAndModifyToggleFx \u2014 pass '{{false}}' or '{{true}}' per the source config, NOT the unwrapped raw value."
+    },
+    "toggleswitchv2": {
+      "configHash": "2808f427",
+      "runtimeName": "toggleswitch1",
+      "runtimeNameNote": "computeComponentName (appCanvasUtils.js:269-295) sanitizes the config `name` ('ToggleSwitch'), NOT the `component` key ('ToggleSwitchV2') and NOT the config filename. deriveCandidate() in runtimeName.js would wrongly yield 'toggleswitchv21'.",
+      "displayName": "Toggle Switch",
+      "facets": {
+        "basics": {
+          "status": "gates_pass"
+        },
+        "properties": {
+          "status": "gates_pass"
+        },
+        "propertiesFx": {
+          "status": "gates_pass"
+        },
+        "styles": {
+          "status": "gates_pass"
+        },
+        "stylesFx": {
+          "status": "gates_pass"
+        },
+        "events": {
+          "status": "gates_pass"
+        },
+        "csa": {
+          "status": "gates_pass"
+        },
+        "inspector": {
+          "status": "gates_pass"
+        },
+        "canvas": {
+          "status": "gates_pass"
+        },
+        "contexts": {
+          "status": "gates_pass"
+        },
+        "userflow": {
+          "status": "gates_pass"
+        },
+        "customerIssues": {
+          "status": "stub"
+        }
+      },
+      "runtimeGreen": {
+        "basics": true,
+        "inspector": "stale \u2014 was green, then gained the empty-defaults it-block; needs re-run",
+        "_other": "not executed \u2014 the Cypress runtime-green loop (skill Step 5.5) was stopped by the user after basics+inspector"
+      },
+      "exposedVarDrift": [
+        {
+          "key": "isValid",
+          "type": "Boolean",
+          "value": "true",
+          "note": "exposed at mount via setExposedVariables (ToggleV2.jsx:232) but absent from config exposedVariables (toggleswitchv2.js:169-176); runtime-only. RUNTIME-CONFIRMED via basics.cy.js."
+        }
+      ],
+      "helperOverrides": {
+        "labelWrapper": "`[data-cy=<W>] div:has(> label)` \u2014 NOT `.form-check-label`. OverflowTooltip passes className to the ToolTip wrapper and renders an unclassed div (OverflowTooltip.jsx:64,72-74). RUNTIME-CONFIRMED.",
+        "switchFx": "switch-type fields (defaultValue, alignment) expose an fx button but have no toggle/stylePicker row to hover; specs use a local openSwitchFx(). SELF-TUNE CANDIDATE \u2014 see Step 7."
+      },
+      "notAutomatable": [],
+      "inventory": {
+        "total": 55,
+        "covered": 55,
+        "note": "52 field/action/exposed/definition items + defaultSize + 2 code-field placeholders. The last 3 were found by a mechanical re-derive from the config AFTER the coverage gate passed at 52/52 \u2014 the gate audits against the supplied inventory, so a plan omission is invisible to it."
+      }
     }
   }
 }

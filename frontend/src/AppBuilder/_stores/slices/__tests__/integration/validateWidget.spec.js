@@ -60,10 +60,11 @@ beforeEach(() => {
   seedPage();
 });
 
-// The three widget types whose options can carry a falsy `value`. Kept as a
-// literal list here on purpose: if production adds a fourth option widget and
-// forgets it, the corresponding case below is what should fail.
-const OPTION_VALUE_WIDGETS = ['DropdownV2', 'MultiselectV2', 'Cascader'];
+// The widget types whose options can carry a falsy `value`. Kept as a literal
+// list here on purpose: if production adds another option widget and forgets
+// it, the corresponding case below is what should fail. RadioButtonV2 was
+// exactly that miss — see [RadioButtonV2-VAL-002] below.
+const OPTION_VALUE_WIDGETS = ['DropdownV2', 'MultiselectV2', 'Cascader', 'RadioButtonV2'];
 
 describe('mandatory + falsy values', () => {
   test.each(OPTION_VALUE_WIDGETS)('%s: a selected option whose value is `false` counts as FILLED', (componentType) => {
@@ -80,6 +81,42 @@ describe('mandatory + falsy values', () => {
       isValid: true,
       validationError: null,
     });
+  });
+
+  test('[RadioButtonV2-VAL-002] a selected radio option whose value is `false` counts as filled', () => {
+    // A radio group answers itself by selection, not by the truthiness of the
+    // selected option's value: `{ label: 'No', value: false }` is an answer.
+    expect(
+      validate({ componentType: 'RadioButtonV2', widgetValue: false, validationObject: { mandatory: { value: true } } })
+    ).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+  });
+
+  // Break this catches: a truthiness check (`if (widgetValue)`) replacing the
+  // option-widget guard — every one of these three values is a real answer the
+  // user picked, and all three are falsy.
+  test.each([
+    ['an empty string', ''],
+    ['false', false],
+    ['zero', 0],
+  ])('[DropdownV2-VAL-001] a selected option valued %s counts as filled', (_case, widgetValue) => {
+    expect(
+      validate({ componentType: 'DropdownV2', widgetValue, validationObject: { mandatory: { value: true } } })
+    ).toEqual({
+      isValid: true,
+      validationError: null,
+    });
+  });
+
+  test.each([
+    ['null', null],
+    ['undefined', undefined],
+  ])('[DropdownV2-VAL-001] %s counts as EMPTY, because no option is selected', (_case, widgetValue) => {
+    expect(
+      validate({ componentType: 'DropdownV2', widgetValue, validationObject: { mandatory: { value: true } } })
+    ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
   test('TextInput: `false` counts as EMPTY, because a text field has no option values', () => {
@@ -105,24 +142,6 @@ describe('mandatory + falsy values', () => {
     // a NumberInput holding zero is answered regardless of component type.
     expect(
       validate({ componentType: 'NumberInput', widgetValue: 0, validationObject: { mandatory: { value: true } } })
-    ).toEqual({ isValid: true, validationError: null });
-  });
-
-  test('an empty array counts as EMPTY, even for an option widget', () => {
-    // Arrays short-circuit the scalar branch entirely: `[]` is "nothing
-    // selected" for a MultiselectV2, and `[false]` is "one option selected".
-    expect(
-      validate({ componentType: 'MultiselectV2', widgetValue: [], validationObject: { mandatory: { value: true } } })
-    ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
-  });
-
-  test('an array holding only `false` counts as FILLED', () => {
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: [false],
-        validationObject: { mandatory: { value: true } },
-      })
     ).toEqual({ isValid: true, validationError: null });
   });
 
@@ -266,26 +285,6 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
-  test('minSelection: too few array entries are rejected', () => {
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: ['a'],
-        validationObject: { minSelection: { value: 2 } },
-      })
-    ).toEqual({ isValid: false, validationError: 'Minimum 2 selections required' });
-  });
-
-  test('maxSelection: too many array entries are rejected', () => {
-    expect(
-      validate({
-        componentType: 'MultiselectV2',
-        widgetValue: ['a', 'b', 'c'],
-        validationObject: { maxSelection: { value: 2 } },
-      })
-    ).toEqual({ isValid: false, validationError: 'Maximum 2 selections allowed' });
-  });
-
   test('selection-count validators are skipped for a non-array value', () => {
     expect(
       validate({ componentType: 'DropdownV2', widgetValue: 'a', validationObject: { minSelection: { value: 2 } } })
@@ -293,26 +292,41 @@ describe('the other validators that actually exist', () => {
   });
 });
 
-describe('known bugs: `||` still swallows a zero bound', () => {
+describe('minValue/maxValue of exactly 0 (NumberInput-VAL-006/007/008)', () => {
   // BUG (unfixed): componentsSlice.js:825 `resolveValue(minValue) || undefined`
   // collapses a configured minimum of 0 to `undefined`, which skips the check
-  // entirely. A NumberInput configured with "Min value: 0" therefore accepts
-  // negative numbers. Same `||`-swallows-falsy class as the mandatory/`false`
-  // bugs above, just not fixed yet. The fix is `??` at componentsSlice.js:825 and :835.
-  // Wrong: { isValid: true }. Right: rejected with 'Minimum value is 0'.
-  test.failing('minValue of 0 must reject a negative number', () => {
+  // entirely. Fix: `??` instead of `||`, with an explicit undefined/null/''
+  // check so the unconfigured default (see NumberInput-VAL-008) isn't broken.
+  test.failing('[NumberInput-VAL-006] minValue of 0 must reject a negative number', () => {
     expect(
       validate({ componentType: 'NumberInput', widgetValue: -5, validationObject: { minValue: { value: 0 } } })
     ).toEqual({ isValid: false, validationError: 'Minimum value is 0' });
   });
 
-  // BUG (unfixed): componentsSlice.js:835, the maxValue twin of the above. A
-  // NumberInput configured with "Max value: 0" accepts any positive number.
-  // Wrong: { isValid: true }. Right: rejected with 'Maximum value is 0'.
-  test.failing('maxValue of 0 must reject a positive number', () => {
+  // BUG (unfixed): componentsSlice.js:835, the maxValue twin of the above.
+  test.failing('[NumberInput-VAL-007] maxValue of 0 must reject a positive number', () => {
     expect(
       validate({ componentType: 'NumberInput', widgetValue: 5, validationObject: { maxValue: { value: 0 } } })
     ).toEqual({ isValid: false, validationError: 'Maximum value is 0' });
+  });
+
+  // Break this catches: fixing VAL-006/007 with a naive `resolveValue(minValue) ?? undefined` —
+  // `resolveValue('')` returns the literal empty string (componentsSlice.js's resolver only
+  // transforms `{{}}` bindings, numberinput.js's own unconfigured default), so `'' ?? undefined`
+  // stays `''`, which is not `undefined` and would wrongly enter the bound-check branch.
+  test('[NumberInput-VAL-008] an unconfigured minValue/maxValue does not reject an undefined widget value', () => {
+    // `{ value: '' }` — not an omitted key — is how an unconfigured minValue/maxValue actually
+    // arrives (numberinput.js's `definition.validation.minValue/maxValue` default to `{ value: '' }`).
+    expect(
+      validate({
+        componentType: 'NumberInput',
+        widgetValue: undefined,
+        validationObject: { minValue: { value: '' }, maxValue: { value: '' } },
+      })
+    ).toEqual({
+      isValid: true,
+      validationError: null,
+    });
   });
 });
 

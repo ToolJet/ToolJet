@@ -180,4 +180,5 @@ export const PLANS = {
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
   STARTER: 'starter',
+  BASICPLUS: 'basicplus',
 };

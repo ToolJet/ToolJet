@@ -310,11 +310,11 @@
     "test:unit": "jest",
     "test:unit:changed": "jest --onlyChanged",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:layout": "node scripts/validate-test-layout.js",
     "test:unit:only": "jest --testPathIgnorePatterns '/node_modules/' '/__tests__/integration/'",
     "test:integration": "jest --testPathPattern \"__tests__/integration\"",
-    "test:ci:changed": "jest --ci --coverage --onlyChanged",
+    "test:ci:changed": "jest --ci --coverage --onlyChanged --maxWorkers=2",
     "test:app-builder": "node scripts/run-app-builder-tests.js all",
     "test:app-builder:watch": "node scripts/run-app-builder-tests.js watch",
     "test:app-builder:contracts": "node scripts/run-app-builder-tests.js contracts --runInBand",
@@ -322,6 +322,7 @@
     "test:app-builder:coverage": "node scripts/run-app-builder-tests.js all --coverage --runInBand",
     "test:app-builder:cypress": "npm --prefix ../cypress-tests run cy:run -- --config-file cypress-appbuilder.config.js",
     "validate:app-builder-coverage-manifest": "node scripts/validate-app-builder-coverage-manifest.js",
+    "validate:widget-testing-contracts": "node scripts/validate-widget-testing-contracts.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build"
   }
