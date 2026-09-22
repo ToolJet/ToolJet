@@ -28,6 +28,7 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { App } from '@entities/app.entity';
 import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 import { DataQuery } from '@entities/data_query.entity';
+import { MAX_DEPENDENTS } from '@modules/tooljet-db/repository';
 
 describe('TooljetDb drop_table dependents', () => {
   describe('EE (plan: enterprise)', () => {
@@ -254,6 +255,42 @@ describe('TooljetDb drop_table dependents', () => {
         where: { organizationId: orgId, tableName: 'no_deps_tbl' },
       });
       expect(gone).toBeNull();
+    });
+
+    it('should keep count honest above MAX_DEPENDENTS while capping the returned list', async () => {
+      expect(tjdbAvailable).toBe(true);
+
+      await createTable('many_deps_tbl');
+      const tableId = await internalTableId('many_deps_tbl');
+
+      const ds = await saveEntity(DataSourceEntity, {
+        name: 'tooljetdb-many-deps',
+        kind: 'tooljetdb',
+        type: 'static',
+        scope: 'global',
+        organizationId: orgId,
+      } as Partial<DataSourceEntity>);
+
+      const dependentCount = MAX_DEPENDENTS + 1;
+      for (let i = 0; i < dependentCount; i++) {
+        const depApp = await createApplication(app, { name: `Many-Deps-App-${i}`, user: adminUser, type: 'front-end' });
+        const version = await createApplicationVersion(app, depApp as App & { organizationId: string });
+        await saveEntity(DataQuery, {
+          name: 'getRows',
+          options: { table_id: tableId, operation: 'list_rows' },
+          dataSourceId: ds.id,
+          appVersionId: version.id,
+        } as Partial<DataQuery>);
+        await updateEntity(App, depApp.id, { currentVersionId: version.id });
+      }
+
+      const depsRes = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/dependents`)
+        .set(headers());
+      expect(depsRes.statusCode).toBe(200);
+      expect(depsRes.body.result.count).toBe(dependentCount);
+      expect(depsRes.body.result.dependents.length).toBe(MAX_DEPENDENTS);
     });
   });
 });

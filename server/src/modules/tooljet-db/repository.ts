@@ -24,7 +24,7 @@ export function addTablesInJoinOperation(uniqTableIds: Set<string>, joinOptions:
   });
 }
 
-const MAX_DEPENDENTS = 50;
+export const MAX_DEPENDENTS = 50;
 
 export interface TableDependent {
   id: string;
