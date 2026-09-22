@@ -56,14 +56,23 @@ export {
   openEditorSidebar,
   closeAccordions,
   selectFromSidebarDropdown,
+  selectReactSelectOption,
   verifyAndModifyParameter,
   verifyAndModifyToggleFx,
   verifyAndModifySwitch,
   verifyPropertiesGeneralAccordion,
   addValueOnInput,
   editAndVerifyWidgetName,
+  commitChange,
   addAndVerifyTooltip,
   verifyTooltip,
+  setTooltip,
+  hoverInPreview,
+  enableFxAndBind,
+  clearParameter,
+  expectNoFxButton,
+  alignmentToggle,
+  locateAlignmentToggle,
 } from "./appBuilder/properties";
 
 export {
@@ -76,6 +85,11 @@ export {
   verifyAndModifyStyleNumberFx,
   verifyStylesGeneralAccordion,
   checkPaddingOfContainer,
+  openStyleAccordion,
+  selectThemeColour,
+  expectThemeColour,
+  expectStyleVar,
+  expectFontWeight,
 } from "./appBuilder/styles";
 
 export {
@@ -84,7 +98,7 @@ export {
   verifyContainerElements,
 } from "./appBuilder/components";
 
-export { verifyLayout } from "./appBuilder/layout";
+export { verifyLayout, switchLayout } from "./appBuilder/layout";
 
 export {
   copyWidget,
@@ -107,10 +121,16 @@ export {
   verifyWidgetMoved,
   verifyWidgetResized,
   verifyWidgetCount,
+  waitForDropSettle,
+  dropWidget,
+  clickWidgetInput,
 } from "./appBuilder/canvas";
 
 export {
   verifyComponentValueFromInspector,
   verifyMultipleComponentValuesFromInspector,
   verifyComponentFromInspector,
+  closeInspectorDetail,
+  verifyExposedValue,
+  openExposedPath,
 } from "./appBuilder/inspectorTree";
