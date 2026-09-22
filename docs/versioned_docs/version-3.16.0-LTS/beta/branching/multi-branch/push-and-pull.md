@@ -30,7 +30,7 @@ That button changes with the branch you are on and whether the resource has reac
 | **Commit** | Commits the resource to the current branch | On a feature branch |
 | **Pull commit** | Pulls changes from Git into the resource | On the default branch |
 | **Sync** | Opens the first-time push flow | On the default branch, for a resource never pushed to Git |
-| **Configure Git** | Opens the Git Sync configuration | When Git Sync is in your plan but not yet configured |
+| **Configure Git** | Opens the Git Sync configuration | When Git Sync is not yet configured for the workspace |
 
 It is shown in the Development environment while a draft version is selected. Saved and released versions are read-only and offer no Git action. **Sync** is the exception: it stays visible in every environment and on any version until the resource is pushed for the first time.
 

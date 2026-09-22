@@ -12,6 +12,8 @@ Pull requests are how changes move from a feature branch to the default branch. 
 
 Every step below happens in one system or the other, never both. ToolJet takes you as far as opening the pull request, and everything from review to merge belongs to your Git provider.
 
+<div style={{ textAlign: 'center' }}>
+
 ```mermaid
 flowchart TD
   A["ToolJet<br/>Create branch"] --> B["ToolJet<br/>Build and edit"]
@@ -27,6 +29,8 @@ flowchart TD
   J --> K["ToolJet<br/>Save a version"]
   K --> L["ToolJet<br/>Promote, release"]
 ```
+
+</div>
 
 ## Create a Pull Request
 

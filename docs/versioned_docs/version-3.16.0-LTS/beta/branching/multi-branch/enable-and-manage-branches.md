@@ -11,7 +11,6 @@ Git Sync starts in single-branch mode. Branching is enabled per workspace, and o
 ## Prerequisites
 
 - **Git Sync configured** with either GitHub or GitLab. See the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up.
-- An **Enterprise** plan. Git Sync itself is available on **Team**, but multiple branches require Enterprise. On a Team plan the Branching toggle stays disabled and the workspace runs in single-branch mode.
 - The **Admin** or **Super admin** role to turn branching on. Once enabled, builders can create, switch, and manage branches; end users cannot.
 - On self-hosted instances: a **Redis** connection, and at least one instance started with `WORKER=true`. Branch creation, pulls, and deletions run as background jobs on this worker. Without one, these actions are queued but never processed.
 
@@ -29,16 +28,34 @@ Once branching is enabled, the default branch becomes read-only and your team wo
 
 ## Create a Branch
 
-Branches can only be created from the default branch.
+Every branch is cut from the default branch, never from another feature branch. You can start one from the dashboard or from inside an application, and the two differ in one respect: only the in-app dialog lets you choose which point in the default branch's history to start from.
+
+Branches are always created in the Git repository as well, so ToolJet and the repository stay in step. Creation runs in the background, and ToolJet notifies you when the branch is ready and adds it to the branch list automatically.
+
+### From the Dashboard
 
 1. Open the branch dropdown in the header.
 2. Select **Create new branch**.
 3. Enter a branch name.
 4. Click **Create branch**.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/multi-branch/create-branch-modal.png" alt="Create branch modal with the branch name field and a note that branches can only be created from the default branch" />
+The branch starts from the current head of the default branch.
 
-Branch creation runs in the background. ToolJet notifies you when the branch is ready and adds it to the branch list automatically.
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/multi-branch/create-branch-modal.png" alt="Create branch modal on the dashboard, with the branch name field and a note that a branch can only be created from main" />
+
+### From Inside an Application
+
+Open the application and use the branch dropdown in the App Builder header. This dialog adds a **Create from** field, which sets the point in the default branch's history the new branch starts at. The branch is still cut from the default branch either way, so this chooses a starting version, not a different source branch.
+
+| Option | Where the branch starts |
+|:-------|:------------------------|
+| **Latest (`main`)** | The current head of the default branch. This is the default, and what you want for new work. |
+| A saved version | That version's contents, so you can correct an earlier release without building on everything that landed after it. |
+| A Git tag | The same, for a version that is in the repository but not in this workspace. |
+
+Two kinds of version cannot be a starting point: a draft, because it is still changing, and a version that was itself saved from a feature branch.
+
+Save or release your current draft before creating a branch. An application is allowed only one draft at a time, so the draft you are holding has to be resolved first.
 
 ### Branch Naming Rules
 
@@ -107,12 +124,7 @@ Existing feature branches are not deleted when branching is disabled, and the br
 
 If your license expires or stops covering Git Sync, branching is **not** turned off for you and your branches are preserved. Instead, ToolJet freezes the resources it manages: applications, modules, and datasources become read-only, and the App Builder and Module Builder open in a locked state with no editing available.
 
-A banner tells you which case applies:
-
-| Situation | Banner message |
-|:----------|:---------------|
-| Your license has expired or is invalid | Your plan has expired. Renew your plan or disable git sync to continue. |
-| Your plan is valid but does not include Git Sync | Git sync is not enabled as per your current plan. Disable git sync to continue. |
+A banner tells you which case applies, whether the license has expired or is invalid, or the license is valid but no longer covers Git Sync.
 
 There are two ways out of the frozen state:
 

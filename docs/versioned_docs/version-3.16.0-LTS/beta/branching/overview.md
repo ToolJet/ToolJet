@@ -19,7 +19,6 @@ There are two modes. Every workspace starts in single-branch mode, and multiple 
 | How changes reach Git | Commit directly | Commit to a feature branch, then merge a pull request |
 | Review before changes land | None | Required, through a pull request |
 | Builders working at once | One at a time | In parallel, each on their own branch |
-| Plan | Team | Enterprise |
 
 ## Choosing a Mode
 
@@ -38,7 +37,7 @@ Some behavior does not change with the mode:
 
 - [Versions and Tags](/docs/beta/branching/versioning) covers drafts, saved versions, and how versions are tagged in Git.
 - [Resolving Conflicts](/docs/beta/branching/troubleshooting/resolving-conflicts) covers duplicate names and slugs, which are checked before anything is written in either mode.
-- [Auto-Sync](/docs/beta/branching/auto-sync) keeps connected instances up to date from the repository. It is available on the Team plan, so it works in single-branch mode as well.
+- [Auto-Sync](/docs/beta/branching/auto-sync) keeps connected instances up to date from the repository.
 - [Troubleshooting](/docs/beta/branching/troubleshooting/overview) covers what to check when a commit, pull, or sync does not behave as expected.
 
 ## Resources Synced to Git

@@ -8,12 +8,11 @@ sidebar_label: Auto-Sync from Repository
 
 Auto-sync keeps ToolJet up to date with your Git repository automatically. Instead of clicking **Pull** after every merge, you register a webhook in your Git provider and ToolJet applies the changes as they happen.
 
-This is especially useful when you run more than one ToolJet instance against the same repository, because a single event updates every connected instance.
+This is especially useful when you run more than one ToolJet instance against the same repository, because a single event updates every connected instance. Auto-sync works in single-branch and multi-branch mode alike, and is unavailable while a license is expired.
 
 ## Prerequisites
 
 - Git Sync configured for the workspace, using GitHub or GitLab.
-- A **Team** plan or higher. Auto-sync does not require Enterprise, so it is available in single-branch mode as well. It is unavailable while a license is expired.
 - The **Admin** or **Super admin** role. Builders and end users cannot configure auto-sync.
 - Permission to add a webhook to the Git repository.
 - `TOOLJET_HOST` set to a URL your Git provider can reach. The webhook URL is derived from it, so an unreachable or incorrect value means events never arrive.

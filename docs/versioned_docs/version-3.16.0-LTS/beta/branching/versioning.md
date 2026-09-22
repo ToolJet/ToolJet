@@ -42,7 +42,7 @@ What happens next depends on where you save from.
 | A new draft | Created automatically | Not needed, your draft is untouched |
 | The Git tag points at | The default branch | The feature branch's own commit |
 
-Saving from a feature branch does not move the default branch forward. The use case is a hotfix: branch from an earlier version, correct it, and save that correction without disturbing what is currently at the head of the default branch.
+Saving from a feature branch does not move the default branch forward. The use case is a hotfix: create a branch that starts from an earlier saved version, correct it there, and save that correction without disturbing what is currently at the head of the default branch. Refer to [Create a Branch](/docs/beta/branching/multi-branch/enable-and-manage-branches) for choosing a starting point.
 
 ## Updating a Version From Git
 

@@ -6,13 +6,14 @@ sidebar_label: Overview
 
 <PlanBadge type="enterprise" />
 
-Branching lets several builders work on the same applications at the same time without overwriting each other. Each builder works on their own branch, where changes stay separate from what is live until they are reviewed and merged through a pull request in your Git provider. This protects production quality through mandatory review, and gives you a complete, traceable change history in Git.
+Branching lets several builders work on the same applications at the same time without overwriting each other. Each builder works on their own branch, where changes stay separate from what is live until they are reviewed and merged through a pull request in your Git provider.
 
-Branching is useful when:
+## Use Cases
 
-- Multiple builders work on the same applications at the same time.
-- You need formal review and approval before changes reach production.
-- Change tracking and auditability are organizational requirements.
+- **Building features in parallel.** Two builders can change the same application at the same time, each on their own branch, without overwriting each other's work.
+- **Reviewing changes before they reach production.** The default branch is read-only, so nothing becomes releasable until a reviewer has approved the pull request that brings it in.
+- **Fixing an earlier version without disturbing what is live.** Create a branch that starts from that saved version, correct it, and save the fix without moving the head of the default branch. Refer to [Version Control with Git](/docs/beta/branching/versioning).
+- **Showing who approved a change.** Every change arrives through a merged pull request, so the repository records the author, the reviewer, and the approval alongside the diff.
 
 ## What a Branch Contains
 
@@ -27,7 +28,7 @@ There are two kinds of branches:
 
 ## Single-Branch and Multi-Branch Mode
 
-Git Sync starts in single-branch mode, which is included with Git Sync on the **Team** plan. Multiple branches require an **Enterprise** plan and are opted into per workspace. See [Enable Branching](/docs/beta/branching/multi-branch/enable-and-manage-branches) for how to turn them on.
+Git Sync starts in single-branch mode. Multiple branches are opted into per workspace. See [Enable Branching](/docs/beta/branching/multi-branch/enable-and-manage-branches) for how to turn them on.
 
 | Behavior | Single-branch mode | Multi-branch mode |
 |:---------|:-------------------|:------------------|
@@ -35,7 +36,7 @@ Git Sync starts in single-branch mode, which is included with Git Sync on the **
 | Default branch | Editable | Read-only |
 | Changes reach the default branch by | Committing directly | Merging a pull request |
 
-When branching is enabled and you are on the default branch, ToolJet blocks these actions:
+When branching is enabled and you are **on the default branch**, ToolJet blocks these actions:
 
 - Creating or editing applications and modules
 - Creating or deleting datasources
@@ -47,6 +48,8 @@ When branching is enabled and you are on the default branch, ToolJet blocks thes
 ## How Changes Reach the Default Branch
 
 Branching splits the work between two systems. You build and commit in ToolJet, and the review and merge happen entirely in your Git provider. ToolJet cannot merge branches.
+
+<div style={{ textAlign: 'center' }}>
 
 ```mermaid
 flowchart LR
@@ -64,6 +67,8 @@ flowchart LR
   end
   A --> B --> C --> D --> E --> F
 ```
+
+</div>
 
 Refer to [Pull Requests](/docs/beta/branching/multi-branch/pull-requests) for the full flow, including how to open and track pull requests from ToolJet.
 
@@ -106,7 +111,7 @@ To decide whether a single or multi-instance setup suits your organization, see 
 ## Limitations
 
 - Branching works with GitHub and GitLab.
-- Branches can only be created from the default branch, not from another feature branch.
+- Branches are always cut from the default branch, never from another feature branch. You can still choose which point in the default branch's history to start at.
 - Pull requests must be created and merged in your Git provider. ToolJet cannot merge branches.
 - Branches cannot be renamed once created.
 - Merge conflicts must be resolved in Git before merging.

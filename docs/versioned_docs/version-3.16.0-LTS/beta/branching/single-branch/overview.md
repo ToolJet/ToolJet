@@ -8,8 +8,6 @@ sidebar_label: Overview
 
 Single-branch mode connects your workspace to one branch in a Git repository, usually `main` or `master`. You build directly on that branch and commit your changes to it. This is how Git Sync works by default, and it is the mode a workspace stays in until branching is turned on.
 
-Use it when you want your work backed up and portable between instances, without a review step between editing and committing.
-
 ## Use Cases
 
 - **Promoting an application to another instance.** Connect your development, staging, and production instances to the same repository, then pull the application into the next instance instead of exporting and importing it.
