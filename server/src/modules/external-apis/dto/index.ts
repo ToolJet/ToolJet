@@ -19,13 +19,16 @@ import {
   Max,
   IsNumber,
   IsPositive,
+  IsBoolean,
+  ArrayMaxSize,
+  ArrayMinSize,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type, Exclude, Expose } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
-import { USER_STATUS } from '@modules/users/constants/lifecycle';
+import { USER_STATUS, WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 export enum Status {
@@ -650,4 +653,391 @@ export class ListUserWorkspacesV2QueryDto {
   @Min(1)
   @Max(100)
   per_page?: number = 20;
+}
+
+// --- v2 Response DTOs: strict, @Exclude-by-default, only @Expose'd fields are ever serialized ---
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class UserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  status: string;
+}
+
+@Exclude()
+export class ListUsersV2ResponseDto {
+  @Expose()
+  @Type(() => UserV2ResponseDto)
+  data: UserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class WorkspaceMembershipV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  default: boolean;
+}
+
+@Exclude()
+export class ListUserWorkspacesV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceMembershipV2ResponseDto)
+  data: WorkspaceMembershipV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+// --- Workspaces v2 ---
+
+export class CreateWorkspaceV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug must be lowercase letters, numbers, and hyphens only' })
+  slug: string;
+}
+
+export class UpdateWorkspaceV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug must be lowercase letters, numbers, and hyphens only' })
+  slug?: string;
+
+  @IsOptional()
+  @IsEnum(WORKSPACE_STATUS)
+  status?: WORKSPACE_STATUS;
+
+  // Can only be set to true here (atomically making this the platform default); true is
+  // rejected on an archived workspace, and setting it alongside status: 'archived' in the
+  // same request is rejected too. Setting it to false directly is always rejected — a default
+  // can only be removed by making a different workspace the default.
+  @IsOptional()
+  @IsBoolean()
+  default?: boolean;
+}
+
+export class ListWorkspacesV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(WORKSPACE_STATUS)
+  status?: WORKSPACE_STATUS;
+
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
+  @IsBoolean()
+  default?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class WorkspaceV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  default: boolean;
+}
+
+@Exclude()
+export class ListWorkspacesV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceV2ResponseDto)
+  data: WorkspaceV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+// --- Workspace Users v2 ---
+
+export class CreateWorkspaceUserV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(100)
+  password: string;
+
+  @IsEnum(USER_ROLE)
+  role: USER_ROLE;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class BulkCreateWorkspaceUsersV2Dto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => CreateWorkspaceUserV2Dto)
+  users: CreateWorkspaceUserV2Dto[];
+}
+
+export class UpdateWorkspaceUserV2Dto {
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class BulkUpdateWorkspaceUserEntryV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class BulkUpdateWorkspaceUsersV2Dto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => BulkUpdateWorkspaceUserEntryV2Dto)
+  users: BulkUpdateWorkspaceUserEntryV2Dto[];
+}
+
+export class ListWorkspaceUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListWorkspaceUserGroupsV2QueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class WorkspaceUserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  status: string;
+
+  @Expose({ name: 'userDetails' })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  data: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class BulkCreateErrorV2ResponseDto {
+  @Expose()
+  index: number;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  code: string;
+
+  @Expose()
+  message: string;
+}
+
+@Exclude()
+export class BulkUpdateErrorV2ResponseDto {
+  @Expose()
+  index: number;
+
+  @Expose()
+  id: string;
+
+  @Expose()
+  code: string;
+
+  @Expose()
+  message: string;
+}
+
+@Exclude()
+export class BulkCreateWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  created: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => BulkCreateErrorV2ResponseDto)
+  errors: BulkCreateErrorV2ResponseDto[];
+}
+
+@Exclude()
+export class BulkUpdateWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  updated: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => BulkUpdateErrorV2ResponseDto)
+  errors: BulkUpdateErrorV2ResponseDto[];
+}
+
+@Exclude()
+export class WorkspaceUserGroupV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListWorkspaceUserGroupsV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserGroupV2ResponseDto)
+  data: WorkspaceUserGroupV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
 }

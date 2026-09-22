@@ -15,6 +15,8 @@
  *   2. Archive/unarchive are symmetric: both the dedicated archive/unarchive endpoints and a
  *      PATCH status change cascade to every OrganizationUser row the user has, not just their
  *      default workspace (a deliberate product decision, not a v1 parity bug).
+ *   3. POST .../archive and .../unarchive return 201, not the spec's 200 — NestJS's default for
+ *      POST, kept as-is rather than overridden with @HttpCode(200).
  */
 
 import * as request from 'supertest';
@@ -75,7 +77,7 @@ describe('ExternalApisUsersControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${user.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(200);
+        .expect(201);
 
       const archived = await request(app.getHttpServer())
         .get(`${BASE}?search=statusfilter${suffix}&status=archived`)
@@ -185,7 +187,7 @@ describe('ExternalApisUsersControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${user.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(200);
+        .expect(201);
       await request(app.getHttpServer())
         .post(`${BASE}/${user.id}/archive`)
         .set('Authorization', getExtAuth())
@@ -194,7 +196,7 @@ describe('ExternalApisUsersControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${user.id}/unarchive`)
         .set('Authorization', getExtAuth())
-        .expect(200);
+        .expect(201);
       await request(app.getHttpServer())
         .post(`${BASE}/${user.id}/unarchive`)
         .set('Authorization', getExtAuth())

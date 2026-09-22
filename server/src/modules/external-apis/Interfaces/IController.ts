@@ -11,6 +11,14 @@ import {
   UpdateUserV2Dto,
   ListUsersV2QueryDto,
   ListUserWorkspacesV2QueryDto,
+  CreateWorkspaceV2Dto,
+  UpdateWorkspaceV2Dto,
+  ListWorkspacesV2QueryDto,
+  CreateWorkspaceUserV2Dto,
+  UpdateWorkspaceUserV2Dto,
+  BulkUpdateWorkspaceUsersV2Dto,
+  ListWorkspaceUsersV2QueryDto,
+  ListWorkspaceUserGroupsV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -76,4 +84,46 @@ export interface IExternalApisUsersControllerV2 {
   unarchiveUser(userIdentifier: string): Promise<any>;
 
   listUserWorkspaces(userIdentifier: string, query: ListUserWorkspacesV2QueryDto): Promise<any>;
+}
+
+export interface IExternalApisWorkspacesControllerV2 {
+  createWorkspace(dto: CreateWorkspaceV2Dto): Promise<any>;
+
+  listWorkspaces(query: ListWorkspacesV2QueryDto): Promise<any>;
+
+  getWorkspace(workspaceIdentifier: string): Promise<any>;
+
+  updateWorkspace(workspaceIdentifier: string, dto: UpdateWorkspaceV2Dto): Promise<any>;
+
+  archiveWorkspace(workspaceIdentifier: string): Promise<any>;
+
+  unarchiveWorkspace(workspaceIdentifier: string): Promise<any>;
+
+  setDefaultWorkspace(workspaceIdentifier: string): Promise<any>;
+}
+
+export interface IExternalApisWorkspaceUsersControllerV2 {
+  createWorkspaceUser(workspaceIdentifier: string, dto: CreateWorkspaceUserV2Dto): Promise<any>;
+
+  // body is untyped: this route accepts EITHER a JSON { users: [...] } payload OR a multipart CSV file,
+  // so it can't go through the global ValidationPipe — entries are validated individually in the service layer.
+  bulkCreateWorkspaceUsers(workspaceIdentifier: string, body: any, file?: any): Promise<any>;
+
+  listWorkspaceUsers(workspaceIdentifier: string, query: ListWorkspaceUsersV2QueryDto): Promise<any>;
+
+  getWorkspaceUser(workspaceIdentifier: string, userIdentifier: string): Promise<any>;
+
+  updateWorkspaceUser(workspaceIdentifier: string, userIdentifier: string, dto: UpdateWorkspaceUserV2Dto): Promise<any>;
+
+  bulkUpdateWorkspaceUsers(workspaceIdentifier: string, dto: BulkUpdateWorkspaceUsersV2Dto): Promise<any>;
+
+  archiveWorkspaceUser(workspaceIdentifier: string, userIdentifier: string): Promise<any>;
+
+  unarchiveWorkspaceUser(workspaceIdentifier: string, userIdentifier: string): Promise<any>;
+
+  listWorkspaceUserGroups(
+    workspaceIdentifier: string,
+    userIdentifier: string,
+    query: ListWorkspaceUserGroupsV2QueryDto
+  ): Promise<any>;
 }
