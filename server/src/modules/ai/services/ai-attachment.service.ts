@@ -14,6 +14,7 @@ import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { MAX_AI_ATTACHMENT_CONTENT_BYTES, renderAttachmentPdf } from './ai-attachment-pdf';
+import { openAiAttachmentText, prepareOpenAiImage } from './ai-attachment-openai';
 
 export const MAX_AI_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 type AttachmentOwner = { id: string; organizationId: string };
@@ -230,17 +231,19 @@ export class AiAttachmentService implements OnModuleDestroy {
           const { body } = await this.download(user, file.id);
           return [{ type: 'text', text: await body.transformToString('utf-8') }];
         });
-        return [{ type: textType, text: `${label}\n${parts[0].text}` }];
+        const text = `${label}\n${parts[0].text}`;
+        return provider === 'openai' ? openAiAttachmentText(text) : [{ type: textType, text }];
       }
       // OpenAI's hosted Agents input accepts text and images, unlike Responses' input_file.
       // Prepare content that both routes can read; route selection stays in the agent.
       if (['openai', 'deepseek', 'gemini'].includes(provider) && extension === 'pdf') {
-        const pages = await this.cachedInline(file.id, async () => {
+        const pages = await this.cachedInline(provider === 'openai' ? `openai:${file.id}` : file.id, async () => {
           const { body } = await this.download(user, file.id);
           return renderAttachmentPdf(
             await body.transformToByteArray(),
             20 - pdfPages,
-            MAX_AI_ATTACHMENT_CONTENT_BYTES - contentBytes
+            MAX_AI_ATTACHMENT_CONTENT_BYTES - contentBytes,
+            ...(provider === 'openai' ? [{ openai: true }] : [])
           );
         });
         pdfPages += pages.length;
@@ -255,6 +258,13 @@ export class AiAttachmentService implements OnModuleDestroy {
             ? pages.map((page) => ({ type: 'input_image', image_url: page.image_url.url }))
             : pages),
         ];
+      }
+      if (provider === 'openai' && imageType) {
+        const parts = await this.cachedInline(`openai:${file.id}`, async () => {
+          const { body } = await this.download(user, file.id);
+          return [{ type: 'input_image', image_url: await prepareOpenAiImage(await body.transformToByteArray()) }];
+        });
+        return [{ type: 'input_text', text: label }, ...parts];
       }
       if (provider === 'gemini' && imageType) {
         const parts = await this.cachedInline(file.id, async () => {

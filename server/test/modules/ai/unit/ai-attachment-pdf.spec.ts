@@ -80,6 +80,33 @@ test('renders ordered, bounded PDF pages and rejects unreadable or excessive con
       await assert.rejects(renderAttachmentPdf(data, 20, 1024 * 1024), /valid, unencrypted PDF/);
       assert.equal(renders, 1);
       assert.equal(destroyed, 5);
+
+      // Dense/scanned PDF pages can exceed the hosted image-string limit even at 1600px.
+      // Exercise the real encoder with a deterministic noisy page produced by the renderer.
+      const dense = createCanvas(1200, 800);
+      const denseContext = dense.getContext('2d');
+      const noise = denseContext.createImageData(1200, 800);
+      let seed = 637;
+      for (let i = 0; i < noise.data.length; i += 4) {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        noise.data[i] = seed >>> 24;
+        noise.data[i + 1] = (seed >>> 16) & 255;
+        noise.data[i + 2] = (seed >>> 8) & 255;
+        noise.data[i + 3] = 255;
+      }
+      denseContext.putImageData(noise, 0, 0);
+      const dataUrl = dense.toDataURL('image/png');
+      assert.ok(dataUrl.length > 1024 * 1024);
+      PDFParse.prototype.getScreenshot = async () => ({ pages: [{ dataUrl }] });
+      const hostedPages = await renderAttachmentPdf(data, 20, 20 * 1024 * 1024, { openai: true });
+      assert.equal(hostedPages.length, 2);
+      for (const page of hostedPages) {
+        assert.ok(page.image_url.url.length <= 1024 * 1024);
+        const decoded = await loadImage(page.image_url.url);
+        assert.equal(decoded.width, 1200);
+        assert.equal(decoded.height, 800);
+      }
+      assert.equal(destroyed, 6);
     })().catch(error => { console.error(error); process.exitCode = 1; });
   `,
     ],

@@ -9,8 +9,15 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import * as sharp from 'sharp';
 import { AiAttachmentService, MAX_AI_ATTACHMENT_BYTES } from '@modules/ai/services/ai-attachment.service';
 import { MAX_AI_ATTACHMENT_CONTENT_BYTES, renderAttachmentPdf } from '@modules/ai/services/ai-attachment-pdf';
+import { MAX_OPENAI_ATTACHMENT_PART_CHARS } from '@modules/ai/services/ai-attachment-openai';
+
+const sampleImage = (extension = 'png') =>
+  sharp({ create: { width: 24, height: 16, channels: 3, background: '#267354' } })
+    .toFormat(extension === 'jpg' ? 'jpeg' : (extension as 'png' | 'jpeg' | 'webp'))
+    .toBuffer();
 
 jest.mock('@modules/ai/services/ai-attachment-pdf', () => ({
   MAX_AI_ATTACHMENT_CONTENT_BYTES: 20 * 1024 * 1024,
@@ -95,7 +102,7 @@ describe('AI attachment storage', () => {
     expect(result).not.toHaveProperty('s3Key');
   });
 
-  it('prepares owned current and earlier files, with fresh URLs separate from saved metadata', async () => {
+  it('prepares owned current and earlier files, keeping image contents separate from saved metadata', async () => {
     const imageId = 'df0b465b-2345-4226-943f-81a6d6e2c497';
     const csvId = '0d3e3f9e-eb2c-4586-bc63-909d4bcb7aee';
     repository.findOne.mockImplementation(async ({ where }) => ({
@@ -107,22 +114,25 @@ describe('AI attachment storage', () => {
       s3Bucket: 'private-fixture',
       s3Key: where.id,
     }));
-    send.mockResolvedValue({ Body: { transformToString: async () => 'item,units\nfolder,19' } });
+    const image = await sampleImage();
+    send.mockResolvedValue({
+      Body: { transformToString: async () => 'item,units\nfolder,19', transformToByteArray: async () => image },
+    });
     const result = await service.prepare(owner, [imageId], [csvId, imageId]);
     expect(result.attachments.map((file) => file.id)).toEqual([imageId]);
     expect(result.content).toEqual(
       expect.arrayContaining([
-        { type: 'input_image', image_url: 'https://files.example.test/signed' },
+        { type: 'input_image', image_url: expect.stringMatching(/^data:image\/png;base64,/) },
         { type: 'input_text', text: 'Previously attached file: stock.csv\nitem,units\nfolder,19' },
       ])
     );
-    expect(JSON.stringify(result.attachments)).not.toMatch(/signed|s3Bucket|s3Key/);
-    expect(repository.findOne).toHaveBeenCalledTimes(3);
+    expect(JSON.stringify(result.attachments)).not.toMatch(/base64|s3Bucket|s3Key/);
+    expect(repository.findOne).toHaveBeenCalledTimes(4);
     expect(repository.findOne).toHaveBeenCalledWith({
       where: { id: csvId, organizationId: owner.organizationId, userId: owner.id, status: 'ready' },
     });
-    expect(getSignedUrl).toHaveBeenCalledWith(expect.anything(), expect.any(GetObjectCommand), { expiresIn: 14400 });
-    expect(send).toHaveBeenCalledTimes(1);
+    expect(getSignedUrl).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it.each(['png', 'jpg', 'jpeg', 'pdf', 'csv', 'tsv', 'txt', 'md', 'json'])(
@@ -172,15 +182,25 @@ describe('AI attachment storage', () => {
           s3Bucket: 'fixture',
           s3Key: id,
         });
-        const data = Buffer.from('synthetic-image');
+        const data = provider === 'openai' ? await sampleImage(extension) : Buffer.from('synthetic-image');
         send.mockResolvedValue({ Body: { transformToByteArray: jest.fn().mockResolvedValue(data) } });
-        if (provider !== 'gemini') {
+        if (!['gemini', 'openai'].includes(provider)) {
           (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/first');
           (getSignedUrl as jest.Mock).mockResolvedValueOnce('https://files.example.test/refreshed');
         }
         const first = await service.prepare(owner, [id], [], provider);
         const followUp = await service.prepare(owner, [], [id], provider);
-        if (provider === 'gemini') {
+        if (provider === 'openai') {
+          expect(first.content[1]).toEqual({
+            type: 'input_image',
+            image_url: expect.stringMatching(/^data:image\/png;base64,/),
+          });
+          const image = Buffer.from(first.content[1].image_url.split(',')[1], 'base64');
+          expect(await sharp(image).metadata()).toMatchObject({ width: 24, height: 16 });
+          expect(followUp.content[1]).toEqual(first.content[1]);
+          expect(send).toHaveBeenCalledTimes(1);
+          expect(getSignedUrl).not.toHaveBeenCalled();
+        } else if (provider === 'gemini') {
           const mime = ['jpg', 'jpeg'].includes(extension) ? 'jpeg' : extension;
           expect(first.content[1]).toEqual({
             type: 'image_url',
@@ -191,24 +211,20 @@ describe('AI attachment storage', () => {
           expect(getSignedUrl).not.toHaveBeenCalled();
         } else {
           expect(first.content[1]).toEqual(
-            provider === 'openai'
-              ? { type: 'input_image', image_url: 'https://files.example.test/first' }
-              : provider === 'deepseek'
-                ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
-                : {
-                    type: extension === 'pdf' ? 'document' : 'image',
-                    source: { type: 'url', url: 'https://files.example.test/first' },
-                  }
+            provider === 'deepseek'
+              ? { type: 'image_url', image_url: { url: 'https://files.example.test/first' } }
+              : {
+                  type: extension === 'pdf' ? 'document' : 'image',
+                  source: { type: 'url', url: 'https://files.example.test/first' },
+                }
           );
           expect(followUp.content[1]).toEqual(
-            provider === 'openai'
-              ? { type: 'input_image', image_url: 'https://files.example.test/refreshed' }
-              : provider === 'deepseek'
-                ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
-                : {
-                    type: extension === 'pdf' ? 'document' : 'image',
-                    source: { type: 'url', url: 'https://files.example.test/refreshed' },
-                  }
+            provider === 'deepseek'
+              ? { type: 'image_url', image_url: { url: 'https://files.example.test/refreshed' } }
+              : {
+                  type: extension === 'pdf' ? 'document' : 'image',
+                  source: { type: 'url', url: 'https://files.example.test/refreshed' },
+                }
           );
           expect(send).not.toHaveBeenCalled();
         }
@@ -266,7 +282,12 @@ describe('AI attachment storage', () => {
       expect(first.content).toEqual([{ type, text: 'Attached file: specimens.pdf' }, ...expectedImages]);
       expect(followUp.content).toEqual([{ type, text: 'Previously attached file: specimens.pdf' }, ...expectedImages]);
       expect(renderAttachmentPdf).toHaveBeenCalledTimes(1);
-      expect(renderAttachmentPdf).toHaveBeenCalledWith(data, 20, MAX_AI_ATTACHMENT_CONTENT_BYTES);
+      expect(renderAttachmentPdf).toHaveBeenCalledWith(
+        data,
+        20,
+        MAX_AI_ATTACHMENT_CONTENT_BYTES,
+        ...(provider === 'openai' ? [{ openai: true }] : [])
+      );
       expect(JSON.stringify(first.attachments)).not.toContain('base64');
       expect(followUp.attachments).toEqual([]);
       expect(getSignedUrl).not.toHaveBeenCalled();
@@ -276,9 +297,56 @@ describe('AI attachment storage', () => {
       // Cached PDF pages must retain their provider-neutral shape when the user changes models.
       const switched = await service.prepare(owner, [], [id], 'deepseek');
       expect(switched.content.slice(1)).toEqual(images);
-      expect(renderAttachmentPdf).toHaveBeenCalledTimes(1);
+      expect(renderAttachmentPdf).toHaveBeenCalledTimes(provider === 'openai' ? 2 : 1);
     }
   );
+
+  it.each(['csv', 'tsv', 'txt', 'md', 'json'])(
+    'keeps every character of long OpenAI %s files on follow-ups',
+    async (extension) => {
+      const id = '7d782e53-5cfc-4306-ac95-bc5b4a693739';
+      const text = 'field,value\n'.repeat(100000) + 'end,🧭';
+      repository.findOne.mockResolvedValue({ id, name: `long.${extension}`, size: Buffer.byteLength(text) });
+      send.mockResolvedValue({ Body: { transformToString: async () => text } });
+      for (const current of [true, false]) {
+        const result = await service.prepare(owner, current ? [id] : [], current ? [] : [id], 'openai');
+        expect(result.content.length).toBeGreaterThan(1);
+        expect(
+          result.content.every(
+            (part) => part.type === 'input_text' && part.text.length <= MAX_OPENAI_ATTACHMENT_PART_CHARS
+          )
+        ).toBe(true);
+        expect(result.content.map((part) => part.text).join('')).toBe(
+          `${current ? 'Attached' : 'Previously attached'} file: long.${extension}\n${text}`
+        );
+      }
+      expect(send).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('isolates normalized OpenAI images from other provider caches and checks ownership on reuse', async () => {
+    const id = '7d782e53-5cfc-4306-ac95-bc5b4a693739';
+    repository.findOne.mockResolvedValue({ id, name: 'mark.webp', size: 100 });
+    const bytes = await sampleImage('webp');
+    send.mockResolvedValue({ Body: { transformToByteArray: async () => bytes } });
+    const openai = await service.prepare(owner, [id], [], 'openai');
+    const gemini = await service.prepare(owner, [], [id], 'gemini');
+    expect(gemini.content[1].image_url.url).toBe(`data:image/webp;base64,${bytes.toString('base64')}`);
+    expect((await service.prepare(owner, [], [id], 'openai')).content[1]).toEqual(openai.content[1]);
+    expect(send).toHaveBeenCalledTimes(2);
+    repository.findOne.mockResolvedValue(null);
+    await expect(service.prepare(owner, [], [id], 'openai')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('rejects missing or unreadable OpenAI image bytes before any build can start', async () => {
+    const id = '7d782e53-5cfc-4306-ac95-bc5b4a693739';
+    repository.findOne.mockResolvedValue({ id, name: 'mark.png', size: 100 });
+    send.mockRejectedValueOnce(new Error('Unavailable'));
+    await expect(service.prepare(owner, [id], [], 'openai')).rejects.toBeInstanceOf(BadGatewayException);
+    send.mockResolvedValue({ Body: { transformToByteArray: async () => Buffer.from('invalid pixels') } });
+    await expect(service.prepare(owner, [id], [], 'openai')).rejects.toThrow('Unable to prepare this image');
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
 
   it('shares the PDF page and content budgets across saved and new DeepSeek files', async () => {
     const ids = ['f7e10f4b-6861-4fe5-b4c4-5af5f5d9be11', '4d188f54-865f-47e6-b6e2-cbdf3c3fb274'];
@@ -439,7 +507,7 @@ describe('AI attachment storage', () => {
     for (const provider of ['openai', 'gemini', 'deepseek']) {
       await expect(service.prepare(owner, [], ids, provider)).rejects.toThrow('20 PDF pages');
     }
-    expect(renderAttachmentPdf).toHaveBeenCalledTimes(2);
+    expect(renderAttachmentPdf).toHaveBeenCalledTimes(4);
   });
 
   it('evicts older inline content when the cache exceeds its memory budget', async () => {

@@ -1,9 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
+import { prepareOpenAiImage } from './ai-attachment-openai';
 
 export const MAX_AI_ATTACHMENT_CONTENT_BYTES = 20 * 1024 * 1024;
 
 // Render PDFs as images for provider routes without document content parts.
-export async function renderAttachmentPdf(data: Uint8Array, maxPages: number, maxBytes: number) {
+export async function renderAttachmentPdf(
+  data: Uint8Array,
+  maxPages: number,
+  maxBytes: number,
+  options: { openai?: boolean } = {}
+) {
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data, isEvalSupported: false });
   try {
@@ -21,8 +27,9 @@ export async function renderAttachmentPdf(data: Uint8Array, maxPages: number, ma
         scale: Math.min(2, 1600 / longestSide),
         imageBuffer: false,
       });
-      const url = result.pages[0]?.dataUrl;
+      let url = result.pages[0]?.dataUrl;
       if (!url?.startsWith('data:image/png;base64,')) throw new Error('Missing rendered page');
+      if (options.openai) url = await prepareOpenAiImage(Buffer.from(url.split(',')[1], 'base64'));
       const image = { type: 'image_url' as const, image_url: { url } };
       maxBytes -= Buffer.byteLength(JSON.stringify(image));
       if (maxBytes < 0) {
