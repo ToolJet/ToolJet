@@ -17,17 +17,22 @@ Run from the repository root with both contract statuses set to the candidate ne
 | --- | --- |
 | Planning/reapproval design audit | `npm --prefix frontend run validate:widget-testing-contracts -- --design-only` |
 | Full local validation | `npm --prefix frontend run validate:widget-testing-contracts` |
+| PR-base validation (CI scope, no GitHub label) | `npm --prefix frontend run validate:widget-testing-contracts:pr` |
 | Final delivery | `npm --prefix frontend run validate:widget-testing-contracts -- --base-ref <implementation-start-revision>` |
 
-All modes discover staged, unstaged, and untracked changes; the default base is HEAD. Design mode
+All modes discover staged, unstaged, and untracked changes; the default base is HEAD, so committed
+PR diffs are invisible until `--pr`. That script diffs the merge-base with the open PR's target
+(`gh pr view`), or `origin/lts-3.16` if there is no PR. Override with
+`--merge-base-with origin/<branch>`. Fetch the target first. Design mode
 validates the contract and reports delivery scope blockers without failing for those blockers alone.
 It permits design review with retained edits. Full validation requires approvals and allowed delivery
 scope. Use the saved implementation base on resumptions and at delivery; it can also be supplied to
 design mode. A missing/invalid ref or failed Git discovery is an error in every mode.
 
 CI uses `--changed-files-stdin` with GitHub `status<TAB>path` entries (or plain modified paths), one
-per line. Explicit stdin replaces local discovery, including an explicitly empty list; stdin and
-`--base-ref` are mutually exclusive. Local rename detection is disabled so removal and addition both count.
+per line. Explicit stdin replaces local discovery, including an explicitly empty list; stdin cannot
+be combined with `--base-ref`, `--merge-base-with`, or `--pr`. Local rename detection is disabled so
+removal and addition both count.
 
 The ledger separates Engineering verification, deferrals, QA ownership, and exclusions. Validation
 checks structure and recognized widget runtime/registration scope. Widget TDD's completeness audit

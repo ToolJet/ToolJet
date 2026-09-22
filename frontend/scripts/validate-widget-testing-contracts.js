@@ -7,17 +7,30 @@ const { validateWidgetTestingContracts } = require('../src/test/app-builder/widg
 function changeOptions(args) {
   let stdin = false;
   let designOnly = false;
+  let pr = false;
   let baseRef;
+  let mergeBaseWith;
   for (let index = 0; index < args.length; index++) {
     if (args[index] === '--changed-files-stdin' && !stdin) stdin = true;
     else if (args[index] === '--design-only' && !designOnly) designOnly = true;
+    else if (args[index] === '--pr' && !pr) pr = true;
     else if (args[index] === '--base-ref' && baseRef === undefined) {
       baseRef = args[++index];
       if (!baseRef || baseRef.startsWith('-')) throw new Error('--base-ref requires a Git commit or ref');
+    } else if (args[index] === '--merge-base-with' && mergeBaseWith === undefined) {
+      mergeBaseWith = args[++index];
+      if (!mergeBaseWith || mergeBaseWith.startsWith('-')) {
+        throw new Error('--merge-base-with requires a Git commit or ref');
+      }
     } else throw new Error(`Unknown or repeated argument: ${args[index]}`);
   }
-  if (stdin && baseRef !== undefined) throw new Error('--changed-files-stdin and --base-ref are mutually exclusive');
-  return { stdin, designOnly, baseRef: baseRef ?? 'HEAD' };
+  if (stdin && (baseRef !== undefined || mergeBaseWith !== undefined || pr)) {
+    throw new Error('--changed-files-stdin cannot be combined with --base-ref, --merge-base-with, or --pr');
+  }
+  if (baseRef !== undefined && (mergeBaseWith !== undefined || pr)) {
+    throw new Error('--base-ref cannot be combined with --merge-base-with or --pr');
+  }
+  return { stdin, designOnly, pr, baseRef, mergeBaseWith };
 }
 
 function changedFilesFromStdin() {
@@ -40,23 +53,61 @@ function changedFilesFromStdin() {
     });
 }
 
-function changedFilesFromGit(frontendRoot, baseRef) {
-  const git = (...args) =>
-    execFileSync('git', args, {
+function runGit(frontendRoot, args) {
+  return execFileSync('git', args, {
+    cwd: frontendRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+}
+
+function detectPrBaseRef(frontendRoot) {
+  try {
+    const name = execFileSync('gh', ['pr', 'view', '--json', 'baseRefName', '-q', '.baseRefName'], {
       cwd: frontendRoot,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    }).trim();
+    if (name) return `origin/${name}`;
+  } catch {
+    // No PR, no gh, or no auth — fall through to the LTS integration branch.
+  }
+  return 'origin/lts-3.16';
+}
+
+function resolveMergeBase(frontendRoot, ref) {
   try {
-    const base = git('rev-parse', '--verify', '--end-of-options', `${baseRef}^{commit}`).trim();
+    const target = runGit(frontendRoot, ['rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`]);
+    return runGit(frontendRoot, ['merge-base', 'HEAD', target]);
+  } catch (error) {
+    throw new Error(
+      `Cannot resolve merge base with ${ref}. Fetch the PR target first (git fetch origin lts-3.16). ${
+        error.stderr?.toString().trim() || error.message
+      }`
+    );
+  }
+}
+
+function changedFilesFromGit(frontendRoot, baseRef) {
+  try {
+    const base = runGit(frontendRoot, ['rev-parse', '--verify', '--end-of-options', `${baseRef}^{commit}`]);
     // Disabling rename detection keeps both the removed and added paths in scope.
-    const entries = git('diff', '--relative', '--name-status', '-z', '--no-renames', base, '--', '.').split('\0');
+    const entries = runGit(frontendRoot, [
+      'diff',
+      '--relative',
+      '--name-status',
+      '-z',
+      '--no-renames',
+      base,
+      '--',
+      '.',
+    ]).split('\0');
     const files = [];
     for (let index = 0; index + 1 < entries.length; index += 2) {
       const status = entries[index] === 'A' ? 'added' : entries[index] === 'D' ? 'removed' : 'modified';
       files.push({ status, path: entries[index + 1] });
     }
-    for (const filePath of git('ls-files', '--others', '--exclude-standard', '-z', '--', '.')
+    for (const filePath of runGit(frontendRoot, ['ls-files', '--others', '--exclude-standard', '-z', '--', '.'])
       .split('\0')
       .filter(Boolean)) {
       files.push({ status: 'added', path: filePath });
@@ -71,16 +122,25 @@ const frontendRoot = path.resolve(__dirname, '..');
 
 try {
   const options = changeOptions(process.argv.slice(2));
-  const changedFiles = options.stdin ? changedFilesFromStdin() : changedFilesFromGit(frontendRoot, options.baseRef);
+  let scope;
+  let changedFiles;
+  if (options.stdin) {
+    changedFiles = changedFilesFromStdin();
+    scope = 'explicit stdin';
+  } else {
+    let baseRef = options.baseRef ?? 'HEAD';
+    if (options.mergeBaseWith || options.pr) {
+      const against = options.mergeBaseWith ?? detectPrBaseRef(frontendRoot);
+      baseRef = resolveMergeBase(frontendRoot, against);
+      scope = `working tree against merge-base with ${against} (${baseRef})`;
+    } else scope = `working tree against ${baseRef}`;
+    changedFiles = changedFilesFromGit(frontendRoot, baseRef);
+  }
   const result = validateWidgetTestingContracts(frontendRoot, {
     changedFiles,
     designOnly: options.designOnly,
   });
-  console.log(
-    `Change scope: ${options.stdin ? 'explicit stdin' : `working tree against ${options.baseRef}`} (${
-      changedFiles.length
-    } paths).`
-  );
+  console.log(`Change scope: ${scope} (${changedFiles.length} paths).`);
   if (result.ledger?.length) {
     console.log('Widget coverage ledger:\n');
     for (const entry of result.ledger) {

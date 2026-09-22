@@ -86,23 +86,15 @@ async function setStyle(property, value, componentId = ID) {
 async function clickText(container, handle = HANDLE) {
   const node = linkText(container, handle);
   const stopNav = (event) => event.preventDefault();
-  node.addEventListener('click', stopNav, true);
-  try {
-    await widget.session.user.click(node);
-  } finally {
-    node.removeEventListener('click', stopNav, true);
-  }
+  node.addEventListener('click', stopNav, { capture: true, once: true });
+  await widget.session.user.click(node);
 }
 
 async function actClick(container, handle = HANDLE) {
   const node = anchor(container, handle);
   const stopNav = (event) => event.preventDefault();
-  node.addEventListener('click', stopNav, true);
-  try {
-    await widget.act('click');
-  } finally {
-    node.removeEventListener('click', stopNav, true);
-  }
+  node.addEventListener('click', stopNav, { capture: true, once: true });
+  await widget.act('click');
 }
 
 describe('Link widget', () => {
