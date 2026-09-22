@@ -61,6 +61,9 @@ export const useCanvasDropHandler = () => {
           }
         : undefined;
 
+      // Custom-tab drops carry which library component the LibraryComponent instance renders.
+      const libraryComponentInfo = component?.libraryComponentInfo;
+
       let addedComponent;
 
       if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
@@ -69,7 +72,8 @@ export const useCanvasDropHandler = () => {
           currentLayout,
           realCanvasRef,
           canvasId,
-          moduleInfo
+          moduleInfo,
+          libraryComponentInfo
         );
         const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
         if (draggedComponentType === 'Form') {
@@ -83,7 +87,8 @@ export const useCanvasDropHandler = () => {
           currentLayout,
           realCanvasRef,
           canvasId,
-          moduleInfo
+          moduleInfo,
+          libraryComponentInfo
         );
         addedComponent = [newComponent];
         await addComponentToCurrentPage(addedComponent);
