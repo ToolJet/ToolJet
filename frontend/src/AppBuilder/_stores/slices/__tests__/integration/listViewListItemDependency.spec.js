@@ -113,8 +113,8 @@ describe('a row binding that references both a query and listItem', () => {
    * separate publishRows call, in that order.
    */
   const runQuery = (data) => {
-    state().setExposedValues(QUERY_ID, 'queries', { isLoading: true }, 'canvas');
-    state().setExposedValues(QUERY_ID, 'queries', { isLoading: false, data }, 'canvas');
+    state().setResolvedQuery(QUERY_ID, { isLoading: true }, 'canvas');
+    state().setResolvedQuery(QUERY_ID, { isLoading: false, data }, 'canvas');
     publishRows(data);
   };
 
