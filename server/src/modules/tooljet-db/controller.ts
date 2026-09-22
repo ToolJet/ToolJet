@@ -28,10 +28,11 @@ import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 import {
   CreatePostgrestTableDto,
   EditTableDto,
-  EditColumnTableDto,
-  PostgrestForeignKeyDto,
   AddColumnDto,
   MigrationNameQueryDto,
+  EditColumnRequestDto,
+  CreateForeignKeyRequestDto,
+  UpdateForeignKeyRequestDto,
 } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
@@ -110,7 +111,6 @@ export class TooljetDbController {
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async table(
-    @Body() body,
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Query('environment_id', new ParseUUIDPipe({ optional: true })) environmentId?: string
@@ -233,17 +233,15 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName/column')
   @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
   async editColumn(
-    @Body('column') columnDto: EditColumnTableDto,
+    @Body() body: EditColumnRequestDto,
     @Param('organizationId') organizationId,
-    @Param('tableName') tableName,
-    @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string,
-    @Body('migration_name') migrationName?: string
+    @Param('tableName') tableName
   ) {
     const params = {
       table_name: tableName,
-      column: columnDto,
-      foreign_key_id_to_delete: foreignKeyIdToDelete || '',
-      migration_name: migrationName,
+      column: body.column,
+      foreign_key_id_to_delete: body.foreignKeyIdToDelete || '',
+      migration_name: body.migration_name,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params, undefined);
     return decamelizeKeys({ result });
@@ -255,14 +253,13 @@ export class TooljetDbController {
   async createForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
-    @Body('migration_name') migrationName?: string
+    @Body() body: CreateForeignKeyRequestDto
   ) {
     const params = {
       table_name: tableName,
-      foreign_keys: foreign_keys,
+      foreign_keys: body.foreign_keys,
       shouldDestroyDbConnection: true,
-      migration_name: migrationName,
+      migration_name: body.migration_name,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params, undefined);
     return decamelizeKeys({ result });
@@ -274,15 +271,13 @@ export class TooljetDbController {
   async updateForeignKey(
     @Param('organizationId') organizationId,
     @Param('tableName') tableName,
-    @Body('foreign_key_id') foreign_key_id: string,
-    @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>,
-    @Body('migration_name') migrationName?: string
+    @Body() body: UpdateForeignKeyRequestDto
   ) {
     const params = {
       table_name: tableName,
-      foreign_key_id: foreign_key_id,
-      foreign_keys: foreign_keys,
-      migration_name: migrationName,
+      foreign_key_id: body.foreign_key_id,
+      foreign_keys: body.foreign_keys,
+      migration_name: body.migration_name,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params, undefined);
     return decamelizeKeys({ result });

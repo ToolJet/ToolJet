@@ -287,6 +287,32 @@ export class MigrationNameQueryDto {
   migration_name?: string;
 }
 
+// Same gap as MigrationNameQueryDto above, but on PATCH/POST/PUT routes that already have a real
+// body - editColumn/createForeignKey/updateForeignKey used to pull migration_name (and, for
+// editColumn, foreignKeyIdToDelete) via raw per-field @Body('key') extraction, which the global
+// ValidationPipe never validates. EditColumnRequestDto itself is declared further down, after
+// EditColumnTableDto - `emitDecoratorMetadata` turns its `column: EditColumnTableDto` property
+// type into a real runtime reference (not just a compile-time type), so it can't forward-reference
+// a class declared later in the same module.
+export class CreateForeignKeyRequestDto {
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Foreign key must have atleast 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestForeignKeyDto)
+  foreign_keys: Array<PostgrestForeignKeyDto>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
+}
+
+export class UpdateForeignKeyRequestDto extends CreateForeignKeyRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  foreign_key_id: string;
+}
+
 export class EditColumnTableDto {
   @IsOptional()
   @IsString()
@@ -341,6 +367,21 @@ export class EditColumnTableDto {
 
   @IsOptional()
   configurations: any;
+}
+
+export class EditColumnRequestDto {
+  @ValidateNested()
+  @Type(() => EditColumnTableDto)
+  column: EditColumnTableDto;
+
+  @IsOptional()
+  @IsString()
+  foreignKeyIdToDelete?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'Migration name must be less than 120 characters' })
+  migration_name?: string;
 }
 
 export class AddColumnDto {
