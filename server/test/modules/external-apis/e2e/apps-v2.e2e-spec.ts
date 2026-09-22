@@ -3,19 +3,11 @@
  */
 
 /**
- * External API v2 — Apps (`api-spec-viewer.html` §3)
+ * Edition/plan gating is shared by every v2 route and covered only here (CE, starter blocks below).
  *
- * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/apps (all EE, gated by
- * FEATURE_KEY.*_APP_V2, license EXTERNAL_API). CE/starter edition-and-plan gating is exercised
- * once below (shared FeatureAbilityGuard/ExternalApiSecurityGuard infrastructure, identical
- * across every v2 resource) — the other three v2 suites don't repeat it.
- *
- * Known, deliberate spec deviations (do not "fix" these tests to match the spec):
- *   1. Error body shape is NestJS's default AllExceptionsFilter ({statusCode, message, ...}),
- *      not the spec's {error:{code,message,status}}.
- *   2. workspaceIdentifier/appIdentifier are never format-validated (no ParseUUIDPipe) — a
- *      garbage string is simply tried as slug/name and 404s if nothing matches, unlike v1
- *      which 400s on a malformed UUID.
+ * Deliberate spec deviations, don't change these tests to match the spec:
+ *   1. Error body is Nest's default ({ statusCode, message }), not { error: { code, message, status } }.
+ *   2. Identifiers aren't format-validated; a non-matching value 404s instead of 400ing.
  */
 
 import * as request from 'supertest';

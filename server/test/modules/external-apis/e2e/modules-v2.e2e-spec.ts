@@ -3,21 +3,8 @@
  */
 
 /**
- * External API v2 — Modules (`api-spec-viewer.html` §4)
- *
- * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/modules (all EE, gated by
- * FEATURE_KEY.*_MODULE_V2, license EXTERNAL_API). Edition/plan gating (CE 404s, starter 451s)
- * is shared guard infrastructure identical across every v2 route — see apps-v2.e2e-spec.ts,
- * which is the only one of the four suites that exercises it.
- *
- * Known, deliberate spec deviations (do not "fix" these tests to match the spec):
- *   1. Error body shape is NestJS's default AllExceptionsFilter ({statusCode, message, ...}),
- *      not the spec's {error:{code,message,status}}.
- *   2. workspaceIdentifier/moduleIdentifier are never format-validated — a garbage string is
- *      tried as a name and 404s if nothing matches, rather than 400ing on a malformed UUID.
- *   3. Modules v2 has NO folder_id anywhere (request or response), despite the spec (§4 schema,
- *      create/list/get/update) defining one. This was an explicit product decision made earlier
- *      in this project, not an oversight.
+ * Gating and spec deviations: see apps-v2.e2e-spec.ts.
+ * Modules have no folder_id in v2, unlike the spec.
  */
 
 import * as request from 'supertest';

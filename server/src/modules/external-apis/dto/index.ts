@@ -24,13 +24,14 @@ import {
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type, Exclude, Expose } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 import { sanitizeInput } from '@helpers/utils.helper';
 import { AllowedCharactersValidator } from '@modules/folders/dto';
+import { applyDecorators } from '@nestjs/common';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
@@ -606,11 +607,18 @@ export class UnbanWorkspaceDto {
   slug?: string;
 }
 
+// Shared by every v2 create/rename DTO (Apps/Modules/Workflows) so the same name is rejected
+// consistently at create time and rename time, for all three resource types.
+const ResourceName = () =>
+  applyDecorators(
+    IsString(),
+    IsNotEmpty(),
+    MaxLength(50),
+    Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
+  );
+
 export class CreateAppV2Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
-  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
+  @ResourceName()
   name: string;
 
   @IsOptional()
@@ -628,9 +636,7 @@ export class CreateAppV2Dto {
 
 export class RenameAppV2Dto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @ResourceName()
   name?: string;
 
   @IsOptional()
@@ -677,17 +683,13 @@ export class ImportAppV2Dto {
 }
 
 export class CreateModuleV2Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @ResourceName()
   name: string;
 }
 
 export class RenameModuleV2Dto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @ResourceName()
   name?: string;
 }
 
@@ -718,9 +720,7 @@ export class ImportModuleV2Dto {
 }
 
 export class CreateWorkflowV2Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @ResourceName()
   name: string;
 
   // workflow folder, by id or name
@@ -732,9 +732,7 @@ export class CreateWorkflowV2Dto {
 
 export class RenameWorkflowV2Dto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
+  @ResourceName()
   name?: string;
 
   // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
@@ -787,10 +785,10 @@ export class CreateFolderV2Dto {
 
 export class UpdateFolderV2Dto {
   @IsString()
-  @IsNotEmpty()
-  @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty({ message: "Folder name can't be empty" })
+  @Transform(({ value }) => sanitizeInput(value ?? '').trim())
+  @Validate(AllowedCharactersValidator)
   @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
-  @MinLength(0, { message: 'Folder name cannot be empty' })
   name: string;
 }
 
@@ -811,4 +809,119 @@ export class ListFoldersV2QueryDto {
   @Min(1)
   @Max(100)
   per_page?: number = 20;
+}
+
+// --- v2 Response DTOs ---
+// Apps/Modules/Workflows/Folders v2 handlers build a plain object by hand (see service.ts) and
+// return it through these @Exclude-by-default DTOs via plainToInstance + ClassSerializerInterceptor,
+// so an accidental extra field on the hand-built object is dropped rather than silently shipped.
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class AppV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose({ name: 'folder_id' })
+  folderId: string | null;
+}
+
+@Exclude()
+export class ListAppsV2ResponseDto {
+  @Expose()
+  @Type(() => AppV2ResponseDto)
+  data: AppV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class ModuleV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListModulesV2ResponseDto {
+  @Expose()
+  @Type(() => ModuleV2ResponseDto)
+  data: ModuleV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class WorkflowV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose({ name: 'folder_id' })
+  folderId: string | null;
+}
+
+@Exclude()
+export class ListWorkflowsV2ResponseDto {
+  @Expose()
+  @Type(() => WorkflowV2ResponseDto)
+  data: WorkflowV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class FolderV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListFoldersV2ResponseDto {
+  @Expose()
+  @Type(() => FolderV2ResponseDto)
+  data: FolderV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+// Export's payload is the app/module/workflow definition blob itself (queries, pages, styles —
+// an open-ended shape, not an enumerable resource), already credential-scrubbed in service.ts
+// (#scrubDataSourceCredentials); this DTO only guarantees the top-level { definition } envelope.
+@Exclude()
+export class ResourceExportV2ResponseDto {
+  @Expose()
+  definition: Record<string, any>;
 }

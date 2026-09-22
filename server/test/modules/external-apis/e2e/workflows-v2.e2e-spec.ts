@@ -3,19 +3,7 @@
  */
 
 /**
- * External API v2 — Workflows (`api-spec-viewer.html` §5)
- *
- * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/workflows (all EE, gated by
- * FEATURE_KEY.*_WORKFLOW_V2, license EXTERNAL_API). Structurally = Apps v2 minus `slug`
- * (no slug in request or response anywhere), otherwise identical: folder_id support, same
- * 422/404/409 semantics, same import/export shape. Delete has no extra guard (unlike Modules'
- * ModuleViewer-in-use check). Edition/plan gating (CE 404s, starter 451s) is shared guard
- * infrastructure identical across every v2 route — see apps-v2.e2e-spec.ts, which is the only
- * one of the four suites that exercises it.
- *
- * Known, deliberate spec deviations — same as apps-v2.e2e-spec.ts:
- *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
- *   2. workspaceIdentifier/workflowIdentifier are never format-validated.
+ * Gating and spec deviations: see apps-v2.e2e-spec.ts.
  */
 
 import * as request from 'supertest';

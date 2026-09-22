@@ -3,22 +3,8 @@
  */
 
 /**
- * External API v2 — App/Module/Workflow Folders (`api-spec-viewer.html` §6)
- *
- * Routes under /api/v2/ext/workspaces/:workspaceIdentifier/{app,module,workflow}-folders (all
- * EE, gated by FEATURE_KEY.*_{APP,MODULE,WORKFLOW}_FOLDER_V2, license EXTERNAL_API). One shared
- * service implementation parameterized by APP_TYPES, called by three thin controllers — so this
- * file drives the same suite of assertions across all three folder types via a small config
- * table, rather than tripling the code by hand.
- *
- * Unlike Apps/Modules/Workflows, Folder is its own entity with a real `name` column
- * (server/src/entities/folder.entity.ts) — there is no app_versions-style split, so (unlike
- * the other three v2 resources) Create/Get/List do NOT show a name: null bug here. Confirmed
- * empirically below, not assumed.
- *
- * Known, deliberate spec deviations — same as apps-v2.e2e-spec.ts:
- *   1. Error body shape is NestJS's default AllExceptionsFilter, not the spec's {error:{...}}.
- *   2. workspaceIdentifier/folderIdentifier are never format-validated.
+ * One service serves all three folder types, so the suite runs once per type from the table below.
+ * Gating and spec deviations: see apps-v2.e2e-spec.ts.
  */
 
 import * as request from 'supertest';
