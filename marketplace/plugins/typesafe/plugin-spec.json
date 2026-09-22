@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "name": "TypeSafe",
+    "kind": "typesafe",
+    "description": "Typed decisions from TypeSafe's Jev model: route, classify, score or answer yes/no over any state, with probabilities and confidence. Reaches TypeSafe directly or through OpenRouter.",
+    "version": "1.0.0",
+    "type": "api"
+  },
+  "auth": {
+    "type": "bearer",
+    "config": {
+      "strategy": "dual",
+      "authTypeKey": "auth_type",
+      "default": "typesafe",
+      "customTesting": true,
+      "methods": [
+        {
+          "value": "typesafe",
+          "name": "TypeSafe API key",
+          "fields": [{ "key": "api_key", "label": "API key", "type": "password", "encrypted": true }],
+          "endpoint": "POST https://api.typesafe.ai/v1/systemone",
+          "headerBehavior": "Authorization: Bearer <api_key>",
+          "modelDefault": "jev-latest"
+        },
+        {
+          "value": "openrouter",
+          "name": "OpenRouter API key",
+          "fields": [{ "key": "openrouter_api_key", "label": "OpenRouter API key", "type": "password", "encrypted": true }],
+          "endpoint": "POST https://openrouter.ai/api/alpha/decisions",
+          "headerBehavior": "Authorization: Bearer <openrouter_api_key>",
+          "modelDefault": "typesafe/jev-1.13",
+          "notes": "Same request and response body as TypeSafe. A model without a slash is prefixed with typesafe/ so jev-latest works on both paths."
+        }
+      ],
+      "commonFields": [
+        { "key": "base_url", "label": "Base URL (optional)", "type": "text", "required": false, "description": "Override the endpoint, for example a proxy or a future API version." }
+      ],
+      "testConnection": "POST one noul question ({state:'ping', questions:{ok:{type:'noul',instructions:'Is the word ping present?'}}}) with the selected credential; status ok on 2xx, else failed with the API's message."
+    }
+  },
+  "schemaVersion": "v1",
+  "operations": [
+    {
+      "name": "evaluate",
+      "displayName": "Evaluate",
+      "description": "Evaluate a state against a map of typed questions. Returns one typed answer per question: choice (option + probabilities + confidence), score (weighted level + probabilities + confidence) or noul (probability that the answer is yes).",
+      "parameters": [
+        { "name": "state", "type": "json", "required": true, "widget": "codehinter", "placeholder": "{{components.table1.selectedRow}}", "description": "Text or JSON to decide about. A string is sent as-is; anything that parses as JSON is sent as structured state." },
+        { "name": "questions", "type": "json", "required": true, "widget": "codehinter", "placeholder": "{\"route\": {\"type\": \"choice\", \"instructions\": \"Which team should handle this?\", \"criteria\": {\"billing\": \"Payments, invoicing, refunds\", \"technical\": \"Bugs, outages\", \"sales\": \"Pricing, upgrades\"}}}", "description": "Map of question id to {type: choice|score|noul, instructions, criteria}. Answers come back under the same ids." },
+        { "name": "model", "type": "string", "required": false, "widget": "codehinter", "placeholder": "jev-latest", "description": "Defaults to jev-latest on TypeSafe and typesafe/jev-1.13 on OpenRouter." }
+      ],
+      "response": {
+        "type": "object",
+        "schema": { "model": "string", "answers": "map<id, {type, choice?, score?, noul?, probabilities?, legend?, confidence?}>", "usage": "{input_tokens, output_tokens}" }
+      },
+      "testCases": [
+        { "name": "choice routes a ticket", "input": { "operation": "evaluate", "state": "Help! My payouts have been failing for 3 days.", "questions": "{\"department\":{\"type\":\"choice\",\"instructions\":\"Which team should handle this?\",\"criteria\":{\"billing\":\"Payments, invoicing, refunds\",\"technical\":\"Bugs, outages, integrations\",\"sales\":\"Pricing, upgrades, new accounts\"}}}" }, "expectedStatus": 200, "expectedShape": { "model": "string", "answers": "object", "usage": "object" } },
+        { "name": "malformed questions is a 422 before the request", "input": { "operation": "evaluate", "state": "x", "questions": "{\"q\":{\"type\":\"maybe\"}}" }, "expectedStatus": 422, "expectedError": "question type" }
+      ]
+    }
+  ],
+  "uiExpectations": {
+    "reference": "none",
+    "datasourceFields": [
+      { "key": "auth_type", "label": "Authentication", "widget": "dropdown-component-flip", "order": 1 },
+      { "key": "base_url", "label": "Base URL (optional)", "widget": "text", "order": 2 },
+      { "key": "api_key", "label": "API key", "widget": "password", "order": 3 },
+      { "key": "openrouter_api_key", "label": "OpenRouter API key", "widget": "password", "order": 3 }
+    ],
+    "notes": "Two credential branches, one endpoint per branch. Nothing else."
+  }
+}
