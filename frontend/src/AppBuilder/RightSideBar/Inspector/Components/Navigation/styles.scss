@@ -537,6 +537,12 @@
       color: var(--text-default);
       padding-left: 2px;
     }
+
+    // Events section: scrollable so the "add event handler" button stays reachable
+    .nav-item-popover-events-section {
+      max-height: 220px;
+      overflow-y: auto;
+    }
   }
   
   // ==========================================

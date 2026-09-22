@@ -451,6 +451,11 @@
         button {
             font-size: 12px;
         }
+
+        .page-events-list {
+            max-height: 220px;
+            overflow-y: auto;
+        }
     }
 }
 
