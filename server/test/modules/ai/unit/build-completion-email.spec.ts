@@ -4,6 +4,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 const eligible = {
   failed: false,
+  incomplete: false,
   cancelled: false,
   intent: 'create',
   appType: APP_TYPES.FRONT_END,
@@ -34,10 +35,8 @@ describe('AI build completion email eligibility', () => {
     expect(shouldEmailBuildCompletion({ ...eligible, failed: true })).toBe(false);
   });
 
-  // A partial build persisted a real, usable app, and the user who walked away from it is
-  // exactly who this email is for — `incomplete` is deliberately not an input here.
-  it('emails a create build regardless of how complete the agent judged it', () => {
-    expect(shouldEmailBuildCompletion(eligible)).toBe(true);
+  it('does not consume the ready notification for an incomplete build', () => {
+    expect(shouldEmailBuildCompletion({ ...eligible, incomplete: true })).toBe(false);
   });
 
   it('stays silent for modules, which have no editor link to send anyone to', () => {

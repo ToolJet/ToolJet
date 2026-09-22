@@ -14061,7 +14061,9 @@ tbody {
 
 .overflow-tooltip {
   .tooltip-inner {
-    max-width: 100%;
+    max-width: 280px;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
@@ -14447,12 +14449,6 @@ tbody {
   gap: 12px;
 }
 
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
-}
-
 #inspector-tabpane-properties {
   .accordion {
     .accordion-item:last-child {
@@ -14776,12 +14772,6 @@ tbody {
 
 .disabled-action-tooltip {
   opacity: 0.4;
-}
-
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
 }
 
 .card-table {
