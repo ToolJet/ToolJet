@@ -17,6 +17,7 @@ import {
   getTooljetDbDataSource,
   closeTestApp,
   ensureAppEnvironments,
+  recoverAbortedSuiteTx,
 } from 'test-helper';
 import { v4 as uuidv4 } from 'uuid';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -532,6 +533,11 @@ describe('TooljetDb baseline repair', () => {
           })
         )
       ).rejects.toMatchObject({ driverError: expect.objectContaining({ code: '23505' }) });
+
+      // The rejected insert leaves the shared suite transaction aborted until rolled back to the
+      // current test's SAVEPOINT — without this, afterEach's logout() runs against a poisoned
+      // connection (global rollbackTestTransaction() runs after this spec's own afterEach, not before).
+      await recoverAbortedSuiteTx();
     });
   });
 });
