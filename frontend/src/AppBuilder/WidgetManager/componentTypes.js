@@ -60,7 +60,9 @@ const universalProps = {
   definition: {
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: '' },
+    },
     generalStyles: {},
   },
 };
@@ -72,7 +74,9 @@ const legacyUniversalProps = {
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: 'code', displayName: 'CSS class', accordian: 'Advanced' },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
