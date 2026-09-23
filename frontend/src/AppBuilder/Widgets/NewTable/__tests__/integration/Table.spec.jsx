@@ -2115,6 +2115,30 @@ describe('Table: styling and misc', () => {
     expect(cell('age', 1).style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 
+  test('[Table-COLTRANSFORM-001] a transformation resolving to null renders an empty cell, not the original value or the literal text "null"', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'age',
+              key: 'age',
+              id: 'col-age',
+              columnType: 'number',
+              columnSize: 80,
+              transformation: '{{cellValue > 32 ? cellValue : null}}',
+            },
+          ],
+        },
+      },
+    });
+    // ROWS: Ada(30), Grace(40), Rosalind(35) — only Grace and Rosalind exceed 32.
+    await waitFor(() => expect(cell('age', 0)).toBeInTheDocument());
+    expect(cellText('age', 0)).toBe('');
+    expect(cellText('age', 1)).toBe('40');
+    expect(cellText('age', 2)).toBe('35');
+  });
+
   test('[Table-STATE-004] dynamicHeight (view mode only) schedules a reflow so the table grows/shrinks with its content', async () => {
     // isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' — inert in edit
     // mode. useDynamicHeight's own DOM effect (freeing the WidgetWrapper element to auto-height)
