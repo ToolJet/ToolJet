@@ -99,6 +99,29 @@ authenticated by a static bearer token rather than a user session.
   matching the spec's "Workspace Groups" concept — it deliberately excludes the default role groups
   (admin/builder/end-user), which are surfaced instead via the `role` field on the Workspace User
   itself.
+- **License limits vs license gating**: `FeatureAbilityGuard` only checks whether a capability is
+  *licensed at all* (CE 404s, starter 451s). Separately, ToolJet enforces license *limits* (seat
+  count, workspace count) everywhere else in the product via `LicenseUserService.validateUser` /
+  `LicenseOrganizationService.validateOrganization`, both throwing `HttpException(msg, 451)` when a
+  count would be exceeded — checked *after* the mutation, in the same transaction, mirroring
+  `setup-organization/util.service.ts` and `organization-users/util.service.ts`'s `inviteNewUser`.
+  Workspaces v2's `createWorkspaceV2` and both unarchive paths (`#setWorkspaceArchivedV2` and
+  `updateWorkspaceV2`'s `PATCH { status: 'active' }` branch), and Workspace Users v2's
+  `#createWorkspaceUserEntryV2`, `#updateWorkspaceUserEntryV2`'s role-change branch, and
+  `#setWorkspaceUserArchivedV2`'s unarchive path all call these. Users v2's `unarchiveUserV2` does
+  **not** yet — it cascades across every workspace the user belongs to, and checking each one's
+  limit needs its own partial-success design; this is a known, deliberate gap, not an oversight.
+- **Bulk create/update diverge from the rest of the codebase on a license-limit hit**: every other
+  license-limit call site lets the 451 propagate uncaught, aborting the whole transaction. Bulk
+  create/update instead report it as a per-entry `LICENSE_LIMIT_REACHED` error in the existing 207
+  response, consistent with how every other per-entry failure (duplicate email, validation) is
+  already handled here — but this means `#createWorkspaceUserEntryV2` and
+  `#updateWorkspaceUserEntryV2` must manually **compensate** (delete/revert exactly what that one
+  call wrote) before re-throwing, since nothing else undoes it. Don't remove that compensation
+  without understanding why it's there — without it, a "failed" bulk entry would still silently
+  persist. Bulk create short-circuits the rest of the batch once the limit is hit (every remaining
+  entry would fail identically); bulk update does not, since only entries that also change `role`
+  are affected by the user-limit check.
 - **Local dev DB gotcha**: `ormconfig.ts`'s `getEnvVars()` loads `.env` or `.env.test` from disk
   and those file values *override* already-exported shell env vars (`{...process.env,
   ...dotenv.parse(file)}`), and which file loads depends on `NODE_ENV`. Separately, `migrations:

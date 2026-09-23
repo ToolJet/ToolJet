@@ -5,10 +5,20 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, closeTestApp, createUser, getDefaultDataSource, NONEXISTENT_UUID } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  getDefaultDataSource,
+  findEntity,
+  NONEXISTENT_UUID,
+  setTestLicenseTerms,
+  restoreLicensePlan,
+} from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE } from 'src/modules/group-permissions/constants';
+import { User } from 'src/entities/user.entity';
 
 jest.setTimeout(120_000);
 
@@ -451,6 +461,153 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
         .get(`${WORKSPACES_BASE}/${workspaceId}/users/${NONEXISTENT_UUID}/groups`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
+  });
+
+  describe('License limits', () => {
+    it('should reject creating a workspace user when the license user limit is reached, without persisting anything', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Limit One', email: `wu-limit1-${suffix}@tooljet.io`, password: 'Password1', role: 'end-user' })
+        .expect(201);
+
+      const overLimitEmail = `wu-limit2-${suffix}@tooljet.io`;
+      try {
+        setTestLicenseTerms(app, {
+          features: { externalApi: true },
+          users: { total: 1, editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+        } as any);
+        await request(app.getHttpServer())
+          .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+          .set('Authorization', getExtAuth())
+          .send({ name: 'Limit Two', email: overLimitEmail, password: 'Password1', role: 'end-user' })
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
+
+      expect(await findEntity(User, { email: overLimitEmail })).toBeNull();
+    });
+
+    it('should stop creating workspace users once the license limit is reached and report the rest as errors', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      const emails = [0, 1, 2, 3].map((i) => `wu-bulklimit${i}-${suffix}@tooljet.io`);
+
+      let res;
+      try {
+        setTestLicenseTerms(app, {
+          features: { externalApi: true },
+          users: { total: 2, editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+        } as any);
+        res = await request(app.getHttpServer())
+          .post(`${WORKSPACES_BASE}/${workspaceId}/users/bulk`)
+          .set('Authorization', getExtAuth())
+          .send({
+            users: emails.map((email, i) => ({
+              name: `Bulk Limit ${i}`,
+              email,
+              password: 'Password1',
+              role: 'end-user',
+            })),
+          })
+          .expect(207);
+      } finally {
+        restoreLicensePlan(app);
+      }
+
+      expect(res.body.created).toHaveLength(2);
+      expect(res.body.errors).toHaveLength(2);
+      expect(res.body.errors[0]).toMatchObject({ index: 2, code: 'LICENSE_LIMIT_REACHED' });
+      expect(res.body.errors[1]).toMatchObject({ index: 3, code: 'LICENSE_LIMIT_REACHED' });
+      expect(await findEntity(User, { email: emails[2] })).toBeNull();
+      expect(await findEntity(User, { email: emails[3] })).toBeNull();
+    });
+
+    it('should reject promoting a workspace user to a role that would exceed the license builder limit, leaving their role unchanged', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Existing Builder',
+          email: `wu-builder-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'builder',
+        })
+        .expect(201);
+      const toPromote = await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'To Promote',
+          email: `wu-promote-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'end-user',
+        })
+        .expect(201);
+
+      try {
+        setTestLicenseTerms(app, {
+          features: { externalApi: true },
+          users: { total: 'UNLIMITED', editor: 1, viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+        } as any);
+        await request(app.getHttpServer())
+          .patch(`${WORKSPACES_BASE}/${workspaceId}/users/${toPromote.body.id}`)
+          .set('Authorization', getExtAuth())
+          .send({ role: 'builder' })
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
+
+      const unchanged = await request(app.getHttpServer())
+        .get(`${WORKSPACES_BASE}/${workspaceId}/users/${toPromote.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(unchanged.body.role).toBe('end-user');
+    });
+
+    it('should reject unarchiving a workspace user when it would exceed the license user limit', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      const toUnarchive = await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'To Unarchive',
+          email: `wu-unarchive-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'end-user',
+        })
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users/${toUnarchive.body.id}/archive`)
+        .set('Authorization', getExtAuth())
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Occupies The Slot',
+          email: `wu-occupies-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'end-user',
+        })
+        .expect(201);
+
+      try {
+        setTestLicenseTerms(app, {
+          features: { externalApi: true },
+          users: { total: 1, editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+        } as any);
+        await request(app.getHttpServer())
+          .post(`${WORKSPACES_BASE}/${workspaceId}/users/${toUnarchive.body.id}/unarchive`)
+          .set('Authorization', getExtAuth())
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
     });
   });
 });

@@ -5,7 +5,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, closeTestApp, NONEXISTENT_UUID } from 'test-helper';
+import { initTestApp, closeTestApp, NONEXISTENT_UUID, setTestLicenseTerms, restoreLicensePlan } from 'test-helper';
 
 jest.setTimeout(120_000);
 
@@ -470,6 +470,86 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
         .post(`${BASE}/${NONEXISTENT_UUID}/set-default`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
+  });
+
+  describe('License limits', () => {
+    it('should reject creating a workspace when the license workspace limit is reached', async () => {
+      const suffix = Date.now();
+      await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `LimitDefault${suffix}`, slug: `limit-default-${suffix}` })
+        .expect(201);
+
+      try {
+        setTestLicenseTerms(app, { features: { externalApi: true }, workspaces: 1 } as any);
+        await request(app.getHttpServer())
+          .post(BASE)
+          .set('Authorization', getExtAuth())
+          .send({ name: `OverLimit${suffix}`, slug: `over-limit-${suffix}` })
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
+    });
+
+    it('should reject unarchiving a workspace when it would exceed the license workspace limit', async () => {
+      const suffix = Date.now();
+      await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `LimitDefault2${suffix}`, slug: `limit-default-2-${suffix}` })
+        .expect(201);
+      const other = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `LimitOther${suffix}`, slug: `limit-other-${suffix}` })
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(`${BASE}/${other.body.id}/archive`)
+        .set('Authorization', getExtAuth())
+        .expect(201);
+
+      try {
+        setTestLicenseTerms(app, { features: { externalApi: true }, workspaces: 1 } as any);
+        await request(app.getHttpServer())
+          .post(`${BASE}/${other.body.id}/unarchive`)
+          .set('Authorization', getExtAuth())
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
+    });
+
+    it('should reject reactivating an archived workspace via PATCH when it would exceed the license workspace limit', async () => {
+      const suffix = Date.now();
+      await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `LimitDefault3${suffix}`, slug: `limit-default-3-${suffix}` })
+        .expect(201);
+      const other = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `LimitOther3${suffix}`, slug: `limit-other-3-${suffix}` })
+        .expect(201);
+      await request(app.getHttpServer())
+        .patch(`${BASE}/${other.body.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ status: 'archived' })
+        .expect(200);
+
+      try {
+        setTestLicenseTerms(app, { features: { externalApi: true }, workspaces: 1 } as any);
+        await request(app.getHttpServer())
+          .patch(`${BASE}/${other.body.id}`)
+          .set('Authorization', getExtAuth())
+          .send({ status: 'active' })
+          .expect(451);
+      } finally {
+        restoreLicensePlan(app);
+      }
     });
   });
 });
