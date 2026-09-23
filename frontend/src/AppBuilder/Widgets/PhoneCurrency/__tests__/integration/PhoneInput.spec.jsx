@@ -498,9 +498,9 @@ describe('remaining actions', () => {
     expect(harness.exposed().value).toBe('+915551234567');
   });
 
-  // Break this catches: adding setShowValidationError(true) to clearValue, which would
-  // make Form clearForm paint an untouched form red.
-  test('[PhoneInput-CSA-003] clear empties the field and fires onChange without changing message visibility', async () => {
+  // Break this catches: dropping the clear CSA's own reveal, or routing it back through the
+  // shared clear path so a Form clearForm reveals too.
+  test('[PhoneInput-CSA-003] clear empties the field, fires onChange, and reports the empty field', async () => {
     harness.render({
       properties: { value: binding('9876543210') },
       validation: { mandatory: binding('{{true}}') },
@@ -514,7 +514,32 @@ describe('remaining actions', () => {
     expect(harness.exposed().value).toBe('');
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
+    // This row previously pinned the opposite — the message stayed hidden — which was
+    // characterisation of the defect CSA-011 now covers, not a decision.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+  });
+
+  // Break this catches: putting the reveal inside the SHARED `clearValue`, which `useFormClear`
+  // also calls — a Form clearForm would then paint every untouched mandatory field red.
+  //
+  // `clear()` is an app author asserting a value, the same family as `setText`, which already
+  // reveals. A Form reset is not: it puts the form back to its starting state and must not accuse
+  // the fields it just emptied. The two paths therefore have to diverge, which is why the reveal
+  // sits on the CSA rather than on the function both share.
+  test('[PhoneInput-CSA-011] the clear CSA reveals the error, while a Form reset stays silent', async () => {
+    // A field loaded with a value and never touched: nothing to say yet.
+    harness.render({
+      properties: { value: binding('9876543210') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
     expect(errorText()).toBeNull();
+
+    await harness.act('clear');
+    await drain();
+
+    expect(harness.exposed().isValid).toBe(false);
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: pointing setFocus at the wrong ref.
@@ -988,6 +1013,25 @@ describe('inside a Form', () => {
 
   // Break this catches: dropping useFormClear(clearValue) — the Form's clearForm
   // action could no longer empty its fields.
+  // Break this catches: putting the clear CSA's reveal inside the SHARED `clearValue`, which
+  // `useFormClear` also calls — a Form clearForm would then paint every untouched mandatory field
+  // red. A Form reset puts the form back to its starting state and must not accuse the fields it
+  // just emptied, unlike `clear()`, which is an app author asserting a value.
+  test('[PhoneInput-CSA-011] a Form clearForm empties the field without accusing it', async () => {
+    harness.renderInsideForm({
+      properties: { value: binding('9876543210') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await formAct('clearForm');
+
+    await waitFor(() => expect(input().value).toBe(''));
+    expect(harness.exposed().isValid).toBe(false); // invalid underneath...
+    expect(errorText()).toBeNull(); // ...but the form is not painted red
+  });
+
   test('[PhoneInput-FORM-002] the Form clearForm action empties the child field', async () => {
     harness.renderInsideForm({ properties: { value: binding('9876543210') } });
     await waitFor(() => expect(input()).toBeTruthy());

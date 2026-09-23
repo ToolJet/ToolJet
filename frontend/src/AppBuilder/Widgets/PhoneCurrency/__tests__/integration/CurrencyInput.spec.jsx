@@ -649,7 +649,7 @@ describe('remaining actions', () => {
 
   // Break this catches: adding setShowValidationError(true) to clearValue, which would
   // make Form clearForm paint an untouched form red.
-  test('[CurrencyInput-CSA-003] clear empties the field and fires onChange without changing message visibility', async () => {
+  test('[CurrencyInput-CSA-003] clear empties the field, fires onChange, and reports the empty field', async () => {
     harness.render({
       properties: { value: binding('{{1234.56}}'), decimalPlaces: binding('{{2}}') },
       validation: { mandatory: binding('{{true}}') },
@@ -662,7 +662,10 @@ describe('remaining actions', () => {
 
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
-    expect(errorText()).toBeNull(); // emptied, but not yet accused
+    // This row previously pinned the opposite — the message stayed hidden — which was
+    // characterisation of the defect PhoneInput-CSA-011 covers, not a decision. The reveal sits on
+    // the CSA, not on the shared clear path, so a Form clearForm still stays silent.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: pointing setFocus at the wrong ref.

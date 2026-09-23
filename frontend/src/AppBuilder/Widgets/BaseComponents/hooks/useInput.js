@@ -207,7 +207,7 @@ export const useInput = ({
   useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        clearValue();
+        clearValue({ revealValidation: true });
       },
       setFocus: async function () {
         inputRef.current.focus();
@@ -308,10 +308,16 @@ export const useInput = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
-  const clearValue = () => {
+  // `revealValidation` is off by default because `useFormClear` calls this with no arguments: a
+  // Form reset puts the form back to its starting state and must not accuse every mandatory field
+  // it just emptied. The `clear()` CSA opts in — an app author asserting a value is the same family
+  // as `setText`, which already reveals, and without it a never-touched field is emptied into a
+  // silently invalid state with nothing on screen to say so.
+  const clearValue = ({ revealValidation = false } = {}) => {
     if (inputType === 'phone') setPhoneInputValue('');
     else if (inputType === 'currency') setCurrencyInputValue('');
     else setInputValue('');
+    if (revealValidation) setShowValidationError(true);
     fireEvent('onChange');
   };
 

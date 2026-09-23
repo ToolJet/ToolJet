@@ -81,12 +81,12 @@
     },
     {
       "componentType": "PasswordInput",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
