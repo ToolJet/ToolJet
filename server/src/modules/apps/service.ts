@@ -9,7 +9,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, EntityNotFoundError, In, IsNull, Not } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -70,6 +70,7 @@ import {
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
+import { UserAppVersionStateRepository } from './repositories/user-app-version-state.repository';
 
 // App type → the UserPermissions bucket holding its folder's resolved access.
 // Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
@@ -96,7 +97,8 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly userAppVersionStateRepository: UserAppVersionStateRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -800,36 +802,117 @@ export class AppsService implements IAppsService {
   /**
    * Set `app.editingVersion` to the right row given the request's branch context.
    *
-   * The subscriber leaves `editingVersion` undefined for git-enabled non-workflow
-   * apps (branch context is required for a deterministic pick). This method
-   * fills it in:
-   *
-   *   - Workflow or git-disabled: subscriber already picked the row — no-op.
-   *   - Git-enabled, x-branch-id header present: load the BRANCH/VERSION row
-   *     for that branch (DRAFT). On a sub-branch this is the BRANCH-type DRAFT;
-   *     on the default branch this is the VERSION-type DRAFT.
-   *   - Git-enabled, no header: fall back to the default-branch DRAFT.
-   *   - Stub rows still resolve so the caller can decide how to react (the EE
-   *     getOne triggers hydration; CE returns the row as-is).
+   *   - Workflow, or resolved branch IS the org's default branch (every org always has
+   *     exactly one default branch row, git-on or off): "version-only" context, no branch
+   *     dimension to key by. Apply the fallback chain — URL name -> user_app_version_state
+   *     -> last-created.
+   *   - Git-enabled, resolved branch is a FEATURE branch: single draft tip per branch.
    */
-  private async resolveBranchAwareEditingVersion(app: App, branchId?: string): Promise<void> {
-    if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
-    if (app.type === APP_TYPES.WORKFLOW) return;
+  private async resolveBranchAwareEditingVersion(
+    app: App,
+    branchId: string | undefined,
+    user: User,
+    versionName?: string
+  ): Promise<{ isDefaultBranchContext: boolean }> {
+    if (app.type === APP_TYPES.WORKFLOW) {
+      await this.resolveVersionFallbackChain(app, undefined, user, versionName);
+      return { isDefaultBranchContext: true };
+    }
 
     const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
     const defaultBranchId = options.defaultBranch?.id;
-    if (!defaultBranchId) return; // git off — subscriber should have handled it
+    const isFeatureBranch = !!defaultBranchId && !!branchId && branchId !== defaultBranchId;
 
-    const targetBranchId = branchId ?? defaultBranchId;
-    const version = await this.versionRepository.findOne({
-      where: { appId: app.id, branchId: targetBranchId, isStub: false },
-      relations: ['branch'],
-      order: { updatedAt: 'DESC' },
-    });
-    if (version) {
-      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
-        version.displayName = version.branch.name;
+    if (isFeatureBranch) {
+      const version = await this.versionRepository.findOne({
+        where: { appId: app.id, branchId, isStub: false },
+        relations: ['branch'],
+        order: { updatedAt: 'DESC' },
+      });
+      if (version) {
+        if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+          version.displayName = version.branch.name;
+        }
+        app.editingVersion = version;
+        (app as any).isStub = false;
+      } else {
+        (app as any).isStub = true;
       }
+      return { isDefaultBranchContext: false };
+    }
+
+    await this.resolveVersionFallbackChain(app, defaultBranchId, user, versionName);
+    return { isDefaultBranchContext: true };
+  }
+
+  // A named version is only valid in this context if it isn't a feature-branch draft or a
+  // stub — findByName also matches branch-name URLs, which must not leak into this chain.
+  private isVersionOnlyContext(version: AppVersion, defaultBranchId: string | undefined): boolean {
+    if (version.versionType === AppVersionType.BRANCH || version.isStub) return false;
+    return !defaultBranchId || version.branchId === defaultBranchId || version.branchId == null;
+  }
+
+  private versionOnlyWhere(
+    appId: string,
+    defaultBranchId: string | undefined,
+    extra: Record<string, unknown> = {}
+  ): Record<string, unknown> | Record<string, unknown>[] {
+    const base = { appId, versionType: Not(AppVersionType.BRANCH), isStub: false, ...extra };
+    // branchId IS NULL covers legacy pre-branching rows (versions/repository.ts's
+    // getVersionsInApp keeps these visible on the default branch the same way).
+    return defaultBranchId
+      ? [
+          { ...base, branchId: defaultBranchId },
+          { ...base, branchId: IsNull() },
+        ]
+      : base;
+  }
+
+  // URL name -> per-user last-active version -> last-created (createdAt DESC).
+  private async resolveVersionFallbackChain(
+    app: App,
+    defaultBranchId: string | undefined,
+    user: User,
+    versionName?: string
+  ): Promise<void> {
+    if (versionName) {
+      try {
+        const version = await this.versionRepository.findByName(versionName, app.id);
+        if (version && this.isVersionOnlyContext(version, defaultBranchId)) {
+          app.editingVersion = version;
+          (app as any).isStub = false;
+          return;
+        }
+      } catch (err) {
+        // Named version not found (stale/deleted link) — fall through rather than 404, matching
+        // the "backward compatibility for old URLs" tolerance elsewhere in this file. findByName
+        // throws EntityNotFoundError rather than returning null/undefined.
+        if (!(err instanceof EntityNotFoundError)) throw err;
+      }
+    }
+
+    const state = await this.userAppVersionStateRepository.findForUserApp(user.id, app.id);
+    if (state?.versionId) {
+      const version = await this.versionRepository.findOne({
+        where: this.versionOnlyWhere(app.id, defaultBranchId, { id: state.versionId }),
+        relations: ['branch'],
+      });
+      if (version) {
+        app.editingVersion = version;
+        (app as any).isStub = false;
+        return;
+      }
+      // Stale pointer (version deleted) — SET NULL should already have cleared this row, but
+      // tolerate a stale read and fall through regardless.
+    }
+
+    const version = await this.versionRepository.findOne({
+      where: this.versionOnlyWhere(app.id, defaultBranchId),
+      relations: ['branch'],
+      order: { createdAt: 'DESC' },
+    });
+
+    if (version) {
       app.editingVersion = version;
       (app as any).isStub = false;
     } else {
@@ -837,13 +920,8 @@ export class AppsService implements IAppsService {
     }
   }
 
-  async getOne(app: App, user: User, branchId?: string): Promise<any> {
-    // The subscriber leaves editingVersion undefined for git-enabled non-workflow
-    // apps — branch context is required for a deterministic pick. Resolve it
-    // here from x-branch-id (or fall back to the default branch's DRAFT).
-    // Workflows + git-disabled apps already have editingVersion set by the
-    // subscriber.
-    await this.resolveBranchAwareEditingVersion(app, branchId);
+  async getOne(app: App, user: User, branchId?: string, versionName?: string): Promise<any> {
+    await this.resolveBranchAwareEditingVersion(app, branchId, user, versionName);
 
     // Non-workflow apps store name/slug/icon/isPublic on app_versions; project them
     // onto the in-memory App so the JSON response carries the correct values.

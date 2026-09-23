@@ -175,8 +175,10 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
-  show(@User() user: UserEntity, @App() app: AppEntity) {
-    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, user.branchId));
+  show(@User() user: UserEntity, @App() app: AppEntity, @Query('version') versionName?: string) {
+    return skipAppEditingVersionHydration.run(true, () =>
+      this.appsService.getOne(app, user, user.branchId, versionName)
+    );
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

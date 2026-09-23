@@ -12,6 +12,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AiModule } from '@modules/ai/module';
 import { AppsRepository } from '@modules/apps/repository';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FeatureAbilityFactory } from './ability';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
@@ -57,6 +58,7 @@ export class ModulesModule extends SubModule {
         AppsService,
         VersionRepository,
         AppsRepository,
+        UserAppVersionStateRepository,
         PageService,
         EventsService,
         AppsUtilService,

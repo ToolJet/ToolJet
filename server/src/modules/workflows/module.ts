@@ -13,6 +13,7 @@ import { WorkflowExecutionEdge } from '@entities/workflow_execution_edge.entity'
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppsRepository } from '@modules/apps/repository';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 import { DataQueriesModule } from '@modules/data-queries/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
@@ -190,6 +191,7 @@ export class WorkflowsModule extends SubModule {
         OrganizationGitSyncRepository,
         OrganizationRepository,
         AppsService,
+        UserAppVersionStateRepository,
         PageService,
         EventsService,
         WorkflowExecutionsService,
