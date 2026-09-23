@@ -249,6 +249,26 @@ export const popoverMenuConfig = {
             },
             accordian: 'Menu',
         },
+        menuWidthMode: {
+            type: 'select',
+            displayName: 'Menu width',
+            validation: { schema: { type: 'string' }, defaultValue: 'matchField' },
+            options: [
+                { name: 'Match the field', value: 'matchField' },
+                { name: 'Match the content', value: 'matchContent' },
+                { name: 'Custom', value: 'custom' },
+            ],
+            accordian: 'Menu',
+            isFxNotRequired: true,
+            description: 'Control popover menu width: match field, match content, or set custom.',
+        },
+        menuCustomWidth: {
+            type: 'input',
+            displayName: 'Custom menu width',
+            validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+            conditionallyRender: { key: 'menuWidthMode', value: 'custom' },
+            accordian: 'Menu',
+        },
 
         optionsTextColor: {
             type: 'colorSwatches',
@@ -364,6 +384,8 @@ export const popoverMenuConfig = {
             direction: { value: 'left' },
             borderRadius: { value: '6' },
             boxShadow: { value: '0px 0px 0px 0px #00000040' },
+            menuWidthMode: { value: 'matchField' },
+            menuCustomWidth: { value: '256' },
             optionsTextColor: { value: 'var(--cc-primary-text)' },
             optionsIconColor: { value: 'var(--cc-default-icon)' },
             optionsDescriptionColor: { value: 'var(--cc-placeholder-text)' },
