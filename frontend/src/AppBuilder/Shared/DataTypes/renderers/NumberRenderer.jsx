@@ -122,7 +122,9 @@ export const NumberRenderer = ({
       onMouseLeave={() => setHovered(false)}
       style={{ color: 'var(--text-primary)' }}
     >
-      <span style={{ width: `${containerWidth}px` }}>{String(cellValue)}</span>
+      <span style={{ width: `${containerWidth}px` }}>
+        {cellValue === null || cellValue === undefined ? '' : String(cellValue)}
+      </span>
     </div>
   );
 
@@ -132,6 +134,7 @@ export const NumberRenderer = ({
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
   const renderText = (text) => {
+    if (text === null || text === undefined) return '';
     if (SearchHighlightComponent) {
       return <SearchHighlightComponent text={String(text)} searchTerm={searchText} />;
     }
