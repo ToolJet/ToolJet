@@ -4,7 +4,15 @@
 const getModalHostEl = () =>
   document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0];
 
-export const onShowSideEffects = () => {
+// Tracks which modals are logically open, independent of whether their DOM
+// node has actually left the tree yet (a closing modal's node can linger
+// mid-exit-animation). A Set keyed by id — rather than a raw counter — stays
+// correct even if a show/hide fires twice for the same id (e.g. React
+// StrictMode's dev-mode double-invoke of effects).
+const openModalIds = new Set();
+
+export const onShowSideEffects = (id) => {
+  openModalIds.add(id);
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const modalHostEl = getModalHostEl();
   const allModalContainers = modalHostEl?.querySelectorAll('.modal') || [];
@@ -23,15 +31,21 @@ export const onShowSideEffects = () => {
   }
 };
 
-export const onHideSideEffects = () => {
+export const onHideSideEffects = (id) => {
+  openModalIds.delete(id);
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const modalHostEl = getModalHostEl();
-  if (!modalHostEl) return;
-  const allModalContainers = modalHostEl.querySelectorAll('.modal');
-  const hasManyModalsOpen = allModalContainers.length > 1;
+
+  // Fallback for any modal implementation that can unmount while open without
+  // going through onHideSideEffects (e.g. a page navigation triggered from
+  // inside it): if the Set is stuck non-empty but nothing is actually
+  // rendered anymore, trust the DOM and self-heal instead of leaving the
+  // canvas locked forever.
+  const nothingRendered = !modalHostEl || modalHostEl.querySelectorAll('.modal').length === 0;
 
   // Enable page scrolling for the canvas if there is no modal open
-  if (canvasElement && !hasManyModalsOpen) {
+  if (canvasElement && (openModalIds.size === 0 || nothingRendered)) {
+    openModalIds.clear();
     canvasElement.style.setProperty('overflow', 'auto', 'important');
   }
 };

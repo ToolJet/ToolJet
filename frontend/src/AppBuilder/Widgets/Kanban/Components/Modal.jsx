@@ -65,9 +65,9 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
     }
 
     if (showModal) {
-      onShowSideEffects();
+      onShowSideEffects(id);
     } else {
-      onHideSideEffects();
+      onHideSideEffects(id);
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];

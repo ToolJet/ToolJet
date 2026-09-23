@@ -75,11 +75,11 @@ export const Modal = function Modal({
 
   const onShowModal = () => {
     openModal();
-    onShowSideEffects();
+    onShowSideEffects(id);
   };
 
   const onHideModal = () => {
-    onHideSideEffects();
+    onHideSideEffects(id);
     hideModal();
   };
 
@@ -109,7 +109,7 @@ export const Modal = function Modal({
 
   // Add debounced version of handleModalOpen
   const debouncedModalOpen = debounce(() => {
-    onShowSideEffects();
+    onShowSideEffects(id);
   }, 10);
 
   useEffect(() => {
