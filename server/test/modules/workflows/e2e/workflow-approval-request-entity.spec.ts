@@ -18,6 +18,8 @@ describe('WorkflowApprovalRequest entity', () => {
   let app: INestApplication;
   let executionId: string;
   let nodeId: string;
+  let organizationId: string;
+  let appId: string;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
@@ -28,6 +30,8 @@ describe('WorkflowApprovalRequest entity', () => {
       lastName: 'Entity',
     });
     const workflowApp = await createWorkflowForUser(app, user, 'HITL entity wf');
+    organizationId = user.organizationId;
+    appId = workflowApp.id;
     const appVersion = await createWorkflowApplicationVersion(app, workflowApp);
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId: appVersion.id,
@@ -87,5 +91,21 @@ describe('WorkflowApprovalRequest entity', () => {
         expiresAt: null,
       })
     ).rejects.toBeInstanceOf(QueryFailedError);
+  });
+
+  it('persists organization_id and app_id on an approval request', async () => {
+    const saved = await saveEntity(WorkflowApprovalRequest, {
+      workflowExecutionId: executionId,
+      executionNodeId: nodeId,
+      token: 'org-stamp-token',
+      status: 'pending',
+      approversSnapshot: { users: [], groups: [], emails: [], tokenBypass: true },
+      organizationId,
+      appId,
+    });
+
+    const found = await findEntityOrFail(WorkflowApprovalRequest, { id: saved.id });
+    expect(found.organizationId).toBe(organizationId);
+    expect(found.appId).toBe(appId);
   });
 });

@@ -15,7 +15,11 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
   `migrations/1787000000000-CreateWorkflowApprovalRequestsAndExecutionLinkage.ts`.
   Key columns: `token` (bearer secret for the public resolve endpoint), `status`
   (`pending`/`resolved`/`expired`/…), `resolvedOutcome`, `input` (jsonb), `resolvedByUserId`,
-  `approversSnapshot` (jsonb), `expiresAt`. Repository:
+  `approversSnapshot` (jsonb), `expiresAt`,
+  `organization_id` / `app_id` (denormalized from the execution's app version so the approvals
+  list can filter and paginate on an index rather than through three joins; written at request
+  creation, backfilled by `migrations/1787800000000-AddOrganizationAndAppToApprovalRequests.ts`).
+  Repository:
   `repositories/workflow-approval-request.repository.ts`.
 - **Execution status `waiting`** — a suspended run's DB `status` is `waiting`, non-terminal,
   `executed` stays `false`. Mapped to the frontend display state by `mapDbStatusToDisplayState`
