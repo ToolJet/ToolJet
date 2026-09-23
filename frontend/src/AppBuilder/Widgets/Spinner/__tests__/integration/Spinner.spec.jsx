@@ -1,10 +1,5 @@
 import { waitFor, within } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  store,
-  MODULE_ID,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { createWidgetHarness, binding, store, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import { spinnerConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/spinner';
 import { spinnerConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/spinner';
@@ -64,7 +59,7 @@ describe('Spinner widget', () => {
     expect(indicator).toBeEmptyDOMElement();
   });
 
-  test("[Spinner-COL-001] Colour updates the spinner's inline color", async () => {
+  test('[Spinner-COL-001] Colour updates the spinner\'s inline color', async () => {
     // Break this catches: ignoring colour updates, remounting on style change, or leaving a stale inline color after clear.
     const { container } = widget.render();
     const indicator = await within(container).findByRole('status');

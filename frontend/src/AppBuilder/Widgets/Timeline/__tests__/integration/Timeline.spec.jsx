@@ -169,10 +169,10 @@ describe('Timeline: boundary values', () => {
     await waitFor(() => expect(list(container)).toBeInTheDocument());
     expect(items(container)).toHaveLength(0);
 
-    await widget.session.store.act(() => widget.setComponentProperty(ID, 'data', null, 'properties', 'value', true));
     await widget.session.store.act(() =>
-      widget.setComponentProperty(ID, 'hideDate', true, 'properties', 'value', true)
+      widget.setComponentProperty(ID, 'data', null, 'properties', 'value', true)
     );
+    await widget.session.store.act(() => widget.setComponentProperty(ID, 'hideDate', true, 'properties', 'value', true));
     await waitFor(() => expect(list(container)).toHaveClass('list-timeline-simple'));
     expect(items(container)).toHaveLength(0);
 
