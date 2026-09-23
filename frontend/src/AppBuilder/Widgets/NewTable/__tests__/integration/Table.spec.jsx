@@ -644,6 +644,49 @@ describe('Table: search and filter', () => {
     expect(exposed('filters')).toEqual([]);
   });
 
+  test('[Table-FILTER-003] isEmpty/isNotEmpty judge Number and Boolean values by real emptiness, not falsy coercion', async () => {
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([
+            { id: 1, qty: 10, active: true },
+            { id: 2, qty: 0, active: false },
+          ])}}}`
+        ),
+        columns: {
+          value: [
+            { name: 'qty', key: 'qty', id: 'col-qty', columnType: 'number', columnSize: 80, isEditable: false },
+            {
+              name: 'active',
+              key: 'active',
+              id: 'col-active',
+              columnType: 'boolean',
+              columnSize: 100,
+              isEditable: false,
+            },
+          ],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    // Neither 0 nor false is an empty value — isNotEmpty must keep both rows.
+    await widget.act('setFilters', [{ column: 'qty', condition: 'isNotEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    // isEmpty must not mistake the falsy Number 0 for an empty value.
+    await widget.act('setFilters', [{ column: 'qty', condition: 'isEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(0));
+
+    // Same real-emptiness rule for Boolean columns: `false` is not empty.
+    await widget.act('setFilters', [{ column: 'active', condition: 'isNotEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    await widget.act('setFilters', [{ column: 'active', condition: 'isEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(0));
+  });
+
   test('[Table-FILTER-SERVER-001] serverSideFilter switches filtering to manual — an applied filter changes `filters` without the table re-filtering client-side', async () => {
     widget.render({
       properties: {
