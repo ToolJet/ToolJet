@@ -706,6 +706,29 @@ describe('TagsInput: component-specific actions', () => {
     await openMenu();
     expect(menuOptions()).toContain('brand new');
   });
+
+  test('[TagsInput-ACT-007] `selectTags` and `deselectTags` report input that is not an array', async () => {
+    // Break this catches: the `Array.isArray` guard returning silently, so a
+    // Control component event whose Tags field was typed as `['New York']`
+    // rather than `{{['New York']}}` selects nothing and reports nothing.
+    const toast = require('react-hot-toast').default;
+    const errors = jest.spyOn(toast, 'error').mockImplementation(() => {});
+
+    await mount();
+
+    await widget.act('selectTags', "['New York']");
+
+    expect(chips()).toEqual([]);
+    expect(errors).toHaveBeenCalledTimes(1);
+    expect(errors.mock.calls[0][0]).toMatch(/selectTags/);
+
+    await widget.act('deselectTags', 'newport');
+
+    expect(errors).toHaveBeenCalledTimes(2);
+    expect(errors.mock.calls[1][0]).toMatch(/deselectTags/);
+
+    errors.mockRestore();
+  });
 });
 
 describe('TagsInput: focus and blur events', () => {
