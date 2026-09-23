@@ -41,6 +41,21 @@ describe('[Table-RENDERER-001] StringRenderer', () => {
     fireEvent.blur(editable);
     expect(onChange).toHaveBeenCalledWith('Adaline');
   });
+
+  test('[Table-RENDERER-001] treats a value containing markup as literal text, not as HTML, while editing', () => {
+    render(
+      <StringRenderer
+        value="<b>text here</b>"
+        isEditable={true}
+        isEditing={true}
+        setIsEditing={() => {}}
+        onChange={() => {}}
+      />
+    );
+    const editable = document.querySelector('[contenteditable="true"]');
+    expect(editable.querySelector('b')).toBeNull();
+    expect(editable.textContent).toBe('<b>text here</b>');
+  });
 });
 
 describe('[Table-RENDERER-001] NumberRenderer', () => {
