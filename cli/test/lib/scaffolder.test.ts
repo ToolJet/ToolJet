@@ -53,8 +53,8 @@ describe('scaffoldTemplate (real Hygen run)', () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(projectRoot, 'dist', 'manifest.json'), 'utf8'));
     expect(manifest.components.HelloWorld).to.deep.include({
       displayName: 'Hello World',
-      defaultWidth: 8,
-      defaultHeight: 6,
+      defaultWidth: 7,
+      defaultHeight: 11,
     });
     expect(manifest.components.HelloWorld.props).to.deep.equal([
       { name: 'firstName', type: 'string', default: 'John', label: 'First Name' },

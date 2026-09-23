@@ -140,8 +140,8 @@ describe('generateManifest - shipped HelloWorld template', () => {
     // needs — a real scaffolded project gets that from an installed @types/react.
     const { manifest } = await generateManifest(cwd.get());
 
-    expect(manifest.components.HelloWorld.defaultWidth).to.equal(8);
-    expect(manifest.components.HelloWorld.defaultHeight).to.equal(6);
+    expect(manifest.components.HelloWorld.defaultWidth).to.equal(7);
+    expect(manifest.components.HelloWorld.defaultHeight).to.equal(11);
   }).timeout(30000);
 });
 
