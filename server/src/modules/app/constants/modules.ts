@@ -50,4 +50,5 @@ export enum MODULES {
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
   PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
   FRONTEND_METRICS = 'FrontendMetrics',
+  CUSTOM_COMPONENT_LIBRARIES = 'CustomComponentLibraries',
 }
