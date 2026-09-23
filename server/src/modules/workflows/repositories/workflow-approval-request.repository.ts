@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { App } from '@entities/app.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
@@ -21,8 +21,22 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
 
   /**
    * Organization-scoped history, newest first. Filters run against the denormalized
-   * `organization_id` / `app_id` columns so the (organization_id, created_at DESC) index can
-   * serve the ORDER BY + LIMIT directly; the joins below only decorate the current page.
+   * `organization_id` / `app_id` columns so `(organization_id, created_at DESC)` can serve the
+   * WHERE + ORDER BY + LIMIT as an index-order scan with early termination.
+   *
+   * This has to be two queries, not one `leftJoinAndMapOne(...).skip().take().getManyAndCount()`:
+   * TypeORM only ever translates `.skip()/.take()` into a real SQL `LIMIT`/`OFFSET` when the
+   * query has zero joins (`createLimitOffsetExpression`, typeorm SelectQueryBuilder). The moment
+   * `app`/`node` are joined in, `getManyAndCount()` silently switches to its "distinct ids"
+   * pagination strategy: it runs the *entire* filtered, joined query with no LIMIT and no ORDER
+   * BY to collect every matching row, and only sorts + slices a page off the top of that fully
+   * materialized set afterwards. The org/app/created indexes can serve the WHERE, but never the
+   * ORDER BY + LIMIT, because no LIMIT is ever pushed into the scan — confirmed by EXPLAIN
+   * ANALYZE showing a full external-merge disk sort of every matching row on every page request.
+   *
+   * Fix: select and paginate `request.id` alone first (no joins → skip/take DOES become a real
+   * LIMIT/OFFSET → the composite index drives an index-order scan that stops after `perPage`
+   * rows), then join `app`/`node` only to decorate that already-small page of ids.
    */
   async listForOrganization(
     organizationId: string,
@@ -30,11 +44,43 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     page: number,
     perPage: number
   ): Promise<{ rows: ApprovalListRow[]; total: number }> {
-    const query = this.createQueryBuilder('request')
+    const idQuery = this.createQueryBuilder('request').where('request.organization_id = :organizationId', {
+      organizationId,
+    });
+    this.applyListFilters(idQuery, filters);
+
+    // getCount() clears skip/take/limit/offset itself (SelectQueryBuilder#executeCountQuery), so
+    // this is the count of every matching row, not the page size.
+    const total = await idQuery.getCount();
+
+    idQuery
+      .select('request.id')
+      // Camelcase property path, not the snake_case column name: TypeORM's orderBy resolves this
+      // via `metadata.findColumnWithPropertyPath()` when building the (here, join-free) LIMIT/
+      // ORDER BY, and only falls back to the raw string when no joins are present. Keeping the
+      // property-path form here regardless keeps this query and the decorate query below
+      // consistent and avoids re-introducing the crash that motivated the fallback path.
+      .orderBy('request.createdAt', 'DESC')
+      .skip((page - 1) * perPage)
+      .take(perPage);
+
+    const ids = (await idQuery.getMany()).map((r) => r.id);
+    if (ids.length === 0) return { rows: [], total };
+
+    const decorated = await this.createQueryBuilder('request')
       .leftJoinAndMapOne('request.app', App, 'app', 'app.id = request.app_id')
       .leftJoinAndMapOne('request.node', WorkflowExecutionNode, 'node', 'node.id = request.execution_node_id')
-      .where('request.organization_id = :organizationId', { organizationId });
+      .where('request.id IN (:...ids)', { ids })
+      .getMany();
 
+    // `WHERE id IN (...)` does not preserve order — re-sort into the id-query's page order.
+    const byId = new Map(decorated.map((row) => [row.id, row]));
+    const rows = ids.map((id) => byId.get(id)).filter((row): row is WorkflowApprovalRequest => row !== undefined);
+
+    return { rows: rows as ApprovalListRow[], total };
+  }
+
+  private applyListFilters(query: SelectQueryBuilder<WorkflowApprovalRequest>, filters: ApprovalListFilters): void {
     if (filters.statuses?.length) {
       query.andWhere('request.status IN (:...statuses)', { statuses: filters.statuses });
     }
@@ -52,17 +98,5 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       // three without three separate containment queries.
       query.andWhere('request.approvers_snapshot::text ILIKE :approver', { approver: `%${filters.approver}%` });
     }
-
-    const [rows, total] = await query
-      // Must be the camelCase property path (`createdAt`), not the snake_case column name: with
-      // joins + skip/take TypeORM's pagination path resolves this via
-      // `metadata.findColumnWithPropertyPath()` and throws on an unmapped property path instead
-      // of falling back to the raw string (unlike its non-paginated order-by builder).
-      .orderBy('request.createdAt', 'DESC')
-      .skip((page - 1) * perPage)
-      .take(perPage)
-      .getManyAndCount();
-
-    return { rows: rows as ApprovalListRow[], total };
   }
 }

@@ -168,4 +168,102 @@ describe('approval requests list query', () => {
     expect(rows[0].app?.name).toBe('List wf A');
     expect(rows[0].node?.definition?.nodeName).toContain('node-');
   });
+
+  it('reports the total count of every matching row, not just the page size', async () => {
+    await seed({ versionId: versionAId, organizationId: orgA, appId: appAId, token: 'total-1', status: 'pending' });
+    await seed({ versionId: versionAId, organizationId: orgA, appId: appAId, token: 'total-2', status: 'pending' });
+    await seed({ versionId: versionAId, organizationId: orgA, appId: appAId, token: 'total-3', status: 'pending' });
+
+    const { rows, total } = await repository.listForOrganization(orgA, {}, 1, 1);
+
+    expect(rows).toHaveLength(1);
+    expect(total).toBe(3);
+  });
+
+  it('filters by approver against the approvers snapshot', async () => {
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'approver-match',
+      status: 'pending',
+      approversSnapshot: { users: ['user-approver-xyz-789'], groups: [], emails: [], tokenBypass: false },
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'approver-miss',
+      status: 'pending',
+      approversSnapshot: { users: ['someone-unrelated'], groups: [], emails: [], tokenBypass: false },
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, { approver: 'approver-xyz-789' }, 1, 10);
+
+    expect(rows.map((r) => r.token)).toEqual(['approver-match']);
+  });
+
+  it('filters by `from`, including a row exactly on the boundary', async () => {
+    const boundary = new Date('2021-02-01T00:00:00Z');
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'from-before',
+      status: 'pending',
+      createdAt: new Date('2021-01-01T00:00:00Z'),
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'from-on-boundary',
+      status: 'pending',
+      createdAt: boundary,
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'from-after',
+      status: 'pending',
+      createdAt: new Date('2021-03-01T00:00:00Z'),
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, { from: boundary }, 1, 10);
+
+    expect(rows.map((r) => r.token).sort()).toEqual(['from-after', 'from-on-boundary']);
+  });
+
+  it('filters by `to`, including a row exactly on the boundary', async () => {
+    const boundary = new Date('2021-02-01T00:00:00Z');
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'to-before',
+      status: 'pending',
+      createdAt: new Date('2021-01-01T00:00:00Z'),
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'to-on-boundary',
+      status: 'pending',
+      createdAt: boundary,
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'to-after',
+      status: 'pending',
+      createdAt: new Date('2021-03-01T00:00:00Z'),
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, { to: boundary }, 1, 10);
+
+    expect(rows.map((r) => r.token).sort()).toEqual(['to-before', 'to-on-boundary']);
+  });
 });
