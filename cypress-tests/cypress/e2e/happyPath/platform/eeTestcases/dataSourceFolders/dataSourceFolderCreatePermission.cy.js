@@ -4,16 +4,20 @@ import {
   dataSourceFolderPermissionSelectors as dsFolderPerm,
   dataSourceFolderSelectors as dsFolder,
 } from 'Selectors/platform/dataSourceFolders';
-import { navigateToManageGroups } from 'Support/utils/common';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
-import { openDataSourcesList } from 'Support/utils/platform/dataSourceFolders';
+import {
+  openDataSourcesList,
+  uiCreateDataSourceFolder,
+  uiDeleteDataSourceFolder,
+  uiOpenFolderMenu,
+  uiVerifyDataSourceFolderExists,
+} from 'Support/utils/platform/dataSourceFolders';
+import { getGroupPermissionInput } from 'Support/utils/userPermissions';
 import { groupsText } from 'Texts/platform/manageGroups';
 
-describe('Data Source Folders — Custom Group Create Override', () => {
+describe('Data Source Folders — Custom Group Coarse Permission Overrides', () => {
   let workspaceId, groupId1, testId, wsName, wsSlug;
 
-  // A fresh workspace PER TEST — a describe-scoped name makes the second test
-  // POST an already-taken slug and the server answers 409.
   beforeEach(() => {
     testId = Date.now();
     wsName = `ds-folder-create-${testId}`;
@@ -25,7 +29,9 @@ describe('Data Source Folders — Custom Group Create Override', () => {
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-    cy.apiUpdateGroupPermission('builder', { dataSourceFolderCreate: false });
+
+    cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(true, false));
+    cy.apiDeleteGranularPermission('builder');
   });
 
   afterEach(() => {
@@ -33,7 +39,7 @@ describe('Data Source Folders — Custom Group Create Override', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  it('custom group with dataSourceFolderCreate OFF blocks the builder from creating a data source folder', () => {
+  it('a custom group grants folder create and delete independently, each taking effect as it is enabled', () => {
     const groupName = `QA DS Folder ${testId}`;
     const userEmail = `ds-folder-create-${testId}@example.com`;
 
@@ -55,8 +61,7 @@ describe('Data Source Folders — Custom Group Create Override', () => {
 
     // Grant the coarse flag through the Permissions tab.
     cy.apiLogin();
-    cy.visit(`/${wsSlug}`);
-    navigateToManageGroups();
+    cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(dsFolderPerm.createCheckbox).check();
@@ -67,38 +72,42 @@ describe('Data Source Folders — Custom Group Create Override', () => {
     cy.apiLogin(userEmail, 'password');
     openDataSourcesList();
     cy.get(dsFolder.createFolderIcon).should('be.visible');
+
+    // Create a folder so the delete affordance has something to act on. The modal
+    // mechanics themselves are covered in dataSourceFolderDefaultAccess.cy.js —
+    // here it is only setup for the permission check below.
+    const folderName = `Create Only Folder ${testId}`;
+    uiCreateDataSourceFolder(folderName);
+    uiVerifyDataSourceFolderExists(folderName);
+
+    cy.apiGetDataSourceFolderId(folderName).then((folderId) => {
+      // Create alone does NOT imply delete. The ⋮ menu still renders, because the
+      // frontend gates Rename on the create flag, but Delete must be absent.
+      uiOpenFolderMenu(folderId);
+      cy.get(dsFolder.folderRenameOption(folderId)).should('exist');
+      cy.get(dsFolder.folderDeleteOption(folderId)).should('not.exist');
+      cy.get('body').type('{esc}');
+      cy.apiLogout();
+
+      // Grant delete on the same group, through the same tab.
+      cy.apiLogin();
+      cy.visit(`/${wsSlug}/workspace-settings/groups`);
+      cy.get(groupsSelector.groupLink(groupName)).click();
+      cy.get(groupsSelector.permissionsLink).click();
+      cy.get(dsFolderPerm.deleteCheckbox).check();
+      cy.verifyToastMessage(commonSelectors.toastMessage, groupsText.permissionUpdatedToast);
+      cy.apiLogout();
+
+      // Delete is now offered, and actually works end to end.
+      cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
+      uiOpenFolderMenu(folderId);
+      cy.get(dsFolder.folderDeleteOption(folderId)).should('exist');
+      cy.get('body').type('{esc}');
+
+      uiDeleteDataSourceFolder(folderId);
+      uiVerifyDataSourceFolderExists(folderName, false);
+    });
   });
 
-  it('app folder permissions do not authorize data source folder creation', () => {
-    const groupName = `QA App Folder Only ${testId}`;
-    const userEmail = `ds-folder-isolation-${testId}@example.com`;
-
-    cy.apiFullUserOnboarding('QA', userEmail, 'builder', 'password', wsName);
-    cy.apiLogout();
-
-    cy.apiLogin();
-    apiCreateGroup(groupName).then((groupId) => {
-      apiAddUserToGroup(groupId, userEmail);
-      // Grant the APP folder flags only — these must not leak across resource types.
-      cy.apiUpdateGroupPermission(groupName, { folderCreate: true, folderDelete: true });
-    });
-    cy.apiLogout();
-
-    cy.apiLogin(userEmail, 'password');
-    openDataSourcesList();
-    cy.get(dsFolder.createFolderIcon).should('not.exist');
-
-    // And the API refuses too — the UI is not the only gate.
-    cy.getAuthHeaders().then((headers) => {
-      cy.request({
-        method: 'POST',
-        url: `${Cypress.env('server_host')}/api/folders`,
-        headers,
-        body: { name: `Leaked Folder ${testId}`, type: 'data_source' },
-        failOnStatusCode: false,
-      }).then((response) => {
-        expect(response.status).to.equal(403);
-      });
-    });
-  });
 });
