@@ -12,9 +12,6 @@ chai.use(
 export const mochaHooks = {
   beforeAll(): void {
     nock.disableNetConnect();
-    // upload-form tests spin up a real local HTTP server to inspect the
-    // multipart body on the wire — only loopback connections are allowed through.
-    nock.enableNetConnect(/^127\.0\.0\.1/);
   },
 
   afterEach(): void {
