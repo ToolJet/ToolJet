@@ -52,6 +52,20 @@ export const CurrencyInput = (props) => {
     showClearBtn,
   } = properties;
 
+  // `decimalsLimit` cannot express "no decimals":
+  // the library resolves `decimalsLimit || fixedDecimalLength || 2`, so a 0 is read as UNSET and replaced with 2
+  // `allowDecimals` is the only lever that refuses the separator outright, which is what a whole-number currency such as JPY or KRW needs.
+  const decimalPlacesSetting = useMemo(() => {
+    const parsed = Number(decimalPlaces);
+    const isSet =
+      decimalPlaces !== '' &&
+      decimalPlaces !== null &&
+      decimalPlaces !== undefined &&
+      Number.isFinite(parsed) &&
+      parsed >= 0;
+    return { allowDecimals: isSet ? parsed > 0 : true, decimalsLimit: isSet ? parsed : 2 };
+  }, [decimalPlaces]);
+
   // Separator characters (rendered as-is) and the locale that drives grouping positions.
   const { separators, intlConfig } = useMemo(() => {
     const { locale, groupSeparator, decimalSeparator } = getNumberFormatConfig(numberFormat);
@@ -290,7 +304,8 @@ export const CurrencyInput = (props) => {
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
             value={value}
-            decimalsLimit={Number(decimalPlaces) || 0}
+            allowDecimals={decimalPlacesSetting.allowDecimals}
+            decimalsLimit={decimalPlacesSetting.decimalsLimit}
             intlConfig={intlConfig}
             groupSeparator={separators.groupSeparator}
             decimalSeparator={separators.decimalSeparator}

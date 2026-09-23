@@ -401,8 +401,44 @@ describe('label, placeholder and property changes', () => {
   // Break this catches: a fix that changes any of these three without updating the
   // contract. D-09 records that `allowDecimals` is the lever such a fix would need —
   // `decimalsLimit` alone cannot express zero decimals.
-  test('[CurrencyInput-PROP-006] zero, non-numeric and empty decimalPlaces all fall back to two decimals', async () => {
-    for (const setting of ['{{0}}', 'abc', '']) {
+  // Break this catches: expressing "zero decimals" through `decimalsLimit` alone. `0` is falsy
+  // inside the library, which resolves `decimalsLimit || fixedDecimalLength || 2` and so reads an
+  // explicit 0 as UNSET and applies its own default of two (react-currency-input-field
+  // index.js:406). `decimalsLimit` cannot say "no decimals" at all — `allowDecimals` is the only
+  // lever — so a whole-number currency such as JPY or KRW could not be configured.
+  //
+  // Reverses the answer recorded in D-09, which characterised this as shipped.
+  test('[CurrencyInput-PROP-006] a decimalPlaces of zero refuses the decimal separator outright', async () => {
+    harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding('{{0}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await userEvent.type(input(), '12.3456');
+
+    // Previously '12.34': the 0 was read as unset and the library's own two-decimal default won.
+    // The separator is REFUSED rather than treated as a terminator, so the digits run together
+    // into a whole number — the same result D-09 measured in a real browser.
+    await waitFor(() => expect(input().value).toBe('123,456'));
+    expect(harness.exposed().value).toBe(123456);
+
+    // One or more decimals is untouched by the fix.
+    for (const [setting, expected] of [
+      ['{{1}}', '12.3'],
+      ['{{3}}', '12.345'],
+    ]) {
+      harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding(setting) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await userEvent.clear(input());
+      await userEvent.type(input(), '12.3456');
+      await waitFor(() => expect(input().value).toBe(expected));
+    }
+  });
+
+  // Break this catches: collapsing an UNUSABLE setting to zero decimals along with an explicit 0.
+  // `Number('abc')` is NaN and `Number('')` is 0, so a naive `Number(decimalPlaces) > 0` would turn
+  // a cleared or fx-broken setting into a whole-number field instead of the documented default.
+  test('[CurrencyInput-PROP-006] a non-numeric or empty decimalPlaces still falls back to two decimals', async () => {
+    for (const setting of ['abc', '']) {
       harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding(setting) } });
       await waitFor(() => expect(input()).toBeTruthy());
 
