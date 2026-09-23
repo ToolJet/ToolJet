@@ -18,6 +18,7 @@ import {
   getSafeEnvironment,
 } from '@/_helpers/environmentAccess';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
+import { setVersionInUrl } from '@/_helpers/active-branch';
 
 const initialState = {
   selectedVersion: null,
@@ -486,6 +487,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // below/elsewhere in this action, so resetting them here too would just wipe fields
         // (theme/urlparams/mode/currentUser) that nothing repopulates in this path.
         get().resetExposedValues(moduleId, { resetConstants: false, resetGlobals: false });
+
+        // Self-sufficient here too — the reactive version-switch effect skips moduleMode.
+        setVersionInUrl(selectedVersion.versionType === 'branch' ? null : selectedVersion.name);
       }
 
       get().setResolvedGlobals(
