@@ -143,8 +143,9 @@ export const StringRenderer = ({
               e.stopPropagation();
             }}
             suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: value }}
-          />
+          >
+            {value}
+          </div>
         ) : (
           <div
             ref={ref}
