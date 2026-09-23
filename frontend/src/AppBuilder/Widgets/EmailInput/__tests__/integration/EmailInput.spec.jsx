@@ -996,6 +996,40 @@ describe('styles', () => {
     expect(inlineStyle(errorText())).toContain('rgb(171, 205, 239)');
   });
 
+  // Break this catches: dropping `tj-input-has-error` from the container, or dropping the
+  // `:not(.tj-input-has-error)` guard from the hover rule in baseInput.scss.
+  //
+  // The error border is an INLINE style, but `.tj-text-input-widget-container:hover` sets
+  // `border` with `!important`, which outranks it. So moving the pointer over an invalid
+  // field repainted the red border with the ordinary darker one and the field looked valid
+  // again until the pointer left. Verified in Chrome, since jsdom loads no stylesheets and
+  // computes no cascade: hovering turned the border from rgb(220,38,38) to the darker
+  // rgb(10,20,30), and the guard held it red. PhoneInput never had this because it renders a
+  // different container class that the rule does not match.
+  test('[EmailInput-STYLE-013] a revealed error opts the field out of the hover border rule', async () => {
+    harness.render({ validation: { mandatory: binding('{{true}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    // Valid and unrevealed: the field takes the ordinary hover treatment.
+    expect(fieldBox()).not.toHaveClass('tj-input-has-error');
+
+    fireEvent.blur(input());
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+
+    // Revealed: the flag is on, which is what keeps the hover rule off the error border.
+    // The error colour itself cannot be asserted here — it is `var(--cc-error-systemStatus)`,
+    // and jsdom's CSSOM drops `var()` on a standard property, so the declaration never lands.
+    expect(fieldBox()).toHaveClass('tj-input-has-error');
+
+    // Fixing the value drops the flag again, so the field goes back to hovering normally.
+    // The feedback node stays mounted and simply empties, so validity is read from the
+    // exposed variable rather than from the element's presence.
+    await userEvent.type(input(), 'ada@tooljet.com');
+    await waitFor(() => expect(harness.exposed().isValid).toBe(true));
+    expect(errorText()).toBeEmptyDOMElement();
+    expect(fieldBox()).not.toHaveClass('tj-input-has-error');
+  });
+
   // Break this catches: dropping the legacy text-colour blocklist — a pre-theme app
   // would render hard #1B1F24 text on a disabled field.
   test('[EmailInput-STYLE-010] a legacy text colour resolves to the theme token, per state', async () => {
