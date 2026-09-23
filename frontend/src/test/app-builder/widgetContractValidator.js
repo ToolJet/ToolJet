@@ -284,8 +284,8 @@ function testDeclarations(source) {
           titleNode?.type === 'StringLiteral'
             ? titleNode.value
             : titleNode?.type === 'TemplateLiteral'
-            ? titleNode.quasis[0].value.cooked
-            : null;
+              ? titleNode.quasis[0].value.cooked
+              : null;
         if (title !== null) {
           if (!parts[0].includes('describe')) {
             const id = title.match(/^\[([A-Za-z0-9-]+)\]/)?.[1];
@@ -322,6 +322,12 @@ function walkSpecs(frontendRoot) {
   visit('src/AppBuilder/Widgets', (rel) => /\/__tests__\/.+\.spec\.[jt]sx?$/.test(rel));
   visit('src/AppBuilder/AppCanvas/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   visit('src/AppBuilder/_stores/slices/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
+  // Navigation's contract (D-02) brought its bespoke Inspector menu-item editor in scope, since
+  // that UI's sole purpose is constructing Navigation's own `menuItems` property — not a generic
+  // Inspector control. Its tests live beside the hook they test, outside src/AppBuilder/Widgets.
+  visit('src/AppBuilder/RightSideBar/Inspector/Components/Navigation/hooks/__tests__', (rel) =>
+    /\.(js|jsx)$/.test(rel)
+  );
   return specs;
 }
 

@@ -7,7 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
-import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
@@ -231,16 +231,14 @@ function convertToBracketNotation(base, accessors) {
 }
 
 function verifyDotAndBracketNotations(jsString) {
-  if (
-    !(
-      jsString.includes('components.') ||
-      jsString.includes('globals.') ||
-      jsString.includes('queries.') ||
-      jsString.includes('page.') ||
-      jsString.includes('variables.') ||
-      jsString.includes('constants.')
-    )
-  ) {
+  if (!(
+    jsString.includes('components.') ||
+    jsString.includes('globals.') ||
+    jsString.includes('queries.') ||
+    jsString.includes('page.') ||
+    jsString.includes('variables.') ||
+    jsString.includes('constants.')
+  )) {
     return false;
   }
 
