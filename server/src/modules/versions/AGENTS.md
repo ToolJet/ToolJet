@@ -4,7 +4,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 
 ## Domain terms
 
-- **Version** — `AppVersion` entity (`app_versions`). `status`: `DRAFT` → `PUBLISHED` → `RELEASED`; `versionType`: `VERSION` (named snapshot) or `BRANCH` (git-branch head; `name` is a UUID, display name comes from `WorkspaceBranch`).
+- **Version** — `AppVersion` entity (`app_versions`). `status`: `DRAFT` → `PUBLISHED` (release is tracked separately, see below — not a status value); `versionType`: `VERSION` (named snapshot) or `BRANCH` (git-branch head; `name` is a UUID, display name comes from `WorkspaceBranch`).
 - **Release** — `apps.current_version_id` points at the released version. Set by apps module `release()`, guarded by env + slug checks.
 - **Environment** — `AppEnvironment` (app-environments module), priority-ordered (development=1 → staging → production). Each version carries `currentEnvironmentId`.
 - **Promote** — advance a saved version's `currentEnvironmentId` to the next-higher-priority environment. Multi-environment is EE-licensed (`LICENSE_FIELD.MULTI_ENVIRONMENT`).
@@ -38,7 +38,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 
 - Non-DRAFT versions are immutable in name/description (`service.ts` update: "Cannot edit name or description of a saved version"). Content edits are frozen via `should_freeze_editor` (env priority > 1, status PUBLISHED, or EE git freeze).
 - Promote: DRAFT cannot be promoted (save first); request's `currentEnvironmentId` must equal the version's, else 406; next env = lowest priority above current; `promotedFrom` is nulled on promote.
-- Delete: released version (matches `apps.current_version_id` or status RELEASED) and the only/branch-head version cannot be deleted; module versions in use by apps block deletion (`checkModuleVersionInUse`). `DataQueryFolder`/`DataQueryFolderMapping` need explicit cleanup (no CASCADE).
+- Delete: released version (matches `apps.current_version_id`) and the only/branch-head version cannot be deleted; module versions in use by apps block deletion (`checkModuleVersionInUse`). `DataQueryFolder`/`DataQueryFolderMapping` need explicit cleanup (no CASCADE).
 - Git branching on ⇒ only one DRAFT of type VERSION per branch. Publishing a default-branch draft (`handleDefaultBranchPublish`) seeds a fresh DRAFT on that branch and NULLs `branch_id` on the published row — DB constraint `chk_app_versions_branched_implies_draft` requires non-DRAFT rows to be branchless (detach must happen in the same UPDATE as the status flip).
 - Non-workflow app metadata (`appName`/`slug`/`icon`/`isPublic`) lives on `app_versions` rows, not `apps.*`; workflows keep it on `apps.*` and always have `branch_id` NULL.
 - Publishing an app version blocks if any ModuleViewer resolves to a draft/orphan/unpinned module (`checkDraftModulesInApp`); EE promote blocks if a pinned module version isn't yet in the target environment.
