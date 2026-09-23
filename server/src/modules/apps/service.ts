@@ -9,7 +9,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager, EntityNotFoundError, In, IsNull, Not } from 'typeorm';
+import { EntityManager, EntityNotFoundError, FindOptionsWhere, In, IsNull, Not } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -855,9 +855,14 @@ export class AppsService implements IAppsService {
   private versionOnlyWhere(
     appId: string,
     defaultBranchId: string | undefined,
-    extra: Record<string, unknown> = {}
-  ): Record<string, unknown> | Record<string, unknown>[] {
-    const base = { appId, versionType: Not(AppVersionType.BRANCH), isStub: false, ...extra };
+    extra: FindOptionsWhere<AppVersion> = {}
+  ): FindOptionsWhere<AppVersion> | FindOptionsWhere<AppVersion>[] {
+    const base: FindOptionsWhere<AppVersion> = {
+      appId,
+      versionType: Not(AppVersionType.BRANCH),
+      isStub: false,
+      ...extra,
+    };
     // branchId IS NULL covers legacy pre-branching rows (versions/repository.ts's
     // getVersionsInApp keeps these visible on the default branch the same way).
     return defaultBranchId
@@ -884,9 +889,8 @@ export class AppsService implements IAppsService {
           return;
         }
       } catch (err) {
-        // Named version not found (stale/deleted link) — fall through rather than 404, matching
-        // the "backward compatibility for old URLs" tolerance elsewhere in this file. findByName
-        // throws EntityNotFoundError rather than returning null/undefined.
+        // Stale/deleted link — fall through rather than 404. findByName throws
+        // EntityNotFoundError here instead of returning null.
         if (!(err instanceof EntityNotFoundError)) throw err;
       }
     }
