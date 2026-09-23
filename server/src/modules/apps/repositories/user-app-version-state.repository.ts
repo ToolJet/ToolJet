@@ -14,7 +14,12 @@ export class UserAppVersionStateRepository extends Repository<UserAppVersionStat
   }
 
   // Last-writer-wins under concurrent calls is acceptable here; this is bookkeeping, not the request's write of record.
-  async upsert(userId: string, appId: string, versionId: string, manager?: EntityManager): Promise<void> {
+  async upsertLastActiveVersion(
+    userId: string,
+    appId: string,
+    versionId: string,
+    manager?: EntityManager
+  ): Promise<void> {
     const m = manager ?? this.manager;
     await m
       .createQueryBuilder()
