@@ -997,6 +997,76 @@ describe('styles', () => {
     await waitFor(() => expect(input()).toBeTruthy());
     expect(inlineStyle(fieldBox())).toContain('calc(100% - 20px - 0px)');
   });
+
+  // Break this catches: putting the mandatory asterisk back on top of the label instead of
+  // beside it — dropping `flex-shrink: 0`, or moving the ellipsis off the text span, or
+  // restoring the absolute positioning it used to have.
+  //
+  // The star used to be absolutely positioned, so it took no width and a constant
+  // `padding-right` was the only thing holding the text out from under it. The star's own
+  // advance grows with the label font, so past roughly a 16px label the text ran under it:
+  // measured in Chrome, 8.47px of overlap at 32px. Reserving a computed width would only
+  // move the problem, since the `*` advance ranges 0.28em-0.60em across font families and
+  // the label font is about to become user-configurable. Laying it out in flow instead
+  // makes the browser reserve exactly the right room, whatever the font.
+  //
+  // This is a shared `_ui/Label` fix, so it guards every widget that renders a mandatory
+  // label — the other inputs, Dropdown, Multiselect, Date, Rating and the rest.
+  test('[EmailInput-STYLE-012] a mandatory label lays its asterisk out beside the text, not over it', async () => {
+    const labelBox = () => label().querySelector('p');
+    const textSpan = () => labelBox().querySelector('span');
+    const asterisk = () => labelBox().querySelectorAll('span')[1];
+
+    harness.render({
+      properties: { label: binding('Label') },
+      styles: { labelFontSize: binding('{{32}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    // The star is in normal flow, so it occupies width the text cannot be laid into. jsdom
+    // computes no geometry, so the guarantee is pinned structurally instead.
+    expect(asterisk()).toHaveTextContent('*');
+    expect(asterisk().style.position).not.toBe('absolute');
+    expect(asterisk().style.flexShrink).toBe('0');
+    expect(labelBox().style.display).toBe('flex');
+
+    // The ellipsis belongs to the text alone. If it sat on the row, an over-long label would
+    // truncate the asterisk away with it and the field would lose its required marker.
+    expect(textSpan()).toHaveTextContent('Label');
+    expect(textSpan().style.textOverflow).toBe('ellipsis');
+    expect(textSpan().style.overflow).toBe('hidden');
+    expect(labelBox().style.textOverflow).not.toBe('ellipsis');
+
+    // The row hands its reserve over to the asterisk rather than keeping both. Holding the
+    // full 12px as well would pay for the same gap twice and widen EVERY mandatory label by
+    // the glyph's width — measured in Chrome, 8px wider even at the default size, where
+    // nothing was wrong. Dropping to the 4px the star used to be inset by reproduces the old
+    // box exactly at 12px, so only an enlarged label grows, and only by what its star needs.
+    expect(labelBox().style.paddingRight).toBe('4px');
+
+    // An optional field has no star to make room for, so it keeps the padding it always had
+    // and its box is unchanged at every size.
+    harness.render({
+      properties: { label: binding('Label') },
+      styles: { labelFontSize: binding('{{32}}') },
+      validation: { mandatory: binding('{{false}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(labelBox().querySelectorAll('span')).toHaveLength(1);
+    expect(textSpan()).toHaveTextContent('Label');
+    expect(labelBox().style.paddingRight).toBe('12px');
+
+    // A right-aligned label pinned its star flush to the edge, so it gives up all of its
+    // padding instead of 8px of it.
+    harness.render({
+      properties: { label: binding('Label') },
+      styles: { labelFontSize: binding('{{32}}'), direction: binding('right') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(labelBox().style.paddingRight).toBe('0px');
+  });
 });
 
 describe('remaining accessibility', () => {
