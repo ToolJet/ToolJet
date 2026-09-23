@@ -134,7 +134,7 @@ const OpenApiV2Config = ({
               isRenderedAsQueryEditor={false}
               workspaceConstants={workspaceConstants}
               isDisabled={isDisabled}
-              width="100%"
+              width="316px"
               dataCy={key}
             />
           </div>
