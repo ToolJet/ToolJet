@@ -27,6 +27,11 @@ export type JWTPayload = {
   isAdminApiKeyAuth?: boolean;
 };
 
+export type BranchResolution = {
+  branchId: string | null;
+  explicit: boolean;
+};
+
 interface Features {
   [FEATURE_KEY.LOG_OUT]: FeatureConfig;
   [FEATURE_KEY.GET_INVITED_USER_SESSION]: FeatureConfig;
