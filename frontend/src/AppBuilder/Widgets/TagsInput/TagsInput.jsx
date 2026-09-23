@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import CreatableSelect from 'react-select/creatable';
 import './tagsInput.scss';
 import cx from 'classnames';
@@ -565,38 +566,45 @@ const TagsInput = ({
 
   // Update selectTags/deselectTags when options change
   useEffect(() => {
+    const rejectNonArrayTags = (handle, tags) => {
+      if (Array.isArray(tags)) return true;
+      toast.error(`${handle} expects an array of tags`);
+      return false;
+    };
+
     setExposedVariable('selectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const newSelected = [...selected];
-        tags.forEach((tag) => {
-          // Support both value and label extraction from object
-          const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
-          const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
+      // An event's Tags field resolves to a string unless the builder wrapped it in `{{}}`.
+      if (!rejectNonArrayTags('selectTags', tags)) return;
 
-          // Find matching option by value first, then by label as fallback
-          const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+      const newSelected = [...selected];
+      tags.forEach((tag) => {
+        // Support both value and label extraction from object
+        const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
+        const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
-          if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
-            newSelected.push(matchingOption);
-          }
-        });
-        setInputValues(newSelected);
-      }
+        // Find matching option by value first, then by label as fallback
+        const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+
+        if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
+          newSelected.push(matchingOption);
+        }
+      });
+      setInputValues(newSelected);
     });
 
     setExposedVariable('deselectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const tagIdentifiers = tags.map((tag) => ({
-          value: typeof tag === 'object' && tag?.value ? tag.value : tag,
-          label: typeof tag === 'object' && tag?.label ? tag.label : tag,
-        }));
-        // Filter out options that match by value OR label
-        const newSelected = selected.filter(
-          (option) =>
-            !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
-        );
-        setInputValues(newSelected);
-      }
+      if (!rejectNonArrayTags('deselectTags', tags)) return;
+
+      const tagIdentifiers = tags.map((tag) => ({
+        value: typeof tag === 'object' && tag?.value ? tag.value : tag,
+        label: typeof tag === 'object' && tag?.label ? tag.label : tag,
+      }));
+      // Filter out options that match by value OR label
+      const newSelected = selected.filter(
+        (option) =>
+          !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
+      );
+      setInputValues(newSelected);
     });
   }, [allOptions, selected]);
 
