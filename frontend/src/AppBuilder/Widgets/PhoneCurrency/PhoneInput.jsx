@@ -316,6 +316,10 @@ export const PhoneInput = (props) => {
             onClick={(event) => {
               event.stopPropagation();
               onInputValueChange('');
+              // Reveal here rather than inside onInputValueChange: that is also the typing handler,
+              // and a keystroke must not accuse the user mid-edit.
+              // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does.
+              inputLogic.setShowValidationError(true);
             }}
             style={{
               position: 'absolute',

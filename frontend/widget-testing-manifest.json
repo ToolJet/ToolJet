@@ -71,7 +71,7 @@
     },
     {
       "componentType": "TextInput",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/TextInput/TESTING.md"
     },
     {
@@ -100,12 +100,12 @@
     },
     {
       "componentType": "PhoneInput",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/PhoneInput/TESTING.md"
     },
     {
       "componentType": "CurrencyInput",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {

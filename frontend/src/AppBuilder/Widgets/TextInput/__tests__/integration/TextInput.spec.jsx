@@ -647,7 +647,33 @@ describe('the clear button', () => {
     expect(harness.exposed().value).toBe('');
     await waitFor(() => expect(callCount()).toBe(1));
     expect(document.activeElement).toBe(input());
-    expect(errorText()).toBeNull(); // no mid-edit accusation
+    // Clearing a mandatory field reports it. This row previously pinned the opposite under
+    // D-05; that decision is superseded, see the contract's approval history.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+  });
+
+  // Break this catches: dropping the reveal from the clear button's handler, which leaves it
+  // to `handleBlur` alone.
+  //
+  // A field that loads with a default value and is never touched has `showValidationError`
+  // false, and the clear button suppresses the blur that would flip it — its `onMouseDown`
+  // calls `preventDefault()` so the field never loses focus. So emptying a mandatory field
+  // with the button left it silently invalid: no message, no red border, and `isValid`
+  // already false underneath. Interacting first masked it, because the blur had flipped the
+  // flag before the click.
+  test('[TextInput-CLR-004] clearing a mandatory field reveals the error with no prior blur', async () => {
+    harness.render({
+      properties: { value: binding('Ada'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await userEvent.click(clearButton());
+
+    expect(input().value).toBe('');
+    expect(harness.exposed().isValid).toBe(false);
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 });
 

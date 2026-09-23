@@ -884,6 +884,29 @@ describe('clear button', () => {
     await waitFor(() => expect(callCount()).toBe(1));
   });
 
+  // Break this catches: dropping the reveal from the clear button's onClick, which leaves it
+  // to `handleBlur` alone.
+  //
+  // A field that loads with a default value and is never touched has `showValidationError`
+  // false, and the clear button suppresses the blur that would flip it — its `onMouseDown`
+  // calls `preventDefault()` so the field never loses focus. So emptying a mandatory field
+  // with the button left it silently invalid: no message, no red border, and `isValid`
+  // already false underneath. The reveal sits on the button rather than in
+  // `onInputValueChange`, which is also the typing handler and must not accuse mid-edit.
+  test('[CurrencyInput-CLR-005] clearing a mandatory field reveals the error with no prior blur', async () => {
+    harness.render({
+      properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await userEvent.click(clearButton());
+
+    await waitFor(() => expect(input().value).toBe(''));
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+  });
+
   // Break this catches: reading only showClearBtn and the value, so a disabled or loading
   // field would still offer a working clear button.
   test('[CurrencyInput-CLR-004] the clear button is hidden while the field is disabled or loading', async () => {
