@@ -8,10 +8,11 @@ import {
   openWorkflowsDashboard,
   createWorkflowFromDashboard,
   renameWorkflowFromCard,
+  cleanupWorkflows,
+  cleanupApps,
 } from "Support/utils/workFlows";
 
-// Dashboard CRUD for workflows. See the workflow-cypress-tdd skill for the
-// surface map and known issues.
+// Dashboard CRUD for workflows.
 //
 // The workflows dashboard renders the same surface as the apps dashboard, so
 // these cases mirror dashboard.cy.js "Should verify the app CRUD operation" and
@@ -31,6 +32,13 @@ describe("Workflows - dashboard CRUD", () => {
     data.appName = `${data.workflowName}app`;
   });
 
+  // Teardown lives here, not at the end of each test, so a test that fails
+  // part-way still cleans up. Covers both names because several tests rename.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName, data.renamedWorkflow]);
+    cleanupApps([data.appName]);
+  });
+
   it("A workflow can be created from the workflows dashboard and opens with a start node", () => {
     openWorkflowsDashboard();
     createWorkflowFromDashboard(data.workflowName);
@@ -39,8 +47,6 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(workflowSelector.startNode, { timeout: 20000 })
       .should("be.visible")
       .and("have.length", 1);
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("A created workflow appears on the dashboard and survives reload", () => {
@@ -58,8 +64,6 @@ describe("Workflows - dashboard CRUD", () => {
       "contain.text",
       data.workflowName
     );
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("The workflow card menu offers the workflow-specific actions", () => {
@@ -82,8 +86,6 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(
       commonSelectors.appCardOptions(workflowsText.deleteWorkflowOption)
     ).verifyVisibleElement("have.text", workflowsText.deleteWorkflowOption);
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("The workflow card menu does not offer Clone", () => {
@@ -103,8 +105,6 @@ describe("Workflows - dashboard CRUD", () => {
       "not.contain.text",
       workflowsText.cloneWorkflowOption
     );
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("A renamed workflow keeps its new name on the dashboard", () => {
@@ -121,8 +121,6 @@ describe("Workflows - dashboard CRUD", () => {
     cy.wait(3000);
     cy.get(commonSelectors.appCard(data.renamedWorkflow)).should("exist");
     cy.get(commonSelectors.appCard(data.workflowName)).should("not.exist");
-
-    cy.apiDeleteWorkflow(data.renamedWorkflow);
   });
 
   it("An empty or duplicate workflow name is rejected", () => {
@@ -140,8 +138,6 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(workflowSelector.createWorkFlowsButton).click();
     cy.wait(2000);
     cy.get("body").should("contain.text", "already exists");
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Deleting a workflow from the dashboard removes its card after confirmation", () => {
@@ -184,9 +180,6 @@ describe("Workflows - dashboard CRUD", () => {
     cy.wait(3000);
     cy.get(commonSelectors.appCard(data.appName)).should("exist");
     cy.get(commonSelectors.appCard(data.workflowName)).should("not.exist");
-
-    cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteApp(data.appName);
   });
 
   it("Dashboard search matches a workflow by name and reflects a rename", () => {
@@ -210,7 +203,5 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(commonSelectors.homePageSearchBar).clear().type(data.workflowName);
     cy.wait(2000);
     cy.get(commonSelectors.appCard(data.workflowName)).should("not.exist");
-
-    cy.apiDeleteWorkflow(data.renamedWorkflow);
   });
 });

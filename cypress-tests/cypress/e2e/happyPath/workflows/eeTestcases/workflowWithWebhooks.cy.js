@@ -11,7 +11,7 @@ import {
 // then fires an actual HTTP request from outside the app.
 //
 // Only the happy path is covered. The disabled state and a bad/revoked token
-// are both untested; see known-issues.md in the workflow-cypress-tdd skill.
+// are both untested.
 const data = {};
 
 describe("Workflows - webhook trigger", () => {

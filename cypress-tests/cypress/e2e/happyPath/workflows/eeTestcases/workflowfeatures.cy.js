@@ -10,7 +10,6 @@ import {
 
 // Payload handling and node preview: what survives a full run, and what the
 // preview panel shows before one.
-// See the workflow-cypress-tdd skill for the surface map and known issues.
 const data = {};
 
 describe("Workflows - payloads and node preview", () => {
@@ -98,7 +97,7 @@ describe("Workflows - payloads and node preview", () => {
   // KNOWN GAP: this case builds the nested-workflow graph but does not assert
   // the child's value comes back — the upstream spec had that assertion
   // commented out pending a fix, and this rewrite deliberately did not change
-  // what it asserts. See known-issues.md in the workflow-cypress-tdd skill.
+  // what it asserts.
   it("A workflow can embed another workflow as a node and the graph builds", () => {
     cy.apiCreateWorkflow(data.childWorkflowName);
     cy.openWorkflow();

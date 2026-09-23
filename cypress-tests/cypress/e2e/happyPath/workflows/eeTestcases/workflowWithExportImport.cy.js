@@ -5,6 +5,7 @@ import {
   createPostgresDataSource,
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
+  cleanupWorkflows,
 } from "Support/utils/workFlows";
 
 // Round trip: build a working workflow, export it, delete it, re-import it and
@@ -13,7 +14,6 @@ import {
 //
 // Note the coupling: the import half reads the fixture the export half wrote in
 // the same run, so a failure in export surfaces as a confusing import failure.
-// See the workflow-cypress-tdd skill for the surface map and known issues.
 const data = {};
 
 describe("Workflows - export and import round trip", () => {
@@ -24,6 +24,13 @@ describe("Workflows - export and import round trip", () => {
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
+  });
+
+  // Teardown also runs here so a test that fails part-way still cleans up.
+  // Without it a failed case leaks its workflow onto the shared instance, and
+  // later specs that open card menus then see more than one workflow card.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName, `${data.workflowName}-runjs`, `${data.workflowName}-pg`]);
   });
 
   it("A RunJS workflow survives an export/import round trip and still executes", () => {
@@ -41,15 +48,15 @@ describe("Workflows - export and import round trip", () => {
     });
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
+    // exportWorkflowApp deletes the workflow from the dashboard itself as its
+    // last step, so there is nothing left here to delete before re-importing.
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
 
     // Same name, rebuilt from the exported file: the re-imported workflow must
     // produce the same result as the original.
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.apiDeleteWorkflow(workflowName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
@@ -71,15 +78,15 @@ describe("Workflows - export and import round trip", () => {
     });
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
+    // exportWorkflowApp deletes the workflow from the dashboard itself as its
+    // last step, so there is nothing left here to delete before re-importing.
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
 
     // The data source binding has to survive the round trip too, otherwise the
     // re-imported query returns nothing.
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    cy.apiDeleteWorkflow(workflowName);
     cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });

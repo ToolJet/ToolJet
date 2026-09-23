@@ -53,7 +53,17 @@ export const importWorkflowApp = (
   cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
   cy.wait(2000);
   cy.get(workflowSelector.workFlowNameInputField).clear().type(workflowName);
+
+  // Import navigates into the editor client-side, so nothing otherwise waits
+  // for the imported app's version data to arrive before a caller interacts
+  // with the canvas — a Run click straight after import can fire before the
+  // version is loaded and get a 400 from the trigger endpoint.
+  cy.intercept("GET", "/api/apps/*/versions").as("importedVersionsLoaded");
   cy.get(workflowSelector.importWorkFlowsButton).click();
+  cy.wait("@importedVersionsLoaded", { timeout: 20000 });
+  // The network response resolving doesn't guarantee the store has committed
+  // and re-rendered yet, so a settle buffer follows it.
+  cy.wait(1500);
 };
 
 export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
@@ -109,22 +119,20 @@ export const createWorkflowFromDashboard = (workflowName) => {
   cy.wait(3000);
 };
 
-// Rename from the card menu. It opens the shared rename modal, whose input is
-// `app-name-input`; the submit label differs for workflows, so the modal's
-// primary action is targeted by text rather than a hardcoded app-only data-cy.
+// Rename from the card menu. The shared rename modal derives its hooks from the
+// app type, so on the workflows dashboard the input is `workflow-name-input` and
+// the submit is `rename-workflow` — not the app-typed `app-name-input` /
+// `rename-app`. The submit stays disabled until the name actually changes.
 export const renameWorkflowFromCard = (currentName, newName) => {
   viewAppCardOptions(currentName);
   cy.get(commonSelectors.appCardOptions(workflowsText.renameWorkflowOption)).click();
   cy.get(commonSelectors.modalComponent).should("be.visible");
-  cy.get(commonSelectors.appNameInput).type(
+  cy.get(workflowSelector.workFlowNameInputField).type(
     `{selectAll}{backspace}${newName}`,
     { force: true }
   );
-  cy.get(commonSelectors.modalComponent)
-    .find("button")
-    .contains(new RegExp(`^${workflowsText.renameWorkflowOption}$`, "i"))
-    .click();
-  cy.wait(2000);
+  cy.get(workflowSelector.renameWorkflowButton).should("be.enabled").click();
+  cy.get(commonSelectors.modalComponent).should("not.exist");
 };
 
 // Moves a workflow into a folder through the shared Add-to-folder modal, the
@@ -147,6 +155,87 @@ export const removeWorkflowFromFolder = (workflowName) => {
   ).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait(2000);
+};
+
+// ---------------------------------------------------------------------------
+// Teardown
+//
+// For afterEach hooks, so a test that fails part-way still cleans up — otherwise
+// its workflows and folders leak into every later test on the same instance.
+// Both helpers are deliberately tolerant: a test may already have deleted or
+// renamed what it created, and a hook that throws on "not found" would turn a
+// passing test red. cy.apiDeleteWorkflow throws in exactly that case, so it is
+// not usable here.
+// ---------------------------------------------------------------------------
+
+const withAuthHeaders = (fn) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    // No session means nothing this test could have created is reachable.
+    if (!cookie) return;
+    fn({
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+    });
+  });
+};
+
+// Deletes each named app of the given type ("workflow" or "front-end") if it
+// still exists.
+const cleanupAppsOfType = (names, type) => {
+  withAuthHeaders((headers) => {
+    names.filter(Boolean).forEach((name) => {
+      cy.request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps?page=1&type=${type}&searchKey=${encodeURIComponent(name)}`,
+        headers,
+        failOnStatusCode: false,
+        log: false,
+      }).then((res) => {
+        (res.body?.apps || [])
+          .filter((app) => app.name === name)
+          .forEach((app) =>
+            cy.request({
+              method: "DELETE",
+              url: `${Cypress.env("server_host")}/api/apps/${app.id}`,
+              headers,
+              failOnStatusCode: false,
+              log: false,
+            })
+          );
+      });
+    });
+  });
+};
+
+export const cleanupWorkflows = (names = []) => cleanupAppsOfType(names, "workflow");
+export const cleanupApps = (names = []) => cleanupAppsOfType(names, "front-end");
+
+// Deletes each named folder if it still exists. `types` matters: folder names
+// are unique per type, so a workflow folder and an app folder can share a name.
+export const cleanupFolders = (names = [], types = ["workflow"]) => {
+  withAuthHeaders((headers) => {
+    types.forEach((type) => {
+      cy.request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/folder-apps?searchKey=&type=${type}`,
+        headers,
+        failOnStatusCode: false,
+        log: false,
+      }).then((res) => {
+        (res.body?.folders || [])
+          .filter((folder) => names.includes(folder.name))
+          .forEach((folder) =>
+            cy.request({
+              method: "DELETE",
+              url: `${Cypress.env("server_host")}/api/folders/${folder.id}`,
+              headers,
+              failOnStatusCode: false,
+              log: false,
+            })
+          );
+      });
+    });
+  });
 };
 
 // ---------------------------------------------------------------------------

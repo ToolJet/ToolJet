@@ -5,8 +5,7 @@ import { fake } from "Fixtures/fake";
 // that it was logged. No browser interaction with the editor at all.
 //
 // Note the log assertion is time-based — it checks a relative timestamp, which
-// says a run happened recently rather than that it succeeded. See
-// known-issues.md in the workflow-cypress-tdd skill.
+// says a run happened recently rather than that it succeeded.
 const data = {};
 
 describe("Workflows - build and execute over the API", () => {

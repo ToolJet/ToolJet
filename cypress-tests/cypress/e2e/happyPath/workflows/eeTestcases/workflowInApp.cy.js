@@ -5,11 +5,12 @@ import {
   buildLinearWorkflow,
   createPostgresDataSource,
   verifyTextInResponseOutputLimited,
+  cleanupWorkflows,
+  cleanupApps,
 } from "Support/utils/workFlows";
 
 // A workflow is consumed from an app as a query. These cases assert the
 // app-side path: add the workflow to an app and run it from there.
-// See the workflow-cypress-tdd skill for the surface map and known issues.
 const data = {};
 
 describe("Workflows - running from an app", () => {
@@ -21,6 +22,14 @@ describe("Workflows - running from an app", () => {
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
+  });
+
+  // Teardown also runs here so a test that fails part-way still cleans up.
+  // Without it a failed case leaks its workflow onto the shared instance, and
+  // later specs that open card menus then see more than one workflow card.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+    cleanupApps([data.appName]);
   });
 
   it("An app can run a RunJS-backed workflow", () => {
@@ -44,11 +53,7 @@ describe("Workflows - running from an app", () => {
 
     // KNOWN GAP: the completion toast is not asserted. The upstream spec had
     // that assertion commented out pending a fix, and this rewrite did not
-    // change what it asserts. See known-issues.md in the workflow-cypress-tdd
-    // skill.
-
-    cy.apiDeleteApp();
-    cy.apiDeleteWorkflow(data.workflowName);
+    // change what it asserts.
   });
 
   it("An app can run a Postgres-backed workflow", () => {
@@ -75,8 +80,6 @@ describe("Workflows - running from an app", () => {
 
     // KNOWN GAP: see the RunJS case above.
 
-    cy.apiDeleteApp();
-    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 });

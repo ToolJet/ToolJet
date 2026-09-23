@@ -17,6 +17,7 @@ import {
   enterJsonInputInStartNode,
   navigateBackToWorkflowsDashboard,
   verifyTextInResponseOutputLimited,
+  cleanupWorkflows,
 } from "Support/utils/workFlows";
 
 // A query node executes against its data source and its result reaches the
@@ -25,7 +26,6 @@ import {
 //
 // These cases need provisioned external data sources. A failure here is as
 // likely to be environment as product; check the connection step first.
-// See the workflow-cypress-tdd skill for the surface map and known issues.
 const data = {};
 
 describe("Workflows - query node execution per data source", () => {
@@ -36,6 +36,13 @@ describe("Workflows - query node execution per data source", () => {
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
+  });
+
+  // Teardown also runs here so a test that fails part-way still cleans up.
+  // Without it a failed case leaks its workflow onto the shared instance, and
+  // later specs that open card menus then see more than one workflow card.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
   });
 
   it("A RunJS query node executes and its result reaches the response node", () => {
@@ -51,8 +58,6 @@ describe("Workflows - query node execution per data source", () => {
     });
 
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("A Postgres query node executes and its rows reach the response node", () => {
@@ -75,7 +80,6 @@ describe("Workflows - query node execution per data source", () => {
     // expanded, so expansion is capped.
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 
@@ -99,7 +103,6 @@ describe("Workflows - query node execution per data source", () => {
 
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
-    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 
@@ -182,7 +185,6 @@ describe("Workflows - query node execution per data source", () => {
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
 
     navigateBackToWorkflowsDashboard();
-    cy.apiDeleteWorkflow(data.workflowName);
     deleteDatasource(dataSourceName);
   });
 });

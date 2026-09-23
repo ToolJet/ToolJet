@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/platform/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 import { dashboardSelector } from "Selectors/platform/dashboard";
 import {
   createFolder,
@@ -15,14 +16,14 @@ import {
   openWorkflowsDashboard,
   moveWorkflowToFolder,
   removeWorkflowFromFolder,
+  cleanupWorkflows,
+  cleanupFolders,
 } from "Support/utils/workFlows";
 
 // Workflow folders are the apps folder feature scoped to workflows: the same
 // folder API, the same folder UI, discriminated by type. These cases mirror
 // dashboard.cy.js "Should verify the folder CRUD operation" plus its
 // add/remove-to-folder blocks, and reuse the same helpers.
-//
-// See the workflow-cypress-tdd skill for the surface map and known issues.
 const data = {};
 
 describe("Workflows - folders and folder movement", () => {
@@ -36,6 +37,14 @@ describe("Workflows - folders and folder movement", () => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
   });
 
+  // Teardown lives here, not at the end of each test, so a test that fails
+  // part-way still cleans up. Folders are cleaned for both types because one
+  // test deliberately creates an app folder with the same name.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+    cleanupFolders([data.folderName, data.updatedFolderName], ["workflow", "front-end"]);
+  });
+
   it("A workflow folder can be created and is listed on the workflows dashboard", () => {
     openWorkflowsDashboard();
     createFolder(data.folderName);
@@ -45,8 +54,6 @@ describe("Workflows - folders and folder movement", () => {
     cy.reload();
     cy.wait(3000);
     cy.get(dashboardSelector.folderName(data.folderName)).should("exist");
-
-    deleteFolder(data.folderName);
   });
 
   it("Closing or cancelling the create-folder modal creates nothing", () => {
@@ -93,8 +100,6 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
       "be.visible"
     );
-
-    deleteFolder(data.updatedFolderName);
   });
 
   it("Deleting a workflow folder asks for confirmation and removes it on confirm", () => {
@@ -128,11 +133,9 @@ describe("Workflows - folders and folder movement", () => {
     deleteFolder(data.folderName);
 
     // The workflow must survive its folder.
-    cy.get(commonSelectors.allApplicationsLink).click();
+    cy.get(workflowSelector.allWorkflowsLink).click();
     cy.wait(2000);
     cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
-
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("A workflow can be moved into a folder and appears inside it", () => {
@@ -152,9 +155,6 @@ describe("Workflows - folders and folder movement", () => {
     cy.get(dashboardSelector.folderName(data.folderName)).click();
     cy.wait(2000);
     cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
-
-    deleteFolder(data.folderName);
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("A workflow can be removed from a folder and returns to the unfiled list", () => {
@@ -170,12 +170,9 @@ describe("Workflows - folders and folder movement", () => {
 
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
 
-    cy.get(commonSelectors.allApplicationsLink).click();
+    cy.get(workflowSelector.allWorkflowsLink).click();
     cy.wait(2000);
     cy.get(commonSelectors.appCard(data.workflowName)).should("exist");
-
-    deleteFolder(data.folderName);
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Folder counts reflect membership and the empty state shows for an empty folder", () => {
@@ -194,9 +191,6 @@ describe("Workflows - folders and folder movement", () => {
       "contain.text",
       `${data.folderName} (1)`
     );
-
-    deleteFolder(data.folderName);
-    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Deleting a workflow inside a folder decrements the folder count", () => {
@@ -218,8 +212,6 @@ describe("Workflows - folders and folder movement", () => {
       "not.contain.text",
       "(1)"
     );
-
-    deleteFolder(data.folderName);
   });
 
   it("An empty workflow folder shows the empty-folder message", () => {
@@ -233,9 +225,6 @@ describe("Workflows - folders and folder movement", () => {
       "have.text",
       commonText.emptyFolderText
     );
-
-    cy.get(commonSelectors.allApplicationsLink).click();
-    deleteFolder(data.folderName);
   });
 
   it("Workflow folders and app folders do not appear in each other's dashboards", () => {
@@ -250,8 +239,6 @@ describe("Workflows - folders and folder movement", () => {
 
     openWorkflowsDashboard();
     cy.get(dashboardSelector.folderName(data.folderName)).should("exist");
-
-    deleteFolder(data.folderName);
   });
 
   it("An app folder and a workflow folder may share the same name", () => {
@@ -264,10 +251,5 @@ describe("Workflows - folders and folder movement", () => {
     openWorkflowsDashboard();
     createFolder(data.folderName);
     cy.get(dashboardSelector.folderName(data.folderName)).should("be.visible");
-
-    deleteFolder(data.folderName);
-    cy.visit("/my-workspace");
-    cy.wait(3000);
-    deleteFolder(data.folderName);
   });
 });
