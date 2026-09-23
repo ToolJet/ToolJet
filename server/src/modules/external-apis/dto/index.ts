@@ -613,8 +613,8 @@ export class UpdateUserV2Dto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(Status)
-  status?: Status;
+  @IsEnum(USER_STATUS)
+  status?: USER_STATUS;
 }
 
 export class ListUsersV2QueryDto {
@@ -623,8 +623,8 @@ export class ListUsersV2QueryDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(Status)
-  status?: Status;
+  @IsEnum(USER_STATUS)
+  status?: USER_STATUS;
 
   @IsOptional()
   @Type(() => Number)
@@ -679,7 +679,7 @@ export class UserV2ResponseDto {
   email: string;
 
   @Expose()
-  status: string;
+  status: USER_STATUS;
 }
 
 @Exclude()

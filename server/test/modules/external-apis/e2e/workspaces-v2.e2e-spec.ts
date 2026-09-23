@@ -553,3 +553,51 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
     });
   });
 });
+
+describe('ExternalApisWorkspacesControllerV2 (EE plan: starter)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/workspaces returns 451 — externalApi not included in starter plan', async () => {
+    await request(app.getHttpServer()).get(BASE).set('Authorization', getExtAuth()).expect(451);
+  });
+
+  it('POST /api/v2/ext/workspaces returns 451 — externalApi not included in starter plan', async () => {
+    await request(app.getHttpServer())
+      .post(BASE)
+      .set('Authorization', getExtAuth())
+      .send({ name: `Starter Workspace ${Date.now()}`, slug: `starter-workspace-${Date.now()}` })
+      .expect(451);
+  });
+});
+
+describe('ExternalApisWorkspacesControllerV2 (CE)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ce' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/workspaces returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer()).get(BASE).set('Authorization', getExtAuth()).expect(404);
+  });
+
+  it('POST /api/v2/ext/workspaces returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer())
+      .post(BASE)
+      .set('Authorization', getExtAuth())
+      .send({ name: `CE Workspace ${Date.now()}`, slug: `ce-workspace-${Date.now()}` })
+      .expect(404);
+  });
+});

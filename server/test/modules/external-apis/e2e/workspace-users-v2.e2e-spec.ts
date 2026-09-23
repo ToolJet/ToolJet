@@ -78,17 +78,39 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
       });
     });
 
-    it('should add an existing platform user to the workspace', async () => {
+    it('should add an existing platform user to the workspace, reusing the row and ignoring the supplied password', async () => {
       const { workspaceId, suffix } = await createWorkspace();
       const email = `wu-existing-${suffix}@tooljet.io`;
-      await createUser(app, { email, firstName: 'Existing', lastName: 'User' });
+      const { user: existingUser } = await createUser(app, { email, firstName: 'Existing', lastName: 'User' });
+      const passwordDigestBefore = (await findEntity(User, { email })).password;
 
       const res = await request(app.getHttpServer())
         .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
         .set('Authorization', getExtAuth())
         .send({ name: 'Existing User', email, password: 'IgnoredPassword1', role: 'builder' })
         .expect(201);
-      expect(res.body).toMatchObject({ email, role: 'builder', status: 'active' });
+      expect(res.body).toMatchObject({ id: existingUser.id, email, role: 'builder', status: 'active' });
+
+      const userAfter = await findEntity(User, { email });
+      expect(userAfter.id).toBe(existingUser.id);
+      expect(userAfter.password).toBe(passwordDigestBefore);
+    });
+
+    it('should reject reusing a platform-archived user for a new workspace membership', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      const email = `wu-archived-${suffix}@tooljet.io`;
+      const { user: existingUser } = await createUser(app, { email, firstName: 'Archived', lastName: 'User' });
+      await request(app.getHttpServer())
+        .patch(`/api/v2/ext/users/${existingUser.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ status: 'archived' })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Archived User', email, password: 'Password1', role: 'end-user' })
+        .expect(400);
     });
 
     it('should reject a user who is already a member of the workspace', async () => {
@@ -179,6 +201,12 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
         .expect(207);
       expect(res.body.created).toHaveLength(2);
       expect(res.body.errors).toHaveLength(0);
+      expect(
+        res.body.created.map((u: { name: string; email: string; role: string }) => [u.name, u.email, u.role])
+      ).toEqual([
+        ['CSV One', `wu-csv1-${suffix}@tooljet.io`, 'end-user'],
+        ['CSV Two', `wu-csv2-${suffix}@tooljet.io`, 'builder'],
+      ]);
     });
 
     it('should reject an empty batch', async () => {
@@ -379,6 +407,64 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
       expect(res.body.errors).toHaveLength(1);
       expect(res.body.errors[0]).toMatchObject({ index: 2, code: 'NOT_FOUND' });
     });
+
+    it('should compensate a role promotion that exceeds the license builder limit mid-batch, reverting both the role and the group membership', async () => {
+      const { workspaceId, suffix } = await createWorkspace();
+      await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Existing Builder',
+          email: `wu-bubuilder-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'builder',
+        })
+        .expect(201);
+      const toPromote = await request(app.getHttpServer())
+        .post(`${WORKSPACES_BASE}/${workspaceId}/users`)
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'To Promote In Bulk',
+          email: `wu-bupromote-${suffix}@tooljet.io`,
+          password: 'Password1',
+          role: 'end-user',
+        })
+        .expect(201);
+
+      let res;
+      try {
+        setTestLicenseTerms(app, {
+          features: { externalApi: true },
+          users: { total: 'UNLIMITED', editor: 1, viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
+        } as any);
+        res = await request(app.getHttpServer())
+          .patch(`${WORKSPACES_BASE}/${workspaceId}/users/bulk`)
+          .set('Authorization', getExtAuth())
+          .send({ users: [{ id: toPromote.body.id, role: 'builder' }] })
+          .expect(207);
+      } finally {
+        restoreLicensePlan(app);
+      }
+      expect(res.body.updated).toHaveLength(0);
+      expect(res.body.errors).toHaveLength(1);
+      expect(res.body.errors[0]).toMatchObject({ index: 0, code: 'LICENSE_LIMIT_REACHED' });
+
+      const unchanged = await request(app.getHttpServer())
+        .get(`${WORKSPACES_BASE}/${workspaceId}/users/${toPromote.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(unchanged.body.role).toBe('end-user');
+
+      const groupRepo = getDefaultDataSource().getRepository(GroupPermissions);
+      const groupUsersRepo = getDefaultDataSource().getRepository(GroupUsers);
+      const [endUserGroup, builderGroup] = await Promise.all([
+        groupRepo.findOne({ where: { organizationId: workspaceId, name: 'end-user' } }),
+        groupRepo.findOne({ where: { organizationId: workspaceId, name: 'builder' } }),
+      ]);
+      const groupIds = (await groupUsersRepo.find({ where: { userId: toPromote.body.id } })).map((m) => m.groupId);
+      expect(groupIds).toContain(endUserGroup.id);
+      expect(groupIds).not.toContain(builderGroup.id);
+    });
   });
 
   describe('POST /api/v2/ext/workspaces/:workspaceIdentifier/users/:userIdentifier/archive and /unarchive', () => {
@@ -567,6 +653,16 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
         .set('Authorization', getExtAuth())
         .expect(200);
       expect(unchanged.body.role).toBe('end-user');
+
+      const groupRepo = getDefaultDataSource().getRepository(GroupPermissions);
+      const groupUsersRepo = getDefaultDataSource().getRepository(GroupUsers);
+      const [endUserGroup, builderGroup] = await Promise.all([
+        groupRepo.findOne({ where: { organizationId: workspaceId, name: 'end-user' } }),
+        groupRepo.findOne({ where: { organizationId: workspaceId, name: 'builder' } }),
+      ]);
+      const groupIds = (await groupUsersRepo.find({ where: { userId: toPromote.body.id } })).map((m) => m.groupId);
+      expect(groupIds).toContain(endUserGroup.id);
+      expect(groupIds).not.toContain(builderGroup.id);
     });
 
     it('should reject unarchiving a workspace user when it would exceed the license user limit', async () => {
@@ -609,5 +705,59 @@ describe('ExternalApisWorkspaceUsersControllerV2 (EE enterprise)', () => {
         restoreLicensePlan(app);
       }
     });
+  });
+});
+
+describe('ExternalApisWorkspaceUsersControllerV2 (EE plan: starter)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/workspaces/:workspaceIdentifier/users returns 451 — externalApi not included in starter plan', async () => {
+    await request(app.getHttpServer())
+      .get(`${WORKSPACES_BASE}/${NONEXISTENT_UUID}/users`)
+      .set('Authorization', getExtAuth())
+      .expect(451);
+  });
+
+  it('POST /api/v2/ext/workspaces/:workspaceIdentifier/users returns 451 — externalApi not included in starter plan', async () => {
+    await request(app.getHttpServer())
+      .post(`${WORKSPACES_BASE}/${NONEXISTENT_UUID}/users`)
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X', email: `wu-starter-${Date.now()}@tooljet.io`, password: 'Password1', role: 'end-user' })
+      .expect(451);
+  });
+});
+
+describe('ExternalApisWorkspaceUsersControllerV2 (CE)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ce' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/workspaces/:workspaceIdentifier/users returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer())
+      .get(`${WORKSPACES_BASE}/${NONEXISTENT_UUID}/users`)
+      .set('Authorization', getExtAuth())
+      .expect(404);
+  });
+
+  it('POST /api/v2/ext/workspaces/:workspaceIdentifier/users returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer())
+      .post(`${WORKSPACES_BASE}/${NONEXISTENT_UUID}/users`)
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X', email: `wu-ce-${Date.now()}@tooljet.io`, password: 'Password1', role: 'end-user' })
+      .expect(404);
   });
 });

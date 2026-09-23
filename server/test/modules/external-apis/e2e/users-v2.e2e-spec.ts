@@ -245,3 +245,52 @@ describe('ExternalApisUsersControllerV2 (EE enterprise)', () => {
     });
   });
 });
+
+describe('ExternalApisUsersControllerV2 (EE plan: starter)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/users returns 451 — externalApi not included in starter plan', async () => {
+    await request(app.getHttpServer()).get(BASE).set('Authorization', getExtAuth()).expect(451);
+  });
+
+  it('PATCH /api/v2/ext/users/:userIdentifier returns 451 — externalApi not included in starter plan', async () => {
+    const { user } = await createUser(app, { email: `uv2-starter-${Date.now()}@tooljet.io` });
+    await request(app.getHttpServer())
+      .patch(`${BASE}/${user.id}`)
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X' })
+      .expect(451);
+  });
+});
+
+describe('ExternalApisUsersControllerV2 (CE)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ce' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+  });
+
+  afterEach(() => jest.resetAllMocks());
+  afterAll(async () => closeTestApp(app), 60000);
+
+  it('GET /api/v2/ext/users returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer()).get(BASE).set('Authorization', getExtAuth()).expect(404);
+  });
+
+  it('PATCH /api/v2/ext/users/:userIdentifier returns 404 — route not registered on CE', async () => {
+    await request(app.getHttpServer())
+      .patch(`${BASE}/${NONEXISTENT_UUID}`)
+      .set('Authorization', getExtAuth())
+      .send({ name: 'X' })
+      .expect(404);
+  });
+});
