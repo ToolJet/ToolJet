@@ -323,6 +323,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         state.appVersionsLazyLoaded = false;
       });
 
+      const renamedSelected = get().selectedVersion;
+      if (renamedSelected?.id === versionId && renamedSelected.versionType !== 'branch') {
+        setVersionInUrl(versionName);
+      }
+
       onSuccess();
     } catch (error) {
       console.log({ error });
@@ -459,6 +464,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
       set((state) => ({ ...state, ...optionsToUpdate }));
 
+      // Direct call, not left to the reactive version-switch effect below: that effect only
+      // fires when currentVersionId's VALUE changes, but this action is also used to refresh
+      // state after an in-place rename/promotion of the same id (CreateVersionModal), where it
+      // wouldn't re-fire.
+      setVersionInUrl(selectedVersion.versionType === 'branch' ? null : selectedVersion.name);
+
       // The App Builder's own version-switch effect (useAppData.js:880, skipped here via
       // moduleMode) redoes all of the below unconditionally a moment after this action returns
       // — so for the regular App Builder every one of these calls is pure redundant work (extra
@@ -480,9 +491,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // below/elsewhere in this action, so resetting them here too would just wipe fields
         // (theme/urlparams/mode/currentUser) that nothing repopulates in this path.
         get().resetExposedValues(moduleId, { resetConstants: false, resetGlobals: false });
-
-        // Self-sufficient here too — the reactive version-switch effect skips moduleMode.
-        setVersionInUrl(selectedVersion.versionType === 'branch' ? null : selectedVersion.name);
       }
 
       get().setResolvedGlobals(
@@ -897,6 +905,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+
+      setVersionInUrl(editorVersion.name);
 
       onSuccess(response);
     } catch (error) {
