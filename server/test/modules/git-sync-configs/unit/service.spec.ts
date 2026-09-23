@@ -25,7 +25,9 @@ import { GitSyncConfigsService } from '@ee/git-sync-configs/service';
 import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
 import { GITConnectionType } from '@entities/organization_git_sync.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 // End-to-end regression coverage for the bug this file guards against: an env-config workspace's
 // GET /git-sync/:id response used to always come back with git_https/git_type/env_git_provider as
@@ -384,5 +386,76 @@ describe('GitSyncConfigsService — resolves env config before every read', () =
     const { service, gitSyncEnvUtilService } = makeServiceWithFullRepo(orgGit);
     await service.deleteConfig(WORKSPACE_ID, 'org-git-id', 'github_https');
     expect(gitSyncEnvUtilService.ensureResolved).toHaveBeenCalledWith(WORKSPACE_ID);
+  });
+});
+
+describe('GitSyncConfigsService — clears last-active branch when branching is disabled', () => {
+  function makeService(orgGit: any) {
+    const gitSyncEnvUtilService = { ensureResolved: jest.fn().mockResolvedValue(undefined) };
+    const repository = {
+      findOrgGitByOrganizationId: jest.fn().mockResolvedValue(orgGit),
+      updateOrgGitConfig: jest.fn().mockResolvedValue(undefined),
+    };
+    const licenseTermsService = { getLicenseTerms: jest.fn().mockResolvedValue({}) };
+    const service = new GitSyncConfigsService(
+      repository as any,
+      licenseTermsService as any,
+      gitSyncEnvUtilService as any,
+      { invalidate: jest.fn().mockResolvedValue(undefined) } as any,
+      {} as any
+    );
+    return service;
+  }
+
+  const orgGit = {
+    id: 'org-git-id',
+    organizationId: WORKSPACE_ID,
+    autoCommit: true,
+    schemaVersion: '2.0.0',
+    isBranchingEnabled: true,
+  };
+
+  const mockManager = { update: jest.fn().mockResolvedValue(undefined) };
+  const originalDbTransactionWrap = (dbTransactionWrap as jest.Mock).getMockImplementation();
+
+  beforeEach(() => {
+    mockManager.update.mockClear();
+    (dbTransactionWrap as jest.Mock).mockImplementation((operation: any) => operation(mockManager));
+  });
+
+  afterAll(() => {
+    (dbTransactionWrap as jest.Mock).mockImplementation(originalDbTransactionWrap);
+  });
+
+  it("clears every member's last-active branch when updateOrgGit disables branching", async () => {
+    const service = makeService(orgGit);
+    await service.updateOrgGit(WORKSPACE_ID, 'org-git-id', { branchingEnabled: false } as any, 'github_https');
+    expect(mockManager.update).toHaveBeenCalledWith(
+      OrganizationUser,
+      { organizationId: WORKSPACE_ID },
+      { lastBranchId: null }
+    );
+  });
+
+  it('leaves last-active branches alone when updateOrgGit keeps branching enabled', async () => {
+    const service = makeService(orgGit);
+    await service.updateOrgGit(WORKSPACE_ID, 'org-git-id', { branchingEnabled: true } as any, 'github_https');
+    expect(mockManager.update).not.toHaveBeenCalled();
+  });
+
+  it("clears every member's last-active branch when updateBranchingEnabled(false) is called", async () => {
+    const service = makeService(orgGit);
+    await service.updateBranchingEnabled(WORKSPACE_ID, 'org-git-id', false);
+    expect(mockManager.update).toHaveBeenCalledWith(
+      OrganizationUser,
+      { organizationId: WORKSPACE_ID },
+      { lastBranchId: null }
+    );
+  });
+
+  it('leaves last-active branches alone when updateBranchingEnabled(true) is called', async () => {
+    const service = makeService(orgGit);
+    await service.updateBranchingEnabled(WORKSPACE_ID, 'org-git-id', true);
+    expect(mockManager.update).not.toHaveBeenCalled();
   });
 });
