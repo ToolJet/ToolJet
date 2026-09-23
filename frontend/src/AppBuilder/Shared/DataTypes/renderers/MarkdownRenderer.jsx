@@ -4,6 +4,13 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import { default as ReactMarkdown } from 'react-markdown';
 import DOMPurify from 'dompurify';
 
+// react-markdown wraps a plain single-line value in a <p>, whose default vertical margin
+// (Bootstrap reboot: margin-top 0, margin-bottom 1rem) shifts the visible text off the
+// flex-centered middle of the cell, unlike every other column type's zero-margin content.
+const markdownComponents = {
+  p: ({ node, ...props }) => <p style={{ margin: 0 }} {...props} />,
+};
+
 /**
  * MarkdownRenderer - Pure Markdown value renderer with editing support
  *
@@ -65,7 +72,7 @@ export const MarkdownRenderer = ({
             whiteSpace: 'pre-wrap',
           }}
         >
-          <ReactMarkdown>{getCellValue(value)}</ReactMarkdown>
+          <ReactMarkdown components={markdownComponents}>{getCellValue(value)}</ReactMarkdown>
         </span>
       </div>
     );
@@ -111,7 +118,9 @@ export const MarkdownRenderer = ({
           e.stopPropagation();
         }}
       >
-        <div className="h-100">{isEditing ? value : <ReactMarkdown>{getCellValue(value)}</ReactMarkdown>}</div>
+        <div className="h-100">
+          {isEditing ? value : <ReactMarkdown components={markdownComponents}>{getCellValue(value)}</ReactMarkdown>}
+        </div>
       </div>
     );
   };
@@ -149,7 +158,7 @@ export const MarkdownRenderer = ({
               whiteSpace: 'pre-wrap',
             }}
           >
-            <ReactMarkdown>{getCellValue(value)}</ReactMarkdown>
+            <ReactMarkdown components={markdownComponents}>{getCellValue(value)}</ReactMarkdown>
           </span>
         </div>
       ) : (
@@ -160,6 +169,10 @@ export const MarkdownRenderer = ({
             }}
             onMouseLeave={() => setHovered(false)}
             className={`${isEditing ? 'h-100 content-editing' : ''} h-100`}
+            style={{
+              maxHeight: maxHeight,
+              whiteSpace: 'pre-wrap',
+            }}
           >
             {renderEditable()}
           </div>
