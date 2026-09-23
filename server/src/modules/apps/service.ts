@@ -1,4 +1,5 @@
 import { User } from '@entities/user.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
@@ -924,8 +925,33 @@ export class AppsService implements IAppsService {
     }
   }
 
+  // Fire-and-forget, own transaction (no manager arg — dbTransactionWrap escapes the request's).
+  // Skips explicit deep links (one-off, not a signal to move the user's other tabs) and PAT
+  // sessions (always land on the org default, which would overwrite the real user's pointer).
+  protected persistActiveBranchIfImplicit(user: User, resolvedBranchId?: string): void {
+    if (!resolvedBranchId || user.branchIdExplicit || user.isPATLogin) return;
+    void dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(
+        OrganizationUser,
+        { userId: user.id, organizationId: user.organizationId },
+        { lastBranchId: resolvedBranchId }
+      );
+    }).catch((err) => console.error('Failed to persist last-active branch:', err));
+  }
+
+  // Only in a version-only context (Workflows, git-off, or the default branch) — a feature
+  // branch has no version dimension to remember.
+  protected persistActiveVersion(user: User, app: App, isDefaultBranchContext: boolean): void {
+    if (!isDefaultBranchContext || !app.editingVersion?.id) return;
+    void this.userAppVersionStateRepository
+      .upsertLastActiveVersion(user.id, app.id, app.editingVersion.id)
+      .catch((err) => console.error('Failed to persist last-active version:', err));
+  }
+
   async getOne(app: App, user: User, branchId?: string, versionName?: string): Promise<any> {
-    await this.resolveBranchAwareEditingVersion(app, branchId, user, versionName);
+    const { isDefaultBranchContext } = await this.resolveBranchAwareEditingVersion(app, branchId, user, versionName);
+    this.persistActiveBranchIfImplicit(user, branchId);
+    this.persistActiveVersion(user, app, isDefaultBranchContext);
 
     // Non-workflow apps store name/slug/icon/isPublic on app_versions; project them
     // onto the in-memory App so the JSON response carries the correct values.
