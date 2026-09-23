@@ -609,6 +609,27 @@ describe('NumberInput: clear button', () => {
     expect(clearButton()).toBeNull();
   });
 
+  // Break this catches: dropping the reveal from NumberInput's own `handleClear`.
+  //
+  // `showValidationError` is flipped by `handleBlur`, `setText` and a Form submit, and the clear
+  // button suppresses the blur that would flip it — its `onMouseDown` preventDefaults to keep
+  // focus. So emptying a mandatory field with the button left it silently invalid. This widget's
+  // own increment and decrement handlers already reveal, which is what made the omission look
+  // accidental rather than deliberate; D-03 lifted the contract's test-only scope for this edit.
+  test('[NumberInput-CLR-004] clearing a mandatory field reveals the error with no prior blur', async () => {
+    widget.render({
+      properties: { value: binding('{{5}}'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeInTheDocument());
+    expect(errorText()).toBeUndefined();
+
+    await widget.session.user.click(clearButton());
+
+    expect(input().value).toBe('');
+    await waitFor(() => expect(errorText()).toBe('Field cannot be empty'));
+  });
+
   test('[NumberInput-CLR-003] clicking clear empties the field and exposes null', async () => {
     widget.render({
       properties: { value: binding('{{5}}'), showClearBtn: binding('{{true}}') },
