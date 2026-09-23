@@ -236,6 +236,7 @@ export const createInitSlice = (set, get) => ({
           get().components[id].properties.showAddNewRowButton ||
           get().components[id].properties.showDownloadButton ||
           get().components[id].properties.showRefreshButton ||
+          get().components[id].properties.showBulkUpdateActions ||
           !get().components[id].properties.hideColumnSelectorButton
       : false;
   },
