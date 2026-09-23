@@ -1690,6 +1690,34 @@ export const createQueryPanelSlice = (set, get) => ({
         };
       }
 
+      // `resolvedState.components` is a one-time snapshot taken before this script started.
+      // A widget that mounts *during* the script's execution (e.g. inside a modal opened via
+      // `await components.modal.open()`) gets a brand-new object in the store when it registers
+      // its exposed values (Immer swaps in a fresh reference on every exposed-value write), so
+      // a script holding the snapshot would never see it update no matter how long it awaits.
+      // Proxy every access back to the live store instead, mirroring how queries.*.getData()
+      // above already re-fetches fresh state on each call rather than trusting a snapshot.
+      const componentsProxy = new Proxy(
+        {},
+        {
+          get(_target, prop) {
+            if (typeof prop === 'symbol') return undefined;
+            return get().getResolvedState(moduleId, 'components').components[prop];
+          },
+          has(_target, prop) {
+            return prop in get().getResolvedState(moduleId, 'components').components;
+          },
+          ownKeys() {
+            return Reflect.ownKeys(get().getResolvedState(moduleId, 'components').components);
+          },
+          getOwnPropertyDescriptor(_target, prop) {
+            const value = get().getResolvedState(moduleId, 'components').components[prop];
+            if (value === undefined) return undefined;
+            return { value, enumerable: true, configurable: true };
+          },
+        }
+      );
+
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
         const libraryRegistry = get().jsLibraryRegistry || {};
@@ -1714,7 +1742,7 @@ export const createQueryPanelSlice = (set, get) => ({
         const fnArgs = [
           moment,
           _,
-          resolvedState.components,
+          componentsProxy,
           queriesInResolvedState,
           resolvedState.globals,
           deepClone(resolvedState.page),
