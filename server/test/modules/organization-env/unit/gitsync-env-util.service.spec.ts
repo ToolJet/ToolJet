@@ -56,6 +56,10 @@ function tjEnvFileContents(config: Record<string, string>): string {
 
 function makeServices() {
   const orgRepo = {
+    find: jest.fn().mockResolvedValue([
+      { id: FILE_WORKSPACE_ID, slug: FILE_WORKSPACE_SLUG, name: 'Test Tj Env Workspace' },
+      { id: ENV_VAR_WORKSPACE_ID, slug: ENV_VAR_WORKSPACE_SLUG, name: 'Test Workspace Git Configs' },
+    ]),
     findOne: jest.fn().mockImplementation(({ where }: any) => {
       if (where?.slug === FILE_WORKSPACE_SLUG) return Promise.resolve({ id: FILE_WORKSPACE_ID, slug: where.slug });
       if (where?.slug === ENV_VAR_WORKSPACE_SLUG)

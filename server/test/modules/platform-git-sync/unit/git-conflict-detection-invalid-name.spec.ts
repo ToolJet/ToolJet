@@ -28,7 +28,7 @@ describe('GitConflictDetectionService — invalid name ("/") detection', () => {
     repoPath = fs.mkdtempSync(path.join(os.tmpdir(), 'git-conflict-invalid-name-'));
     // No orphan candidates / multi-draft resources in any of these tests — only the
     // invalid-name check matters.
-    jest.spyOn(service as any, 'loadOrphanCandidateModules').mockResolvedValue([]);
+    jest.spyOn(service as any, 'loadOrphanCandidateModuleOrWorkflowApps').mockResolvedValue([]);
     jest.spyOn(service as any, 'loadOrphanCandidateDataSources').mockResolvedValue([]);
     jest.spyOn(service, 'detectMultipleDraftResources').mockResolvedValue([]);
   });

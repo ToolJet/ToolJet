@@ -1006,8 +1006,11 @@ describe('LoginConfigsController', () => {
 
       it('should auto-enable instance AND workspace-level OIDC/SAML/LDAP once a TJ_LICENSE is added to .env after boot, without a server restart', async () => {
         jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        // The freshness check decrypts TJ_LICENSE — mock a valid, unexpired license so this
+        // test doesn't depend on whatever TJ_LICENSE happens to be set in the ambient env.
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2999-01-01' } as any);
         app.get(LicenseInitService).setUseEnvLicense(false);
-        process.env.TJ_LICENSE = realTjLicense;
+        process.env.TJ_LICENSE = 'test-env-license-added-after-boot';
 
         await runBootSequence();
 
