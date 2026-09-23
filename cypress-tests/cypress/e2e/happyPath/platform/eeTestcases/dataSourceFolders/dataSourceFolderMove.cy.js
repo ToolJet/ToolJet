@@ -1,6 +1,8 @@
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import {
   dragDataSourceToFolder,
+  dragDataSourceToStrayList,
+  multiSelectDataSources,
   openDataSourcesList,
   uiEnsureFolderExpanded,
   uiOpenMoveDataSourceModal,
@@ -137,6 +139,87 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
       uiOpenMoveDataSourceModal(dataSourceName);
       cy.get(dsFolder.moveToFolderButton).should('be.visible');
       cy.get(dsFolder.cancelButton).click();
+    });
+  });
+  // Manual plan TC-05 — the half the drag test did not cover: selecting several
+  // rows and dragging them together, then dragging one back out to the
+  // un-foldered list.
+  it('multi-select drags several data sources into a folder, and dragging one out makes it stray again', () => {
+    const attemptId = Date.now();
+    const first = `ds-multi-a-${attemptId}`;
+    const second = `ds-multi-b-${attemptId}`;
+    const folderName = `Multi Target ${attemptId}`;
+    const createdIds = [];
+
+    cy.apiCreateGlobalDataSource(first).then((id) => createdIds.push(id));
+    cy.apiCreateGlobalDataSource(second).then((id) => createdIds.push(id));
+
+    cy.apiCreateDataSourceFolder(folderName).then((folder) => {
+      openDataSourcesList();
+
+      // Shift-click builds the selection; the drag then carries the whole set.
+      multiSelectDataSources([first, second]);
+      dragDataSourceToFolder(second, folderName);
+
+      cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
+        expect(ids, 'both selected data sources moved together').to.have.length(2);
+        createdIds.forEach((id) => expect(ids).to.include(id));
+      });
+
+      // Drag one back out onto the stray drop zone.
+      openDataSourcesList();
+      uiEnsureFolderExpanded(folderName, first);
+      dragDataSourceToStrayList(first);
+
+      cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
+        expect(ids, 'the dragged-out data source left the folder').to.have.length(1);
+        expect(ids).to.not.include(createdIds[0]);
+      });
+    });
+  });
+
+  // Manual plan TC-06 — the move modal's destination filtering and submit gating,
+  // which the drag test only opened without exercising.
+  it('the move modal hides a folder that already holds the data source and gates its submit button', () => {
+    const attemptId = Date.now();
+    const dataSourceName = `ds-modal-${attemptId}`;
+    const homeFolder = `Home Folder ${attemptId}`;
+    const otherFolder = `Other Folder ${attemptId}`;
+
+    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
+      cy.apiCreateDataSourceFolder(homeFolder).then((home) => {
+        cy.apiCreateDataSourceFolder(otherFolder);
+        cy.apiAddDataSourceToFolder(dataSourceId, home.id);
+
+        openDataSourcesList();
+        uiEnsureFolderExpanded(homeFolder, dataSourceName);
+        uiOpenMoveDataSourceModal(dataSourceName);
+
+        // Submit is gated until a destination folder is chosen.
+        cy.get(dsFolder.moveToFolderButton).should('be.disabled');
+
+        // Open the destination dropdown. Neither react-select carries a data-cy,
+        // and both share classNamePrefix="move-ds-select", so scope by the field's
+        // label and click the CONTROL — the placeholder node is overlaid by the
+        // input container and is not clickable.
+        cy.contains('.move-ds-field', 'Folder name')
+          .find('.move-ds-select__control')
+          .click();
+
+        // The folder the data source already sits in is filtered out of the
+        // destination list; every other folder is offered. Use react-select's own
+        // __menu/__option classes — a loose [class*="-menu"] matches five unrelated
+        // nodes on this page and cy.within() then refuses the subject.
+        cy.get('.move-ds-select__menu').should('have.length', 1);
+        cy.get('.move-ds-select__option').should('contain.text', otherFolder);
+        cy.get('.move-ds-select__menu').should('not.contain.text', homeFolder);
+
+        // Choosing a destination enables the submit.
+        cy.contains('.move-ds-select__option', otherFolder).click();
+        cy.get(dsFolder.moveToFolderButton).should('not.be.disabled');
+
+        cy.get(dsFolder.cancelButton).click();
+      });
     });
   });
 });

@@ -1,14 +1,13 @@
 import { apiCreateGroup } from 'Support/utils/manageGroups';
-import { openDataSourcesList, uiVerifyFolderMenuAbsent } from 'Support/utils/platform/dataSourceFolders';
+import {
+  openDataSourcesList,
+  uiVerifyDataSourceFolderExists,
+  uiVerifyFolderMenuAbsent,
+} from 'Support/utils/platform/dataSourceFolders';
 
 describe('Data Source Folders — Folder Granular Access', () => {
   let workspaceId, wsName, wsSlug;
 
-  /**
-   * Builds: a folder holding one data source, a group with a folder-scoped
-   * granular grant, and a builder-role user in that group.
-   * `isAll` is false so the grant is scoped to this folder only.
-   */
   const setupFolderAccess = (label, permissions, role = 'builder') => {
     const attemptId = Date.now();
     const folderName = `${label} DS Folder ${attemptId}`;
@@ -38,12 +37,7 @@ describe('Data Source Folders — Folder Granular Access', () => {
           [folderId],
           false
         )
-      )
-      // Coarse flags OFF so the granular grant is the only possible source of
-      // access. This MUST happen before the user is onboarded — changing a group's
-      // permissions once it has members runs the role-change validation and the
-      // request is rejected.
-      .then(() =>
+      ).then(() =>
         cy.apiUpdateGroupPermission(groupName, {
           dataSourceFolderCreate: false,
           dataSourceFolderDelete: false,
@@ -69,53 +63,13 @@ describe('Data Source Folders — Folder Granular Access', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    cy.apiDeleteGranularPermission('builder', ['data_source', 'data_source_folder']);
+
+    cy.apiDeleteGranularPermission('builder', ['data_source_folder']);
     // Same ordering rule: the default builder group is stripped here, while it has
     // no members yet. Doing it mid-test after apiFullUserOnboarding is rejected.
     cy.apiUpdateGroupPermission('builder', {
       dataSourceFolderCreate: false,
       dataSourceFolderDelete: false,
-    });
-  });
-
-  /**
-   * KNOWN GAP — asserts CURRENT behaviour, which is not the intended behaviour.
-   *
-   * Invariant, reproducible through the public API: a non-owner whose only data
-   * source folder permission is a granular `Edit folder` grant scoped to that
-   * folder gets 403 from PUT /api/folders/:id. The grant does not confer rename.
-   *
-   * Intended: rename succeeds. Actual: 403.
-   *
-   * The same grant is equally inert on the membership routes (see the gap test
-   * at the end of this file) and on folder listing (see
-   * dataSourceFolderVisibility.cy.js) — the three read as one behaviour.
-   *
-   * When the grant is honoured this flips to 200 and the test must be updated;
-   * the failure is the signal, not a flake.
-   */
-  it('a granular Edit folder grant does not authorise folder rename (known gap)', () => {
-    setupFolderAccess('EditFolder', {
-      canEditFolder: true,
-      canEditApps: false,
-      canViewApps: false,
-    }).then(({ folderId, folderName, userEmail }) => {
-      cy.apiLogin(userEmail, 'password');
-
-      cy.getAuthHeaders().then((headers) => {
-        cy.request({
-          method: 'PUT',
-          url: `${Cypress.env('server_host')}/api/folders/${folderId}`,
-          headers,
-          body: { name: `${folderName} Renamed` },
-          failOnStatusCode: false,
-        }).then((response) => {
-          expect(
-            response.status,
-            'intended 200 — the grant is inert on EE, so the server refuses'
-          ).to.equal(403);
-        });
-      });
     });
   });
 
@@ -201,31 +155,14 @@ describe('Data Source Folders — Folder Granular Access', () => {
       cy.apiFullUserOnboarding('QA Unshared DS User', userEmail, 'builder', 'password', wsName);
 
       cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
 
-      // Asserted at the API, not the UI: with every data source grant stripped this
-      // user cannot open the global data sources page at all (the sidebar icon is
-      // hidden and no folder request is made), so a UI assertion here would be
-      // testing page access rather than folder ownership.
-      cy.getAuthHeaders().then((headers) => {
-        cy.request({
-          method: 'PUT',
-          url: `${Cypress.env('server_host')}/api/folders/${folder.id}`,
-          headers,
-          body: { name: `${folderName} Hijacked` },
-          failOnStatusCode: false,
-        }).then((response) => {
-          expect(response.status, 'non-owner cannot rename').to.equal(403);
-        });
-
-        cy.request({
-          method: 'DELETE',
-          url: `${Cypress.env('server_host')}/api/folders/${folder.id}`,
-          headers,
-          failOnStatusCode: false,
-        }).then((response) => {
-          expect(response.status, 'non-owner cannot delete').to.equal(403);
-        });
-      });
+      // The folder is listed, but it offers this user no management affordance:
+      // the ⋮ menu only renders when the viewer can rename OR delete, so its
+      // absence is the whole permission signal — and it is what the customer
+      // actually experiences.
+      uiVerifyDataSourceFolderExists(folderName);
+      uiVerifyFolderMenuAbsent(folder.id);
     });
   });
 

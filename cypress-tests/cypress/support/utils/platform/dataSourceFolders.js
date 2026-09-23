@@ -91,25 +91,57 @@ export const dragDataSourceToFolder = (dataSourceName, folderName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({
     position: "center",
   });
-  // clear the activation threshold before aiming at the target
+  // Clear the 8px activation threshold, then step onto the target. A single jump
+  // is not always tracked when the page is busy, which is what made this flake in
+  // a full-suite run while passing in isolation.
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
   cy.get(dsFolder.folderRow(folderName)).realMouseMove(5, 5, {
     position: "center",
   });
+  cy.get(dsFolder.folderRow(folderName)).realMouseMove(0, 2, {
+    position: "center",
+  });
+
+  // Release only once dnd-kit reports the folder as the active droppable. The
+  // wrapper (.datasource-folder) carries is-drop-over, not the row that holds the
+  // data-cy — without this gate the mouseup can land before the drop registers.
+  cy.get(dsFolder.folderRow(folderName))
+    .closest(".datasource-folder")
+    .should("have.class", "is-drop-over");
+
   cy.get(dsFolder.folderRow(folderName)).realMouseUp({ position: "center" });
 };
 
 /**
- * Shift-click builds a multi-selection; a plain click clears it. Pass the items
- * in the order they should be picked — the first is a plain click.
+ * Drags a data source out of its folder and onto the un-foldered ("stray") drop
+ * zone, which is how the UI removes folder membership by gesture.
+ * Same pointer-event requirement as dragDataSourceToFolder — see that comment.
+ * The zone has no data-cy, so this is class-coupled.
+ */
+export const dragDataSourceToStrayList = (dataSourceName) => {
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
+  cy.get(dsFolder.strayDropZone).realMouseMove(5, 5, { position: "center" });
+  cy.get(dsFolder.strayDropZone).realMouseMove(0, 2, { position: "center" });
+
+  // Same release gate as dragDataSourceToFolder — DroppableZone puts is-drop-over
+  // straight onto the zone element here.
+  cy.get(dsFolder.strayDropZone).should("have.class", "is-drop-over");
+
+  cy.get(dsFolder.strayDropZone).realMouseUp({ position: "center" });
+};
+
+/**
+ * Builds a multi-selection. EVERY click must carry a modifier: the row handler is
+ * `if (e.shiftKey || e.metaKey || e.ctrlKey) toggle() else clearSelection()`, so a
+ * plain click on the first row clears the selection instead of starting one.
  */
 export const multiSelectDataSources = (dataSourceNames = []) => {
-  dataSourceNames.forEach((name, index) => {
-    if (index === 0) {
-      cy.get(dsFolder.dataSourceRow(name)).click();
-    } else {
-      cy.get(dsFolder.dataSourceRow(name)).click({ shiftKey: true });
-    }
+  dataSourceNames.forEach((name) => {
+    cy.get(dsFolder.dataSourceRow(name)).click({ shiftKey: true });
+    cy.get(dsFolder.dataSourceRow(name))
+      .parents('.datasource-draggable')
+      .should('have.class', 'is-selected');
   });
 };
 
