@@ -1424,6 +1424,10 @@ export class AppImportExportService {
         : convertSinglePageSchemaToMultiPageSchema(appParams);
       schemaUnifiedAppParams.name = appName;
 
+      if (cloning) {
+        await this.dedupeClonedDataSourceNames(manager, schemaUnifiedAppParams, user.organizationId);
+      }
+
       const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
       const isNormalizedAppDefinitionSchema = cloning
         ? true
@@ -1473,6 +1477,30 @@ export class AppImportExportService {
       });
       return { newApp, resourceMapping };
     }, manager);
+  }
+
+  /**
+   * Cloning duplicates the app's custom data sources into new rows
+   * (findOrCreateDataSourceForAppVersion has no reusable global match for them)
+   * while the originals still exist on the same branch. Keeping the source name
+   * would violate idx_unique_active_name_branch on data_source_versions
+   * (PG 23505 → 422), so dedupe each name up front — mirroring how the app
+   * itself is renamed via appName. Default/sample sources are reused by
+   * reference and never duplicated, so they are skipped.
+   */
+  private async dedupeClonedDataSourceNames(
+    manager: EntityManager,
+    appParams: any,
+    organizationId: string
+  ): Promise<void> {
+    const dataSources = appParams?.dataSources;
+    if (!dataSources?.length) return;
+    for (const dataSource of dataSources) {
+      if (!dataSource?.name) continue;
+      if (DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName)) continue;
+      if (dataSource.type === DataSourceTypes.SAMPLE) continue;
+      dataSource.name = await this.dataSourcesUtilService.generateUniqueName(dataSource.name, organizationId, manager);
+    }
   }
 
   /**

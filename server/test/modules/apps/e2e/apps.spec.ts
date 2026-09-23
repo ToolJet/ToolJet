@@ -781,8 +781,9 @@ describe('AppsController', () => {
         await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
       });
 
-      // QUARANTINE(apps): failing since main CI rehab — see #17258
-      it.skip('should be able to clone the app if user is a super admin', async () => {
+      // Clones an app carrying a custom data source — the clone must duplicate the
+      // data source under a deduped name instead of violating idx_unique_active_name_branch (#17679)
+      it('should be able to clone the app if user is a super admin', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
@@ -794,7 +795,7 @@ describe('AppsController', () => {
           userType: 'instance',
         });
 
-        const { application } = await createAppWithDependencies(app, adminUserData.user, {
+        const { application, dataSource } = await createAppWithDependencies(app, adminUserData.user, {
           dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
           name: 'App to clone',
         });
@@ -816,8 +817,19 @@ describe('AppsController', () => {
         expect(response.statusCode).toBe(201);
 
         const appId = response.body['imports']['app'][0]['id'];
-        const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
-        expect(clonedApplication.name).toContain('App to clone_');
+        await App.findOneOrFail({ where: { id: appId } });
+        // Non-workflow apps store name on app_versions.app_name, not apps.name
+        const clonedVersion = await findEntityOrFail(AppVersion, { appId });
+        expect(clonedVersion.appName).toContain('App to clone_');
+
+        // The clone gets its own copy of the custom data source under a deduped
+        // name; the original row is untouched.
+        const workspaceSources = await findEntities(DataSource, {
+          where: { organizationId: adminUserData.user.defaultOrganizationId },
+        });
+        const copies = workspaceSources.filter((source) => source.name.startsWith(dataSource.name));
+        expect(copies.map((source) => source.name).sort()).toEqual([dataSource.name, `${dataSource.name}_2`]);
+        expect(copies.map((source) => source.id)).toContain(dataSource.id);
 
         // Audit log assertions skipped: ResponseInterceptor not registered in test environment
       });
