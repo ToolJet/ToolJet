@@ -12,7 +12,6 @@ import {
 } from '@modules/personal-access-tokens/constants/scopes';
 
 /**
- * Confines personal-access-token sessions to what their KIND is entitled to.
  * Session kinds and the rules behind them: see this module's AGENTS.md.
  *
  * An INTERCEPTOR rather than a guard, deliberately. Global guards run BEFORE route-level guards,
@@ -46,8 +45,6 @@ export class PatScopeInterceptor implements NestInterceptor {
     const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
     const feature = this.reflector.get<string>('tjFeatureId', context.getHandler());
 
-    /* The embed flow. Its token is bound to an app row, so the binding IS the scope. Restricting
-       it would regress a shipped feature. */
     if (user.patScope === PersonalAccessTokenScope.APP) {
       return next.handle();
     }
@@ -81,11 +78,7 @@ export class PatScopeInterceptor implements NestInterceptor {
     return next.handle();
   }
 
-  /**
-   * Returns the denial message, or undefined if the request is allowed. Three narrowings, and all
-   * three matter — the module list alone would leave the session free to roam the workspace and
-   * to write.
-   */
+  /** Returns the denial message, or undefined if the request is allowed. */
   private denyViewer(
     user: User,
     request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
@@ -123,10 +116,6 @@ function extractAppIdFromPath(path?: string): string | undefined {
   return APP_ID_IN_PATH.exec(path)?.[1];
 }
 
-/**
- * The player has to execute the app's queries to render anything, and that is a POST. Nothing else
- * is exempt from the read-only rule.
- */
 function isViewerWriteException(request: { originalUrl?: string; url?: string }): boolean {
   const path = (request?.originalUrl || request?.url || '').split('?')[0];
   /* BOTH run routes: `:id/run` is the released-viewer path, and `:id/versions/:versionId/run/:envId`

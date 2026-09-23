@@ -293,9 +293,6 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
 
   const session = { isPATLogin: true, patScope: PersonalAccessTokenScope.WORKSPACE, patAppId: APP_ID };
 
-  /* The reflector is asked for 'tjModuleId' off the class and 'tjFeatureId' off the handler, so the
-     stub has to answer differently per key — the feature-narrowed modules cannot be exercised with
-     a reflector that returns the same value for both. */
   const run = (module: MODULES | undefined, feature?: string, request: any = {}) =>
     new PatScopeInterceptor({ get: (key: string) => (key === 'tjFeatureId' ? feature : module) } as any).intercept(
       {
@@ -418,7 +415,6 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
         originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
       })
     ).toBe('HANDLED');
-    // Not every data-queries POST: creating or updating a query is still a write.
     expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
       ForbiddenException
     );
@@ -442,7 +438,6 @@ describe('PAT app-viewer surface', () => {
   });
 
   it('grants a non-empty set of modules', () => {
-    // An empty list would 403 the render check entirely — an outage no other test here catches.
     expect(PAT_APP_VIEWER_MODULES.length).toBeGreaterThan(0);
   });
 

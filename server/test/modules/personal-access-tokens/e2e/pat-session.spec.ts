@@ -51,7 +51,6 @@ describe('Personal access token session exchange', () => {
     return application.id;
   };
 
-  // A real app owned by another workspace, not just an unknown id.
   const createAppInOtherWorkspace = async (): Promise<string> => {
     const { user: outsider } = await createUser(app, {
       email: 'outsider@tooljet.io',

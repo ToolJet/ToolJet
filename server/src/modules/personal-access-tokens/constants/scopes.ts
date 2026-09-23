@@ -142,7 +142,7 @@ export const PAT_APP_VIEWER_MODULES: MODULES[] = [
   MODULES.ORGANIZATION_CONSTANT,
   MODULES.DATA_QUERY,
   MODULES.GLOBAL_DATA_SOURCE,
-  MODULES.CUSTOM_STYLES, // changes how the app PAINTS — linting the DOM without it measures a lie
+  MODULES.CUSTOM_STYLES,
 
   // ?version= boots hit GET versions/:id; not on every boot
   MODULES.VERSION,
@@ -170,19 +170,10 @@ export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string
   [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.GET_ONE]),
 };
 
-/**
- * The one module a viewer session must never reach, for the same reason the workspace allowlist
- * bars it: a session that can mint tokens can launder itself into an unscoped one and survive
- * revocation of the credential it came from. Enforced by test.
- */
 export const PAT_APP_VIEWER_NEVER_GRANTABLE: MODULES[] = [MODULES.PERSONAL_ACCESS_TOKENS];
 
 const APP_VIEWER_MODULES: ReadonlySet<MODULES> = new Set(PAT_APP_VIEWER_MODULES);
 
-/**
- * Fails CLOSED, like patCanAccess: an unknown module is denied, and so is a route with no feature
- * metadata on a module that is feature-narrowed.
- */
 export function patAppViewerCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
   if (PAT_APP_VIEWER_NEVER_GRANTABLE.includes(module)) return false;
