@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { baseComponentProperties } from '../DefaultComponent';
 import Select from '@/_ui/Select';
 // eslint-disable-next-line import/no-unresolved
@@ -105,7 +105,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   const filteredProperties = properties.filter(
-    (property) => componentMeta.properties[property].section !== 'additionalActions'
+    (property) => !['additionalActions', 'deprecatedStyles'].includes(componentMeta.properties[property].section)
   );
 
   const additionalActions = properties.filter(

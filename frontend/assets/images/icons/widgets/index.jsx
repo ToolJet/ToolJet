@@ -53,6 +53,7 @@ import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
 import Treeselect from './treeselect.jsx';
+import Cascader from './cascader';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
@@ -72,6 +73,7 @@ import JSONExplorer from './jsonexplorer.jsx';
 import JSONEditor from './jsoneditor.jsx';
 import Navigation from './navigation.jsx';
 import FileButton from './fileButton.jsx';
+import FlexContainer from './flexcontainer.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -220,6 +222,8 @@ const WidgetIcon = (props) => {
 
     case 'treeselect':
       return <Treeselect {...props} />;
+    case 'cascader':
+      return <Cascader {...props} />;
     case 'upstatistics':
       return <Upstatistics {...props} />;
     case 'verticaldivider':
@@ -243,6 +247,8 @@ const WidgetIcon = (props) => {
       return <JSONEditor {...props} />;
     case 'filebutton':
       return <FileButton {...props} />;
+    case 'flexcontainer':
+      return <FlexContainer {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

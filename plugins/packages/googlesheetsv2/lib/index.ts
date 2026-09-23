@@ -41,9 +41,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
         return option?.value || option || '';
       }
     };
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = getSourceOptionValue('oauth_type');
     const userScopes =
       getSourceOptionValue('access_type') === 'write'
@@ -51,6 +48,12 @@ export default class Googlesheetsv2QueryService implements QueryService {
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
     const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : getSourceOptionValue('client_id');
+    const host =
+      oauth_type === 'tooljet_app'
+        ? process.env.TOOLJET_HOST
+        : getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
     const alwaysScope = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
@@ -91,6 +94,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
 
     let clientId = '';
     let clientSecret = '';
+    let host = process.env.TOOLJET_HOST;
     const oauth_type = getSourceOptionValue('oauth_type');
 
     if (oauth_type === 'tooljet_app') {
@@ -99,6 +103,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
     } else {
       clientId = getSourceOptionValue('client_id');
       clientSecret = getSourceOptionValue('client_secret');
+      host = getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     }
 
     if (!clientId || !clientSecret) {
@@ -106,7 +111,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
@@ -431,7 +435,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
       }
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
-      let errorDetails = {};
+      let errorDetails: { message?: string; status?: string } = {};
       if (error.response) {
         const errorRespose = JSON.parse(error.response.body);
         errorDetails = {
@@ -445,8 +449,12 @@ export default class Googlesheetsv2QueryService implements QueryService {
           message: 'Invalid JSON',
         };
       }
-      // For OAuth if token is expired or invalid it returns 401 or 403
-      // For other authentication types just throw generic error so that user can re-authenticate
+
+      const displayMessage = errorDetails.message || error.message || 'Query could not be completed';
+
+      // For OAuth if token is expired or invalid, 401 triggers the refresh/re-auth flow.
+      // 403 (permission denied, insufficient scope) is surfaced as a QueryError so the
+      // actual Google error message reaches the user instead of a silent OAuth redirect.
       const statusCode =
         error.response?.statusCode ||
         error.description?.statusCode ||
@@ -456,13 +464,13 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
 
-      if (sourceOptions['authentication_type'] !== 'service_account' && (statusCode === 401 || statusCode === 403)) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
+      if (sourceOptions['authentication_type'] !== 'service_account' && statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(displayMessage, displayMessage, {
           ...error,
           ...errorDetails,
         });
       }
-      throw new QueryError('Query could not be completed', error.message, errorDetails);
+      throw new QueryError(displayMessage, displayMessage, errorDetails);
     }
 
     return {
@@ -558,10 +566,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
-      if (statusCode === 401 || statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
+      const googleMessage = error.message;
+      if (statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(googleMessage, googleMessage, {});
       }
-      throw error;
+      throw new QueryError(googleMessage, googleMessage, { statusCode });
     }
   }
 
@@ -602,10 +611,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
-      if (statusCode === 401 || statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
+      const googleMessage = error.message;
+      if (statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(googleMessage, googleMessage, {});
       }
-      throw new QueryError('Failed to fetch sheets', error.message, error);
+      throw new QueryError(googleMessage, googleMessage, { statusCode });
     }
   }
 

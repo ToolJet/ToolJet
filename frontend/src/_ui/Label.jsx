@@ -38,7 +38,7 @@ function Label({
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize,
-            height: defaultAlignment === 'top' && '20px',
+            height: defaultAlignment === 'top' && `calc(${fontSize} + 8px)`,
             ...style,
           }}
           htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste

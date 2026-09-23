@@ -11,17 +11,17 @@ export const datasourceService = {
   save,
   fetchOauth2BaseUrl,
   testSampleDb,
-  getDecryptedOptions,
+  validateOptions,
 };
 
-function getDecryptedOptions(options) {
+function validateOptions(dataSourceId, options, schema, environmentId) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify(options),
+    body: JSON.stringify({ options, schema, environment_id: environmentId }),
   };
-  return fetch(`${config.apiUrl}/data-sources/decrypt`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${dataSourceId}/validate-options`, requestOptions).then(handleResponse);
 }
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {

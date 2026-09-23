@@ -49,12 +49,12 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isMfaEnabled: boolean;
   private _isCustomDomains: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
-  private _appComponents: Record<string, boolean> = {};
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -122,9 +122,6 @@ export default class LicenseBase {
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
-    this._appComponents = this._app?.components
-      ? Object.fromEntries(Object.entries(this._app.components).map(([k, v]) => [k, v ?? false]))
-      : {};
     this._isCustomGroups = this.getPermissionValue('customGroups');
     this._isObservability = licenseData?.observability;
 
@@ -148,6 +145,10 @@ export default class LicenseBase {
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
+    // Strict opt-in, unlike getFeatureValue(): licenses issued before MFA existed have no
+    // `features.mfa` key at all, and getFeatureValue() defaults an absent key to true for
+    // non-flexible plans - which would silently turn MFA on for every pre-existing license.
+    this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
@@ -446,6 +447,17 @@ export default class LicenseBase {
     return !!this._features?.['queryFolders'];
   }
 
+  public get customComponentLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
+    }
+
+    if (this._app?.features?.customComponentLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.customComponentLibraries;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -506,6 +518,13 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.scim;
     }
     return this._isScimEnabled;
+  }
+
+  public get mfa(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.mfa;
+    }
+    return this._isMfaEnabled;
   }
 
   public get customDomains(): boolean {
@@ -593,14 +612,14 @@ export default class LicenseBase {
       github: this.github,
       externalApis: this.externalApis,
       scim: this.scim,
+      mfa: this.mfa,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
-      ...Object.fromEntries(
-        Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
-      ),
+      publicApp: this.publicApp,
     };
   }
 
@@ -687,7 +706,7 @@ export default class LicenseBase {
   }
 
   public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
 
@@ -695,13 +714,6 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
-  }
-
-  public get appComponents(): Record<string, boolean> {
-    if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.app?.components ?? {};
-    }
-    return this._appComponents;
   }
 
   public get appJsLibraries(): boolean {
@@ -713,5 +725,16 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.jsLibraries;
+  }
+
+  public get publicApp(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
+    }
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

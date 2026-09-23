@@ -5,6 +5,7 @@ import './appCanvas.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
+import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
@@ -18,7 +19,7 @@ import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
-import { SuspenseCountProvider } from './SuspenseTracker';
+import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
 import { MobileLayout } from './MobileLayout';
 import { DesktopLayout } from './DesktopLayout';
 // Lazy load editor-only component to reduce viewer bundle size
@@ -27,14 +28,15 @@ const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
+
 import useCanvasResizing from './Hooks/useCanvasResizing';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-
   useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
+
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -62,6 +64,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const isMobileLayout = currentLayout === 'mobile';
+  const pageLoader = useStore((state) => state.pageLoader, shallow);
+  const isCanvasReloading = useStore((state) => state.loaderStore.modules[moduleId].isCanvasReloading, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -216,6 +220,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         id="main-editor-canvas"
         onMouseUp={handleCanvasContainerMouseUp}
       >
+        <AgentBuildingOverlay />
         <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
             ref={canvasContainerRef}
@@ -247,10 +252,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             <div
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
-                '!tw-w-[450px] tw-mx-auto': isMobileLayout,
+                'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{ minWidth: minCanvasWidth }}
             >
+              {/* The same overlay the viewer uses for lazy-loading. It has to sit here rather than
+                  deeper in the canvas: the wrappers below collapse to zero height while the widget
+                  tree is unmounted, and this is the nearest full-height positioned ancestor. */}
+              {isCanvasReloading && <SuspenseLoadingOverlay darkMode={isAppDarkMode} pageLoader />}
               <div
                 ref={canvasContentRef}
                 className={cx(
@@ -260,6 +269,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 )}
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
@@ -275,12 +285,17 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   currentLayout={currentLayout}
                   isModuleMode={isModuleMode}
                 >
-                  {environmentLoadingState !== 'loading' && (
+                  {environmentLoadingState !== 'loading' && !isCanvasReloading && (
                     <SuspenseCountProvider
+                      // Also keyed on pageKey: a same-page switch changes pageKey but not
+                      // currentPageId, so without it this wouldn't remount and the batch
+                      // that switch opens would never flush.
+                      key={`${currentPageId}-${pageKey}`}
+                      disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
-                      {isMobileLayout ? (
+                      {isMobileLayout && !isModuleMode ? (
                         <MobileLayout
                           pageKey={pageKey}
                           showCanvasHeader={showCanvasHeader}
@@ -297,6 +312,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           mainCanvasContainer={mainCanvasContainer}
                           gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       ) : (
                         <DesktopLayout
@@ -322,6 +338,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           mainCanvasContainer={mainCanvasContainer}
                           gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       )}
                     </SuspenseCountProvider>

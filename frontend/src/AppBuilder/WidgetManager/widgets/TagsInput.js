@@ -160,6 +160,20 @@ export const tagsInputConfig = {
       },
       accordian: 'Tags',
     },
+    serverSideSearch: {
+      type: 'clientServerSwitch',
+      displayName: 'Search type',
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      accordian: 'Tags',
+      conditionallyRender: {
+        key: 'enableSearch',
+        value: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -185,12 +199,30 @@ export const tagsInputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -205,6 +237,12 @@ export const tagsInputConfig = {
       type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -388,6 +426,7 @@ export const tagsInputConfig = {
       placeholder: { value: 'Add or select a tag' },
       dynamicHeight: { value: '{{true}}' },
       enableSearch: { value: '{{true}}' },
+      serverSideSearch: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },
@@ -420,10 +459,12 @@ export const tagsInputConfig = {
         ],
       },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },

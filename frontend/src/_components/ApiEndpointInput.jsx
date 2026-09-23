@@ -83,7 +83,7 @@ const ApiEndpointInput = (props) => {
       .then((response) => response.text())
       .then((text) => {
         const format = url.endsWith('.json') ? 'json' : 'yaml';
-        openapiService.parseOpenapiSpec(text, format).then((data) => {
+        return openapiService.parseOpenapiSpec(text, format).then((data) => {
           setSpecJson(data);
 
           if (isMultiSpec) {
@@ -123,6 +123,10 @@ const ApiEndpointInput = (props) => {
 
           setLoadingSpec(false);
         });
+      })
+      .catch((err) => {
+        console.error('Failed to load OpenAPI spec:', err);
+        setLoadingSpec(false);
       });
   };
 

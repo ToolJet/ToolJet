@@ -6,7 +6,6 @@ const ArrayNode = ({ value }) => {
     <div className="json-viewer-node-value" style={{ color: '#1F99ED' }}>
       <OverflowTooltip
         tooltipClassName="inspector-node-tooltip"
-        maxLetters={32}
         style={{ width: '100%' }}
       >{`[${value.length}]`}</OverflowTooltip>
     </div>

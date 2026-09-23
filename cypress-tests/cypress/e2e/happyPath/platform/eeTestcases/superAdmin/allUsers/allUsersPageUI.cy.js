@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { instanceWorkspaceSelectors } from "Selectors/superAdminSelectors";
+import { instanceWorkspaceSelectors } from "Selectors/platform/superAdminSelectors";
 import { sanitize } from "Support/utils/common";
 import { cleanAllUsers } from "Support/utils/manageUsers";
 import {
@@ -40,7 +40,7 @@ describe("Instance Settings - All Users UI", () => {
         cy.clearAndType(instanceWorkspaceSelectors.userSearchBar, data.userEmail);
 
         verifyUserRow(data.userName, data.userEmail, "workspace", "active");
-        verifyUserActionMenu(data.userName);
+        verifyUserActionMenu(data.userEmail);
 
         verifyResetPasswordModalUI(data.userEmail);
 

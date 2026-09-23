@@ -201,12 +201,27 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' } },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -297,6 +312,10 @@ export const formConfig = {
       displayName: 'Reset Form',
     },
     {
+      handle: 'clearForm',
+      displayName: 'Clear Form',
+    },
+    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'setVisibility', displayName: 'Set Visibility', defaultValue: '{{true}}', type: 'toggle' }],
@@ -344,6 +363,12 @@ export const formConfig = {
       },
       JSONData: {
         value: {},
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
       },
     },
     events: [],

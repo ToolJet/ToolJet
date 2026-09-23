@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Cohere datasource",
   "description": "A schema defining Cohere datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Cohere",
     "kind": "cohere",

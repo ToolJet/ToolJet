@@ -39,45 +39,66 @@
 
   .ai-builder-chat-container {
     position: relative;
+    font-size: var(--font-size-large);
+
+    // Match the previous plain-Textarea's fixed sizing (initialHeight 80px, max-h 180px) —
+    // the shared CodeMirror mention theme otherwise caps this at 3rem/6.5rem everywhere.
+    .cm-editor {
+      min-height: 80px;
+      max-height: 180px;
+    }
+
+    // Reserve the footer's height (32px) plus a gap at the end of the content so the LAST line can
+    // always be scrolled clear of the model picker. This handles the end of the document; the footer
+    // being opaque (below) is what protects the rows passing through the viewport mid-scroll. Both
+    // are needed: padding alone leaves scrolled text visible under a transparent footer, and an
+    // opaque footer alone would permanently hide the final line.
+    .cm-content {
+      padding-bottom: 2.5rem;
+    }
+
+    // CodeMirror's own cursor for the empty doc isn't reliably aligned with the absolutely-
+    // positioned placeholder overlay text (varies by device/DPR) — hide it and use our own
+    // caret (.slot-placeholder-caret) instead, which is laid out inline with the overlay text.
+    &.is-showing-placeholder .cm-cursor {
+      visibility: hidden;
+    }
+
     .ai-builder-footer {
       display: flex;
-      background-color: transparent;
+      // Opaque, matching the composer surface. The footer sits absolutely across the bottom of the
+      // input, so once the prompt is long enough for CodeMirror to scroll, text passes THROUGH a
+      // transparent footer and collides with the model picker. Padding on .cm-content cannot fix
+      // that: it reserves space at the end of the scrollable content, not at the bottom of the
+      // viewport, so mid-scroll rows still render underneath. Making the footer opaque hides them,
+      // and the content padding below still lets the final line scroll clear of it.
+      // Use --page-weak, not --interactive-weak: the composer surface is itself transparent
+      // (--interactive-weak resolves to rgba(255,255,255,0)), so it shows the .get-started-page
+      // background through it. --page-weak is that background, and is theme-aware.
+      background-color: var(--page-weak);
       justify-content: flex-end;
       align-items: center;
       gap: 8px;
       position: absolute;
       bottom: 0;
+      left: 0;
       right: 0;
-      width: fit-content;
+      width: auto;
       border-radius: 0 0 8px 8px;
       border-top: 0px !important;
 
       button[role="combobox"] {
-        border-radius: 100px !important;
-        height: 20px !important;
-        font-size: 11px !important;
-        padding: 0 8px !important;
+        border-radius: 100px;
+        height: auto;
+        font-size: var(--font-size-large);
+        padding: 0.125rem 0.625rem;
+        gap: 0.25rem;
 
         &:hover {
           background-color: var(--interactive-default) !important;
         }
       }
     }
-  }
-}
-
-.example-prompts-dropdown button[role="combobox"] {
-  width: 124px !important;
-  gap: 4px !important;
-  padding: 2px 8px !important;
-
-  > div {
-    max-width: 89px !important;
-    width: 89px !important;
-  }
-  > div > div {
-    max-width: 89px !important;
-    width: 89px !important;
   }
 }
 
@@ -88,7 +109,7 @@ div[role="listbox"].example-prompts-dropdown__content {
 
   div[role="option"] {
     padding: 8px 6px !important;
-    font-size: 12px !important;
+    font-size: var(--font-size-large) !important;
     height: 30px !important;
     cursor: pointer;
 
@@ -112,7 +133,7 @@ div[role="listbox"].example-prompts-dropdown__content {
     position: absolute;
     left: 0;
     top: 0;
-    height: 16px;
+    height: 1.25rem;
     width: calc(100% - 32px);
     overflow: hidden;
     pointer-events: none;
@@ -126,16 +147,30 @@ div[role="listbox"].example-prompts-dropdown__content {
   }
 
   &-line {
-    height: 16px;
     display: flex;
     align-items: center;
     opacity: 0.3;
     transition: opacity 0.4s ease;
-    font-size: 12px;
+    font-size: var(--font-size-large);
     color: var(--text-placeholder);
 
     &.active {
       opacity: 1;
     }
+  }
+
+  &-caret {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-right: 2px;
+    background-color: var(--text-default);
+    animation: slot-placeholder-caret-blink 1s step-end infinite;
+  }
+}
+
+@keyframes slot-placeholder-caret-blink {
+  50% {
+    opacity: 0;
   }
 }

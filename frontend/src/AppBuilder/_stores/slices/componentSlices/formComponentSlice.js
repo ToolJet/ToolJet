@@ -406,7 +406,7 @@ export const createFormComponentSlice = (set, get) => ({
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
 
-    const { skipUndoRedo = false, saveAfterAction = true } = options;
+    const { skipUndoRedo = false, saveAfterAction = true, onCycleReject } = options;
     let upatedDiff = {};
 
     // Process create operations
@@ -506,7 +506,7 @@ export const createFormComponentSlice = (set, get) => ({
           };
         }
 
-        saveComponentChanges(combinedDiff, 'components/batch', 'update');
+        saveComponentChanges(combinedDiff, 'components/batch', 'update', undefined, { onCycleReject });
 
         // Broadcast updates for multiplayer
         get().multiplayer.broadcastUpdates({ operations }, 'components', 'update');

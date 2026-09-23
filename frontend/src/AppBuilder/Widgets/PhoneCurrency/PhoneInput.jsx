@@ -5,14 +5,17 @@ import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+  useInput,
+} from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-
-const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
@@ -36,9 +39,9 @@ export const PhoneInput = (props) => {
     handleBlur,
     handleFocus,
     value,
-    handlePhoneCurrencyInputChange,
     country,
     setCountry,
+    setPhoneInputValue,
   } = inputLogic;
   const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
@@ -56,11 +59,26 @@ export const PhoneInput = (props) => {
     boxShadow,
     borderRadius,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const isInitialRender = useRef(true);
+
+  const countryCode = getCountryCallingCodeSafe(country);
+  const safeCountry = countryCode ? country : 'US'; // fall back to a valid country so the library never gets an unknown one.
+
+  // Normalize value to an E.164 value expected by library.
+  // prepend the calling code so the library never warns ("Expected E.164…") or fires a spurious onChange which leads to value flickering.
+  const inputValue = (() => {
+    const normalizedValue = `${value ?? ''}`.trim();
+    if (!normalizedValue) return '';
+    if (normalizedValue.startsWith('+')) return normalizedValue;
+    return countryCode ? `+${countryCode}${normalizedValue}` : normalizedValue;
+  })();
 
   const options = useMemo(
     () =>
@@ -73,13 +91,41 @@ export const PhoneInput = (props) => {
     []
   );
 
+  /**
+   * Changes the active country and re-bases the current value onto its calling code.
+   *   - Strips the previously applied calling code prefix from the current value, and prepends the new country's calling code.
+   *   - Updates the country and input value states.
+   *
+   * NOTE -
+   * `react-phone-number-input` expects `value` to be an E.164 number consistent with the `country` prop.
+   * Changing `country` alone leaves the old calling code on `value` (e.g. country "US" + "+91XXXXXXXXXX" still holds IN);
+   * the library then mangles the number and fires a corrective `onChange`, which can spiral into a re-render loop.
+   */
+  const onCountryChange = (nextCountry) => {
+    const newCode = getCountryCallingCodeSafe(nextCountry);
+    if (!newCode) return;
+
+    const oldCode = getCountryCallingCodeSafe(country);
+
+    let localNumber = `${value ?? ''}`.replace(/\D/g, '');
+    if (oldCode && localNumber.startsWith(`${oldCode}`)) {
+      localNumber = localNumber.slice(`${oldCode}`.length);
+    }
+
+    const nextValue = localNumber ? `+${newCode}${localNumber}` : '';
+
+    // Return early so a re-resolved-but-unchanged country won't trigger re-renders.
+    if (nextCountry === country && nextValue === value) return;
+
+    setCountry(nextCountry);
+    // Pass nextCountry so the value is validated/published against the new country,
+    // since the `country` state closure isn't updated until the re-render.
+    setPhoneInputValue(nextValue, nextCountry);
+  };
+
   const onInputValueChange = (value) => {
-    setExposedVariables({
-      country: country,
-      countryCode: `+${getCountryCallingCodeSafe(country)}`,
-      formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-    });
-    handlePhoneCurrencyInputChange(value);
+    setPhoneInputValue(value);
+    fireEvent('onChange');
   };
 
   const handleKeyUp = (e) => {
@@ -95,31 +141,30 @@ export const PhoneInput = (props) => {
         countryCode: `+${getCountryCallingCodeSafe(country)}`,
         formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
         value: value,
-        setCountryCode: (code) => {
-          let value = getCountryCallingCodeSafe(code);
-          if (value) {
-            setCountry(code);
-          } else {
-            value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
-            setCountry(value ? value : '');
-          }
-          setExposedVariables({
-            country: country,
-            countryCode: `+${getCountryCallingCodeSafe(country)}`,
-            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-          });
-        },
       });
       isInitialRender.current = false;
     }
   }, []);
 
+  // Accepts either a country code ('CN') or a calling code ('+86'),
+  // then routes through onCountryChange, which re-bases the value onto the new calling code and ignores an unresolvable country.
+  useEffect(() => {
+    setExposedVariables({
+      setCountryCode: (code) => {
+        const resolvedCountry = getCountryCallingCodeSafe(code)
+          ? code
+          : getCountries().find((c) => `+${getCountryCallingCode(c)}` === code) || '';
+        onCountryChange(resolvedCountry);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value]);
+
   useEffect(() => {
     if (!isInitialRender.current) {
-      if (getCountryCallingCodeSafe(defaultCountry)) {
-        setCountry(defaultCountry);
-      }
+      onCountryChange(defaultCountry);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
 
   const disabledState = disable || loading;
@@ -130,7 +175,7 @@ export const PhoneInput = (props) => {
     transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
-  const countryCode = getCountryCallingCodeSafe(country);
+
   const hasValue = (() => {
     if (value === '' || value === null || value === undefined) return false;
     if (!countryCode) return true;
@@ -213,6 +258,7 @@ export const PhoneInput = (props) => {
           inputId={`component-${id}`}
           classes={labelClasses}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
@@ -235,7 +281,7 @@ export const PhoneInput = (props) => {
             darkMode={darkMode}
             onChange={(selectedOption) => {
               if (selectedOption) {
-                setCountry(selectedOption.value);
+                onCountryChange(selectedOption.value);
               }
             }}
             componentId={id}
@@ -243,13 +289,14 @@ export const PhoneInput = (props) => {
           />
           <Input
             ref={inputRef}
-            country={country}
+            country={safeCountry}
             international={true}
-            value={value}
+            value={inputValue}
             onChange={onInputValueChange}
             placeholder={placeholder}
             style={computedStyles}
             id={`component-${id}`}
+            disabled={disabledState}
             aria-disabled={disabledState}
             aria-busy={loading}
             aria-required={isMandatory}

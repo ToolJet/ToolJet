@@ -38,12 +38,13 @@ export default class Bigquery implements QueryService {
       }
     };
 
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = getSourceOptionValue('oauth_type');
 
     const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : getSourceOptionValue('client_id');
+    const host =
+      oauth_type === 'tooljet_app' ? process.env.TOOLJET_HOST : getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
     if (!clientId) {
       throw Error('You need to define Google OAuth environment variables');
@@ -91,6 +92,7 @@ export default class Bigquery implements QueryService {
 
     let clientId = '';
     let clientSecret = '';
+    let host = process.env.TOOLJET_HOST;
     const oauth_type = getSourceOptionValue('oauth_type');
 
     if (oauth_type === 'tooljet_app') {
@@ -99,6 +101,7 @@ export default class Bigquery implements QueryService {
     } else {
       clientId = getSourceOptionValue('client_id');
       clientSecret = getSourceOptionValue('client_secret');
+      host = getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     }
 
     if (!clientId || !clientSecret) {
@@ -106,7 +109,6 @@ export default class Bigquery implements QueryService {
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

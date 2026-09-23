@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
   checkSubstringRegex,
@@ -11,32 +11,49 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import {
   computeComponentName,
+  getDropTargetLabel,
   getAllChildComponents,
   getParentWidgetFromId,
+  wouldCreateParentCycle,
 } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
-  TOP_ALIGNMENT_HEIGHT_INCREMENT,
-  ROW_SCOPED_WIDGET_TYPES,
-  NESTING_LEVEL_LIMITS,
-} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+  calculateInputCanvasHeight,
+  resolveInputCanvasAlignment,
+  resolveInputCanvasLabelLength,
+} from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+
+// ======================
+// SECTION: Query re-run on dependency change
+// ======================
 
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
 
+// Modules whose initial-load / page-switch exposed-value flush is in progress.
+// Dependency-triggered query re-runs for those modules are suppressed.
+const suppressedQueryRerunModules = new Set();
+
 // Debounce delay for dependency-triggered query re-runs.
 // RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
+  // Skip re-runs cascading from the initial-load / page-switch settle for this module.
+  if (suppressedQueryRerunModules.has(moduleId)) return;
   if (queryRerunTimers.has(queryId)) {
     clearTimeout(queryRerunTimers.get(queryId));
   }
@@ -65,6 +82,33 @@ function clearAllQueryRerunTimers() {
   queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
   queryRerunTimers.clear();
 }
+
+/** Suppress dependency-triggered query re-runs for a given module during initial-load or page-switch settle. */
+export function setSuppressQueryRerun(moduleId, value) {
+  if (value) suppressedQueryRerunModules.add(moduleId);
+  else suppressedQueryRerunModules.delete(moduleId);
+}
+
+// ======================
+// END SECTION: Query re-run on dependency change
+// ======================
+
+// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
+const hasDynamicValue = (value) => {
+  const pending = [value];
+  while (pending.length) {
+    const current = pending.pop();
+    if (typeof current === 'string') {
+      if (current.includes('{{') && current.includes('}}')) return true;
+    } else if (current && typeof current === 'object') {
+      for (const entry of Object.values(current)) pending.push(entry);
+    }
+  }
+  return false;
+};
+
+// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
+const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -161,7 +205,7 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
 
-  setCurrentPageId: (id, moduleId = 'canvas') =>
+  setCurrentPageId: (id, moduleId = 'canvas') => {
     set(
       (state) => {
         const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === id);
@@ -181,7 +225,8 @@ export const createComponentsSlice = (set, get) => ({
       },
       false,
       'setCurrentPageId'
-    ),
+    );
+  },
   setCurrentPageHandle: (handle, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -398,8 +443,11 @@ export const createComponentsSlice = (set, get) => ({
       // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
       const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
       let ancestorId = nearestDef?.component?.parent;
+      const ancestorVisited = new Set();
       while (ancestorId) {
         const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
+        if (ancestorVisited.has(baseAncestorId)) break;
+        ancestorVisited.add(baseAncestorId);
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
         if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
@@ -502,7 +550,7 @@ export const createComponentsSlice = (set, get) => ({
         lodashSet(
           componentResolvedValues,
           [componentId, idx, paramType, ...keys],
-          getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+          getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
         );
       } else {
         componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
@@ -530,7 +578,7 @@ export const createComponentsSlice = (set, get) => ({
           lodashSet(
             componentResolvedValues,
             [componentId, paramType, ...keys],
-            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+            getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
           );
         } else {
           componentResolvedValues[componentId][paramType][property] = resolvedValue;
@@ -608,8 +656,11 @@ export const createComponentsSlice = (set, get) => ({
     // Build the parent hierarchy to find all ListView ancestors
     const listviewAncestors = [];
     let currentParentId = parentId;
+    const listviewAncestorVisited = new Set();
     while (currentParentId) {
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+      if (listviewAncestorVisited.has(baseId)) break;
+      listviewAncestorVisited.add(baseId);
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
       if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
@@ -735,11 +786,20 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     if (validationRegex && validationRegex.trim() !== '') {
-      const re = new RegExp(validationRegex, 'g');
-      if (!re.test(widgetValue)) {
+      try {
+        const re = new RegExp(validationRegex, 'g');
+        if (!re.test(widgetValue)) {
+          return {
+            isValid: false,
+            validationError: 'The input should match pattern',
+          };
+        }
+      } catch (err) {
+        // Invalid/faulty regex pattern (eg, unterminated `[123123`). Surface it as a
+        // validation message instead of letting the SyntaxError crash the widget render.
         return {
           isValid: false,
-          validationError: 'The input should match pattern',
+          validationError: 'Invalid regex pattern',
         };
       }
     }
@@ -788,11 +848,15 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = resolveValue(mandatory) || false;
-    // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
-    const optionValueWidgets = ['DropdownV2', 'MultiselectV2'];
+    // Option widgets may use `false` as a legitimate configured value. DropdownV2 also distinguishes
+    // an explicitly selected empty-string option from its `null` clear state.
+    const optionValueWidgets = ['DropdownV2', 'MultiselectV2', 'Cascader', 'RadioButtonV2'];
+    const isLegitimateFalsyOptionValue =
+      (widgetValue === false && optionValueWidgets.includes(componentType)) ||
+      (widgetValue === '' && componentType === 'DropdownV2');
     const isEmpty = Array.isArray(widgetValue)
       ? widgetValue.length === 0
-      : !widgetValue && widgetValue !== 0 && !(widgetValue === false && optionValueWidgets.includes(componentType));
+      : !widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue;
 
     if (resolvedMandatory == true && isEmpty) {
       return {
@@ -924,16 +988,34 @@ export const createComponentsSlice = (set, get) => ({
     component,
     resolvedComponentValues,
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    preClonedValue
   ) => {
-    const { updateResolvedValues, generateDependencyGraphForRefs } = get();
-    const updatedPropertyValue = cloneDeep(value);
+    const { updateResolvedValues, generateDependencyGraphForRefs, checkValueAndResolve } = get();
     if (Array.isArray(value)) {
+      // Nested calls receive the parent's clone of this subtree, so cloning again would repeat per level
+      const updatedPropertyValue = preClonedValue ?? cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
+            // Nested arrays of objects (eg. Navigation group children) carry their own dynamic values
+            if (Array.isArray(keyValue) && hasObjectEntry(keyValue) && hasDynamicValue(keyValue)) {
+              const { updatedValue } = checkValueAndResolve(
+                componentId,
+                paramType,
+                propertyWithArrayValue,
+                keyValue,
+                component,
+                resolvedComponentValues,
+                updatePassedValue,
+                moduleId,
+                updatedPropertyValue[index][key]
+              );
+              lodashSet(updatedPropertyValue, [index, key], updatedValue);
+              return;
+            }
             const keys = [key];
             if (keyValue?.value) {
               keys.push('value');
@@ -1062,6 +1144,8 @@ export const createComponentsSlice = (set, get) => ({
       addToDependencyGraph,
       setResolvedComponents,
       resolveOthers,
+      startDependencyBatch,
+      flushDependencyBatch,
       registerQueryDependencies,
     } = get();
     const components = getCurrentPageComponents(moduleId);
@@ -1069,12 +1153,51 @@ export const createComponentsSlice = (set, get) => ({
     //TODO: Replace with object of component types
     let resolvedComponentValues = {};
 
+    startDependencyBatch();
     Object.entries(components).forEach(([componentId, component]) => {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
     });
+    flushDependencyBatch();
+
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
 
+    // Pre-populate default exposed values for all components in a single store write.
+    // This prevents 600+ individual set() calls during component mount in RenderWidget
+    // (setDefaultExposedValues will early-return since values already exist).
+    set(
+      (state) => {
+        Object.entries(components).forEach(([componentId, component]) => {
+          const componentType = component.component.component;
+          const parentId = component.component.parent;
+
+          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          if (existing && Object.keys(existing).length > 0) return;
+
+          const compDef = componentTypeDefinitionMap[componentType];
+          if (!compDef) return;
+
+          // Skip components with a Listview ancestor — they use per-row array storage at runtime
+          // and cannot be pre-populated flat. Form children without a Listview ancestor can be
+          // pre-populated here, eliminating their individual set() calls at mount time.
+          if (parentId) {
+            let cur = components[parentId];
+            while (cur) {
+              if (ROW_SCOPED_WIDGET_TYPES.includes(cur.component.component)) return;
+              cur = components[cur.component.parent];
+            }
+          }
+
+          const exposedVariables = compDef.exposedVariables || {};
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
+            ...exposedVariables,
+            id: componentId,
+          };
+        });
+      },
+      false,
+      'batchSetDefaultExposedValues'
+    );
     // Register query option dependencies for queries with runOnDependencyChange enabled
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
@@ -1225,10 +1348,16 @@ export const createComponentsSlice = (set, get) => ({
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = getParentWidgetFromId(parentType, parentId);
-    const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
+    const parentSlotType = parentId ? parentId.split('-').pop() : undefined;
+    const restrictedWidgets = [
+      ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || []),
+      ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
+    ];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed) {
-      toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
+      toast.error(
+        `${currentWidget} is not compatible as a child component of ${getDropTargetLabel(parentWidget, parentSlotType)}`
+      );
       return false;
     }
 
@@ -1237,8 +1366,11 @@ export const createComponentsSlice = (set, get) => ({
     if (nestingLimit) {
       let currentParentId = parentId;
       let count = 0;
+      const visited = new Set();
       while (currentParentId) {
         const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+        if (visited.has(baseId)) break;
+        visited.add(baseId);
         const parentDef = getComponentDefinition(baseId, moduleId);
         if (parentDef?.component?.component === currentWidget) {
           count++;
@@ -1269,6 +1401,7 @@ export const createComponentsSlice = (set, get) => ({
       checkIfParentIsFormAndAddField,
       buildComponentDefinition,
       getCurrentPageId,
+      getComponentDefinition,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
@@ -1280,7 +1413,8 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         ) === false
       ) {
-        return false;
+        resolve(false);
+        return;
       }
       const newComponents = buildComponentDefinition(componentDefinitions, moduleId);
 
@@ -1294,8 +1428,9 @@ export const createComponentsSlice = (set, get) => ({
         };
         return acc;
       }, {});
+      const flexChildOrderUpdates = {};
 
-      newComponents.forEach((newComponent, index) => {
+      newComponents.forEach((newComponent) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
         const oldName = getComponentNameFromId(newComponent.id, moduleId);
         if (oldName) {
@@ -1315,8 +1450,11 @@ export const createComponentsSlice = (set, get) => ({
             const componentParentId = newComponent.component.parent;
             if (componentParentId) {
               let ancestorId = componentParentId;
+              const ancestorVisited = new Set();
               while (ancestorId) {
                 const baseAncestorId = getBaseParentId(ancestorId);
+                if (ancestorVisited.has(baseAncestorId)) break;
+                ancestorVisited.add(baseAncestorId);
                 const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
                 if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
                   parentIndices.unshift(0);
@@ -1342,6 +1480,13 @@ export const createComponentsSlice = (set, get) => ({
             }
             const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
             page.components[newComponent.id] = newComponent;
+            get().addFlexContainerChildOrderToDraft({
+              state,
+              page,
+              parentId,
+              childId: newComponent.id,
+              flexChildOrderUpdates,
+            });
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
@@ -1354,7 +1499,31 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       if (saveAfterAction) {
-        saveComponentChanges(diff, 'components', 'create', moduleId)
+        const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+          return acc;
+        }, {});
+
+        const savePromise =
+          Object.keys(flexParentUpdateDiff).length > 0
+            ? saveComponentChanges(
+                {
+                  create: {
+                    diff,
+                    pageId: currentPageId,
+                  },
+                  update: {
+                    diff: flexParentUpdateDiff,
+                  },
+                },
+                'components/batch',
+                'update',
+                moduleId
+              )
+            : saveComponentChanges(diff, 'components', 'create', moduleId);
+
+        savePromise
           .then(() => {
             resolve(); // Resolve the promise after all operations are complete
           })
@@ -1380,6 +1549,7 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      updateDependencyValues,
       checkIfParentIsFormAndDeleteField,
       getCurrentPageId,
       checkIfComponentIsModule,
@@ -1400,8 +1570,11 @@ export const createComponentsSlice = (set, get) => ({
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
+    const flexChildOrderUpdates = {};
     const allComponents = getCurrentPageComponents(moduleId);
     const affectedFormIds = new Set(); // Track which Forms need their fields updated
+    // {id, keys}[] for deleted components, so dependents can be notified after the delete below commits.
+    const pendingDependencyUpdates = [];
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -1446,6 +1619,13 @@ export const createComponentsSlice = (set, get) => ({
             );
           });
 
+          get().removeDeletedComponentFromFlexChildOrdersInDraft({
+            page,
+            childId: id,
+            toDeleteComponents,
+            flexChildOrderUpdates,
+          });
+
           if (checkIfComponentIsModule(id, moduleId)) {
             clearModuleFromStore(id);
           }
@@ -1463,13 +1643,13 @@ export const createComponentsSlice = (set, get) => ({
           componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
+          pendingDependencyUpdates.push({ id, keys: Object.keys(componentsExposedValues[id] || {}) });
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
             get().clearSelectedComponents();
           }
-          removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
 
@@ -1479,6 +1659,14 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
+    // Run as top-level calls, not nested in the set() above — a set() called
+    // from inside another set()'s producer gets clobbered when the outer one
+    // commits. Update dependents before removeNode strips their graph edges.
+    pendingDependencyUpdates.forEach(({ id, keys }) => {
+      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId));
+      removeNode(`components.${id}`, moduleId);
+    });
 
     // Handle save after state update
     if (saveAfterAction) {
@@ -1496,11 +1684,17 @@ export const createComponentsSlice = (set, get) => ({
         }
       };
 
+      const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+        const component = getComponentDefinition(componentId, moduleId)?.component;
+        if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+        return acc;
+      }, {});
+
       // If Forms were affected, use batch operation to combine delete + form update
-      if (affectedFormIds.size > 0) {
+      if (affectedFormIds.size > 0 || Object.keys(flexParentUpdateDiff).length > 0) {
         // Build the form update diff
         const currentPageIndex = getCurrentPageIndex(moduleId);
-        const formUpdateDiff = {};
+        let formUpdateDiff = { ...flexParentUpdateDiff };
         affectedFormIds.forEach((formId) => {
           const formComponent = get().modules[moduleId].pages[currentPageIndex].components[formId]?.component;
           if (formComponent) {
@@ -1643,6 +1837,46 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+    // Snapshot pre-mutation parents per affected component so we can revert if
+    // the server's authoritative cycle guard rejects the batch.
+    const oldParentByComponentId = {};
+
+    // Reject the whole batch if any re-parent in it would form a cycle.
+    // Skipping just the parent write while keeping the layout write would
+    // leave widgets at coordinates measured against a parent they never
+    // moved into.
+    if (updateParent && newParentId) {
+      const { getBaseParentId } = get();
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      const cyclicId = Object.keys(componentLayouts).find((componentId) =>
+        wouldCreateParentCycle(componentId, newParentId, pageComponents, getBaseParentId)
+      );
+      if (cyclicId) {
+        const draggedName = pageComponents[cyclicId]?.component?.name || cyclicId;
+        toast.error(`Cannot move "${draggedName}" here — it would create a parent-child loop.`);
+        return;
+      }
+    }
+
+    // Capture per-component pre-mutation parents AND layouts for the revert
+    // path. The drag handler writes new coordinates (computed in the new
+    // parent's coordinate system) before save fires, so a cycle reject needs
+    // to restore both the parent ref AND the prior position to put the widget
+    // back where it started visually.
+    const oldLayoutByComponentId = {};
+    if (updateParent) {
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      Object.keys(componentLayouts).forEach((componentId) => {
+        const comp = pageComponents[componentId];
+        oldParentByComponentId[componentId] = comp?.component?.parent ?? null;
+        if (comp?.layouts?.[currentLayout]) {
+          oldLayoutByComponentId[componentId] = { ...comp.layouts[currentLayout] };
+        }
+      });
+    }
+
+    const flexChildOrderUpdates = {};
+
     // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
     // so we can batch the form field changes with the layout changes into a single API call
     const formFieldsDiff = updateParent
@@ -1655,11 +1889,56 @@ export const createComponentsSlice = (set, get) => ({
           // ============ Component layout update logic ============
           Object.entries(componentLayouts).forEach(([componentId, layout]) => {
             const component = page.components[componentId];
+            const newParentComponentType = newParentId ? page.components[newParentId]?.component?.component : null;
+            const oldParentComponentType = component?.component?.parent
+              ? page.components[component.component.parent]?.component?.component
+              : null;
+
             if (component) {
-              component.layouts[currentLayout] = {
-                ...component.layouts[currentLayout],
-                ...layout,
-              };
+              if (newParentComponentType === 'FlexContainer' && updateParent) {
+                // FlexContainer children: write only flex-specific fields, strip grid fields
+                const defaultFlexLayout = createDefaultFlexChildLayout({
+                  widthPx: layout.widthPx,
+                  height: layout.height,
+                });
+                const { fillWidth, widthPx, height } = {
+                  ...defaultFlexLayout,
+                  ...layout,
+                };
+                const flexLayout = {};
+                if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
+                if (widthPx !== undefined) flexLayout.widthPx = widthPx;
+                if (height !== undefined) flexLayout.height = height;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...flexLayout,
+                };
+                // Strip absolute-grid position/width fields when moving into FlexContainer.
+                delete component.layouts[currentLayout].top;
+                delete component.layouts[currentLayout].left;
+                delete component.layouts[currentLayout].width;
+              } else if (
+                oldParentComponentType === 'FlexContainer' &&
+                newParentComponentType !== 'FlexContainer' &&
+                updateParent
+              ) {
+                // Moving OUT of FlexContainer: strip flex fields, write grid fields
+                const { top, left, width, height } = layout;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  top,
+                  left,
+                  width,
+                  height,
+                };
+                delete component.layouts[currentLayout].fillWidth;
+                delete component.layouts[currentLayout].widthPx;
+              } else {
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...layout,
+                };
+              }
             }
             // ============ Component layout update logic ends ===========
 
@@ -1667,6 +1946,15 @@ export const createComponentsSlice = (set, get) => ({
             oldParentId = component.component.parent;
             hasParentChanged = oldParentId !== newParentId;
             if (hasParentChanged && updateParent) {
+              if (oldParentComponentType === 'FlexContainer' && oldParentId) {
+                get().removeFlexContainerChildOrderFromDraft({
+                  page,
+                  parentId: oldParentId,
+                  childId: componentId,
+                  flexChildOrderUpdates,
+                });
+              }
+
               // Update the component's parent
               component.component.parent = newParentId;
               // Remove the component from the old parent's children list
@@ -1687,6 +1975,15 @@ export const createComponentsSlice = (set, get) => ({
                 }
                 if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
                   state.containerChildrenMapping[newParentId].push(componentId);
+                }
+                if (newParentComponentType === 'FlexContainer') {
+                  get().addFlexContainerChildOrderToDraft({
+                    state,
+                    page,
+                    parentId: newParentId,
+                    childId: componentId,
+                    flexChildOrderUpdates,
+                  });
                 }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
@@ -1787,12 +2084,18 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
-
     if (saveAfterAction) {
       // Check if we need to batch multiple operations together
       if (updateParent) {
         // Collect all component updates that need to be batched
         let updatedDiff = formFieldsDiff || {};
+
+        Object.entries(flexChildOrderUpdates).forEach(([componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) {
+            updatedDiff[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+          }
+        });
 
         // Update container auto-height for both old and new parents
         // Get the diffs to include in the batch operation
@@ -1814,12 +2117,51 @@ export const createComponentsSlice = (set, get) => ({
 
         // Use batch operations to combine layout changes and component updates in a single API call
         // This creates only one history entry
+        const revertParents = () => {
+          set(
+            (state) => {
+              const page = state.modules[moduleId].pages[currentPageIndex];
+              if (!page) return;
+              Object.entries(oldParentByComponentId).forEach(([componentId, restoredParent]) => {
+                const component = page.components[componentId];
+                if (!component) return;
+                // Restore the pre-drag layout (x/y/w/h) — without this the
+                // widget stays at the new-parent coordinates but under the
+                // old parent, which renders in the wrong spot.
+                const restoredLayout = oldLayoutByComponentId[componentId];
+                if (restoredLayout && component.layouts) {
+                  component.layouts[currentLayout] = { ...restoredLayout };
+                }
+                const currentParent = component.component.parent;
+                if (currentParent === restoredParent) return;
+                component.component.parent = restoredParent;
+                // Detach from current parent bucket, reattach to restored parent bucket.
+                const currentBucket = currentParent || moduleId;
+                if (state.containerChildrenMapping[currentBucket]) {
+                  state.containerChildrenMapping[currentBucket] = state.containerChildrenMapping[currentBucket].filter(
+                    (id) => id !== componentId
+                  );
+                }
+                const restoreBucket = restoredParent || moduleId;
+                if (!state.containerChildrenMapping[restoreBucket]) {
+                  state.containerChildrenMapping[restoreBucket] = [];
+                }
+                if (!state.containerChildrenMapping[restoreBucket].includes(componentId)) {
+                  state.containerChildrenMapping[restoreBucket].push(componentId);
+                }
+              });
+            },
+            false,
+            { type: 'revertLayoutParentsAfterCycleReject' }
+          );
+        };
         performBatchComponentOperations(
           {
             updated: Object.keys(updatedDiff).length > 0 ? updatedDiff : undefined,
             layout: diff,
           },
-          moduleId
+          moduleId,
+          { onCycleReject: revertParents }
         );
       } else {
         // Simple layout change (resize, move within same parent) - use the regular layout endpoint
@@ -1877,6 +2219,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
+      removePropertyNodes,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const componentDef = getComponentDefinition(componentId, moduleId);
@@ -1894,6 +2237,8 @@ export const createComponentsSlice = (set, get) => ({
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
+      // Entries are re-indexed on every edit, so edges for the previous indices must go before the new ones register
+      removePropertyNodes(`components.${componentId}.${paramType}.${property}`, moduleId);
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -1999,7 +2344,21 @@ export const createComponentsSlice = (set, get) => ({
       getComponentTypeFromId,
       setResolvedComponent,
       withUndoRedo,
+      getBaseParentId,
     } = get();
+
+    // Reject self-parenting or descendant-as-new-parent. Covers multiplayer
+    // remote parent events and undo/redo replays that bypass the drag UX's
+    // ghost guard.
+    if (newParentId) {
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      if (wouldCreateParentCycle(componentId, newParentId, pageComponents, getBaseParentId)) {
+        const draggedName = pageComponents[componentId]?.component?.name || componentId;
+        toast.error(`Cannot move "${draggedName}" here — it would create a parent-child loop.`);
+        return;
+      }
+    }
+
     let oldParentId;
     set(
       withUndoRedo((state) => {
@@ -2079,7 +2438,38 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components', 'update', moduleId);
+      // If the server's authoritative cycle guard rejects this re-parent (e.g.
+      // the local snapshot was stale relative to a concurrent edit), put the
+      // parent back so the canvas matches what actually persisted.
+      const revertParent = () => {
+        set(
+          (state) => {
+            const component = state.modules[moduleId].pages[currentPageIndex].components[componentId];
+            if (!component) return;
+            component.component.parent = oldParentId ?? null;
+            // Re-thread containerChildrenMapping to match the restored parent.
+            if (newParentId && state.containerChildrenMapping[newParentId]) {
+              state.containerChildrenMapping[newParentId] = state.containerChildrenMapping[newParentId].filter(
+                (id) => id !== componentId
+              );
+            } else if (state.containerChildrenMapping[moduleId]) {
+              state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
+                (id) => id !== componentId
+              );
+            }
+            const restoreBucket = oldParentId || moduleId;
+            if (!state.containerChildrenMapping[restoreBucket]) {
+              state.containerChildrenMapping[restoreBucket] = [];
+            }
+            if (!state.containerChildrenMapping[restoreBucket].includes(componentId)) {
+              state.containerChildrenMapping[restoreBucket].push(componentId);
+            }
+          },
+          false,
+          { type: 'revertParentAfterCycleReject', payload: { componentId, oldParentId } }
+        );
+      };
+      saveComponentChanges(diff, 'components', 'update', moduleId, { onCycleReject: revertParent });
       get().multiplayer.broadcastUpdates({ componentId, newParentId }, 'components', 'parent');
     }
   },
@@ -2128,7 +2518,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       { type: 'setFocusedParentId', payload: { parentId } };
   },
-  saveComponentChanges: (diff, type, operation, moduleId = 'canvas') => {
+  saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
       (state) => {
         state.appStore.modules[moduleId].app.isSaving = true;
@@ -2156,8 +2546,29 @@ export const createComponentsSlice = (set, get) => ({
           resolve(response);
         })
         .catch((error) => {
-          toast.error('App could not be saved.');
+          // handle-response.js rejects with { error: <message string>, data: <full body>, statusCode }.
+          // The structured fields (code, componentId) live on `error.data`, not on the message string.
+          const errorBody = error?.data || error?.response?.data || error;
+          const errorMsg = errorBody?.message || error?.error;
+          const isCycleReject =
+            errorBody?.code === 'PARENT_CYCLE_DETECTED' ||
+            (typeof errorMsg === 'string' && errorMsg.includes('parent-child loop'));
+          if (isCycleReject) {
+            // Caller-supplied revert restores pre-mutation parent refs locally
+            // so the canvas matches the authoritative server state.
+            if (typeof onCycleReject === 'function') {
+              try {
+                onCycleReject();
+              } catch (revertErr) {
+                console.error('Error reverting after parent-cycle reject:', revertErr);
+              }
+            }
+            toast.error(errorMsg || 'Move rejected: would create a parent-child loop.');
+          } else {
+            toast.error('App could not be saved.');
+          }
           console.error('Error saving component changes:', error);
+          resolve(null);
         })
         .finally(() => {
           set(
@@ -2301,120 +2712,162 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
     return childComponents;
   },
-  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+  applyDependencyUpdate: (
+    dependency,
+    path,
+    moduleId = 'canvas',
+    parentIndices = [],
+    preloadedExposedValues,
+    batchedStateMutations = null
+  ) => {
     const {
       getAllExposedValues,
-      getDependencies,
       getNodeData,
       getEntityResolvedValueLength,
       updateChildComponentResolvedValues,
       getComponentTypeFromId,
-      getResolvedComponent,
     } = get();
-    const dependecies = getDependencies(path, moduleId);
-    if (dependecies?.length) {
-      dependecies.forEach((dependency) => {
-        // Handle query options sentinel — trigger re-run instead of resolution
-        if (dependency.endsWith('.__options__')) {
-          const nodeData = getNodeData(dependency, moduleId);
-          if (nodeData?.queryId) {
-            const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
-            if (query?.options?.runOnDependencyChange) {
-              // Use live name from store (queryIdNameMapping is updated on rename)
-              const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
-              scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
-            }
-          }
-          return;
-        }
-        const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
-        // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
-        if (itemsLength) {
-          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
-        } else {
-          const [entityType, entityId, type, ...keys] = dependency.split('.');
-          const key = keys.join('.');
-          const unResolvedValue = getNodeData(dependency, moduleId);
-          const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, []);
+    const applyOrQueueMutation = (mutator) => {
+      if (Array.isArray(batchedStateMutations)) {
+        batchedStateMutations.push(mutator);
+        return;
+      }
 
-          if (type === undefined) {
-            set(
-              (state) => {
-                // This will set the value for fx on canvas backgroundColor & page settings
-                state.resolvedStore.modules[moduleId][entityType][entityId] = resolvedValue;
-              },
-              false,
-              'updateDependencyValues'
-            );
-          } else {
-            const shouldValidate = entityType === 'components' && entityId;
-            const validatedValue = shouldValidate
-              ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
-              : resolvedValue;
+      set(
+        (state) => {
+          mutator(state);
+        },
+        false,
+        'updateDependencyValues'
+      );
+    };
 
-            // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
-            if (hasArrayNotation(key)) {
-              const keys = parsePropertyPath(key);
-              // Triggering a re-render of the table component if any of the dependent component is updated
-              // This is done to calculate the callValues in the table component
-              // Need to find a better way to handle this
-              if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
-                set(
-                  (state) => {
-                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                    if (Array.isArray(entity)) {
-                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                    }
-                    lodashSet(
-                      entity,
-                      ['properties', 'shouldRender'],
-                      (getResolvedComponent(entityId, null, moduleId)?.['properties']?.['shouldRender'] ?? 0) + 1
-                    );
-                  },
-                  false,
-                  'updateDependencyValues'
-                );
-              } else {
-                set(
-                  (state) => {
-                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                    if (Array.isArray(entity)) {
-                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                    }
-                    lodashSet(
-                      entity,
-                      [type, ...keys],
-                      getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
-                    );
-                  },
-                  false,
-                  'updateDependencyValues'
-                );
-              }
-            } else {
-              set(
-                (state) => {
-                  let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-                  // Guard: stale array format from previous ListView/Kanban parent
-                  if (Array.isArray(entity)) {
-                    entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
-                    state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
-                  }
-                  if (!entity[type]) {
-                    entity[type] = {};
-                  }
-                  entity[type][key] = validatedValue;
-                },
-                false,
-                'updateDependencyValues'
-              );
-            }
-          }
+    // Handle query options sentinel - trigger re-run instead of resolution
+    if (dependency.endsWith('.__options__')) {
+      const nodeData = getNodeData(dependency, moduleId);
+      if (nodeData?.queryId) {
+        const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
+        if (query?.options?.runOnDependencyChange) {
+          // Use live name from store (queryIdNameMapping is updated on rename)
+          const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
+          scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
         }
+      }
+      return;
+    }
+
+    const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
+    // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
+    if (itemsLength) {
+      updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
+      return;
+    }
+
+    const [entityType, entityId, type, ...keys] = dependency.split('.');
+    const key = keys.join('.');
+    const unResolvedValue = getNodeData(dependency, moduleId);
+    const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
+    const resolvedValue = resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []);
+
+    if (type === undefined) {
+      applyOrQueueMutation((state) => {
+        // This will set the value for fx on canvas backgroundColor & page settings
+        state.resolvedStore.modules[moduleId][entityType][entityId] = resolvedValue;
+      });
+      return;
+    }
+
+    const shouldValidate = entityType === 'components' && entityId;
+    const validatedValue = shouldValidate
+      ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
+      : resolvedValue;
+
+    // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
+    if (hasArrayNotation(key)) {
+      const keys = parsePropertyPath(key);
+      // Triggering a re-render of the table component if any of the dependent component is updated
+      // This is done to calculate the callValues in the table component
+      // Need to find a better way to handle this
+      if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
+        applyOrQueueMutation((state) => {
+          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (Array.isArray(entity)) {
+            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+          }
+          const currentShouldRender = entity?.properties?.shouldRender ?? 0;
+          lodashSet(entity, ['properties', 'shouldRender'], currentShouldRender + 1);
+        });
+      } else {
+        applyOrQueueMutation((state) => {
+          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (Array.isArray(entity)) {
+            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+          }
+          lodashSet(
+            entity,
+            [type, ...keys],
+            getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
+          );
+        });
+      }
+    } else {
+      applyOrQueueMutation((state) => {
+        let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+        // Guard: stale array format from previous ListView/Kanban parent
+        if (Array.isArray(entity)) {
+          entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+          state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+        }
+        if (!entity[type]) {
+          entity[type] = {};
+        }
+        entity[type][key] = validatedValue;
       });
     }
+  },
+
+  updateDependencyValuesBatch: (paths = [], moduleId = 'canvas', parentIndices = []) => {
+    const { getDependencies, applyDependencyUpdate, getAllExposedValues } = get();
+    const uniqueDependencies = new Map();
+    const exposedValues = getAllExposedValues(moduleId);
+    const batchedStateMutations = [];
+
+    paths.forEach((path) => {
+      const dependencies = getDependencies(path, moduleId);
+      if (!dependencies?.length) return;
+
+      dependencies.forEach((dependency) => {
+        if (!uniqueDependencies.has(dependency)) {
+          uniqueDependencies.set(dependency, path);
+        }
+      });
+    });
+
+    uniqueDependencies.forEach((sourcePath, dependency) => {
+      applyDependencyUpdate(dependency, sourcePath, moduleId, parentIndices, exposedValues, batchedStateMutations);
+    });
+
+    if (batchedStateMutations.length > 0) {
+      set(
+        (state) => {
+          batchedStateMutations.forEach((mutator) => mutator(state));
+        },
+        false,
+        'updateDependencyValuesBatch'
+      );
+    }
+  },
+
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
+    const { getDependencies, applyDependencyUpdate } = get();
+    const dependencies = getDependencies(path, moduleId);
+    if (!dependencies?.length) return;
+
+    dependencies.forEach((dependency) => {
+      applyDependencyUpdate(dependency, path, moduleId, parentIndices);
+    });
   },
   computePageSettings: (currentPageSettings) => {
     try {
@@ -2447,7 +2900,12 @@ export const createComponentsSlice = (set, get) => ({
       findNearestSubcontainerAncestor,
       updateRowScope,
     } = get();
-    const [entityType, entityId, type, key] = dependency.split('.');
+    const [entityType, entityId, type, ...keys] = dependency.split('.');
+    // Array properties (eg. menuItems[0].label) carry dots after the index, so the tail must be
+    // rejoined and written through its parsed path. Writing it as a flat key would store
+    // properties['menuItems[0].label'] and leave the actual array entry stale forever.
+    const key = keys.join('.');
+    const propertyPath = hasArrayNotation(key) ? parsePropertyPath(key) : null;
     const parentId = getParentIdFromDependency(dependency, moduleId);
     // Walk up to find the nearest ListView ancestor for customResolvables lookup
     const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
@@ -2470,12 +2928,14 @@ export const createComponentsSlice = (set, get) => ({
     // For lazy parents (eg. Table expandable rows),
     // only resolve required rows instead of all 0..length-1.
     // This is a no-op for ListView/Kanban.
+    // Index 0 is always included: it is the template a row falls back to until it is expanded and
+    // resolved, so a stale index 0 would make a row expanded after this update show an old value.
     const { isLazyResolvableParent, getLazyRowIndices } = get();
     const isLazy = isLazyResolvableParent(resolvableParentId, moduleId);
     const indicesToResolve = isLazy
-      ? getLazyRowIndices(resolvableParentId, moduleId)
+      ? getLazyRowIndices(resolvableParentId, moduleId, true)
       : Array.from({ length }, (_, i) => i);
-    if (isLazy && indicesToResolve.length === 0) return;
+    if (indicesToResolve.length === 0) return;
 
     const updates = [];
     for (const i of indicesToResolve) {
@@ -2489,9 +2949,34 @@ export const createComponentsSlice = (set, get) => ({
       updates.push({ index: i, value: validatedValue });
     }
 
+    // Writes one row's resolved value, honouring array notation in the property path.
+    const writeResolvedValue = (rowEntry, value) => {
+      if (!rowEntry[type]) rowEntry[type] = {};
+      if (propertyPath) lodashSet(rowEntry, [type, ...propertyPath], value);
+      else rowEntry[type][key] = value;
+    };
+
+    // Builds a missing row entry from the template row. For array properties the branch of the
+    // template being written into is cloned, otherwise every row would share one array instance.
+    const createRowEntry = (template) => {
+      const typeValues = { ...(template?.[type] || {}) };
+      if (propertyPath) {
+        typeValues[propertyPath[0]] = cloneDeep(typeValues[propertyPath[0]]);
+      }
+      return { ...(template || DEFAULT_COMPONENT_STRUCTURE), [type]: typeValues };
+    };
+
     // Single batched update instead of N individual set() calls
     set(
       (state) => {
+        // Lazy parents skip updateChildComponentsLength, so a descendant may still hold its
+        // pre-row plain object — seed it as the row 0 template before writing row entries.
+        if (!Array.isArray(state.resolvedStore.modules[moduleId][entityType][entityId])) {
+          const existing = state.resolvedStore.modules[moduleId][entityType][entityId];
+          state.resolvedStore.modules[moduleId][entityType][entityId] = [
+            existing || { ...DEFAULT_COMPONENT_STRUCTURE },
+          ];
+        }
         const entityStore = state.resolvedStore.modules[moduleId][entityType][entityId];
         if (parentIndices.length === 0) {
           updates.forEach(({ index, value }) => {
@@ -2502,19 +2987,9 @@ export const createComponentsSlice = (set, get) => ({
             // Also guard entityStore[0] used as template
             const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
             if (!entityStore[index]) {
-              entityStore[index] = {
-                ...template,
-                [type]: {
-                  ...(template?.[type] || {}),
-                  [key]: value,
-                },
-              };
-            } else {
-              if (!entityStore[index][type]) {
-                entityStore[index][type] = {};
-              }
-              entityStore[index][type][key] = value;
+              entityStore[index] = createRowEntry(template);
             }
+            writeResolvedValue(entityStore[index], value);
           });
         } else {
           // Navigate to the correct nested level using parentIndices
@@ -2545,15 +3020,9 @@ export const createComponentsSlice = (set, get) => ({
               if (source && Array.isArray(source)) {
                 source = source[0];
               }
-              current[lastIdx] = source
-                ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
-                : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
-            } else {
-              if (!current[lastIdx][type]) {
-                current[lastIdx][type] = {};
-              }
-              current[lastIdx][type][key] = value;
+              current[lastIdx] = createRowEntry(source);
             }
+            writeResolvedValue(current[lastIdx], value);
           });
         }
       },
@@ -2650,9 +3119,12 @@ export const createComponentsSlice = (set, get) => ({
   // Returns the base UUID of that ancestor, or null if none found.
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
+    const visited = new Set();
     let currentId = startParentId;
     while (currentId) {
       const baseId = getBaseParentId(currentId) || currentId;
+      if (visited.has(baseId)) return null;
+      visited.add(baseId);
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
       if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
@@ -2668,16 +3140,16 @@ export const createComponentsSlice = (set, get) => ({
       queries: getQueryIdNameMapping(moduleId),
     };
 
+    // The trailing path (".value", "?.value", "[0].name", ...) is matched with an include-list
+    // of what a JS member-path can actually contain, instead of an exclude-list of characters
+    // that "shouldn't" appear there — an exclude-list has to anticipate every operator that
+    // might sit next to a reference (this is what missed `<`/`>` previously); an include-list
+    // of valid identifier/index characters can't miss anything because it's a closed set.
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
-    return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?((?:\??\.[A-Za-z_$][\w$]*|\[\d+\]|\['[^']*'\]|\["[^"]*"\])*)/g;
+    return input.replace(regex, (match, category, prefix, id, closingBracket, path) => {
       if (mappings[category] && mappings[category][id]) {
-        let name;
-        if (category === 'components') {
-          name = mappings[category][id];
-        } else {
-          name = mappings[category][id];
-        }
+        const name = mappings[category][id];
 
         // Reconstruct the string with the name instead of UUID
         let result = `${category}`;
@@ -2696,22 +3168,23 @@ export const createComponentsSlice = (set, get) => ({
           result += name;
         }
 
-        // Handle optional chaining after the name
-        if (optionalChaining) {
-          result += optionalChaining;
-        }
-
-        // Add the property if it exists
-        if (property) {
-          result += property;
-        }
+        // Append the rest of the member path as-is (already validated by the regex above)
+        result += path;
 
         return result;
       }
       return match; // Return the original match if no mapping is found
     });
   },
-  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
+  calculateMoveableBoxHeightWithId: (
+    componentId,
+    currentLayout,
+    stylesDefinition,
+    moduleId = 'canvas',
+    resolvedStyleAlignment,
+    resolvedStyleLegacyInputSize,
+    resolvedPropertyLabel
+  ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
@@ -2723,27 +3196,41 @@ export const createComponentsSlice = (set, get) => ({
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
     const width = stylesDefinition?.width ?? stylesDefinition?.labelWidth ?? { value: null };
-    let resolvedLabel = label?.value?.length ?? 0;
+    const resolvedLabelLength = resolveInputCanvasLabelLength(label?.value, (value) =>
+      resolvedPropertyLabel !== undefined
+        ? resolvedPropertyLabel
+        : resolveDynamicValues(value + '', getAllExposedValues(moduleId))
+    );
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
-    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
-    if (resolvedLabelType === 'auto') {
-      resolvedLabel = 1;
-    }
+    const resolvedLabelType = labelType
+      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
+      : undefined;
+    const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
+    const resolvedLegacyInputSize =
+      resolvedStyleLegacyInputSize ??
+      (legacyInputSizeProperty
+        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
+        : false);
 
-    const resolvedAlignment =
-      alignment.value === 'top' || alignment.value === 'side'
-        ? alignment.value
-        : resolveDynamicValues(alignment.value + '');
-    let newHeight = layoutData?.height;
+    const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
+      alignment: alignment.value,
+      hasLegacyInputSizeProperty: Boolean(legacyInputSizeProperty),
+      legacyInputSize: resolvedLegacyInputSize,
+      resolveValue: (value) => resolvedStyleAlignment ?? get().getResolvedValue(value, {}, moduleId),
+    });
 
-    if (alignment.value && resolvedAlignment === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
-      }
-    }
-    return newHeight;
+    return calculateInputCanvasHeight({
+      height: layoutData?.height,
+      alignment: alignment.value && resolvedAlignment,
+      labelLength: resolvedLabelLength,
+      width: resolvedWidth,
+      auto: resolvedAuto,
+      labelType: resolvedLabelType,
+      legacyInputSize: resolvedLegacyInputSize,
+      isDynamicAlignment,
+    });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {
     const { getCurrentPage } = get();

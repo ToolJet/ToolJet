@@ -13,9 +13,9 @@ export async function textGeneration(cohere: CohereClientV2, options: QueryOptio
     advancedParams = JSON.parse(advanced_parameters);
   }
 
-  const response = await cohere.generate({
+  const response = await cohere.chat({
     model: model,
-    prompt: message,
+    messages: [{ role: 'user', content: message }],
     ...advancedParams,
   });
 

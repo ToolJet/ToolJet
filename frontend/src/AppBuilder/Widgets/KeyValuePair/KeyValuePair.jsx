@@ -26,7 +26,6 @@ export const KeyValuePair = ({
   id,
   width: widgetWidth,
   height,
-  adjustComponentPositions,
   currentLayout,
   currentMode,
   subContainerIndex,
@@ -59,7 +58,23 @@ export const KeyValuePair = ({
     accentColor = 'var(--primary)',
     // Container
     padding = 'default',
+    paddingInside = 0,
+    backgroundColor = 'var(--cc-surface1-surface)',
+    borderColor = 'var(--cc-weak-border)',
+    borderRadius = 6,
+    boxShadow = '0px 0px 0px 0px #00000040',
+    hoverBackgroundMode = 'auto',
+    hoverBackgroundColor,
   } = styles;
+
+  const containerStyles = {
+    padding: paddingInside ? parseFloat(paddingInside) : 0,
+    backgroundColor,
+    border: `1px solid ${borderColor}`,
+    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    boxShadow,
+    ...(hoverBackgroundMode === 'manual' && hoverBackgroundColor && { '--kv-hover-bg': hoverBackgroundColor }),
+  };
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     loadingState,
@@ -85,7 +100,6 @@ export const KeyValuePair = ({
     id,
     height,
     value: heightChangeValue,
-    adjustComponentPositions,
     currentLayout,
     width: widgetWidth,
     visibility: isVisible,
@@ -179,7 +193,7 @@ export const KeyValuePair = ({
 
   if (isLoading) {
     return (
-      <div className={'key-value-pair-container'} data-cy={dataCy}>
+      <div className={'key-value-pair-container'} style={containerStyles} data-cy={dataCy}>
         <div className="key-value-pair-loading">
           <Loader width="24" />
         </div>
@@ -197,6 +211,7 @@ export const KeyValuePair = ({
         'dark-mode': darkMode,
         [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
+      style={containerStyles}
       data-cy={dataCy}
       id={`component-${id}`}
     >

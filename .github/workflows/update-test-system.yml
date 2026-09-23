@@ -40,20 +40,16 @@ jobs:
         run: |
           # Define allowed users
           allowed_users=(
-            "${{ secrets.ALLOWED_USER1_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER2_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER3_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER4_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER5_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER6_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER7_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER8_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER9_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER10_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER11_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER12_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER13_TEST_SYSTEM }}"
-            "${{ secrets.ALLOWED_USER14_TEST_SYSTEM }}"
+            "${{ secrets.PLATFORM_1 }}"
+            "${{ secrets.PLATFORM_2 }}"
+            "${{ secrets.MARKETPLACE_1 }}"
+            "${{ secrets.MARKETPLACE_2 }}"
+            "${{ secrets.AI_1 }}"
+            "${{ secrets.AI_2 }}"
+            "${{ secrets.APP_BUILDER_1 }}"
+            "${{ secrets.APP_BUILDER_2 }}"
+            "${{ secrets.DEVOPS_1 }}"
+            "${{ secrets.DEVOPS_2 }}"
           )
 
           current_user="${{ github.actor }}"

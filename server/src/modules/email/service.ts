@@ -12,7 +12,10 @@ import {
   SendOrganizationUserWelcomeEmailPayload,
   SendCommentMentionEmailPayload,
   SendPasswordResetEmailPayload,
+  SendPasswordExpiredResetEmailPayload,
   SendEmailOtpPayload,
+  SendUserBannedEmailPayload,
+  SendWorkspaceBannedEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -102,11 +105,26 @@ export class EmailService implements IEmailService {
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
       : 'You have received this email to confirm your email address';
 
+    // Format expiry date from the stored token expiry in the DB
+    let expiryDate: string | null = null;
+    if (payload.invitationTokenExpiry) {
+      expiryDate = new Date(payload.invitationTokenExpiry).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
+    }
+
     const templateData = {
       name: name || '',
       inviteUrl,
       sender,
       organizationName,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
@@ -131,16 +149,29 @@ export class EmailService implements IEmailService {
   }
 
   async sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload) {
-    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo } = payload;
+    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo, invitationTokenExpiry } = payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo, host);
+    let expiryDate: string | null = null;
+    if (invitationTokenExpiry) {
+      expiryDate = new Date(invitationTokenExpiry).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
+    }
     const templateData = {
       name: name || '',
       inviteUrl,
       sender,
       organizationName,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
@@ -159,7 +190,7 @@ export class EmailService implements IEmailService {
   }
 
   async sendPasswordResetEmail(payload: SendPasswordResetEmailPayload) {
-    const { to, token, firstName, organizationId, redirectTo } = payload;
+    const { to, token, firstName, organizationId, redirectTo, orgSlug, forgotPasswordTokenExpiry } = payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const effectiveHost = this.stripTrailingSlash(host);
@@ -168,10 +199,25 @@ export class EmailService implements IEmailService {
     const appSlug = redirectTo?.match(/^\/applications\/([^/?]+)/)?.[1];
     const url = appSlug
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
-      : `${effectiveHost}${basePath}reset-password/${token}`;
+      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
+
+    let expiryDate: string | null = null;
+    if (forgotPasswordTokenExpiry) {
+      expiryDate = new Date(forgotPasswordTokenExpiry).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
+    }
+
     const templateData = {
       name: firstName || '',
       resetLink: url,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
@@ -182,6 +228,37 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to reset your password was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendPasswordExpiredResetEmail(payload: SendPasswordExpiredResetEmailPayload) {
+    const { to, token, firstName, organizationId, redirectTo, orgSlug } = payload;
+    await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const effectiveHost = this.stripTrailingSlash(host);
+    const subject = 'Reset your expired password';
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const appSlug = redirectTo?.match(/^\/applications\/([^/?]+)/)?.[1];
+    const url = appSlug
+      ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
+      : redirectTo
+      ? `${effectiveHost}${basePath}reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}${orgSlug ? `&oid=${encodeURIComponent(orgSlug)}` : ''}`
+      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
+    const templateData = {
+      name: firstName || '',
+      resetLink: url,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const templatePath = this.defaultWhiteLabelState ? 'default_password_expired.hbs' : 'password_expired.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because your password has expired',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
@@ -204,6 +281,45 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(email, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to signUp was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendUserBannedEmail(payload: SendUserBannedEmailPayload) {
+    const { to, name } = payload;
+    await this.init();
+    const subject = `Your ${this.WHITE_LABEL_TEXT || 'ToolJet'} account has been suspended`;
+    const templateData = {
+      name: name || to,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const htmlEmailContent = this.compileTemplate('user_banned.hbs', templateData);
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because your account has been suspended',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendWorkspaceBannedEmail(payload: SendWorkspaceBannedEmailPayload) {
+    const { to, adminName, workspaceName } = payload;
+    await this.init();
+    const subject = `Workspace "${workspaceName}" has been suspended`;
+    const templateData = {
+      adminName: adminName || to,
+      workspaceName,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const htmlEmailContent = this.compileTemplate('workspace_banned.hbs', templateData);
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because a workspace you administer has been suspended',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import Selecto from 'react-selecto';
 import './selecto.scss';

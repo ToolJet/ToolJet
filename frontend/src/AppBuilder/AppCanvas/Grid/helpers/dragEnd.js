@@ -268,7 +268,32 @@ export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []
         return DROPPABLE_PARENTS.has(widgetType);
       });
 
-    return slotId;
+    if (slotId) return slotId;
+
+    // Falls back to the source Modal when this search comes up empty but the
+    // cursor is still within the Modal's dialog bounds, avoiding a false
+    // "dragged out to canvas" block.
+    const sourceParentId = getWidgetById(widgets, event.target.id)?.parent;
+    const sourceParentBaseId = sourceParentId
+      ? sourceParentId.length > 36
+        ? sourceParentId.slice(0, 36)
+        : sourceParentId
+      : null;
+    const sourceParentWidget = sourceParentBaseId ? getWidgetById(widgets, sourceParentBaseId) : null;
+    if (sourceParentWidget?.component?.component === 'ModalV2') {
+      const dialogRect = document.querySelector(`.tj-modal-content-${sourceParentBaseId}`)?.getBoundingClientRect();
+      const isCursorWithinDialog =
+        dialogRect &&
+        event.clientX >= dialogRect.left &&
+        event.clientX <= dialogRect.right &&
+        event.clientY >= dialogRect.top &&
+        event.clientY <= dialogRect.bottom;
+      if (isCursorWithinDialog) {
+        return sourceParentId;
+      }
+    }
+
+    return undefined;
   }
 };
 
@@ -297,9 +322,12 @@ export function isNestingLimitReached(slotId, widgets, widgetType) {
 
   let currentParentId = slotId;
   let count = 0;
+  const visited = new Set();
 
   while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
     const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    if (visited.has(baseId)) return false;
+    visited.add(baseId);
     const parentWidget = widgets.find((w) => w.id === baseId);
 
     if (parentWidget?.component?.component === widgetType) {

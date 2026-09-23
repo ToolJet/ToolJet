@@ -248,7 +248,22 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    extensions: [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.png',
+      '.wasm',
+      '.tar',
+      '.data',
+      '.svg',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.json',
+    ],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -269,7 +284,12 @@ module.exports = {
   //   (sentryWebpackPlugin uploads then deletes the .map files from the build dir).
   // In production without Sentry: skip map generation entirely — nothing consumes
   //   them and they push individual chunks past Cloudflare Pages' 25 MiB limit.
-  devtool: environment === 'development' ? 'eval-source-map' : process.env.APM_VENDOR === 'sentry' ? 'hidden-source-map' : false,
+  devtool:
+    environment === 'development'
+      ? 'eval-source-map'
+      : process.env.APM_VENDOR === 'sentry'
+      ? 'hidden-source-map'
+      : false,
   module: {
     rules: [
       {
@@ -289,7 +309,12 @@ module.exports = {
         use: ['file-loader'],
       },
       {
-        test: /\.svg$/,
+        test: /\.svg$/i,
+        type: 'asset/resource',
+        resourceQuery: /url/, // SVGs with path has *.svg?url
+      },
+      {
+        test: /\.svg$/i,
         use: ({ resource }) => ({
           loader: '@svgr/webpack',
           options: {
@@ -305,6 +330,7 @@ module.exports = {
             },
           },
         }),
+        resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
         test: /\.css$/,
@@ -375,6 +401,13 @@ module.exports = {
     client: {
       overlay: false,
     },
+    // The custom-component shell iframe is sandboxed (opaque origin), so its import()/fetch()
+    // of these vendor files sends `Origin: null` and needs an explicit ACAO — see
+    // server/ee/custom-component-libraries/controller.ts for the matching header on the
+    // bundle/css serve routes. webpack-dev-server's array/object `headers` form applies to
+    // every request, so this needs the function form to scope it to just this path.
+    headers: (req) =>
+      req.url.startsWith('/assets/custom-components/') ? { 'Access-Control-Allow-Origin': 'null' } : {},
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
@@ -402,8 +435,7 @@ module.exports = {
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
       WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup',
       TJ_SELFHOST_CREDITS_APP:
-        process.env.TJ_SELFHOST_CREDITS_APP ||
-        'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
+        process.env.TJ_SELFHOST_CREDITS_APP || 'https://app.tooljet.ai/applications/credits-portal',
       ENABLE_PASSWORD_COMPLEXITY_RULES: process.env.ENABLE_PASSWORD_COMPLEXITY_RULES || false,
     }),
   },

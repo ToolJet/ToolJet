@@ -6,6 +6,7 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
+import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
@@ -16,13 +17,9 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import Beta from '@/_ui/Beta';
 import './styles.scss';
 
-// Map of widget component name → featureAccess key. Widgets listed here are hidden
-// from the picker entirely when the corresponding featureAccess flag is false.
-const PAID_WIDGETS = {
-  Navigation: 'componentNavigation',
-};
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
   constructor(props) {
@@ -58,35 +55,30 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
   const edition = fetchEdition();
 
-  const { hasModuleAccess, featureAccess } = useLicenseStore(
+  const { hasModuleAccess } = useLicenseStore(
     (state) => ({
       hasModuleAccess: state.hasModuleAccess,
-      featureAccess: state.featureAccess,
     }),
     shallow
   );
 
-  const isPaidWidgetAllowed = useCallback(
-    (componentName) => {
-      const flag = PAID_WIDGETS[componentName];
-      return !flag || !!featureAccess?.[flag];
-    },
-    [featureAccess]
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
   const componentList = useMemo(() => {
     return componentTypes
       .map((component) => component.component)
-      .filter((component) => !IGNORED_ITEMS.includes(component) && isPaidWidgetAllowed(component));
-  }, [componentTypes, isPaidWidgetAllowed]);
+      .filter((component) => !IGNORED_ITEMS.includes(component));
+  }, [componentTypes]);
 
   const searchList = useMemo(() => {
     return componentTypes
-      .filter((component) => !IGNORED_ITEMS.includes(component.component) && isPaidWidgetAllowed(component.component))
+      .filter((component) => !IGNORED_ITEMS.includes(component.component))
       .map((component) => {
         return { component: component.component, displayName: component.displayName };
       });
-  }, [componentTypes, isPaidWidgetAllowed]);
+  }, [componentTypes]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
@@ -246,6 +238,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
+              : activeTab === 'custom'
+              ? t('globals.searchCustomComponents', 'Search components')
               : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
@@ -318,6 +312,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
                 </ModuleErrorBoundary>
+              </Tab>
+            )}
+            {hasCustomComponentLibrariesAccess && (
+              <Tab
+                eventKey="custom"
+                title={
+                  <>
+                    {t('globals.custom', 'Custom')}
+                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                  </>
+                }
+                darkMode={darkMode}
+              >
+                {searchBox()}
+                <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
             )}
           </Tabs>

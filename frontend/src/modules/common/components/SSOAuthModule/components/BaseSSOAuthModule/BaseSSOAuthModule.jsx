@@ -8,6 +8,7 @@ const BaseSSOAuthModule = ({
   setSignupOrganizationDetails,
   gitSSORef,
   googleSSORef,
+  redirectTo,
 }) => {
   return (
     <>
@@ -19,6 +20,7 @@ const BaseSSOAuthModule = ({
             setRedirectUrlToCookie={setRedirectUrlToCookie}
             setSignupOrganizationDetails={setSignupOrganizationDetails}
             buttonText={buttonText}
+            redirectTo={redirectTo}
           />
         </div>
       )}
@@ -31,6 +33,7 @@ const BaseSSOAuthModule = ({
             setRedirectUrlToCookie={setRedirectUrlToCookie}
             setSignupOrganizationDetails={setSignupOrganizationDetails}
             buttonText={buttonText}
+            redirectTo={redirectTo}
           />
         </div>
       )}

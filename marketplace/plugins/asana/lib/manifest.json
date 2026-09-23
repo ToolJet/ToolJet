@@ -1,0 +1,104 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Asana",
+  "description": "Integrate with Asana for project and task management",
+  "type": "api",
+  "source": {
+    "name": "Asana",
+    "kind": "asana",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_id": {
+        "type": "string"
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://app.asana.com/-/oauth_token"
+    },
+    "redirect_url": {
+      "value": ""
+    },
+    "auth_url": {
+      "value": "https://app.asana.com/-/oauth_authorize"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "access_token_custom_headers": {
+      "value": [
+        [
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        ]
+      ]
+    },
+    "scopes": {
+      "value": "default"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "OAuth configuration for Asana",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app"
+            ]
+          }
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": false
+      }
+    }
+  },
+  "required": []
+}

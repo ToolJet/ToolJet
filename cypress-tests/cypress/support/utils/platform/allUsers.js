@@ -2,25 +2,25 @@ import { commonSelectors } from "Selectors/common";
 import {
   commonEeSelectors,
   instanceSettingsSelector,
-} from "Selectors/eeCommon";
-import { usersSelector } from "Selectors/manageUsers";
+} from "Selectors/platform/eeCommon";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import {
   instanceAllUsersSelectors,
   usersTableElementsInInstance,
-} from "Selectors/superAdminSelectors";
+} from "Selectors/platform/superAdminSelectors";
 import {
   openInstanceSettings,
   openUserActionMenu,
 } from "Support/utils/platform/eeCommon";
-import { instanceSettingsText } from "Texts/eeCommon";
+import { instanceSettingsText } from "Texts/platform/eeCommon";
 import {
   instanceAllUsersText,
   usersTableElementsInInstanceText,
-} from "Texts/superAdminText";
+} from "Texts/platform/superAdminText";
 
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 
-import { usersText } from "Texts/manageUsers";
+import { usersText } from "Texts/platform/manageUsers";
 
 export const openAllUsersPage = () => {
   openInstanceSettings();
@@ -125,8 +125,8 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
-export const verifyUserActionMenu = (userName) => {
-  openUserActionMenu(userName);
+export const verifyUserActionMenu = (userEmail) => {
+  openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).verifyVisibleElement(
     "have.text",
     instanceAllUsersText.editUserDetails

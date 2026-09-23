@@ -32,7 +32,6 @@ export interface IEventsService {
   cascadeDeleteEvents(sourceId: string): Promise<void>;
   createEvent(eventHandler: CreateEventHandlerDto, versionId: string): Promise<EventHandler>;
   updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string): Promise<any>;
-  updateEventsOrderOnDelete(sourceId: string, deletedIndex: number): Promise<void>;
   deleteEvent(eventId: string, appVersionId: string): Promise<any>;
   getEvents(app: App, sourceId: string): Promise<EventHandler[]>;
 }

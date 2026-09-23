@@ -53,6 +53,15 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    autogenerateColumns: {
+      type: 'toggle',
+      displayName: 'Lock column schema',
+      isFxNotRequired: true,
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     columnData: {
       type: 'code',
       displayName: 'Column data',
@@ -358,6 +367,7 @@ export const tableConfig = {
     onFilterChanged: { displayName: 'Filter changed' },
     onNewRowsAdded: { displayName: 'Add new rows' },
     onTableDataDownload: { displayName: 'Download data' },
+    onRefresh: { displayName: 'Refresh' },
     onHeaderClick: { displayName: 'Header clicked' },
   },
   styles: {

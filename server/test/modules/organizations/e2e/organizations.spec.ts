@@ -416,6 +416,9 @@ describe('OrganizationsController', () => {
         expect(getResponse.body.sso_configs.form).toBeDefined();
         expect(getResponse.body.sso_configs.form.sso).toBe('form');
         expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+        // client_secret must never be returned on the public (unauthenticated) endpoint
+        expect(getResponse.body.sso_configs.git?.configs?.client_secret).toBeUndefined();
+        expect(getResponse.body.sso_configs.git?.configs?.client_id).toBeDefined();
       });
 
       it('should get organization specific details with instance level sso and override it with organization sso configs for all users for multiple organization deployment', async () => {
@@ -459,6 +462,9 @@ describe('OrganizationsController', () => {
         // Git config should be present (org-level overrides instance)
         expect(getResponse.body.sso_configs.git).toBeDefined();
         expect(getResponse.body.sso_configs.git.sso).toBe('git');
+        // client_secret must never be returned on the public (unauthenticated) endpoint
+        expect(getResponse.body.sso_configs.git?.configs?.client_secret).toBeUndefined();
+        expect(getResponse.body.sso_configs.git?.configs?.client_id).toBeDefined();
       });
 
       it('should get organization specific details with instance level sso for all users for multiple organization deployment', async () => {
@@ -491,6 +497,45 @@ describe('OrganizationsController', () => {
         expect(getResponse.body.sso_configs.form).toBeDefined();
         expect(getResponse.body.sso_configs.form.sso).toBe('form');
         expect(getResponse.body.sso_configs.form.enabled).toBe(true);
+      });
+
+      it('should not expose client_secret in OIDC configs on the public endpoint', async () => {
+        const { user, organization } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+        const loggedUser = await login(app);
+
+        const patchResponse = await request(app.getHttpServer())
+          .patch('/api/login-configs/organization-sso')
+          .send({
+            type: 'openid',
+            configs: {
+              clientId: 'oidc-client-id',
+              clientSecret: 'oidc-super-secret',
+              wellKnownUrl: 'https://idp.example.com/.well-known/openid-configuration',
+              name: 'Test OIDC',
+            },
+            enabled: true,
+          })
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
+
+        expect(patchResponse.statusCode).toBe(200);
+
+        const getResponse = await request(app.getHttpServer()).get(
+          `/api/login-configs/${organization.id}/public`
+        );
+
+        expect(getResponse.statusCode).toBe(200);
+        const oidcConfigs = getResponse.body.sso_configs?.openid;
+        // OIDC is returned as an array for workspace-scoped configs
+        const oidcEntry = Array.isArray(oidcConfigs) ? oidcConfigs[0] : oidcConfigs;
+        expect(oidcEntry).toBeDefined();
+        // client_secret must never appear — neither snake_case nor camelCase
+        expect(oidcEntry?.configs?.client_secret).toBeUndefined();
+        expect(oidcEntry?.configs?.clientSecret).toBeUndefined();
+        // Public fields should still be present
+        expect(oidcEntry?.configs?.client_id ?? oidcEntry?.configs?.clientId).toBeDefined();
       });
     });
   });

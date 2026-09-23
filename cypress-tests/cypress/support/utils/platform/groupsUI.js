@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsText } from "Texts/platform/manageGroups";
 
 export const verifyAdminHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
@@ -369,7 +369,7 @@ export const verifyGranularPermissionModalStates = (
             builder: {
                 editRadio: { checked: true, enabled: true },
                 viewRadio: { checked: false, enabled: true },
-                hideCheckbox: { enabled: false },
+                hideCheckbox: { enabled: true },
                 allAppsRadio: { checked: true, enabled: false },
                 customRadio: { checked: false, enabled: false },
             },
@@ -383,7 +383,7 @@ export const verifyGranularPermissionModalStates = (
             custom: {
                 editRadio: { checked: true, enabled: true },
                 viewRadio: { checked: false, enabled: true },
-                hideCheckbox: { enabled: false },
+                hideCheckbox: { enabled: true },
                 allAppsRadio: { checked: true, enabled: true },
                 customRadio: { checked: false, enabled: true },
             },
@@ -705,7 +705,7 @@ export const verifyGranularAccessByRole = (role) => {
         builder: {
             appEditRadio: { checked: true, enabled: true },
             appViewRadio: { checked: false, enabled: true },
-            appHideCheckbox: { enabled: false },
+            appHideCheckbox: { enabled: true },
             workflowBuildRadio: { checked: true, enabled: true },
             workflowExecuteRadio: { checked: false, enabled: true },
             datasourceConfigureRadio: { checked: true, enabled: true },

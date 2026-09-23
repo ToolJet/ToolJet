@@ -18,6 +18,7 @@ import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
 import { imageConfig } from './image';
 import { containerConfig } from './container';
+import { flexContainerConfig } from './flexContainer';
 import { dropdownConfig } from './dropdown';
 import { dropdownV2Config } from './dropdownV2';
 import { multiselectConfig } from './multiselect';
@@ -39,6 +40,7 @@ import { tagsConfig } from './tags';
 import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
+import { libraryComponentConfig } from './libraryComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { timelineConfig } from './timeline';
@@ -52,6 +54,7 @@ import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
+import { cascaderConfig } from './cascader';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
@@ -107,6 +110,7 @@ const widgets = {
   textConfig,
   imageConfig,
   containerConfig,
+  flexContainerConfig,
   dropdownConfig, //!Depreciated
   dropdownV2Config,
   multiselectConfig,
@@ -129,6 +133,7 @@ const widgets = {
   paginationConfig,
   circularProgressbarConfig,
   spinnerConfig,
+  libraryComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   rangeSliderV2Config,
@@ -144,6 +149,7 @@ const widgets = {
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -175,15 +181,20 @@ const universalProps = {
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: "code", displayName: "CSS class", accordian: "Advanced" },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
   },
   definition: {
+    properties: {},
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: "" },
+    },
     generalStyles: {
       boxShadow: { value: "0px 0px 0px 0px #00000040" },
     },
@@ -210,7 +221,7 @@ const combineProperties = (widget, universal, isArray = false) => {
 };
 
 export const componentTypes = Object.values(widgets).map((widget) => {
-  return {
+  const combined = {
     ...combineProperties(widget, universalProps),
     definition: combineProperties(
       widget.definition,
@@ -218,6 +229,13 @@ export const componentTypes = Object.values(widgets).map((widget) => {
       true,
     ),
   };
+  // Mirror of frontend componentTypes.js: LibraryComponent renders an iframe — a CSS
+  // class on its wrapper can never reach the content inside; no false affordance.
+  if (widget.component === 'LibraryComponent') {
+    delete combined.styles.cssClass;
+    delete combined.definition.styles.cssClass;
+  }
+  return combined;
 });
 
 export default widgets;

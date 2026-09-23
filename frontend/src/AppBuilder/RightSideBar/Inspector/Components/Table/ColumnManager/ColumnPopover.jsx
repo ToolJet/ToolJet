@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
@@ -23,14 +23,13 @@ export const ColumnPopoverContent = ({
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
   const [selectedButtonId, setSelectedButtonId] = useState(null);
-  const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
-  const popoverRef = useRef(null);
 
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
     { name: '-12:00', value: 'Etc/GMT+12' },
     { name: '-11:00', value: 'Etc/GMT+11' },
     { name: '-10:00', value: 'Pacific/Honolulu' },
+    { name: '-09:30', value: 'Pacific/Marquesas' },
     { name: '-09:00', value: 'America/Anchorage' },
     { name: '-08:00', value: 'America/Santa_Isabel' },
     { name: '-07:00', value: 'America/Chihuahua' },
@@ -45,6 +44,7 @@ export const ColumnPopoverContent = ({
     { name: '+01:00', value: 'Europe/Berlin' },
     { name: '+02:00', value: 'Africa/Gaborone' },
     { name: '+03:00', value: 'Asia/Baghdad' },
+    { name: '+03:30', value: 'Asia/Tehran' },
     { name: '+04:00', value: 'Asia/Muscat' },
     { name: '+04:30', value: 'Asia/Kabul' },
     { name: '+05:00', value: 'Asia/Tashkent' },
@@ -61,26 +61,6 @@ export const ColumnPopoverContent = ({
     { name: '+12:00', value: 'Etc/GMT-12' },
     { name: '+13:00', value: 'Pacific/Auckland' },
   ];
-
-  // Dont remove this useEffect otherwise the popover suggestions will get clipped and cause a scroll this causes a scroll only if the popover is going below the screen
-  useEffect(() => {
-    const checkPopoverPosition = () => {
-      if (popoverRef.current) {
-        const popoverRect = popoverRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const isBelowScreen = popoverRect.bottom > viewportHeight;
-        setIsGoingBelowScreen(isBelowScreen);
-      }
-    };
-
-    const timeoutId = setTimeout(checkPopoverPosition, 100);
-    window.addEventListener('resize', checkPopoverPosition);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', checkPopoverPosition);
-    };
-  }, [index]);
 
   const isButtonColumn = column.columnType === 'button';
   const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
@@ -178,10 +158,7 @@ export const ColumnPopoverContent = ({
           </div>
         </div>
       </Popover.Header>
-      <Popover.Body
-        ref={popoverRef}
-        className={`table-column-popover ${darkMode && 'theme-dark'} ${isGoingBelowScreen ? 'show-scrollbar' : ''}`}
-      >
+      <Popover.Body className={`table-column-popover ${darkMode && 'theme-dark'}`}>
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements
             column={column}

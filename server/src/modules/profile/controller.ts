@@ -14,9 +14,10 @@ import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { ChangePasswordDto } from '@modules/users/dto';
 import { ProfileService } from '@modules/profile/service';
-import { ProfileUpdateDto } from './dto';
+import { ProfilePreferencesDto, ProfileUpdateDto } from './dto';
 import { IProfileController } from './interfaces/IController';
 import { FEATURE_KEY, MAX_AVATAR_FILE_SIZE } from './constants';
+import { ImageMagicBytesValidator } from './image-magic-bytes.validator';
 import { PasswordRevalidateGuard } from './guards/password-revalidate.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -46,6 +47,15 @@ export class ProfileController implements IProfileController {
     };
   }
 
+  // Separate from @Patch() above because ProfileUpdateDto requires first_name — a
+  // preference toggle has no business sending the user's name along with it.
+  @InitFeature(FEATURE_KEY.UPDATE_PREFERENCES)
+  @Patch('preferences')
+  async updatePreferences(@User() user: UserEntity, @Body() preferencesDto: ProfilePreferencesDto) {
+    await this.profileService.updatePreferences(user.id, preferencesDto);
+    return { ai_build_notifications_enabled: preferencesDto.ai_build_notifications_enabled };
+  }
+
   @InitFeature(FEATURE_KEY.UPDATE_AVATAR)
   @Patch('avatar')
   @UseInterceptors(FileInterceptor('file'))
@@ -53,7 +63,7 @@ export class ProfileController implements IProfileController {
     @User() user: UserEntity,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: MAX_AVATAR_FILE_SIZE })],
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_AVATAR_FILE_SIZE }), new ImageMagicBytesValidator()],
       })
     )
     file: any

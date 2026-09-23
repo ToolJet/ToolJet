@@ -173,6 +173,13 @@ class DraftEditor extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.clearCount !== this.props.clearCount && this.props.clearCount > 0) {
+      const emptyEditorState = EditorState.createEmpty();
+      this.setState({ editorState: emptyEditorState });
+      this.props.handleChange('');
+      return;
+    }
+
     if (prevProps.defaultValue !== this.props.defaultValue) {
       const newContentState = stateFromHTML(DOMPurify.sanitize(this.props.defaultValue));
       const newEditorState = EditorState.createWithContent(newContentState);

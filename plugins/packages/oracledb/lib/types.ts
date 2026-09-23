@@ -15,10 +15,45 @@ export type SourceOptions = {
   wallet_file?: string;
   wallet_file_path:string;
   wallet_password?: string; 
-
 };
 export type QueryOptions = {
   operation: string;
   query: string;
   mode: string;
+  query_params: string[][];
+  table: string;
+  primary_key_column: string;
+  primary_key_columns?: string[];
+  records: Record<string, unknown>[];
+
+  list_rows?: {
+    where_filters?: any;
+    order_filters?: any;
+    aggregates?: any;
+    group_by?: any;
+  };
+
+  limit?: string | number;
+  offset?: string | number;
+
+  create_row?: {
+    columns?: any;
+  };
+
+  update_rows?: {
+    columns?: any;
+    where_filters?: any;
+  };
+
+  upsert_rows?: {
+    columns?: any;
+  };
+
+  delete_rows?: {
+    where_filters?: any;
+  };
+
+  allow_multiple_updates?: boolean;
+  zero_records_as_success?: boolean;
+
 };

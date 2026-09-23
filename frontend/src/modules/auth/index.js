@@ -4,6 +4,7 @@ import {
   LoginPage,
   ForgotPasswordPage,
   ResetPasswordPage,
+  PasswordExpiredPage,
   SuperadminLoginPage,
   OpenIdLoginPage,
   LdapLoginPage,
@@ -46,6 +47,7 @@ const Auth = (props) => [
     }
   />,
   <Route key="forgot-password" path="/forgot-password" element={<ForgotPasswordPage />} />,
+  <Route key="password-expired" path="/password-expired" element={<PasswordExpiredPage />} />,
   <Route key="reset-password-with-token" path="/reset-password/:token" element={<ResetPasswordPage />} />,
   <Route key="reset-password" path="/reset-password" element={<ResetPasswordPage />} />,
   <Route key="openid-login-with-org" path="/login/:organizationId/sso/openid" exact element={<OpenIdLoginPage />} />,

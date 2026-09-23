@@ -30,7 +30,12 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { ComponentsService as ComponentsServiceBase } from '@modules/apps/services/component.service';
+import { ComponentsService as EEComponentsService } from '@ee/apps/services/component.service';
 
 /** @group platform */
 describe('AppsController', () => {
@@ -52,6 +57,97 @@ describe('AppsController', () => {
     describe('GET /api/apps/:id | Get application', () => {
       it('should allow only authenticated users to update app params', async () => {
         await request(app.getHttpServer()).put('/api/apps/uuid').expect(401);
+      });
+
+      it('assembles a multi-page app definition without one components query per page', async () => {
+        // Incident guard (cloud 500s on large apps): getOne used to fire one components
+        // query — one transaction, one pool connection — per page via Promise.all. With
+        // 34 pages that starved the 25-slot pool and pg-pool threw "timeout exceeded
+        // when trying to connect". Definition assembly must batch components for all
+        // pages into a single query and still return the exact per-page shape.
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(app, { name: 'multi page app', user: adminUserData.user });
+        const version = await createApplicationVersion(app, application);
+        const homePage = await findEntityOrFail(Page, { appVersionId: version.id } as any);
+
+        const pageTwo = await saveEntity(Page, {
+          name: 'Page 2',
+          handle: 'page-2',
+          index: 2,
+          appVersionId: version.id,
+          autoComputeLayout: true,
+        });
+        const emptyPage = await saveEntity(Page, {
+          name: 'Page 3',
+          handle: 'page-3',
+          index: 3,
+          appVersionId: version.id,
+          autoComputeLayout: true,
+        });
+
+        // getAllComponents* filter on layout.type, so a component only renders with a Layout row
+        const seedComponent = async (name: string, pageId: string) => {
+          const component = await saveEntity(Component, {
+            name,
+            type: 'Text',
+            pageId,
+            properties: {},
+            styles: {},
+            validation: {},
+          });
+          await saveEntity(Layout, {
+            componentId: component.id,
+            type: 'desktop',
+            top: 0,
+            left: 0,
+            width: 10,
+            height: 40,
+            dimensionUnit: 'count',
+          });
+          return component;
+        };
+
+        const homeText = await seedComponent('homeText1', homePage.id);
+        const pageTwoTextA = await seedComponent('pageTwoTextA', pageTwo.id);
+        const pageTwoTextB = await seedComponent('pageTwoTextB', pageTwo.id);
+
+        const perPagePlainSpy = jest.spyOn(ComponentsServiceBase.prototype, 'getAllComponents');
+        const perPagePermissionSpy = jest.spyOn(EEComponentsService.prototype, 'getAllComponentsWithPermissions');
+
+        try {
+          const response = await request(app.getHttpServer())
+            .get(`/api/apps/${application.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+
+          const pagesById = Object.fromEntries((response.body.pages || []).map((page: any) => [page.id, page]));
+          expect(Object.keys(pagesById[homePage.id].components)).toEqual([homeText.id]);
+          expect(Object.keys(pagesById[pageTwo.id].components).sort()).toEqual(
+            [pageTwoTextA.id, pageTwoTextB.id].sort()
+          );
+          expect(pagesById[emptyPage.id].components).toEqual({});
+          expect(pagesById[pageTwo.id].components[pageTwoTextA.id].layouts.desktop).toMatchObject({
+            width: 10,
+            height: 40,
+          });
+
+          // The fan-out itself is the regression: no per-page component fetches allowed.
+          expect(perPagePlainSpy).not.toHaveBeenCalled();
+          expect(perPagePermissionSpy).not.toHaveBeenCalled();
+        } finally {
+          perPagePlainSpy.mockRestore();
+          perPagePermissionSpy.mockRestore();
+        }
+
+        await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
       });
     });
 
@@ -119,6 +215,69 @@ describe('AppsController', () => {
           await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
           await logout(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+
+        it('should be able to create app even after a module app was viewed by another user in the same server instance', async () => {
+          // Regression test: FeatureAbilityGuard (server/src/modules/app/guards/ability.guard.ts)
+          // is a singleton and stores the last-seen app on `this.resource`. Viewing/loading a
+          // "module" type app leaves that field set to `type: 'module'`. A subsequent create
+          // request (which has no app in context) then has its ability resolved against the
+          // MODULES.MODULES resource type instead of MODULES.APP, so a builder's `app_create`
+          // grant is silently ignored and the create is rejected with 403.
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+
+          const adminLogin = await login(app);
+          adminUserData['tokenCookie'] = adminLogin.tokenCookie;
+
+          const organization = adminUserData.organization;
+
+          const moduleApp = await createApplication(app, {
+            name: 'Some Module',
+            user: adminUserData.user,
+            type: 'module',
+          });
+          await createApplicationVersion(app, moduleApp);
+
+          // Admin views the module -- this populates the FeatureAbilityGuard singleton's
+          // `this.resource` with the module app (type: 'module').
+          const moduleGetResponse = await request(app.getHttpServer())
+            .get(`/api/apps/${moduleApp.id}`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(moduleGetResponse.statusCode).toBe(200);
+
+          const builderUserData = await createUser(app, {
+            email: 'flaky-builder@tooljet.io',
+            groups: ['all_users', 'builder', 'app-creator'],
+            organization,
+          });
+
+          const customGroup = await findEntityOrFail(GroupPermissions, {
+            organizationId: organization.id,
+            name: 'app-creator',
+          } as any);
+          await updateEntity(GroupPermissions, customGroup.id, { appCreate: true });
+
+          const builderLogin = await login(app, 'flaky-builder@tooljet.io');
+          builderUserData['tokenCookie'] = builderLogin.tokenCookie;
+
+          const createResponse = await request(app.getHttpServer())
+            .post(`/api/apps`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', builderUserData['tokenCookie'])
+            .send({
+              name: 'Builder App',
+              type: 'front-end',
+            });
+
+          expect(createResponse.statusCode).toBe(201);
+
+          await logout(app, adminUserData['tokenCookie'], organization.id);
+          await logout(app, builderUserData['tokenCookie'], organization.id);
         });
       });
 
@@ -1818,6 +1977,81 @@ describe('AppsController', () => {
         });
       });
 
+      describe('modules', () => {
+        // Collects every page id across a rendered module. A module rendered off the
+        // wrong version (arbitrary findVersion(undefined)) or as an empty shell will
+        // NOT carry its own version's page, so matching the module's Home page id
+        // proves the module resolved its real version. (Asserting on components would
+        // need Layout rows, since getAllComponents inner-joins on layout.type.)
+        const pageIdsOf = (renderedModule: any): string[] => (renderedModule?.pages || []).map((page: any) => page?.id);
+
+        // Builds a module app (no release lifecycle, so no currentVersionId) plus a
+        // host app whose previewed version embeds it via a ModuleViewer.
+        const seedHostWithModule = async (user: any) => {
+          const moduleApp = await createApplication(app, { name: 'Some Module', user, type: 'module' });
+          const moduleVersion = await createApplicationVersion(app, moduleApp);
+          const moduleHomePage = await findEntityOrFail(Page, { appVersionId: moduleVersion.id } as any);
+
+          const application = await createApplication(app, { name: 'Host App', user });
+          const hostVersion = await createApplicationVersion(app, application, { name: 'v1' });
+          const hostPage = await findEntityOrFail(Page, { appVersionId: hostVersion.id } as any);
+          await saveEntity(Component, {
+            name: 'moduleViewer1',
+            type: 'ModuleViewer',
+            pageId: hostPage.id,
+            properties: { moduleAppId: { value: moduleApp.id } },
+            styles: {},
+            validation: {},
+          });
+
+          return { moduleApp, application, hostVersion, moduleHomePage };
+        };
+
+        it('getVersion (preview) returns the embedded module rendered from its own version', async () => {
+          // Modules have no release lifecycle, so a module's currentVersionId is never
+          // set. getVersion must resolve the module's own version to render it inline;
+          // otherwise the module is dropped/mis-rendered and the frontend falls back to
+          // a direct GET /api/apps/:moduleId that 403s a builder without module perms.
+          const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app);
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, hostVersion, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/v2/apps/${application.id}/versions/${hostVersion.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+
+        it('getOne (builder) returns the embedded module rendered from its own version', async () => {
+          const adminUserData = await createUser(app, { email: 'admin2@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app, 'admin2@tooljet.io');
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/apps/${application.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+      });
+
       describe('PUT /api/apps/:id/versions/:version_id | Update version', () => {
         it('should be able to update app version if has group admin or app update permission group in same organization', async () => {
           const adminUserData = await createUser(app, {
@@ -2169,6 +2403,99 @@ describe('AppsController', () => {
 
         expect(response.statusCode).toBe(200);
         // Audit log assertions skipped: ResponseInterceptor not registered in test environment
+      });
+    });
+
+    describe('GET /api/apps/restricted-access-info/:slug | Get restricted access info', () => {
+      it('should not allow unauthenticated requests', async () => {
+        const response = await request(app.getHttpServer()).get('/api/apps/restricted-access-info/foo');
+
+        expect(response.statusCode).toBe(401);
+      });
+
+      it('should return the app name and folder name for a user in the same organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          groups: ['all_users', 'viewer'],
+          organization: adminUserData.organization,
+        });
+        const loggedUser = await login(app, 'viewer@tooljet.io');
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(
+          app,
+          { name: 'Marketing Dashboard', user: adminUserData.user, slug: 'restricted-app-with-folder' },
+          false
+        );
+        const folder = await createFolder(app, { name: 'Analytics', organizationId: adminUserData.organization.id });
+        await addAppToFolder(app, application, folder);
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-with-folder')
+          .set('Cookie', viewerUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.appName).toBe('Marketing Dashboard');
+        expect(response.body.folderName).toBe('Analytics');
+      });
+
+      it('should return a null folder name when the app is not in any folder', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          groups: ['all_users', 'viewer'],
+          organization: adminUserData.organization,
+        });
+        const loggedUser = await login(app, 'viewer@tooljet.io');
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createApplication(
+          app,
+          { name: 'All Apps Dashboard', user: adminUserData.user, slug: 'restricted-app-no-folder' },
+          false
+        );
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-no-folder')
+          .set('Cookie', viewerUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.appName).toBe('All Apps Dashboard');
+        expect(response.body.folderName).toBeNull();
+      });
+
+      it('should not resolve app details for a user in another organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app, 'another@tooljet.io');
+        anotherOrgUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createApplication(
+          app,
+          { name: 'name', user: adminUserData.user, slug: 'restricted-app-cross-org' },
+          false
+        );
+
+        const response = await request(app.getHttpServer())
+          .get('/api/apps/restricted-access-info/restricted-app-cross-org')
+          .set('Cookie', anotherOrgUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(404);
+
+        await logout(app, anotherOrgUserData['tokenCookie'], anotherOrgUserData.user.defaultOrganizationId);
       });
     });
 

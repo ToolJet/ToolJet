@@ -38,6 +38,9 @@
 }
 
 #component-portal {
+    .react-datepicker-popper {
+        z-index: 10000 !important;
+    }
 
     // DatePickerV2 Component
     .datepicker-component {

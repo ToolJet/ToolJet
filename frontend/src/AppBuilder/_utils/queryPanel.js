@@ -79,7 +79,7 @@ export function extractQueryReferences(kind, options) {
 }
 
 // Plugins that support dual SQL/GUI mode via options.mode
-const SQL_GUI_PLUGINS = new Set(['postgresql', 'mysql', 'mssql', 'oracledb']);
+const SQL_GUI_PLUGINS = new Set(['postgresql', 'mysql', 'mssql', 'oracledb', 'databricks']);
 
 function getEffectiveOptions(kind, options) {
   if (kind === 'tooljetdb') {
@@ -171,7 +171,7 @@ function extractRefsFromValue(obj) {
   const refs = new Set();
   const walk = (value) => {
     if (typeof value === 'string') {
-      const matches = value.match(/\{\{(.*?)\}\}/g);
+      const matches = value.match(/\{\{(.*?)\}\}/gs);
       if (matches) matches.forEach((m) => refs.add(m));
     } else if (Array.isArray(value)) {
       value.forEach(walk);

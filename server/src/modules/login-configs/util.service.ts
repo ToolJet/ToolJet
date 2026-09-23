@@ -141,12 +141,12 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
 
   public buildConfigs(config: any, configId: string) {
     if (!config) return config;
+    const safeConfigs = Object.fromEntries(
+      Object.entries(config?.configs || {}).filter(([key]) => !key.toLowerCase().includes('secret'))
+    );
     return {
       ...config,
-      configs: {
-        ...(config?.configs || {}),
-        ...(config?.configs ? { clientSecret: '' } : {}),
-      },
+      configs: safeConfigs,
       configId,
     };
   }

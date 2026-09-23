@@ -4,25 +4,25 @@ export const dynamodbUIConfig = {
             type: "dropdown",
             fieldName: "Authentication",
             validations: {
-                defaultValue: "Use IAM Access Keys",
+                defaultValue: "IAM Access Keys",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "Access key ID",
             validations: {
-                isRequired: false,
-                placeholder: "Enter access key",
+                isRequired: true,
+                placeholder: "Enter access key ID",
                 defaultValue: "",
                 disabled: false
             }
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Secret access key",
             validations: {
-                isRequired: false,
+                isRequired: true,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,
@@ -50,26 +50,26 @@ export const dynamodbFormConfig = {
         },
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "Access key ID",
             text: `${Cypress.env('dynamodb_access_key')}`
         },
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Secret access key",
             text: `${Cypress.env('dynamodb_secret_key')}`
         }
     ],
     invalidAccessKey: [
         {
             type: "input",
-            fieldName: "Access key",
+            fieldName: "Access key ID",
             text: "invalid-access-key"
         }
     ],
     invalidSecretKey: [
         {
             type: "encrypted",
-            fieldName: "Secret key",
+            fieldName: "Secret access key",
             text: "invalid-secret-key"
         }
     ]

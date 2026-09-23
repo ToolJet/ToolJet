@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -16,6 +16,8 @@ import {
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -23,9 +25,11 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -40,6 +44,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -75,6 +80,7 @@ type NewRevampedComponent =
   | 'DropdownV2'
   | 'Table'
   | 'Button'
+  | 'Cascader'
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
@@ -86,6 +92,7 @@ type NewRevampedComponent =
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
+  | 'FlexContainer'
   | 'Tabs'
   | 'Form'
   | 'Image'
@@ -107,7 +114,9 @@ type NewRevampedComponent =
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
-  | 'PopoverMenu';
+  | 'PopoverMenu'
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -126,6 +135,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Table',
   'Checkbox',
   'Button',
+  'Cascader',
   'Divider',
   'VerticalDivider',
   'Link',
@@ -136,6 +146,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DaterangePicker',
   'TextArea',
   'Container',
+  'FlexContainer',
   'Tabs',
   'Form',
   'Image',
@@ -158,6 +169,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
+  'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -211,10 +224,12 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
   'ButtonGroupV2',
+  'Cascader',
   'Checkbox',
   'CodeEditor',
   'ColorPicker',
   'Container',
+  'FlexContainer',
   'CurrencyInput',
   'DatePickerV2',
   'DaterangePicker',
@@ -222,6 +237,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'DropdownV2',
   'EmailInput',
   'Form',
+  'Html',
   'Image',
   'JSONEditor',
   'JSONExplorer',
@@ -246,9 +262,76 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
+
+const TOOLTIP_FORMAT_COMPONENT_TYPES = [
+  'Accordion',
+  'AudioRecorder',
+  'Button',
+  'ButtonGroupV2',
+  'Camera',
+  'Cascader',
+  'Checkbox',
+  'CircularProgressBar',
+  'ColorPicker',
+  'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'Divider',
+  'DropdownV2',
+  'EmailInput',
+  'FileButton',
+  'FileInput',
+  'FilePicker',
+  'Form',
+  'Icon',
+  'IFrame',
+  'Image',
+  'JSONEditor',
+  'JSONExplorer',
+  'Kanban',
+  'KeyValuePair',
+  'Link',
+  'Listview',
+  'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'PopoverMenu',
+  'ProgressBar',
+  'RadioButtonV2',
+  'RangeSliderV2',
+  'ReorderableList',
+  'StarRating',
+  'Statistics',
+  'Tabs',
+  'Tags',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TextInput',
+  'TimePicker',
+  'Timeline',
+  'ToggleSwitchV2',
+  'TreeSelect',
+  'VerticalDivider',
+];
 
 @Injectable()
 export class AppImportExportService {
@@ -258,7 +341,9 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager
+    protected entityManager: EntityManager,
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -531,6 +616,24 @@ export class AppImportExportService {
             .getMany()
         : [];
 
+    // Gate: if any referenced module is missing, the user must have module_create permission
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter(
+        (m) => !existingModules.find((existing) => existing.name === m?.appV2?.name)
+      );
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
+        }
+      }
+    }
+
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
       for (const importedModule of appParams.modules) {
@@ -655,6 +758,7 @@ export class AppImportExportService {
         moduleResourceMappings
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -699,6 +803,9 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 
@@ -743,6 +850,16 @@ export class AppImportExportService {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
   }
+
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     manager: EntityManager,
     appParams: any,
@@ -993,6 +1110,8 @@ export class AppImportExportService {
                   newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
+                  if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                  if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -1322,6 +1441,19 @@ export class AppImportExportService {
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
+        // Heal any parent-child cycles in the imported tree BEFORE we begin ID
+        // remapping. A cycle reaching this point (corrupt source app / hand-
+        // edited JSON / git-merge artifact) would otherwise persist verbatim
+        // and freeze the canvas on first open. The helper mutates
+        // component.parent in place on the deterministically-chosen node.
+        const { repairedIds } = repairParentCycles(pageComponents);
+        if (repairedIds.length > 0) {
+          this.transactionLogger.warn(
+            `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
+              `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+          );
+        }
+
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
@@ -1428,8 +1560,10 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
+            // Deduplicate layouts by type to prevent duplicate layout rows on import
+            const uniqueLayouts = deduplicateLayoutsByType(componentLayout);
             await Promise.all(
-              componentLayout.map(async (layout) => {
+              uniqueLayouts.map(async (layout) => {
                 const newLayout = new Layout();
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
@@ -1440,6 +1574,8 @@ export class AppImportExportService {
                 newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
+                if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                 newLayout.component = savedComponent;
 
                 await manager.save(newLayout);
@@ -2651,6 +2787,13 @@ export class AppImportExportService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
 
+      if (
+        eventDefinition?.actionId === 'scroll-component-into-view' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -2775,12 +2918,20 @@ function migrateProperties(
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
 
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
+
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
   }
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
+    properties.tooltipFormat = { value: 'plainText' };
   }
 
   if (!tooljetVersion) {
@@ -3201,6 +3352,13 @@ function migrateProperties(
       }
       if (properties.tooltip === undefined) {
         properties.tooltip = { value: '' };
+      }
+    }
+
+    // Pagination
+    if (componentType === 'Pagination') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }

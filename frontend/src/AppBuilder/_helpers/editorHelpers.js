@@ -7,7 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
-import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
@@ -52,8 +52,9 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
+import { FlexContainer } from '@/AppBuilder/Widgets/FlexContainer/FlexContainer';
 import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
-import { Tabs } from '@/AppBuilder/Widgets/Tabs';
+import { Tabs } from '@/AppBuilder/Widgets/Tabs/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
@@ -90,8 +91,10 @@ const PDF = lazy(() => import('@/AppBuilder/Widgets/PDF'));
 const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'));
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect'));
+const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
+const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -120,6 +123,7 @@ export const AllComponents = {
   RichTextEditor,
   DropDown,
   DropdownV2,
+  Cascader,
   Checkbox,
   Datepicker,
   DatetimePickerV2,
@@ -150,6 +154,7 @@ export const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  LibraryComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,
@@ -173,6 +178,7 @@ export const AllComponents = {
   Form,
   Calendar,
   Container,
+  FlexContainer,
   Listview,
   Tabs,
   Kanban,

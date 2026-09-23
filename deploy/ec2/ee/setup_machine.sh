@@ -139,12 +139,15 @@ tar xJf postgrest-v12.2.0-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
 sudo rm postgrest-v12.2.0-linux-static-x64.tar.xz
 
-# Add the Redis APT repository
-sudo add-apt-repository ppa:redislabs/redis -y
+# Add the official Redis APT repository (ppa:redislabs/redis is stale and stuck on old CVE-flagged versions)
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
 
 # Install redis
 retry_apt_update
 sudo apt-get install redis-server -y
+echo "Redis version installed:"
+dpkg -l | grep redis-server | grep -E "^ii" | awk '{printf "%-20s %s\n", $2, $3}'
 
 # Setup app, postgrest and redis as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
@@ -183,6 +186,9 @@ git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/"
 git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
 git submodule update --init --recursive
 git submodule foreach 'git checkout lts-3.16 || true'
+
+# Token only needed for the clone above; drop it now so it never ends up baked into the build artifacts
+git config --global --unset url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf
 
 npm install -g npm@10.9.2
 

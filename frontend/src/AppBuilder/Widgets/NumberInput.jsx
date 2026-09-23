@@ -5,14 +5,21 @@ import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
+  const beforeSetInputValue = (value) => {
+    if (value === '' || value === null || value === undefined) return value;
+    return Number(parseFloat(value).toFixed(props.properties.decimalPlaces));
+  };
+
   const inputLogic = useInput({
     ...props,
     properties: {
       ...props.properties,
-      value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
+      value: beforeSetInputValue(props.properties.value),
     },
+    beforeSetInputValue,
   });
-  const showClearBtn = props.properties?.showClearBtn;
+
+  const { showClearBtn, disableStepControls } = props.properties;
 
   const handleChange = (e) => {
     if (e.target.value === '') {
@@ -28,14 +35,13 @@ export const NumberInput = (props) => {
   };
 
   const handleBlur = (e) => {
-    const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
-    inputLogic.setInputValue(value);
+    inputLogic.setInputValue(e.target.value);
     inputLogic.handleBlur(e);
   };
 
   const handleIncrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) + 1;
+    const newValue = Number(((inputLogic.value || 0) + 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
     inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
@@ -45,7 +51,7 @@ export const NumberInput = (props) => {
 
   const handleDecrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) - 1;
+    const newValue = Number(((inputLogic.value || 0) - 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
     inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
@@ -65,7 +71,13 @@ export const NumberInput = (props) => {
     props.fireEvent('onChange');
   };
 
-  const numberControls = !inputLogic.isResizing && (
+  const handleKeyDown = (e) => {
+    if (disableStepControls && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+    }
+  };
+
+  const numberControls = !disableStepControls && !inputLogic.isResizing && (
     <div className="tw-w-5 tw-z-[2] tw-shrink-0 tw-self-stretch tw-flex tw-flex-col tw-border-0 tw-border-l tw-border-solid tw-border-[var(--cc-default-border)]">
       <div
         onClick={handleIncrement}
@@ -84,6 +96,50 @@ export const NumberInput = (props) => {
   );
 
   useEffect(() => {
+    if (!disableStepControls || !inputLogic.inputRef.current) return;
+
+    const el = inputLogic.inputRef.current;
+
+    // undefined = not yet searched, null = searched but no scrollable ancestor found
+    let scrollableParent = undefined;
+
+    const handleWheel = (e) => {
+      // Prevent the browser from changing the input value on scroll
+      e.preventDefault();
+
+      // Lazy-init: walk the DOM only on the first scroll, then cache the result.
+      // This avoids doing any work if the user never scrolls over the input.
+      if (scrollableParent === undefined) {
+        scrollableParent = null;
+
+        let parent = el.parentElement;
+
+        while (parent) {
+          // String concat lets one regex check both overflow and overflowY at once.
+          // e.g. overflow="visible", overflowY="auto" → "visibleauto" → matches "auto"
+          const { overflow, overflowY } = window.getComputedStyle(parent);
+
+          const isScrollable = /(auto|scroll)/.test(overflow + overflowY) && parent.scrollHeight > parent.clientHeight;
+
+          if (isScrollable) {
+            scrollableParent = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+
+      (scrollableParent ?? window).scrollBy(0, e.deltaY);
+    };
+
+    // { passive: false } is required — without it the browser silently ignores preventDefault()
+    el.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => el.removeEventListener('wheel', handleWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableStepControls]);
+
+  useEffect(() => {
     if (isNaN(inputLogic.value) || inputLogic.value === '') {
       props.setExposedVariable('value', null);
     }
@@ -99,6 +155,7 @@ export const NumberInput = (props) => {
       additionalInputProps={{
         min: props.validation?.minValue ?? null,
         max: props.validation?.maxValue ?? null,
+        onKeyDown: handleKeyDown,
       }}
       rightIcon={numberControls}
       classes={{

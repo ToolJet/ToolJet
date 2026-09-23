@@ -28,7 +28,7 @@ export class AppHistoryRepository {
       operationScope?: Record<string, any>;
       description: string;
       changePayload: any;
-      parentId?: string;
+      parentId?: string | null;
       isAiGenerated?: boolean;
     }
   ): Promise<AppHistory> {

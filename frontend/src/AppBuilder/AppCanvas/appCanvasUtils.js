@@ -17,6 +17,7 @@ import {
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -26,19 +27,66 @@ export function snapToGrid(canvasWidth, x, y) {
   return [snappedX, snappedY];
 }
 
+// Mirrors LibraryComponent Inspector's fieldMeta() type→field mapping so the stamped
+// value matches what that field type expects (dropdown.js/checkbox.js precedent):
+// toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
+function manifestDefaultToDefinitionValue(prop) {
+  // TODO: prop.default is undefined both when
+  // the author never set a useStateX initialValue AND when they set one the CLI's manifest
+  // generator can't statically resolve (template literal, computed expr, imported constant
+  // — evalLiteralNode in manifest-generator.ts). The '' /'{{false}}' fallback below is
+  // correct for the former and silently wrong for the latter (it permanently overrides the
+  // shell's real runtime initialValue for that prop). Decided to keep current behavior for
+  // now rather than risk downstream undefined-handling issues; future fix is to have the
+  // generator distinguish "not set" from "unresolved" (e.g. a `defaultUnresolved` flag) and
+  // surface a warning icon/tooltip on the Inspector field for the latter case, rather than
+  // silently guessing a fallback value.
+  if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
+  if (prop.type === 'boolean') return `{{${prop.default}}}`;
+  if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
+  return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
+}
+
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
   currentLayout,
   realCanvasRef,
   parentId,
-  moduleInfo = undefined
+  moduleInfo = undefined,
+  libraryComponentInfo = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
-  const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
+  // Custom-tab drops are named after the ACTUAL library component (currencyinput1),
+  // not the host widget type (librarycomponent1).
+  const componentName = computeComponentName(
+    libraryComponentInfo?.componentName ?? componentType,
+    useStore.getState().getCurrentPageComponents(),
+    moduleInfo?.moduleName
+  );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
+
+  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
+  // instance renders — mirrors the moduleInfo pattern below. Must run before the
+  // defaultWidth/Height reads so a manifest-declared size wins.
+  if (libraryComponentInfo) {
+    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+    componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
+    componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
+    // Manifest prop defaults land as instance values so the Inspector's fields arrive
+    // pre-filled (module input_items precedent below).
+    for (const prop of libraryComponentInfo.props ?? []) {
+      componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
+    }
+    if (libraryComponentInfo.defaultSize?.width)
+      componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
+    if (libraryComponentInfo.defaultSize?.height)
+      componentData.defaultSize.height = libraryComponentInfo.defaultSize.height;
+  }
+
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
@@ -51,14 +99,17 @@ export const addNewWidgetToTheEditor = (
     parentCanvasType
   );
   const scrollTop = realCanvasRef?.scrollTop;
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
+  const subContainerWidths = useGridStore.getState().subContainerWidths;
+  const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
+  const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
+  const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
+  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
 
   // Adjust widget width based on the dropping canvas width
-  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
+  let width = Math.round((defaultWidth * mainCanvasGridWidth) / gridWidth);
 
   let customLayouts = undefined;
 
@@ -76,6 +127,19 @@ export const addNewWidgetToTheEditor = (
     for (const { name, default_value } of inputItems) {
       componentData.definition.properties[name] = { value: default_value };
     }
+
+    // Module editor's additional-action settings act as the instance defaults;
+    // the instance properties stay editable in the app (override). API responses
+    // snake_case definition keys (see input_items above), so check both forms.
+    const moduleContainerProperties = moduleInfo.moduleContainer?.component.definition.properties;
+    const copyModuleDefault = (snakeKey, camelKey) => {
+      const defaultValue = moduleContainerProperties?.[snakeKey]?.value ?? moduleContainerProperties?.[camelKey]?.value;
+      if (defaultValue !== undefined) {
+        componentData.definition.properties[camelKey] = { value: defaultValue };
+      }
+    };
+    copyModuleDefault('dynamic_height', 'dynamicHeight');
+    copyModuleDefault('collapse_when_hidden', 'collapseWhenHidden');
   }
 
   // Ensure minimum width
@@ -93,6 +157,40 @@ export const addNewWidgetToTheEditor = (
   }
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+
+  // When dropping into a FlexContainer, use flex layout fields instead of grid fields
+  const parentComponentType =
+    parentId && parentId !== 'canvas' ? useStore.getState().getComponentTypeFromId(parentId) : null;
+  const isFlexContainerParent = parentComponentType === 'FlexContainer';
+
+  let activeLayoutData;
+  let nonActiveLayoutData;
+
+  if (isFlexContainerParent) {
+    const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
+    const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
+
+    const flexLayout = createDefaultFlexChildLayout({
+      widthPx: dropWidthPx,
+      height: dropHeightPx,
+    });
+    activeLayoutData = flexLayout;
+    nonActiveLayoutData = { ...flexLayout };
+  } else {
+    activeLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[currentLayout].width : width,
+      height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
+    };
+    nonActiveLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+      height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
+    };
+  }
+
   const newComponent = {
     id: uuidv4(),
     name: componentName,
@@ -101,18 +199,8 @@ export const addNewWidgetToTheEditor = (
       parent: parentId === 'canvas' ? null : parentId,
     },
     layouts: {
-      [currentLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[currentLayout].width : width,
-        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
-      },
-      [nonActiveLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
-        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
-      },
+      [currentLayout]: activeLayoutData,
+      [nonActiveLayout]: nonActiveLayoutData,
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };
@@ -221,16 +309,28 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
+export function computeComponentName(componentType, currentComponents, moduleName) {
+  // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
+  // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
+  const widgetConfigName =
+    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
+  const rawBase = moduleName || widgetConfigName || '';
+  let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+
+  if (!sanitizedBase) {
+    sanitizedBase = (widgetConfigName || 'component').toLowerCase();
+  }
+
+  const matchingCount = Object.values(currentComponents).filter((component) =>
+    component?.component?.name?.startsWith(sanitizedBase)
+  ).length;
+  let currentNumber = matchingCount + 1;
+
   let found = false;
-  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
-  let currentNumber = currentComponentsForKind.length + 1;
+
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
+    _componentName = `${sanitizedBase}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
@@ -241,10 +341,37 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
-export const getAllChildComponents = (allComponents, parentId) => {
+// Walks the ancestor chain of `newParentId`; returns true if `componentId`
+// appears anywhere along it (assigning it as the new parent would close a
+// cycle), or if the chain is already cyclic (defensive — protects against
+// corrupt trees from past multiplayer races / git-sync merges).
+export const wouldCreateParentCycle = (componentId, newParentId, allComponents, getBaseParentId) => {
+  if (!componentId || !newParentId) return false;
+  const toBase = (id) => (getBaseParentId ? getBaseParentId(id) || id : id);
+  const visited = new Set();
+  let currentId = toBase(newParentId);
+  while (currentId) {
+    if (currentId === componentId) return true;
+    if (visited.has(currentId)) return true;
+    visited.add(currentId);
+    const parentRef = allComponents[currentId]?.component?.parent;
+    if (!parentRef) return false;
+    currentId = toBase(parentRef);
+  }
+  return false;
+};
+
+// Internal worker that threads `visited` across recursion. A cyclic parent
+// chain (multiplayer race / git-sync merge / legacy corrupt data) would
+// otherwise infinite-loop and freeze the editor.
+const collectChildComponents = (allComponents, parentId, visited) => {
+  if (!parentId || visited.has(parentId)) return [];
+  visited.add(parentId);
+
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
+    if (visited.has(componentId)) return;
     const componentParentId = allComponents[componentId].component?.parent;
 
     const isParentTabORCalendar =
@@ -264,8 +391,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
         childComponent.isParentTabORCalendar = true;
         childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
         childComponents.push(childComponent);
-        // Recursively find children of the current child component
-        const childrenOfChild = getAllChildComponents(allComponents, componentId);
+        const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
         childComponents.push(...childrenOfChild);
       }
     }
@@ -276,13 +402,16 @@ export const getAllChildComponents = (allComponents, parentId) => {
       childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
       childComponents.push(childComponent);
 
-      // Recursively find children of the current child component
-      const childrenOfChild = getAllChildComponents(allComponents, componentId);
+      const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
       childComponents.push(...childrenOfChild);
     }
   });
 
   return childComponents;
+};
+
+export const getAllChildComponents = (allComponents, parentId) => {
+  return collectChildComponents(allComponents, parentId, new Set());
 };
 
 export const getCanvasWidth = (moduleId = 'canvas') => {
@@ -340,6 +469,9 @@ export const getParentWidgetFromId = (parentType, parentId) => {
   return parentType;
 };
 
+export const getDropTargetLabel = (widgetType, slotType) =>
+  slotType === 'header' || slotType === 'footer' ? slotType : widgetType;
+
 export const getTabId = (parentId) => {
   return parentId.split('-').slice(0, -1).join('-');
 };
@@ -358,7 +490,12 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form' || componentType === 'Accordion') {
+  if (
+    componentType === 'Container' ||
+    componentType === 'Form' ||
+    componentType === 'Accordion' ||
+    componentType === 'FlexContainer'
+  ) {
     padding =
       2 * CONTAINER_FORM_CANVAS_PADDING +
       2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +

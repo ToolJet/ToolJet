@@ -4,11 +4,14 @@ import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
@@ -22,13 +25,15 @@ import {
   DeletePageOptions,
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService
+    protected eventHandlerService: EventsService,
+    protected readonly transactionLogger: TransactionLogger
   ) { }
 
   /**
@@ -145,14 +150,20 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
+    // One batched query for every page's components (one pool connection) instead of
+    // one transaction per page — the per-page fan-out starved the pool on large apps
+    // and 500ed GET /api/apps/:id with "timeout exceeded when trying to connect".
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(
+      allPages.map((page) => page.id),
+      manager
     );
-    return pagesWithComponents;
+    return allPages.map((page) => {
+      // Keyed map { [componentId]: ... }, not Component[] — same shape the endpoint
+      // always returned; Page.components was implicitly `any` before batching.
+      const components: any = componentsByPage[page.id] ?? {};
+      delete page.appVersionId;
+      return { ...page, components, restricted: false };
+    });
   }
 
   async findOne(id: string): Promise<Page> {
@@ -287,6 +298,18 @@ export class PageService implements IPageService {
       const pageComponents = await manager.find(Component, {
         where: { pageId },
       });
+
+      // Heal any pre-existing parent-child cycle on the source page before
+      // cloning. Otherwise the clone preserves the cycle verbatim through the
+      // ID remap and the new page is born corrupt.
+      const { repairedIds } = repairParentCycles(pageComponents);
+      if (repairedIds.length > 0) {
+        this.transactionLogger.warn(
+          `[page-clone] Repaired ${repairedIds.length} parent-child cycle(s) on source page ${pageId}. ` +
+            `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+        );
+      }
+
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
@@ -333,8 +356,9 @@ export class PageService implements IPageService {
           const componentLayouts = await manager.find(Layout, {
             where: { componentId: component.id },
           });
-          // CORRECTED: Use manager.create(Layout, ...) to ensure entity instances are created
-          const clonedLayouts = componentLayouts.map((layout) =>
+          // Deduplicate layouts by type to prevent duplicate layout rows from propagating
+          const uniqueLayouts = deduplicateLayoutsByType(componentLayouts);
+          const clonedLayouts = uniqueLayouts.map((layout) =>
             manager.create(Layout, {
               ...layout,
               id: undefined, // Let TypeORM generate a new ID
@@ -443,6 +467,12 @@ export class PageService implements IPageService {
           }
         }
         component.parent = parentId;
+      }
+
+      for (const component of clonedComponents) {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding); remap after
+        // the full componentsIdMap is built so flex-child order survives page clone (#5153).
+        remapFlexContainerChildOrder(component, componentsIdMap);
       }
 
       await manager.save(clonedComponents);
