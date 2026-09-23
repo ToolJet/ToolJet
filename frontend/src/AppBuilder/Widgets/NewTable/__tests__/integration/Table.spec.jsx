@@ -1088,6 +1088,33 @@ describe('Table: add row and refresh', () => {
     );
   });
 
+  test('[Table-ADDROW-004] the add-new-row popup gives its blank row a height floor, independent of column content type', async () => {
+    // AddNewRow.jsx renders its own <tr>/<td> (unlike the main table body, which gets a
+    // guaranteed non-zero row height from the virtualizer's estimateSize) with no height
+    // floor of its own. A plain string/text/markdown/html column's idle cell has zero
+    // natural content height when blank, so an all-string-column row has nothing for the
+    // flex row to size itself from. Real browsers then collapse the whole row to 0px,
+    // making it invisible/unclickable (Tab can still reach it, since focus doesn't
+    // require non-zero size) — jsdom can't reproduce that collapse since it doesn't
+    // compute real layout, so this asserts the inline floor directly, the same proxy
+    // used elsewhere in this suite for geometry-adjacent guarantees.
+    const STRING_ONLY_COLUMNS = [
+      { name: 'id', key: 'id', id: 'col-id-only', columnType: 'string', columnSize: 120, isEditable: true },
+      { name: 'name', key: 'name', id: 'col-name-only', columnType: 'string', columnSize: 120, isEditable: true },
+    ];
+    widget.render({ properties: { columns: { value: STRING_ONLY_COLUMNS } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const addRow = await waitFor(() => {
+      const el = document.querySelector('[data-cy="add-new-row-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    expect(addRow.style.minHeight).toBe('32px');
+  });
+
   test('[Table-ACTCOL-001] a configured left-position action renders in the left action column', async () => {
     // generateActionColumns.js measures button text width via canvas.getContext('2d'), which the
     // global test setup stubs to return null (real font-metric measurement is QA/Playwright-owned,
