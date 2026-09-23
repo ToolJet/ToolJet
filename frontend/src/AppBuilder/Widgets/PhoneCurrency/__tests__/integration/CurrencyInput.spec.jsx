@@ -203,6 +203,62 @@ describe('component-specific actions', () => {
     await waitFor(() => expect(input().value).toBe('2,500.75'));
     await waitFor(() => expect(callCount()).toBe(1));
   });
+
+  // Break this catches: deriving the display string and the number from separate paths in the
+  // currency `setValue` handle — the `!isNaN(Number(value))` gate that used to skip formatting.
+  //
+  // Any separator makes `Number(value)` NaN, so a string carrying one fell to the raw branch
+  // and the UNFORMATTED text became the display string, while `setCurrencyInputValue` was
+  // called with no second argument and re-derived the number through `parseValueToNumber`,
+  // which does understand separators. The two disagreed: the field rendered `NaN.56` and
+  // `formattedValue` read `$ NaN.56`, while `value` held 12.564 and `isValid` stayed true.
+  // Normalising once and feeding both from the same number is what keeps them in step.
+  test('[CurrencyInput-CSA-011] setValue normalises a separator-carrying string instead of rendering NaN', async () => {
+    const setTo = async (v) => {
+      harness.render({ properties: { value: binding('') } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await harness.act('setValue', v);
+      await drain();
+      return {
+        field: input().value,
+        value: harness.exposed().value,
+        formatted: harness.exposed().formattedValue,
+        isValid: harness.exposed().isValid,
+      };
+    };
+
+    // US format: ',' groups and '.' is the decimal, so '12.56,4' reads as 12.564 and rounds
+    // to the configured 2 places. Previously: field 'NaN.56', value 12.564.
+    expect(await setTo('12.56,4')).toEqual({ field: '12.56', value: 12.56, formatted: '$ 12.56', isValid: true });
+
+    // Same string with the separators swapped groups to 1256.4. Previously: field 'NaN.4'.
+    expect(await setTo('12,56.4')).toEqual({ field: '1,256.4', value: 1256.4, formatted: '$ 1,256.4', isValid: true });
+
+    // A grouped string the author copied back out of the field survives a round trip.
+    expect(await setTo('2,500.75')).toEqual({
+      field: '2,500.75',
+      value: 2500.75,
+      formatted: '$ 2,500.75',
+      isValid: true,
+    });
+
+    // An empty write still EMPTIES the field. Without its own guard the normalisation would
+    // turn it into the number 0 and render '0', so clearing through setValue would silently
+    // become setting a zero amount.
+    expect((await setTo('')).field).toBe('');
+    expect((await setTo(null)).field).toBe('');
+    expect((await setTo(undefined)).field).toBe('');
+    // A real zero is still a real zero, and is not confused with emptiness.
+    expect((await setTo(0)).field).toBe('0');
+
+    // Whatever the input, the field and the exposed number never disagree.
+    for (const v of ['12.564', '1256.4', 1256.4, '0', 0]) {
+      const r = await setTo(v);
+      expect(r.field).not.toContain('NaN');
+      expect(Number.isFinite(r.value)).toBe(true);
+      expect(r.formatted).not.toContain('NaN');
+    }
+  });
 });
 
 describe('disabled, loading and visibility', () => {

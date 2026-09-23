@@ -192,9 +192,13 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      const isNumeric = value !== '' && value !== null && value !== undefined && !isNaN(Number(value));
-      const displayValue = isNumeric ? `${formatNumber(value, decimalPlaces)}` : `${value ?? ''}`;
-      setCurrencyInputValue(displayValue);
+      // Normalise ONCE, then feed the display string and the number from that same result.
+      // The previous shape gated formatting on `!isNaN(Number(value))`, which any separator fails,
+      // so a value like '12.56,4' or a grouped '2,500.75' copied back out of the field
+      // skipped formatting and reached the `setCurrencyInputValue` as raw text.
+      const isEmpty = value === '' || value === null || value === undefined;
+      const normalized = isEmpty ? null : Number(formatNumber(parseValueToNumber(value, numberFormat), decimalPlaces));
+      setCurrencyInputValue(isEmpty ? '' : String(normalized), isEmpty ? undefined : normalized);
       setCountry(countryCode);
       fireEvent('onChange');
     });
