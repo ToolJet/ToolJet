@@ -99,6 +99,21 @@ present a token — the approvals list's per-row `canResolve`, resolve-by-id —
 `authorizeResolverForUser` directly; going through the wrapper would authorize every caller
 for every request in the workspace.
 
+The approvals list's `canResolve` is **actionability, not authorization**:
+`authorized && status === 'pending'`. Consumers render the resolve control on that single
+field rather than re-deriving the conjunction, so no consumer can forget the state half and
+show a live Approve control on a closed row. The list also projects only the identity fields
+of the approvers snapshot (`users`/`emails`/`groups`) — `tokenBypass` never goes on the wire,
+so no client can write `canResolve || approversSnapshot.tokenBypass`.
+
+`list()` resolves the caller's custom-group membership and workspace-admin role **once per
+page** and passes them into `authorizeResolverForUser` as an optional identity context. Both
+are functions of `(user, organizationId)` only. This matters because `isWorkspaceAdmin` calls
+`dbTransactionWrap` with no manager, which opens a fresh pooled connection and transaction on
+every call, and it sits on the default path (any row where the caller is not a listed
+approver). Single-request callers such as `resolve()` pass no context and each lookup runs on
+demand.
+
 ## File map
 
 **Backend (EE twins under `server/ee/workflows/`):**
