@@ -36,7 +36,7 @@ import { convertAllKeysToSnakeCase, normalizeQueryTransformationOptions } from '
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
-import { whenBranchResolved, getActiveBranchId, setActiveBranch } from '@/_helpers/active-branch';
+import { whenBranchResolved, getActiveBranchId, setActiveBranch, setVersionInUrl } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -417,7 +417,7 @@ const useAppData = (
         // workspaceBranchesStore) even though every org has a hidden default-branch row —
         // only reflect a resolved branch here when git sync is actually on for this org.
         if (
-          !moduleMode &&
+          (!moduleMode || moduleId === 'canvas') &&
           !isPreviewForVersion &&
           editingVersion &&
           useWorkspaceBranchesStore.getState().isGitSyncConfigured
@@ -429,6 +429,15 @@ const useAppData = (
             // the branch the server actually resolved, not whatever the URL had (or didn't have).
             setActiveBranch({ id: resolvedBranchId, name: resolvedBranchName });
           }
+        }
+        // Editor only — on the viewer, isPreviewForVersion above reads `?version=` as an explicit
+        // preview request, so stamping a resolved-not-requested version here would flip the
+        // viewer's own next load into preview mode.
+        if (mode === 'edit' && (!moduleMode || moduleId === 'canvas') && !isPreviewForVersion) {
+          const isBranchType = (editingVersion?.versionType ?? editingVersion?.version_type) === 'branch';
+          // Branch-type versions store an internal UUID in `name` — the human name lives on the
+          // branch, already covered by ?branch= above — so clear rather than leak the UUID.
+          setVersionInUrl(isBranchType ? null : (editingVersion?.name ?? null));
         }
         if (isPreviewForVersion) {
           // `convertAllKeysToSnakeCase` normalises the metadata envelope.
@@ -1148,6 +1157,10 @@ const useAppData = (
           { name: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name },
           moduleId
         );
+        // Fires for switch, create, and delete alike — all three change currentVersionId.
+        if (mode === 'edit') {
+          setVersionInUrl(selectedVersion?.versionType === 'branch' ? null : (selectedVersion?.name ?? null));
+        }
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

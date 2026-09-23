@@ -95,6 +95,26 @@ export function getVersionNameFromUrl() {
 }
 
 /**
+ * Write (or clear) `?version=<name>` on the current URL without adding a history entry.
+ * Mirrors setBranchInUrl. Editor-only by caller convention — the viewer treats `?version=` as
+ * an explicit preview request, so callers must not stamp a resolved-not-requested one there.
+ */
+export function setVersionInUrl(name) {
+  try {
+    if (name && !isBranchRelevantPath()) return;
+    const url = new URL(window.location.href);
+    if (name) {
+      url.searchParams.set(VERSION_URL_PARAM, name);
+    } else {
+      url.searchParams.delete(VERSION_URL_PARAM);
+    }
+    window.history.replaceState(window.history.state, '', url);
+  } catch {
+    // ignore URL errors
+  }
+}
+
+/**
  * Select the active branch: cache its id (for API calls) and reflect its name into the URL.
  * Pass a branch object `{ id, name }`, or null to clear (non-git / disabled).
  * Kept as the public entry point so existing callers don't need to change.
