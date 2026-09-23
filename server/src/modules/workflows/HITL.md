@@ -99,6 +99,12 @@ present a token — the approvals list's per-row `canResolve`, resolve-by-id —
 `authorizeResolverForUser` directly; going through the wrapper would authorize every caller
 for every request in the workspace.
 
+`authorizeResolver` is a thin wrapper: it applies the `tokenBypass` short-circuit and then
+delegates to **`authorizeResolverForUser`**, which holds the identity paths (allowlist, groups,
+admin overrides) and has no token branch. Callers that present no token — the approvals list's
+`canResolve` and `POST by-id/:id/resolve` — must use `authorizeResolverForUser` directly;
+`tokenBypass` defaults to `true`, so going through the wrapper would authorize everyone.
+
 The approvals list's `canResolve` is **actionability, not authorization**:
 `authorized && status === 'pending'`. Consumers render the resolve control on that single
 field rather than re-deriving the conjunction, so no consumer can forget the state half and
@@ -124,7 +130,7 @@ demand.
 | Timeout/reminder producer | `services/workflow-approval-timeout.service.ts` |
 | Timeout/reminder consumer | `processors/workflow-approval-timeout.processor.ts` |
 | Timer bootstrap on boot | `services/approval-timeout-bootstrap.service.ts` |
-| Public endpoints | `controllers/workflow-approvals.controller.ts` (`GET :token`, `POST :token/resolve`, `POST :id/cancel`) |
+| Public endpoints | `controllers/workflow-approvals.controller.ts` (`GET :token`, `POST :token/resolve`, `POST by-id/:id/resolve`, `POST :id/cancel`) |
 | Entity / repo / dto | `@entities/workflow_approval_request.entity.ts`, `repositories/workflow-approval-request.repository.ts`, `dto/resolve-approval.dto.ts`, `interfaces/IWorkflowApprovalsService.ts` |
 
 **Frontend (`frontend/ee/modules/Workflows/`):**

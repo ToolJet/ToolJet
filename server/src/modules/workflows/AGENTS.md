@@ -52,6 +52,10 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - **Schedule overlap guard.** Runs carry `schedule_id`; the schedule processor skips enqueuing while a prior run of the same schedule is non-terminal (`waiting` counts as non-terminal) — a schedule cannot stack behind a run awaiting input.
 - **Gating & files (EE):** `FEATURE_KEY.HUMAN_IN_THE_LOOP`; `services/workflow-approvals.service.ts`, `services/workflow-approval-timeout.service.ts`, `processors/workflow-approval-timeout.processor.ts`, `services/approval-timeout-bootstrap.service.ts`, `controllers/workflow-approvals.controller.ts`, plus `processHumanNode`/`saveSuspendedStatus` in `services/workflow-executions.service.ts`.
 - **List endpoint.** `GET /workflow-approvals` (`FEATURE_KEY.LIST_APPROVAL_REQUESTS`, `JwtAuthGuard` + `FeatureAbilityGuard`, declared before `:token` in the class body) wraps `WorkflowApprovalsService.list`, org-scoped from the JWT session only — there is no `organizationId` query param. `page`/`per_page` are validated in `dto/list-approvals.dto.ts` (`@Min(1)`, `per_page` also `@Max(100)`), not read as raw strings: an unvalidated `page <= 0` reaches the repository as a negative SQL `OFFSET`, which Postgres rejects as an uncaught exception rather than a clean 400.
+- **Approvals page API.** `GET workflow-approvals` (org-scoped, filtered, paginated, per-row
+  `canResolve`) and `POST workflow-approvals/by-id/:id/resolve` back the in-product approvals
+  page. Both are gated by `FEATURE_KEY.LIST_APPROVAL_REQUESTS` and authorize through
+  `authorizeResolverForUser` (no `tokenBypass`).
 - **Nested chains** (a sub-workflow suspending its parent, spec §7) are a **separate follow-up plan** — not implemented here.
 
 ## Related modules

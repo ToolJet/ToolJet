@@ -32,6 +32,18 @@ export class WorkflowApprovalsController {
     throw new Error('Method not implemented.');
   }
 
+  @InitFeature(FEATURE_KEY.LIST_APPROVAL_REQUESTS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('by-id/:id/resolve')
+  // Explicit return type to match the EE override (see the note on resolve below).
+  async resolveById(
+    @Param('id') id: string,
+    @Body() dto: ResolveApprovalDto,
+    @User() user: any
+  ): Promise<{ status: 'resolved' }> {
+    throw new Error('Method not implemented.');
+  }
+
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Post(':token/resolve')
   // Return type must match the EE override (which returns the resolve result), or the EE
