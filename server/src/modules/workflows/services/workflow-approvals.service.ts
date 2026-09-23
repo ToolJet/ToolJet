@@ -12,4 +12,7 @@ export class WorkflowApprovalsService implements IWorkflowApprovalsService {
   async cancel(): Promise<{ status: 'cancelled' }> {
     throw new Error('Method not implemented.');
   }
+  async list(): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

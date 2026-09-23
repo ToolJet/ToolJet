@@ -92,6 +92,13 @@ In `WorkflowApprovalsService` (EE `services/workflow-approvals.service.ts`),
    `via: 'super-admin'`. `ADMIN_OVERRIDE_CHANNELS = {'workspace-admin','super-admin'}`.
 `via` and `adminOverride` are threaded into `resumeWithDecision` audit metadata.
 
+Step 1 lives only in `authorizeResolver`, the token-aware wrapper used by the public
+`POST :token/resolve` route. Steps 2–3 live in `authorizeResolverForUser`, which has **no**
+token branch. `tokenBypass` defaults to `true` on every request, so any caller that did not
+present a token — the approvals list's per-row `canResolve`, resolve-by-id — must call
+`authorizeResolverForUser` directly; going through the wrapper would authorize every caller
+for every request in the workspace.
+
 ## File map
 
 **Backend (EE twins under `server/ee/workflows/`):**
