@@ -23,6 +23,7 @@ export enum FEATURE_KEY {
   TERMINATE_WORKFLOW_EXECUTION = 'terminate_workflow_execution',
   WORKFLOW_EXECUTION_STATE = 'workflow_execution_state',
   HUMAN_IN_THE_LOOP = 'human_in_the_loop',
+  LIST_APPROVAL_REQUESTS = 'list_approval_requests',
 }
 
 // Queue and job name constants

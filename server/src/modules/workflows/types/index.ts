@@ -54,6 +54,7 @@ interface Features {
   [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: FeatureConfig;
   [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
+  [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
