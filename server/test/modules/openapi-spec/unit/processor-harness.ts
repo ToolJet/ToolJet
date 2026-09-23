@@ -21,6 +21,7 @@ export async function loadProcessor(): Promise<void> {
 }
 
 export const DATA_SOURCE_ID = 'ds-1';
+export const DATA_SOURCE_VERSION_OPTIONS_ID = 'dsvo-1';
 
 export function makeManager() {
   const saved: Record<string, any>[] = [];
@@ -31,7 +32,9 @@ export function makeManager() {
       saved.push(...rows);
       return rows;
     }),
-    findOne: jest.fn().mockResolvedValue({ options: {} }),
+    // Always "found" (with an id) so updateSpecOptions takes the update-existing-row branch, not
+    // the create branch - matches the steady-state case these tests exercise.
+    findOne: jest.fn().mockResolvedValue({ id: DATA_SOURCE_VERSION_OPTIONS_ID, options: {} }),
     update: jest.fn(async (_entity: unknown, where: Record<string, any>, patch: Record<string, any>) => {
       updates.push({ where, ...patch });
     }),
@@ -45,16 +48,22 @@ export function makeProcessor({ terminated = false } = {}) {
     isTerminated: jest.fn().mockResolvedValue(terminated),
     clear: jest.fn(),
   };
+  const notificationService = { notify: jest.fn().mockResolvedValue(undefined) };
   const logger = { log: jest.fn(), error: jest.fn() };
-  const processor = new OpenApiSpecProcessor(terminationRegistry as any, logger as any);
-  return { processor, logger, terminationRegistry };
+  const processor = new OpenApiSpecProcessor(terminationRegistry as any, notificationService as any, logger as any);
+  return { processor, logger, terminationRegistry, notificationService };
 }
+
+export const DATA_SOURCE_VERSION_ID = 'dsv-1';
 
 export function definitionJob(definition: string, environmentIds = ['env-1']) {
   return {
     id: 'job-1',
     data: {
       dataSourceId: DATA_SOURCE_ID,
+      dataSourceVersionId: DATA_SOURCE_VERSION_ID,
+      dataSourceName: 'Test datasource',
+      userId: 'user-1',
       organizationId: 'org-1',
       environmentIds,
       sourceType: OpenApiSpecSourceType.DEFINITION,

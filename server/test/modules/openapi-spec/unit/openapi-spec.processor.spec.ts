@@ -1,7 +1,15 @@
 import { createHash } from 'crypto';
 import * as yaml from 'js-yaml';
 import { OpenApiSpecSourceType, OpenApiSpecStatus } from '../../../../src/modules/openapi-spec/constants';
-import { DATA_SOURCE_ID, definitionJob, loadProcessor, makeManager, makeProcessor } from './processor-harness';
+import {
+  DATA_SOURCE_ID,
+  DATA_SOURCE_VERSION_ID,
+  DATA_SOURCE_VERSION_OPTIONS_ID,
+  definitionJob,
+  loadProcessor,
+  makeManager,
+  makeProcessor,
+} from './processor-harness';
 
 jest.mock('got', () => ({ __esModule: true, default: jest.fn() }));
 
@@ -214,9 +222,12 @@ describe('OpenApiSpecProcessor', () => {
           encrypted: false,
         },
       };
+      // updateSpecOptions reads the existing DataSourceVersionOptions row and updates it by its
+      // own id (not by dataSourceId/environmentId directly) - see processor-harness.ts's findOne
+      // mock, which always returns a row with this id.
       expect(harness.updates).toMatchObject([
-        { where: { dataSourceId: DATA_SOURCE_ID, environmentId: 'env-1' }, options: expectedOptions },
-        { where: { dataSourceId: DATA_SOURCE_ID, environmentId: 'env-2' }, options: expectedOptions },
+        { where: { id: DATA_SOURCE_VERSION_OPTIONS_ID }, options: expectedOptions },
+        { where: { id: DATA_SOURCE_VERSION_OPTIONS_ID }, options: expectedOptions },
       ]);
     });
 
@@ -237,22 +248,26 @@ describe('OpenApiSpecProcessor', () => {
       const { processor, terminationRegistry } = makeProcessor();
       terminationRegistry.isTerminated.mockImplementation(async () => harness.saved.length > 0);
 
-      await expect(processor.process(definitionJob(JSON.stringify(manyOperationsOpenApi3())))).resolves.toBeUndefined();
+      await expect(processor.process(definitionJob(JSON.stringify(manyOperationsOpenApi3())))).resolves.toBe(
+        OpenApiSpecStatus.CANCELLED
+      );
 
       expect(harness.saved).toHaveLength(50);
       expect(harness.updates).toMatchObject([{ options: { spec_status: { value: OpenApiSpecStatus.CANCELLED } } }]);
       expect(harness.updates).toHaveLength(1);
-      expect(terminationRegistry.clear).toHaveBeenCalledWith(DATA_SOURCE_ID, 'env-1');
+      expect(terminationRegistry.clear).toHaveBeenCalledWith(DATA_SOURCE_VERSION_ID, 'env-1');
     });
 
     it('should mark the spec cancelled without throwing when termination was requested', async () => {
       const { processor, terminationRegistry } = makeProcessor({ terminated: true });
 
-      await expect(processor.process(definitionJob(JSON.stringify(petStoreOpenApi3())))).resolves.toBeUndefined();
+      await expect(processor.process(definitionJob(JSON.stringify(petStoreOpenApi3())))).resolves.toBe(
+        OpenApiSpecStatus.CANCELLED
+      );
 
       expect(harness.saved).toEqual([]);
       expect(harness.updates).toMatchObject([{ options: { spec_status: { value: OpenApiSpecStatus.CANCELLED } } }]);
-      expect(terminationRegistry.clear).toHaveBeenCalledWith(DATA_SOURCE_ID, 'env-1');
+      expect(terminationRegistry.clear).toHaveBeenCalledWith(DATA_SOURCE_VERSION_ID, 'env-1');
     });
 
     it('should mark the spec failed with the error message and rethrow when the definition cannot be parsed', async () => {

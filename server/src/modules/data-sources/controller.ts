@@ -228,9 +228,16 @@ export class DataSourcesController implements IDataSourcesController {
   async processOpenApiSpec(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Body() createOpenApiSpecDto: CreateOpenApiSpecDto
+    @Body() createOpenApiSpecDto: CreateOpenApiSpecDto,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.createOrReplaceOpenApiSpec(dataSourceId, user.organizationId, createOpenApiSpecDto);
+    return this.dataSourcesService.createOrReplaceOpenApiSpec(
+      dataSourceId,
+      user.organizationId,
+      createOpenApiSpecDto,
+      user.id,
+      branchId
+    );
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION)
@@ -239,9 +246,10 @@ export class DataSourcesController implements IDataSourcesController {
   async getOpenApiSpecStatus(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.getOpenApiSpecStatus(dataSourceId, user.organizationId, environmentId);
+    return this.dataSourcesService.getOpenApiSpecStatus(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
@@ -250,9 +258,15 @@ export class DataSourcesController implements IDataSourcesController {
   async cancelOpenApiSpecProcessing(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.cancelOpenApiSpecProcessing(dataSourceId, user.organizationId, environmentId);
+    return this.dataSourcesService.cancelOpenApiSpecProcessing(
+      dataSourceId,
+      user.organizationId,
+      environmentId,
+      branchId
+    );
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION)
@@ -261,9 +275,10 @@ export class DataSourcesController implements IDataSourcesController {
   async getOpenApiSpecMetadata(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.getOpenApiSpecMetadata(dataSourceId, user.organizationId, environmentId);
+    return this.dataSourcesService.getOpenApiSpecMetadata(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION)
@@ -272,13 +287,15 @@ export class DataSourcesController implements IDataSourcesController {
   async listOpenApiSpecOperations(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query() query: OpenApiSpecOperationsQueryDto
+    @Query() query: OpenApiSpecOperationsQueryDto,
+    @Query('branch_id') branchId?: string
   ) {
     return this.dataSourcesService.listOpenApiSpecOperations(
       dataSourceId,
       user.organizationId,
       query.environmentId,
-      query
+      query,
+      branchId
     );
   }
 
@@ -289,8 +306,9 @@ export class DataSourcesController implements IDataSourcesController {
     @Param('id') dataSourceId: string,
     // Row id, not the spec's operationId (optional, non-unique).
     @Param('operationRecordId') operationRecordId: string,
-    @Query('environmentId') environmentId: string
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.getOpenApiSpecOperation(dataSourceId, environmentId, operationRecordId);
+    return this.dataSourcesService.getOpenApiSpecOperation(dataSourceId, environmentId, operationRecordId, branchId);
   }
 }

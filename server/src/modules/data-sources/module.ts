@@ -4,6 +4,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { NotificationsModule } from '@modules/notifications/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { DataSourcesRepository } from './repository';
 import { PluginsRepository } from '@modules/plugins/repository';
@@ -63,6 +64,7 @@ export class DataSourcesModule extends SubModule {
         await GitSyncConfigsModule.register(configs),
         await AppPermissionsModule.register(configs!),
         await CustomDomainsModule.register(configs!),
+        await NotificationsModule.register(configs),
         await TypeOrmModule.forFeature([OpenApiSpecOperation]),
         await BullModule.registerQueue({ name: OPENAPI_SPEC_PROCESSING_QUEUE }),
         await BullBoardModule.forFeature({ name: OPENAPI_SPEC_PROCESSING_QUEUE, adapter: BullMQAdapter }),

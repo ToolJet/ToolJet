@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const openApiSpecService = {
   upload,
@@ -21,22 +22,31 @@ function upload(dataSourceId, { sourceType, url, definition, environmentId }) {
     body: JSON.stringify({ sourceType, url, definition, environmentId }),
     credentials: 'include',
   };
-  return fetch(baseUrl(dataSourceId), requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(baseUrl(dataSourceId)), requestOptions).then(handleResponse);
 }
 
 function getStatus(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${baseUrl(dataSourceId)}/status?environmentId=${environmentId}`, requestOptions).then(handleResponse);
+  return fetch(
+    appendBranchParam(`${baseUrl(dataSourceId)}/status?environmentId=${environmentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function cancel(dataSourceId, environmentId) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${baseUrl(dataSourceId)}/cancel?environmentId=${environmentId}`, requestOptions).then(handleResponse);
+  return fetch(
+    appendBranchParam(`${baseUrl(dataSourceId)}/cancel?environmentId=${environmentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getMetadata(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${baseUrl(dataSourceId)}/metadata?environmentId=${environmentId}`, requestOptions).then(handleResponse);
+  return fetch(
+    appendBranchParam(`${baseUrl(dataSourceId)}/metadata?environmentId=${environmentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getOperations(dataSourceId, environmentId, { service, tag, search, page, perPage } = {}) {
@@ -49,13 +59,17 @@ function getOperations(dataSourceId, environmentId, { service, tag, search, page
 
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   // Response shape: { meta: { totalPages, totalCount, currentPage }, operations: [...] }.
-  return fetch(`${baseUrl(dataSourceId)}/operations?${params.toString()}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${baseUrl(dataSourceId)}/operations?${params.toString()}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getOperation(dataSourceId, environmentId, operationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(
-    `${baseUrl(dataSourceId)}/operations/${encodeURIComponent(operationId)}?environmentId=${environmentId}`,
+    appendBranchParam(
+      `${baseUrl(dataSourceId)}/operations/${encodeURIComponent(operationId)}?environmentId=${environmentId}`
+    ),
     requestOptions
   ).then(handleResponse);
 }

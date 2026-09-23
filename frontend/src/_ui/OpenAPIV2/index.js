@@ -3,7 +3,17 @@ import Select from '@/_ui/Select';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
 import OAuth from '@/_ui/OAuth';
+import Headers from '@/_ui/HttpHeaders';
 import { useOpenApiSpecStatus } from '@/_hooks/use-openapi-spec-status';
+
+// Same shape/behaviour as REST API's own datasource-config Credentials fields (plain key-value,
+// not query-editor mode) - see restapi/lib/manifest.json's credentialsInputs.
+const CREDENTIALS_FIELDS = [
+  { key: 'headers', label: 'Headers' },
+  { key: 'url_parameters', label: 'URL parameters' },
+  { key: 'body', label: 'Body' },
+  { key: 'cookies', label: 'Cookies' },
+];
 
 const SOURCE_TYPES = [
   { name: 'URL', value: 'url' },
@@ -111,11 +121,25 @@ const OpenApiV2Config = ({
         </div>
       )}
 
-      {isFailed && (
-        <div className="p-2" style={{ color: 'red' }}>
-          Processing failed{specError ? `: ${specError}` : ''}
-        </div>
-      )}
+      <div className="col-md-12 mb-3">
+        {CREDENTIALS_FIELDS.map(({ key, label }) => (
+          <div className="mb-3" key={key}>
+            <label className="form-label" data-cy={`label-${key}`}>
+              {label}
+            </label>
+            <Headers
+              getter={key}
+              options={options?.[key]?.value || [['', '']]}
+              optionchanged={optionchanged}
+              isRenderedAsQueryEditor={false}
+              workspaceConstants={workspaceConstants}
+              isDisabled={isDisabled}
+              width="100%"
+              dataCy={key}
+            />
+          </div>
+        ))}
+      </div>
 
       <div className="col-md-12 mb-3">
         <OAuth
@@ -147,6 +171,11 @@ const OpenApiV2Config = ({
           selectedDataSource={selectedDataSource}
         />
       </div>
+      {isFailed && (
+        <div className="p-2" style={{ color: 'red' }}>
+          Processing failed{specError ? `: ${specError}` : ''}
+        </div>
+      )}
 
       <div className="col-md-12 mb-3 d-flex justify-content-end">
         <StatusBadge status={status} isPending={isPending} />

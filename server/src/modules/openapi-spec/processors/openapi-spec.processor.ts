@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { createHash } from 'crypto';
 import got from 'got';
@@ -9,8 +9,10 @@ import SwaggerParser from '@apidevtools/swagger-parser';
 import { dereferenceInternal, getJsonSchemaRefParserDefaultOptions } from '@apidevtools/json-schema-ref-parser';
 import { Logger } from 'nestjs-pino';
 import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { NotificationService } from '@modules/notifications/service';
+import { NOTIFICATION_TYPE } from '@modules/notifications/constants';
 import { OpenApiSpecTerminationRegistry } from '../services/openapi-spec-termination-registry';
 import { pruneCircularRefs } from '../utils/circular-ref.util';
 import {
@@ -24,6 +26,9 @@ import {
 
 export interface OpenApiSpecJobData {
   dataSourceId: string;
+  dataSourceVersionId: string | null;
+  dataSourceName: string;
+  userId: string;
   organizationId: string;
   environmentIds: string[];
   sourceType: OpenApiSpecSourceType;
@@ -36,10 +41,12 @@ type ExtractedOperation = Omit<
   | keyof BaseEntity
   | 'id'
   | 'dataSourceId'
+  | 'dataSourceVersionId'
   | 'environmentId'
   | 'createdAt'
   | 'updatedAt'
   | 'dataSource'
+  | 'dataSourceVersion'
   | 'appEnvironment'
 >;
 
@@ -62,18 +69,46 @@ export class OpenApiSpecProcessor extends WorkerHost {
 
   constructor(
     private readonly terminationRegistry: OpenApiSpecTerminationRegistry,
+    private readonly notificationService: NotificationService,
     private readonly logger: Logger
   ) {
     super();
   }
 
-  async process(job: Job<OpenApiSpecJobData>): Promise<void> {
-    const { dataSourceId, environmentIds, sourceType, url, definition } = job.data;
+  async process(job: Job<OpenApiSpecJobData>): Promise<OpenApiSpecStatus> {
+    const {
+      dataSourceId,
+      dataSourceVersionId,
+      dataSourceName,
+      userId,
+      organizationId,
+      environmentIds,
+      sourceType,
+      url,
+      definition,
+    } = job.data;
     const startedAt = Date.now();
 
     try {
-      if (await this.isTerminated(dataSourceId, environmentIds)) {
-        return this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.CANCELLED);
+      if (!dataSourceVersionId) {
+        this.logger.error(
+          `[openapi-spec:${job.id}] no dataSourceVersionId resolved for datasource ${dataSourceId} - aborting`
+        );
+        await this.finalize(dataSourceVersionId, environmentIds, OpenApiSpecStatus.FAILED);
+        return OpenApiSpecStatus.FAILED;
+      }
+
+      this.notify(userId, organizationId, {
+        type: NOTIFICATION_TYPE.INFO,
+        title: 'Spec processing started',
+        body: `Processing the OpenAPI spec for ${dataSourceName}. It will be ready to query shortly.`,
+        toast: false,
+        dataSourceId,
+      });
+
+      if (await this.isTerminated(dataSourceVersionId, environmentIds)) {
+        await this.finalize(dataSourceVersionId, environmentIds, OpenApiSpecStatus.CANCELLED);
+        return OpenApiSpecStatus.CANCELLED;
       }
 
       // CreateOpenApiSpecDto guarantees url/definition is set for the matching sourceType.
@@ -86,8 +121,9 @@ export class OpenApiSpecProcessor extends WorkerHost {
       // document. Each operation is dereferenced lazily per batch below.
       const $refs = await SwaggerParser.resolve(parsedInput as any);
 
-      if (await this.isTerminated(dataSourceId, environmentIds)) {
-        return this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.CANCELLED);
+      if (await this.isTerminated(dataSourceVersionId, environmentIds)) {
+        await this.finalize(dataSourceVersionId, environmentIds, OpenApiSpecStatus.CANCELLED);
+        return OpenApiSpecStatus.CANCELLED;
       }
 
       const version = parsedInput.openapi ? '3.0' : '2.0';
@@ -99,13 +135,16 @@ export class OpenApiSpecProcessor extends WorkerHost {
       let operationCount = 0;
 
       // Readers only see rows once status is READY, so no transaction needs to span the job.
+      // Scoped by dataSourceVersionId (branch-specific), not dataSourceId - other branches' rows
+      // for this same datasource must be left untouched.
       await dbTransactionWrap((manager: EntityManager) =>
-        manager.delete(OpenApiSpecOperation, { dataSourceId, environmentId: In(environmentIds) })
+        manager.delete(OpenApiSpecOperation, { dataSourceVersionId, environmentId: In(environmentIds) })
       );
 
       for (let i = 0; i < batches.length; i++) {
-        if (await this.isTerminated(dataSourceId, environmentIds)) {
-          return this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.CANCELLED);
+        if (await this.isTerminated(dataSourceVersionId, environmentIds)) {
+          await this.finalize(dataSourceVersionId, environmentIds, OpenApiSpecStatus.CANCELLED);
+          return OpenApiSpecStatus.CANCELLED;
         }
 
         // A malformed operation (e.g. unresolvable $ref) is logged and skipped, not fatal to the job.
@@ -126,7 +165,7 @@ export class OpenApiSpecProcessor extends WorkerHost {
         }
 
         for (const environmentId of environmentIds) {
-          await this.persistBatchForEnvironment(dataSourceId, environmentId, batchOperations);
+          await this.persistBatchForEnvironment(dataSourceId, dataSourceVersionId, environmentId, batchOperations);
         }
         operationCount += batchOperations.length;
 
@@ -137,7 +176,7 @@ export class OpenApiSpecProcessor extends WorkerHost {
       }
 
       for (const environmentId of environmentIds) {
-        await this.updateSpecOptions(dataSourceId, environmentId, {
+        await this.updateSpecOptions(dataSourceVersionId, environmentId, {
           [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.READY,
           [OPENAPI_SPEC_OPTION_KEYS.ERROR]: null,
           [OPENAPI_SPEC_OPTION_KEYS.METADATA]: metadata,
@@ -151,15 +190,69 @@ export class OpenApiSpecProcessor extends WorkerHost {
           `environments in ${Date.now() - startedAt}ms, heap used ` +
           `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`
       );
+      return OpenApiSpecStatus.READY;
     } catch (error) {
       this.logger.error(`OpenAPI spec processing failed for datasource ${dataSourceId}`, error);
-      await this.finalize(dataSourceId, environmentIds, OpenApiSpecStatus.FAILED, (error as Error).message);
+      await this.finalize(dataSourceVersionId, environmentIds, OpenApiSpecStatus.FAILED, (error as Error).message);
       throw error;
     } finally {
-      await Promise.all(
-        environmentIds.map((environmentId) => this.terminationRegistry.clear(dataSourceId, environmentId))
-      );
+      if (dataSourceVersionId) {
+        await Promise.all(
+          environmentIds.map((environmentId) => this.terminationRegistry.clear(dataSourceVersionId, environmentId))
+        );
+      }
     }
+  }
+
+  // Fires whenever process() returns without throwing - including the CANCELLED early-returns,
+  // not just a genuine success, so this checks the actual outcome (via process()'s return value,
+  // BullMQ's job result) rather than assuming completed == succeeded. A user-initiated cancel
+  // already has its own explicit action/feedback, so it deliberately gets no notification here.
+  @OnWorkerEvent('completed')
+  async onCompleted(job: Job<OpenApiSpecJobData> | undefined, result: OpenApiSpecStatus): Promise<void> {
+    if (!job || result !== OpenApiSpecStatus.READY) return;
+    const { userId, organizationId, dataSourceId, dataSourceName } = job.data;
+    this.notify(userId, organizationId, {
+      type: NOTIFICATION_TYPE.SUCCESS,
+      title: 'Spec processing complete',
+      body: `The OpenAPI spec for ${dataSourceName} is ready to query.`,
+      toast: true,
+      dataSourceId,
+    });
+  }
+
+  @OnWorkerEvent('failed')
+  async onFailed(job: Job<OpenApiSpecJobData> | undefined, error: Error): Promise<void> {
+    if (!job) return;
+    const { userId, organizationId, dataSourceId, dataSourceName } = job.data;
+    this.notify(userId, organizationId, {
+      type: NOTIFICATION_TYPE.ERROR,
+      title: 'Spec processing failed',
+      body: `Couldn't process the OpenAPI spec for ${dataSourceName}: ${error.message}`,
+      toast: true,
+      dataSourceId,
+    });
+  }
+
+  // A notification failure must never crash job handling - same defensiveness as git-sync's
+  // equivalent (git-sync-queue.service.ts/.processor.ts).
+  private notify(
+    userId: string,
+    organizationId: string,
+    params: { type: NOTIFICATION_TYPE; title: string; body: string; toast: boolean; dataSourceId: string }
+  ): void {
+    this.notificationService
+      .notify({
+        type: params.type,
+        userId,
+        organizationId,
+        title: params.title,
+        body: params.body,
+        toast: params.toast,
+        metadata: { source: 'openapi-spec', dataSourceId: params.dataSourceId },
+        channels: ['in_app'],
+      })
+      .catch((e) => this.logger.error(`failed to emit openapi-spec notification: ${(e as Error)?.message}`));
   }
 
   // yaml.load also parses JSON, but JSON.parse is far faster and lighter, so try it first.
@@ -171,21 +264,22 @@ export class OpenApiSpecProcessor extends WorkerHost {
     }
   }
 
-  private async isTerminated(dataSourceId: string, environmentIds: string[]): Promise<boolean> {
+  private async isTerminated(dataSourceVersionId: string, environmentIds: string[]): Promise<boolean> {
     const flags = await Promise.all(
-      environmentIds.map((environmentId) => this.terminationRegistry.isTerminated(dataSourceId, environmentId))
+      environmentIds.map((environmentId) => this.terminationRegistry.isTerminated(dataSourceVersionId, environmentId))
     );
     return flags.some(Boolean);
   }
 
   private async finalize(
-    dataSourceId: string,
+    dataSourceVersionId: string | null,
     environmentIds: string[],
     status: OpenApiSpecStatus,
     errorMessage: string | null = null
   ): Promise<void> {
+    if (!dataSourceVersionId) return;
     for (const environmentId of environmentIds) {
-      await this.updateSpecOptions(dataSourceId, environmentId, {
+      await this.updateSpecOptions(dataSourceVersionId, environmentId, {
         [OPENAPI_SPEC_OPTION_KEYS.STATUS]: status,
         [OPENAPI_SPEC_OPTION_KEYS.ERROR]: errorMessage,
       });
@@ -317,6 +411,7 @@ export class OpenApiSpecProcessor extends WorkerHost {
   // save() of a large spec would exceed.
   private async persistBatchForEnvironment(
     dataSourceId: string,
+    dataSourceVersionId: string,
     environmentId: string,
     batchOperations: ExtractedOperation[]
   ): Promise<void> {
@@ -324,27 +419,34 @@ export class OpenApiSpecProcessor extends WorkerHost {
     await dbTransactionWrap((manager: EntityManager) =>
       manager.save(
         OpenApiSpecOperation,
-        batchOperations.map((op) => ({ ...op, dataSourceId, environmentId }))
+        batchOperations.map((op) => ({ ...op, dataSourceId, dataSourceVersionId, environmentId }))
       )
     );
   }
 
-  // Uses DataSourceOptions directly, not the edition-split AppEnvironmentUtilService: this
-  // non-split provider would inject the CE token and throw UnknownDependenciesException under EE.
+  // Writes DataSourceVersionOptions directly (not via AppEnvironmentUtilService): this processor
+  // has no EE counterpart, so injecting an edition-split service would throw
+  // UnknownDependenciesException under EE. dataSourceVersionId is already resolved (by whoever
+  // enqueued the job, against whatever branch that request was on) - never re-resolved here.
   private async updateSpecOptions(
-    dataSourceId: string,
+    dataSourceVersionId: string,
     environmentId: string,
     patch: Record<string, any>
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const existing = await manager.findOne(DataSourceOptions, {
-        where: { dataSourceId, environmentId },
+      const existing = await manager.findOne(DataSourceVersionOptions, {
+        where: { dataSourceVersionId, environmentId },
       });
       const options = { ...(existing?.options || {}) };
       for (const key of Object.keys(patch)) {
         options[key] = { value: patch[key], encrypted: false };
       }
-      await manager.update(DataSourceOptions, { dataSourceId, environmentId }, { options, updatedAt: new Date() });
+
+      if (existing) {
+        await manager.update(DataSourceVersionOptions, { id: existing.id }, { options, updatedAt: new Date() });
+      } else {
+        await manager.save(manager.create(DataSourceVersionOptions, { dataSourceVersionId, environmentId, options }));
+      }
     });
   }
 }

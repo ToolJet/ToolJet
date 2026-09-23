@@ -3,7 +3,8 @@ import { EntityManager, In } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   OpenApiSpecStatus,
@@ -33,9 +34,15 @@ export class ValidateOpenApiSpecStatusGuard implements CanActivate {
       });
       if (!environments.length) return false;
 
-      const optionsRows = await manager.find(DataSourceOptions, {
+      // No @Query() access in a guard - user.branchId is already resolved on every authenticated
+      // request by JwtStrategy (from the branch_id query param, falling back to the org default),
+      // so it's the correct source here rather than always checking the default branch's DSV.
+      const dsv = await DataSourcesRepository.resolveDsvForDataSource(manager, dataSource.id, user.branchId);
+      if (!dsv) return false;
+
+      const optionsRows = await manager.find(DataSourceVersionOptions, {
         where: {
-          dataSourceId: dataSource.id,
+          dataSourceVersionId: dsv.id,
           environmentId: In(environments.map((environment) => environment.id)),
         },
       });

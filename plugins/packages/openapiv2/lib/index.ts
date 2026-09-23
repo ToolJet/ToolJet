@@ -10,6 +10,11 @@ import {
   getAuthUrl,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  isEmpty,
+  sanitizeHeaders,
+  sanitizeCookies,
+  cookiesToString,
+  sanitizeSearchParams,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, OpenApiV2Result } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -48,6 +53,16 @@ export default class OpenApiV2 implements QueryService {
     }, {});
   };
 
+  private buildSourceOptionsSearchParams(sourceOptions: SourceOptions): Record<string, string> {
+    const pairs = sanitizeSearchParams({ url_params: sourceOptions.url_parameters }, {}, true);
+    return Object.fromEntries(pairs as unknown as Array<[string, string]>);
+  }
+
+  private buildSourceOptionsBody(sourceOptions: SourceOptions): Record<string, unknown> | undefined {
+    const sourceBody = (sourceOptions.body || []).filter((pair) => pair.some((value) => !isEmpty(value)));
+    return sourceBody.length ? Object.fromEntries(sourceBody) : undefined;
+  }
+
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
@@ -63,16 +78,28 @@ export default class OpenApiV2 implements QueryService {
     await validateUrlForSSRF(url.toString());
 
     const parsedRequest = request ? this.parseRequest(request) : undefined;
-    const json =
+    const operationJson =
       operation !== 'get' && parsedRequest && Object.keys(parsedRequest).length > 0
         ? this.sanitizeObject(parsedRequest)
         : undefined;
+    const sourceOptionsBody = this.buildSourceOptionsBody(sourceOptions);
+    const json = operationJson || sourceOptionsBody ? { ...operationJson, ...sourceOptionsBody } : undefined;
+
+    const sourceOptionHeaders = sanitizeHeaders(sourceOptions, {}, true);
+    const headers: Record<string, string> = { ...header, ...sourceOptionHeaders };
+
+    const sanitizedCookies = sanitizeCookies(sourceOptions, {}, true);
+    const cookieString = cookiesToString(sanitizedCookies);
+    if (cookieString) {
+      headers['Cookie'] = cookieString;
+    }
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method: operation,
-      headers: header,
+      headers,
       searchParams: {
         ...query,
+        ...this.buildSourceOptionsSearchParams(sourceOptions),
       },
     };
 

@@ -124,6 +124,26 @@
       "type": "boolean",
       "title": "Multiple auth enabled",
       "default": false
+    },
+    "headers": {
+      "type": "array",
+      "title": "Headers",
+      "default": [["", ""]]
+    },
+    "url_parameters": {
+      "type": "array",
+      "title": "URL parameters",
+      "default": [["", ""]]
+    },
+    "body": {
+      "type": "array",
+      "title": "Body",
+      "default": [["", ""]]
+    },
+    "cookies": {
+      "type": "array",
+      "title": "Cookies",
+      "default": [["", ""]]
     }
   },
   "tj:encrypted": ["password", "bearer_token", "client_secret"],

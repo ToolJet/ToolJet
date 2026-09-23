@@ -246,16 +246,22 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
     }
 
-    if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
-      // Throws, aborting the delete, if a running job doesn't stop in time.
-      await this.dataSourcesUtilService.terminateOpenApiSpecJobsForDelete(dataSourceId);
-    }
-
     // Branch-aware deletion. On a FEATURE branch the delete is branch-scoped and mergeable,
     // so it soft-deletes (is_active = false). On the DEFAULT branch the row is hard-deleted:
     // gitsync-off reads resolve the active default-branch row, so a lingering inactive row
     // serves no purpose — remove it outright. With no branch context the whole DS is deleted.
     const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
+      // Throws, aborting the delete, if a running job doesn't stop in time. Scoped the same way
+      // the delete below is: effectiveBranchId set means only that DSV is being removed, so only
+      // its jobs need terminating; unset means the whole datasource (every DSV) is being removed.
+      await this.dataSourcesUtilService.terminateOpenApiSpecJobsForDelete(
+        dataSourceId,
+        user.organizationId,
+        effectiveBranchId
+      );
+    }
 
     if (effectiveBranchId) {
       await dbTransactionWrap(async (manager: EntityManager) => {
@@ -537,33 +543,56 @@ export class DataSourcesService implements IDataSourcesService {
 
   // --- OpenAPI v2 spec processing -------
 
-  async createOrReplaceOpenApiSpec(dataSourceId: string, organizationId: string, dto: CreateOpenApiSpecDto) {
-    return this.dataSourcesUtilService.createOrReplaceOpenApiSpec(dataSourceId, organizationId, dto);
+  async createOrReplaceOpenApiSpec(
+    dataSourceId: string,
+    organizationId: string,
+    dto: CreateOpenApiSpecDto,
+    userId: string,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.createOrReplaceOpenApiSpec(dataSourceId, organizationId, dto, userId, branchId);
   }
 
-  async getOpenApiSpecStatus(dataSourceId: string, organizationId: string, environmentId: string) {
-    return this.dataSourcesUtilService.getOpenApiSpecStatus(dataSourceId, organizationId, environmentId);
+  async getOpenApiSpecStatus(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecStatus(dataSourceId, organizationId, environmentId, branchId);
   }
 
-  async cancelOpenApiSpecProcessing(dataSourceId: string, organizationId: string, environmentId: string) {
-    return this.dataSourcesUtilService.cancelOpenApiSpecProcessing(dataSourceId, organizationId, environmentId);
+  async cancelOpenApiSpecProcessing(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.cancelOpenApiSpecProcessing(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      branchId
+    );
   }
 
-  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string) {
-    return this.dataSourcesUtilService.getOpenApiSpecMetadata(dataSourceId, organizationId, environmentId);
+  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecMetadata(dataSourceId, organizationId, environmentId, branchId);
   }
 
   async listOpenApiSpecOperations(
     dataSourceId: string,
     organizationId: string,
     environmentId: string,
-    query: OpenApiSpecOperationsQueryDto
+    query: OpenApiSpecOperationsQueryDto,
+    branchId?: string
   ) {
-    return this.dataSourcesUtilService.listOpenApiSpecOperations(dataSourceId, organizationId, environmentId, query);
+    return this.dataSourcesUtilService.listOpenApiSpecOperations(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      query,
+      branchId
+    );
   }
 
-  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string) {
-    return this.dataSourcesUtilService.getOpenApiSpecOperation(dataSourceId, environmentId, id);
+  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecOperation(dataSourceId, environmentId, id, branchId);
   }
 
   protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {

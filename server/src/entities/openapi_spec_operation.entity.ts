@@ -11,18 +11,22 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { DataSource } from './data_source.entity';
+import { DataSourceVersion } from './data_source_version.entity';
 import { AppEnvironment } from './app_environments.entity';
 
 // No unique constraint on operationId: it is optional in the spec and may repeat; `id` is the key.
 @Entity({ name: 'openapi_spec_operations' })
-@Unique('UQ_OPENAPI_SPEC_OPERATION', ['dataSourceId', 'environmentId', 'id'])
-@Index('IDX_OPENAPI_SPEC_OPERATION_SERVICE', ['dataSourceId', 'environmentId', 'serviceId'])
+@Unique('UQ_OPENAPI_SPEC_OPERATION', ['dataSourceVersionId', 'environmentId', 'id'])
+@Index('IDX_OPENAPI_SPEC_OPERATION_SERVICE', ['dataSourceVersionId', 'environmentId', 'serviceId'])
 export class OpenApiSpecOperation extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ name: 'data_source_id', type: 'uuid' })
   dataSourceId: string;
+
+  @Column({ name: 'data_source_version_id', type: 'uuid' })
+  dataSourceVersionId: string;
 
   @Column({ name: 'environment_id', type: 'uuid' })
   environmentId: string;
@@ -69,6 +73,10 @@ export class OpenApiSpecOperation extends BaseEntity {
   @ManyToOne(() => DataSource, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
+
+  @ManyToOne(() => DataSourceVersion, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'data_source_version_id' })
+  dataSourceVersion: DataSourceVersion;
 
   @ManyToOne(() => AppEnvironment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'environment_id' })

@@ -188,6 +188,72 @@ describe('openapiv2 - run()', () => {
     expect(getRefreshedToken).toHaveBeenCalledWith(sourceOptions, error, 'user-1', false);
   });
 
+  describe('Credentials section (headers/url_parameters/body/cookies) - datasource-level only, no per-query equivalent', () => {
+    it('should apply datasource-level headers on top of the operation declared header params', async () => {
+      mockGotSuccess();
+
+      await run(
+        { params: { header: { Authorization: 'Bearer t' } } },
+        { host: 'https://api.example.com', headers: [['X-Source-Only', 's']] }
+      );
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.headers).toMatchObject({ Authorization: 'Bearer t', 'X-Source-Only': 's' });
+    });
+
+    it('should override a declared header on key collision with the datasource-level value', async () => {
+      mockGotSuccess();
+
+      await run(
+        { params: { header: { 'X-Shared': 'from-declared-param' } } },
+        { host: 'https://api.example.com', headers: [['X-Shared', 'from-source']] }
+      );
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.headers['X-Shared']).toBe('from-source');
+    });
+
+    it('should add datasource-level url_parameters into searchParams alongside declared query params', async () => {
+      mockGotSuccess();
+
+      await run(
+        { params: { query: { page: '2' } } },
+        { host: 'https://api.example.com', url_parameters: [['from', 'source']] }
+      );
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.searchParams).toMatchObject({ page: '2', from: 'source' });
+    });
+
+    it('should send datasource-level body pairs as json on a non-GET operation', async () => {
+      mockGotSuccess();
+
+      await run({ operation: 'post' }, { host: 'https://api.example.com', body: [['fromSource', 's']] });
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.json).toMatchObject({ fromSource: 's' });
+    });
+
+    it('should send datasource-level cookies as a single Cookie header', async () => {
+      mockGotSuccess();
+
+      await run({}, { host: 'https://api.example.com', cookies: [['tracking', 'xyz']] });
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.headers['Cookie']).toContain('tracking=xyz');
+    });
+
+    it('should ignore empty [key, value] pairs', async () => {
+      mockGotSuccess();
+
+      await run({}, { host: 'https://api.example.com', headers: [['', '']], body: [['', '']] });
+
+      const requestOptions = mockGot.mock.calls[0][1];
+      expect(requestOptions.headers).not.toHaveProperty('');
+      expect(requestOptions).not.toHaveProperty('json');
+    });
+  });
+
   it('should not read the spec from sourceOptions - only host/path/operation/params drive the request', async () => {
     mockGotSuccess();
 

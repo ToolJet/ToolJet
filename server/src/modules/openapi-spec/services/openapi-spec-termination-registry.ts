@@ -33,34 +33,39 @@ export class OpenApiSpecTerminationRegistry implements OnModuleInit, OnModuleDes
     await this.queueEvents?.close();
   }
 
-  private key(dataSourceId: string, environmentId: string): string {
-    return `${this.TERMINATION_KEY_PREFIX}${dataSourceId}:${environmentId}`;
+  private key(dataSourceVersionId: string, environmentId: string): string {
+    return `${this.TERMINATION_KEY_PREFIX}${dataSourceVersionId}:${environmentId}`;
   }
 
-  async requestTermination(dataSourceId: string, environmentId: string): Promise<void> {
-    await this.redis.set(this.key(dataSourceId, environmentId), new Date().toISOString());
-    this.logger.log(`OpenAPI spec termination flag set for datasource ${dataSourceId}, environment ${environmentId}`);
+  async requestTermination(dataSourceVersionId: string, environmentId: string): Promise<void> {
+    await this.redis.set(this.key(dataSourceVersionId, environmentId), new Date().toISOString());
+    this.logger.log(
+      `OpenAPI spec termination flag set for data source version ${dataSourceVersionId}, environment ${environmentId}`
+    );
   }
 
-  async isTerminated(dataSourceId: string, environmentId: string): Promise<boolean> {
+  async isTerminated(dataSourceVersionId: string, environmentId: string): Promise<boolean> {
     try {
-      const value = await this.redis.get(this.key(dataSourceId, environmentId));
+      const value = await this.redis.get(this.key(dataSourceVersionId, environmentId));
       return value !== null;
     } catch (error) {
       // Fail-open: if Redis is unavailable, don't block processing (BullMQ is affected too).
       this.logger.error(
-        `Failed to check OpenAPI spec termination status for datasource ${dataSourceId}, environment ${environmentId}, continuing`,
+        `Failed to check OpenAPI spec termination status for data source version ${dataSourceVersionId}, environment ${environmentId}, continuing`,
         error
       );
       return false;
     }
   }
 
-  async clear(dataSourceId: string, environmentId: string): Promise<void> {
+  async clear(dataSourceVersionId: string, environmentId: string): Promise<void> {
     try {
-      await this.redis.del(this.key(dataSourceId, environmentId));
+      await this.redis.del(this.key(dataSourceVersionId, environmentId));
     } catch (error) {
-      this.logger.warn(`Failed to clear OpenAPI spec termination flag for datasource ${dataSourceId}`, error);
+      this.logger.warn(
+        `Failed to clear OpenAPI spec termination flag for data source version ${dataSourceVersionId}`,
+        error
+      );
     }
   }
 
@@ -80,12 +85,12 @@ export class OpenApiSpecTerminationRegistry implements OnModuleInit, OnModuleDes
   // Resolves once the job is no longer running (removed, finished, or failed for any reason).
   // Throws only if it is still active after timeoutMs.
   async terminateAndWait(
-    dataSourceId: string,
+    dataSourceVersionId: string,
     environmentId: string,
     jobId: string | number | undefined,
     timeoutMs = 30000
   ): Promise<void> {
-    await this.requestTermination(dataSourceId, environmentId);
+    await this.requestTermination(dataSourceVersionId, environmentId);
 
     const job = await this.removeIfQueued(jobId);
     if (!job || ['completed', 'failed'].includes(await job.getState())) return;
@@ -95,12 +100,12 @@ export class OpenApiSpecTerminationRegistry implements OnModuleInit, OnModuleDes
     } catch (error) {
       if ((error as Error).message?.includes('timed out before finishing')) {
         throw new Error(
-          `OpenAPI spec processing job ${jobId} for datasource ${dataSourceId}, environment ${environmentId} did not ` +
+          `OpenAPI spec processing job ${jobId} for data source version ${dataSourceVersionId}, environment ${environmentId} did not ` +
             `stop within ${timeoutMs}ms of requesting termination - refusing to proceed while it may still be running.`
         );
       }
       this.logger.warn(
-        `OpenAPI spec job ${jobId} for datasource ${dataSourceId} ended with an error while awaiting termination (treated as stopped): ${
+        `OpenAPI spec job ${jobId} for data source version ${dataSourceVersionId} ended with an error while awaiting termination (treated as stopped): ${
           (error as Error).message
         }`
       );

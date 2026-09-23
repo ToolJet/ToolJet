@@ -68,6 +68,23 @@ export class DataSourcesRepository extends Repository<DataSource> {
     return manager.findOne(DataSourceVersion, { where });
   }
 
+  // Read-only: the given branch's DSV if branchId is provided and it exists, else the default
+  // DSV, else null. Callers that need to WRITE to a branch with no DSV yet must not use this -
+  // see DataSourcesUtilService.ensureDsvForBranch, which auto-creates and seeds one instead.
+  static async resolveDsvForDataSource(
+    manager: EntityManager,
+    dataSourceId: string,
+    branchId?: string,
+    opts: { activeOnly?: boolean } = {}
+  ): Promise<DataSourceVersion | null> {
+    if (branchId) {
+      const where: Record<string, unknown> = { dataSourceId, branchId };
+      if (opts.activeOnly) where.isActive = true;
+      return manager.findOne(DataSourceVersion, { where });
+    }
+    return DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceId, opts);
+  }
+
   async allGlobalDS(
     userPermissions: UserPermissions,
     organizationId: string,

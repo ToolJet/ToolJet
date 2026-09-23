@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique, TableIndex } from 'typeorm';
 
-export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationInterface {
+export class CreateOpenapiSpecOperationsTable1789926191000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -15,6 +15,11 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
           },
           {
             name: 'data_source_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
+            name: 'data_source_version_id',
             type: 'uuid',
             isNullable: false,
           },
@@ -111,6 +116,16 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
     await queryRunner.createForeignKey(
       'openapi_spec_operations',
       new TableForeignKey({
+        columnNames: ['data_source_version_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'data_source_versions',
+        onDelete: 'CASCADE',
+      })
+    );
+
+    await queryRunner.createForeignKey(
+      'openapi_spec_operations',
+      new TableForeignKey({
         columnNames: ['environment_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'app_environments',
@@ -118,12 +133,14 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
       })
     );
 
-    // No unique constraint on operation_id: it is optional in the spec and may repeat.
+    // No unique constraint on operation_id: it is optional in the spec and may repeat. Scoped by
+    // data_source_version_id, not data_source_id - two branches of the same data source can have
+    // different specs configured, so operations must be branch-scoped too.
     await queryRunner.createUniqueConstraint(
       'openapi_spec_operations',
       new TableUnique({
         name: 'UQ_OPENAPI_SPEC_OPERATION',
-        columnNames: ['data_source_id', 'environment_id', 'id'],
+        columnNames: ['data_source_version_id', 'environment_id', 'id'],
       })
     );
 
@@ -131,7 +148,7 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
       'openapi_spec_operations',
       new TableIndex({
         name: 'IDX_OPENAPI_SPEC_OPERATION_SERVICE',
-        columnNames: ['data_source_id', 'environment_id', 'service_id'],
+        columnNames: ['data_source_version_id', 'environment_id', 'service_id'],
       })
     );
   }
@@ -145,6 +162,13 @@ export class CreateOpenapiSpecOperationsTable1784527468000 implements MigrationI
     const dataSourceIdForeignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf('data_source_id') !== -1);
     if (dataSourceIdForeignKey) {
       await queryRunner.dropForeignKey('openapi_spec_operations', dataSourceIdForeignKey);
+    }
+
+    const dataSourceVersionIdForeignKey = table.foreignKeys.find(
+      (fk) => fk.columnNames.indexOf('data_source_version_id') !== -1
+    );
+    if (dataSourceVersionIdForeignKey) {
+      await queryRunner.dropForeignKey('openapi_spec_operations', dataSourceVersionIdForeignKey);
     }
 
     const environmentIdForeignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf('environment_id') !== -1);
