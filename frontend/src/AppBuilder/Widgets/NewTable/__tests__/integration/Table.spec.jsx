@@ -257,6 +257,24 @@ describe('Table: column list and autogeneration', () => {
       expect(document.querySelector(`[data-cy="${NAME}-manage-columns-button"]`)).not.toBeInTheDocument()
     );
   });
+
+  test('[Table-FOOTER-001] the footer stays visible for showBulkUpdateActions alone, with every other footer toggle off', async () => {
+    widget.render({
+      properties: {
+        enablePagination: binding('{{false}}'),
+        showAddNewRowButton: binding('{{false}}'),
+        showDownloadButton: binding('{{false}}'),
+        showRefreshButton: binding('{{false}}'),
+        hideColumnSelectorButton: binding('{{true}}'),
+        showBulkUpdateActions: binding('{{true}}'),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    await waitFor(() => expect(document.querySelector('.card-footer')).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Adaline');
+    await waitFor(() => expect(document.querySelector('[data-cy="table-button-save-changes"]')).toBeInTheDocument());
+  });
 });
 
 const MANY_ROWS = Array.from({ length: 5 }, (_, i) => ({
