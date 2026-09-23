@@ -149,6 +149,26 @@ describe('[Table-RENDERER-001] HTMLRenderer and MarkdownRenderer', () => {
     expect(window.__xssC).toBeUndefined();
     expect(container.textContent).toContain('Hello');
   });
+
+  test('[Table-RENDERER-001] HTMLRenderer constrains its editable wrapper to the row height and preserves whitespace, keeping content aligned like other column types', () => {
+    const { container } = render(
+      <HTMLRenderer value="madhav" isEditable={true} isEditing={false} setIsEditing={() => {}} maxHeight="21px" />
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+    const wrapper = editable.parentElement;
+    expect(wrapper.style.maxHeight).toBe('21px');
+    expect(wrapper.style.whiteSpace).toBe('pre-wrap');
+  });
+
+  test('[Table-RENDERER-001] MarkdownRenderer constrains its editable wrapper to the row height and preserves whitespace, keeping content aligned like other column types', () => {
+    const { container } = render(
+      <MarkdownRenderer value="madhav" isEditable={true} isEditing={false} setIsEditing={() => {}} maxHeight="21px" />
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+    const wrapper = editable.parentElement;
+    expect(wrapper.style.maxHeight).toBe('21px');
+    expect(wrapper.style.whiteSpace).toBe('pre-wrap');
+  });
 });
 
 describe('[Table-RENDERER-001] SelectRenderer and TagsRenderer', () => {
