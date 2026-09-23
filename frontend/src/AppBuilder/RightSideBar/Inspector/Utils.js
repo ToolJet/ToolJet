@@ -1,6 +1,7 @@
 import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
+import { convertToKebabCase } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
@@ -310,6 +311,28 @@ export const validateStaticId = (value, existingIds = [], currentId = null, mess
   }
 
   return [true, null];
+};
+
+export const getDocsLink = (componentType = '') => {
+  switch (componentType) {
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
+    case 'DaterangePicker':
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
+    case 'ModuleViewer':
+    case 'ModuleContainer':
+      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
+    default:
+      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentType)}`;
+  }
 };
 
 export const goToModule = (moduleAppId) => {
