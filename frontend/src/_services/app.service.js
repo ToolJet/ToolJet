@@ -1,6 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
-import { getActiveBranchId, appendBranchParam } from '@/_helpers/active-branch';
+import { getActiveBranchId, appendBranchParam, getVersionNameFromUrl } from '@/_helpers/active-branch';
 
 export const appService = {
   getConfig,
@@ -144,7 +144,11 @@ function getApp(id, accessType) {
 // v2 api for fetching app
 function fetchApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}`), requestOptions).then(handleResponse);
+  const versionName = getVersionNameFromUrl();
+  const url = versionName
+    ? `${config.apiUrl}/apps/${id}?version=${encodeURIComponent(versionName)}`
+    : `${config.apiUrl}/apps/${id}`;
+  return fetch(appendBranchParam(url), requestOptions).then(handleResponse);
 }
 
 function deleteApp(id) {

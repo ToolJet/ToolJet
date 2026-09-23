@@ -36,7 +36,8 @@ import { convertAllKeysToSnakeCase, normalizeQueryTransformationOptions } from '
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
-import { whenBranchResolved } from '@/_helpers/active-branch';
+import { whenBranchResolved, getActiveBranchId, setActiveBranch } from '@/_helpers/active-branch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -412,6 +413,23 @@ const useAppData = (
         // misleading "Error fetching module data" toast.
         let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
+        // Git-off workspaces deliberately keep the active-branch cache null (see
+        // workspaceBranchesStore) even though every org has a hidden default-branch row —
+        // only reflect a resolved branch here when git sync is actually on for this org.
+        if (
+          !moduleMode &&
+          !isPreviewForVersion &&
+          editingVersion &&
+          useWorkspaceBranchesStore.getState().isGitSyncConfigured
+        ) {
+          const resolvedBranchId = editingVersion.branchId ?? editingVersion.branch_id;
+          const resolvedBranchName = editingVersion.branch?.name;
+          if (resolvedBranchId && resolvedBranchName && resolvedBranchId !== getActiveBranchId()) {
+            // Closes the write/read-drift window: any query/autosave fired after this line targets
+            // the branch the server actually resolved, not whatever the URL had (or didn't have).
+            setActiveBranch({ id: resolvedBranchId, name: resolvedBranchName });
+          }
+        }
         if (isPreviewForVersion) {
           // `convertAllKeysToSnakeCase` normalises the metadata envelope.
           appData = convertAllKeysToSnakeCase(appData);

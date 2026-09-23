@@ -83,6 +83,17 @@ export function setBranchInUrl(name) {
   }
 }
 
+const VERSION_URL_PARAM = 'version';
+
+/** Read the active version NAME from the browser URL (null when absent). */
+export function getVersionNameFromUrl() {
+  try {
+    return new URLSearchParams(window.location.search).get(VERSION_URL_PARAM) || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Select the active branch: cache its id (for API calls) and reflect its name into the URL.
  * Pass a branch object `{ id, name }`, or null to clear (non-git / disabled).
