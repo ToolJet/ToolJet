@@ -985,6 +985,86 @@ describe('clear button', () => {
   // with the button left it silently invalid: no message, no red border, and `isValid`
   // already false underneath. The reveal sits on the button rather than in
   // `onInputValueChange`, which is also the typing handler and must not accuse mid-edit.
+
+  // Break this catches: reverting the clear button's vertical offset, or the field height, to the
+  // constants this widget carried before. Both are the defect EmailInput-CLR-004 fixed in the
+  // shared BaseInput; PhoneInput and CurrencyInput render their own clear button and their own
+  // field box, so they kept the original bug.
+  //
+  // The button is positioned against the WHOLE widget, so a top-aligned label takes a share of it
+  // that grows with the font, and a fixed `calc(50% + 10px)` — correct only at the 12px default —
+  // left the button riding up over the label.
+  //
+  // The reported "component pops out of the wrapper" half is NOT fixed here, deliberately: measured
+  // in Chrome across 24 wrapper-height x label-size combinations, subtracting the label height from
+  // the field box changes nothing, because the flex column and the field's own min-content height
+  // already decide the layout. The overflow is real at small widget heights but it IS the
+  // contained-until-forced behaviour BaseInput shows too.
+
+  // Break this catches: putting `h-100` back on the field box, or dropping either branch of the
+  // height. `h-100` is `height: 100% !important` (tabler.scss:6829), so an inline height cannot
+  // override it — the class has to go, which then makes BOTH branches this element's job.
+  //
+  // Top-aligned the field sits below the label in a flex column, so a full wrapper height is added
+  // to the label's and the content spills out of its own widget box as the label grows. Measured in
+  // Chrome before the fix: 16.5px of overflow at a 40px widget with a 12px label, 24.5px at 20px,
+  // 32.5px at a 60px widget with a 48px label — all 0 after. The side branch restores exactly what
+  // the class used to supply; without it a side-aligned field collapsed from the widget height to
+  // its content, measured 100px -> 36.5px.
+  //
+  // jsdom computes no layout, so the geometry above is browser evidence and what is asserted here
+  // is the inline style each branch emits.
+  test('[CurrencyInput-STYLE-011] the field box height follows a top label and fills the box otherwise', async () => {
+    const boxHeightAt = async (alignment, labelFontSize) => {
+      harness.render({
+        properties: { value: binding('{{100}}'), label: binding('Lbl') },
+        styles: { alignment: binding(alignment), labelFontSize },
+      });
+      await waitFor(() => expect(fieldBox()).toBeTruthy());
+      return fieldBox().style.height;
+    };
+
+    // Top-aligned: the label's own height comes off the box, plus the canvas box padding.
+    expect(await boxHeightAt('top', binding('{{12}}'))).toBe('calc(100% - 20px - 4px)');
+    expect(await boxHeightAt('top', binding('{{20}}'))).toBe('calc(100% - 28px - 4px)');
+    expect(await boxHeightAt('top', binding('{{32}}'))).toBe('calc(100% - 40px - 4px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await boxHeightAt('top', binding('abc'))).toBe('calc(100% - 20px - 4px)');
+
+    // Side-aligned: the label takes no vertical space, so the field fills the widget box as it
+    // always did. This is the half the `h-100` removal would otherwise have silently dropped.
+    expect(await boxHeightAt('side', binding('{{32}}'))).toBe('100%');
+    expect(await boxHeightAt('side', binding('{{12}}'))).toBe('100%');
+  });
+
+  test('[CurrencyInput-CLR-006] the clear button stays centred on the field as a top label grows', async () => {
+    const atLabelSize = async (labelFontSize) => {
+      harness.render({
+        properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+        styles: { alignment: binding('top'), labelFontSize },
+      });
+      await waitFor(() => expect(clearButton()).toBeTruthy());
+      return clearButton().style.top;
+    };
+
+    // Half the label's own height, so the button lands on the middle of the field.
+    expect(await atLabelSize(binding('{{12}}'))).toBe('calc(50% + 10px)');
+    expect(await atLabelSize(binding('{{20}}'))).toBe('calc(50% + 14px)');
+    expect(await atLabelSize(binding('{{32}}'))).toBe('calc(50% + 20px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await atLabelSize(binding('abc'))).toBe('calc(50% + 10px)');
+
+    // A side-aligned label takes no vertical space, so there is nothing to offset or subtract.
+    harness.render({
+      properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+      styles: { alignment: binding('side'), labelFontSize: binding('{{32}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(clearButton().style.top).toBe('50%');
+  });
+
   test('[CurrencyInput-CLR-005] clearing a mandatory field reveals the error with no prior blur', async () => {
     harness.render({
       properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}') },

@@ -3,6 +3,7 @@ import { default as ReactCurrencyInput, formatValue } from 'react-currency-input
 import {
   useInput,
   getLabelFontSize,
+  getLabelHeight,
   getWidthTypeOfComponentStyles,
   getLabelWidthOfInput,
 } from '../BaseComponents/hooks/useInput';
@@ -12,6 +13,7 @@ import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap, getNumberFormatConfig, parseValueToNumber } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
@@ -108,6 +110,7 @@ export const CurrencyInput = (props) => {
     borderRadius,
     widthType,
     labelFontSize,
+    padding,
   } = styles;
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
@@ -155,13 +158,18 @@ export const CurrencyInput = (props) => {
 
   const loaderStyle = {
     right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
-    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
     transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
   const clearButtonRight =
     direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
-  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
   const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
@@ -259,11 +267,19 @@ export const CurrencyInput = (props) => {
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
-          className="d-flex h-100"
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect

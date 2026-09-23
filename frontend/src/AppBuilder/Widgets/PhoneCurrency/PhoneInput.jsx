@@ -7,6 +7,7 @@ import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
 import {
   getLabelFontSize,
+  getLabelHeight,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
   useInput,
@@ -14,6 +15,7 @@ import {
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
@@ -60,6 +62,7 @@ export const PhoneInput = (props) => {
     borderRadius,
     widthType,
     labelFontSize,
+    padding,
   } = styles;
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
@@ -162,7 +165,7 @@ export const PhoneInput = (props) => {
 
   const loaderStyle = {
     right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
-    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
     transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
@@ -177,7 +180,12 @@ export const PhoneInput = (props) => {
   const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const clearButtonRight =
     direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
-  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
   const clearButtonTransform = 'translateY(-50%)';
 
   const computedStyles = {
@@ -251,13 +259,29 @@ export const PhoneInput = (props) => {
           dataCy={dataCy}
           fontSize={labelFontSizeValue}
         />
+        {/*
+          `h-100` is `height: 100% !important` (tabler.scss:6829), which an inline height cannot
+          override, so the class is dropped and BOTH branches set the height here. Top-aligned, the
+          field sits below the label in a flex column, so a full wrapper height is added to the
+          label's and the content spills out of its own widget box as the label grows; subtracting
+          the label height keeps it contained until the label alone exceeds the box. The side
+          branch restores exactly what the class used to supply.
+        */}
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
-          className="d-flex h-100"
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect
