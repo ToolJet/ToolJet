@@ -71,22 +71,22 @@
     },
     {
       "componentType": "TextInput",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/TextInput/TESTING.md"
     },
     {
       "componentType": "EmailInput",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/EmailInput/TESTING.md"
     },
     {
       "componentType": "PasswordInput",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
@@ -100,12 +100,12 @@
     },
     {
       "componentType": "PhoneInput",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/PhoneInput/TESTING.md"
     },
     {
       "componentType": "CurrencyInput",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {
