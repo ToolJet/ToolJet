@@ -48,8 +48,14 @@ and only falls back to `run-ci/<uuid>` when unset. (The old static defaults `gsm
 (error classifier + sanitizer, connection-error handler, webhook signature + dedup, datasource/resource
 FS readers, branching-tag/target helpers, `git-tree-sha` ls-remote/ls-tree parsing,
 `AppGitFileOperationsUtil` layout resolvers + `validateAppJsonForImport` normalization,
-and the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/
-branchExists/resolveTagToSha argv shaping). `test:gitsync` chains unit then e2e.
+the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/branchExists/
+resolveTagToSha argv shaping — and `PlatformGitPushService`'s fs-only meta helpers
+(`deleteAppFromRepo`, `readAppMeta`/`writeAppMeta`)) — plus two host-free guards for the
+**app-open** path (§35): `apps/unit/apps-service-open-no-git-pull.spec.ts` (EE `getOne` hydrates on
+`is_stub` only, never for a materialized draft) and
+`platform-git-sync/unit/hydrate-stale-referenced-modules-gate.spec.ts` (the referenced-module
+cascade skips already-materialized modules and resolves provider auth lazily).
+`test:gitsync` chains unit then e2e.
 
 ### Coverage (git-sync files only)
 
@@ -174,7 +180,7 @@ End-to-end single test; each step depends on the previous. Steps:
 | 46 | Bulk add `testing-app-4` & `testing-app-5` to folder (single request) |
 | 47 | List folders → count = 2 |
 | 48 | Commit app4 & app5, merge `feat-e2e-4` → `main`, pull, validate folder mapping on `main` |
-| 49 | Hydration failure: invalid repo URL surfaces `hydration_error` on `GET /apps/:id` |
+| 49 | Hydration failure: with the draft flipped to `is_stub = true`, an invalid repo URL surfaces `hydration_error` on `GET /apps/:id` (200 + diagnostics), and un-stubbing restores a clean `already-up-to-date` open |
 | 50 | Per-app pull via `ensure-draft` preserves folder mapping (sibling of step 48) |
 | 51 | Feature-branch pull preserves local-only app |
 | 52 | Data-source workspace push → merge → pull `main`: DS appears with per-env options |
@@ -493,10 +499,11 @@ content hashes (a tree SHA changes iff something beneath it changed):
 
 The branch-level tokens (`last_synced_commit`, the category `*_git_tree_sha`) are read from git and
 stored on **pull**. A version's per-resource `git_tree_sha` is stamped when the version is
-**materialized** — a pull that imports a fresh stub, or an app-open hydration — and by **push** (so
-just-pushed content reads as in-sync and isn't re-hydrated); a changed-but-unopened app therefore keeps
-a null/stale `git_tree_sha` until it's opened, so this test opens the app before asserting its per-app
-token. The observable effect of a skip is that the pull's orphan sweep — which DELETES the branch versions
+**materialized** — a pull that imports a fresh stub, or an app open that hydrates a stub — and by
+**push** (so just-pushed content reads as in-sync and isn't re-hydrated); an app the pull only flagged
+`outdated` therefore keeps a null/stale `git_tree_sha`, and since app open no longer hydrates a
+non-stub draft (§35) this test flips the row to `is_stub = true` and opens it before asserting its
+per-app token. The observable effect of a skip is that the pull's orphan sweep — which DELETES the branch versions
 of a synced default-branch app absent from git (apps row kept; data sources are deactivated instead, see
 §30) — does NOT run for the skipped scope, so a manufactured synced orphan survives untouched
 (`is_synced=true`, row present). The orphan sweep is gated to the DEFAULT branch, so these tests operate on
@@ -658,6 +665,28 @@ must be `is_synced=true`.
 This is the DB-level assertion that §2 step 54 (which checks the cascade via the API) does not make.
 **Mirrored in `git-sync-gitlab.spec.ts`.**
 
+## 35. App open never pulls from git (`it: serves a materialized draft (and its referenced module) from the DB, and hydrates only on is_stub`)
+
+Dedicated isolated org, multi-branch. `GET /apps/:id` used to re-clone the repo on **every** open of a
+materialized (non-stub) draft just to compare git's current tree SHA against the draft's stored
+`git_tree_sha` — one clone per app open, plus one more per referenced module via
+`hydrateStaleReferencedModules`. On-open hydration now fires **only** for an `is_stub` version.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Configure git + branching, pull `main`, create a feature branch | 201/200 |
+| 2 | Create a **module** + a **host app** with a `ModuleViewer` referencing it | 201 |
+| 3 | `gitpush` both to the feature branch | 201 |
+| 4 | Merge feature → `main`, pull `main` | both land as **stubs** |
+| 5 | Open the host app | `is_hydration_tried: true`, `hydration_status: 'success'` (stub path); the module cascade-materializes |
+| 6 | Stamp a sentinel `git_tree_sha` on the host **and** module drafts, re-open the host | `is_hydration_tried: false`, `not_hydrated_reason: 'already-up-to-date'`, `editing_version` resolved — and **both sentinels survive** (no re-import of the app, none of the cascaded module). Opening the module directly is likewise DB-only |
+| 7 | NULL the `git_tree_sha` on the host draft **and** the module draft (the "outdated" marker a pull leaves, see `classifyEntry`) and open each | still `is_hydration_tried: false` for both; both NULLs survive, and a further host open doesn't refresh the module through the cascade either — refreshing an outdated draft is the **pull path's** job, not app open. A module opens through the same `GET /apps/:id`, so it gets the same treatment. Asserts the accepted gap so it can't regress silently |
+| 8 | Flip the host draft to `is_stub = true` and open | `is_hydration_tried: true`, `hydration_status: 'success'`; the row is materialized again (`is_stub=false`) and carries git's **real** tree SHA (not the sentinel) — proof `is_stub` is still a live trigger |
+
+Guard rail for `ee/apps/service.ts` `getOne` + `hydrateStaleReferencedModules`
+(`ee/platform-git-sync/pull.service.ts`): a re-introduced git call on the open path overwrites the
+sentinel SHAs and fails step 6/7. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
 ---
 
 ## 22. Per-app import from git — createGitApp (`it: imports an app pushed to git into a separate workspace via /app-git/gitpull/app`)
@@ -770,8 +799,8 @@ and opening the app fresh on that branch must re-hydrate them from git.
 
 | # | `it` | Expected |
 |---|------|----------|
-| 1 | carries a connected global data source into the feature branch on app push, and re-hydrates it on open | create app + global DS on a feature branch, link the DS via a query, `gitpush` the app → `data-sources/<name>/data-source.json` is committed (id = DS `co_relation_id`); then delete the branch DSV + force a re-hydrate (`GET /apps/:id` with a bogus `git_tree_sha`) → the branch DSV is **re-created from git** (`deserializeWorkspaceResources`), not left as an "Undefined data source" dummy |
-| 2 | carries a referenced module into the feature branch on app push, and re-creates its stub from git on host open | push a module + a host app with a `ModuleViewer` referencing it → the module is present under `modules/`; then hard-delete the module's DB rows + force a host re-hydrate → the module stub is **re-created from git** and appears in the host's `modules` (exercises `hydrateStubApp` sparse-checking out `modules/` for a front-end app) |
+| 1 | carries a connected global data source into the feature branch on app push, and re-hydrates it on open | create app + global DS on a feature branch, link the DS via a query, `gitpush` the app → `data-sources/<name>/data-source.json` is committed (id = DS `co_relation_id`); then delete the branch DSV + force a hydrate (flip the draft to `is_stub = true`, then `GET /apps/:id` — app open only hydrates stubs, see §35) → the branch DSV is **re-created from git** (`deserializeWorkspaceResources`), not left as an "Undefined data source" dummy |
+| 2 | carries a referenced module into the feature branch on app push, and re-creates its stub from git on host open | push a module + a host app with a `ModuleViewer` referencing it → the module is present under `modules/`; then hard-delete the module's DB rows + force a host hydrate (flip the host draft to `is_stub = true`, then open it) → the module stub is **re-created from git** and appears in the host's `modules` (exercises `hydrateStubApp` sparse-checking out `modules/` for a front-end app) |
 
 Fixes: `hydrateStubApp` (`ee/platform-git-sync/pull.service.ts`) now `sparse-checkout add modules` for a
 front-end app so `hydrateReferencedModuleStubs → pullModules(repoPath)` can stub a referenced module that
@@ -1004,6 +1033,49 @@ multi-branch multidraft guard inside this cascade suite. The module lives on the
 readiness check counts drafts on the DEFAULT branch (`getConnectedModulesBlockingPush`), so TWO extra
 default-branch drafts are injected there; the host-app `gitpush` then fails **400 MODULES_NOT_READY**
 naming the module (`/not ready to sync/i` + `toContain('sc-multidraft-module')`).
+
+---
+
+## 34. Data source folders — git round-trip + branch-lock + permission isolation
+
+Data sources can live in folders (`folder_data_sources`, keyed `(data_source_id, branch_id)`), the
+data-source analogue of `folder_apps`. Folder placement round-trips through git as a directory
+segment — `data-sources/<folder>/<ds-name>/data-source.json` (root when unfoldered) — mirroring
+`apps/<folder>/<app>/`.
+
+### Unit coverage (implemented, `@group gitsync` / `platform`, run via `test:gitsync:unit`)
+
+| File | Mirrors (apps/modules) | Covers |
+|---|---|---|
+| `git-sync/unit/data-source-fs.util.spec.ts` | `git-resource-fs.util.spec.ts` | `readDataSourceEntries` (root / folder-nested / legacy-flat / mixed / backward-compat / malformed / dedup), `dataSourceFilePath`, `pruneStaleDataSourceFolders` (delete / rename / folder-move + empty-folder sweep) |
+| `git-sync/unit/data-source-path-resolution.spec.ts` | `platform-git-sync/unit/push-path-resolution.spec.ts` | serialize path — `resolvePlacementFolderName` root vs folder, 100-char name preserved, branch-scoped `(data_source_id, branch_id)` lookup |
+| `folder-data-sources/unit/ability.spec.ts` | `folder-apps/unit/ability.spec.ts` | **permission isolation** — an app-folder grant does NOT authorize a data-source-folder mutation; `DATA_SOURCE_FOLDER` bucket (blanket + specific folder); owner; admin; `dataSourceFolderCreate` fallback |
+
+The pull-side reconcile (`attachFoldersForDataSources`) has **no** unit test — deliberate parity
+with apps, whose `attachFoldersForExistingApps` is exercised only by the e2e steps below.
+
+### e2e (PLANNED — steps not yet in `git-sync.spec.ts`; mirror app-folder steps 42–48, 50)
+
+| # | Planned step |
+|---|------|
+| a | Create folder `ds-folder-1` (`type='data_source'`) on `feat-*`; list `GET /folder-data-sources` → present, 0 data sources |
+| b | Add a global data source to `ds-folder-1` (`POST /folder-data-sources`); list → count = 1, branch-scoped |
+| c | Bulk add two data sources (`data_source_ids`); list → count = 2 |
+| d | `scope=datasource` push, merge `feat-*` → `main`, pull `main` → data sources land under `data-sources/ds-folder-1/<ds>/` and the `folder_data_sources` mapping is reconstructed on `main` |
+| e | **Folder-only move**: move a data source to `ds-folder-2` on a branch, push+merge+pull → mapping moves; the DS's own subtree SHA is unchanged, so the reconcile must run despite the per-DSV content-skip |
+| f | **Delete-cleanup**: delete a data source on a feature branch (soft) → its `folder_data_sources` row is removed on that branch only; delete on the (single-branch) default branch (hard DSV delete) → row removed; other branches keep their mapping |
+| g | **`is_active` listing**: a soft-deleted / orphaned data source drops out of the folder listing (inner-join to an active DSV) even if a stale mapping row lingers |
+| h | **Branch-lock (EE)**: `POST`/`PUT /folder-data-sources` on the default branch is **rejected 400** under multi-branch; allowed on a feature branch and in single-branch mode; **403** under git license lock (mirrors the folder-membership row of §3's matrix) |
+| i | **Permission isolation (e2e)**: a builder granted app-folder edit but no `DATA_SOURCE_FOLDER` grant → **403** on data-source-folder mutation |
+
+### Folder-name validation (relevant to the directory-segment layout)
+
+Folder names become git path segments, so slash `/` and backslash `\` must never appear in one.
+Enforced by `AllowedCharactersValidator` (`/^[a-zA-Z0-9 -]+$/`) on **both**:
+- `CreateFolderDto` (folder create) — always had it.
+- `UpdateFolderDto` (folder **rename**) — added alongside this feature; previously rename only ran
+  `sanitizeInput` (HTML-escape), which leaves `/` and `\` intact, so a rename could have injected a
+  path separator into `data-sources/<folder>/…` / `apps/<folder>/…`. Now rejected on rename too.
 
 ---
 
