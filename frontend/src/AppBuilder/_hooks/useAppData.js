@@ -113,7 +113,6 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
@@ -253,10 +252,11 @@ const useAppData = (
     }
   };
 
+  // Only observes pageSwitchInProgress — must not reset it. Ownership of that flag's
+  // lifecycle belongs solely to appSlice.js's switchPage/doSwitch.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
-      setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
 
@@ -310,6 +310,10 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    // Guards against a Module unmounted mid-load by rapid page switching: its stale promise
+    // would otherwise still call startExposedValueBatch() below, opening a batch nothing
+    // will ever flush (its own layout-ready cycle belongs to a fresh mount that already
+    // ran its own load-and-flush) — an orphaned +1 that leaves the shared batch stuck open.
     let cancelled = false;
     if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
       initModules(moduleId);
@@ -404,7 +408,7 @@ const useAppData = (
         // Canvas-only (mirrors the version-change effect's own cleanUpStore); embedded modules manage
         // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
         const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
-        if (isFreshCanvasMount) cleanUpStore(false);
+        if (isFreshCanvasMount) cleanUpStore();
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -585,17 +589,18 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
-        // and modules — the module editor's Canvas styles fields read these, so gating this to
-        // non-modules left module mode/theme unpopulated.
-        const global_settings = mapKeys(
-          appData.editing_version?.global_settings || appData.global_settings,
-          (value, key) => camelCase(key)
-        );
-        if (!global_settings?.theme) {
-          global_settings.theme = baseTheme;
+        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
+        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
+          const global_settings = mapKeys(
+            appData.editing_version?.global_settings || appData.global_settings,
+            (value, key) => camelCase(key)
+          );
+          if (!global_settings?.theme) {
+            global_settings.theme = baseTheme;
+          }
+          setGlobalSettings(global_settings);
         }
-        setGlobalSettings(global_settings);
+
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
           setPageSettings(
@@ -807,6 +812,10 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        // This instance was torn down (e.g. its Module got unmounted by a rapid page
+        // switch) before its own load finished — skip opening a batch nobody will flush.
+        if (cancelled) return;
+
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
@@ -900,10 +909,10 @@ const useAppData = (
           // Apps that need data refresh on navigation should trigger queries from the
           // onPageLoad event instead of relying on runOnPageLoad.
           isPageSwitchRef.current = false;
-          handleEvent('onPageLoad', currentPageEvents, {});
+          handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
         } else {
           runOnLoadQueries(moduleId).then(() => {
-            handleEvent('onPageLoad', currentPageEvents, {});
+            handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
           });
         }
       };
@@ -994,7 +1003,7 @@ const useAppData = (
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -1183,3 +1192,9 @@ const useAppData = (
 };
 
 export default useAppData;
+
+export function isEmbeddedModuleInstance(mode, moduleMode) {
+  // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
+  // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
+  return mode === 'view' && moduleMode;
+}

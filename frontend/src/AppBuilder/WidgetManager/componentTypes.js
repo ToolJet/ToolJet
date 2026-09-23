@@ -106,10 +106,15 @@ const combineProperties = (widget, universal, isArray = false) => {
 
 export const componentTypes = widgets.map((widget) => {
   const baseProps = newRevampedComponents.has(widget.component) ? universalProps : legacyUniversalProps;
-  return {
+  const combined = {
     ...combineProperties(widget, baseProps),
     definition: combineProperties(widget.definition, baseProps.definition, true),
   };
+  if (widget.component === 'LibraryComponent') {
+    delete combined.styles.cssClass;
+    delete combined.definition.styles.cssClass;
+  }
+  return combined;
 });
 
 export const componentTypeDefinitionMap = componentTypes.reduce((acc, component) => {

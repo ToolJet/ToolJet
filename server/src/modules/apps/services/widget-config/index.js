@@ -40,6 +40,7 @@ import { tagsConfig } from './tags';
 import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
+import { libraryComponentConfig } from './libraryComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { timelineConfig } from './timeline';
@@ -132,6 +133,7 @@ const widgets = {
   paginationConfig,
   circularProgressbarConfig,
   spinnerConfig,
+  libraryComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   rangeSliderV2Config,
@@ -287,7 +289,7 @@ const combineProperties = (widget, universal, isArray = false) => {
 
 export const componentTypes = Object.values(widgets).map((widget) => {
   const baseProps = newRevampedComponents.has(widget.component) ? universalProps : legacyUniversalProps;
-  return {
+  const combined = {
     ...combineProperties(widget, baseProps),
     definition: combineProperties(
       widget.definition,
@@ -295,6 +297,13 @@ export const componentTypes = Object.values(widgets).map((widget) => {
       true,
     ),
   };
+  // Mirror of frontend componentTypes.js: LibraryComponent renders an iframe — a CSS
+  // class on its wrapper can never reach the content inside; no false affordance.
+  if (widget.component === 'LibraryComponent') {
+    delete combined.styles.cssClass;
+    delete combined.definition.styles.cssClass;
+  }
+  return combined;
 });
 
 export default widgets;

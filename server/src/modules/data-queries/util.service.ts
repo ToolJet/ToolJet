@@ -348,7 +348,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'bigquery' ||
             dataSource.kind === 'databricks' ||
             dataSource.kind === 'asana' ||
-            dataSource.kind === 'gmail'
+            dataSource.kind === 'gmail' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
@@ -745,13 +746,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // c: Replace all occurrences of {{ }} variables
         else if (
           typeof resolvedValue === 'string' &&
-          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/gs)?.length > 0 &&
           !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
         ) {
-          const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
+          const variables = resolvedValue.match(/\{\{(.*?)\}\}/gs);
 
           for (const variable of variables || []) {
-            let replacement = options[variable];
+            // Lookup keys are built from newline-flattened text (see `flattenedForLookup` above),
+            // so a variable matched across multiple lines must be flattened the same way to find it.
+            const lookupKey = variable.replace(/\n/g, ' ');
+            let replacement = (options as any)[lookupKey];
 
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {
