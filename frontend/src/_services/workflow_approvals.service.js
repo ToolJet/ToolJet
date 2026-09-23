@@ -7,7 +7,9 @@ export const workflowApprovalsService = {
   cancel,
 };
 
-function getAll(filters = {}, page = 1, perPage = 25) {
+// `signal` lets a caller abort a superseded request (e.g. the approvals page re-querying
+// before a previous filter/page request resolved) — see ApprovalsPage's `load()`.
+function getAll(filters = {}, page = 1, perPage = 25, signal) {
   const params = new URLSearchParams();
   params.set('page', page);
   params.set('per_page', perPage);
@@ -17,7 +19,7 @@ function getAll(filters = {}, page = 1, perPage = 25) {
   if (filters.from) params.set('from', filters.from);
   if (filters.to) params.set('to', filters.to);
 
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
   return fetch(`${config.apiUrl}/workflow-approvals?${params.toString()}`, requestOptions).then(handleResponse);
 }
 
