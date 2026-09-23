@@ -234,8 +234,8 @@ export const ErrorModal = ({ errorMsg, appSlug, isValidSession, errorType, appDe
                 isRestrictedType
                   ? 'btn restricted-back-btn'
                   : errorMsg?.retry || appSlug
-                    ? 'btn btn-primary'
-                    : 'btn btn-primary action-btn'
+                  ? 'btn btn-primary'
+                  : 'btn btn-primary action-btn'
               }
               onClick={() => {
                 eraseCookie('redirectPath');
