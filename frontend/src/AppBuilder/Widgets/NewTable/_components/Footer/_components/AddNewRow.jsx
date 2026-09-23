@@ -208,7 +208,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
+              <tr
+                key={row.id}
+                style={{ display: 'flex', minHeight: '32px' }}
+                className="table-row"
+                data-cy={`add-new-row-${row.index}`}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
