@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
@@ -37,7 +37,7 @@ export class WorkflowApprovalsController {
   @Post('by-id/:id/resolve')
   // Explicit return type to match the EE override (see the note on resolve below).
   async resolveById(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ResolveApprovalDto,
     @User() user: any
   ): Promise<{ status: 'resolved' }> {

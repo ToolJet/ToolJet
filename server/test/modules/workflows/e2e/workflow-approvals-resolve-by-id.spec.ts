@@ -147,6 +147,17 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .expect(400);
   });
 
+  it('rejects a non-UUID id with 400 instead of a raw query error', async () => {
+    const { tokenCookie } = await buildTestSession(builderUser, organizationId);
+
+    await request(app.getHttpServer())
+      .post('/api/workflow-approvals/by-id/not-a-uuid/resolve')
+      .set('Cookie', tokenCookie)
+      .set('tj-workspace-id', organizationId)
+      .send({ outcome: 'approved' })
+      .expect(400);
+  });
+
   it('resolves for a workspace admin even when not a listed approver', async () => {
     const seeded = await seedRequest('rbi-admin-override', {
       users: [],
@@ -228,5 +239,42 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .set('tj-workspace-id', organizationId)
       .send({ outcome: 'approved' })
       .expect(409);
+  });
+
+  it('pins authorization ahead of the state check: an unauthorized cross-workspace caller gets 403, not 409, for an already-resolved id', async () => {
+    const seeded = await seedRequest('rbi-order-leak-check', {
+      users: [builderUser.id],
+      groups: [],
+      emails: [],
+      tokenBypass: true,
+    });
+    const { tokenCookie: builderCookie } = await buildTestSession(builderUser, organizationId);
+
+    // Resolve it first, as the legitimate approver, so the row is no longer pending.
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/by-id/${seeded.id}/resolve`)
+      .set('Cookie', builderCookie)
+      .set('tj-workspace-id', organizationId)
+      .send({ outcome: 'approved' })
+      .expect(201);
+
+    // A caller from a different workspace, never a listed approver here, hits the same id. If
+    // the pending/expired check ran before authorization, this would 409 ("not pending") --
+    // disclosing that the id exists and is already resolved to a caller never authorized to act
+    // on it. Authorization must run first, so this stays 403 regardless of the request's status.
+    const { user: otherUser } = await setupOrganizationAndUser(app, {
+      email: 'resolve-by-id-order-check@tooljet.io',
+      password: 'password',
+      firstName: 'Order',
+      lastName: 'Check',
+    });
+    const { tokenCookie: otherCookie } = await buildTestSession(otherUser, otherUser.organizationId);
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/by-id/${seeded.id}/resolve`)
+      .set('Cookie', otherCookie)
+      .set('tj-workspace-id', otherUser.organizationId)
+      .send({ outcome: 'approved' })
+      .expect(403);
   });
 });

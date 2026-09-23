@@ -92,18 +92,14 @@ In `WorkflowApprovalsService` (EE `services/workflow-approvals.service.ts`),
    `via: 'super-admin'`. `ADMIN_OVERRIDE_CHANNELS = {'workspace-admin','super-admin'}`.
 `via` and `adminOverride` are threaded into `resumeWithDecision` audit metadata.
 
-Step 1 lives only in `authorizeResolver`, the token-aware wrapper used by the public
-`POST :token/resolve` route. Steps 2–3 live in `authorizeResolverForUser`, which has **no**
-token branch. `tokenBypass` defaults to `true` on every request, so any caller that did not
-present a token — the approvals list's per-row `canResolve`, resolve-by-id — must call
-`authorizeResolverForUser` directly; going through the wrapper would authorize every caller
-for every request in the workspace.
-
-`authorizeResolver` is a thin wrapper: it applies the `tokenBypass` short-circuit and then
-delegates to **`authorizeResolverForUser`**, which holds the identity paths (allowlist, groups,
-admin overrides) and has no token branch. Callers that present no token — the approvals list's
-`canResolve` and `POST by-id/:id/resolve` — must use `authorizeResolverForUser` directly;
-`tokenBypass` defaults to `true`, so going through the wrapper would authorize everyone.
+Step 1 lives only in `authorizeResolver`, the token-aware wrapper: it applies the `tokenBypass`
+short-circuit (which **defaults to `true`**) and is only correct for the public link route
+`POST :token/resolve`, where possessing the unguessable token *is* the authorization. Steps 2–3
+live in `authorizeResolverForUser`, which holds the identity paths (allowlist, groups, admin
+overrides) and has **no** token branch. Every caller that presents no token — the approvals
+list's per-row `canResolve` and `POST by-id/:id/resolve` — must call `authorizeResolverForUser`
+directly; going through the wrapper would authorize every caller for every request in the
+workspace.
 
 The approvals list's `canResolve` is **actionability, not authorization**:
 `authorized && status === 'pending'`. Consumers render the resolve control on that single
