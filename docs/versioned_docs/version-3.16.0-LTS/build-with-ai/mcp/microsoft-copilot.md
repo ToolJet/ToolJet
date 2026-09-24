@@ -9,7 +9,7 @@ This works with both ToolJet Cloud and self-hosted ToolJet.
 
 ## Prerequisites
 
-- The URL of a running ToolJet MCP server, ending in `/mcp`, for example `https://mcp.yourcompany.com/mcp`.
+- The URL of a running ToolJet MCP server, for example `https://tooljet-mcp.example.com/mcp`.
 - A Microsoft 365 tenant where you can create and publish Copilot Studio agents.
 
 ## How It Works
@@ -30,18 +30,7 @@ A token only works in the workspace it was created in, and every tool call runs 
 
 ## Step 2: Add ToolJet MCP to Your Agent
 
-In Copilot Studio, add an MCP server tool to your agent. For the general steps, see Microsoft's guide to [adding an MCP server to an agent](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent). Use these values:
-
-| Field | Value |
-|:------|:------|
-| **Server name** | `ToolJet MCP` |
-| **Description** | `Manage ToolJet workspaces: list and manage apps, users, datasources and ToolJet DB tables, and build or modify ToolJet apps` |
-| **Server URL** | Your ToolJet MCP server URL, ending in `/mcp` |
-| **Authentication** | **API key**, sent as a **Header** |
-| **Header name** | `x-tooljet-pat` |
-| **Key value** | Your ToolJet personal access token |
-
-Once the tool is added, it should list the ToolJet tools, such as `list_workspace_apps`, `create_app`, and `list_tables`. See [Supported Tools](/docs/build-with-ai/mcp/supported-tools) for the full list.
+In Copilot Studio, add an MCP server tool to your agent. For the general steps, see Microsoft's guide to [adding an MCP server to an agent](https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent).
 
 Add these instructions to the agent so it checks with the user before changing anything:
 
@@ -49,13 +38,43 @@ Add these instructions to the agent so it checks with the user before changing a
 You are a ToolJet assistant. Use the ToolJet MCP tools to inspect and manage the user's ToolJet workspace and build or modify apps when asked. Confirm before any destructive or mutating action. Be concise.
 ```
 
+Then add the ToolJet MCP server as a tool:
+
+1. In the **Add MCP server** dialog, enter these values and click **Add**:
+
+   | Field | Value |
+   |:------|:------|
+   | **Server name** | `ToolJet MCP` |
+   | **Server description** | `Manage ToolJet workspaces: list and manage apps, users, datasources and ToolJet DB tables, and build or modify ToolJet apps` |
+   | **Server URL** | Your ToolJet MCP server URL, for example `https://tooljet-mcp.example.com/mcp` |
+   | **Authentication** | **API key** |
+   | **Parameter type** | **Header** |
+   | **Header name** | `x-tooljet-pat` |
+   | **Key value** | Your ToolJet personal access token |
+
+   <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/microsoft-copilot/copilot-add-mcp-server.png" alt="Add MCP server dialog with the ToolJet MCP values" />
+
+2. When asked for a connection, create a new one and paste the same token into the `x-tooljet-pat` field.
+3. Open the **ToolJet MCP** tool. It should list the ToolJet tools, such as **List workspaces**, **List workspace apps**, and **Create app**. See [Supported Tools](/docs/build-with-ai/mcp/supported-tools) for the full list.
+4. Set **Authentication** to **End user account**, so each person who uses the agent connects with their own token and acts in ToolJet as themselves.
+
+   <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/microsoft-copilot/copilot-tools-loaded.png" alt="ToolJet MCP tool with the ToolJet tools loaded" />
+
+5. Save the agent.
+
 ## Step 3: Test the Agent
 
 Ask the agent:
 
-> List the apps in my ToolJet workspace.
+> What ToolJet workspace am I in?
 
-The agent should list your applications with a count. Once that works, try a build:
+The first time the agent uses a ToolJet tool, it shows a **Permission Required** card. Click **Approve**. If it asks you to connect first, use your ToolJet personal access token.
+
+The agent should reply with the name of the workspace your token was created in.
+
+<img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/microsoft-copilot/copilot-preview-test.png" alt="Agent replying with the ToolJet workspace name after the Permission Required card" />
+
+Once that works, try a build:
 
 - *"What ToolJet DB tables do I have?"*
 - *"Create an app called Hello World with a text component that says Hello, World! and give me the editor link."*
@@ -65,7 +84,9 @@ The agent should list your applications with a count. Once that works, try a bui
 
 | Symptom | Cause and fix |
 |:--------|:--------------|
-| The agent can't load the MCP tools (HTTP 400) | The agent can't reach the server. Check that the server URL is correct, uses `https`, and ends in `/mcp`. |
+| The agent can't load the MCP tools (HTTP 400) | The agent can't reach the server. Check that the server URL is correct and uses `https`. |
+| The agent can't load the MCP tools (HTTP 403) | The tool isn't using a valid connection. Remove the ToolJet MCP tool from the agent, add it again, and create a new connection with your token. |
+| The agent says it has no ToolJet tools | The tool isn't attached to the agent, or the agent wasn't saved. Check that **ToolJet MCP** is listed under **Tools**, save the agent, and start a new chat. |
 | Tool error "HTTP 401: Invalid personal access token" | The token is revoked, copied incompletely, or from a different ToolJet instance than the one the server calls. Create a new token and update the key value on the agent's connection. |
 | The agent sees a different workspace than expected | A token only works in the workspace it was created in. Create a token in the right workspace. |
 
