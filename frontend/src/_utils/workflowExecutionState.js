@@ -95,11 +95,13 @@ export function isExecutionInProgress(execution) {
  * Check if execution is in final state
  *
  * @param {Object} execution - Raw execution object
- * @returns {boolean} True if execution is completed, failed, or terminated
+ * @returns {boolean} True if execution is completed, failed, terminated, or unknown
  */
 export function isExecutionFinished(execution) {
   const state = getExecutionDisplayState(execution);
-  return ['completed', 'failed', 'terminated'].includes(state);
+  // 'unknown' has no live job and no path left to a terminal status — it will never progress,
+  // so callers waiting on completion must treat it as finished, not as still pending.
+  return ['completed', 'failed', 'terminated', 'unknown'].includes(state);
 }
 
 /**

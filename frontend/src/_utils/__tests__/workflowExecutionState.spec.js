@@ -1,6 +1,8 @@
 import {
   getExecutionDisplayState,
   getExecutionStatusText,
+  isExecutionFinished,
+  isExecutionInProgress,
   STALE_EXECUTION_THRESHOLD_MS,
 } from '@/_utils/workflowExecutionState';
 
@@ -64,5 +66,11 @@ describe('getExecutionDisplayState — unknown', () => {
 
   it('uses a five minute floor so a backed-up queue is not called dead', () => {
     expect(STALE_EXECUTION_THRESHOLD_MS).toBeGreaterThanOrEqual(5 * 60 * 1000);
+  });
+
+  it('treats unknown as finished, not in progress, so callers waiting on completion do not hang forever', () => {
+    const staleExecution = { executed: false, status: null, startedAt: minutesAgo(60) };
+    expect(isExecutionFinished(staleExecution)).toBe(true);
+    expect(isExecutionInProgress(staleExecution)).toBe(false);
   });
 });
