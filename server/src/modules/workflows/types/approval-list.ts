@@ -5,6 +5,15 @@ import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity'
 export interface ApprovalListFilters {
   statuses?: string[];
   appId?: string;
+  /**
+   * Narrow to the workflows filed under one dashboard folder.
+   *
+   * Matched on folder membership alone, ignoring `folder_apps.branch_id`: that column is scoped
+   * per git branch, but workflows are not git-synced, so a workflow sits in the same folder
+   * whichever branch is checked out — and the approvals list carries no branch context to match
+   * against in the first place.
+   */
+  folderId?: string;
   /** Free-text match against the approvers snapshot (user id, group id or email). */
   approver?: string;
   from?: Date;

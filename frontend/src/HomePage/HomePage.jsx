@@ -2596,7 +2596,9 @@ class HomePageComponent extends React.Component {
                 {/* A sibling view of this dashboard (e.g. the approvals tab) renders its own content
                     in place of the app list, keeping the folder sidebar, header and tabs around it. */}
                 {contentOverride ? (
-                  contentOverride
+                  // The folder sidebar is shared, so the override is told which folder is
+                  // selected and narrows itself the same way the app list would.
+                  React.cloneElement(contentOverride, { currentFolder })
                 ) : (
                   <>
                     {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}

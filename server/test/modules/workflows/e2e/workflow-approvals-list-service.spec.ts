@@ -14,6 +14,8 @@ import {
   createUserWorkflowPermissions,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
+  createFolder,
+  addAppToFolder,
   NONEXISTENT_UUID,
 } from 'test-helper';
 
@@ -23,6 +25,8 @@ describe('approvals list service :: canResolve', () => {
   let service: WorkflowApprovalsService;
   let organizationId: string;
   let appId: string;
+  /** The App row behind `appId` — addAppToFolder needs the entity, not just the id. */
+  let workflow: any;
   let versionId: string;
   let adminUser: any;
   let builderUser: any;
@@ -48,6 +52,7 @@ describe('approvals list service :: canResolve', () => {
     organization = org;
     organizationId = user.organizationId;
     const wf = await createWorkflowForUser(app, user, 'CanResolve wf');
+    workflow = wf;
     appId = wf.id;
     versionId = (await createWorkflowApplicationVersion(app, wf)).id;
 
@@ -75,9 +80,14 @@ describe('approvals list service :: canResolve', () => {
 
   // Each `it()` runs inside its own rolled-back SAVEPOINT, so rows seeded by one case are gone
   // by the next — every case seeds the request it asserts on.
-  async function seedRequest(token: string, approversSnapshot: Record<string, unknown>, status = 'pending') {
+  async function seedRequest(
+    token: string,
+    approversSnapshot: Record<string, unknown>,
+    status = 'pending',
+    target: { appId: string; versionId: string } = { appId, versionId }
+  ) {
     const execution = await saveEntity(WorkflowExecution, {
-      appVersionId: versionId,
+      appVersionId: target.versionId,
       startNodeId: null,
       executed: false,
       status: 'waiting',
@@ -106,9 +116,42 @@ describe('approvals list service :: canResolve', () => {
       status,
       approversSnapshot,
       organizationId,
-      appId,
+      appId: target.appId,
     });
   }
+
+  it('narrows the list to the workflows filed under one folder', async () => {
+    const snapshot = { users: [], groups: [], emails: [], tokenBypass: true };
+    const otherWorkflow = await createWorkflowForUser(app, adminUser, 'Unfiled wf');
+    const otherVersion = await createWorkflowApplicationVersion(app, otherWorkflow);
+    const folder = await createFolder(app, { name: 'Finance', type: 'workflow', organizationId });
+    await addAppToFolder(app, workflow, folder);
+
+    const inFolder = await seedRequest('in-folder', snapshot);
+    const outsideFolder = await seedRequest('outside-folder', snapshot, 'pending', {
+      appId: otherWorkflow.id,
+      versionId: otherVersion.id,
+    });
+
+    const { requests, meta } = await service.list(adminUser, { folderId: folder.id }, 1, 50);
+    const ids = requests.map((r) => r.id);
+
+    expect(ids).toContain(inFolder.id);
+    expect(ids).not.toContain(outsideFolder.id);
+    // The count must respect the filter too, or the pager offers pages that do not exist.
+    expect(meta.total).toBe(1);
+  });
+
+  it('returns nothing for a folder holding no workflows, rather than falling back to all', async () => {
+    const snapshot = { users: [], groups: [], emails: [], tokenBypass: true };
+    const emptyFolder = await createFolder(app, { name: 'Empty', type: 'workflow', organizationId });
+    await seedRequest('unfiled-request', snapshot);
+
+    const { requests, meta } = await service.list(adminUser, { folderId: emptyFolder.id }, 1, 50);
+
+    expect(requests).toHaveLength(0);
+    expect(meta.total).toBe(0);
+  });
 
   it('does not mark a row resolvable just because tokenBypass is on', async () => {
     // tokenBypass defaults to true on every request; a page caller presents no token.

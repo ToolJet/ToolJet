@@ -38,6 +38,7 @@ function getAll(filters = {}, page = 1, perPage = 25, signal) {
   params.set('per_page', perPage);
   (filters.statuses || []).forEach((status) => params.append('status', status));
   if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
   if (filters.approver) params.set('approver', filters.approver);
   if (filters.from) params.set('from', toLocalDayBoundary(filters.from, 'start'));
   if (filters.to) params.set('to', toLocalDayBoundary(filters.to, 'end'));

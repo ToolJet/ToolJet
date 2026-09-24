@@ -96,6 +96,15 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     if (filters.appId) {
       query.andWhere('request.app_id = :appId', { appId: filters.appId });
     }
+    if (filters.folderId) {
+      // A subquery rather than a join: `listForOrganization` depends on the id query staying
+      // join-free, because TypeORM only emits a real SQL LIMIT/OFFSET (and so only lets the
+      // composite index drive the scan) while `joinAttributes` is empty. See the note there.
+      query.andWhere(
+        'request.app_id IN (SELECT folder_apps.app_id FROM folder_apps WHERE folder_apps.folder_id = :folderId)',
+        { folderId: filters.folderId }
+      );
+    }
     if (filters.from) {
       query.andWhere('request.created_at >= :from', { from: filters.from });
     }

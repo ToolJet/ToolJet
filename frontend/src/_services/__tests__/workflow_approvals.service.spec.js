@@ -71,6 +71,19 @@ describe('workflowApprovalsService.getAll — other filters', () => {
     expect(sentParam('app_id')).toBe('wf-1');
   });
 
+  it('sends the folder filter as folder_id', async () => {
+    await workflowApprovalsService.getAll({ folderId: 'folder-1' });
+
+    expect(sentParam('folder_id')).toBe('folder-1');
+  });
+
+  it('omits folder_id entirely when no folder is selected', async () => {
+    // "All workflows" is the absence of the filter, not a folder id the server has to interpret.
+    await workflowApprovalsService.getAll({ statuses: ['pending'] });
+
+    expect(sentParam('folder_id')).toBeNull();
+  });
+
   it('repeats `status` once per selected status', async () => {
     await workflowApprovalsService.getAll({ statuses: ['pending', 'resolved'] });
 
