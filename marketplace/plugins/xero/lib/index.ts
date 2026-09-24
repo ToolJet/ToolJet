@@ -12,18 +12,19 @@ import got, { OptionsOfTextResponseBody } from 'got';
 
 export default class Xero implements QueryService {
   authUrl(source_options: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = source_options.oauth_type.value;
 
     let clientId: string;
+    let host = process.env.TOOLJET_HOST;
 
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.XERO_CLIENT_ID;
     } else {
       clientId = source_options?.client_id?.value;
+      host = (source_options as any)?.tj_redirect_host?.value || process.env.TOOLJET_HOST;
     }
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
     if (!clientId) {
       const errorMessage = 'Missing OAuth credentials: "clientId" or "clientSecret" not provided.';
@@ -216,7 +217,9 @@ export default class Xero implements QueryService {
 
     const clientSecret = oauth_type === 'tooljet_app' ? process.env.XERO_CLIENT_SECRET : getOption('client_secret');
 
-    const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
+    const redirectHost =
+      oauth_type === 'tooljet_app' ? process.env.TOOLJET_HOST : getOption('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const redirectUri = `${redirectHost}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
     const data = new URLSearchParams({
       code: authCode,

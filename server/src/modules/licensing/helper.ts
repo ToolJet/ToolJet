@@ -172,8 +172,14 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.QUERY_FOLDERS:
       return licenseInstance.queryFolders;
 
+    case LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES:
+      return licenseInstance.customComponentLibraries;
+
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;
+
+    case LICENSE_FIELD.PUBLIC_APP:
+      return licenseInstance.publicApp;
 
     default:
       return licenseInstance.terms;

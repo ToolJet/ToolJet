@@ -109,6 +109,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         opts
       );
 
+      const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+      if (!isTooljetManagedApp) {
+        sourceOptions['tj_redirect_host'] = await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+      }
+
       // Determine whether query timeout is set, to initiate abort controller
       const queryTimeoutMs =
         typeof parsedQueryOptions['query_timeout'] === 'string' && parsedQueryOptions['query_timeout'].trim() === ''
@@ -212,6 +217,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                   provider: dataSource.kind,
                   source_options: sourceOptions,
                   plugin_id: dataSource.pluginId,
+                  organization_id: organizationId,
+                  environment_id: environmentId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -264,6 +271,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user,
               opts
             ));
+            if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+              sourceOptions['tj_redirect_host'] =
+                await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+            }
             queryStatus.setOptions(parsedQueryOptions);
             abortCtrl.start();
 
@@ -293,13 +304,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'slack' ||
             dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2' ||
-            dataSource.kind === 'servicenow'
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
               provider: dataSource.kind,
               source_options: sourceOptions,
               plugin_id: dataSource.pluginId,
+              organization_id: organizationId,
+              environment_id: environmentId,
             });
             return {
               status: 'needs_oauth',
@@ -438,7 +452,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto): Promise<object> {
+  async listTables(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    listTablesOptions?: ListTablesDto
+  ): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -465,12 +484,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
       dataSourceOptions.updatedAt,
-      { 
-        schema: listTablesOptions?.schema, 
+      {
+        schema: listTablesOptions?.schema,
         datasetId: listTablesOptions?.datasetId,
-        search: listTablesOptions?.search, 
-        page: listTablesOptions?.page, 
-        limit: listTablesOptions?.limit 
+        search: listTablesOptions?.search,
+        page: listTablesOptions?.page,
+        limit: listTablesOptions?.limit,
       }
     );
   }
@@ -677,13 +696,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // c: Replace all occurrences of {{ }} variables
         else if (
           typeof resolvedValue === 'string' &&
-          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/gs)?.length > 0 &&
           !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
         ) {
-          const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
+          const variables = resolvedValue.match(/\{\{(.*?)\}\}/gs);
 
           for (const variable of variables || []) {
-            let replacement = options[variable];
+            // Lookup keys are built from newline-flattened text (see `flattenedForLookup` above),
+            // so a variable matched across multiple lines must be flattened the same way to find it.
+            const lookupKey = variable.replace(/\n/g, ' ');
+            let replacement = (options as any)[lookupKey];
 
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {

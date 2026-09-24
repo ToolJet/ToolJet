@@ -6,7 +6,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -70,6 +70,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timeline',
 ];
 
+const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
+
 const RenderWidget = ({
   id,
   widgetHeight,
@@ -122,6 +124,8 @@ const RenderWidget = ({
   const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
   const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
+  const resetComponentExposedValues = useStore((state) => state.resetComponentExposedValues, shallow);
+  const resetComponentExposedValuesPerRow = useStore((state) => state.resetComponentExposedValuesPerRow, shallow);
   const resolvedValidation = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
@@ -201,6 +205,16 @@ const RenderWidget = ({
     setKey(Math.random());
   }, []);
 
+  const resetExposedVariables = useCallback(() => {
+    if (nearestListviewId && resolveIndex) {
+      // Inside a ListView — per-row reset (flat reset would clear every row's array slot)
+      const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
+      resetComponentExposedValuesPerRow(id, indices, moduleId);
+    } else {
+      resetComponentExposedValues(id, moduleId);
+    }
+  }, [id, moduleId, resetComponentExposedValues, resetComponentExposedValuesPerRow, nearestListviewId, resolveIndex]);
+
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
     (key, value) => {
@@ -258,14 +272,21 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, moduleId, customResolvables?.[effectiveSubContainerIndex] ?? {}, options);
+      fireEvent(
+        eventName,
+        id,
+        moduleId,
+        customResolvables?.[effectiveSubContainerIndex] ?? {},
+        options,
+        resolveIndex ?? null
+      );
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
-  setDefaultExposedValues(id, parentId, componentType);
+  setDefaultExposedValues(id, parentId, componentType, moduleId);
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
@@ -298,7 +319,8 @@ const RenderWidget = ({
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
-  const hasUserTooltip = !!userTooltipContent?.toString().trim();
+  const hasUserTooltip = !!String(userTooltipContent ?? '').trim();
+  const selfScopesTooltip = WIDGETS_WITH_PORTALED_CONTENT.includes(component?.component);
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
@@ -336,6 +358,7 @@ const RenderWidget = ({
           fireEvent={fireEventWrapper}
           validate={validate}
           resetComponent={resetComponent}
+          resetExposedVariables={resetExposedVariables}
           onComponentClick={onComponentClick}
           darkMode={darkMode}
           componentName={componentName}
@@ -344,6 +367,9 @@ const RenderWidget = ({
           currentMode={currentMode}
           subContainerIndex={subContainerIndex}
           componentType={componentType}
+          {...(selfScopesTooltip && {
+            tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
+          })}
         />
       </TrackedSuspense>
     </div>
@@ -354,21 +380,43 @@ const RenderWidget = ({
   // tooltip surfaces the widget's *description*, not user-authored content.
   if (inCanvas) {
     return (
-      <ErrorBoundary widgetType={componentType}>
-        <WidgetTooltip
-          content={userTooltipContent}
-          format={userTooltipFormat}
-          show={hasUserTooltip}
-          darkMode={darkMode}
-        >
-          {innerWidget}
-        </WidgetTooltip>
-      </ErrorBoundary>
+      <FallbackBoundary
+        variant="inline"
+        label={componentName}
+        location={`Component ${componentName}`}
+        canRetry
+        canReport={currentMode === 'edit'}
+        darkMode={darkMode}
+        resetKeys={[id]}
+        widgetType={componentType}
+      >
+        {selfScopesTooltip ? (
+          innerWidget
+        ) : (
+          <WidgetTooltip
+            content={userTooltipContent}
+            format={userTooltipFormat}
+            show={hasUserTooltip}
+            darkMode={darkMode}
+          >
+            {innerWidget}
+          </WidgetTooltip>
+        )}
+      </FallbackBoundary>
     );
   }
 
   return (
-    <ErrorBoundary widgetType={componentType}>
+    <FallbackBoundary
+      variant="inline"
+      label={componentName}
+      location={`Component ${componentName}`}
+      canRetry
+      canReport={currentMode === 'edit'}
+      darkMode={darkMode}
+      resetKeys={[id]}
+      widgetType={componentType}
+    >
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}
@@ -381,7 +429,7 @@ const RenderWidget = ({
       >
         {innerWidget}
       </OverlayTrigger>
-    </ErrorBoundary>
+    </FallbackBoundary>
   );
 };
 
