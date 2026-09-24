@@ -404,6 +404,11 @@ export class OnboardingService implements IOnboardingService {
 
       const user: User = organizationUser.user;
 
+      if (loggedInUser && loggedInUser.email.toLowerCase() !== user.email.toLowerCase()) {
+        const { type, message, inputError } = SIGNUP_ERRORS.INCORRECT_INVITED_EMAIL;
+        throw new NotAcceptableException({ message: { message, type, inputError } });
+      }
+
       if (user.invitationToken) {
         // User sign up link send - not activated account
         this.eventEmitter.emit('emailEvent', {

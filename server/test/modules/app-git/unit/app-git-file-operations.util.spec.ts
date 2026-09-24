@@ -27,8 +27,9 @@ describe('AppGitFileOperationsUtil (pure)', () => {
   beforeEach(() => convertMock.mockClear());
 
   describe('static resourceFolderForApp', () => {
-    it('routes modules under modules/ and everything else under apps/', () => {
+    it('routes modules under modules/, workflows under workflows/ and everything else under apps/', () => {
       expect(AppGitFileOperationsUtil.resourceFolderForApp({ type: 'module' })).toBe('modules');
+      expect(AppGitFileOperationsUtil.resourceFolderForApp({ type: 'workflow' })).toBe('workflows');
       expect(AppGitFileOperationsUtil.resourceFolderForApp({ type: 'front-end' })).toBe('apps');
       expect(AppGitFileOperationsUtil.resourceFolderForApp({})).toBe('apps');
       expect(AppGitFileOperationsUtil.resourceFolderForApp(undefined as any)).toBe('apps');
@@ -36,9 +37,9 @@ describe('AppGitFileOperationsUtil (pure)', () => {
   });
 
   describe('static metaFileForApp', () => {
-    it('picks moduleMeta.json for modules and appMeta.json otherwise', () => {
+    it('picks moduleMeta.json for modules, workflowMeta.json for workflows and appMeta.json otherwise', () => {
       expect(AppGitFileOperationsUtil.metaFileForApp({ type: 'module' })).toBe('moduleMeta.json');
-      expect(AppGitFileOperationsUtil.metaFileForApp({ type: 'workflow' })).toBe('appMeta.json');
+      expect(AppGitFileOperationsUtil.metaFileForApp({ type: 'workflow' })).toBe('workflowMeta.json');
       expect(AppGitFileOperationsUtil.metaFileForApp(undefined as any)).toBe('appMeta.json');
     });
   });
