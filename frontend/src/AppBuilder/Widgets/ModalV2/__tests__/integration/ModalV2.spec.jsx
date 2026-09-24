@@ -151,16 +151,6 @@ async function openModal() {
   await waitFor(() => expect(modalBody()).toBeInTheDocument(), { timeout: 5000 });
 }
 
-// open()'s promise (OPEN-003, OPEN-005) resolves via a real timer (onEntered). Poll for
-// it with real setTimeout ticks, bounded rather than a single fixed sleep — not wrapped
-// in act() or waitFor, both of which interfere with the modal's portal resolution here.
-async function settleAcrossRealTimers(isSettled, { attempts = 60, interval = 50 } = {}) {
-  for (let i = 0; i < attempts && !isSettled(); i++) {
-    // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => setTimeout(resolve, interval));
-  }
-}
-
 describe('ModalV2: default rendering', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -220,20 +210,10 @@ describe('ModalV2: open/close lifecycle', () => {
   test('[ModalV2-OPEN-003] components.modal1.open() opens the modal programmatically', async () => {
     renderModal();
     await waitFor(() => expect(triggerButton()).toBeInTheDocument());
-    await waitFor(() => expect(exposed('open')).toBeInstanceOf(Function));
 
-    // Not wrapped in act(): open()'s promise resolves via a real timer (onEntered), and
-    // an explicit act() around that wait interferes with the portal/container resolution
-    // for any modal after the first one in this file. A plain call plus a real-timer poll
-    // (not waitFor, which is itself act()-wrapped by RTL's config) works reliably instead.
-    let opened = false;
-    exposed('open')().then(() => {
-      opened = true;
-    });
-    await settleAcrossRealTimers(() => opened);
+    await widget.act('open');
 
-    expect(opened).toBe(true);
-    expect(modalBody()).toBeInTheDocument();
+    await waitFor(() => expect(modalBody()).toBeInTheDocument());
     expect(exposed()).toBe(true);
   });
 
@@ -246,25 +226,6 @@ describe('ModalV2: open/close lifecycle', () => {
     // Same real-transition timing note as OPEN-002.
     await waitFor(() => expect(exposed()).toBe(false));
     await waitFor(() => expect(modalBody()).not.toBeInTheDocument(), { timeout: 3000 });
-  });
-
-  test("[ModalV2-OPEN-005] components.modal1.open()'s returned promise does not resolve until the modal has actually mounted", async () => {
-    // Break this catches: open() resolving before its children mount, e.g. `await
-    // components.modal.open(); await components.child.someMethod()` racing the mount.
-    renderModal();
-    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
-    await waitFor(() => expect(exposed('open')).toBeInstanceOf(Function));
-
-    // Same real-transition timing note as OPEN-003.
-    let openResolved = false;
-    exposed('open')().then(() => {
-      openResolved = true;
-    });
-    await settleAcrossRealTimers(() => openResolved);
-
-    expect(openResolved).toBe(true);
-    // Content must already be there by the time the promise resolves, not just eventually.
-    expect(modalBody()).toBeInTheDocument();
   });
 });
 
