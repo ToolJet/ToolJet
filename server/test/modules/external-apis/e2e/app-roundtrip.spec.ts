@@ -7,7 +7,7 @@ import { createUser, initTestApp, closeTestApp, createApplication, createApplica
  * External API — cross-cutting round trip: export (all versions) → import → list.
  *
  * The single-version happy paths for export/import individually are covered in
- * app-export.e2e-spec.ts / app-import.e2e-spec.ts. This file adds the one thing those
+ * app-export.spec.ts / app-import.spec.ts. This file adds the one thing those
  * don't: a MULTI-VERSION app surviving a full export→import→list cycle with its version
  * count intact, exercising exportAllVersions=true end-to-end and doubling as a regression
  * test for the processAllWorkspaceAppsData raw-column fix (versions[] population on list).

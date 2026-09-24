@@ -26,7 +26,7 @@ describe.skip('[QUARANTINED] POST /workflows — branch_id assignment', () => {
   }
 
   // Task 3.5 superseded Task 0's NULL-branch_id design: workflows now always resolve to
-  // the org's default branch (see workflow-branch-id-assignment.e2e-spec.ts for the fuller
+  // the org's default branch (see workflow-branch-id-assignment.spec.ts for the fuller
   // coverage of that behavior, including the DTO-supplied-branchId-is-ignored case).
   it("should create a workflow with the org's default (non-null) branch_id on its app_versions row", async () => {
     const admin = await createAdmin(app, 'workflow-branch-id-admin@tooljet.io');

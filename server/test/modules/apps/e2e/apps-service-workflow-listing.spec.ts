@@ -20,8 +20,8 @@ describe('AppsService — workflow metadata in create response and listing', () 
     const admin = await createAdmin(app, 'service-create-admin@tooljet.io');
     // createAdmin/createUser create the org via a bare repository.save, bypassing the
     // production signup flow that auto-seeds AppEnvironment rows — POST /apps needs them
-    // seeded explicitly (mirrors the pattern in apps-util-service-create.e2e-spec.ts and
-    // workflow-create-branch-id.e2e-spec.ts).
+    // seeded explicitly (mirrors the pattern in apps-util-service-create.spec.ts and
+    // workflow-create-branch-id.spec.ts).
     await ensureAppEnvironments(app, admin.workspace.id);
 
     const res = await request(app.getHttpServer())

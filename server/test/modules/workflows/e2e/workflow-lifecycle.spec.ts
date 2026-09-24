@@ -19,7 +19,7 @@ import {
 
 // Workflows (App type='workflow') always resolve app_versions.branch_id to the
 // org's default WorkspaceBranch, regardless of the caller's active branch or any
-// branchId supplied in the request body (see workflow-create-branch-id.e2e-spec.ts,
+// branchId supplied in the request body (see workflow-create-branch-id.spec.ts,
 // commit b61ccf667d). None of app-git/git-sync/workspace-branches source has a single
 // reference to "workflow" -- there is no workflow-specific push/pull. So git-sync
 // being configured, enabled, and branching-on should be a complete no-op for every

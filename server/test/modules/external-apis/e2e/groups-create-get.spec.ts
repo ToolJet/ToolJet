@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
  * External API — POST /ext/workspace/:workspaceId/groups (create)
  *                 GET  /ext/workspace/:workspaceId/groups/:groupId (get one)
  *
- * List/patch/delete are covered in test/modules/workflows/e2e/external-api-groups.e2e-spec.ts.
+ * List/patch/delete are covered in test/modules/workflows/e2e/external-api-groups.spec.ts.
  * Tested cases:
  *   - Auth: missing header, wrong token
  *   - create: 201 no body, name validation (length, charset), workspace not found,
