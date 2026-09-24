@@ -208,6 +208,52 @@ jobs:
   # ---------------------------------------------------------------------------
   # 3. Test jobs — need plugins build artifact
   # ---------------------------------------------------------------------------
+  # Frontend jest suite — needs no build artifact, so it runs parallel to the builds.
+  # Runs in both lanes: the whole suite takes seconds, and scoping it to changed
+  # files let PRs pass green without running a test.
+  test-frontend:
+    name: 'Test Suite · frontend'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci
+      # Layout first: a misfiled or *.test.* spec silently never runs, so this
+      # must fail the build before the suite reports a misleading green.
+      - name: Validate test layout
+        run: npm run test:layout
+      # Existing untouched widgets remain a report-only backfill. New widget
+      # definitions and modified widget tests must already have an approved
+      # behavior contract before CI accepts them.
+      - name: Validate widget testing contracts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[] | [.status, .filename] | @tsv' | \
+              npm run validate:widget-testing-contracts -- --changed-files-stdin
+          else
+            npm run validate:widget-testing-contracts
+          fi
+      - name: Run full test suite with coverage
+        run: npm run test:ci
+      # Fails if an App Builder source file is not assigned to a subsystem in
+      # app-builder-coverage-manifest.json. The harness contract spec already
+      # runs in the full suite above via testMatch.
+      - name: Validate App Builder coverage manifest
+        run: npm run validate:app-builder-coverage-manifest
+
   # Unit and e2e run sequentially in one job, not two in parallel: cypress-platform
   # (~60min) is the run's real critical path, so serializing unit (~3-4min) ahead of
   # e2e costs zero wall-clock while saving a whole duplicate checkout+submodule+cache
@@ -735,6 +781,7 @@ jobs:
       - build-plugins
       - build-marketplace
       - test-changed
+      - test-frontend
       - test-server
       - test-gitsync
       - cypress-platform
@@ -836,6 +883,7 @@ jobs:
             "build-frontend:${{ needs.build-frontend.result }}"
             "build-plugins:${{ needs.build-plugins.result }}"
             "build-marketplace:${{ needs.build-marketplace.result }}"
+            "test-frontend:${{ needs.test-frontend.result }}"
           )
           if [[ "$MODE" == "changed" ]]; then
             results=("${builds[@]}" "test-changed:${{ needs.test-changed.result }}")
@@ -901,6 +949,7 @@ jobs:
           RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
           RESULT_E2E: ${{ needs.test-server.outputs.e2e || needs.test-server.result }}
           RESULT_CHANGED: ${{ needs.test-changed.result }}
+          RESULT_FRONTEND: ${{ needs.test-frontend.result }}
           RESULT_CYPRESS_PLATFORM: ${{ needs.cypress-platform.result }}
           RESULT_CYPRESS_MARKETPLACE: ${{ needs.cypress-marketplace.result }}
         run: |
