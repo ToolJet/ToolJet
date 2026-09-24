@@ -711,6 +711,33 @@ describe('Table: search and filter', () => {
     widget.render({ properties: { showFilterButton: binding('{{false}}') } });
     await waitFor(() => expect(document.querySelector(`[data-cy="${NAME}-filter-button"]`)).not.toBeInTheDocument());
   });
+
+  test('[Table-BUG-011] setFilters can target a column whose configured name resolves to a non-string value', async () => {
+    // Break this catches: generateColumnsData.js leaves columnDef.header as whatever type the
+    // column's fx-bound name resolves to (e.g. the Number 2026 for {{2026}}), never coerced to
+    // a string. setFilters's `column` argument is always a string, so TableExposedVariables.jsx's
+    // `col.columnDef?.header === column` match never succeeds for such a column — the filter
+    // entry is silently dropped instead of narrowing the rows.
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([
+            { id: 1, y: 1 },
+            { id: 2, y: null },
+            { id: 3, y: 2 },
+          ])}}}`
+        ),
+        columns: {
+          value: [{ name: '{{2026}}', key: 'y', id: 'col-y', columnType: 'number', columnSize: 80 }],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(3));
+
+    await widget.act('setFilters', [{ column: '2026', condition: 'isNotEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+  });
 });
 
 const checkboxIn = (rowEl) => rowEl?.querySelector('[data-cy="checkbox-input"]');
