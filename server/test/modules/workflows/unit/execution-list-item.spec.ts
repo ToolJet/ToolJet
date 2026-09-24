@@ -37,16 +37,27 @@ describe('toExecutionListItem', () => {
     expect(toExecutionListItem({ ...baseRow, triggerType: null }).triggerType).toBe('unknown');
   });
 
-  it('tolerates a run whose environment was never resolved', () => {
-    expect(toExecutionListItem({ ...baseRow, environment: undefined }).environment).toBeNull();
-  });
-
-  it('tolerates a manual run with no schedule', () => {
-    expect(toExecutionListItem({ ...baseRow, schedule: undefined }).schedule).toBeNull();
-  });
-
   it('leaves an unfinished run without a finish time', () => {
     expect(toExecutionListItem({ ...baseRow, finishedAt: null }).finishedAt).toBeNull();
+  });
+
+  // The repository's `listForOrganization` resolves app/appVersion/environment/schedule via
+  // `leftJoinAndMapOne`. TypeORM's RawSqlResultsToEntityTransformer sets an unmatched mapped
+  // one-to-one join to `null`, never `undefined` — so `null` is the case that must be pinned here.
+  // `undefined` is kept too, cheaply, in case a hand-built row or a future change produces one.
+  describe.each([
+    ['app', 'workflow'],
+    ['appVersion', 'version'],
+    ['environment', 'environment'],
+    ['schedule', 'schedule'],
+  ] as const)('when %s is missing', (rowKey, resultKey) => {
+    it(`yields a null ${resultKey} for the real runtime case (${rowKey}: null)`, () => {
+      expect(toExecutionListItem({ ...baseRow, [rowKey]: null })[resultKey]).toBeNull();
+    });
+
+    it(`also yields a null ${resultKey} for ${rowKey}: undefined`, () => {
+      expect(toExecutionListItem({ ...baseRow, [rowKey]: undefined })[resultKey]).toBeNull();
+    });
   });
 });
 

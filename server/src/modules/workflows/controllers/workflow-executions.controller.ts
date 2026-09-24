@@ -24,6 +24,8 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   // /workflow_executions/workspace would resolve as "fetch the execution with id 'workspace'".
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
   @Get('workspace')
+  // Explicit return type to match the EE override, or the EE subclass trips TS2416 (its concrete
+  // return isn't assignable to an inferred Promise<void>).
   async listForWorkspace(
     @Query() query: ListExecutionsDto,
     @User() user?: any
@@ -33,6 +35,8 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
 
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
   @Post('workspace/states')
+  // Explicit return type to match the EE override, or the EE subclass trips TS2416 (its concrete
+  // return isn't assignable to an inferred Promise<void>).
   async workspaceStates(
     @Body() body: { executionIds: string[] },
     @User() user?: any
