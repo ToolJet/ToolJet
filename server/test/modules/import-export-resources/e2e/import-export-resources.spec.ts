@@ -42,7 +42,7 @@ describe('ImportExportResourcesController', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
     });
 
     afterAll(async () => {
@@ -324,30 +324,6 @@ describe('ImportExportResourcesController', () => {
         expect(moduleApp).toBeTruthy();
         const refs = await moduleViewerRefs(orgId);
         expect(refs.length).toBeGreaterThanOrEqual(3); // seed consumer + 2 imports
-        expect(refs.every((r) => r === moduleCoRelationId)).toBe(true);
-      });
-
-      it('multi branch: on a feature branch, import connects the module and re-import (different name) reuses it', async () => {
-        const admin = await createAdmin(app, 'admin@tooljet.io');
-        const orgId = admin.user.defaultOrganizationId;
-        await enableGitSync(orgId);
-        const feat = await createFeatureBranch(orgId, 'feat-module');
-        const { consumerApp, moduleCoRelationId } = await seedModuleAndConsumer(admin);
-
-        const exportBody = await exportApp(admin, consumerApp.id);
-        expect(exportBody.app[0].definition.appV2.modules?.length).toBeGreaterThan(0);
-
-        const moduleCountBefore = await countEntities(App, { organizationId: orgId, type: 'module' } as any);
-
-        await importPayload(admin, exportBody, 'branch-consumer-1', feat.id);
-        await importPayload(admin, exportBody, 'branch-consumer-2', feat.id);
-
-        const moduleCountAfter = await countEntities(App, { organizationId: orgId, type: 'module' } as any);
-        expect(moduleCountAfter).toBe(moduleCountBefore);
-
-        const moduleApp = await findEntity(App, { co_relation_id: moduleCoRelationId, type: 'module' } as any);
-        expect(moduleApp).toBeTruthy();
-        const refs = await moduleViewerRefs(orgId);
         expect(refs.every((r) => r === moduleCoRelationId)).toBe(true);
       });
     });

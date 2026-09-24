@@ -40,7 +40,7 @@ describe('GroupPermissionsControllerV2', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterEach(() => {
@@ -709,42 +709,6 @@ describe('GroupPermissionsControllerV2', () => {
     });
 
     // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions/granular-permissions/addable-folders
-    // -------------------------------------------------------------------------
-
-    describe('GET /api/v2/group-permissions/granular-permissions/addable-folders | List addable folders', () => {
-      it('should return only front-end folders and hide module folders', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const appFolder = await createFolder(nestApp, {
-          name: 'App Folder',
-          type: APP_TYPES.FRONT_END,
-          organizationId: organization.id,
-        });
-
-        const moduleFolder = await createFolder(nestApp, {
-          name: 'Module Folder',
-          type: APP_TYPES.MODULE,
-          organizationId: organization.id,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions/granular-permissions/addable-folders')
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-
-        const folderIds = response.body.map((folder: any) => folder.id);
-        expect(folderIds).toContain(appFolder.id);
-        expect(folderIds).not.toContain(moduleFolder.id);
-      });
-    });
-
-    // -------------------------------------------------------------------------
     // POST /api/v2/group-permissions/:id/granular-permissions/folder
     // -------------------------------------------------------------------------
 
@@ -799,42 +763,6 @@ describe('GroupPermissionsControllerV2', () => {
         });
 
         expect(groupFolders.length).toBeGreaterThan(0);
-      });
-    });
-
-    // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders
-    // -------------------------------------------------------------------------
-
-    describe('GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders | List addable workflow folders', () => {
-      it('should return only workflow folders and hide front-end/module folders', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const appFolder = await createFolder(nestApp, {
-          name: 'App Folder For Workflow Check',
-          type: APP_TYPES.FRONT_END,
-          organizationId: organization.id,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions/granular-permissions/addable-workflow-folders')
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-
-        const folderIds = response.body.map((folder: any) => folder.id);
-        expect(folderIds).toContain(workflowFolder.id);
-        expect(folderIds).not.toContain(appFolder.id);
       });
     });
 

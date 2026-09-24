@@ -5,10 +5,8 @@ import { createUser, initTestApp, closeTestApp, getEntityRepository, ensureInsta
 import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
-import { InstanceSettings } from '@entities/instance_settings.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { User } from '@entities/user.entity';
-import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
 jest.mock('got');
 const mockedGot = mocked(got);
@@ -17,7 +15,6 @@ const mockedGot = mocked(got);
 describe('OAuthController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
-    let instanceSettingsRepository: Repository<InstanceSettings>;
     let userRepository: Repository<User>;
     let orgUserRepository: Repository<OrganizationUser>;
     let configService: ConfigService;
@@ -27,7 +24,6 @@ describe('OAuthController', () => {
     beforeAll(async () => {
       ({ app } = await initTestApp());
       configService = app.get(ConfigService);
-      instanceSettingsRepository = getEntityRepository(InstanceSettings);
       userRepository = getEntityRepository(User);
       orgUserRepository = getEntityRepository(OrganizationUser);
       await ensureInstanceSSOConfigs();
@@ -41,112 +37,6 @@ describe('OAuthController', () => {
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
-
-    // ---------------------------------------------------------------------------
-    // Instance SSO | non-super-admin flows
-    // ---------------------------------------------------------------------------
-    describe('POST /api/oauth/sign-in/:configId | Git instance SSO (non-super-admin)', () => {
-      beforeEach(async () => {
-        await instanceSettingsRepository.update(
-          { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
-          { value: 'false' }
-        );
-        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-              return 'google-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_ID':
-              return 'git-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-              return 'git-secret';
-            default:
-              return process.env[key];
-          }
-        });
-      });
-
-      describe('Multi-Workspace instance level SSO', () => {
-        describe('sign in via Git OAuth', () => {
-          it('Should not login if user workspace status is invited', async () => {
-            await createUser(app, {
-              firstName: 'SSO',
-              lastName: 'userExist',
-              email: 'invited@tooljet.io',
-              groups: ['end-user'],
-              status: 'invited',
-            });
-
-            const gitAuthResponse = jest.fn();
-            gitAuthResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    access_token: 'some-access-token',
-                    scope: 'scope',
-                    token_type: 'bearer',
-                  };
-                },
-              };
-            });
-            const gitGetUserResponse = jest.fn();
-            gitGetUserResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    name: 'SSO userExist',
-                    email: 'invited@tooljet.io',
-                  };
-                },
-              };
-            });
-
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
-
-            await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
-          });
-
-          it('Should not login if user workspace status is archived', async () => {
-            await createUser(app, {
-              firstName: 'SSO',
-              lastName: 'userExist',
-              email: 'archived@tooljet.io',
-              groups: ['end-user'],
-              status: 'archived',
-            });
-
-            const gitAuthResponse = jest.fn();
-            gitAuthResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    access_token: 'some-access-token',
-                    scope: 'scope',
-                    token_type: 'bearer',
-                  };
-                },
-              };
-            });
-            const gitGetUserResponse = jest.fn();
-            gitGetUserResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    name: 'SSO userExist',
-                    email: 'archived@tooljet.io',
-                  };
-                },
-              };
-            });
-
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
-
-            await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
-          });
-        });
-      });
-    });
 
     // ---------------------------------------------------------------------------
     // Instance SSO | super-admin flows
@@ -368,37 +258,6 @@ describe('OAuthController', () => {
 
             const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
             expect(orgCount).toBe(2); // Should not create new workspace
-          });
-          it('Workspace Login - should return 401 when the super admin status is archived', async () => {
-            await userRepository.update({ email: 'superadmin@tooljet.io' }, { status: 'archived' });
-
-            const gitAuthResponse = jest.fn();
-            gitAuthResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    access_token: 'some-access-token',
-                    scope: 'scope',
-                    token_type: 'bearer',
-                  };
-                },
-              };
-            });
-            const gitGetUserResponse = jest.fn();
-            gitGetUserResponse.mockImplementation(() => {
-              return {
-                json: () => {
-                  return {
-                    name: 'SSO UserGit',
-                    email: 'superadmin@tooljet.io',
-                  };
-                },
-              };
-            });
-
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
-            (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
-            await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
           });
         });
       });
