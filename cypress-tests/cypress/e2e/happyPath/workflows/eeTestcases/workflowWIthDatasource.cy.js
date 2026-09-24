@@ -80,6 +80,9 @@ describe("Workflows - query node execution per data source", () => {
     // expanded, so expansion is capped.
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
+    // The data source can't be deleted while a workflow still references it
+    // through this query node, so the workflow goes first.
+    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 
@@ -103,6 +106,7 @@ describe("Workflows - query node execution per data source", () => {
 
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
 
+    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 
@@ -184,6 +188,7 @@ describe("Workflows - query node execution per data source", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
 
+    cy.apiDeleteWorkflow(data.workflowName);
     navigateBackToWorkflowsDashboard();
     deleteDatasource(dataSourceName);
   });

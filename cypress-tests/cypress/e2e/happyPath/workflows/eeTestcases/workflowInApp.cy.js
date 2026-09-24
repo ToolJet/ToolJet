@@ -80,6 +80,9 @@ describe("Workflows - running from an app", () => {
 
     // KNOWN GAP: see the RunJS case above.
 
+    // The data source can't be deleted while a workflow still references it
+    // through this query node, so the workflow goes first.
+    cy.apiDeleteWorkflow(data.workflowName);
     cy.apiDeleteDataSource(dataSourceName);
   });
 });
