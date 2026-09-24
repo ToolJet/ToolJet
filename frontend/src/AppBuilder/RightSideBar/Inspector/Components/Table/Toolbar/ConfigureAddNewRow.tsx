@@ -51,12 +51,15 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
     return { isAllMode: !asArray, storedSelection: new Set<string>(asArray ? resolved : []) };
   }, [component?.component?.definition?.properties?.addNewRowColumns?.value]);
 
+  // Hidden columns (Visibility off) never render in the add-new-row form, so they aren't offered here either.
   const items = useMemo<ColumnItem[]>(
     () =>
-      columns.map((column) => ({
-        token: getColumnToken(column),
-        label: getColumnLabel(column),
-      })),
+      columns
+        .filter((column) => resolveReferences(column.columnVisibility) ?? true)
+        .map((column) => ({
+          token: getColumnToken(column),
+          label: getColumnLabel(column),
+        })),
     [columns]
   );
   const allTokens = useMemo<string[]>(() => items.map((item) => item.token), [items]);
