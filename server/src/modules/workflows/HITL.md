@@ -126,7 +126,7 @@ demand.
 | Timeout/reminder producer | `services/workflow-approval-timeout.service.ts` |
 | Timeout/reminder consumer | `processors/workflow-approval-timeout.processor.ts` |
 | Timer bootstrap on boot | `services/approval-timeout-bootstrap.service.ts` |
-| Public endpoints | `controllers/workflow-approvals.controller.ts` (`GET :token`, `POST :token/resolve`, `POST by-id/:id/resolve`, `POST :id/cancel`) |
+| Endpoints | `controllers/workflow-approvals.controller.ts` — token channel: `GET :token`, `POST :token/resolve` (no `FeatureAbilityGuard`; possession of the token authorizes). Session channel: `GET /` (list), `POST by-id/:id/resolve` (listed approver or admin), `POST :id/cancel` (**admin only**). Session routes are workspace-scoped and 404 on a foreign id. |
 | Entity / repo / dto | `@entities/workflow_approval_request.entity.ts`, `repositories/workflow-approval-request.repository.ts`, `dto/resolve-approval.dto.ts`, `interfaces/IWorkflowApprovalsService.ts` |
 
 **Frontend (`frontend/ee/modules/Workflows/`):**
@@ -136,11 +136,25 @@ demand.
 | Canvas node | `pages/WorkflowEditorPage/components/FlowBuilder/Nodes/HumanNode/{index.jsx,styles.scss,human.svg}` |
 | Node defaults / naming | `reducer/defaults.js`, `hooks/useNodeName.js`, `utils.js` |
 | Waiting logs UI | `pages/WorkflowEditorPage/components/LogsPanel/index.jsx` + `OptionsColumn/index.jsx` (`.hitl-waiting-banner`, scoped off already-executed nodes) |
+| Approvals page (route `/:workspaceId/workflows/approvals`, registered in `modules/Workflows/index.js`) | `pages/ApprovalsPage/index.jsx` (fetch, filters, pagination, selection) + `styles.scss` |
+| Approvals filter bar | `pages/ApprovalsPage/ApprovalsFilterBar.jsx` (status chips, workflow picker, debounced approver search, date range) |
+| Approvals table | `pages/ApprovalsPage/ApprovalsTable.jsx` |
+| Approvals detail panel | `pages/ApprovalsPage/ApprovalDetailPanel.jsx` (outcome buttons, Cancel for admins) |
+| `inputSchema` form | `pages/ApprovalsPage/ApprovalInputForm.jsx` (`text \| number \| boolean \| select`) |
+| Nav shortcut | `frontend/ee/modules/common/components/LeftNavSideBar/LeftNavSideBar.jsx` (`approvalsEnabled` prop into CE's `BaseLeftNavSideBar`) |
+| API client (CE) | `frontend/src/_services/workflow_approvals.service.js` (`getAll` / `resolveById` / `cancel`; converts date-only filters to local-day instants) |
 
 **Tests (root `server/test/modules/workflows/`):**
 `unit/approval-timeout-scheduler.spec.ts`, `unit/approval-timeout-processor.spec.ts`,
-`unit/approval-notification-dispatch.spec.ts`, `e2e/workflow-approvals-service.spec.ts`,
-`e2e/workflow-approvals-controller.spec.ts`, `e2e/workflow-approval-{expire,cascade,request-entity}.spec.ts`.
+`unit/approval-notification-dispatch.spec.ts`, `unit/approvals-ability.spec.ts`,
+`unit/approval-date-range.spec.ts`, `e2e/workflow-approvals-service.spec.ts`,
+`e2e/workflow-approvals-controller.spec.ts`, `e2e/workflow-approvals-list-controller.spec.ts`,
+`e2e/workflow-approvals-list-query.spec.ts`, `e2e/workflow-approvals-list-service.spec.ts`,
+`e2e/workflow-approvals-resolve-by-id.spec.ts`, `e2e/workflow-approvals-cancel.spec.ts`,
+`e2e/workflow-approval-{expire,cascade,request-entity}.spec.ts`.
+
+Frontend: `frontend/ee/modules/Workflows/pages/ApprovalsPage/__tests__/` (filter bar, detail panel,
+input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spec.js`.
 
 ## Behavioral invariants
 
@@ -173,3 +187,22 @@ demand.
 - Reminders were **decoupled from timeout** so they can be configured with the timeout disabled
   (moved to top-level `node.data.reminders`; scheduler reads it independently, legacy
   `timeout.reminders` still honored). Backend: `feat: decouple approval reminders from timeout`.
+- **The ability grant for `FEATURE_KEY.HUMAN_IN_THE_LOOP` was missing** (spec §6.2). The key was
+  declared and registered with an empty `FeatureConfig`, but no `can(...)` in
+  `server/ee/workflows/ability/app/index.ts` ever granted it, and `AbilityGuard` rejects a feature
+  with no matching grant — so `POST /workflow-approvals/:id/cancel`, the only HITL route carrying
+  `FeatureAbilityGuard`, returned **403 for every user including super admins**. It was dead code.
+  Fixed alongside the new `LIST_APPROVAL_REQUESTS`: both are granted on the same workspace-wide,
+  app-less shape as `WORKFLOW_PACKAGES` (`isAllAppsEditable`, at least one editable workflow, or
+  super admin). `GET :token` / `POST :token/resolve` were never affected — they do not use that
+  guard. No license gate was added: HITL's empty `FeatureConfig` is deliberate (spec decision #9).
+- **Waking `cancel` up exposed that it had no authorization of its own.** With the grant in place
+  the route became reachable, and the service method performed no approver check, no admin check
+  and no organization comparison — any builder in any workspace could cancel any request id, and
+  the approvals list hands out those ids. `cancel` now enforces workspace scope (404) then
+  `isApprovalAdmin` (403) before its state check. Covered by
+  `e2e/workflow-approvals-cancel.spec.ts`.
+- **`resolveById` was not organization-scoped.** It looked the request up by id alone and
+  authorized against the *request's* org, so anyone whose id or email appeared in a workspace's
+  `approversSnapshot` — free text, trivially arranged — could resolve it from an unrelated
+  session. Now rejected with 404 via `assertInCallersWorkspace`.
