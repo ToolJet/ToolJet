@@ -112,6 +112,7 @@ export const TableContainer = ({
 
   const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
     useTable({
+      id,
       data,
       columns,
       enableSorting,
@@ -124,6 +125,7 @@ export const TableContainer = ({
       globalFilter,
       setGlobalFilter,
       expandedRows,
+      getEditedFieldsOnIndex,
     });
 
   // Collapse all expanded rows when sort, filter, search or page changes
