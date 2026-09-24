@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
@@ -117,31 +117,55 @@ export const ModalV2 = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
+
+  // Resolver for the promise openModal() hands back - set right before
+  // showing, called once the modal has actually finished opening.
+  const openPromiseRef = useRef(null);
+
+  // Fires once the modal has actually finished mounting/transitioning in (real
+  // DOM ready), not just when React starts showing it - see onEntered below.
+  const handleModalEntered = useCallback(() => {
+    fireEvent('onOpen');
+    openPromiseRef.current?.();
+    openPromiseRef.current = null;
+  }, [fireEvent]);
+
   function hideModal() {
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
   }
 
-  function openModal() {
+  function openModal(callback) {
     setExposedVariable('show', true);
-    setShowModal(true);
+    if (callback) {
+      useStore.getState().eventsSlice.queueEventCallback(id, 'onOpen', callback, moduleId);
+    }
+    const openPromise = new Promise((resolve) => {
+      openPromiseRef.current = resolve;
+    });
+    if (showModalRef.current) {
+      // Already open - onEntered won't fire again, so drain/resolve now.
+      handleModalEntered();
+    } else {
+      setShowModal(true);
+    }
+    return openPromise;
   }
 
-  const onShowModal = () => {
-    openModal();
+  const onShowModal = (callback) => {
     setSelectedComponentAsModal(id);
+    return openModal(callback);
   };
 
   const onHideModal = () => {
     hideModal();
     clearSelectedComponents();
   };
-
-  const showModalRef = useRef(false);
-  useEffect(() => {
-    showModalRef.current = showModal;
-  }, [showModal]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -322,8 +346,9 @@ export const ModalV2 = function Modal({
         restoreFocus={false}
         animation={false}
         onShow={() => {
-          onShowModal();
-          fireEvent('onOpen');
+          // Only the raw trigger button reaches here without having already gone
+          // through openModal (e.g. via open()) - just mark it selected.
+          setSelectedComponentAsModal(id);
         }}
         onHide={() => {
           onHideModal();
@@ -342,6 +367,7 @@ export const ModalV2 = function Modal({
           hideTitleBar,
           hideCloseButton,
           onHideModal,
+          onModalEntered: handleModalEntered,
           component,
           hideOnEsc,
           modalHeight,
