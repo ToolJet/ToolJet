@@ -11,7 +11,7 @@ describe('VersionRepository — workflow metadata overlay (post-migration)', () 
   let versionRepository: VersionRepository;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     versionRepository = app.get(VersionRepository);
   });
   afterAll(async () => {

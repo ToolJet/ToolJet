@@ -15,7 +15,7 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
   let appsRepository: AppsRepository;
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     appsRepository = app.get(AppsRepository);
   });
   afterAll(async () => {

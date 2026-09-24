@@ -11,7 +11,7 @@ describe('NotificationController', () => {
     let admin: Awaited<ReturnType<typeof createAdmin>>;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
       admin = await createAdmin(app, 'notifications-admin@tooljet.io');
     });
     afterEach(() => {

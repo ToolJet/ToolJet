@@ -41,7 +41,7 @@ describe.skip('[QUARANTINED] PUT /apps/:id | slug update rules (git sync disable
   };
 
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
     const admin = await createAdmin(app, 'slug-update-admin@tooljet.io');
     cookie = admin.cookie;
     workspaceId = admin.workspace.id;

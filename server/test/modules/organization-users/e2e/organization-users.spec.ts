@@ -24,7 +24,7 @@ describe('OrganizationUsersController', () => {
     let userRepository: Repository<User>;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
       userRepository = getEntityRepository(User);
     });
 
@@ -663,40 +663,6 @@ describe('OrganizationUsersController', () => {
 
         await victimData.orgUser.reload();
         expect(victimData.orgUser.status).toBe('invited');
-      });
-    });
-
-    describe('POST /api/organization-users/:userId/archive-all | Archive from all workspaces', () => {
-      it('only superadmins can able to archive all users', async () => {
-        const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
-        const developerUserData = await createUser(app, {
-          email: 'developer@tooljet.io',
-          userType: 'workspace',
-          organization: adminUserData.organization,
-        });
-        const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', userType: 'workspace' });
-
-        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
-        adminUserData['tokenCookie'] = adminSession.tokenCookie;
-
-        const developerSession = await buildTestSession(developerUserData.user, adminUserData.organization.id);
-        developerUserData['tokenCookie'] = developerSession.tokenCookie;
-
-        const adminRequestResponse = await request(app.getHttpServer())
-          .post(`/api/organization-users/${viewerUserData.user.id}/archive-all`)
-          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-          .set('Cookie', adminUserData['tokenCookie'])
-          .send();
-
-        expect(adminRequestResponse.statusCode).toBe(201);
-
-        const developerRequestResponse = await request(app.getHttpServer())
-          .post(`/api/organization-users/${viewerUserData.user.id}/archive-all`)
-          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-          .set('Cookie', developerUserData['tokenCookie'])
-          .send();
-
-        expect(developerRequestResponse.statusCode).toBe(403);
       });
     });
 

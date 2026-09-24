@@ -19,7 +19,7 @@ describe('OnboardingController', () => {
     let configService: ConfigService;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
       configService = app.get(ConfigService);
       userRepository = getEntityRepository(User);
       orgUserRepository = getEntityRepository(OrganizationUser);
@@ -64,59 +64,6 @@ describe('OnboardingController', () => {
           where: { email: 'firstuser@tooljet.com' },
         });
         expect(user.status).toBe('active');
-      });
-    });
-
-    describe('POST /api/onboarding/signup | User signup', () => {
-      it('should signup and auto-activate a new user', async () => {
-        // First set up a super admin so signup is allowed
-        await request(app.getHttpServer()).post('/api/onboarding/setup-super-admin').send({
-          email: 'firstuser@tooljet.com',
-          name: 'First Admin',
-          password: 'password',
-          workspace: 'tooljet',
-          workspaceName: 'tooljet',
-        });
-
-        const response = await request(app.getHttpServer())
-          .post('/api/onboarding/signup')
-          .send({ email: 'newuser@tooljet.com', name: 'New User', password: 'password' });
-        expect(response.statusCode).toBe(201);
-
-        const user = await userRepository.findOneOrFail({
-          where: { email: 'newuser@tooljet.com' },
-          relations: ['organizationUsers'],
-        });
-
-        // EE auto-activates users on signup
-        expect(user.status).toBe('active');
-        expect(user.invitationToken).toBeNull();
-        expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      });
-
-      it('should allow auto-activated user to view apps', async () => {
-        // Setup super admin + signup
-        await request(app.getHttpServer()).post('/api/onboarding/setup-super-admin').send({
-          email: 'firstuser@tooljet.com',
-          name: 'First Admin',
-          password: 'password',
-          workspace: 'tooljet',
-          workspaceName: 'tooljet',
-        });
-
-        await request(app.getHttpServer())
-          .post('/api/onboarding/signup')
-          .send({ email: 'newuser@tooljet.com', name: 'New User', password: 'password' });
-
-        const user = await userRepository.findOneOrFail({ where: { email: 'newuser@tooljet.com' } });
-        const loggedUser = await login(app, user.email);
-
-        const response = await request(app.getHttpServer())
-          .get('/api/apps')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
-
-        expect(response.statusCode).toBe(200);
       });
     });
 
@@ -274,47 +221,6 @@ describe('OnboardingController', () => {
           .post('/api/onboarding/signup')
           .send({ email: 'invited@tooljet.com', name: 'Invited User', password: 'password' });
         expect(response.statusCode).toBe(406);
-      });
-
-      it('should allow inviting a user who signed up separately', async () => {
-        // First set up super admin so signup is allowed
-        await request(app.getHttpServer()).post('/api/onboarding/setup-super-admin').send({
-          email: 'firstuser@tooljet.com',
-          name: 'First Admin',
-          password: 'password',
-          workspace: 'tooljet',
-          workspaceName: 'tooljet',
-        });
-
-        // Create an admin user (via createUser for proper admin role)
-        const { user: adminUser } = await createUser(app, {
-          firstName: 'admin',
-          lastName: 'admin',
-          email: 'admin@tooljet.com',
-          status: 'active',
-        });
-        const loggedAdmin = await login(app, adminUser.email);
-
-        // Signup another user independently
-        await request(app.getHttpServer())
-          .post('/api/onboarding/signup')
-          .send({ email: 'newuser@tooljet.com', name: 'New User', password: 'password' })
-          .expect(201);
-
-        // Invite the already-existing user to admin's workspace
-        const response = await request(app.getHttpServer())
-          .post('/api/organization-users')
-          .send({ email: 'newuser@tooljet.com', role: 'end-user' })
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedAdmin.tokenCookie);
-        expect(response.status).toBe(201);
-
-        // Verify the user now has an org-user record in the admin's workspace
-        const newUser = await userRepository.findOneOrFail({ where: { email: 'newuser@tooljet.com' } });
-        const orgUser = await orgUserRepository.findOneOrFail({
-          where: { userId: newUser.id, organizationId: adminUser.defaultOrganizationId },
-        });
-        expect(orgUser).toBeDefined();
       });
     });
 

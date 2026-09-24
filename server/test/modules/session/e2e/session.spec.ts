@@ -12,7 +12,7 @@ describe('SessionController', () => {
     let orgId: string;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
       const { organization } = await createUser(app, {
         email: 'admin@tooljet.io',
         firstName: 'user',
