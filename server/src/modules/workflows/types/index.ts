@@ -3,11 +3,17 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
-// Workflow trigger types
+// How an execution started. `app` is a workflow query fired from an application (the dashboard
+// calls this "Event"); `workflow` is a run invoked by a parent workflow; `unknown` is history
+// written before trigger_type existed — triggeredBy lived only in BullMQ job data, which is
+// evicted, so it cannot be reconstructed and must not be guessed at.
 export const WORKFLOW_TRIGGER_TYPE = {
   MANUAL: 'manual',
   SCHEDULE: 'schedule',
   WEBHOOK: 'webhook',
+  APP: 'app',
+  WORKFLOW: 'workflow',
+  UNKNOWN: 'unknown',
 } as const;
 
 export type WorkflowTriggerType = (typeof WORKFLOW_TRIGGER_TYPE)[keyof typeof WORKFLOW_TRIGGER_TYPE];
@@ -55,6 +61,7 @@ interface Features {
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: FeatureConfig;
   [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
   [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
