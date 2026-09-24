@@ -44,11 +44,7 @@ const getData = (table, forExcel = false) => {
     return rowData;
   });
 
-  const headersWithUpperCase = headers.map((header) =>
-    !forExcel ? header.toUpperCase() : { ...header, value: header.value.toUpperCase() }
-  );
-
-  return { headers: headersWithUpperCase, data };
+  return { headers, data };
 };
 
 // Export to CSV
