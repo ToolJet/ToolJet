@@ -10,11 +10,21 @@ describe('conversation attachment preparation', () => {
   let routing: any;
   beforeEach(() => {
     service = Object.create(AiService.prototype);
-    routing = { provider: 'tooljet_managed', headers: { provider: 'gemini', model: 'fixture-model' } };
+    routing = {
+      provider: 'tooljet_managed',
+      headers: { provider: 'gemini', model: 'fixture-model' },
+    };
     Object.assign(service, {
-      aiConversationRepository: { findOne: jest.fn().mockResolvedValue({ metadata: {} }), updateOne: jest.fn() },
-      aiConversationMessageRepository: { find: jest.fn().mockResolvedValue([]) },
-      licenseTermsService: { getLicenseTerms: jest.fn().mockResolvedValue({ aiPlan: 'credits' }) },
+      aiConversationRepository: {
+        findOne: jest.fn().mockResolvedValue({ metadata: {} }),
+        updateOne: jest.fn(),
+      },
+      aiConversationMessageRepository: {
+        find: jest.fn().mockResolvedValue([]),
+      },
+      licenseTermsService: {
+        getLicenseTerms: jest.fn().mockResolvedValue({ aiPlan: 'credits' }),
+      },
       aiUtilService: {
         resolveAgentRouting: jest.fn().mockResolvedValue(routing),
         resolveConversationLlmSelection: jest.fn().mockResolvedValue({ provider: 'gemini' }),
@@ -25,15 +35,21 @@ describe('conversation attachment preparation', () => {
             inputModalities: ['text', 'image'],
             contextWindow: 240000,
           },
-          { id: 'fixture/text-model', name: 'Fixture Text', inputModalities: ['text'], contextWindow: 240000 },
+          {
+            id: 'fixture/text-model',
+            name: 'Fixture Text',
+            inputModalities: ['text'],
+            contextWindow: 240000,
+          },
         ]),
         createNewConversation: jest.fn().mockResolvedValue({ id: 'continuation-chat' }),
         handoffThread: jest.fn().mockResolvedValue({ summary: 'A synthetic workshop inventory.' }),
       },
       attachmentService: {
-        prepare: jest
-          .fn()
-          .mockResolvedValue({ attachments: [{ id: current }], content: [{ type: 'text', text: 'fixture' }] }),
+        prepare: jest.fn().mockResolvedValue({
+          attachments: [{ id: current }],
+          manifest: [{ id: earlier }, { id: current }],
+        }),
       },
     });
   });
@@ -41,12 +57,12 @@ describe('conversation attachment preparation', () => {
   it('keeps empty sends independent of model selection and storage', async () => {
     expect(await service.prepareAttachments(user, 'chat')).toEqual({
       attachments: [],
-      content: [],
+      manifest: [],
       routing: undefined,
     });
     expect(await service.prepareAttachments(user, 'chat', [])).toEqual({
       attachments: [],
-      content: [],
+      manifest: [],
       routing: undefined,
     });
     expect(service.aiUtilService.resolveAgentRouting).not.toHaveBeenCalled();
@@ -59,48 +75,36 @@ describe('conversation attachment preparation', () => {
   });
 
   it('combines handoff and active user-message files with the same routing snapshot returned for the socket', async () => {
-    service.aiConversationRepository.findOne.mockResolvedValue({ metadata: { attachmentIds: [earlier] } });
+    service.aiConversationRepository.findOne.mockResolvedValue({
+      metadata: { attachmentIds: [earlier] },
+    });
     service.aiConversationMessageRepository.find.mockResolvedValue([{ metadata: { attachments: [{ id: earlier }] } }]);
     const result = await service.prepareAttachments(user, 'chat', [current]);
     expect(service.aiConversationMessageRepository.find).toHaveBeenCalledWith({
-      where: { aiConversationId: 'chat', messageType: 'user', isLatest: true, deleted: false },
+      where: {
+        aiConversationId: 'chat',
+        messageType: 'user',
+        isLatest: true,
+        deleted: false,
+      },
       select: ['metadata'],
       order: { createdAt: 'ASC' },
     });
-    expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [current], [earlier], 'gemini');
+    expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [current], [earlier]);
     expect(result.routing).toBe(routing);
     expect(result.attachments).toEqual([{ id: current }]);
     expect(service.aiUtilService.resolveAgentRouting).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['openai-agents', 'anthropic-agents'])('rejects unsupported %s before downloading', async (provider) => {
-    routing.headers.provider = provider;
-    await expect(service.prepareAttachments(user, 'chat', [current])).rejects.toThrow('builder chats');
-    expect(service.attachmentService.prepare).not.toHaveBeenCalled();
-  });
-
-  it.each(['vision', 'text'])(
-    'uses the pinned OpenRouter %s model capabilities for current and saved files',
-    async (kind) => {
-      routing.headers = { provider: 'openrouter', model: `fixture/${kind}-model` };
-      service.aiConversationRepository.findOne.mockResolvedValue({ metadata: { attachmentIds: [earlier] } });
+  it.each(['openai', 'anthropic', 'grok', 'gemini', 'deepseek', 'openrouter', 'openai-agents', 'anthropic-agents'])(
+    'passes the same small manifest through %s routing without provider conversion',
+    async (provider) => {
+      routing.headers.provider = provider;
       const result = await service.prepareAttachments(user, 'chat', [current]);
-      expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [current], [earlier], 'openrouter', {
-        name: kind === 'vision' ? 'Fixture Vision' : 'Fixture Text',
-        inputModalities: kind === 'vision' ? ['text', 'image'] : ['text'],
-      });
+      expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [current], []);
+      expect(result.manifest).toEqual([{ id: earlier }, { id: current }]);
       expect(result.routing).toBe(routing);
-    }
-  );
-
-  it.each([undefined, 'fixture/missing-model'])(
-    'rejects an unavailable OpenRouter selection before preparing files: %s',
-    async (model) => {
-      routing.headers = { provider: 'openrouter', model };
-      await expect(service.prepareAttachments(user, 'chat', [current])).rejects.toThrow(
-        'Choose an available OpenRouter model'
-      );
-      expect(service.attachmentService.prepare).not.toHaveBeenCalled();
+      expect(service.aiUtilService.listCompatibleOpenRouterModels).not.toHaveBeenCalled();
     }
   );
 
@@ -123,11 +127,18 @@ describe('conversation attachment preparation', () => {
       user
     );
     expect(service.aiConversationRepository.findOne).toHaveBeenCalledWith({
-      where: { id: 'previous-chat', userId: user.id, app: { organizationId: user.organizationId } },
+      where: {
+        id: 'previous-chat',
+        userId: user.id,
+        app: { organizationId: user.organizationId },
+      },
       relations: ['app'],
     });
-    expect(result.metadata).toEqual({ attachmentIds: [earlier, current], phasePlan: 'fixture' });
+    expect(result.metadata).toEqual({
+      attachmentIds: [earlier, current],
+      phasePlan: 'fixture',
+    });
     await service.prepareAttachments(user, 'continuation-chat', []);
-    expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [], [earlier, current], 'gemini');
+    expect(service.attachmentService.prepare).toHaveBeenCalledWith(user, [], [earlier, current]);
   });
 });

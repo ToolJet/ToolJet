@@ -20,14 +20,25 @@ export class AiAttachment {
   @Column({ type: 'integer' })
   size: number;
 
-  @Column({ name: 's3_bucket', type: 'text' })
-  s3Bucket: string;
+  @Column({
+    type: 'bytea',
+    select: false,
+    transformer: {
+      // pg calls toPostgres only on the wire; ORM errors, query logs and traces see a redacted value.
+      to: (data: Buffer) =>
+        data == null
+          ? data
+          : {
+              toPostgres: () => data,
+              toJSON: () => '[attachment bytes]',
+            },
+      from: (data: Buffer) => data,
+    },
+  })
+  data: Buffer;
 
-  @Column({ name: 's3_key', type: 'text' })
-  s3Key: string;
-
-  @Column({ type: 'varchar', length: 16, default: 'pending' })
-  status: 'pending' | 'ready' | 'failed';
+  @Column({ name: 'attached_at', type: 'timestamptz', nullable: true })
+  attachedAt: Date;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
