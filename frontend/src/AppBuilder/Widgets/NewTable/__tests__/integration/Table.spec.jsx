@@ -10,6 +10,7 @@
  * file's own basename, and the widget's directory is `NewTable` (does not match `Table`).
  */
 import React from 'react';
+import Papa from 'papaparse';
 import { waitFor, within, fireEvent as rtlFireEvent, act } from '@testing-library/react';
 import { componentDefinition, seedApp, binding } from '@/test/app-builder';
 import { createWidgetHarness, store, MODULE_ID, drain } from '@/AppBuilder/Widgets/widgetHarness';
@@ -1314,6 +1315,42 @@ describe('Table: add row and refresh', () => {
     );
     rtlFireEvent.click(document.querySelector('[data-tooltip-id="tooltip-for-download-serverside-pagingation"]'));
     await waitFor(() => expect(store().getVariable('downloadFired', MODULE_ID)).toBe(true));
+  });
+
+  test('[Table-DL-003] a JSON/object-valued cell exports as valid stringified JSON, not "[object Object]"', async () => {
+    // Same jsdom Blob-capture workaround as Table-DL-002 (window.URL.createObjectURL is unimplemented).
+    const OriginalBlob = window.Blob;
+    let capturedCsv;
+    window.Blob = function (parts, opts) {
+      capturedCsv = parts[0];
+      return new OriginalBlob(parts, opts);
+    };
+    window.URL.createObjectURL = jest.fn(() => 'blob:mock');
+    window.URL.revokeObjectURL = jest.fn();
+
+    const meta = { role: 'admin', tags: ['x', 'y'] };
+    const columnsWithJson = [
+      ...COLUMNS,
+      { name: 'meta', key: 'meta', id: 'col-meta', columnType: 'json', columnSize: 200 },
+    ];
+    const rowsWithJson = ROWS.map((row) => ({ ...row, meta: row.name === 'Ada' ? meta : {} }));
+
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(rowsWithJson)}}}`),
+        columns: { value: columnsWithJson },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await widget.act('downloadTableData', 'csv');
+
+    const parsedRows = Papa.parse(capturedCsv, { header: true }).data;
+    const adaRow = parsedRows.find((row) => row.NAME === 'Ada');
+    expect(JSON.parse(adaRow.META)).toEqual(meta);
+    expect(capturedCsv).not.toContain('[object Object]');
+
+    window.Blob = OriginalBlob;
   });
 
   test('[Table-REFRESH-001] showRefreshButton gates the manual refresh control', async () => {
