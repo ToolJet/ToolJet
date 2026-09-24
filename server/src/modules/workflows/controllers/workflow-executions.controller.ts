@@ -10,11 +10,35 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
 import { Observable } from 'rxjs';
+import { ListExecutionsDto } from '@modules/workflows/dto/list-executions.dto';
+import { ExecutionListItem } from '@modules/workflows/types/execution-list';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow_executions')
 export class WorkflowExecutionsController implements IWorkflowExecutionController {
   constructor() {}
+
+  // Declared before @Get(':id') on purpose — see the note in the plan/spec. Moving this below the
+  // parameterised route silently breaks it: NestJS matches routes in declaration order, so a
+  // single-segment 'workspace' path declared after ':id' would be shadowed and
+  // /workflow_executions/workspace would resolve as "fetch the execution with id 'workspace'".
+  @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
+  @Get('workspace')
+  async listForWorkspace(
+    @Query() query: ListExecutionsDto,
+    @User() user?: any
+  ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
+  @Post('workspace/states')
+  async workspaceStates(
+    @Body() body: { executionIds: string[] },
+    @User() user?: any
+  ): Promise<Record<string, { terminationRequested: boolean; jobState: string }>> {
+    throw new Error('Method not implemented.');
+  }
 
   @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)
   @Post()
