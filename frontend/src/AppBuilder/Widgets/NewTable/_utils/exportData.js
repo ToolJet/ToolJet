@@ -29,12 +29,14 @@ const getData = (table, forExcel = false) => {
     accessorKeys.forEach((accessorKey) => {
       const cellValue = row.original[accessorKey];
       const isNumber = typeof cellValue === 'number';
+      const isObject = cellValue !== null && typeof cellValue === 'object';
+      const exportValue = isObject ? JSON.stringify(cellValue) : cellValue;
 
       rowData.push(
         !forExcel // Get formatted data for 'export to Excel' as expected by zipcelx's config
-          ? cellValue
+          ? exportValue
           : {
-              value: cellValue,
+              value: exportValue,
               type: isNumber ? 'number' : 'string',
             }
       );
