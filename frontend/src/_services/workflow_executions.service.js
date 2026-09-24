@@ -17,6 +17,8 @@ export const workflowExecutionsService = {
   streamSSE,
   terminate,
   getExecutionStates,
+  getWorkspaceExecutions,
+  getWorkspaceExecutionStates,
 };
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
@@ -169,4 +171,34 @@ function getExecutionStates(appVersionId, executionIds) {
   return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
     handleResponse
   );
+}
+
+// `signal` lets a caller abort a superseded request (the executions page re-querying before a
+// previous filter/page request resolved).
+function getWorkspaceExecutions(filters = {}, page = 1, perPage = 15, signal) {
+  const params = new URLSearchParams();
+  params.set('page', page);
+  params.set('per_page', perPage);
+  (filters.statuses || []).forEach((status) => params.append('status', status));
+  (filters.triggers || []).forEach((trigger) => params.append('trigger', trigger));
+  if (filters.appId) params.set('app_id', filters.appId);
+  if (filters.folderId) params.set('folder_id', filters.folderId);
+  if (filters.environmentId) params.set('environment_id', filters.environmentId);
+  if (filters.from) params.set('from', filters.from);
+  if (filters.to) params.set('to', filters.to);
+
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace?${params.toString()}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getWorkspaceExecutionStates(executionIds) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ executionIds }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
 }
