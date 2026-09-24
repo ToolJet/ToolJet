@@ -236,11 +236,8 @@ export class RolesUtilService implements IRolesUtilService {
         });
 
       if (hasNonReleasedEnvironments) {
-        const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-          LICENSE_FIELD.MULTI_ENVIRONMENT,
-          organizationId
-        );
-        return !hasMultiEnvironment;
+        const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.RELEASE, organizationId);
+        return !hasReleaseLicense;
       }
 
       return false;

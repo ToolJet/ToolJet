@@ -28,6 +28,36 @@
     display: block;
 }
 
+.tooltip.page-limit-tooltip,
+.tooltip.page-group-limit-tooltip {
+    .tooltip-inner {
+        padding: 12px;
+        background-color: var(--background-inverse, #1B1F24);
+        color: var(--text-on-solid, #FFF);
+        border-radius: 8px;
+        font-family: "IBM Plex Sans";
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+    }
+
+    &.bs-tooltip-top .tooltip-arrow::before {
+        border-top-color: var(--background-inverse, #1B1F24);
+    }
+
+    &.bs-tooltip-bottom .tooltip-arrow::before {
+        border-bottom-color: var(--background-inverse, #1B1F24);
+    }
+}
+
+.tooltip.page-limit-tooltip .tooltip-inner {
+    max-width: 247px;
+}
+
+.tooltip.page-group-limit-tooltip .tooltip-inner {
+    max-width: 282px;
+}
+
 .page-menu-icon.rev {
     display: none;
 }
