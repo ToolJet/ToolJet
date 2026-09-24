@@ -561,6 +561,20 @@ describe('Table: sorting', () => {
     await waitFor(() => expect(exposed('selectedColumnHeader')).toMatchObject({ key: 'age', name: 'age' }));
     expect(store().getVariable('headerClicked', MODULE_ID)).toBe(true);
   });
+
+  test('[Table-SORT-006] turning enabledSort off clears an already-applied sort', async () => {
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(headerCell('age'));
+    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['40', '35', '30']));
+    expect(document.querySelector('[data-cy="age-sort-icon-descending"]')).toBeInTheDocument();
+
+    widget.setComponentProperty(ID, 'enabledSort', '{{false}}', 'properties');
+
+    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['30', '40', '35']));
+    expect(document.querySelector('[data-cy="age-sort-icon-descending"]')).not.toBeInTheDocument();
+  });
 });
 
 describe('Table: search and filter', () => {
