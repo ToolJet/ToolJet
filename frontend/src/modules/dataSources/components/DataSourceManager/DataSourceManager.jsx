@@ -278,6 +278,7 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -1002,8 +1003,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1015,6 +1016,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);

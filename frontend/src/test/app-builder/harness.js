@@ -1,6 +1,8 @@
 import React, { StrictMode } from 'react';
 import { act, cleanup as rtlCleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import useStore from '@/AppBuilder/_stores/store';
 import { render as renderWithRouter } from '@/test/test-utils';
 import { createAppBuilderControls } from './controls';
@@ -15,6 +17,7 @@ export class AppBuilderTestSession {
   #hosts = [];
   #strictMode;
   #route;
+  #dnd;
 
   constructor({ scenario } = {}) {
     if (!scenario) throw new Error('AppBuilderTestSession requires a scenario');
@@ -22,6 +25,13 @@ export class AppBuilderTestSession {
     this.#network = createAppBuilderNetwork(scenario.capabilities.network);
     this.user = userEvent.setup();
     this.#strictMode = scenario.infrastructure?.strictMode === true;
+    // `capabilities.dnd` mounts the REAL react-dnd provider AppBuilder.jsx:96
+    // supplies in production. `AppCanvas/Container` (and therefore any widget
+    // rendered as a sub-container child, e.g. a Form field) throws
+    // `Invariant Violation: Expected drag drop context` without it. Opt-in
+    // because the backend attaches document-level listeners that specs not
+    // rendering a container have no reason to pay for.
+    this.#dnd = scenario.capabilities.dnd === true;
     this.#route = {
       'app-editor': '/apps/test-app',
       'module-editor': '/modules/test-module',
@@ -60,7 +70,8 @@ export class AppBuilderTestSession {
   }
 
   render(ui, options = {}) {
-    const tree = this.#strictMode ? <StrictMode>{ui}</StrictMode> : ui;
+    const provided = this.#dnd ? <DndProvider backend={HTML5Backend}>{ui}</DndProvider> : ui;
+    const tree = this.#strictMode ? <StrictMode>{provided}</StrictMode> : provided;
     if (this.#root) {
       this.#root.rerender(tree);
       return this.#root;

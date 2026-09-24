@@ -158,8 +158,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -287,7 +287,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 >
                   {environmentLoadingState !== 'loading' && !isCanvasReloading && (
                     <SuspenseCountProvider
-                      key={currentPageId}
+                      // Also keyed on pageKey: a same-page switch changes pageKey but not
+                      // currentPageId, so without it this wouldn't remount and the batch
+                      // that switch opens would never flush.
+                      key={`${currentPageId}-${pageKey}`}
                       disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
