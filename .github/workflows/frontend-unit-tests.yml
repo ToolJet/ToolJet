@@ -59,14 +59,14 @@ jobs:
       # run it. So this step FAILS while the label is absent, rather than the job
       # being skipped — a skipped job reports SUCCESS and would let the PR merge
       # unscreened. Mark this check as required in branch protection.
-      - name: Require the run-frontend-tests label
+      - name: Require the run-ci label
         if: >-
           github.event_name == 'pull_request' &&
           steps.scope.outputs.frontend == 'true' &&
-          !contains(github.event.pull_request.labels.*.name, 'run-frontend-tests')
+          !contains(github.event.pull_request.labels.*.name, 'run-ci')
         working-directory: ${{ github.workspace }}
         run: |
-          echo "::error title=Frontend tests not run::This PR changes frontend/ but does not carry the 'run-frontend-tests' label, so the suite has not run. Add the label to run it. This check must pass before the PR can be merged."
+          echo "::error title=Frontend tests not run::This PR changes frontend/ but does not carry the 'run-ci' label, so the suite has not run. Add the label to run it. This check must pass before the PR can be merged."
           exit 1
 
       # Default GITHUB_TOKEN only authenticates for this repo, not the private
