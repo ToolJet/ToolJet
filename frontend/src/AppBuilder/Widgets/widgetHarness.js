@@ -133,6 +133,7 @@ export function createWidgetHarness({
   widgetHeight = 40,
   widgetWidth = 200,
   offsetHeight,
+  seedFromRegisteredDefinition = true, // See componentDefinition() in test/app-builder/seed.js.
 }) {
   const scenario = defineAppBuilderScenario({
     id: `${componentType.toLowerCase()}-widget`,
@@ -173,7 +174,11 @@ export function createWidgetHarness({
       handle,
       componentType,
       { ...defaultProperties, ...properties },
-      { styles: { ...defaultStyles, ...styles }, validation: { ...defaultValidation, ...validation } }
+      {
+        styles: { ...defaultStyles, ...styles },
+        validation: { ...defaultValidation, ...validation },
+        seedFromRegisteredDefinition,
+      }
     );
 
     const seeded = { [componentId]: definition, ...defaultExtraComponents, ...extraComponents };
@@ -282,6 +287,7 @@ export function createWidgetHarness({
           // Pinned rather than inherited: a Form child must be on the desktop
           // layout for this seam regardless of the widget's own registered default.
           others: { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') },
+          seedFromRegisteredDefinition,
         }
       );
       child.component.parent = formId;
