@@ -1,6 +1,13 @@
 /** @group workflows */
 
-import { WorkflowExecutionRepository } from '@modules/workflows/repositories/workflow-execution.repository';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import {
+  WorkflowExecutionRepository,
+  STATUS_FILTER_TO_DB,
+  IN_FLIGHT_FILTER,
+} from '@modules/workflows/repositories/workflow-execution.repository';
+import { ListExecutionsDto, EXECUTION_STATUS_FILTERS } from '@modules/workflows/dto/list-executions.dto';
 
 // A QueryBuilder test double recording andWhere calls, so filter translation can be asserted
 // without a database. The repository's SQL correctness is covered by the EXPLAIN check in Task 2.
@@ -71,5 +78,36 @@ describe('WorkflowExecutionRepository.applyListFilters', () => {
 
   it('applies nothing when no filters are given', () => {
     expect(applyFilters({})).toHaveLength(0);
+  });
+});
+
+describe('ListExecutionsDto validation', () => {
+  it('accepts a recognised status list', async () => {
+    const dto = plainToInstance(ListExecutionsDto, { status: ['running', 'success'] });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('rejects an unrecognised status value rather than silently dropping the filter', async () => {
+    const dto = plainToInstance(ListExecutionsDto, { status: ['bogus'] });
+    const errors = await validate(dto);
+    expect(errors.some((error) => error.property === 'status')).toBe(true);
+  });
+
+  it('accepts a recognised trigger value', async () => {
+    const dto = plainToInstance(ListExecutionsDto, { trigger: ['schedule'] });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
+  it('rejects an unrecognised trigger value rather than silently dropping the filter', async () => {
+    const dto = plainToInstance(ListExecutionsDto, { trigger: ['bogus'] });
+    const errors = await validate(dto);
+    expect(errors.some((error) => error.property === 'trigger')).toBe(true);
+  });
+
+  it('keeps the DTO status filters and the repository status keys in sync', () => {
+    const repositoryStatusKeys = [IN_FLIGHT_FILTER, ...Object.keys(STATUS_FILTER_TO_DB)].sort();
+    expect([...EXECUTION_STATUS_FILTERS].sort()).toEqual(repositoryStatusKeys);
   });
 });

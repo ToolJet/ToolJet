@@ -11,13 +11,16 @@ import { ExecutionListFilters, ExecutionListRow } from '../types/execution-list'
 // flag). Only the DB half can be a SQL predicate. `running` therefore means "in flight" — no
 // terminal status yet — and the finer Queued/Running/Stopping/Unknown split is refined in the
 // browser from polled job state.
-const STATUS_FILTER_TO_DB: Record<string, string[]> = {
+// Exported (alongside IN_FLIGHT_FILTER below) so a test can assert this stays in lockstep with
+// `EXECUTION_STATUS_FILTERS` in `../dto/list-executions.dto` — one status vocabulary, checked
+// from both ends, rather than two lists that can silently drift apart.
+export const STATUS_FILTER_TO_DB: Record<string, string[]> = {
   waiting: ['waiting', 'waiting_for_delay'],
   success: ['success'],
   failed: ['failure'],
   terminated: ['terminated'],
 };
-const IN_FLIGHT_FILTER = 'running';
+export const IN_FLIGHT_FILTER = 'running';
 const IN_FLIGHT_PREDICATE = '(execution.executed = false AND execution.status IS NULL)';
 
 @Injectable()
