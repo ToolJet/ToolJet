@@ -44,4 +44,3 @@ import 'cypress-live-reporter/support';
 Cypress.on("uncaught:exception", (err, runnable) => {
   return false;
 });
-
