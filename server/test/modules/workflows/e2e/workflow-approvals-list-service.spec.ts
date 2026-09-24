@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
+import { User } from '@entities/user.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { WorkflowApprovalsService } from '@ee/workflows/services/workflow-approvals.service';
@@ -235,11 +236,83 @@ describe('approvals list service :: canResolve', () => {
     const snapshot = requests.find((r) => r.id === seeded.id).approversSnapshot;
 
     expect(snapshot).toEqual({
-      users: [adminUser.id],
-      groups: [builderGroupId],
-      emails: ['someone@tooljet.io'],
+      users: [{ id: adminUser.id, kind: 'user', label: 'Can Admin' }],
+      groups: [{ id: builderGroupId, kind: 'group', label: expect.any(String) }],
+      emails: [{ id: 'someone@tooljet.io', kind: 'email', label: 'someone@tooljet.io' }],
     });
     expect('tokenBypass' in snapshot).toBe(false);
+  });
+
+  it('labels an approver with no name by their email, and an unknown id by the id itself', async () => {
+    // A user row can legitimately carry empty name fields, and an id in the snapshot can outlive
+    // the user it pointed at (removed from the workspace). Neither may render blank.
+    const { user: namelessUser } = await createUser(app, {
+      firstName: 'Temp',
+      lastName: 'Name',
+      email: 'nameless-approver@tooljet.io',
+      groups: ['end-user'],
+      organization,
+    });
+    // createUser insists on names; clear them on the row so this exercises the real fallback.
+    await saveEntity(User, { id: namelessUser.id, firstName: null, lastName: null });
+
+    const seeded = await seedRequest('approver-labels', {
+      users: [namelessUser.id, NONEXISTENT_UUID],
+      groups: [],
+      emails: [],
+      tokenBypass: true,
+    });
+
+    const { requests } = await service.list(adminUser, { appId }, 1, 50);
+    const snapshot = requests.find((r) => r.id === seeded.id).approversSnapshot;
+
+    expect(snapshot.users).toEqual([
+      { id: namelessUser.id, kind: 'user', label: 'nameless-approver@tooljet.io' },
+      { id: NONEXISTENT_UUID, kind: 'user', label: NONEXISTENT_UUID },
+    ]);
+  });
+
+  it('labels resolvedBy with the resolver display name', async () => {
+    const seeded = await seedRequest(
+      'resolved-by-label',
+      { users: [], groups: [], emails: [], tokenBypass: true },
+      'resolved'
+    );
+    await saveEntity(WorkflowApprovalRequest, { id: seeded.id, resolvedByUserId: adminUser.id });
+
+    const { requests } = await service.list(adminUser, { appId }, 1, 50);
+    const row = requests.find((r) => r.id === seeded.id);
+
+    expect(row.resolvedBy).toEqual({ id: adminUser.id, kind: 'user', label: 'Can Admin' });
+  });
+
+  it('leaves resolvedBy null for a system resolution', async () => {
+    // The timeout branch auto-resolves with resolvedBy = null. That must stay null rather than
+    // becoming a party with an empty label, so the page can say "by the system".
+    const seeded = await seedRequest(
+      'system-resolved',
+      { users: [], groups: [], emails: [], tokenBypass: true },
+      'resolved'
+    );
+
+    const { requests } = await service.list(adminUser, { appId }, 1, 50);
+    expect(requests.find((r) => r.id === seeded.id).resolvedBy).toBeNull();
+  });
+
+  it('resolves approver identities once per page, not once per row', async () => {
+    // Same hazard the caller-identity hoist addressed: a per-row lookup would be an N+1 against
+    // the users table. Three rows naming the same approver must cost one lookup.
+    await seedRequest('label-cost-1', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
+    await seedRequest('label-cost-2', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
+    await seedRequest('label-cost-3', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
+
+    const spy = jest.spyOn(service as never as { lookupParties: (...a: unknown[]) => unknown }, 'lookupParties');
+    try {
+      await service.list(adminUser, { appId }, 1, 50);
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('resolves the caller identity once per page, not once per row', async () => {

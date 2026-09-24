@@ -16,6 +16,15 @@ export interface ApprovalListRow extends WorkflowApprovalRequest {
   node?: WorkflowExecutionNode;
 }
 
+/** One party an approval can be addressed to, resolved to something a human can read. */
+export interface ApprovalParty {
+  /** The stored identifier: a user id, a group id, or — for an email approver — the email itself. */
+  id: string;
+  /** What the page renders. Never empty: falls back to the email, then to `id`. */
+  label: string;
+  kind: 'user' | 'email' | 'group';
+}
+
 /**
  * The identity half of an approvals snapshot, as projected onto the wire.
  *
@@ -25,9 +34,9 @@ export interface ApprovalListRow extends WorkflowApprovalRequest {
  * split closes, so it is not part of this type and must not be added to it.
  */
 export interface ApprovalListApprovers {
-  users: string[];
-  emails: string[];
-  groups: string[];
+  users: ApprovalParty[];
+  emails: ApprovalParty[];
+  groups: ApprovalParty[];
 }
 
 /**
@@ -49,7 +58,11 @@ export interface ApprovalListItem {
   inputSchema: Array<Record<string, unknown>>;
   approversSnapshot: ApprovalListApprovers;
   resolvedOutcome: string | null;
-  resolvedBy: string | null;
+  /**
+   * Who resolved it, already labelled — or `null` when the timeout branch auto-resolved it, which
+   * the page renders as a system decision rather than as an unnamed person.
+   */
+  resolvedBy: ApprovalParty | null;
   /**
    * Whether THIS caller can resolve THIS row *right now* — authorized by the user-only authorizer
    * AND still `pending`. It is actionability, not bare authorization, so that every consumer
