@@ -198,6 +198,7 @@
             "build-with-ai/mcp/overview",
             "build-with-ai/mcp/app-generation",
             "build-with-ai/mcp/setup",
+            "build-with-ai/mcp/microsoft-copilot",
             "build-with-ai/mcp/supported-tools",
             "build-with-ai/mcp/security"
           ]
