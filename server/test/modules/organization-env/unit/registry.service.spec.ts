@@ -21,6 +21,13 @@ function makeService() {
   return { service, logger };
 }
 
+// private method, reached through an unknown cast
+function parseGitConfigsVar(service: OrganizationEnvRegistryService): Map<string, Map<string, string>> {
+  return (
+    service as unknown as { parseWorkspaceConfigVar(envVarName: string): Map<string, Map<string, string>> }
+  ).parseWorkspaceConfigVar('WORKSPACE_GIT_CONFIGS');
+}
+
 describe('OrganizationEnvRegistryService', () => {
   beforeEach(() => {
     delete process.env.WORKSPACE_GIT_CONFIGS;
@@ -31,10 +38,10 @@ describe('OrganizationEnvRegistryService', () => {
     jest.clearAllMocks();
   });
 
-  describe('parseWorkspaceGitConfigsVar()', () => {
+  describe('parseWorkspaceConfigVar("WORKSPACE_GIT_CONFIGS")', () => {
     it('returns empty map when WORKSPACE_GIT_CONFIGS is not set', () => {
       const { service } = makeService();
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(0);
     });
@@ -44,7 +51,7 @@ describe('OrganizationEnvRegistryService', () => {
       process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
         'workspace-a': { GITHUB_URL: 'https://github.com/org/repo', GITHUB_BRANCH: 'main' },
       });
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.size).toBe(1);
       expect(result.get('workspace-a').get('GITHUB_URL')).toBe('https://github.com/org/repo');
       expect(result.get('workspace-a').get('GITHUB_BRANCH')).toBe('main');
@@ -53,7 +60,7 @@ describe('OrganizationEnvRegistryService', () => {
     it('returns empty map and warns when JSON is invalid', () => {
       const { service, logger } = makeService();
       process.env.WORKSPACE_GIT_CONFIGS = 'not-valid-json{{{';
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.size).toBe(0);
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('invalid JSON'));
     });
@@ -61,7 +68,7 @@ describe('OrganizationEnvRegistryService', () => {
     it('returns empty map and warns when top-level value is an array', () => {
       const { service, logger } = makeService();
       process.env.WORKSPACE_GIT_CONFIGS = '[]';
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.size).toBe(0);
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('plain object'));
     });
@@ -72,7 +79,7 @@ describe('OrganizationEnvRegistryService', () => {
         'bad-workspace': 'not-an-object',
         'good-workspace': { GITHUB_URL: 'https://github.com/org/repo' },
       });
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.has('bad-workspace')).toBe(false);
       expect(result.has('good-workspace')).toBe(true);
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('"bad-workspace"'));
@@ -83,7 +90,7 @@ describe('OrganizationEnvRegistryService', () => {
       process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
         'workspace-a': { GITHUB_URL: 'https://github.com/org/repo', GITHUB_APP_ID: 12345 },
       });
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.get('workspace-a').get('GITHUB_URL')).toBe('https://github.com/org/repo');
       expect(result.get('workspace-a').has('GITHUB_APP_ID')).toBe(false);
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('workspace-a.GITHUB_APP_ID'));
@@ -94,7 +101,7 @@ describe('OrganizationEnvRegistryService', () => {
       process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
         'workspace-a': { GITHUB_APP_ID: 12345 },
       });
-      const result = (service as any).parseWorkspaceGitConfigsVar();
+      const result = parseGitConfigsVar(service);
       expect(result.has('workspace-a')).toBe(false);
     });
   });
