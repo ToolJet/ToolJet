@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
@@ -102,20 +102,19 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  // Resolves once the modal has actually finished entering (via onEntered below), so
-  // `await components.modal.open()` (the live registration is useModalCSA.js's
-  // `open: async () => onShowModal()`) can't run ahead of its children mounting.
-  //
-  // openModal() runs twice per open (the trigger, then again via onShow below, which
-  // always fires when `show` becomes true). openPromiseRef makes the second call reuse
-  // the pending promise instead of clobbering openPromiseResolverRef and orphaning it.
-  const openPromiseResolverRef = useRef(null);
-  const openPromiseRef = useRef(null);
-
-  const handleModalEntered = useCallback(() => {
-    openPromiseResolverRef.current?.();
-    openPromiseResolverRef.current = null;
-    openPromiseRef.current = null;
+  useEffect(() => {
+    const exposedVariables = {
+      open: async function () {
+        setExposedVariable('show', true);
+        setShowModal(true);
+      },
+      close: async function () {
+        setExposedVariable('show', false);
+        setShowModal(false);
+      },
+    };
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function hideModal() {
@@ -126,24 +125,12 @@ export const ModalV2 = function Modal({
 
   function openModal() {
     setExposedVariable('show', true);
-    if (showModalRef.current) {
-      // Already open: already entered, nothing to wait for.
-      return Promise.resolve();
-    }
-    if (openPromiseRef.current) {
-      // Already opening (a redundant re-entry via onShow) — the pending promise.
-      return openPromiseRef.current;
-    }
     setShowModal(true);
-    openPromiseRef.current = new Promise((resolve) => {
-      openPromiseResolverRef.current = resolve;
-    });
-    return openPromiseRef.current;
   }
 
   const onShowModal = () => {
+    openModal();
     setSelectedComponentAsModal(id);
-    return openModal();
   };
 
   const onHideModal = () => {
@@ -350,7 +337,6 @@ export const ModalV2 = function Modal({
           customStyles,
           parentRef,
           id,
-          onModalEntered: handleModalEntered,
           title,
           titleAlignment,
           hideTitleBar,
