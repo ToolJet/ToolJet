@@ -80,8 +80,8 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
     ? normalizedTriggerButtonFontWeight
     : normalizedTriggerButtonFontWeight === '0'
-      ? 0
-      : 'normal';
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -115,20 +115,59 @@ export const ModalV2 = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // open(callback) calls waiting for the modal to finish entering, so the callback sees mounted children
+  const pendingOpenCallbacksRef = useRef([]);
+  const hasEnteredRef = useRef(false);
+
+  const runPendingOpenCallbacks = () => {
+    const pending = pendingOpenCallbacksRef.current;
+    if (!pending.length) return;
+    pendingOpenCallbacksRef.current = [];
+    const store = useStore.getState();
+    store.flushImplicitBatchEntries();
+    const { components } = store.getResolvedState(moduleId);
+    pending.forEach(({ callback, resolve, reject }) => {
+      Promise.resolve()
+        .then(() => callback(components))
+        .then(resolve, reject);
+    });
+  };
+
+  const dropPendingOpenCallbacks = () => {
+    pendingOpenCallbacksRef.current.forEach(({ resolve }) => resolve());
+    pendingOpenCallbacksRef.current = [];
+  };
+
+  const onModalEntered = () => {
+    hasEnteredRef.current = true;
+    runPendingOpenCallbacks();
+  };
+
   function hideModal() {
+    hasEnteredRef.current = false;
+    dropPendingOpenCallbacks();
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
   }
 
-  function openModal() {
+  function openModal(callback) {
+    const opened =
+      typeof callback === 'function'
+        ? new Promise((resolve, reject) => pendingOpenCallbacksRef.current.push({ callback, resolve, reject }))
+        : undefined;
     setExposedVariable('show', true);
-    setShowModal(true);
+    if (hasEnteredRef.current) {
+      runPendingOpenCallbacks();
+    } else {
+      setShowModal(true);
+    }
+    return opened;
   }
 
-  const onShowModal = () => {
-    openModal();
+  const onShowModal = (callback) => {
     setSelectedComponentAsModal(id);
+    return openModal(callback);
   };
 
   const onHideModal = () => {
@@ -164,6 +203,7 @@ export const ModalV2 = function Modal({
   // the next page unscrollable.
   useEffect(() => {
     return () => {
+      dropPendingOpenCallbacks();
       if (showModalRef.current) {
         onHideSideEffects();
       }
@@ -338,6 +378,7 @@ export const ModalV2 = function Modal({
           hideTitleBar,
           hideCloseButton,
           onHideModal,
+          onModalEntered,
           component,
           hideOnEsc,
           modalHeight,
