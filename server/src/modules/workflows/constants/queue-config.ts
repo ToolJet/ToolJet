@@ -104,6 +104,7 @@ const DB_STATUS_TO_DISPLAY_STATE: Record<string, string> = {
   failure: 'failed',
   terminated: 'terminated',
   waiting: 'waiting',
+  waiting_for_delay: 'waiting',
 };
 
 export function mapDbStatusToDisplayState(dbStatus: string | undefined | null): string {

@@ -11,10 +11,11 @@
  * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated'
  */
 export function getExecutionDisplayState(execution) {
-  // A suspended (Human-in-the-Loop) run: status is persisted as 'waiting' with executed=false,
-  // but its original BullMQ job has COMPLETED (returns a waiting sentinel), so jobState would
-  // otherwise mis-render it as 'completed'. The DB status is authoritative here.
-  if (execution.status === 'waiting') return 'waiting';
+  // A suspended run is authoritative in the database. Human-in-the-loop uses `waiting`;
+  // a timed Wait node uses `waiting_for_delay` so it can keep polling until its timer resumes.
+  // The original BullMQ job has completed with a waiting sentinel, so its job state must not
+  // cause the suspended execution to render as completed.
+  if (execution.status === 'waiting' || execution.status === 'waiting_for_delay') return 'waiting';
 
   // Already finished in database - this is the final state
   if (execution.executed) {
@@ -145,7 +146,7 @@ export function getExecutionDisplayConfig(execution) {
     },
     waiting: {
       state: 'waiting',
-      text: 'Waiting for input',
+      text: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
       showSpinner: false,
       showCancelButton: false,
       showTime: false,
@@ -184,7 +185,7 @@ export function getExecutionStatusText(execution) {
     completed: 'Completed',
     failed: 'Failed',
     terminated: 'Terminated',
-    waiting: 'Waiting for input',
+    waiting: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
   };
 
   return statusTexts[state] || 'Unknown';

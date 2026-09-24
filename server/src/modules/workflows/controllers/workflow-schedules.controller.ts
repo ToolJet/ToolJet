@@ -19,6 +19,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
     @Body()
     createWorkflowScheduleDto: {
       workflowId: string;
+      name: string;
       active: boolean;
       environmentId: string;
       type: string;
@@ -36,7 +37,15 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
 
   @InitFeature(FEATURE_KEY.LIST_WORKFLOW_SCHEDULES)
   @Get()
-  async findAll(@User() user, @Query('app_id') appId: string): Promise<WorkflowSchedule[]> {
+  async findAll(
+    @User() user,
+    @Query('app_id') appId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('environment_id') environmentId?: string,
+    @Query('workflow_id') workflowId?: string
+  ): Promise<WorkflowSchedule[] | { data: WorkflowSchedule[]; total: number; page: number; limit: number }> {
     throw new Error('Method not implemented.');
   }
 
@@ -54,6 +63,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
     @Body()
     updateWorkflowScheduleDto: Partial<{
       environmentId: string;
+      name: string;
       /* workflow id = versionId */
       workflowId: string;
       type: string;

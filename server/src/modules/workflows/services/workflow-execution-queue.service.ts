@@ -3,6 +3,13 @@ import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowTriggerType } from '../types';
 
+export interface WorkflowResumeOptions {
+  startNodeId?: string;
+  injectedState?: object;
+  requestId?: string;
+  delayMs?: number;
+}
+
 @Injectable()
 export class WorkflowExecutionQueueService {
   constructor() {}
@@ -12,7 +19,8 @@ export class WorkflowExecutionQueueService {
     createWorkflowExecutionDto: CreateWorkflowExecutionDto,
     triggeredBy: WorkflowTriggerType = 'manual',
     priority: number = 0,
-    timeout?: number
+    timeout?: number,
+    resumeOptions?: WorkflowResumeOptions
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }

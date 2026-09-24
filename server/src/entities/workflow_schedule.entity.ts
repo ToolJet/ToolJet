@@ -21,6 +21,12 @@ export class WorkflowSchedule {
   @Column({ name: 'active' })
   active: boolean;
 
+  @Column({ name: 'name', type: 'varchar', length: 100, nullable: true })
+  name: string | null;
+
+  @Column({ name: 'app_id', type: 'uuid' })
+  appId: string;
+
   @Column({ name: 'environment_id' })
   environmentId: string;
 
@@ -32,6 +38,9 @@ export class WorkflowSchedule {
 
   @Column('simple-json', { name: 'details', nullable: false })
   details: any;
+
+  @Column('jsonb', { name: 'params', nullable: true })
+  params: Record<string, unknown> | null;
 
   @Column({ name: 'workflow_id' })
   workflowId: string;

@@ -111,7 +111,7 @@ export class WorkflowSuspendedSignal extends Error {
     public readonly executionId: string,
     public readonly requestId: string
   ) {
-    super('Workflow execution suspended awaiting human input');
+    super('Workflow execution suspended');
     this.name = 'WorkflowSuspendedSignal';
   }
 }

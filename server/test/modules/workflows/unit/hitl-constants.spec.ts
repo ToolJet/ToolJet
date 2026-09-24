@@ -11,6 +11,10 @@ describe('HITL shared constants & signal', () => {
     expect(mapDbStatusToDisplayState('waiting')).toBe('waiting');
   });
 
+  it('maps a timed delay to the display state "waiting"', () => {
+    expect(mapDbStatusToDisplayState('waiting_for_delay')).toBe('waiting');
+  });
+
   it('WorkflowSuspendedSignal carries executionId and requestId', () => {
     const sig = new WorkflowSuspendedSignal('exec-1', 'req-1');
     expect(sig).toBeInstanceOf(Error);
