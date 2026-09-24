@@ -1346,9 +1346,43 @@ describe('Table: add row and refresh', () => {
     await widget.act('downloadTableData', 'csv');
 
     const parsedRows = Papa.parse(capturedCsv, { header: true }).data;
-    const adaRow = parsedRows.find((row) => row.NAME === 'Ada');
-    expect(JSON.parse(adaRow.META)).toEqual(meta);
+    const adaRow = parsedRows.find((row) => row.name === 'Ada');
+    expect(JSON.parse(adaRow.meta)).toEqual(meta);
     expect(capturedCsv).not.toContain('[object Object]');
+
+    window.Blob = OriginalBlob;
+  });
+
+  test('[Table-DL-004] exported headers match the configured column name exactly, without forcing uppercase', async () => {
+    // Break this catches: exportData.js's getData() force-uppercasing every header, silently
+    // mangling any column whose configured name has lowercase/mixed-case letters (e.g. "userId" -> "USERID").
+    const OriginalBlob = window.Blob;
+    let capturedCsv;
+    window.Blob = function (parts, opts) {
+      capturedCsv = parts[0];
+      return new OriginalBlob(parts, opts);
+    };
+    window.URL.createObjectURL = jest.fn(() => 'blob:mock');
+    window.URL.revokeObjectURL = jest.fn();
+
+    const columnsWithMixedCase = [
+      ...COLUMNS,
+      { name: 'userId', key: 'userId', id: 'col-userId', columnType: 'string', columnSize: 100 },
+    ];
+    const rowsWithMixedCase = ROWS.map((row) => ({ ...row, userId: `u-${row.id}` }));
+
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(rowsWithMixedCase)}}}`),
+        columns: { value: columnsWithMixedCase },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await widget.act('downloadTableData', 'csv');
+
+    const headerLine = capturedCsv.split(/\r?\n/)[0];
+    expect(headerLine).toBe('name,email,age,userId');
 
     window.Blob = OriginalBlob;
   });
