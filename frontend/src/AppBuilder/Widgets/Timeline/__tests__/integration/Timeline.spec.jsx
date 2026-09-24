@@ -335,16 +335,21 @@ describe('Timeline: dynamic height', () => {
   afterEach(() => widget.teardown());
 
   test('[Timeline-DYN-002] dynamicHeight only applies in Viewer, not in the Editor canvas', async () => {
-    // Break this catches: dropping the `currentMode === 'view'` half of the gate would apply
-    // `height: 'auto'` in the Editor too, destabilizing canvas geometry while authoring.
-    const { container } = widget.render({
-      properties: { dynamicHeight: binding('{{true}}') },
-      currentMode: 'edit',
-    });
-    const card = () => container.querySelector('.card');
+    // Break this catches: either half of `dynamicHeight && currentMode === 'view'` going wrong.
+    // Dropping the mode check applies `height: auto` in the Editor, destabilizing canvas geometry
+    // while authoring; breaking the Viewer branch silently stops Timeline growing with its items.
+    const card = () => document.querySelector('.card');
 
-    await waitFor(() => expect(items(container)).toHaveLength(3));
-    expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' });
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+    await waitFor(() => expect(document.querySelectorAll('.list-timeline > li')).toHaveLength(3));
+    expect(card()).toHaveStyle({ height: 'auto', minHeight: '36px', overflow: 'visible' });
+
+    widget.render({ properties: { dynamicHeight: binding('{{false}}') }, currentMode: 'view' });
+    await waitFor(() => expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' }));
+    expect(card().style.minHeight).toBe('');
+
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'edit' });
+    await waitFor(() => expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' }));
     expect(card().style.minHeight).toBe('');
   });
 });
