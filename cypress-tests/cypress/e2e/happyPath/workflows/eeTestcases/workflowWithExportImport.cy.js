@@ -87,6 +87,9 @@ describe("Workflows - export and import round trip", () => {
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
+    // The data source can't be deleted while a workflow still references it
+    // through this query node, so the workflow goes first.
+    cy.apiDeleteWorkflow(workflowName);
     cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
