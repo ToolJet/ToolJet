@@ -232,7 +232,11 @@ describe('approval requests list query', () => {
 
     const { rows } = await repository.listForOrganization(orgA, { from: boundary }, 1, 10);
 
-    expect(rows.map((r) => r.token).sort()).toEqual(['from-after', 'from-on-boundary']);
+    // No `.sort()`: the returned order is the assertion. The rows come back through an
+    // `IN (:...ids)` decorate query, which does NOT preserve order, and are re-sorted into the
+    // id query's page order afterwards — sorting here would hide a regression in exactly that
+    // remap. created_at DESC puts March before February.
+    expect(rows.map((r) => r.token)).toEqual(['from-after', 'from-on-boundary']);
   });
 
   it('filters by `to`, including a row exactly on the boundary', async () => {
@@ -264,6 +268,43 @@ describe('approval requests list query', () => {
 
     const { rows } = await repository.listForOrganization(orgA, { to: boundary }, 1, 10);
 
-    expect(rows.map((r) => r.token).sort()).toEqual(['to-before', 'to-on-boundary']);
+    // created_at DESC — February before January. Note this is the opposite of alphabetical, so
+    // it only passes if the IN()-remap really does restore the id query's order.
+    expect(rows.map((r) => r.token)).toEqual(['to-on-boundary', 'to-before']);
+  });
+
+  it('paginates deterministically when rows share a created_at, instead of repeating or dropping one', async () => {
+    // Parallel human nodes in one run write their requests in the same millisecond. With
+    // `ORDER BY created_at DESC` alone that is not a total order, so Postgres may return ties in
+    // a different order per query — the same row can land on page 1 and page 2, and another on
+    // neither. The `id` tiebreaker makes paging stable.
+    const tied = new Date('2022-06-01T12:00:00.000Z');
+    for (const token of ['tie-a', 'tie-b', 'tie-c', 'tie-d']) {
+      await seed({
+        versionId: versionAId,
+        organizationId: orgA,
+        appId: appAId,
+        token,
+        status: 'pending',
+        createdAt: tied,
+      });
+    }
+
+    const filters = { from: tied, to: tied };
+    const firstPage = await repository.listForOrganization(orgA, filters, 1, 2);
+    const secondPage = await repository.listForOrganization(orgA, filters, 2, 2);
+
+    const firstTokens = firstPage.rows.map((r) => r.token);
+    const secondTokens = secondPage.rows.map((r) => r.token);
+
+    expect(firstPage.total).toBe(4);
+    expect(firstTokens).toHaveLength(2);
+    expect(secondTokens).toHaveLength(2);
+    // Disjoint pages covering every row: no repeats across the boundary, nothing lost.
+    expect(new Set([...firstTokens, ...secondTokens]).size).toBe(4);
+    expect([...firstTokens, ...secondTokens].sort()).toEqual(['tie-a', 'tie-b', 'tie-c', 'tie-d']);
+    // And the same query twice returns the same page, rather than a fresh arbitrary slice.
+    const firstPageAgain = await repository.listForOrganization(orgA, filters, 1, 2);
+    expect(firstPageAgain.rows.map((r) => r.token)).toEqual(firstTokens);
   });
 });

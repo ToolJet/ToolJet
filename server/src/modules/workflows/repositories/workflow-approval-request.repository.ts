@@ -61,6 +61,13 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       // property-path form here regardless keeps this query and the decorate query below
       // consistent and avoids re-introducing the crash that motivated the fallback path.
       .orderBy('request.createdAt', 'DESC')
+      // Tiebreaker. `created_at` alone is not a total order: one run with parallel human nodes
+      // writes several requests in the same millisecond, and Postgres is free to return ties in
+      // any order per query — so a tied row can appear on both page 1 and page 2, or on neither.
+      // `id` is unique, which makes the sort total and paging stable. The
+      // `(organization_id, created_at DESC)` index still drives the scan; the tiebreaker only
+      // orders within a group of rows sharing a timestamp.
+      .addOrderBy('request.id', 'DESC')
       .skip((page - 1) * perPage)
       .take(perPage);
 
@@ -73,7 +80,9 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       .where('request.id IN (:...ids)', { ids })
       .getMany();
 
-    // `WHERE id IN (...)` does not preserve order — re-sort into the id-query's page order.
+    // The decorate query deliberately sets no ORDER BY of its own: `WHERE id IN (...)` does not
+    // preserve order, and the id query above is the single place page order is established.
+    // Re-sort into that order here.
     const byId = new Map(decorated.map((row) => [row.id, row]));
     const rows = ids.map((id) => byId.get(id)).filter((row): row is WorkflowApprovalRequest => row !== undefined);
 
