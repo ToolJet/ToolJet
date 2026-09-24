@@ -236,6 +236,8 @@ jobs:
       # definitions and modified widget tests must already have an approved
       # behavior contract before CI accepts them.
       - name: Validate widget testing contracts
+        # explicit bash = pipefail; a failed gh api must not feed the validator empty stdin
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

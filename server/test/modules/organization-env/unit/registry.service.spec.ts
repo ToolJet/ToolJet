@@ -21,7 +21,6 @@ function makeService() {
   return { service, logger };
 }
 
-// private method, reached through an unknown cast
 function parseGitConfigsVar(service: OrganizationEnvRegistryService): Map<string, Map<string, string>> {
   return (
     service as unknown as { parseWorkspaceConfigVar(envVarName: string): Map<string, Map<string, string>> }
