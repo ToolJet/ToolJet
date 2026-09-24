@@ -344,8 +344,13 @@ export async function createUserGroupPermissions(
 
   const groupUserEntries = [];
 
-  for (const group of groups) {
-    const groupName = group === 'all_users' ? 'end-user' : group;
+  // Roles are exclusive: an admin/builder is never also in end-user. Two role rows make
+  // getUserRole()'s unordered findOne return either one → flaky isBuilder/isAdmin.
+  const groupNames = groups.map((group) => (group === 'all_users' ? 'end-user' : group));
+  const hasHigherRole = groupNames.includes('admin') || groupNames.includes('builder');
+
+  for (const groupName of groupNames) {
+    if (hasHigherRole && groupName === 'end-user') continue;
 
     let groupPermission: GroupPermissions;
 
