@@ -49,6 +49,24 @@ export class WorkflowExecution {
   @Column({ name: 'environment_id', type: 'uuid', nullable: true })
   environmentId: string;
 
+  @Column({ name: 'organization_id', type: 'uuid', nullable: true })
+  organizationId: string;
+
+  @Column({ name: 'app_id', type: 'uuid', nullable: true })
+  appId: string;
+
+  @Column({ name: 'trigger_type', type: 'varchar', nullable: true })
+  triggerType: string;
+
+  // Wall-clock bounds of the run. Deliberately separate from created_at/updated_at: updated_at is
+  // an @UpdateDateColumn that bumps on any write, so a human-in-the-loop run resumed two days
+  // later would otherwise report a two-day duration.
+  @Column({ name: 'started_at', type: 'timestamptz', nullable: true })
+  startedAt: Date | null;
+
+  @Column({ name: 'finished_at', type: 'timestamptz', nullable: true })
+  finishedAt: Date | null;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'executing_user_id' })
   user: User;
