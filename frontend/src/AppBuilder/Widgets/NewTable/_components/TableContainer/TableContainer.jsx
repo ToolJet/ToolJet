@@ -128,6 +128,13 @@ export const TableContainer = ({
       getEditedFieldsOnIndex,
     });
 
+  // Turning sorting off does not clear a sort already applied while it was on, since TanStack's
+  // sorting state is uncontrolled here; clear it explicitly so the data/UI un-sort too.
+  useEffect(() => {
+    if (!enableSorting) table.setSorting([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableSorting]);
+
   // Collapse all expanded rows when sort, filter, search or page changes
   useEffect(() => {
     if (enableExpandableRows) collapseAllRows(id);
