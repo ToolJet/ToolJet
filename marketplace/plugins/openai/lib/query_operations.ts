@@ -3,6 +3,8 @@ import { QueryOptions } from './types';
 
 // All GPT image family models — always return b64_json, never a URL
 const GPT_IMAGE_MODELS = new Set([
+  'gpt-image-2.5-flare',
+  'gpt-image-2.5-sunburst',
   'gpt-image-1',
   'gpt-image-1-mini',
   'gpt-image-1.5',
@@ -10,9 +12,14 @@ const GPT_IMAGE_MODELS = new Set([
   'gpt-image-2-2026-04-21',
 ]);
 
-// gpt-image-2 supports arbitrary WIDTHxHEIGHT strings up to 3840x2160;
+// gpt-image-2 and the 2.5 family support arbitrary WIDTHxHEIGHT strings;
 // the standard fixed-size switch used by the other GPT image models does not apply
-const GPT_IMAGE_2_MODELS = new Set(['gpt-image-2', 'gpt-image-2-2026-04-21']);
+const GPT_IMAGE_2_MODELS = new Set([
+  'gpt-image-2',
+  'gpt-image-2-2026-04-21',
+  'gpt-image-2.5-flare',
+  'gpt-image-2.5-sunburst',
+]);
 
 const GPT_IMAGE_2_SIZE_RE = /^\d+x\d+$/;
 
@@ -117,9 +124,9 @@ export async function getChatCompletion(
     }
   }
 
-  // 2. Temperature Guard: Reasoning models (o-series, gpt-5) do not support temperature.
+  // 2. Temperature Guard: Reasoning models (o-series, gpt-5, gpt-6) do not support temperature.
   // GPT-4.1 (non-reasoning) DOES support it.
-  const isReasoning = modelName.startsWith('o') || modelName.startsWith('gpt-5');
+  const isReasoning = modelName.startsWith('o') || modelName.startsWith('gpt-5') || modelName.startsWith('gpt-6');
   if (!isReasoning) {
     requestPayload.temperature = typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0;
   }

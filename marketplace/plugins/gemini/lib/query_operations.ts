@@ -1,9 +1,30 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { QueryOptions } from './types';
 
-const getMaxTokens = (max_tokens: number | string | undefined): number => {
+const DEFAULT_MODEL = 'models/gemini-3.8-flash';
+
+const MODEL_MAX_OUTPUT_TOKENS: Record<string, number> = {
+  'models/gemini-3.8-flash': 65536,
+  'models/gemini-3.7-flash': 65536,
+  'models/gemini-3.6-flash': 65536,
+  'models/gemini-3.5-flash': 65536,
+  'models/gemini-3.5-flash-lite': 65536,
+  'models/gemini-3.1-pro-preview': 65536,
+  'models/gemini-3.1-flash-lite': 65536,
+  'models/gemini-3-pro-preview': 65536,
+  'models/gemini-3-flash-preview': 65536,
+  'models/gemini-2.5-pro': 65536,
+  'models/gemini-2.5-flash': 65536,
+  'models/gemini-2.5-flash-lite': 65536,
+};
+
+// reasoning models spend part of the budget on thinking before any text is produced,
+// so they need more headroom than the 1000 tokens older models default to
+const getMaxTokens = (model: string, max_tokens: number | string | undefined): number => {
+  const cap = MODEL_MAX_OUTPUT_TOKENS[model] ?? 4096;
+  const fallback = cap > 4096 ? 8192 : 1000;
   const tokens = typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens;
-  return isNaN(tokens) ? 1000 : Math.max(1, Math.min(4096, tokens));
+  return isNaN(tokens) ? Math.min(fallback, cap) : Math.max(1, Math.min(cap, tokens));
 };
 
 const getTemperature = (temperature: number | string | undefined): number => {
@@ -21,8 +42,10 @@ export async function generateText(
     return { error: 'Prompt is required for text generation.', statusCode: 400 };
   }
 
+  const selectedModel = model || DEFAULT_MODEL;
+
   const generativeModel = geminiClient.getGenerativeModel({
-    model: model || 'models/gemini-1.5-flash',
+    model: selectedModel,
     systemInstruction: system_prompt,
   });
 
@@ -35,7 +58,7 @@ export async function generateText(
         },
       ],
       generationConfig: {
-        maxOutputTokens: getMaxTokens(max_tokens),
+        maxOutputTokens: getMaxTokens(selectedModel, max_tokens),
         temperature: getTemperature(temperature),
       },
     });
@@ -56,8 +79,10 @@ export async function chat(
     return { error: 'User prompt is required for chat.', statusCode: 400 };
   }
 
+  const selectedModel = model || DEFAULT_MODEL;
+
   const generativeModel = geminiClient.getGenerativeModel({
-    model: model || 'models/gemini-1.5-flash',
+    model: selectedModel,
     systemInstruction: system_prompt,
   });
 
@@ -69,7 +94,7 @@ export async function chat(
     const chat = await generativeModel.startChat({ 
       history: histories,
       generationConfig: {
-        maxOutputTokens: getMaxTokens(max_tokens),
+        maxOutputTokens: getMaxTokens(selectedModel, max_tokens),
         temperature: getTemperature(temperature),
       },
      });
