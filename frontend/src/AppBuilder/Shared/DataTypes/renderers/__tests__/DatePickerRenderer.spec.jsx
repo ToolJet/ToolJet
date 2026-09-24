@@ -91,3 +91,30 @@ describe('DatePickerRenderer: unix timestamp unit on date pick', () => {
     expect(moment.unix(emitted).format('YYYY-MM-DD')).toBe('2026-08-15');
   });
 });
+
+describe('[Table-BUG-012] disabledDates clearing', () => {
+  test('a date excluded by disabledDates becomes selectable again once disabledDates is cleared, without remounting', async () => {
+    // Break this catches: the excludedDates-sync effect only calling setExcludedDates inside
+    // `if (disabledDates.length > 0)`, so a prop change to `[]` (or a non-array) never clears
+    // the previously-set exclusion list and the stale disabled day stays disabled forever.
+    const value = moment('01/01/2026', 'MM/DD/YYYY').toDate();
+
+    const { rerender } = render(<DatePickerRenderer {...baseProps} value={value} disabledDates={['01/01/2026']} />);
+
+    const input = document.querySelector('.table-column-datepicker-input');
+    await userEvent.click(input);
+    let day = await screen.findByText('1', {
+      selector: '.react-datepicker__day:not(.react-datepicker__day--outside-month)',
+    });
+    expect(day).toHaveAttribute('aria-disabled', 'true');
+
+    rerender(<DatePickerRenderer {...baseProps} value={value} disabledDates={[]} />);
+
+    // Same component instance (no remount) — the popper may have closed on rerender; reopen it.
+    await userEvent.click(input);
+    day = await screen.findByText('1', {
+      selector: '.react-datepicker__day:not(.react-datepicker__day--outside-month)',
+    });
+    expect(day).toHaveAttribute('aria-disabled', 'false');
+  });
+});
