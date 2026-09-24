@@ -1,9 +1,15 @@
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
+const MIGRATION_NAME = 'AddWorkspaceColumnsToWorkflowExecutions1790400000000';
+
 // Rows per backfill batch. workflow_executions is the highest-volume table in this module and its
-// rows are fat (the `logs` json column), so a single UPDATE would mean heavy WAL, bloat and a long
-// lock. ormconfig sets migrationsTransactionMode: 'all', so this still runs in one transaction —
-// batching bounds the work per statement, not the transaction itself.
+// rows are fat (the `logs` json column). ormconfig sets migrationsTransactionMode: 'all', so the
+// whole migration — every batch below included — runs inside one Postgres transaction: batching
+// does NOT shorten lock duration or let other transactions interleave. Every row lock taken by
+// every batch is held until the final COMMIT, exactly as a single unbatched UPDATE would hold it.
+// What batching actually buys is bounded peak memory/work_mem and sort cost per statement, plus
+// (with the progress logging below) visible incremental progress instead of one opaque, silent,
+// multi-minute UPDATE on the module's highest-volume table.
 const BATCH_SIZE = 5000;
 
 export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements MigrationInterface {
@@ -34,6 +40,13 @@ export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements Mig
     // Backfill in batches. `updated_at` is deliberately NOT in the SET list and must never be:
     // it is an @UpdateDateColumn, and historical durations are derived from it for rows that
     // predate started_at/finished_at. Touching it here would corrupt them retroactively.
+    const [{ count: eligibleCount }] = await queryRunner.query(
+      `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
+    );
+    const total = parseInt(eligibleCount, 10);
+    console.log(`${MIGRATION_NAME}: [START] Backfilling workflow_executions: ${total}`);
+
+    let totalUpdated = 0;
     let updated = 0;
     do {
       const result = await queryRunner.query(
@@ -57,7 +70,29 @@ export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements Mig
         `
       );
       updated = result?.[1] ?? 0;
+      totalUpdated += updated;
+      const percentage = total > 0 ? ((totalUpdated / total) * 100).toFixed(1) : '0.0';
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
     } while (updated === BATCH_SIZE);
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill finished. Updated: ${totalUpdated}/${total}`);
+
+    // The inner joins through app_versions -> apps mean any row whose chain doesn't resolve
+    // (orphaned app_version_id, deleted app, etc.) is never selected by the batch above and keeps
+    // organization_id NULL forever — it will never appear in any workspace-scoped query. That's a
+    // pre-existing data-integrity gap, not something this migration can repair, so we don't throw;
+    // we make it visible instead of leaving it silent.
+    const [{ count: remainingCount }] = await queryRunner.query(
+      `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
+    );
+    const remaining = parseInt(remainingCount, 10);
+    if (remaining > 0) {
+      console.warn(
+        `${MIGRATION_NAME}: [WARNING] ${remaining} workflow_executions row(s) could not be backfilled ` +
+          `(no resolvable app_version_id -> app_id -> organization_id chain) and remain organization_id ` +
+          `IS NULL. These rows will not appear in any workspace-scoped query.`
+      );
+    }
 
     // Supports: WHERE organization_id = $1 ORDER BY created_at DESC LIMIT n
     await queryRunner.query(`
