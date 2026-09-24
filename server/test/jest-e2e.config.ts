@@ -18,7 +18,7 @@ const config: Config.InitialOptions = {
   // NOTE: git-sync-gitlab.spec.ts is NOT quarantined — it self-guards, skipping the whole
   // suite at runtime when the GitLab env (TEST_GITLAB_TOKEN et al.) is absent instead of
   // throwing at import, so it runs for real wherever the GitLab simulator env is configured.
-  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.e2e-spec\\.ts$'],
+  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
   testTimeout: 60000,

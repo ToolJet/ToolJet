@@ -34,7 +34,7 @@ import { Repository } from 'typeorm';
  *
  * The full save -> release -> push lifecycle chain, and the branch-publish
  * hook this endpoint shares with release, are covered in
- * promote-to-next-version.e2e-spec.ts, not here.
+ * promote-to-next-version.spec.ts, not here.
  */
 
 /** @group platform */

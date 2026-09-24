@@ -6398,7 +6398,7 @@ describeGitLab('GitSyncController — GitLab', () => {
 
     // ────────────────────────────────────────────────────────────────────────────
     // Slug-update branch rules under git sync (regression). Complements the git-off
-    // slug matrix in apps/e2e/slug-update.e2e-spec.ts by covering the two git-enabled
+    // slug matrix in apps/e2e/slug-update.spec.ts by covering the two git-enabled
     // gates in AppsService.update / AppsUtilService.update:
     //   - SINGLE branch: the default branch IS the working branch → slug edits allowed.
     //   - MULTI branch: slug edits on the default branch are blocked for synced apps

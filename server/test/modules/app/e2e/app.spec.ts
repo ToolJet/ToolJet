@@ -645,7 +645,7 @@ describe('AppController', () => {
 
     // First user setup tests deleted | FirstUserSignupGuard uses LicenseCountsService.getUsersCount()
     // which caches user counts. Reliable first-user testing requires a fresh app instance.
-    // Covered by onboarding/form-auth.e2e-spec.ts.
+    // Covered by onboarding/form-auth.spec.ts.
 
     describe('Multi organization with ALLOW_PERSONAL_WORKSPACE=false', () => {
       beforeEach(async () => {
@@ -815,7 +815,7 @@ describe('AppController', () => {
     // Super Admin onboarding tests deleted | the setup-super-admin endpoint
     // uses FirstUserSignupGuard (LicenseCountsService.getUsersCount) which caches
     // user counts across the NestJS app lifecycle. Reliable first-user testing
-    // requires a fresh app instance per test | covered by onboarding/form-auth.e2e-spec.ts.
+    // requires a fresh app instance per test | covered by onboarding/form-auth.spec.ts.
 
     describe('Multi organization - Super Admin authentication', () => {
       beforeEach(async () => {

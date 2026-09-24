@@ -236,7 +236,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
     // trigger it. This chain proves the realistic sequence: save publishes +
     // seeds the next draft, release promotes that published version to prod,
     // push pushes its commit — closing the "save then release" claim that
-    // used to be a stale comment in save-version.e2e-spec.ts.
+    // used to be a stale comment in save-version.spec.ts.
     it('chains save -> release -> push through a full git-sync lifecycle', async () => {
       const { user, organization } = await seedOrgWithGit();
       const branch = await seedDefaultBranch(organization.id);

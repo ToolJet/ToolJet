@@ -8,7 +8,7 @@ import { createAdmin, findEntity, findEntityOrFail, saveEntity, ensureAppEnviron
 /**
  * Task 3.5: workflows now always resolve to the org's default branch instead of
  * permanently carrying branch_id = NULL (Task 0's now-superseded design) — see
- * workflow-create-branch-id.e2e-spec.ts for the prior (now-updated) NULL-branch_id
+ * workflow-create-branch-id.spec.ts for the prior (now-updated) NULL-branch_id
  * assertion this supersedes.
  */
 /** @group platform */

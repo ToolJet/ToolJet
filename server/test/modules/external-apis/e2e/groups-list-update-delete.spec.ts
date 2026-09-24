@@ -26,7 +26,7 @@ import { Repository } from 'typeorm';
  *                 GET   /ext/workspace/:workspaceId/groups (list)
  *                 DELETE /ext/workspace/:workspaceId/groups/:groupId (delete)
  *
- * create/get-one are covered in groups-create-get.e2e-spec.ts.
+ * create/get-one are covered in groups-create-get.spec.ts.
  */
 
 // ---------------------------------------------------------------------------
