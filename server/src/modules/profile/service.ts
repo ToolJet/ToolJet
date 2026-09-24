@@ -33,8 +33,11 @@ export class ProfileService implements IProfileService {
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string): Promise<File> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await this.userRepository.getUser({
-        id: userId,
+      const user = await this.userRepository.getUser({ id: userId }, undefined, undefined, {
+        id: true,
+        defaultOrganizationId: true,
+        email: true,
+        avatarId: true,
       });
       const avatar = await this.serviceUtils.addAvatar(userId, imageBuffer, filename, manager);
       const auditLogData = {
@@ -61,6 +64,7 @@ export class ProfileService implements IProfileService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
+        select: { id: true, defaultOrganizationId: true, email: true },
       });
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
       const passwordExpiry =
@@ -88,6 +92,7 @@ export class ProfileService implements IProfileService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
+        select: { id: true, defaultOrganizationId: true, email: true, firstName: true, lastName: true },
       });
       const { first_name: firstName, last_name: lastName } = updateUserDto;
       await this.userRepository.updateOne(userId, { firstName, lastName }, manager);
@@ -115,6 +120,7 @@ export class ProfileService implements IProfileService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
+        select: { id: true, defaultOrganizationId: true, email: true, aiBuildNotificationsEnabled: true },
       });
       const { ai_build_notifications_enabled: aiBuildNotificationsEnabled } = preferencesDto;
       await this.userRepository.updateOne(userId, { aiBuildNotificationsEnabled }, manager);

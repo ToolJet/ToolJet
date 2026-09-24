@@ -7,6 +7,7 @@ import {
   DataSource,
   EntityManager,
   Equal,
+  FindOptionsSelect,
   FindOptionsWhere,
   ILike,
   In,
@@ -27,6 +28,20 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
+
+const GROUP_USERS_SAFE_SELECT: FindOptionsSelect<GroupUsers> = {
+  id: true,
+  userId: true,
+  groupId: true,
+  user: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    avatarId: true,
+  },
+};
+
 @Injectable()
 export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {
@@ -276,6 +291,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
             organizationUsers: true,
           },
         },
+        select: GROUP_USERS_SAFE_SELECT,
       });
     }
 
@@ -283,6 +299,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     return m.find(GroupUsers, {
       where: baseWhere,
       relations: { group: true, user: { organizationUsers: true } },
+      select: GROUP_USERS_SAFE_SELECT,
     });
   }
 

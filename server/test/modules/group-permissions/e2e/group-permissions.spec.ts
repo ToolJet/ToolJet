@@ -603,6 +603,20 @@ describe('GroupPermissionsControllerV2', () => {
         // Should contain at least the admin user
         const users = Array.isArray(response.body) ? response.body : (response.body.users ?? []);
         expect(users.length).toBeGreaterThanOrEqual(1);
+        expect(users[0]).toMatchObject({
+          id: expect.any(String),
+          userId: expect.any(String),
+          groupId: adminGroup.id,
+          user: {
+            id: expect.any(String),
+            email: expect.any(String),
+            firstName: expect.anything(),
+            lastName: expect.anything(),
+          },
+        });
+        expect(users[0].user.password).toBeUndefined();
+        expect(users[0].user.invitationToken).toBeUndefined();
+        expect(users[0].user.forgotPasswordToken).toBeUndefined();
       });
     });
 
