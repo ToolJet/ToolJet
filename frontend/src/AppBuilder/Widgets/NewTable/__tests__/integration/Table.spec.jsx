@@ -613,6 +613,21 @@ describe('Table: search and filter', () => {
     expect(bodyRowCount()).toBe(2);
   });
 
+  test("[Table-SEARCH-003] global search matches an edited cell's current value, not its original stored value", async () => {
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    await waitFor(() => expect(searchInput()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Orange');
+    await waitFor(() => expect(exposed('changeSet')).toMatchObject({ 0: { name: 'Orange' } }));
+
+    rtlFireEvent.change(searchInput(), { target: { value: 'Orange' } });
+    await waitFor(() => expect(exposed('searchText')).toBe('Orange'), { timeout: 2000 });
+
+    expect(bodyRowCount()).toBe(1);
+    expect(cellText('name', 0)).toBe('Orange');
+  });
+
   test('[Table-FILTER-002] a configured filter condition narrows rendered rows via setFilters, and clearFilters restores them; onFilterChanged fires on each change', async () => {
     widget.render({
       properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{10}}') },
