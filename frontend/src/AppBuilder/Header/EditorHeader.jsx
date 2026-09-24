@@ -53,8 +53,6 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const headerLockClass = cx({ 'tw-pointer-events-none tw-opacity-50': isGitSyncLicenseLocked });
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
-  const isOnWorkspaceFeatureBranch =
-    workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
   const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
@@ -140,12 +138,9 @@ export const EditorHeader = ({ darkMode, appType }) => {
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
-                  {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
-                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
-                    <VersionManagerErrorBoundary>
-                      <VersionManagerDropdown darkMode={darkMode} />
-                    </VersionManagerErrorBoundary>
-                  )}
+                  <VersionManagerErrorBoundary>
+                    <VersionManagerDropdown darkMode={darkMode} />
+                  </VersionManagerErrorBoundary>
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
                 </div>
               </div>

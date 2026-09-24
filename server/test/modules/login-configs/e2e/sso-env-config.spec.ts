@@ -12,8 +12,13 @@ import {
   buildTestSession,
 } from 'test-helper';
 import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
+import { OidcEnvUtilService } from '@ee/organization-env/services/oidc.util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
-import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
+import { OauthService } from '@ee/auth/oauth/service';
+import { OidcOAuthService } from '@ee/auth/oauth/util-services/oidc-auth.service';
+import { LicenseInitService } from '@modules/licensing/interfaces/IService';
+import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
+import { SSOConfigs, SSOType, ConfigScope } from 'src/entities/sso_config.entity';
 import { SsoConfigOidcGroupSync } from 'src/entities/sso_config_oidc_group_sync.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
@@ -227,6 +232,217 @@ describe('LoginConfigsController', () => {
 
         await groupSyncRepository.delete({ ssoConfigId: row.id });
       });
+
+      it('should expose the group-sync claim name as claim_name (not blank) in the GET /instance-sso API response', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'groups',
+          groupMapping: { engineering: 'builder' },
+          enableGroupSync: true,
+        });
+
+        try {
+          const response = await request(app.getHttpServer())
+            .get('/api/login-configs/instance-sso')
+            .set('Cookie', tokenCookie)
+            .set('tj-workspace-id', orgId)
+            .expect(200);
+
+          const openidConfig = (response.body as any[]).find((c) => c.sso === SSOType.OPENID);
+          const groupSync = openidConfig?.oidc_group_syncs?.find((g: any) => g.organization_id === orgId);
+
+          expect(groupSync).toBeDefined();
+          expect(groupSync?.claim_name).toBe('groups');
+          expect(groupSync?.claimName).toBeUndefined();
+        } finally {
+          await groupSyncRepository.delete({ ssoConfigId: row.id });
+        }
+      });
+
+      it('should keep DB-configured group sync for workspaces the .env override does not cover, once the shared instance provider is env-managed', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const otherOrgId = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+        const dbGroupSyncs = [
+          { organizationId: orgId, claimName: 'stale-claim', groupMapping: { engineering: 'stale-group' } },
+          { organizationId: otherOrgId, claimName: 'db-claim', groupMapping: { engineering: 'db-mapped-group' } },
+        ];
+
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME = 'groups';
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING = JSON.stringify({ engineering: 'from-env' });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            undefined,
+            null,
+            dbGroupSyncs
+          );
+
+          const forTestOrg = result.find((entry: any) => entry.organizationId === orgId);
+          const forOtherOrg = result.find((entry: any) => entry.organizationId === otherOrgId);
+
+          expect(forTestOrg).toMatchObject({ claimName: 'groups', groupMapping: { engineering: 'from-env' } });
+          expect(forOtherOrg).toMatchObject({
+            claimName: 'db-claim',
+            groupMapping: { engineering: 'db-mapped-group' },
+          });
+        } finally {
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME;
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING;
+          await app.get(OrganizationEnvUtilService).initialize();
+        }
+      });
+
+      it('should source login-time group sync mapping from OIDC_GROUP_SYNC_* env vars, not a stale GUI-configured DB row', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        const groupSyncRepository = getEntityRepository(SsoConfigOidcGroupSync);
+        await groupSyncRepository.save({
+          ssoConfigId: row.id,
+          organizationId: orgId,
+          claimName: 'stale-claim',
+          groupMapping: { engineering: 'stale-group' },
+          enableGroupSync: true,
+        });
+
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME = 'groups';
+        process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING = JSON.stringify({ engineering: 'from-env' });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const mappings = await app.get(OidcEnvUtilService).getInstanceGroupSyncMappings();
+          const orgMapping = mappings.find((m) => m.organizationId === orgId);
+
+          expect(orgMapping).toMatchObject({
+            claimName: 'groups',
+            groupMapping: { engineering: 'from-env' },
+          });
+        } finally {
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_CLAIM_NAME;
+          delete process.env.OIDC_GROUP_SYNC_SSO_ENV_CONFIG_TEST_ORG_MAPPING;
+          await app.get(OrganizationEnvUtilService).initialize();
+          await groupSyncRepository.delete({ ssoConfigId: row.id });
+        }
+      });
+
+      it('should match the workspace name across hyphen/underscore/space variants in the env var name token', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        await runBootSequence();
+        const row = await getInstanceOidcRow();
+        expect(row?.useEnvConfig).toBe(true);
+
+        // Org name is "SSO Env Config Test Org" (spaces) — env var names can't contain spaces, so an
+        // admin typing hyphens instead of underscores must still resolve to the same workspace.
+        process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_CLAIM_NAME'] = 'groups';
+        process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_MAPPING'] = JSON.stringify({
+          engineering: 'from-env-hyphen',
+        });
+        try {
+          await app.get(OrganizationEnvUtilService).initialize();
+
+          const mappings = await app.get(OidcEnvUtilService).getInstanceGroupSyncMappings();
+          const orgMapping = mappings.find((m) => m.organizationId === orgId);
+
+          expect(orgMapping).toMatchObject({
+            claimName: 'groups',
+            groupMapping: { engineering: 'from-env-hyphen' },
+          });
+        } finally {
+          delete process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_CLAIM_NAME'];
+          delete process.env['OIDC_GROUP_SYNC_SSO-ENV-CONFIG-TEST-ORG_MAPPING'];
+          await app.get(OrganizationEnvUtilService).initialize();
+        }
+      });
+
+      it('should mask name and grantType to their env-var names, while exposing the real values as resolvedName/resolvedGrantType', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.OIDC_NAME = 'Instance OIDC';
+        process.env.OIDC_GRANT_TYPE = 'authorization_code';
+        try {
+          await runBootSequence();
+
+          const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+          const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+          expect(openidConfig?.configs?.name).toBe('OIDC_NAME');
+          expect(openidConfig?.configs?.resolvedName).toBe('Instance OIDC');
+          expect(openidConfig?.configs?.grantType).toBe('OIDC_GRANT_TYPE');
+          expect(openidConfig?.configs?.resolvedGrantType).toBe('authorization_code');
+        } finally {
+          process.env.OIDC_NAME = 'Instance OIDC';
+          process.env.OIDC_GRANT_TYPE = 'authorization_code';
+        }
+      });
+
+      it('should clear a stale GUI-configured custom scopes value once env-config is on, when OIDC_CUSTOM_SCOPES is not set', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        const savedCustomScopes = process.env.OIDC_CUSTOM_SCOPES;
+        delete process.env.OIDC_CUSTOM_SCOPES;
+        try {
+          await ssoConfigsRepository.update(
+            { sso: SSOType.OPENID, organizationId: IsNull() },
+            {
+              useEnvConfig: false,
+              enabled: false,
+              configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '', customScopes: 'stale-scope' },
+            }
+          );
+
+          await runBootSequence();
+
+          const configs = await app.get(LoginConfigsService).getInstanceSSOConfigs();
+          const openidConfig = (configs as any[]).find((c) => c.sso === SSOType.OPENID);
+
+          expect(openidConfig?.configs?.customScopes).toBeUndefined();
+        } finally {
+          if (savedCustomScopes === undefined) delete process.env.OIDC_CUSTOM_SCOPES;
+          else process.env.OIDC_CUSTOM_SCOPES = savedCustomScopes;
+        }
+      });
+
+      it('should use the DB-configured custom scopes at login time, not .env, when env-config is off', async () => {
+        const savedCustomScopes = process.env.OIDC_CUSTOM_SCOPES;
+        process.env.OIDC_CUSTOM_SCOPES = 'read write email';
+        try {
+          await ssoConfigsRepository.update(
+            { sso: SSOType.OPENID, organizationId: IsNull() },
+            {
+              useEnvConfig: false,
+              enabled: true,
+              configs: {
+                clientId: 'instance-client-id',
+                clientSecret: '',
+                name: 'Instance OIDC',
+                wellKnownUrl: 'https://instance-idp.example.com/.well-known/openid-configuration',
+                grantType: 'authorization_code',
+                customScopes: 'gui-configured-scope',
+              },
+            }
+          );
+
+          const ssoConfigs = await app.get(OidcOAuthService).getSsoConfigs(undefined as unknown as string);
+
+          expect(ssoConfigs?.customScopes).toBe('gui-configured-scope');
+        } finally {
+          if (savedCustomScopes === undefined) delete process.env.OIDC_CUSTOM_SCOPES;
+          else process.env.OIDC_CUSTOM_SCOPES = savedCustomScopes;
+        }
+      });
     });
 
     describe('workspace OIDC env config', () => {
@@ -269,6 +485,40 @@ describe('LoginConfigsController', () => {
         expect(rows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
       });
 
+      it('should reuse an existing untouched legacy row (no envConfigIndex) instead of creating a duplicate', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [TEST_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'id-1',
+              OIDC_CLIENT_SECRET: 'secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        const legacyRow = await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.OPENID,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const rows = await ssoConfigsRepository.find({ where: { sso: SSOType.OPENID, organizationId: orgId } });
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toBe(legacyRow.id);
+        expect(rows[0].useEnvConfig).toBe(true);
+        expect(rows[0].enabled).toBe(true);
+        expect((rows[0].configs as Record<string, unknown>)?.envConfigIndex).toBe(0);
+      });
+
       it('should throw the generic env-config message on a manual toggle attempt with an incomplete config', async () => {
         process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
           [TEST_ORG_SLUG]: [{ OIDC_CLIENT_ID: 'id-1', OIDC_NAME: 'first' }],
@@ -307,6 +557,82 @@ describe('LoginConfigsController', () => {
         await expect(
           app.get(LoginConfigsService).toggleOidcEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/already being used/);
+      });
+
+      describe('login-time group sync source (OauthService.resolveOidcGroupSyncs)', () => {
+        const stubDbGroupSyncs = [
+          { organizationId: 'stale-org', claimName: 'stale-claim', groupMapping: { engineering: 'stale-group' } },
+        ];
+
+        it('should use the env-derived mapping when the provider config has group sync enabled', async () => {
+          process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+            [TEST_ORG_SLUG]: [
+              {
+                OIDC_CLIENT_ID: 'id-1',
+                OIDC_CLIENT_SECRET: 'secret-1',
+                OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+                OIDC_NAME: 'first',
+                OIDC_GRANT_TYPE: 'authorization_code',
+                OIDC_CLAIM_NAME: 'groups',
+                OIDC_ENABLE_GROUP_SYNC: 'true',
+                OIDC_GROUP_MAPPING: JSON.stringify({ engineering: 'from-env' }),
+              },
+            ],
+          });
+          jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+          await runBootSequence();
+          const row = await getOrgRow(SSOType.OPENID);
+          const resolvedOidcConfigs = await app.get(OidcEnvUtilService).getOidcConfig(orgId, row.id, 0);
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            row.id,
+            resolvedOidcConfigs,
+            stubDbGroupSyncs
+          );
+
+          expect(result).toEqual([
+            { claimName: 'groups', enableGroupSync: true, groupMapping: { engineering: 'from-env' } },
+          ]);
+        });
+
+        it('should return no group sync — not the stale DB row — when env-config is on but group sync is not enabled in .env', async () => {
+          process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+            [TEST_ORG_SLUG]: [
+              {
+                OIDC_CLIENT_ID: 'id-1',
+                OIDC_CLIENT_SECRET: 'secret-1',
+                OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+                OIDC_NAME: 'first',
+                OIDC_GRANT_TYPE: 'authorization_code',
+              },
+            ],
+          });
+          jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+          await runBootSequence();
+          const row = await getOrgRow(SSOType.OPENID);
+          const resolvedOidcConfigs = await app.get(OidcEnvUtilService).getOidcConfig(orgId, row.id, 0);
+
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            true,
+            row.id,
+            resolvedOidcConfigs,
+            stubDbGroupSyncs
+          );
+
+          expect(result).toEqual([]);
+        });
+
+        it('should use the DB-configured mapping when the provider is not env-managed', async () => {
+          const result = await (app.get(OauthService) as any).resolveOidcGroupSyncs(
+            false,
+            'some-config-id',
+            { enableGroupSync: false },
+            stubDbGroupSyncs
+          );
+
+          expect(result).toBe(stubDbGroupSyncs);
+        });
       });
     });
 
@@ -351,6 +677,59 @@ describe('LoginConfigsController', () => {
           app.get(LoginConfigsService).toggleSamlEnvConfig('a-human-user-id', orgId, { useEnvConfig: true })
         ).rejects.toThrow(/Environment variable is not configured for SSO/);
       });
+
+      it('should auto-enable even when an untouched, disabled placeholder row already exists', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.SAML,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.SAML);
+        expect(row?.useEnvConfig).toBe(true);
+        expect(row?.enabled).toBe(true);
+      });
+
+      it('should never re-enable a provider a human explicitly disabled, even after the config is fixed', async () => {
+        await runBootSequence();
+        const enabledRow = await getOrgRow(SSOType.SAML);
+        expect(enabledRow?.useEnvConfig).toBe(true);
+
+        await ssoConfigsRepository.update(enabledRow.id, {
+          useEnvConfig: false,
+          configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false },
+        });
+
+        await runBootSequence();
+
+        expect((await getOrgRow(SSOType.SAML))?.useEnvConfig).toBe(false);
+      });
+
+      it('should never take over a row already enabled by a human via the GUI', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.SAML,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: true,
+            useEnvConfig: false,
+            configs: { name: 'human-configured-saml' },
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.SAML);
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.name).toBe('human-configured-saml');
+      });
     });
 
     describe('workspace LDAP env config', () => {
@@ -391,6 +770,178 @@ describe('LoginConfigsController', () => {
 
         expect(ldapEntry?.configs?.basedns).toEqual(['LDAP_BASE_DN']);
       });
+
+      it('should auto-enable even when an untouched, disabled placeholder row already exists', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.LDAP,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: false,
+            useEnvConfig: false,
+            configs: {},
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.LDAP);
+        expect(row?.useEnvConfig).toBe(true);
+        expect(row?.enabled).toBe(true);
+      });
+
+      it('should never re-enable a provider a human explicitly disabled, even after the config is fixed', async () => {
+        await runBootSequence();
+        const enabledRow = await getOrgRow(SSOType.LDAP);
+        expect(enabledRow?.useEnvConfig).toBe(true);
+
+        await ssoConfigsRepository.update(enabledRow.id, {
+          useEnvConfig: false,
+          configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false },
+        });
+
+        await runBootSequence();
+
+        expect((await getOrgRow(SSOType.LDAP))?.useEnvConfig).toBe(false);
+      });
+
+      it('should never take over a row already enabled by a human via the GUI', async () => {
+        await ssoConfigsRepository.save(
+          ssoConfigsRepository.create({
+            organizationId: orgId,
+            sso: SSOType.LDAP,
+            configScope: ConfigScope.ORGANIZATION,
+            enabled: true,
+            useEnvConfig: false,
+            configs: { name: 'human-configured-ldap' },
+          })
+        );
+
+        await runBootSequence();
+
+        const row = await getOrgRow(SSOType.LDAP);
+        expect(row?.useEnvConfig).toBe(false);
+        expect((row?.configs as Record<string, unknown>)?.name).toBe('human-configured-ldap');
+      });
+    });
+
+    describe('lazy workspace auto-enable (login-page load, no restart)', () => {
+      const LAZY_ORG_SLUG = 'lazy-auto-enable-test-org';
+      let lazyOrgId: string;
+
+      const waitUntil = async (predicate: () => Promise<boolean>, timeoutMs = 2000, intervalMs = 50) => {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+          if (await predicate()) return;
+          await new Promise((resolve) => setTimeout(resolve, intervalMs));
+        }
+        throw new Error('waitUntil: condition not met within timeout');
+      };
+
+      beforeEach(async () => {
+        const samlMetadata = JSON.parse(baselineWorkspaceSamlConfig)[TEST_ORG_SLUG].SAML_IDP_METADATA;
+        process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: [
+            {
+              OIDC_CLIENT_ID: 'lazy-client-1',
+              OIDC_CLIENT_SECRET: 'lazy-secret-1',
+              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+              OIDC_NAME: 'lazy-first',
+              OIDC_GRANT_TYPE: 'authorization_code',
+            },
+          ],
+        });
+        process.env.WORKSPACE_SAML_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: { SAML_IDP_METADATA: samlMetadata, SAML_NAME: 'Lazy SAML' },
+        });
+        process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify({
+          [LAZY_ORG_SLUG]: {
+            LDAP_HOST_NAME: 'localhost',
+            LDAP_PORT: '389',
+            LDAP_BASE_DN: 'dc=example,dc=com',
+            LDAP_NAME: 'Lazy LDAP',
+          },
+        });
+
+        await app.get(OrganizationEnvUtilService).initialize();
+
+        const { organization } = await createUser(app, {
+          organizationName: 'Lazy Auto Enable Org',
+          email: 'lazy-auto-enable@tooljet.io',
+        });
+        lazyOrgId = organization.id;
+        await getEntityRepository(Organization).update(lazyOrgId, { slug: LAZY_ORG_SLUG });
+      });
+
+      afterEach(async () => {
+        process.env.WORKSPACE_OIDC_CONFIG = baselineWorkspaceOidcConfig;
+        process.env.WORKSPACE_SAML_CONFIG = baselineWorkspaceSamlConfig;
+        process.env.WORKSPACE_LDAP_CONFIG = baselineWorkspaceLdapConfig;
+        await ssoConfigsRepository.delete({ organizationId: lazyOrgId });
+        await getEntityRepository(Organization).delete(lazyOrgId);
+      });
+
+      it('should auto-enable SAML/LDAP/OIDC the first time the login page reads org details — no restart involved', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+
+        await waitUntil(async () => {
+          const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+          const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+          const oidc = await ssoConfigsRepository.findOne({
+            where: { organizationId: lazyOrgId, sso: SSOType.OPENID },
+          });
+          return !!saml?.enabled && !!ldap?.enabled && !!oidc?.enabled;
+        });
+
+        const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+        const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+        const oidc = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.OPENID } });
+
+        expect(saml?.useEnvConfig).toBe(true);
+        expect(ldap?.useEnvConfig).toBe(true);
+        expect(oidc?.useEnvConfig).toBe(true);
+        expect(saml?.enabled).toBe(true);
+        expect(ldap?.enabled).toBe(true);
+        expect(oidc?.enabled).toBe(true);
+      });
+
+      it('should auto-enable when called with the workspace slug — the actual param AuthRoute.jsx sends, not a UUID', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(LAZY_ORG_SLUG);
+
+        await waitUntil(async () => {
+          const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+          const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+          const oidc = await ssoConfigsRepository.findOne({
+            where: { organizationId: lazyOrgId, sso: SSOType.OPENID },
+          });
+          return !!saml?.enabled && !!ldap?.enabled && !!oidc?.enabled;
+        });
+
+        const saml = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.SAML } });
+        const ldap = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.LDAP } });
+        const oidc = await ssoConfigsRepository.findOne({ where: { organizationId: lazyOrgId, sso: SSOType.OPENID } });
+
+        expect(saml?.enabled).toBe(true);
+        expect(ldap?.enabled).toBe(true);
+        expect(oidc?.enabled).toBe(true);
+      });
+
+      it('should not re-attempt (and re-hit the IdP) on every request within the cooldown window', async () => {
+        const discoverSpy = jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+        await waitUntil(async () => discoverSpy.mock.calls.length > 0);
+        const callsAfterFirst = discoverSpy.mock.calls.length;
+
+        await app.get(LoginConfigsService).getProcessedOrganizationDetails(lazyOrgId);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(discoverSpy.mock.calls.length).toBe(callsAfterFirst);
+      });
     });
 
     describe('workspace config shape enforcement', () => {
@@ -425,6 +976,93 @@ describe('LoginConfigsController', () => {
           .set('tj-workspace-id', orgId)
           .send({ useEnvConfig: false })
           .expect(400);
+      });
+    });
+
+    describe('TJ_LICENSE freshness on auto-enable (sso-env)', () => {
+      const realTjLicense = process.env.TJ_LICENSE;
+
+      beforeEach(async () => {
+        await ssoConfigsRepository.update(
+          { sso: SSOType.OPENID, organizationId: IsNull() },
+          {
+            useEnvConfig: false,
+            enabled: false,
+            configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' },
+          }
+        );
+        await clearOrgRows(SSOType.OPENID);
+        await clearOrgRows(SSOType.SAML);
+        await clearOrgRows(SSOType.LDAP);
+      });
+
+      afterEach(async () => {
+        process.env.TJ_LICENSE = realTjLicense;
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        await clearOrgRows(SSOType.OPENID);
+        await clearOrgRows(SSOType.SAML);
+        await clearOrgRows(SSOType.LDAP);
+      });
+
+      it('should auto-enable instance AND workspace-level OIDC/SAML/LDAP once a TJ_LICENSE is added to .env after boot, without a server restart', async () => {
+        jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
+        // The freshness check decrypts TJ_LICENSE — mock a valid, unexpired license so this
+        // test doesn't depend on whatever TJ_LICENSE happens to be set in the ambient env.
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2999-01-01' } as any);
+        app.get(LicenseInitService).setUseEnvLicense(false);
+        process.env.TJ_LICENSE = 'test-env-license-added-after-boot';
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
+
+        const instanceRow = await getInstanceOidcRow();
+        expect(instanceRow?.useEnvConfig).toBe(true);
+        expect(instanceRow?.enabled).toBe(true);
+
+        const workspaceOidcRows = await ssoConfigsRepository.find({
+          where: { sso: SSOType.OPENID, organizationId: orgId },
+        });
+        expect(workspaceOidcRows.length).toBeGreaterThan(0);
+        expect(workspaceOidcRows.every((r) => r.useEnvConfig && r.enabled)).toBe(true);
+
+        const samlRow = await getOrgRow(SSOType.SAML);
+        expect(samlRow?.useEnvConfig).toBe(true);
+        expect(samlRow?.enabled).toBe(true);
+
+        const ldapRow = await getOrgRow(SSOType.LDAP);
+        expect(ldapRow?.useEnvConfig).toBe(true);
+        expect(ldapRow?.enabled).toBe(true);
+      });
+
+      it('should stop using an env license that has since expired, on the next auto-enable pass', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2000-01-01' } as any);
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(false);
+      });
+
+      it('should leave license state untouched when TJ_LICENSE is invalid/undecryptable', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        process.env.TJ_LICENSE = 'garbage';
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockImplementation(() => {
+          throw new Error('bad license');
+        });
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
+      });
+
+      it('should do nothing when TJ_LICENSE is not set', async () => {
+        app.get(LicenseInitService).setUseEnvLicense(true);
+        delete process.env.TJ_LICENSE;
+
+        await runBootSequence();
+
+        expect(app.get(LicenseInitService).isUsingEnvLicense()).toBe(true);
       });
     });
   });

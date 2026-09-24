@@ -76,6 +76,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'invited@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -98,6 +99,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'archived@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -135,6 +137,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'ssouser@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
@@ -162,6 +165,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'ssouser@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
@@ -195,6 +199,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'ssouser@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
@@ -218,6 +223,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'superadmin@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
@@ -237,6 +243,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'ssouser@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
@@ -261,6 +268,7 @@ describe('OAuthController', () => {
               sub: 'someSSOId',
               email: 'ssouser@tooljet.io',
               name: 'SSO User',
+              email_verified: true,
               hd: 'tooljet.io',
             }),
           }));
