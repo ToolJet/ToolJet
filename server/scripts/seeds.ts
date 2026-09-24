@@ -35,12 +35,8 @@ async function bootstrap() {
   const dataSource = app.get(DataSource);
   const manager = dataSource.manager;
 
-  // SetupOrganizationsUtilService/OnboardingUtilService/USER_ROLE have EE overrides
-  // (ee/setup-organization, ee/onboarding, ee/group-permissions) that extend the CE
-  // classes and get registered as the DI provider instead of them under
-  // TOOLJET_EDITION=ee/cloud. A static `@modules/...` import would resolve to the CE
-  // class reference — a different token from what's actually in the container — so
-  // resolve the same way SubModule.getProviders() does.
+  // These have EE overrides registered as the DI token under TOOLJET_EDITION=ee/cloud —
+  // a static @modules/... import would resolve to the wrong (CE) class reference.
   const importPath = await getImportPath(nestConfigs.IS_GET_CONTEXT);
   const { SetupOrganizationsUtilService } = await import(`${importPath}/setup-organization/util.service`);
   const { OnboardingUtilService } = await import(`${importPath}/onboarding/util.service`);
@@ -51,7 +47,6 @@ async function bootstrap() {
   const organizationUsersRepository = app.get(OrganizationUsersRepository);
   console.log('Database connected.');
 
-  // Check if already seeded
   const existingUser = await manager.findOne(User, { where: { email: config.email } });
   if (existingUser) {
     console.log('Database already seeded. Skipping.');
@@ -60,16 +55,12 @@ async function bootstrap() {
   }
 
   await manager.transaction(async (txManager) => {
-    // 1. Org + default envs + default groups + branch + sample DB + theme +
-    //    ToolJetDB tenant schema + static data sources (restapi/runjs/runpy/
-    //    tooljetdb/workflows) — same path real signup uses.
     const organization = await setupOrganizationsUtilService.create(
       { name: config.workspaceName, slug: config.workspaceName.toLowerCase().replace(/\s+/g, '-'), isDefault: true },
       null,
       txManager
     );
 
-    // 2. Super admin user + RBAC role
     const user = await onboardingUtilService.createUserWithRole(
       {
         firstName: config.firstName,
@@ -87,10 +78,9 @@ async function bootstrap() {
       txManager
     );
 
-    // 3. Organization-user mapping
     await organizationUsersRepository.createOne(user, organization, false, txManager);
 
-    // 4. Mark metadata as onboarded so frontend skips /setup entirely
+    // so frontend skips /setup entirely
     const [metadata] = await txManager.find(Metadata);
     if (metadata) {
       metadata.data = { ...metadata.data, onboarded: true };
