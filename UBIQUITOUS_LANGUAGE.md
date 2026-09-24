@@ -134,7 +134,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
-| **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (reserve for component-level interactions) |
+| **Workflow Trigger** | What starts a workflow: `manual`, `schedule`, `webhook`, `app` (run triggered from inside an application), `workflow` (run invoked by a parent workflow), or `unknown` (history predating the `trigger_type` column — never back-fill by guessing) | Event — reserved for component-level interactions, but the executions dashboard also labels the `app` trigger "Event" per Figma; see Flagged Ambiguities |
 | **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated, waiting | — |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
 | **Wait Node** | A workflow node that pauses an execution for a configured duration, then continues through its single output | — |
@@ -198,7 +198,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - A **Query** connects an **App** to a **Data Source** and may apply a **Transformation** to results
 - A **Global Data Source** is shared across all **Apps** in a **Workspace**; an **App-Level Data Source** belongs to one **App**
 - An **Environment** (dev/staging/prod) holds per-environment **Data Source** configurations and **Workspace Constant** values
-- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook/app/workflow/unknown) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
 - A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request** resolved by token via the approval API
 - A **Plan** determines the **License Terms**, which gate **Features** via **Feature Flags**
 - A **Plugin** backs a **Data Source** type; **Marketplace Plugins** extend the built-in set
@@ -219,7 +219,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 
 - **"Branch"** is now three things: a **Workspace Branch** (workspace-scoped git branch entity), a **branch-head Version** (`versionType: BRANCH`, UUID name, display name from the Workspace Branch), and the plain git branch on the remote. Say which one; never use bare "branch" for an app Version.
 
-- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook). Do not use them interchangeably.
+- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook, app, workflow, unknown). Do not use them interchangeably in code or general docs — **except** the workflow executions dashboard UI, which labels the `app` trigger "Event" (per Figma, product-owner call); that one shipped label is a known, accepted exception, not a precedent for reuse elsewhere.
 
 - **"Module"** is heavily overloaded: in the backend it's a NestJS architectural module (`server/src/modules/*`); in the frontend it's a reusable app building block (EE feature, app type `MODULE`). Always qualify which you mean.
 
