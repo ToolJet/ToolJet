@@ -190,6 +190,8 @@ export const ValidationProperties = ({
               popperClassName={cx('tj-table-datepicker', {
                 'theme-dark dark-theme': darkMode,
               })}
+              popperPlacement="bottom-start"
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );
@@ -207,6 +209,8 @@ export const ValidationProperties = ({
               placeholderText={validation?.placeholder ?? ''}
               timeFormat={'HH:mm'}
               darkMode={darkMode}
+              popperPlacement="bottom-start"
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );
