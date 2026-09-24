@@ -8,8 +8,16 @@
  * @param {string} execution.status - DB status ('success', 'failed', 'terminated', null)
  * @param {string} [execution.jobState] - BullMQ state ('active', 'waiting', 'delayed', 'completed', 'failed')
  * @param {boolean} [execution.terminationRequested] - Redis termination flag
- * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated'
+ * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated' | 'unknown'
  */
+// A run with no live BullMQ job is normally a transient race — the DB just hasn't caught up.
+// Past this age it isn't: the job was evicted (removeOnComplete: 100) or its worker died, and the
+// row will never reach a terminal status on its own. Reporting that as success is a lie, so it
+// gets its own state. The default workflow timeout is 60s, so 2x alone is 120s — too tight for a
+// backed-up queue, hence the five minute floor.
+const WORKFLOW_TIMEOUT_MS = 60 * 1000;
+export const STALE_EXECUTION_THRESHOLD_MS = Math.max(WORKFLOW_TIMEOUT_MS * 2, 5 * 60 * 1000);
+
 export function getExecutionDisplayState(execution) {
   // A suspended run is authoritative in the database. Human-in-the-loop uses `waiting`;
   // a timed Wait node uses `waiting_for_delay` so it can keep polling until its timer resumes.
@@ -32,7 +40,12 @@ export function getExecutionDisplayState(execution) {
   // Job doesn't exist in queue anymore
   // This can happen if job completed but DB not updated yet
   if (!jobState) {
-    // Poll will fetch fresh data soon
+    // No job AND old enough that the DB will never catch up: the run is dead, not pending.
+    const startedAt = execution.startedAt || execution.createdAt;
+    if (startedAt && Date.now() - new Date(startedAt).getTime() > STALE_EXECUTION_THRESHOLD_MS) {
+      return 'unknown';
+    }
+    // Recent: the poll will fetch fresh data shortly. Unchanged behaviour for the editor.
     return 'completed';
   }
 
@@ -152,6 +165,14 @@ export function getExecutionDisplayConfig(execution) {
       showTime: false,
       icon: 'waiting',
     },
+    unknown: {
+      state: 'unknown',
+      text: null,
+      showSpinner: false,
+      showCancelButton: false,
+      showTime: true,
+      icon: 'unknown',
+    },
   };
 
   return configs[state] || configs.running; // Fallback to running if unknown state
@@ -186,6 +207,7 @@ export function getExecutionStatusText(execution) {
     failed: 'Failed',
     terminated: 'Terminated',
     waiting: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
+    unknown: 'Unknown',
   };
 
   return statusTexts[state] || 'Unknown';
