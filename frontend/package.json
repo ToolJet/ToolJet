@@ -313,6 +313,7 @@
       "node_modules/(?!(react|mpx-error-boundary)/)"
     ],
     "moduleNameMapper": {
+      "@ee/(.*)": "<rootDir>/ee/$1",
       "@/(.*)": "<rootDir>/src/$1"
     },
     "testEnvironment": "jest-environment-jsdom",
