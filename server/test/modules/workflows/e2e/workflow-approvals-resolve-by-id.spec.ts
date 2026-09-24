@@ -191,27 +191,35 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
   });
 
   it("rejects a caller from another workspace, even if listed by id in this workspace's snapshot", async () => {
-    const seeded = await seedRequest('rbi-cross-org', {
-      users: [],
-      groups: [],
-      emails: [],
-      tokenBypass: true,
-    });
-
+    // The other-org user is created FIRST so their id can go into the snapshot. Seeding an empty
+    // `users` list here would make the case pass on the allowlist miss alone and never exercise
+    // its own title: `approversSnapshot` is free text written by whoever configured the node, so
+    // a stranger's id (or email) landing in a workspace's snapshot is trivially arrangeable, and
+    // `authorizeResolverForUser` would happily authorize them against the REQUEST's org. The org
+    // that must gate this is the CALLER's session org.
     const { user: otherUser } = await setupOrganizationAndUser(app, {
       email: 'resolve-by-id-other-org@tooljet.io',
       password: 'password',
       firstName: 'Other',
       lastName: 'Org',
     });
+
+    const seeded = await seedRequest('rbi-cross-org', {
+      users: [otherUser.id],
+      groups: [],
+      emails: [],
+      tokenBypass: true,
+    });
+
     const { tokenCookie } = await buildTestSession(otherUser, otherUser.organizationId);
 
+    // 404, not 403: a caller outside the workspace must not learn that this id exists.
     await request(app.getHttpServer())
       .post(`/api/workflow-approvals/by-id/${seeded.id}/resolve`)
       .set('Cookie', tokenCookie)
       .set('tj-workspace-id', otherUser.organizationId)
       .send({ outcome: 'approved' })
-      .expect(403);
+      .expect(404);
 
     const after = await findEntityOrFail(WorkflowApprovalRequest, { id: seeded.id });
     expect(after.status).toBe('pending');
@@ -241,7 +249,7 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .expect(409);
   });
 
-  it('pins authorization ahead of the state check: an unauthorized cross-workspace caller gets 403, not 409, for an already-resolved id', async () => {
+  it('pins authorization ahead of the state check: an unauthorized cross-workspace caller gets 404, not 409, for an already-resolved id', async () => {
     const seeded = await seedRequest('rbi-order-leak-check', {
       users: [builderUser.id],
       groups: [],
@@ -258,10 +266,10 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .send({ outcome: 'approved' })
       .expect(201);
 
-    // A caller from a different workspace, never a listed approver here, hits the same id. If
-    // the pending/expired check ran before authorization, this would 409 ("not pending") --
-    // disclosing that the id exists and is already resolved to a caller never authorized to act
-    // on it. Authorization must run first, so this stays 403 regardless of the request's status.
+    // A caller from a different workspace hits the same id. If the pending/expired check ran
+    // before the org scope + authorization checks, this would 409 ("not pending") -- disclosing
+    // that the id exists and is already resolved to a caller never authorized to act on it. The
+    // org scope check runs first, so this stays 404 regardless of the request's status.
     const { user: otherUser } = await setupOrganizationAndUser(app, {
       email: 'resolve-by-id-order-check@tooljet.io',
       password: 'password',
@@ -275,6 +283,6 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .set('Cookie', otherCookie)
       .set('tj-workspace-id', otherUser.organizationId)
       .send({ outcome: 'approved' })
-      .expect(403);
+      .expect(404);
   });
 });
