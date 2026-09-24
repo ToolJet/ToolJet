@@ -4,11 +4,7 @@
 const getModalHostEl = () =>
   document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0];
 
-// Tracks which modals are logically open, independent of whether their DOM
-// node has actually left the tree yet (a closing modal's node can linger
-// mid-exit-animation). A Set keyed by id — rather than a raw counter — stays
-// correct even if a show/hide fires twice for the same id (e.g. React
-// StrictMode's dev-mode double-invoke of effects).
+// Modals logically open, independent of DOM/animation timing.
 const openModalIds = new Set();
 
 export const onShowSideEffects = (id) => {
@@ -36,11 +32,7 @@ export const onHideSideEffects = (id) => {
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const modalHostEl = getModalHostEl();
 
-  // Fallback for any modal implementation that can unmount while open without
-  // going through onHideSideEffects (e.g. a page navigation triggered from
-  // inside it): if the Set is stuck non-empty but nothing is actually
-  // rendered anymore, trust the DOM and self-heal instead of leaving the
-  // canvas locked forever.
+  // Self-heal if the Set is stuck non-empty but nothing is actually rendered.
   const nothingRendered = !modalHostEl || modalHostEl.querySelectorAll('.modal').length === 0;
 
   // Enable page scrolling for the canvas if there is no modal open

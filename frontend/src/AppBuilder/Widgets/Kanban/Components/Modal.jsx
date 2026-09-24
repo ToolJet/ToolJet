@@ -13,6 +13,7 @@ import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/Modal
 
 export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanProps, lastSelectedCard }) {
   const isInitialRender = useRef(true);
+  const showModalRef = useRef(false);
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { id, containerProps, component, properties } = kanbanProps;
@@ -59,6 +60,10 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
   };
 
   useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
+
+  useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
@@ -74,6 +79,16 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // Releases the scroll lock if the widget unmounts while the modal is open.
+  useEffect(() => {
+    return () => {
+      if (showModalRef.current) {
+        onHideSideEffects(id);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <BootstrapModal

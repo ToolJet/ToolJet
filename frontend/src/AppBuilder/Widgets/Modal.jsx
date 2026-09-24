@@ -120,6 +120,8 @@ export const Modal = function Modal({
 
     // Create a ResizeObserver
     const resizeObserver = new ResizeObserver(() => {
+      // Resize fires for every mounted modal, even closed ones.
+      if (!showModal) return;
       debouncedModalOpen();
     });
 
@@ -130,7 +132,7 @@ export const Modal = function Modal({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [showModal]);
 
   useEffect(() => {
     if (showModal) {
