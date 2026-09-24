@@ -278,12 +278,12 @@ export const DatePickerRenderer = ({
 
   // Handle disabled dates
   useEffect(() => {
-    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
-      const excludedDates = disabledDates
-        .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
-        .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate());
-      setExcludedDates(excludedDates);
-    }
+    const excludedDates = Array.isArray(disabledDates)
+      ? disabledDates
+          .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
+          .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate())
+      : [];
+    setExcludedDates(excludedDates);
   }, [disabledDates]);
 
   useEffect(() => {
