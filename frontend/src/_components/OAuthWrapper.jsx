@@ -11,6 +11,7 @@ import Input from '@/_ui/Input';
 import cx from 'classnames';
 import { Modal } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import GoogleSheetsAccessType from '@/_components/GoogleSheetsAccessType';
 
 const OAuthWrapper = ({
   optionchanged,
@@ -64,6 +65,21 @@ const OAuthWrapper = ({
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
   const redirectUri = `${getHostURL()}/oauth2/authorize`;
+
+  // With "ToolJet-managed OAuth" (oauth_type === 'tooljet_app'), ToolJet's
+  // pre-built OAuth app supplies the credentials and redirect URI, so there is
+  // nothing for the user to fill in. It is a Cloud-only option (self-hosted
+  // offers only "Your own OAuth").
+  const isToolJetApp = options?.oauth_type?.value === 'tooljet_app';
+
+  // The redirect URI only matters when the user configures their own OAuth app;
+  // the ToolJet-managed app already has its redirect URI registered.
+  const hideRedirectUri = isToolJetApp;
+
+  // Save/connect is normally gated on a field change to avoid pointless re-saves,
+  // but ToolJet-managed OAuth has no fields to change — it must be connectable on
+  // a fresh data source right away, so it bypasses that check.
+  const canSaveOrConnect = !isSaving && !isDisabled && (hasFieldsChanged() || isToolJetApp);
 
   const docLink =
     selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
@@ -162,16 +178,28 @@ const OAuthWrapper = ({
           )}
         </div>
       )}
-      <div>
-        <label className="form-label mt-3">Redirect URI</label>
-        <Input
-          value={redirectUri}
-          helpText="Save this URL as callback or redirect URL in your OAuth app."
-          type="copyToClipboard"
-          disabled={true}
-          className="form-control"
-        />
-      </div>
+      {!hideRedirectUri && (
+        <div>
+          <label className="form-label mt-3">Redirect URI</label>
+          <Input
+            value={redirectUri}
+            helpText="Save this URL as callback or redirect URL in your OAuth app."
+            type="copyToClipboard"
+            disabled={true}
+            className="form-control"
+          />
+        </div>
+      )}
+      {/* Google Sheets access scope (Read only / Read and write). Rendered here,
+          after the credential fields, so it is not wedged between the auth-type
+          dropdown and the OAuth settings. Scoped to the Google Sheets connector
+          by kind — other OAuth connectors (e.g. BigQuery) have their own
+          access_type option and must not get this Google Sheets control. */}
+      {selectedDataSource?.kind === 'googlesheetsv2' && (
+        <div className="mt-3">
+          <GoogleSheetsAccessType options={options} optionchanged={optionchanged} disabled={isDisabled} />
+        </div>
+      )}
       {options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code' && (
         <div>
           <label className="form-check form-switch mt-3">
@@ -247,7 +275,7 @@ const OAuthWrapper = ({
                   <ButtonSolid
                     className={`m2 googlesheetsv2-save-btn${isSaving ? ' btn-loading' : ''}`}
                     isLoading={isSaving}
-                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    disabled={!canSaveOrConnect}
                     onClick={() => saveDataSource()}
                     variant="tertiary"
                   >
@@ -257,7 +285,7 @@ const OAuthWrapper = ({
                     <ButtonSolid
                       className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
                       isLoading={authStatus === 'waiting_for_url'}
-                      disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                      disabled={!canSaveOrConnect}
                       onClick={() => authorizeWithProvider()}
                       variant="primary"
                     >

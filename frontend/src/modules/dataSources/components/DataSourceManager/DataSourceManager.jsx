@@ -7,7 +7,14 @@ import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
-import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
+import {
+  getWorkspaceId,
+  deepEqual,
+  returnDevelopmentEnv,
+  decodeEntities,
+  resolveEditionSpecificDefaults,
+} from '@/_helpers/utils';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { getSubpath } from '@/_helpers/routes';
 import {
   DataBaseSources,
@@ -159,11 +166,13 @@ class DataSourceManagerComponent extends React.Component {
       appId: this.state.appId,
     });
     this.hideModal();
+    const installedVersion =
+      useAppDataStore.getState()?.metadata?.installed_version ?? localStorage.getItem('currentVersion');
     this.setState(
       {
         dataSourceMeta: source.manifestFile?.data?.source ?? source,
         selectedDataSource: source.manifestFile?.data?.source ?? source,
-        options: source?.defaults ?? source?.options,
+        options: resolveEditionSpecificDefaults(source?.defaults, installedVersion) ?? source?.options,
         selectedDataSourceIcon: source.iconFile?.data,
         name: source.manifestFile?.data?.source?.kind ?? source.kind,
         dataSourceSchema: source.manifestFile?.data,

@@ -25,8 +25,28 @@
     },
     "defaults": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "description": "Option values seeded when a data source of this kind is first created, keyed by option name.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "description": "Base default value for the option."
+          },
+          "encrypted": {
+            "type": ["boolean", "string"]
+          },
+          "editions": {
+            "type": "object",
+            "description": "Optional per-edition override of `value`. When the running edition has an entry here, that value is seeded instead of `value`. Resolved on the frontend by resolveEditionSpecificDefaults (frontend/src/_helpers/utils.js).",
+            "properties": {
+              "ce": {},
+              "ee": {},
+              "cloud": {}
+            },
+            "additionalProperties": false
+          }
+        }
+      }
     },
     "source": {
       "type": "object",

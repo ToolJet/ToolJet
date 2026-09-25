@@ -27,7 +27,7 @@ import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { checkIfToolJetCloud, resolveEditionSpecificDefaults } from '@/_helpers/utils';
 import { MarketplaceBanner } from '../MarketplaceBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { getDataSourceGroupLabel } from './utils';
@@ -162,8 +162,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         }
       });
       datasourceGroup.list = [...arr];
-      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
-        (arr = []);
+      ((datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []));
       return datasourceGroup;
     });
     const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
@@ -179,12 +179,14 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       dataSource.manifestFile?.data?.['tj:source']?.kind ??
       dataSource.manifestFile?.data?.source?.kind ??
       dataSource.kind;
-    const options =
+    const options = resolveEditionSpecificDefaults(
       dataSource?.defaults ??
-      dataSource?.options ??
-      dataSource?.manifestFile?.data?.defaults ??
-      dataSource?.manifestFile?.data?.source?.options ??
-      {};
+        dataSource?.options ??
+        dataSource?.manifestFile?.data?.defaults ??
+        dataSource?.manifestFile?.data?.source?.options ??
+        {},
+      tooljetVersion
+    );
     const pluginId = id;
     const kind = selectedDataSource?.kind;
     const scope = 'global';
