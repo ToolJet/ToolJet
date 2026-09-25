@@ -1,12 +1,11 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
-import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { DynamicModule, INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
-import { AuditLogsModule } from '@ee/audit-logs/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
@@ -15,18 +14,12 @@ import * as cookieParser from 'cookie-parser';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import LicenseBase from '@modules/licensing/configs/LicenseBase';
 import { getLicenseFieldValue } from '@modules/licensing/helper';
-import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
-import {
-  BASIC_PLAN_TERMS,
-  STARTER_PLAN_TERMS_CLOUD,
-  PRO_PLAN_TERMS_CLOUD,
-  TEAM_PLAN_TERMS_CLOUD,
-} from '@ee/licensing/constants/PlanTerms';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { Terms } from '@modules/licensing/interfaces/terms';
-import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
+import { setConnectionInstance } from '@helpers/database.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 
 // ---------------------------------------------------------------------------
@@ -71,6 +64,12 @@ export function setDataSources(nestApp: INestApplication) {
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
+  // GetConnection's constructor sets this on first instantiation, but reusing a cached app
+  // (initTestApp's cache-hit path) never re-runs it — dbTransactionWrap-based service code
+  // (getConnectionInstance()) would keep reading whichever app's DataSource happened to be
+  // built last, diverging from _defaultDataSource and making writes from one app invisible
+  // to reads from the other. Keep them in lockstep here instead.
+  setConnectionInstance(_defaultDataSource);
 }
 
 /** Returns the default TypeORM DataSource. Throws if setDataSources() was not called. */
@@ -324,82 +323,19 @@ export async function withRealTransactions(fn: () => Promise<void>) {
 // App factory
 // ---------------------------------------------------------------------------
 
-/**
- * Enterprise Terms — all features enabled, all limits unlimited.
- * In production, these are encoded in the encrypted license key (no constant exists).
- * Defined here so enterprise tests go through the same LicenseBase parsing path
- * as every other plan — no test-mode shortcuts.
- */
-const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
-  apps: 'UNLIMITED',
-  workspaces: 'UNLIMITED',
-  users: { total: 'UNLIMITED', editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },
-  database: { table: 'UNLIMITED' },
-  type: LICENSE_TYPE.ENTERPRISE,
-  features: {
-    auditLogs: true,
-    oidc: true,
-    ldap: true,
-    saml: true,
-    customStyling: true,
-    whiteLabelling: true,
-    appWhiteLabelling: true,
-    customThemes: true,
-    serverSideGlobalResolve: true,
-    multiEnvironment: true,
-    multiPlayerEdit: true,
-    comments: true,
-    gitSync: true,
-    gitSyncMultiBranch: true,
-    ai: true,
-    externalApi: true,
-    scim: true,
-    customDomains: true,
-    google: true,
-    github: true,
-  },
-  auditLogs: { maximumDays: 365 },
-  app: {
-    pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
-    permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
-  },
-  modules: { enabled: true },
-  permissions: { customGroups: true },
-  observability: { enabled: true },
-  workflows: {
-    enabled: true,
-    // execution_timeout is a plain number (unlike the 'UNLIMITED' sentinel fields below) —
-    // the runtime check in workflow-executions.service.ts is `elapsedSeconds > timeout`,
-    // so 0 timed out every execution immediately instead of meaning unlimited.
-    execution_timeout: 3600,
-    workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-    instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
-  },
-  ai: { plan: 'credits' },
+/** Plan → Terms mapping. Unknown plans resolve to basic terms. */
+const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
+  basic: CE_BASIC_PLAN_TERMS as Partial<Terms>,
 };
 
-/**
- * Plan → Terms mapping.
- * Mirrors the production flow where Terms are resolved per plan:
- *   EE:    License key is decrypted into Terms (server/ee/licensing/configs/License.ts)
- *   Cloud: Terms are pre-computed at payment time and stored in organization_license.terms
- *          (server/ee/organization-payments/service.ts → webhookInvoicePaidHandler)
- *          At runtime, OrganizationLicense falls back to plan defaults
- *          (server/ee/licensing/configs/organization-license.ts → getDefaultPlanTerms)
- */
-const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
-  enterprise: ENTERPRISE_TEST_TERMS,
-  trial: ENTERPRISE_TEST_TERMS,
-  team: TEAM_PLAN_TERMS_CLOUD as Partial<Terms>,
-  starter: STARTER_PLAN_TERMS_CLOUD as Partial<Terms>,
-  pro: PRO_PLAN_TERMS_CLOUD as Partial<Terms>,
-  basic: BASIC_PLAN_TERMS as Partial<Terms>,
-};
+/** Adds or overrides plan terms. Module-scoped, so it lasts for the current spec file. */
+export function registerPlanTerms(terms: Record<string, Partial<Terms>>): void {
+  Object.assign(PLAN_TO_TERMS, terms);
+}
 
 /** Creates a real LicenseBase instance for the given plan. */
 function createLicenseInstance(plan: string): LicenseBase {
-  const terms = PLAN_TO_TERMS[plan] ?? ENTERPRISE_TEST_TERMS;
+  const terms = PLAN_TO_TERMS[plan] ?? PLAN_TO_TERMS.basic;
   const futureDate = new Date();
   futureDate.setMinutes(futureDate.getMinutes() + 30);
   return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);
@@ -439,69 +375,13 @@ function createResilientLicenseTermsMock(plan: string) {
   return mock;
 }
 
+export type TestLicenseTermsMock = ReturnType<typeof createResilientLicenseTermsMock>;
+
 /** Reconfigures the mock's LicenseBase instance for the given plan. */
-function configurePlanMock(app: INestApplication, plan: string) {
-  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
+export function configurePlanMock(app: INestApplication, plan: string) {
+  const lts = app.get(LicenseTermsService) as TestLicenseTermsMock;
   if (!lts._licenseInstance) return; // not our mock — skip
   lts._licenseInstance = createLicenseInstance(plan);
-}
-
-/** Builds a LicenseBase from arbitrary Terms. `expired` sets a past expiry → basic-plan fallback. */
-function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): LicenseBase {
-  const expiry = new Date();
-  if (expired) expiry.setDate(expiry.getDate() - 1);
-  else expiry.setMinutes(expiry.getMinutes() + 30);
-  return new (LicenseBase as any)(
-    CE_BASIC_PLAN_TERMS,
-    terms,
-    new Date(),
-    new Date(),
-    expiry,
-    (terms as any).type ?? 'enterprise'
-  );
-}
-
-/**
- * Spy installed on LicenseDecryptService.prototype.decrypt so the real License path
- * (ee/licensing/configs/License.ts, which does `new LicenseDecryptService().decrypt(key)`)
- * yields test terms instead of decrypting a signed key. Kept in module scope so
- * restoreLicensePlan() can tear it down.
- */
-let _decryptSpy: jest.SpyInstance | undefined;
-
-/**
- * Overrides the license terms on the running app's (mocked) LicenseTermsService at runtime — no
- * restart. Use it to drive license-dependent scenarios mid-test (e.g. gitSync unlicensed,
- * multi-branch unlicensed, or an expired plan). Call restoreLicensePlan() afterwards to revert.
- *
- * The same terms are also fed to the real License path by mocking
- * LicenseDecryptService.prototype.decrypt: License.ts constructs its own decrypt service and calls
- * `.decrypt(key)`, so the prototype spy intercepts it and returns these terms (with an expiry
- * consistent with the `expired` flag) instead of decrypting a signed key. This keeps any code that
- * resolves through the real License instance consistent with the mock — without a test-only escape
- * hatch living in production code.
- */
-export function setTestLicenseTerms(
-  app: INestApplication,
-  terms: Partial<Terms>,
-  opts: { expired?: boolean } = {}
-): void {
-  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
-  if (!lts?._licenseInstance) return; // not our mock — skip
-
-  // Make the real License path (new LicenseDecryptService().decrypt(key)) return these terms.
-  const decryptedTerms = { expiry: opts.expired ? '2000-01-01' : '2999-12-31', ...terms };
-  _decryptSpy?.mockRestore();
-  _decryptSpy = jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue(decryptedTerms);
-
-  lts._licenseInstance = buildTestLicenseInstance(terms, opts.expired);
-}
-
-/** Restores the license mock to a plan (default enterprise) and removes the decrypt spy. */
-export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): void {
-  _decryptSpy?.mockRestore();
-  _decryptSpy = undefined;
-  configurePlanMock(app, plan);
 }
 
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
@@ -522,10 +402,10 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 }
 
 export interface InitTestAppOptions {
-  /** Edition to simulate. Default: 'ee'. Each edition loads different modules — gets its own cache slot. */
+  /** Edition to simulate. Default: 'ce'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
   /**
-   * License plan to simulate. Default: 'enterprise' (all features unlocked).
+   * License plan to simulate. Default: 'basic'.
    * Does NOT create a new app — reconfigures the LicenseTermsService mock
    * on the cached app to return plan-appropriate values.
    */
@@ -536,6 +416,8 @@ export interface InitTestAppOptions {
    * The fresh app is NOT cached and will be properly closed by closeTestApp().
    */
   freshApp?: boolean;
+  /** Modules registered alongside AppModule. Called only when a new app is built, after TOOLJET_EDITION is set. */
+  extraModules?: () => Promise<DynamicModule[]>;
 }
 
 export interface InitTestAppResult {
@@ -544,7 +426,7 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const { edition = 'ee', plan = 'enterprise', freshApp = false } = options ?? {};
+  const { edition = 'ce', plan = 'basic', freshApp = false, extraModules } = options ?? {};
 
   // Cache key: only edition matters. Plan reconfigures the mock, not the app.
   const isCacheable = !freshApp;
@@ -574,10 +456,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   process.env.TOOLJET_EDITION = edition;
 
   const moduleBuilder = Test.createTestingModule({
-    imports: [
-      await AppModule.register({ IS_GET_CONTEXT: true }),
-      await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
-    ],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: true }), ...((await extraModules?.()) ?? [])],
   });
 
   moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock(plan));

@@ -622,7 +622,7 @@ function loadEnvVars() {
   if (fs.existsSync(envFilePath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
     // Merge with existing process.env (existing env vars take precedence)
-    Object.assign(process.env, envConfig, process.env);
+    Object.assign(process.env, { ...envConfig, ...process.env });
   }
 }
 

@@ -1,6 +1,11 @@
 /** @jest-config-loader ts-node */
 import type { Config } from '@jest/types';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { coverageConfig } from './test/jest-coverage.config';
+
+// CE when asked for, or when the private test tree is absent (public clone).
+const isCE = process.env.TOOLJET_EDITION === 'ce' || !existsSync(join(__dirname, 'ee/test'));
 
 const config: Config.InitialOptions = {
   verbose: true,
@@ -11,6 +16,7 @@ const config: Config.InitialOptions = {
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
+  roots: isCE ? ['<rootDir>/test'] : ['<rootDir>/test', '<rootDir>/ee/test'],
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
@@ -39,9 +45,9 @@ const config: Config.InitialOptions = {
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
-    '^test-helper$': '<rootDir>/test/test.helper.ts',
+    '^test-helper$': isCE ? '<rootDir>/test/test.helper.ts' : '<rootDir>/ee/test/test.helper.ts',
   },
-  ...coverageConfig(),
+  ...coverageConfig(isCE),
   coverageDirectory: '<rootDir>/coverage-unit',
   runner: 'groups',
   testTimeout: 30000,

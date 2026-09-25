@@ -1,6 +1,11 @@
 /** @jest-config-loader ts-node */
 import type { Config } from '@jest/types';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { coverageConfig } from './jest-coverage.config';
+
+// CE when asked for, or when the private test tree is absent (public clone).
+const isCE = process.env.TOOLJET_EDITION === 'ce' || !existsSync(join(__dirname, '../ee/test'));
 
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
@@ -13,12 +18,13 @@ const config: Config.InitialOptions = {
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts', '<rootDir>/test/jest-retry-setup.ts'],
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
+  roots: isCE ? ['<rootDir>/test'] : ['<rootDir>/test', '<rootDir>/ee/test'],
   // Explicitly setting this key drops Jest's own default ('/node_modules/'), so it's
   // restored here — rootDir now covers server/node_modules too.
   // NOTE: git-sync-gitlab.spec.ts is NOT quarantined — it self-guards, skipping the whole
   // suite at runtime when the GitLab env (TEST_GITLAB_TOKEN et al.) is absent instead of
   // throwing at import, so it runs for real wherever the GitLab simulator env is configured.
-  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.e2e-spec\\.ts$'],
+  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
   testTimeout: 60000,
@@ -53,9 +59,9 @@ const config: Config.InitialOptions = {
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
-    '^test-helper$': '<rootDir>/test/test.helper.ts',
+    '^test-helper$': isCE ? '<rootDir>/test/test.helper.ts' : '<rootDir>/ee/test/test.helper.ts',
   },
-  ...coverageConfig(),
+  ...coverageConfig(isCE),
   // run-e2e.sh always overrides this per-shard (--coverageDirectory=.coverage/shard-N);
   // this is only the default for direct `jest --config test/jest-e2e.config.ts` invocations.
   coverageDirectory: '<rootDir>/coverage-e2e',

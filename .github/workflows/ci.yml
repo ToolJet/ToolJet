@@ -132,6 +132,7 @@ jobs:
       - run: npm ci --prefix server
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
+      - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
       - name: Upload lint/build log for the PR comment
         if: failure()
         uses: actions/upload-artifact@v7
@@ -288,7 +289,7 @@ jobs:
       unit: ${{ steps.unit.outcome }}
       e2e: ${{ steps.e2e.outcome || 'skipped' }}
     container: node:22.15.1-bookworm
-    services:
+    services: &server-test-services
       postgres:
         image: postgres:16
         env:
@@ -305,7 +306,7 @@ jobs:
           --health-interval 3s
           --health-timeout 3s
           --health-retries 5
-    env:
+    env: &server-test-env
       FORCE_COLOR: true
       NODE_OPTIONS: '--max-old-space-size=8192'
       NODE_ENV: test
@@ -455,6 +456,59 @@ jobs:
   # critical path; feeds ci-gate. Isolating it keeps simulator flakiness/outages from failing
   # the core suite. In `changed` mode the fast lane (test-changed) runs git-sync when touched.
   # ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # 3a-ter. CE suite without the private submodules — what a public clone sees.
+  # Catches public specs that need EE code, and CE boot paths that only work
+  # when ee/ is on disk. No coverage: test-server already reports it.
+  # ---------------------------------------------------------------------------
+  test-server-ce:
+    name: 'Test Suite · server (CE, no submodules)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    container: node:22.15.1-bookworm
+    services: *server-test-services
+    env: *server-test-env
+    steps:
+      - uses: actions/checkout@v7   # no submodule checkout, on purpose
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: Unit tests
+        id: unit
+        continue-on-error: true
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+      - name: E2E tests
+        id: e2e
+        run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
+      - name: Fail job if unit or e2e failed
+        if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+        run: exit 1
+
   test-gitsync:
     name: 'Test Suite · git-sync'
     runs-on: ubuntu-latest
@@ -785,6 +839,7 @@ jobs:
       - test-changed
       - test-frontend
       - test-server
+      - test-server-ce
       - test-gitsync
       - cypress-platform
       - cypress-marketplace
@@ -893,6 +948,7 @@ jobs:
             results=(
               "${builds[@]}"
               "test-server:${{ needs.test-server.result }}"
+              "test-server-ce:${{ needs.test-server-ce.result }}"
               "test-gitsync:${{ needs.test-gitsync.result }}"
               "cypress-platform:${{ needs.cypress-platform.result }}"
               "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
