@@ -1700,6 +1700,22 @@ button {
   }
 }
 
+// Pagination widget: links inherit the widget height from the <ul> instead of
+// adding their own vertical padding, so they never overflow the widget box.
+.pagination-widget {
+  .page-item {
+    display: flex;
+  }
+  .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 .datasource-picker,
 .stripe-operation-options {
 
@@ -11034,18 +11050,21 @@ tbody {
 }
 
 .bounded-box {
-  .sc-dxgOiQ.jcdOkx {
+  // react-image-annotation renders: Container(div) > Img + absolute annotation layers.
+  // Select by structure — its styled-components class hashes change between builds.
+  > div {
     height: 100%;
     margin: auto;
     width: max-content;
     max-width: 100% !important;
 
-    img {
+    > img {
       height: 100% !important;
-    }
-
-    .gVmiLs {
       width: auto !important;
+      // Height-driven images can be wider than the widget; cap them so they never
+      // leave the box. When capped, the picture letterboxes inside the image box.
+      
+      // object-fit: contain;
     }
   }
 
@@ -11056,6 +11075,13 @@ tbody {
       height: 12px !important;
     }
   }
+}
+
+// QR scanner widget: react-qr-reader sizes its viewfinder as a square (inline
+// padding-top: 100%), ignoring the widget height. Let it fill the widget box instead.
+.qr-scanner-widget > section > section {
+  padding-top: 0 !important;
+  height: 100%;
 }
 
 .sso-type-header {

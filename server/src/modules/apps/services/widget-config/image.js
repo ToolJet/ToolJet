@@ -245,6 +245,16 @@ export const imageConfig = {
       accordian: 'Container',
       showLabel: false,
     },
+    margin: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
+    },
   },
   exposedVariables: {},
   actions: [
@@ -298,6 +308,7 @@ export const imageConfig = {
     },
     events: [],
     styles: {
+      margin: { value: 'default' },
       imageFit: { value: 'contain' },
       borderType: { value: 'none' },
       backgroundColor: { value: '#ffffff00' },

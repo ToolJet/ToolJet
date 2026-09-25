@@ -46,6 +46,16 @@ export const svgImageConfig = {
         defaultValue: 'left',
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
   },
   exposedVariables: {},
   definition: {
@@ -62,6 +72,7 @@ export const svgImageConfig = {
     },
     events: [],
     styles: {
+      padding: { value: 'default' },
       visibility: { value: '{{true}}' },
       alignment: { value: 'left' },
     },

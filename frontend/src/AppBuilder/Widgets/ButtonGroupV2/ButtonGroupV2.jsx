@@ -55,7 +55,6 @@ export const ButtonGroupV2 = (props) => {
     borderRadius,
     btnAlignment,
     boxShadow,
-    padding,
     labelFontSize,
   } = styles;
 
@@ -254,7 +253,7 @@ export const ButtonGroupV2 = (props) => {
   };
 
   // ===== COMPUTED STYLES =====
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
   const justifyContentByAlignment = btnAlignment === 'left' ? 'start' : btnAlignment === 'right' ? 'end' : 'center';
 
   const groupStyles = {

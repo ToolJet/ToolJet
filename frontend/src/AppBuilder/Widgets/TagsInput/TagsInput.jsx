@@ -89,7 +89,7 @@ const TagsInput = ({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isTagsLoading, setIsTagsLoading] = useState(tagsLoadingState);
   const [isTagsDisabled, setIsTagsDisabled] = useState(properties.disabledState);
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

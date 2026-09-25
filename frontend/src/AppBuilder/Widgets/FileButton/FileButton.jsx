@@ -173,7 +173,7 @@ export const FileButton = (props) => {
   // RenderWidget always hands us `widgetHeight - 4`, reserving 4px for its own 2px/side wrapper
   // padding — but it zeroes that wrapper padding out when `padding` is 'none', so we grow by the
   // same 4px to still fill the widget's full assigned height.
-  const contentHeight = padding === 'none' ? height + 4 : height;
+  const contentHeight = height;
 
   const selectedSummary = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`;
 

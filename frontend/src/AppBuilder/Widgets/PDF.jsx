@@ -13,7 +13,9 @@ const PasswordResponses = {
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
+  const { visibility, boxShadow, borderColor, borderRadius, padding } = styles;
+  // RenderWidget pads the widget box 2px/side unless margin is 'none'; width arrives un-inset.
+  const boxPadding = padding === 'none' ? 0 : 4;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
@@ -152,7 +154,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         {Array.from(new Array(numPages), (el, index) => (
           <Page
             pageNumber={index + 1}
-            width={scale ? width - 12 : undefined}
+            width={scale ? width - boxPadding - 8 : undefined} // 8 = 1px border each side + 6px scrollbar
             height={scale ? undefined : height}
             key={`page_${index + 1}`}
             inputRef={(el) => (pageRef.current[index] = el)}
@@ -183,11 +185,14 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
+    <div
+      style={{ display: visibility ? 'flex' : 'none', width: width - boxPadding, height, boxShadow }}
+      data-cy={dataCy}
+    >
       <div
         className="d-flex position-relative h-100 flex-column"
         style={{
-          margin: '0 auto',
+          width: '100%',
           overflow: 'hidden',
           borderRadius: `${borderRadius}px`,
           border: `1px solid ${borderColor}`,
