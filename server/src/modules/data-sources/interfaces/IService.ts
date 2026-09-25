@@ -17,7 +17,7 @@ export interface IDataSourcesService {
     query: GetQueryVariables,
     user: User,
     userPermissions: UserPermissions
-  ): Promise<{ data_sources: object[] }>;
+  ): Promise<{ data_sources: object[]; data_source_folders: object[] }>;
 
   getAll(query: GetQueryVariables, user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
@@ -41,7 +41,12 @@ export interface IDataSourcesService {
     branchId?: string
   ): Promise<DataSource>;
 
-  testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
+  testConnection(
+    testDataSourceDto: TestDataSourceDto,
+    organization_id: string,
+    dataSourceId?: string,
+    branchId?: string
+  ): Promise<object>;
 
   testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User): Promise<object>;
 

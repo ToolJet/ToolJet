@@ -2,6 +2,17 @@
 
 React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition()`) is covered in the root `AGENTS.md` — this file covers conventions and App Builder architecture.
 
+## Testing context
+
+Before adding or changing tests for `src/AppBuilder/**`, read
+`src/test/app-builder/README.md`, then use `ee/.agents/skills/app-builder-test-driven-development/SKILL.md`. Registered widget status
+and canonical contract paths live in `widget-testing-manifest.json`; widget-specific facts under
+`ee/test/app-builder/widgets/<ComponentType>/TESTING.md` must not be generalized to other widgets.
+Research is a hard gate. Existing widgets require Context7 official ToolJet documentation plus the
+last 2 years of Git history. New widgets require an approved GitHub, ClickUp, or Notion PRD instead.
+Record the applicable source in the canonical contract; if Context7 is required but unavailable,
+stop and request installation/configuration before writing tests.
+
 ## Component patterns
 
 - Check `frontend/src/_ui/` (55+ components) before creating a new UI component

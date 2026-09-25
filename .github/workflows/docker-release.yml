@@ -4,8 +4,11 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
-  build-tooljet-image-for-ce-edtion:
+ build-tooljet-image-for-ce-edtion:
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -82,7 +85,6 @@ jobs:
 
 
   build-tooljet-image-for-ee-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 
@@ -165,7 +167,6 @@ jobs:
 
 
   build-tooljet-image-for-cloud-edtion:
-
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
 

@@ -49,12 +49,12 @@ import {
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
-import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 import { v4 as uuidv4 } from 'uuid';
+import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
@@ -961,12 +961,7 @@ class HomePageComponent extends React.Component {
     // Unsynced apps (pre-git or not yet pushed) are always mutable, even on master
     if (app?.app_versions?.[0]?.is_synced === false) return false;
 
-    // Branching affects folder mutations for front-end apps and modules.
-    // Workflows are not branch-scoped, so folder operations there remain unrestricted.
-    const isBranchingEnabled =
-      this.props.appType === 'front-end' || this.props.appType === 'module'
-        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
-        : false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
   };
@@ -984,10 +979,7 @@ class HomePageComponent extends React.Component {
   isOnFeatureBranch = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    const isBranchingEnabled =
-      this.props.appType === 'front-end' || this.props.appType === 'module'
-        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
-        : false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && !isDefault);
   };
@@ -995,14 +987,12 @@ class HomePageComponent extends React.Component {
   // Git sync ON but in single-branch mode (branching disabled / unlicensed for multi-branch):
   // the delete lands on the default branch and is auto-committed + pushed to git — so it needs
   // the same "committed to git, cannot be retrieved" warning as a feature-branch delete, just
-  // without the merge step. Only front-end apps and modules are branch-scoped and auto-commit
-  // deletions to git (workflows are not). Multi-branch feature-branch deletes are handled by
+  // without the merge step. Multi-branch feature-branch deletes are handled by
   // isOnFeatureBranch(); multi-branch default-branch deletes are blocked upstream (switch-branch
   // modal), so the only case reaching here with git on is single-branch mode.
   isGitSyncSingleBranchDelete = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    if (this.props.appType !== 'front-end' && this.props.appType !== 'module') return false;
     const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     return !isBranchingEnabled;
   };
@@ -2584,9 +2574,11 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              {this.props.appType !== 'workflow' && (
-                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
-              )}
+              <WorkspaceLockedBanner
+                pageContext={
+                  this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'
+                }
+              />
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -2601,7 +2593,6 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}

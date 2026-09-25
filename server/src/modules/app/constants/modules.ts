@@ -20,6 +20,8 @@ export enum MODULES {
   AUTH = 'Auth',
   METADATA = 'Metadata',
   FOLDER_APPS = 'FolderApp',
+  FOLDER_DATA_SOURCES = 'FolderDataSource',
+  DATA_SOURCE_FOLDER = 'DataSourceFolder',
   CUSTOM_STYLES = 'CustomStyles',
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',
@@ -52,4 +54,6 @@ export enum MODULES {
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
   WORKFLOW_FOLDER = 'WorkflowFolder',
   MODULE_FOLDER = 'ModuleFolder',
+  PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
+  FRONTEND_METRICS = 'FrontendMetrics',
 }

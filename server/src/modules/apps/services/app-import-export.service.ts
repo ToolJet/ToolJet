@@ -30,7 +30,6 @@ import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
-import { readWorkflowQueryRefs } from 'src/helpers/workflow_query_options.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -133,7 +132,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -187,6 +187,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -290,6 +291,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -344,6 +356,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -404,7 +417,7 @@ export class AppImportExportService {
         queryAppVersions.andWhere('app_versions.id = :versionId', {
           versionId,
         });
-      } else if (branchId && appToExport.type !== APP_TYPES.WORKFLOW) {
+      } else if (branchId) {
         // Sub-branch file export — export only the BRANCH-type row that owns
         // this sub-branch's editable state. On the default branch, all versions
         // (VERSION-type) should be exported. Workflows skip the filter entirely
@@ -568,8 +581,6 @@ export class AppImportExportService {
             : undefined,
         };
       });
-
-      await this.stampWorkflowNames(manager, queriesWithPermissionGroups, appToExport.organizationId);
 
       // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
       for (const query of queriesWithPermissionGroups) {
@@ -803,66 +814,6 @@ export class AppImportExportService {
       delete (appToExport as any).updatedAt;
       return { appV2: appToExport };
     });
-  }
-
-  /*
-   * A workflow query points at a workflow app by uuid, which means nothing in any other
-   * workspace — git-sync doesn't push the workflow itself, so after a pull the reference
-   * dangles. Stamp the names alongside so the reader can resolve them by name.
-   * Mutates options on the passed objects; nothing is written back to data_queries.
-   */
-  private async stampWorkflowNames(manager: EntityManager, queries: any[], organizationId: string): Promise<void> {
-    const workflowQueries = queries
-      .map((query) => ({ query, refs: readWorkflowQueryRefs(query.options) }))
-      .filter(({ refs }) => refs.workflowId);
-    if (!workflowQueries.length) return;
-
-    const workflowAppIds = [...new Set(workflowQueries.map(({ refs }) => refs.workflowId))];
-
-    // getRawMany() skips entity hydration. AppsSubscriber.afterLoad fires per hydrated App
-    // and issues an extra app_versions query each, on a connection outside this transaction.
-    const workflowApps = await manager
-      .createQueryBuilder(App, 'app')
-      .select('app.id', 'id')
-      .addSelect(
-        `(SELECT av.app_name FROM app_versions av
-           WHERE av.app_id = app.id AND av.version_type = 'version'
-             AND av.is_stub = false AND av.app_name IS NOT NULL
-           ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1)`,
-        'name'
-      )
-      .where('app.id IN (:...ids)', { ids: workflowAppIds })
-      // scoped: options.workflowId is untrusted JSON and may point at another workspace
-      .andWhere('app.organization_id = :organizationId', { organizationId })
-      .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW })
-      .getRawMany();
-    const workflowNameById = new Map(workflowApps.map((a) => [a.id, a.name]));
-
-    const workflowVersionIds = [...new Set(workflowQueries.map(({ refs }) => refs.workflowVersionId).filter(Boolean))];
-    const workflowVersions =
-      workflowVersionIds.length && workflowNameById.size
-        ? await manager
-            .createQueryBuilder(AppVersion, 'version')
-            .select(['version.id AS id', 'version.name AS name'])
-            .where('version.id IN (:...ids)', { ids: workflowVersionIds })
-            .andWhere('version.app_id IN (:...appIds)', { appIds: [...workflowNameById.keys()] })
-            .getRawMany()
-        : [];
-    const workflowVersionNameById = new Map(workflowVersions.map((v) => [v.id, v.name]));
-
-    for (const { query, refs } of workflowQueries) {
-      /*
-       * options is still the managed entity's object (the caller's map is a shallow copy),
-       * so clone before writing. Keep any incoming name when the lookup misses — otherwise
-       * a re-push from a workspace holding stale ids would null the names out of the repo.
-       * Always write camelCase, so exporting normalizes snake-cased rows on the way out.
-       */
-      query.options = {
-        ...query.options,
-        workflowName: workflowNameById.get(refs.workflowId) ?? refs.workflowName ?? null,
-        workflowVersionName: workflowVersionNameById.get(refs.workflowVersionId) ?? refs.workflowVersionName ?? null,
-      };
-    }
   }
 
   async mapModulesForAppImport(
@@ -3424,13 +3375,16 @@ export class AppImportExportService {
           }
         }
       }
-      await manager.save(
+      const newDsvo = await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
           options: clonedOptions,
         })
       );
+      // Clone OAuth token rows too — only matters when this datasource already existed in the
+      // target org (import referencing an existing DS); a freshly-imported DS has no token yet.
+      await this.dataSourcesUtilService.duplicateTokenData(dOpt.id, newDsvo.id, manager);
     }
   }
 
@@ -3680,17 +3634,13 @@ export class AppImportExportService {
       user?.organizationId
     );
     const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
-    // Workflows are branch-agnostic — they are not synced to git and must not be
-    // scoped to a branch or use the BRANCH version type, otherwise the versions
-    // list (which filters by default branch / VERSION type) will hide them.
-    const isWorkflow = importedApp.type === APP_TYPES.WORKFLOW;
 
     // Determine whether we are importing into a sub-branch (non-default).
     // Sub-branch versions must use BRANCH type so the canvas stays editable.
     // Applies to git-sync, clone, AND device imports on a feature branch (branchId set).
     // Skipped for workflows since they are branch-agnostic.
     let isSubBranch = false;
-    if (!isWorkflow && branchId && useBranchVersionType) {
+    if (branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
         select: ['id', 'isDefault'],
@@ -3836,19 +3786,22 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          // branch_id is NOT NULL now and every app_version lives on a branch. A DRAFT on a
-          // feature branch uses that branch; everything else (workflows, PUBLISHED snapshots,
-          // and DRAFTs with no explicit branch) lands on the org's default branch.
+          // branch_id is NOT NULL now and every app_version lives on a branch. A DRAFT lands on
+          // the branch it was imported into, falling back to the default branch when the caller
+          // supplies none; anything non-DRAFT (a PUBLISHED snapshot) always lands on the default
+          // branch, since a published version has no branch component. Workflows are not carved
+          // out — they follow the same rule as apps and modules, so a workflow DRAFT imported onto
+          // a feature branch stays on it.
           branchId:
-            isWorkflow || versionStatus !== AppVersionStatus.DRAFT
-              ? importDefaultBranchId
-              : (branchId ?? importDefaultBranchId),
-          // isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
-          // A device import (isGitApp=false) has never been committed to git — stays false,
-          // same as every other creation path (AppsService.create, feature-branch, datasource).
-          // Git-repo imports/pulls (isGitApp=true, ee/app-git/*) keep the original behavior:
-          // that content genuinely came from git and matches remote.
-          isSynced: isGitApp && isGitSyncConfigured && !isWorkflow && !isSubBranch,
+            versionStatus !== AppVersionStatus.DRAFT ? importDefaultBranchId : (branchId ?? importDefaultBranchId),
+          // Imported apps/modules/workflows must be marked synced whenever git sync is enabled —
+          // regardless of single- vs multi-branch mode, and regardless of whether this version
+          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
+          // version) — so they participate in the default-branch git flow (unsynced rows are
+          // treated as new/uncommitted content and can't be pushed). Sub-branch (feature-branch)
+          // imports are excluded: that's genuinely new, unpushed content on that branch, so the
+          // push flow still needs to pick it up.
+          isSynced: isGitApp && isGitSyncConfigured && !isSubBranch ? true : undefined,
           // Multi-branch: a feature-branch import is uncommitted from creation, regardless of isSynced.
           hasUncommittedChanges: isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
@@ -3860,6 +3813,9 @@ export class AppImportExportService {
           appName: resolvedAppName,
           icon: appVersion.icon ?? importMeta?.icon ?? null,
           isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
+          // Branch-scoped, and NOT stripped from the version rows on export (unlike the four
+          // above) because it is genuinely per-version state rather than app metadata.
+          workflowEnabled: appVersion.workflowEnabled ?? false,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -4574,6 +4530,10 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };

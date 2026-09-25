@@ -29,6 +29,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { completionLabelTooltip } from './completionLabelTooltip';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -74,6 +75,7 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
     readOnly = false,
     editable = true,
+    usePortalEditor = true, // honoured the same way as in SingleLineCodeEditor
     renderCopilot,
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
@@ -261,6 +263,7 @@ const MultiLineCodeEditor = (props) => {
           return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
         },
       }),
+      completionLabelTooltip,
       customTabKeymap,
       keymap.of([...staticCustomKeyMaps]),
     ],
@@ -326,14 +329,18 @@ const MultiLineCodeEditor = (props) => {
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
-        <CodeHinter.PopupIcon
-          callback={handleTogglePopupExapand}
-          icon="portal-open"
-          tip="Pop out code editor into a new window"
-          isMultiEditor={true}
-          isQueryManager={isInsideQueryPane}
-          position={{ height: height }}
-        />
+        {/* The portal renders into document.body, so it escapes any parent `inert` wrapper.
+            Callers that must stay uneditable opt out here. */}
+        {usePortalEditor && (
+          <CodeHinter.PopupIcon
+            callback={handleTogglePopupExapand}
+            icon="portal-open"
+            tip="Pop out code editor into a new window"
+            isMultiEditor={true}
+            isQueryManager={isInsideQueryPane}
+            position={{ height: height }}
+          />
+        )}
 
         <CodeHinter.Portal
           isCopilotEnabled={false}

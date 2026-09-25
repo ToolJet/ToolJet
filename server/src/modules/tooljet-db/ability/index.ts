@@ -49,6 +49,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isQueryPublic = dataQuery?.appVersion?.isPublic;
     const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && isQueryPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
+    const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 
     if (superAdmin || isAdmin || userPermission.tjdbCRUD) {
       can(
@@ -70,7 +71,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
     }
 
-    if (isPublicAppRequest || isUserLoggedin) {
+    if (isPublicAppRequest) {
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
+    }
+
+    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch)) {
+      //For logged in users only with valid organization and data query, allow proxy postgrest feature
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 

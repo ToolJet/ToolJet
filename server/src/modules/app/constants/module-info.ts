@@ -6,6 +6,7 @@ import { FEATURES as APP_FEATURES } from '@modules/apps/constants/features';
 import { FEATURES as METADATA_FEATURES } from '@modules/meta/constants/feature';
 import { FEATURES as FOLDER_FEATURES } from '@modules/folders/constants/features';
 import { FEATURES as FOLDER_APPS_FEATURES } from '@modules/folder-apps/constants/feature';
+import { FEATURES as FOLDER_DATA_SOURCES_FEATURES } from '@modules/folder-data-sources/constants/feature';
 import { FEATURES as CUSTOM_STYLES_FEATURES } from '@modules/custom-styles/constants/feature';
 import { FEATURES as VERSION_FEATURES } from '@modules/versions/constants/features';
 import { FEATURES as SMTP_FEATURES } from '@modules/smtp/constants/features';
@@ -49,6 +50,8 @@ import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 import { FEATURES as WORKSPACE_BRANCHES_FEATURES } from '@modules/workspace-branches/constants/feature';
 import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
 import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
+import { FEATURES as PERSONAL_ACCESS_TOKENS_FEATURES } from '@modules/personal-access-tokens/constants/feature';
+import { FEATURES as FRONTEND_METRICS_FEATURES } from '@modules/frontend-metrics/constants/feature';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -67,6 +70,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...METADATA_FEATURES,
   ...FOLDER_FEATURES,
   ...FOLDER_APPS_FEATURES,
+  ...FOLDER_DATA_SOURCES_FEATURES,
   ...CUSTOM_STYLES_FEATURES,
   ...VERSION_FEATURES,
   ...SMTP_FEATURES,
@@ -106,4 +110,6 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...WORKSPACE_BRANCHES_FEATURES,
   ...CUSTOM_DOMAINS_FEATURES,
   ...DATA_QUERY_FOLDERS_FEATURES,
+  ...PERSONAL_ACCESS_TOKENS_FEATURES,
+  ...FRONTEND_METRICS_FEATURES,
 };
