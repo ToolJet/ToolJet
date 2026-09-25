@@ -3220,6 +3220,16 @@ function migrateProperties(
       }
     }
 
+    if (['PhoneInput', 'CurrencyInput'].includes(componentType) && properties.dateFormat !== undefined) {
+      if (properties.dateFormat?.fxActive !== undefined) {
+        properties.defaultCountry = {
+          ...properties.defaultCountry,
+          fxActive: properties.defaultCountry?.fxActive ?? properties.dateFormat.fxActive,
+        };
+      }
+      delete properties.dateFormat;
+    }
+
     // TreeSelect
     if (componentType === 'TreeSelect') {
       if (!styles.labelColor) {

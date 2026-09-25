@@ -4,6 +4,7 @@ import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widget
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -59,7 +60,7 @@ export const useInput = ({
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);
   const [loading, setLoading] = useState(loadingState);
-  const [disable, setDisable] = useState(disabledState || loadingState);
+  const [disable, setDisable] = useState(disabledState);
 
   const numberFormat = properties?.numberFormat;
   // Value handed to validation for the currency input: a canonical numeric STRING (e.g. "1234.56").
@@ -74,7 +75,6 @@ export const useInput = ({
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
-  const [iconVisibility, setIconVisibility] = useState(false);
   const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
   const { isValid, validationError } = validationStatus;
@@ -164,7 +164,8 @@ export const useInput = ({
   useEffect(() => {
     if (inputType === 'phone') {
       const code = getCountryCallingCodeSafe(country);
-      setPhoneInputValue(`+${code}${properties.value}`);
+      // The value belongs to the current country, so that is the only dial code we strip.
+      setPhoneInputValue(toE164(properties.value, code, code));
     } else if (inputType === 'currency') {
       setCurrencyInputValue(`${properties.value ?? ''}`);
     } else {
@@ -181,9 +182,9 @@ export const useInput = ({
       // Ignore an invalid country, and build the E.164 value from the TARGET country's calling code.
       const targetCountry = getCountryCallingCodeSafe(nextCountry) ? nextCountry : country;
       const code = getCountryCallingCodeSafe(targetCountry);
-      const nationalNumber = `${value ?? ''}`.replace(/\D/g, '');
       setCountry(targetCountry);
-      setPhoneInputValue(nationalNumber ? `+${code}${nationalNumber}` : '', targetCountry);
+      // The caller states the target country, so that is the code we strip if present.
+      setPhoneInputValue(toE164(value, code, code), targetCountry);
       fireEvent('onChange');
     });
   }, [inputType, country]);
@@ -191,9 +192,13 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      const isNumeric = value !== '' && value !== null && value !== undefined && !isNaN(Number(value));
-      const displayValue = isNumeric ? `${formatNumber(value, decimalPlaces)}` : `${value ?? ''}`;
-      setCurrencyInputValue(displayValue);
+      // Normalise ONCE, then feed the display string and the number from that same result.
+      // The previous shape gated formatting on `!isNaN(Number(value))`, which any separator fails,
+      // so a value like '12.56,4' or a grouped '2,500.75' copied back out of the field
+      // skipped formatting and reached the `setCurrencyInputValue` as raw text.
+      const isEmpty = value === '' || value === null || value === undefined;
+      const normalized = isEmpty ? null : Number(formatNumber(parseValueToNumber(value, numberFormat), decimalPlaces));
+      setCurrencyInputValue(isEmpty ? '' : String(normalized), isEmpty ? undefined : normalized);
       setCountry(countryCode);
       fireEvent('onChange');
     });
@@ -202,7 +207,7 @@ export const useInput = ({
   useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        clearValue();
+        clearValue({ revealValidation: true });
       },
       setFocus: async function () {
         inputRef.current.focus();
@@ -303,10 +308,16 @@ export const useInput = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
-  const clearValue = () => {
+  // `revealValidation` is off by default because `useFormClear` calls this with no arguments: a
+  // Form reset puts the form back to its starting state and must not accuse every mandatory field
+  // it just emptied. The `clear()` CSA opts in — an app author asserting a value is the same family
+  // as `setText`, which already reveals, and without it a never-touched field is emptied into a
+  // silently invalid state with nothing on screen to say so.
+  const clearValue = ({ revealValidation = false } = {}) => {
     if (inputType === 'phone') setPhoneInputValue('');
     else if (inputType === 'currency') setCurrencyInputValue('');
     else setInputValue('');
+    if (revealValidation) setShowValidationError(true);
     fireEvent('onChange');
   };
 
@@ -353,8 +364,6 @@ export const useInput = ({
     setShowValidationError,
     isFocused,
     labelWidth,
-    iconVisibility,
-    setIconVisibility,
     isValid,
     validationError,
     isMandatory,

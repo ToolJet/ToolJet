@@ -3,6 +3,7 @@ import { default as ReactCurrencyInput, formatValue } from 'react-currency-input
 import {
   useInput,
   getLabelFontSize,
+  getLabelHeight,
   getWidthTypeOfComponentStyles,
   getLabelWidthOfInput,
 } from '../BaseComponents/hooks/useInput';
@@ -12,6 +13,7 @@ import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap, getNumberFormatConfig, parseValueToNumber } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
@@ -51,6 +53,20 @@ export const CurrencyInput = (props) => {
     numberFormat = 'us',
     showClearBtn,
   } = properties;
+
+  // `decimalsLimit` cannot express "no decimals":
+  // the library resolves `decimalsLimit || fixedDecimalLength || 2`, so a 0 is read as UNSET and replaced with 2
+  // `allowDecimals` is the only lever that refuses the separator outright, which is what a whole-number currency such as JPY or KRW needs.
+  const decimalPlacesSetting = useMemo(() => {
+    const parsed = Number(decimalPlaces);
+    const isSet =
+      decimalPlaces !== '' &&
+      decimalPlaces !== null &&
+      decimalPlaces !== undefined &&
+      Number.isFinite(parsed) &&
+      parsed >= 0;
+    return { allowDecimals: isSet ? parsed > 0 : true, decimalsLimit: isSet ? parsed : 2 };
+  }, [decimalPlaces]);
 
   // Separator characters (rendered as-is) and the locale that drives grouping positions.
   const { separators, intlConfig } = useMemo(() => {
@@ -94,6 +110,7 @@ export const CurrencyInput = (props) => {
     borderRadius,
     widthType,
     labelFontSize,
+    padding,
   } = styles;
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
@@ -141,13 +158,18 @@ export const CurrencyInput = (props) => {
 
   const loaderStyle = {
     right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
-    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
     transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
   const clearButtonRight =
     direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
-  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
   const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
@@ -245,11 +267,19 @@ export const CurrencyInput = (props) => {
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
-          className="d-flex h-100"
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect
@@ -290,7 +320,8 @@ export const CurrencyInput = (props) => {
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
             value={value}
-            decimalsLimit={Number(decimalPlaces) || 0}
+            allowDecimals={decimalPlacesSetting.allowDecimals}
+            decimalsLimit={decimalPlacesSetting.decimalsLimit}
             intlConfig={intlConfig}
             groupSeparator={separators.groupSeparator}
             decimalSeparator={separators.decimalSeparator}
@@ -328,6 +359,10 @@ export const CurrencyInput = (props) => {
             onClick={(event) => {
               event.stopPropagation();
               onInputValueChange('');
+              // Reveal here rather than inside onInputValueChange: that is also the typing handler,
+              // and a keystroke must not accuse the user mid-edit.
+              // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does.
+              inputLogic.setShowValidationError(true);
             }}
             style={{
               position: 'absolute',

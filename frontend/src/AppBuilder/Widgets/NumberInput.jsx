@@ -68,6 +68,8 @@ export const NumberInput = (props) => {
 
   const handleClear = () => {
     inputLogic.setInputValue('');
+    // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does
+    inputLogic.setShowValidationError(true);
     props.fireEvent('onChange');
   };
 

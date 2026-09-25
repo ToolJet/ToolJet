@@ -775,8 +775,15 @@ export const createComponentsSlice = (set, get) => ({
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
 
     if (componentType === 'EmailInput' && widgetValue) {
-      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
-      const emailRegex = new RegExp(validationRegex, 'g');
+      // Dots and hyphens separate parts rather than being legal anywhere inside them: the
+      // local part is dot-joined chunks, and each domain label must begin and end
+      // alphanumeric. The previous pattern kept `.` and `-` inside one character class per
+      // side, so an edge dot or hyphen passed — `.user@`, `user.@`, `@.example`,
+      // `@-example`, `@example-.`. Splitting on the separators also makes the old
+      // `(?!.*\.\.)` lookahead redundant, since no part can be empty.
+      const validationRegex =
+        '^[a-zA-Z0-9_%+-]+(?:\\.[a-zA-Z0-9_%+-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$';
+      const emailRegex = new RegExp(validationRegex);
       if (!emailRegex.test(widgetValue)) {
         return {
           isValid: false,

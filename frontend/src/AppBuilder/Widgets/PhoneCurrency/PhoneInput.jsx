@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Input, { getCountries, getCountryCallingCode } from 'react-phone-number-input/input';
-import { getCountryCallingCodeSafe } from './utils';
+import { getCountryCallingCodeSafe, toE164 } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
 import {
   getLabelFontSize,
+  getLabelHeight,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
   useInput,
@@ -14,6 +15,7 @@ import {
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
@@ -60,6 +62,7 @@ export const PhoneInput = (props) => {
     borderRadius,
     widthType,
     labelFontSize,
+    padding,
   } = styles;
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
@@ -71,14 +74,11 @@ export const PhoneInput = (props) => {
   const countryCode = getCountryCallingCodeSafe(country);
   const safeCountry = countryCode ? country : 'US'; // fall back to a valid country so the library never gets an unknown one.
 
-  // Normalize value to an E.164 value expected by library.
-  // prepend the calling code so the library never warns ("Expected E.164…") or fires a spurious onChange which leads to value flickering.
-  const inputValue = (() => {
-    const normalizedValue = `${value ?? ''}`.trim();
-    if (!normalizedValue) return '';
-    if (normalizedValue.startsWith('+')) return normalizedValue;
-    return countryCode ? `+${countryCode}${normalizedValue}` : normalizedValue;
-  })();
+  // Normalize to the E.164 value the library expects, so it never warns
+  // ("Expected E.164…") or fires a corrective onChange that flickers the value. This
+  // shares the same rule as every other write and is idempotent, so a value
+  // that has already been normalized passes through unchanged.
+  const inputValue = countryCode ? toE164(value, countryCode, countryCode) : `${value ?? ''}`.trim();
 
   const options = useMemo(
     () =>
@@ -105,14 +105,8 @@ export const PhoneInput = (props) => {
     const newCode = getCountryCallingCodeSafe(nextCountry);
     if (!newCode) return;
 
-    const oldCode = getCountryCallingCodeSafe(country);
-
-    let localNumber = `${value ?? ''}`.replace(/\D/g, '');
-    if (oldCode && localNumber.startsWith(`${oldCode}`)) {
-      localNumber = localNumber.slice(`${oldCode}`.length);
-    }
-
-    const nextValue = localNumber ? `+${newCode}${localNumber}` : '';
+    // Strip the PREVIOUS country's code, which is the one the current value carries.
+    const nextValue = toE164(value, newCode, getCountryCallingCodeSafe(country));
 
     // Return early so a re-resolved-but-unchanged country won't trigger re-renders.
     if (nextCountry === country && nextValue === value) return;
@@ -171,7 +165,7 @@ export const PhoneInput = (props) => {
 
   const loaderStyle = {
     right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
-    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
     transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
@@ -186,7 +180,12 @@ export const PhoneInput = (props) => {
   const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const clearButtonRight =
     direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
-  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
   const clearButtonTransform = 'translateY(-50%)';
 
   const computedStyles = {
@@ -260,13 +259,29 @@ export const PhoneInput = (props) => {
           dataCy={dataCy}
           fontSize={labelFontSizeValue}
         />
+        {/*
+          `h-100` is `height: 100% !important` (tabler.scss:6829), which an inline height cannot
+          override, so the class is dropped and BOTH branches set the height here. Top-aligned, the
+          field sits below the label in a flex column, so a full wrapper height is added to the
+          label's and the content spills out of its own widget box as the label grows; subtracting
+          the label height keeps it contained until the label alone exceeds the box. The side
+          branch restores exactly what the class used to supply.
+        */}
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
-          className="d-flex h-100"
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect
@@ -325,6 +340,10 @@ export const PhoneInput = (props) => {
             onClick={(event) => {
               event.stopPropagation();
               onInputValueChange('');
+              // Reveal here rather than inside onInputValueChange: that is also the typing handler,
+              // and a keystroke must not accuse the user mid-edit.
+              // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does.
+              inputLogic.setShowValidationError(true);
             }}
             style={{
               position: 'absolute',
