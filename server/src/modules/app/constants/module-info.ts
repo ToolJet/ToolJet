@@ -7,6 +7,7 @@ import { FEATURES as METADATA_FEATURES } from '@modules/meta/constants/feature';
 import { FEATURES as FOLDER_FEATURES } from '@modules/folders/constants/features';
 import { FEATURES as FOLDER_APPS_FEATURES } from '@modules/folder-apps/constants/feature';
 import { FEATURES as CUSTOM_STYLES_FEATURES } from '@modules/custom-styles/constants/feature';
+import { FEATURES as CUSTOM_COMPONENT_LIBRARIES_FEATURES } from '@modules/custom-component-libraries/constants/feature';
 import { FEATURES as VERSION_FEATURES } from '@modules/versions/constants/features';
 import { FEATURES as SMTP_FEATURES } from '@modules/smtp/constants/features';
 import { FEATURES as GLOBAL_DATA_SOURCE_FEATURES } from '@modules/data-sources/constants/feature';
@@ -68,6 +69,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...FOLDER_FEATURES,
   ...FOLDER_APPS_FEATURES,
   ...CUSTOM_STYLES_FEATURES,
+  ...CUSTOM_COMPONENT_LIBRARIES_FEATURES,
   ...VERSION_FEATURES,
   ...SMTP_FEATURES,
   ...GLOBAL_DATA_SOURCE_FEATURES,
