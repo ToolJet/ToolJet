@@ -475,6 +475,8 @@ export const createPageMenuSlice = (set, get) => {
         handle: newHandle,
         components: {},
         index: pages.length + 1,
+        // Mirror the server default so a new page reports auto-layout on before re-hydration.
+        ...(!isPageGroup ? { autoComputeLayout: true } : {}),
         ...pageObj,
         isPageGroup,
         ...(isPageGroup
@@ -573,7 +575,8 @@ export const createPageMenuSlice = (set, get) => {
       switchPage(
         page?.id,
         pages.find((p) => page.id === p?.id)?.handle,
-        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : [],
+        moduleId
       );
     },
 
@@ -670,7 +673,8 @@ export const createPageMenuSlice = (set, get) => {
       switchPage(
         page?.id,
         pages.find((p) => page.id === p?.id)?.handle,
-        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : [],
+        moduleId
       );
       currentMode !== 'view' && setCurrentPageHandle(page.handle);
       return true;

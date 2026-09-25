@@ -310,6 +310,7 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -1107,6 +1108,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);

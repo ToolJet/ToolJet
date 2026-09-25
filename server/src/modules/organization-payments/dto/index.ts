@@ -18,6 +18,7 @@ enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export enum SubscriptionMode {
@@ -51,6 +52,7 @@ export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export class PaymentRedirectDto {
