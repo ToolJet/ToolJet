@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="adanosGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="20" fill="url(#adanosGrad)"/>
+  <path d="M50 20 L78 75 L62 75 L50 48 L38 75 L22 75 Z" fill="#FFFFFF"/>
+  <path d="M35 60 L65 60 L61 68 L39 68 Z" fill="#FFFFFF" opacity="0.9"/>
+</svg>

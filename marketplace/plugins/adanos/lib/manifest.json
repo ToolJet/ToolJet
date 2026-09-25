@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Adanos datasource",
+  "description": "A schema defining Adanos market sentiment datasource",
+  "type": "api",
+  "source": {
+    "name": "Adanos",
+    "kind": "adanos",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API Key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Enter your Adanos API key (X-API-Key)",
+      "placeholder": "sk_live_...",
+      "encrypted": true
+    }
+  },
+  "required": ["api_key"]
+}
