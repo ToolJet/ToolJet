@@ -13,8 +13,15 @@ function walk(directory) {
   });
 }
 
+// Type-only declarations have no runtime code to cover; the guard below keeps it that way.
+const typesRoot = 'src/AppBuilder/types/';
+// Top-level only (column 0), so interface members such as `default?: unknown` never match.
+const runtimeStatement =
+  /^(?:export[ \t]+)?(?:const|let|var|function|async[ \t]+function|class|abstract[ \t]+class|enum)\b|^export[ \t]+(?:default\b|\{|\*)/m;
+
 function isEligible(absolute) {
   const relative = path.relative(frontendRoot, absolute).split(path.sep).join('/');
+  if (relative.startsWith(typesRoot)) return false;
   if (!sourceExtensions.has(path.extname(absolute)) || relative.endsWith('.d.ts')) return false;
   if (relative.includes('/__tests__/') || relative.includes('/__mocks__/')) return false;
   if (/\.(test|spec|stories)\.[jt]sx?$/.test(relative)) return false;
@@ -27,6 +34,18 @@ if (subsystemIds.size !== 10) errors.push(`Expected 10 unique subsystems, found 
 if (manifest.target.enforcement !== 'report-only') errors.push('Coverage enforcement must remain report-only');
 for (const subsystem of manifest.subsystems) {
   if (subsystem.owner !== '') errors.push(`Owner must remain empty during adoption: ${subsystem.id}`);
+}
+
+const typesDirectory = path.join(frontendRoot, typesRoot);
+if (fs.existsSync(typesDirectory)) {
+  for (const absolute of walk(typesDirectory)) {
+    const relative = path.relative(frontendRoot, absolute).split(path.sep).join('/');
+    if (path.extname(absolute) !== '.ts') {
+      errors.push(`Only .ts type declarations belong in ${typesRoot}: ${relative}`);
+    } else if (runtimeStatement.test(fs.readFileSync(absolute, 'utf8'))) {
+      errors.push(`Runtime code is not allowed in ${typesRoot} (move it to its subsystem): ${relative}`);
+    }
+  }
 }
 
 const counts = Object.fromEntries([...subsystemIds].map((id) => [id, 0]));

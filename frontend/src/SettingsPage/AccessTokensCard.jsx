@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import moment from 'moment';
 
 import { cn } from '@/lib/utils';
+import { authenticationService } from '@/_services/authentication.service';
 import { personalAccessTokensService } from '@/_services/personalAccessTokens.service';
 import { organizationService } from '@/_services';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -45,6 +46,9 @@ export const AccessTokensCard = ({ darkMode }) => {
 
   const edition = fetchEdition();
 
+  const currentOrgId = authenticationService.currentSessionValue?.current_organization_id;
+  const isAdminOrBuilder = ['admin', 'builder'].includes(authenticationService?.currentSessionValue?.role?.name);
+
   const fetchTokens = () => {
     setLoadFailed(false);
     personalAccessTokensService
@@ -65,7 +69,7 @@ export const AccessTokensCard = ({ darkMode }) => {
       .then((res) => {
         const orgs = res?.organizations ?? res ?? [];
         setOrganizations(orgs);
-        if (orgs.length > 0) setOrganizationId(orgs[0].id);
+        if (orgs.length > 0) setOrganizationId(orgs.find((org) => org.id === currentOrgId)?.id ?? orgs[0].id);
       })
       .catch(() => toast.error('Could not load your workspaces', { duration: 3000 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,6 +144,12 @@ export const AccessTokensCard = ({ darkMode }) => {
     resetCreateForm();
   };
 
+  const handleOpenCreateModal = () => {
+    if (!isAdminOrBuilder) return;
+
+    setShowCreateModal(true);
+  };
+
   return (
     <div className="card profile-page-card tw-mt-16 access-tokens-card">
       {/* header: p-16, title 16/500 + subtitle 12 placeholder, primary button (design 52:7675-7679) */}
@@ -155,7 +165,8 @@ export const AccessTokensCard = ({ darkMode }) => {
           isLucid
           variant="primary"
           leadingIcon="plus"
-          onClick={() => setShowCreateModal(true)}
+          disabled={!isAdminOrBuilder}
+          onClick={handleOpenCreateModal}
           data-cy="create-new-token-button"
         >
           Create new token
@@ -173,7 +184,7 @@ export const AccessTokensCard = ({ darkMode }) => {
           </p>
         </div>
       ) : tokens.length === 0 ? (
-        <AccessTokensEmptyState onCreate={() => setShowCreateModal(true)} />
+        <AccessTokensEmptyState isDisabled={!isAdminOrBuilder} onCreate={handleOpenCreateModal} />
       ) : (
         <div className="access-tokens-list" data-cy="access-tokens-table">
           <div className="access-tokens-list-header">
@@ -362,7 +373,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   );
 };
 
-function AccessTokensEmptyState({ onCreate }) {
+function AccessTokensEmptyState({ isDisabled, onCreate }) {
   return (
     <div className="tw-flex tw-flex-col tw-items-center tw-px-4 tw-py-10" data-cy="access-tokens-empty">
       <div className="tw-flex tw-justify-center tw-items-center tw-size-8 tw-rounded-lg tw-bg-background-surface-layer-02 tw-mb-2">
@@ -376,7 +387,14 @@ function AccessTokensEmptyState({ onCreate }) {
         <br /> or to let a CI pipeline deploy on yourbehalf.
       </p>
 
-      <Button isLucid variant="outline" leadingIcon="plus" onClick={onCreate} data-cy="create-token-button">
+      <Button
+        isLucid
+        variant="outline"
+        leadingIcon="plus"
+        onClick={onCreate}
+        disabled={isDisabled}
+        data-cy="create-token-button"
+      >
         Create token
       </Button>
     </div>

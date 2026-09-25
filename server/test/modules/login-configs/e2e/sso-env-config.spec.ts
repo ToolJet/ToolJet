@@ -997,7 +997,9 @@ describe('LoginConfigsController', () => {
       });
 
       afterEach(async () => {
-        process.env.TJ_LICENSE = realTjLicense;
+        // assigning undefined to process.env stores the string "undefined"
+        if (realTjLicense === undefined) delete process.env.TJ_LICENSE;
+        else process.env.TJ_LICENSE = realTjLicense;
         app.get(LicenseInitService).setUseEnvLicense(true);
         await clearOrgRows(SSOType.OPENID);
         await clearOrgRows(SSOType.SAML);
@@ -1007,7 +1009,9 @@ describe('LoginConfigsController', () => {
       it('should auto-enable instance AND workspace-level OIDC/SAML/LDAP once a TJ_LICENSE is added to .env after boot, without a server restart', async () => {
         jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
         app.get(LicenseInitService).setUseEnvLicense(false);
-        process.env.TJ_LICENSE = realTjLicense;
+        // CI has no real TJ_LICENSE — stub a valid, unexpired one
+        process.env.TJ_LICENSE = 'valid-env-license';
+        jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2999-12-31' });
 
         await runBootSequence();
 
@@ -1034,6 +1038,7 @@ describe('LoginConfigsController', () => {
 
       it('should stop using an env license that has since expired, on the next auto-enable pass', async () => {
         app.get(LicenseInitService).setUseEnvLicense(true);
+        process.env.TJ_LICENSE = 'expired-env-license';
         jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue({ expiry: '2000-01-01' } as any);
 
         await runBootSequence();

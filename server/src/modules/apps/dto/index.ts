@@ -159,6 +159,15 @@ export class AppListDto {
   context?: string;
 }
 
+@Exclude()
+export class RestrictedAccessInfoDto {
+  @Expose()
+  appName: string;
+
+  @Expose()
+  folderName: string | null;
+}
+
 export class VersionReleaseDto {
   @IsNotEmpty()
   @IsUUID()
