@@ -106,18 +106,6 @@ interface CachedAppSlot {
 const _cache: Record<string, CachedAppSlot> = {};
 
 /**
- * Building a non-'ee' edition as the very first NestJS app compiled in a worker process hits a
- * NestJS DI resolution quirk: LicenseModule's global-scoped exports (LicenseUserService,
- * LicenseCountsService, ...) aren't visible to their consumers (RolesService, MetadataUtilService,
- * ...) on a cold 'ce'/'cloud' bootstrap, even though the provider classes and module wiring are
- * correct. Building an 'ee' app first — anywhere earlier in the process — makes every subsequent
- * edition resolve correctly; a repeated cold 'ce' build never self-heals. Root cause not fully
- * pinned down in NestJS's opaque-key-factory/global-module-binding internals (see Linear DEV-108).
- * This flag makes initTestApp silently warm 'ee' once per process so callers never hit it.
- */
-let _eeWarmed = false;
-
-/**
  * Closes all cached NestJS apps so DB connections are released gracefully.
  *
  * Called automatically via a deferred timer in jest-transaction-setup.ts's
@@ -596,11 +584,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
       // DataSource retrieval failed — app was destroyed externally
     }
     delete _cache[cacheKey];
-  }
-
-  if (edition !== 'ee' && !_eeWarmed) {
-    _eeWarmed = true;
-    await initTestApp({ edition: 'ee' });
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
