@@ -108,1021 +108,1019 @@ describe('GroupPermissionsControllerV2', () => {
   // Edition section
   // ---------------------------------------------------------------------------
 
-  describe('EE (plan: enterprise)', () => {
-    // -------------------------------------------------------------------------
-    // POST /api/v2/group-permissions | Create
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // POST /api/v2/group-permissions | Create
+  // -------------------------------------------------------------------------
 
-    describe('POST /api/v2/group-permissions | Create group', () => {
-      it('should not allow non-admin to create a group', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+  describe('POST /api/v2/group-permissions | Create group', () => {
+    it('should not allow non-admin to create a group', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
 
-        const response = await createGroupViaApi(cookie, defaultUser.defaultOrganizationId, 'avengers');
-        expect(response.statusCode).toBe(403);
-      });
-
-      it('should allow admin to create a custom group', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const response = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-        expect(response.statusCode).toBe(201);
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-        expect(group).toMatchObject({
-          name: 'avengers',
-          organizationId: organization.id,
-        });
-        expect(group.createdAt).toBeDefined();
-        expect(group.updatedAt).toBeDefined();
-      });
-
-      it('should reject duplicate group names within the same organization', async () => {
-        const {
-          organization: { adminUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const first = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-        expect(first.statusCode).toBe(201);
-
-        const second = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-        expect(second.statusCode).toBe(409);
-      });
-
-      it('should allow the same group name in different organizations', async () => {
-        const {
-          organization: { adminUser },
-          anotherOrganization: { anotherAdminUser },
-        } = await setupOrganizations();
-        const adminCookie = await authenticate('admin@tooljet.io');
-        const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
-
-        const r1 = await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
-        expect(r1.statusCode).toBe(201);
-
-        const r2 = await createGroupViaApi(anotherAdminCookie, anotherAdminUser.defaultOrganizationId, 'avengers');
-        expect(r2.statusCode).toBe(201);
-      });
+      const response = await createGroupViaApi(cookie, defaultUser.defaultOrganizationId, 'avengers');
+      expect(response.statusCode).toBe(403);
     });
 
-    // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions | List
-    // -------------------------------------------------------------------------
+    it('should allow admin to create a custom group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('GET /api/v2/group-permissions | List groups', () => {
-      it('should not allow non-admin to list groups', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      const response = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+      expect(response.statusCode).toBe(201);
 
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(403);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
+      expect(group).toMatchObject({
+        name: 'avengers',
+        organizationId: organization.id,
       });
-
-      it('should allow admin to list all groups', async () => {
-        const {
-          organization: { adminUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        // Create a custom group first
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions')
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-        // Response should contain default groups (admin, end-user) plus the custom one
-        const body = response.body;
-        // The response shape may be an array or an object with a groups key — handle both
-        const groups: any[] = Array.isArray(body) ? body : (body.groupPermissions ?? body.group_permissions ?? body);
-        const names = groups.map((g: any) => g.name ?? g.group);
-        expect(names).toContain('admin');
-        expect(names).toContain('avengers');
-      });
+      expect(group.createdAt).toBeDefined();
+      expect(group.updatedAt).toBeDefined();
     });
 
-    // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions/:id | Get single
-    // -------------------------------------------------------------------------
+    it('should reject duplicate group names within the same organization', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('GET /api/v2/group-permissions/:id | Get group', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to get a group', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      const first = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+      expect(first.statusCode).toBe(201);
 
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions/some-id')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(403);
-      });
-
-      it('should allow admin to get a group by id', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .get(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-        // v2 returns { group: GroupPermissions, isBuilderLevel: boolean }
-        const body = response.body;
-        const returnedGroup = body.group ?? body;
-        expect(returnedGroup.name).toBe('avengers');
-      });
-
-      it('should return 404 for group from another organization', async () => {
-        const {
-          organization: { adminUser, organization },
-          anotherOrganization: { anotherAdminUser },
-        } = await setupOrganizations();
-        const adminCookie = await authenticate('admin@tooljet.io');
-        const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
-
-        await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        // Another org's admin should not be able to access
-        const response = await request(nestApp.getHttpServer())
-          .get(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
-          .set('Cookie', anotherAdminCookie);
-
-        expect(response.statusCode).toBe(400);
-      });
+      const second = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+      expect(second.statusCode).toBe(409);
     });
 
-    // -------------------------------------------------------------------------
-    // PUT /api/v2/group-permissions/:id | Update
-    // -------------------------------------------------------------------------
+    it('should allow the same group name in different organizations', async () => {
+      const {
+        organization: { adminUser },
+        anotherOrganization: { anotherAdminUser },
+      } = await setupOrganizations();
+      const adminCookie = await authenticate('admin@tooljet.io');
+      const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
-    describe('PUT /api/v2/group-permissions/:id | Update group', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to update a group', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      const r1 = await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
+      expect(r1.statusCode).toBe(201);
 
-        const response = await request(nestApp.getHttpServer())
-          .put('/api/v2/group-permissions/some-id')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ name: 'titans' });
+      const r2 = await createGroupViaApi(anotherAdminCookie, anotherAdminUser.defaultOrganizationId, 'avengers');
+      expect(r2.statusCode).toBe(201);
+    });
+  });
 
-        expect(response.statusCode).toBe(403);
-      });
+  // -------------------------------------------------------------------------
+  // GET /api/v2/group-permissions | List
+  // -------------------------------------------------------------------------
 
-      it('should allow admin to rename a custom group', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+  describe('GET /api/v2/group-permissions | List groups', () => {
+    it('should not allow non-admin to list groups', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
 
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/v2/group-permissions')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
 
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ name: 'titans' });
-
-        expect(response.statusCode).toBe(200);
-
-        const updated = await findEntity(GroupPermissions, { id: group.id } as any);
-        expect(updated!.name).toBe('titans');
-      });
-
-      it('should reject renaming to an existing group name', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        // Try to rename to 'admin' which is a default group
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ name: 'admin' });
-
-        expect(response.statusCode).toBe(400);
-      });
-
-      it('should allow admin to update group permission flags', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ appCreate: true, appDelete: true });
-
-        expect(response.statusCode).toBe(200);
-
-        const updated = await findEntity(GroupPermissions, { id: group.id } as any);
-        expect(updated).toMatchObject({
-          appCreate: true,
-          appDelete: true,
-        });
-      });
+      expect(response.statusCode).toBe(403);
     });
 
-    // -------------------------------------------------------------------------
-    // DELETE /api/v2/group-permissions/:id | Delete
-    // -------------------------------------------------------------------------
+    it('should allow admin to list all groups', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('DELETE /api/v2/group-permissions/:id | Delete group', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to delete a group', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      // Create a custom group first
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const response = await request(nestApp.getHttpServer())
-          .delete('/api/v2/group-permissions/some-id')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/v2/group-permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
 
-        expect(response.statusCode).toBe(403);
-      });
+      expect(response.statusCode).toBe(200);
+      // Response should contain default groups (admin, end-user) plus the custom one
+      const body = response.body;
+      // The response shape may be an array or an object with a groups key — handle both
+      const groups: any[] = Array.isArray(body) ? body : (body.groupPermissions ?? body.group_permissions ?? body);
+      const names = groups.map((g: any) => g.name ?? g.group);
+      expect(names).toContain('admin');
+      expect(names).toContain('avengers');
+    });
+  });
 
-      it('should allow admin to delete a custom group', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+  // -------------------------------------------------------------------------
+  // GET /api/v2/group-permissions/:id | Get single
+  // -------------------------------------------------------------------------
 
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+  describe('GET /api/v2/group-permissions/:id | Get group', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to get a group', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
 
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/v2/group-permissions/some-id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
 
-        const response = await request(nestApp.getHttpServer())
-          .delete(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-
-        const deleted = await findEntity(GroupPermissions, { id: group.id } as any);
-        expect(deleted).toBeNull();
-      });
+      expect(response.statusCode).toBe(403);
     });
 
-    // -------------------------------------------------------------------------
-    // POST /api/v2/group-permissions/:id/users | Add users
-    // -------------------------------------------------------------------------
+    it('should allow admin to get a group by id', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('POST /api/v2/group-permissions/:id/users | Add user to group', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to add users', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const response = await request(nestApp.getHttpServer())
-          .post('/api/v2/group-permissions/some-id/users')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: ['some-user-id'], groupId: 'some-id' });
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
 
-        expect(response.statusCode).toBe(403);
-      });
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
 
-      it('should allow admin to add users to a custom group', async () => {
-        const {
-          organization: { adminUser, defaultUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: [defaultUser.id], groupId: group.id });
-
-        expect(response.statusCode).toBe(201);
-
-        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: group.id } });
-        const userIds = usersInGroup.map((gu) => gu.userId);
-        expect(userIds).toContain(defaultUser.id);
-      });
-
-      it('should reject adding an end-user to a group with module Build-with (view-only) permission', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers', organization });
-        await grantModulePermission(nestApp, moduleGroup.id, { read: true });
-
-        const { user: endUser } = await createUser(nestApp, {
-          email: 'end-user-build-with@tooljet.io',
-          groups: ['all_users'],
-          organization,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: [endUser.id], groupId: moduleGroup.id });
-
-        expect(response.statusCode).toBe(409);
-
-        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
-        expect(usersInGroup).toHaveLength(0);
-      });
-
-      it('should reject adding an end-user to a group with module Edit permission', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-editors', organization });
-        await grantModulePermission(nestApp, moduleGroup.id, { update: true });
-
-        const { user: endUser } = await createUser(nestApp, {
-          email: 'end-user-module-edit@tooljet.io',
-          groups: ['all_users'],
-          organization,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: [endUser.id], groupId: moduleGroup.id });
-
-        expect(response.statusCode).toBe(409);
-
-        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
-        expect(usersInGroup).toHaveLength(0);
-      });
-
-      it('should allow adding a builder-role user to a group with module Build-with permission', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers-builder', organization });
-        await grantModulePermission(nestApp, moduleGroup.id, { read: true });
-
-        const { user: builderUser } = await createUser(nestApp, {
-          email: 'builder-module-view@tooljet.io',
-          groups: ['builder'],
-          organization,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: [builderUser.id], groupId: moduleGroup.id });
-
-        expect(response.statusCode).toBe(201);
-
-        const usersInGroup = await findEntities(GroupUsers, {
-          where: { groupId: moduleGroup.id, userId: builderUser.id },
-        });
-        expect(usersInGroup).toHaveLength(1);
-      });
+      expect(response.statusCode).toBe(200);
+      // v2 returns { group: GroupPermissions, isBuilderLevel: boolean }
+      const body = response.body;
+      const returnedGroup = body.group ?? body;
+      expect(returnedGroup.name).toBe('avengers');
     });
 
-    // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions/:id/users | List users in group
-    // -------------------------------------------------------------------------
+    it('should return 404 for group from another organization', async () => {
+      const {
+        organization: { adminUser, organization },
+        anotherOrganization: { anotherAdminUser },
+      } = await setupOrganizations();
+      const adminCookie = await authenticate('admin@tooljet.io');
+      const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
-    describe('GET /api/v2/group-permissions/:id/users | List group users', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to list group users', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions/some-id/users')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
 
-        expect(response.statusCode).toBe(403);
-      });
+      // Another org's admin should not be able to access
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
+        .set('Cookie', anotherAdminCookie);
 
-      it('should allow admin to list users in a group', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+      expect(response.statusCode).toBe(400);
+    });
+  });
 
-        // Get the admin default group
-        const adminGroup = await findEntityOrFail(GroupPermissions, {
-          name: 'admin',
-          organizationId: organization.id,
-        } as any);
+  // -------------------------------------------------------------------------
+  // PUT /api/v2/group-permissions/:id | Update
+  // -------------------------------------------------------------------------
 
-        const response = await request(nestApp.getHttpServer())
-          .get(`/api/v2/group-permissions/${adminGroup.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
+  describe('PUT /api/v2/group-permissions/:id | Update group', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to update a group', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
 
-        expect(response.statusCode).toBe(200);
-        // Should contain at least the admin user
-        const users = Array.isArray(response.body) ? response.body : (response.body.users ?? []);
-        expect(users.length).toBeGreaterThanOrEqual(1);
-      });
+      const response = await request(nestApp.getHttpServer())
+        .put('/api/v2/group-permissions/some-id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ name: 'titans' });
+
+      expect(response.statusCode).toBe(403);
     });
 
-    // -------------------------------------------------------------------------
-    // DELETE /api/v2/group-permissions/users/:id | Remove user from group
-    // -------------------------------------------------------------------------
+    it('should allow admin to rename a custom group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('DELETE /api/v2/group-permissions/users/:id | Remove user from group', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to remove a user from a group', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const response = await request(nestApp.getHttpServer())
-          .delete('/api/v2/group-permissions/users/some-id')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
 
-        expect(response.statusCode).toBe(403);
-      });
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ name: 'titans' });
 
-      it('should allow admin to remove a user from a custom group', async () => {
-        const {
-          organization: { adminUser, defaultUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+      expect(response.statusCode).toBe(200);
 
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        // Add user first
-        await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/users`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ userIds: [defaultUser.id], groupId: group.id });
-
-        // Find the GroupUsers entry
-        const groupUser = await findEntityOrFail(GroupUsers, { groupId: group.id, userId: defaultUser.id } as any);
-
-        // Remove the user
-        const response = await request(nestApp.getHttpServer())
-          .delete(`/api/v2/group-permissions/users/${groupUser.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-
-        const remaining = await findEntities(GroupUsers, { where: { groupId: group.id, userId: defaultUser.id } });
-        expect(remaining).toHaveLength(0);
-      });
+      const updated = await findEntity(GroupPermissions, { id: group.id } as any);
+      expect(updated!.name).toBe('titans');
     });
 
-    // -------------------------------------------------------------------------
-    // GET /api/v2/group-permissions/:id/users/addable-users | Addable users
-    // -------------------------------------------------------------------------
+    it('should reject renaming to an existing group name', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('GET /api/v2/group-permissions/:id/users/addable-users | List addable users', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('should not allow non-admin to search addable users', async () => {
-        const {
-          organization: { defaultUser },
-        } = await setupOrganizations();
-        const cookie = await authenticate('developer@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/v2/group-permissions/some-id/users/addable-users?input=test')
-          .set('tj-workspace-id', defaultUser.defaultOrganizationId)
-          .set('Cookie', cookie);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
 
-        expect(response.statusCode).toBe(403);
-      });
+      // Try to rename to 'admin' which is a default group
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ name: 'admin' });
 
-      it('should allow admin to search for addable users', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'avengers',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .get(`/api/v2/group-permissions/${group.id}/users/addable-users?input=developer`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-        const users = Array.isArray(response.body) ? response.body : (response.body.users ?? []);
-        // developer@tooljet.io should appear as addable
-        const emails = users.map((u: any) => u.email);
-        expect(emails).toContain('developer@tooljet.io');
-      });
+      expect(response.statusCode).toBe(400);
     });
 
-    // -------------------------------------------------------------------------
-    // POST /api/v2/group-permissions/:id/granular-permissions/folder
-    // -------------------------------------------------------------------------
+    it('should allow admin to update group permission flags', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('POST /api/v2/group-permissions/:id/granular-permissions/folder | Create folder granular permissions', () => {
-      it('should still persist module folder ids when sent directly', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'module-folder-access'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
 
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'module-folder-access',
-        } as any);
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ appCreate: true, appDelete: true });
 
-        const moduleFolder = await createFolder(nestApp, {
-          name: 'Module Folder - direct grant',
-          type: APP_TYPES.MODULE,
-          organizationId: organization.id,
-        });
+      expect(response.statusCode).toBe(200);
 
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Module Folder Access',
-            groupId: group.id,
-            type: 'folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: moduleFolder.id }],
-            },
-          });
+      const updated = await findEntity(GroupPermissions, { id: group.id } as any);
+      expect(updated).toMatchObject({
+        appCreate: true,
+        appDelete: true,
+      });
+    });
+  });
 
-        expect(response.statusCode).toBe(201);
+  // -------------------------------------------------------------------------
+  // DELETE /api/v2/group-permissions/:id | Delete
+  // -------------------------------------------------------------------------
 
-        const groupFolders = await findEntities(GroupFolders, {
-          where: {
-            folderId: moduleFolder.id,
+  describe('DELETE /api/v2/group-permissions/:id | Delete group', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to delete a group', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
+
+      const response = await request(nestApp.getHttpServer())
+        .delete('/api/v2/group-permissions/some-id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to delete a custom group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(200);
+
+      const deleted = await findEntity(GroupPermissions, { id: group.id } as any);
+      expect(deleted).toBeNull();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /api/v2/group-permissions/:id/users | Add users
+  // -------------------------------------------------------------------------
+
+  describe('POST /api/v2/group-permissions/:id/users | Add user to group', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to add users', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
+
+      const response = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions/some-id/users')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: ['some-user-id'], groupId: 'some-id' });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to add users to a custom group', async () => {
+      const {
+        organization: { adminUser, defaultUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: [defaultUser.id], groupId: group.id });
+
+      expect(response.statusCode).toBe(201);
+
+      const usersInGroup = await findEntities(GroupUsers, { where: { groupId: group.id } });
+      const userIds = usersInGroup.map((gu) => gu.userId);
+      expect(userIds).toContain(defaultUser.id);
+    });
+
+    it('should reject adding an end-user to a group with module Build-with (view-only) permission', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers', organization });
+      await grantModulePermission(nestApp, moduleGroup.id, { read: true });
+
+      const { user: endUser } = await createUser(nestApp, {
+        email: 'end-user-build-with@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: [endUser.id], groupId: moduleGroup.id });
+
+      expect(response.statusCode).toBe(409);
+
+      const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
+      expect(usersInGroup).toHaveLength(0);
+    });
+
+    it('should reject adding an end-user to a group with module Edit permission', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const moduleGroup = await createGroupPermission(nestApp, { name: 'module-editors', organization });
+      await grantModulePermission(nestApp, moduleGroup.id, { update: true });
+
+      const { user: endUser } = await createUser(nestApp, {
+        email: 'end-user-module-edit@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: [endUser.id], groupId: moduleGroup.id });
+
+      expect(response.statusCode).toBe(409);
+
+      const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
+      expect(usersInGroup).toHaveLength(0);
+    });
+
+    it('should allow adding a builder-role user to a group with module Build-with permission', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers-builder', organization });
+      await grantModulePermission(nestApp, moduleGroup.id, { read: true });
+
+      const { user: builderUser } = await createUser(nestApp, {
+        email: 'builder-module-view@tooljet.io',
+        groups: ['builder'],
+        organization,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: [builderUser.id], groupId: moduleGroup.id });
+
+      expect(response.statusCode).toBe(201);
+
+      const usersInGroup = await findEntities(GroupUsers, {
+        where: { groupId: moduleGroup.id, userId: builderUser.id },
+      });
+      expect(usersInGroup).toHaveLength(1);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /api/v2/group-permissions/:id/users | List users in group
+  // -------------------------------------------------------------------------
+
+  describe('GET /api/v2/group-permissions/:id/users | List group users', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to list group users', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/v2/group-permissions/some-id/users')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to list users in a group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      // Get the admin default group
+      const adminGroup = await findEntityOrFail(GroupPermissions, {
+        name: 'admin',
+        organizationId: organization.id,
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${adminGroup.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(200);
+      // Should contain at least the admin user
+      const users = Array.isArray(response.body) ? response.body : (response.body.users ?? []);
+      expect(users.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // DELETE /api/v2/group-permissions/users/:id | Remove user from group
+  // -------------------------------------------------------------------------
+
+  describe('DELETE /api/v2/group-permissions/users/:id | Remove user from group', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to remove a user from a group', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
+
+      const response = await request(nestApp.getHttpServer())
+        .delete('/api/v2/group-permissions/users/some-id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to remove a user from a custom group', async () => {
+      const {
+        organization: { adminUser, defaultUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
+
+      // Add user first
+      await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ userIds: [defaultUser.id], groupId: group.id });
+
+      // Find the GroupUsers entry
+      const groupUser = await findEntityOrFail(GroupUsers, { groupId: group.id, userId: defaultUser.id } as any);
+
+      // Remove the user
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/users/${groupUser.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(200);
+
+      const remaining = await findEntities(GroupUsers, { where: { groupId: group.id, userId: defaultUser.id } });
+      expect(remaining).toHaveLength(0);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /api/v2/group-permissions/:id/users/addable-users | Addable users
+  // -------------------------------------------------------------------------
+
+  describe('GET /api/v2/group-permissions/:id/users/addable-users | List addable users', () => {
+    // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+    it.skip('should not allow non-admin to search addable users', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations();
+      const cookie = await authenticate('developer@tooljet.io');
+
+      const response = await request(nestApp.getHttpServer())
+        .get('/api/v2/group-permissions/some-id/users/addable-users?input=test')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to search for addable users', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'avengers',
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${group.id}/users/addable-users?input=developer`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(200);
+      const users = Array.isArray(response.body) ? response.body : (response.body.users ?? []);
+      // developer@tooljet.io should appear as addable
+      const emails = users.map((u: any) => u.email);
+      expect(emails).toContain('developer@tooljet.io');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /api/v2/group-permissions/:id/granular-permissions/folder
+  // -------------------------------------------------------------------------
+
+  describe('POST /api/v2/group-permissions/:id/granular-permissions/folder | Create folder granular permissions', () => {
+    it('should still persist module folder ids when sent directly', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'module-folder-access'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'module-folder-access',
+      } as any);
+
+      const moduleFolder = await createFolder(nestApp, {
+        name: 'Module Folder - direct grant',
+        type: APP_TYPES.MODULE,
+        organizationId: organization.id,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Module Folder Access',
+          groupId: group.id,
+          type: 'folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: moduleFolder.id }],
           },
         });
 
-        expect(groupFolders.length).toBeGreaterThan(0);
+      expect(response.statusCode).toBe(201);
+
+      const groupFolders = await findEntities(GroupFolders, {
+        where: {
+          folderId: moduleFolder.id,
+        },
       });
+
+      expect(groupFolders.length).toBeGreaterThan(0);
     });
+  });
 
-    // -------------------------------------------------------------------------
-    // POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder
+  // -------------------------------------------------------------------------
 
-    describe('POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder | Create workflow folder granular permissions', () => {
-      it('creates a workflow folder granular permission scoped to the given workflow folders', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+  describe('POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder | Create workflow folder granular permissions', () => {
+    it('creates a workflow folder granular permission scoped to the given workflow folders', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'workflow-folder-access'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'workflow-folder-access'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
 
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'workflow-folder-access',
-        } as any);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'workflow-folder-access',
+      } as any);
 
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - direct grant',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
+      const workflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - direct grant',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
 
-        const response = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Workflow Folder Access',
-            groupId: group.id,
-            type: 'workflow_folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: workflowFolder.id }],
-            },
-          });
-
-        expect(response.statusCode).toBe(201);
-
-        const groupFolders = await findEntities(GroupFolders, {
-          where: {
-            folderId: workflowFolder.id,
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Workflow Folder Access',
+          groupId: group.id,
+          type: 'workflow_folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: workflowFolder.id }],
           },
         });
 
-        expect(groupFolders.length).toBeGreaterThan(0);
-      });
-    });
+      expect(response.statusCode).toBe(201);
 
-    // -------------------------------------------------------------------------
-    // PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id
-    // -------------------------------------------------------------------------
-
-    describe('PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Update workflow folder granular permissions', () => {
-      it('should update actions and persist the new values on the FoldersGroupPermissions row', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'workflow-folder-update-actions'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'workflow-folder-update-actions',
-        } as any);
-
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - update actions',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const createResponse = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Workflow Folder Update Actions Access',
-            groupId: group.id,
-            type: 'workflow_folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: workflowFolder.id }],
-            },
-          });
-        expect(createResponse.statusCode).toBe(201);
-
-        const granularPermission = await findEntityOrFail(GranularPermissions, {
-          groupId: group.id,
-          name: 'Workflow Folder Update Actions Access',
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            actions: {
-              canEditFolder: false,
-              canEditApps: true,
-              canViewApps: true,
-            },
-          });
-
-        expect(response.statusCode).toBe(200);
-
-        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
-          granularPermissionId: granularPermission.id,
-        } as any);
-        expect(foldersGroupPermissions).toMatchObject({
-          canEditFolder: false,
-          canEditApps: true,
-          canViewApps: true,
-        });
-      });
-
-      it('should add an additional folder via resourcesToAdd without removing the original one', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'workflow-folder-update-add'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'workflow-folder-update-add',
-        } as any);
-
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - update add original',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const createResponse = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Workflow Folder Update Add Access',
-            groupId: group.id,
-            type: 'workflow_folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: workflowFolder.id }],
-            },
-          });
-        expect(createResponse.statusCode).toBe(201);
-
-        const granularPermission = await findEntityOrFail(GranularPermissions, {
-          groupId: group.id,
-          name: 'Workflow Folder Update Add Access',
-        } as any);
-
-        const anotherWorkflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - update add new',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            resourcesToAdd: [{ folderId: anotherWorkflowFolder.id }],
-          });
-
-        expect(response.statusCode).toBe(200);
-
-        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
-          granularPermissionId: granularPermission.id,
-        } as any);
-
-        const groupFolders = await findEntities(GroupFolders, {
-          where: { foldersGroupPermissionsId: foldersGroupPermissions.id },
-        });
-        const folderIds = groupFolders.map((groupFolder) => groupFolder.folderId);
-
-        expect(folderIds).toContain(workflowFolder.id);
-        expect(folderIds).toContain(anotherWorkflowFolder.id);
-      });
-
-      it('should remove the original folder via resourcesToDelete', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'workflow-folder-update-delete'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
-
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'workflow-folder-update-delete',
-        } as any);
-
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - update delete',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const createResponse = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Workflow Folder Update Delete Access',
-            groupId: group.id,
-            type: 'workflow_folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: workflowFolder.id }],
-            },
-          });
-        expect(createResponse.statusCode).toBe(201);
-
-        const granularPermission = await findEntityOrFail(GranularPermissions, {
-          groupId: group.id,
-          name: 'Workflow Folder Update Delete Access',
-        } as any);
-
-        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
-          granularPermissionId: granularPermission.id,
-        } as any);
-
-        const groupFolder = await findEntityOrFail(GroupFolders, {
+      const groupFolders = await findEntities(GroupFolders, {
+        where: {
           folderId: workflowFolder.id,
-          foldersGroupPermissionsId: foldersGroupPermissions.id,
-        } as any);
+        },
+      });
 
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            resourcesToDelete: [{ id: groupFolder.id }],
-          });
+      expect(groupFolders.length).toBeGreaterThan(0);
+    });
+  });
 
-        expect(response.statusCode).toBe(200);
+  // -------------------------------------------------------------------------
+  // PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id
+  // -------------------------------------------------------------------------
 
-        const deletedGroupFolder = await findEntity(GroupFolders, { id: groupFolder.id } as any);
-        expect(deletedGroupFolder).toBeNull();
+  describe('PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Update workflow folder granular permissions', () => {
+    it('should update actions and persist the new values on the FoldersGroupPermissions row', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'workflow-folder-update-actions'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'workflow-folder-update-actions',
+      } as any);
+
+      const workflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - update actions',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Workflow Folder Update Actions Access',
+          groupId: group.id,
+          type: 'workflow_folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: workflowFolder.id }],
+          },
+        });
+      expect(createResponse.statusCode).toBe(201);
+
+      const granularPermission = await findEntityOrFail(GranularPermissions, {
+        groupId: group.id,
+        name: 'Workflow Folder Update Actions Access',
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          actions: {
+            canEditFolder: false,
+            canEditApps: true,
+            canViewApps: true,
+          },
+        });
+
+      expect(response.statusCode).toBe(200);
+
+      const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+        granularPermissionId: granularPermission.id,
+      } as any);
+      expect(foldersGroupPermissions).toMatchObject({
+        canEditFolder: false,
+        canEditApps: true,
+        canViewApps: true,
       });
     });
 
-    // -------------------------------------------------------------------------
-    // DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id
-    // -------------------------------------------------------------------------
+    it('should add an additional folder via resourcesToAdd without removing the original one', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
 
-    describe('DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Delete workflow folder granular permissions', () => {
-      it('should delete the granular permission and cascade-delete its FoldersGroupPermissions/GroupFolders rows', async () => {
-        const {
-          organization: { adminUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'workflow-folder-update-add'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
 
-        const customGroupResponse = await createGroupViaApi(
-          cookie,
-          adminUser.defaultOrganizationId,
-          'workflow-folder-delete'
-        );
-        expect(customGroupResponse.statusCode).toBe(201);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'workflow-folder-update-add',
+      } as any);
 
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: 'workflow-folder-delete',
-        } as any);
-
-        const workflowFolder = await createFolder(nestApp, {
-          name: 'Workflow Folder - delete grant',
-          type: APP_TYPES.WORKFLOW,
-          organizationId: organization.id,
-        });
-
-        const createResponse = await request(nestApp.getHttpServer())
-          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({
-            name: 'Workflow Folder Delete Access',
-            groupId: group.id,
-            type: 'workflow_folder',
-            isAll: false,
-            createResourcePermissionObject: {
-              canEditFolder: false,
-              canEditApps: false,
-              canViewApps: true,
-              resourcesToAdd: [{ folderId: workflowFolder.id }],
-            },
-          });
-        expect(createResponse.statusCode).toBe(201);
-
-        const granularPermission = await findEntityOrFail(GranularPermissions, {
-          groupId: group.id,
-          name: 'Workflow Folder Delete Access',
-        } as any);
-
-        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
-          granularPermissionId: granularPermission.id,
-        } as any);
-
-        const response = await request(nestApp.getHttpServer())
-          .delete(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie);
-
-        expect(response.statusCode).toBe(200);
-
-        const deletedGranularPermission = await findEntity(GranularPermissions, { id: granularPermission.id } as any);
-        expect(deletedGranularPermission).toBeNull();
-
-        const deletedFoldersGroupPermissions = await findEntity(FoldersGroupPermissions, {
-          id: foldersGroupPermissions.id,
-        } as any);
-        expect(deletedFoldersGroupPermissions).toBeNull();
-
-        const deletedGroupFolders = await findEntities(GroupFolders, {
-          where: { folderId: workflowFolder.id },
-        });
-        expect(deletedGroupFolders).toHaveLength(0);
+      const workflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - update add original',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
       });
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Workflow Folder Update Add Access',
+          groupId: group.id,
+          type: 'workflow_folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: workflowFolder.id }],
+          },
+        });
+      expect(createResponse.statusCode).toBe(201);
+
+      const granularPermission = await findEntityOrFail(GranularPermissions, {
+        groupId: group.id,
+        name: 'Workflow Folder Update Add Access',
+      } as any);
+
+      const anotherWorkflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - update add new',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          resourcesToAdd: [{ folderId: anotherWorkflowFolder.id }],
+        });
+
+      expect(response.statusCode).toBe(200);
+
+      const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+        granularPermissionId: granularPermission.id,
+      } as any);
+
+      const groupFolders = await findEntities(GroupFolders, {
+        where: { foldersGroupPermissionsId: foldersGroupPermissions.id },
+      });
+      const folderIds = groupFolders.map((groupFolder) => groupFolder.folderId);
+
+      expect(folderIds).toContain(workflowFolder.id);
+      expect(folderIds).toContain(anotherWorkflowFolder.id);
+    });
+
+    it('should remove the original folder via resourcesToDelete', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'workflow-folder-update-delete'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'workflow-folder-update-delete',
+      } as any);
+
+      const workflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - update delete',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Workflow Folder Update Delete Access',
+          groupId: group.id,
+          type: 'workflow_folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: workflowFolder.id }],
+          },
+        });
+      expect(createResponse.statusCode).toBe(201);
+
+      const granularPermission = await findEntityOrFail(GranularPermissions, {
+        groupId: group.id,
+        name: 'Workflow Folder Update Delete Access',
+      } as any);
+
+      const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+        granularPermissionId: granularPermission.id,
+      } as any);
+
+      const groupFolder = await findEntityOrFail(GroupFolders, {
+        folderId: workflowFolder.id,
+        foldersGroupPermissionsId: foldersGroupPermissions.id,
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          resourcesToDelete: [{ id: groupFolder.id }],
+        });
+
+      expect(response.statusCode).toBe(200);
+
+      const deletedGroupFolder = await findEntity(GroupFolders, { id: groupFolder.id } as any);
+      expect(deletedGroupFolder).toBeNull();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id
+  // -------------------------------------------------------------------------
+
+  describe('DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Delete workflow folder granular permissions', () => {
+    it('should delete the granular permission and cascade-delete its FoldersGroupPermissions/GroupFolders rows', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+
+      const customGroupResponse = await createGroupViaApi(
+        cookie,
+        adminUser.defaultOrganizationId,
+        'workflow-folder-delete'
+      );
+      expect(customGroupResponse.statusCode).toBe(201);
+
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'workflow-folder-delete',
+      } as any);
+
+      const workflowFolder = await createFolder(nestApp, {
+        name: 'Workflow Folder - delete grant',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({
+          name: 'Workflow Folder Delete Access',
+          groupId: group.id,
+          type: 'workflow_folder',
+          isAll: false,
+          createResourcePermissionObject: {
+            canEditFolder: false,
+            canEditApps: false,
+            canViewApps: true,
+            resourcesToAdd: [{ folderId: workflowFolder.id }],
+          },
+        });
+      expect(createResponse.statusCode).toBe(201);
+
+      const granularPermission = await findEntityOrFail(GranularPermissions, {
+        groupId: group.id,
+        name: 'Workflow Folder Delete Access',
+      } as any);
+
+      const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+        granularPermissionId: granularPermission.id,
+      } as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+
+      expect(response.statusCode).toBe(200);
+
+      const deletedGranularPermission = await findEntity(GranularPermissions, { id: granularPermission.id } as any);
+      expect(deletedGranularPermission).toBeNull();
+
+      const deletedFoldersGroupPermissions = await findEntity(FoldersGroupPermissions, {
+        id: foldersGroupPermissions.id,
+      } as any);
+      expect(deletedFoldersGroupPermissions).toBeNull();
+
+      const deletedGroupFolders = await findEntities(GroupFolders, {
+        where: { folderId: workflowFolder.id },
+      });
+      expect(deletedGroupFolders).toHaveLength(0);
     });
   });
 });
