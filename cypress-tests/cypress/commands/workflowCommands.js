@@ -39,7 +39,10 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
     "have.text",
     workflowsText.workflowRunhelperText
   );
+  cy.verifyResponseNodeOutput(expectedText);
+});
 
+Cypress.Commands.add("verifyResponseNodeOutput", (expectedText) => {
   cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
   cy.get('[data-cy="tab-output"]').click();

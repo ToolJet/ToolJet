@@ -7,6 +7,7 @@ import { viewAppCardOptions } from "Support/utils/common";
 import {
   openWorkflowsDashboard,
   createWorkflowFromDashboard,
+  navigateBackToWorkflowsDashboard,
   renameWorkflowFromCard,
   cleanupWorkflows,
   cleanupApps,
@@ -39,7 +40,7 @@ describe("Workflows - dashboard CRUD", () => {
     cleanupApps([data.appName]);
   });
 
-  it("A workflow can be created from the workflows dashboard and opens with a start node", () => {
+  it("A workflow created from the dashboard opens with a start node and stays on the dashboard after reload", () => {
     openWorkflowsDashboard();
     createWorkflowFromDashboard(data.workflowName);
 
@@ -47,23 +48,18 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(workflowSelector.startNode, { timeout: 20000 })
       .should("be.visible")
       .and("have.length", 1);
-  });
 
-  it("A created workflow appears on the dashboard and survives reload", () => {
-    cy.apiCreateWorkflow(data.workflowName);
-    openWorkflowsDashboard();
-
+    // The reload proves the card comes from the server, not from client state
+    // left behind by the create flow.
+    navigateBackToWorkflowsDashboard();
     cy.get(commonSelectors.appCard(data.workflowName)).should(
       "contain.text",
       data.workflowName
     );
-
     cy.reload();
-    cy.wait(3000);
-    cy.get(commonSelectors.appCard(data.workflowName)).should(
-      "contain.text",
-      data.workflowName
-    );
+    cy.get(commonSelectors.appCard(data.workflowName), {
+      timeout: 20000,
+    }).should("contain.text", data.workflowName);
   });
 
   it("The workflow card menu offers the workflow-specific actions", () => {

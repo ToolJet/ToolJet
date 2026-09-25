@@ -28,12 +28,12 @@ export const workflowsText = {
   responseNodeExpectedValueText: "your value",
   longStringJsonText:
     "ToolJet is an AI-native open-source low-code platform for building and deploying internal tools and business applications with minimal effort",
-  postgresNodeQuery: `SELECT table_name
-FROM information_schema.tables
-WHERE table_schema = 'public'
-AND table_type = 'BASE TABLE';`,
+  // Self-contained, so the result doesn't depend on what the shared test
+  // database happens to contain.
+  postgresNodeQuery: "SELECT current_database() AS database_name;",
   postgresResponseNodeQuery: "return postgresql1.data",
-  postgresExpectedValue: "server_side_pagination",
+  // The database createPostgresDataSource connects to.
+  postgresExpectedValue: "postgres",
   
   restApiUrl: "http://9.234.17.31:8000/delay/10s",
   restApiResponseNodeQuery: "return restapi1.data",
@@ -65,7 +65,12 @@ AND table_type = 'BASE TABLE';`,
 
   // Folder delete confirmation. The trailing sentence says "Apps ... will not be
   // deleted" even on the workflows dashboard, so only the stable prefix is
-  // asserted. See the workflow-folders contract.
+  // asserted.
   folderDeletePrefix: (folderName) =>
     `Are you sure you want to delete the folder ${folderName}?`,
+
+  llmAgentFixturePath:
+    "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",
+  marketplacePluginsToBeInstalled: "Marketplace plugins to be installed",
+  agentExecutionFailed: "Agent execution failed",
 };

@@ -44,15 +44,19 @@ export const revealWorkflowToken = (selectors) => {
     });
 };
 
+// `fixture` is a path or an in-memory file — anything cy.selectFile accepts.
+// `beforeImport` runs once the file is picked, while the import modal is open.
 export const importWorkflowApp = (
   workflowName,
-  fixturePath = "cypress/fixtures/exportedApp.json"
+  fixture = "cypress/fixtures/exportedApp.json",
+  { beforeImport } = {}
 ) => {
   cy.get(workflowSelector.importWorkFlowsOption).click();
   cy.get(workflowSelector.importWorkFlowsLabel).click();
-  cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
+  cy.get('input[type="file"]').first().selectFile(fixture, { force: true });
   cy.wait(2000);
   cy.get(workflowSelector.workFlowNameInputField).clear().type(workflowName);
+  if (beforeImport) beforeImport();
 
   // Import navigates into the editor client-side, so nothing otherwise waits
   // for the imported app's version data to arrive before a caller interacts
@@ -161,8 +165,8 @@ export const removeWorkflowFromFolder = (workflowName) => {
 // Teardown
 //
 // For afterEach hooks, so a test that fails part-way still cleans up — otherwise
-// its workflows and folders leak into every later test on the same instance.
-// Both helpers are deliberately tolerant: a test may already have deleted or
+// what it created leaks into every later test on the same instance.
+// These helpers are deliberately tolerant: a test may already have deleted or
 // renamed what it created, and a hook that throws on "not found" would turn a
 // passing test red. cy.apiDeleteWorkflow throws in exactly that case, so it is
 // not usable here.
@@ -234,6 +238,32 @@ export const cleanupFolders = (names = [], types = ["workflow"]) => {
             })
           );
       });
+    });
+  });
+};
+
+// Run after cleanupWorkflows: a data source still used by a workflow query
+// can't be deleted.
+export const cleanupDataSources = (names = []) => {
+  withAuthHeaders((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}`,
+      headers,
+      failOnStatusCode: false,
+      log: false,
+    }).then((res) => {
+      (res.body?.data_sources || [])
+        .filter((dataSource) => names.includes(dataSource.name))
+        .forEach((dataSource) =>
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/data-sources/${dataSource.id}`,
+            headers,
+            failOnStatusCode: false,
+            log: false,
+          })
+        );
     });
   });
 };
@@ -346,20 +376,124 @@ export const createRestApiDataSource = (dataSourceName) => {
   cy.reload();
 };
 
-// Opens the data source and waits for "connection verified" before any workflow
-// is built on it — otherwise a connection failure surfaces later as a confusing
-// empty query result.
+// Opens the data source and waits for its connection test to pass before any
+// workflow is built on it — otherwise a connection failure surfaces later as a
+// confusing empty query result.
 export const verifyDataSourceConnection = (dataSourceName) => {
+  // The data source list scrolls, so a new entry can sit below its fold.
   cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
+    .scrollIntoView()
     .should("be.visible")
     .click();
-  cy.get(postgreSqlSelector.buttonTestConnection).click();
-  cy.get(postgreSqlSelector.textConnectionVerified, { timeout: 10000 }).should(
-    "have.text",
-    postgreSqlText.labelConnectionVerified
-  );
+  testDataSourceConnection();
   cy.reload();
 };
+
+// The result arrives as a toast. A failed test reads "Test connection could not
+// be verified", which then shows up in the assertion message.
+export const testDataSourceConnection = () => {
+  cy.get(postgreSqlSelector.buttonTestConnection).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    postgreSqlText.toastConnectionVerified
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Importing and running exported workflows
+// ---------------------------------------------------------------------------
+
+// Import reuses any global data source with the same name and kind, so the
+// export's data source is renamed per run to keep each import on its own.
+export const workflowImportFile = (fixturePath, dataSourceKind, dataSourceName) =>
+  cy.readFile(fixturePath).then((exported) => {
+    exported.app[0].definition.appV2.dataSources
+      .filter((dataSource) => dataSource.kind === dataSourceKind)
+      .forEach((dataSource) => {
+        dataSource.name = dataSourceName;
+      });
+    return {
+      contents: Cypress.Buffer.from(JSON.stringify(exported)),
+      fileName: fixturePath.split("/").pop(),
+      mimeType: "application/json",
+    };
+  });
+
+export const isPluginInstalled = (pluginId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({ url: `${Cypress.env("server_host")}/api/plugins`, headers, log: false })
+      .then(({ body }) => body.some((plugin) => plugin.pluginId === pluginId))
+  );
+
+// Not cy.apiSetDataSourceCredentials: a failed request there dumps the request
+// body, key included, into the run log. Here only the status is asserted.
+export const setOpenAiApiKey = (dataSourceName, apiKey) =>
+  cy.apiGetEnvironments().then((environments) => {
+    const development = environments.find((env) => env.name === "development");
+    cy.apiGetDataSourceIdByName(dataSourceName).then((dataSourceId) =>
+      cy.getAuthHeaders().then((headers) =>
+        cy
+          .request({
+            method: "PUT",
+            url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${development.id}`,
+            headers,
+            body: {
+              name: dataSourceName,
+              options: [{ key: "apiKey", value: apiKey, encrypted: true }],
+            },
+            failOnStatusCode: false,
+            log: false,
+          })
+          .its("status", { log: false })
+          .should("equal", 200)
+      )
+    );
+  });
+
+// The editor runs workflows synchronously: the trigger request resolves only
+// once the run has finished, so waiting on it also covers slow agent runs.
+export const runWorkflowFromEditor = (timeout = 120000) => {
+  cy.intercept("POST", "/api/workflow_executions/*/trigger").as("workflowRun");
+  cy.get(workflowSelector.workflowRunButton).should("not.be.disabled").click();
+  return cy
+    .wait("@workflowRun", { responseTimeout: timeout })
+    .its("response.body.result");
+};
+
+// An app's workflow query triggers the run the same synchronous way, so the
+// trigger response carries the workflow's result.
+export const previewWorkflowQueryInApp = (expectedText, timeout = 60000) => {
+  cy.intercept("POST", "/api/workflow_executions/*/trigger").as("appWorkflowRun");
+  cy.get(dataSourceSelector.queryPreviewButton).click();
+  cy.wait("@appWorkflowRun", { responseTimeout: timeout })
+    .its("response.body.result")
+    .as("appWorkflowResult");
+  cy.get(dataSourceSelector.previewTabRaw).click();
+  cy.get(dataSourceSelector.previewTabRawContainer).should(
+    "contain.text",
+    expectedText
+  );
+  return cy.get("@appWorkflowResult");
+};
+
+export const getWorkflowExecution = (executionId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        url: `${Cypress.env("server_host")}/api/workflow_executions/${executionId}`,
+        headers,
+        log: false,
+      })
+      .its("body")
+  );
+
+export const getWorkflowQueries = (workflowId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({ url: `${Cypress.env("server_host")}/api/apps/${workflowId}`, headers, log: false })
+      .its("body.data_queries")
+  );
 
 export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get(workflowSelector.workflowRunButton).click();
