@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
@@ -34,15 +34,26 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table ${tableName} not found`);
     }
 
-    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId);
+    const remainingRowCapacity = await this.tableOperationsService.getRemainingRowCapacity(organizationId);
+    if (remainingRowCapacity <= 0) {
+      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    }
+
+    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, remainingRowCapacity);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
-    organizationId: string
+    organizationId: string,
+    remainingRowCapacity: number = Infinity
   ): Promise<{ processedRows: number }> {
-    return await this.bulkUploadUtilService.bulkUploadCsv(internalTableId, fileBuffer, organizationId);
+    return await this.bulkUploadUtilService.bulkUploadCsv(
+      internalTableId,
+      fileBuffer,
+      organizationId,
+      remainingRowCapacity
+    );
   }
 
   async bulkUpdateRowsWithPrimaryKey(
@@ -157,6 +168,19 @@ export class TooljetDbBulkUploadService {
       return {
         status: 'failed',
         error: 'Table not found',
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    // Conservative: treats every row in the batch as a potential new row, since knowing which
+    // primary keys already exist would need an extra query. Safe default for a hard cap.
+    const remainingRowCapacity = await this.tableOperationsService.getRemainingRowCapacity(organizationId);
+    if (rowsToUpsert.length > remainingRowCapacity) {
+      return {
+        status: 'failed',
+        error: "You've reached your limit of rows in ToolJet database tables. Upgrade for more.",
         inserted: 0,
         updated: 0,
         rows: [],

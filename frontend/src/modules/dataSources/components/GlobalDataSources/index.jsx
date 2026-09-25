@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
@@ -141,10 +142,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     fetchDataSources(resetSelection, dataSource);
   };
 
-  const handleSearch = (e) => {
-    const searchQuery = e.target.value;
-    setQueryString(searchQuery);
+  const handleSearch = (e) => setQueryString(e.target.value);
 
+  const filterDataSources = (searchQuery) => {
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
@@ -162,14 +162,27 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         }
       });
       datasourceGroup.list = [...arr];
-      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
-        (arr = []);
+      ((datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []));
       return datasourceGroup;
     });
     const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
     filteredDsList.length >= 1 ? setSuggestingDataSource(false) : setSuggestingDataSource(true);
     setFilteredDataSources([...filtered]);
   };
+
+  // Reapply URL searches on navigation, and refresh results as installed plugins arrive.
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') ?? '';
+  useEffect(() => {
+    setQueryString(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    filterDataSources(queryString);
+    // Filtering depends on the catalogue as well as the user's current search.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryString, plugins, isCloudEdition]);
 
   const createDataSource = (dataSource) => {
     const { id } = dataSource;

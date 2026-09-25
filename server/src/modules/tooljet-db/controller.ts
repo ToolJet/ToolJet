@@ -82,6 +82,14 @@ export class TooljetDbController {
     return data;
   }
 
+  @InitFeature(FEATURE_KEY.VIEW_TABLES)
+  @Get('/rows/limits/:organizationId')
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
+  async getRowsLimit(@Param('organizationId') organizationId) {
+    const data = await this.tableOperationsService.getRowsLimit(organizationId);
+    return data;
+  }
+
   @InitFeature(FEATURE_KEY.VIEW_TABLE)
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
