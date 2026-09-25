@@ -1,16 +1,17 @@
 import { fake } from "Fixtures/fake";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { workflowsText } from "Texts/platform/workflows";
 import {
   buildLinearWorkflow,
   createPostgresDataSource,
   verifyTextInResponseOutputLimited,
+  previewWorkflowQueryInApp,
   cleanupWorkflows,
   cleanupApps,
+  cleanupDataSources,
 } from "Support/utils/workFlows";
 
-// A workflow is consumed from an app as a query. These cases assert the
-// app-side path: add the workflow to an app and run it from there.
+// A workflow is consumed from an app as a query. Each case checks the workflow
+// works on its own, then that an app running it gets the workflow's result.
 const data = {};
 
 describe("Workflows - running from an app", () => {
@@ -24,39 +25,54 @@ describe("Workflows - running from an app", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  // Teardown also runs here so a test that fails part-way still cleans up.
-  // Without it a failed case leaks its workflow onto the shared instance, and
-  // later specs that open card menus then see more than one workflow card.
+  // Teardown runs here so a test that fails part-way still cleans up — a leaked
+  // workflow or data source breaks later specs on the same instance. Workflows
+  // go first: a data source still used by a workflow query can't be deleted.
   afterEach(() => {
     cleanupWorkflows([data.workflowName]);
     cleanupApps([data.appName]);
+    cleanupDataSources([`cypress-${data.dataSourceName}-manual-pgsql`]);
   });
 
-  it("An app can run a RunJS-backed workflow", () => {
-    cy.apiCreateWorkflow(data.workflowName);
-    cy.openWorkflow();
-
-    buildLinearWorkflow({
-      blockLabel: workflowsText.runjsNodeLabel,
-      nodeName: workflowsText.runjs,
-      inputField: workflowsText.runjsInputField,
-      query: workflowsText.runjsNodeCode,
-      responseReturn: workflowsText.responseNodeQuery,
+  it("An app runs an API-built workflow and receives its result, and the run is logged", () => {
+    // start → runjs1 (returns the start params) → response, built over the API.
+    cy.apiCreateWorkflowApp(data.workflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiGetDataSourceId("runjs");
+    cy.apiCreateWorkflowNode("runjs", "runjs1", {
+      code: workflowsText.runjsNodeCode,
+      parameters: [],
     });
-    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
+    cy.apiWireWorkflowDefinition({
+      processingNodeName: "runjs1",
+      processingKind: "runjs",
+      defaultParams: '{"dev":"your value"}',
+      responseCode: workflowsText.responseNodeQuery,
+      responseStatus: "200",
+    });
 
-    // The workflow works standalone; now prove an app can drive it.
+    // Run directly first: the run succeeds and its logs carry the data. This
+    // has to happen before cy.openApp, which overwrites the version ids used.
+    cy.apiExecuteWorkflow(workflowsText.jsonValuePlaceholder);
+    cy.apiValidateLogs();
+    cy.apiValidateLogsWithData(workflowsText.jsonValuePlaceholder);
+
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.addWorkflowInApp(data.workflowName);
-    cy.get(dataSourceSelector.queryPreviewButton).click();
 
-    // KNOWN GAP: the completion toast is not asserted. The upstream spec had
-    // that assertion commented out pending a fix, and this rewrite did not
-    // change what it asserts.
+    // The app passes no params, so the workflow runs on its default params.
+    previewWorkflowQueryInApp(workflowsText.jsonValuePlaceholder).then(
+      (result) => {
+        expect(result.executionStatus).to.equal("completed");
+        expect(result.data).to.deep.equal({
+          dev: workflowsText.jsonValuePlaceholder,
+        });
+      }
+    );
   });
 
-  it("An app can run a Postgres-backed workflow", () => {
+  it("An app runs a Postgres-backed workflow and receives its rows", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
     createPostgresDataSource(dataSourceName);
 
@@ -76,13 +92,9 @@ describe("Workflows - running from an app", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.addWorkflowInApp(data.workflowName);
-    cy.get(dataSourceSelector.queryPreviewButton).click();
 
-    // KNOWN GAP: see the RunJS case above.
-
-    // The data source can't be deleted while a workflow still references it
-    // through this query node, so the workflow goes first.
-    cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteDataSource(dataSourceName);
+    previewWorkflowQueryInApp(workflowsText.postgresExpectedValue)
+      .its("executionStatus")
+      .should("equal", "completed");
   });
 });

@@ -4,6 +4,14 @@ on:
   pull_request_target:
     types: [labeled]
 
+  # TEMPORARY, trigger-check branch only — do not merge.
+  # A brand-new pull_request_target workflow is not picked up until it exists on
+  # the default branch, so labelling a PR cannot exercise it yet. pull_request
+  # reads the workflow from the PR head, which does run. Remove this block
+  # before merging.
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
   workflow_dispatch:
 
 permissions:

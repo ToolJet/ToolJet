@@ -2,7 +2,6 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
 import { postgreSqlText } from "Texts/marketplace/postgreSql";
-import { deleteDatasource } from "Support/utils/marketplace/datasources/dataSource";
 import { harperDbText } from "Texts/marketplace/harperDb";
 import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
@@ -15,9 +14,10 @@ import {
   createPostgresDataSource,
   createRestApiDataSource,
   enterJsonInputInStartNode,
-  navigateBackToWorkflowsDashboard,
+  testDataSourceConnection,
   verifyTextInResponseOutputLimited,
   cleanupWorkflows,
+  cleanupDataSources,
 } from "Support/utils/workFlows";
 
 // A query node executes against its data source and its result reaches the
@@ -38,11 +38,16 @@ describe("Workflows - query node execution per data source", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  // Teardown also runs here so a test that fails part-way still cleans up.
-  // Without it a failed case leaks its workflow onto the shared instance, and
-  // later specs that open card menus then see more than one workflow card.
+  // Teardown runs here so a test that fails part-way still cleans up — a leaked
+  // workflow or data source breaks later specs on the same instance. Workflows
+  // go first: a data source still used by a workflow query can't be deleted.
   afterEach(() => {
     cleanupWorkflows([data.workflowName]);
+    cleanupDataSources(
+      ["manual-pgsql", "restapi", "harperdb"].map(
+        (kind) => `cypress-${data.dataSourceName}-${kind}`
+      )
+    );
   });
 
   it("A RunJS query node executes and its result reaches the response node", () => {
@@ -76,14 +81,7 @@ describe("Workflows - query node execution per data source", () => {
       clearBeforeTyping: true,
     });
 
-    // The row set is large enough that the JSON viewer cannot be fully
-    // expanded, so expansion is capped.
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
-
-    // The data source can't be deleted while a workflow still references it
-    // through this query node, so the workflow goes first.
-    cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteDataSource(dataSourceName);
   });
 
   it("A REST API query node executes and its response body reaches the response node", () => {
@@ -105,9 +103,6 @@ describe("Workflows - query node execution per data source", () => {
     });
 
     cy.verifyTextInResponseOutput(workflowsText.restApiExpectedValue);
-
-    cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteDataSource(dataSourceName);
   });
 
   it("A HarperDB query node executes and its rows reach the response node", () => {
@@ -144,10 +139,7 @@ describe("Workflows - query node execution per data source", () => {
       Cypress.env("harperdb_password")
     );
 
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
+    testDataSourceConnection();
 
     cy.get(postgreSqlSelector.buttonSave)
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
@@ -187,9 +179,5 @@ describe("Workflows - query node execution per data source", () => {
       workflowsText.harperDbResponseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.harperDbExpectedValue);
-
-    cy.apiDeleteWorkflow(data.workflowName);
-    navigateBackToWorkflowsDashboard();
-    deleteDatasource(dataSourceName);
   });
 });

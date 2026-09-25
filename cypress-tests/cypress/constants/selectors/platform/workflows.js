@@ -47,6 +47,10 @@ export const workflowSelector = {
   simpleInputField: (fieldName) => `[data-cy="${cyParamName(fieldName)}"]`,
   nodeHandleRight: (node) => `[data-cy="${node}-node-handle-right"]`,
 
+  canvasEdge: ".react-flow__edge",
+  // Rows of the selected run in the logs panel; failed rows carry .log-red.
+  workflowLogErrorRow: '[data-cy="options-column"] .log-red',
+
   // The shared card-menu popover body. Needed to assert an option is ABSENT —
   // appCardOptions(text) builds a per-option selector, which cannot express
   // "no clone control exists".
