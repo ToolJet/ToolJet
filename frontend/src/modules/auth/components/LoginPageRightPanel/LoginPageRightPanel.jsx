@@ -2,13 +2,13 @@ import React from 'react';
 import { useWhiteLabellingStore, useWhiteLabelBanner } from '@/_stores/whiteLabellingStore';
 import { GeneralFeatureImage } from '@/modules/common/components';
 
-const LoginPageRightPanel = () => {
+const LoginPageRightPanel = ({ DefaultImage = GeneralFeatureImage }) => {
   const isWhiteLabelDetailsFetched = useWhiteLabellingStore((state) => state.isWhiteLabelDetailsFetched);
   const whiteLabelBanner = useWhiteLabelBanner();
 
   if (!isWhiteLabelDetailsFetched) return null;
 
-  if (!whiteLabelBanner) return <GeneralFeatureImage />;
+  if (!whiteLabelBanner) return <DefaultImage />;
 
   return (
     <img
