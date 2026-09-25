@@ -41,7 +41,12 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import {
+  computeFlexResizeStyles,
+  computeFlexResizeEndPatch,
+  computeResizeStopPosition,
+  clampResizeTranslate,
+} from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -204,14 +209,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
 
-        y = Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
-
         gw = gw ? gw : gridWidth;
 
+        const { top, left } = computeResizeStopPosition({ x, y, gw, gridHeight: GRID_HEIGHT });
+        y = top;
+
         const parent = boxList.find((box) => box.id === id)?.component?.parent;
-        if (y < 0) {
-          y = 0;
-        }
         if (parent) {
           const parentElem = document.getElementById(`canvas-${parent}`);
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
@@ -232,7 +235,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           height: height ? height : GRID_HEIGHT,
           width: newWidth ? newWidth : 1,
           top: y,
-          left: Math.round(x / gw),
+          left,
         };
       });
 
@@ -817,6 +820,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const containerWidth = elemContainer.clientWidth;
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
+
+            ({ x: transformX, y: transformY } = clampResizeTranslate({
+              x: transformX,
+              y: transformY,
+              maxX: maxLeft,
+              maxY,
+            }));
+
             const maxWidthHit = transformX < 0 || transformX >= maxLeft;
             const maxHeightHit = transformY < 0 || transformY >= maxY;
 
