@@ -89,7 +89,7 @@ Users then select the ToolJet agent in Microsoft 365 Copilot.
 ## Related
 
 - [ToolJet MCP Overview](/docs/build-with-ai/mcp/overview)
-- [Setup](/docs/build-with-ai/mcp/setup)
+- [App Generation](/docs/build-with-ai/mcp/app-generation)
 - [Supported Tools](/docs/build-with-ai/mcp/supported-tools)
 - [Security](/docs/build-with-ai/mcp/security)
 
