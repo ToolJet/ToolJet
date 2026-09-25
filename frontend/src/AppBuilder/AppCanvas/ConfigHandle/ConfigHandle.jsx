@@ -19,7 +19,6 @@ import { getInvalidLicenseTooltip } from './utils';
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
 
-const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
 
 export const ConfigHandle = ({
@@ -217,7 +216,7 @@ export const ConfigHandle = ({
             ? '0px'
             : position === 'top'
             ? '-26px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+            : `${height + BUFFER_HEIGHT}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
