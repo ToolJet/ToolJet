@@ -141,11 +141,14 @@ export class SessionUtilService {
 
       applyCustomDomainCookieOptions(cookieOptions, this.configService);
       let signedPat;
+      let authToken: string | undefined;
       if (isPatLogin) {
         signedPat = this.sign(JWTPayload);
       } else {
-        response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
+        authToken = this.sign(JWTPayload);
+        response.cookie('tj_auth_token', authToken, cookieOptions);
       }
+      const isMobileClient = request?.headers?.['x-client-type'] === 'mobile';
       const isCurrentOrganizationArchived = organization?.status === WORKSPACE_STATUS.ARCHIVE;
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
@@ -162,6 +165,7 @@ export class SessionUtilService {
         noActiveWorkspaces,
         ...(extraData ? extraData : {}),
         ...(isPatLogin ? { signedPat } : {}),
+        ...(isMobileClient && authToken ? { authToken } : {}),
       };
 
       return decamelizeKeys(responsePayload);
@@ -367,13 +371,16 @@ export class SessionUtilService {
     }
 
     applyCustomDomainCookieOptions(cookieOptions, this.configService);
-    response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
+    const authToken = this.sign(JWTPayload);
+    response.cookie('tj_auth_token', authToken, cookieOptions);
+    const isMobileClient = request?.headers?.['x-client-type'] === 'mobile';
 
     return decamelizeKeys({
       id,
       email,
       firstName,
       lastName,
+      ...(isMobileClient ? { authToken } : {}),
     });
   }
 
