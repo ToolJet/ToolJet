@@ -117,6 +117,8 @@ export function handleResponse(
 
         const modalContainer = document.getElementById('modal-div');
         if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
+          // Force remount so the modal reopens on repeated 451s, not just a no-op prop update.
+          ReactDOM.unmountComponentAtNode(modalContainer);
           ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {
