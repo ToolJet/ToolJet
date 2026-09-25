@@ -81,4 +81,18 @@ describe('If condition node', () => {
       selectedHandle: null,
     });
   });
+
+  it('propagates a condition evaluation error without evaluating later branches', async () => {
+    const definition: IfConditionDefinition = {
+      conditions: [
+        { id: 'true', label: 'If', code: 'invalid' },
+        { id: 'else-if-1', label: 'Else if 1', code: 'second' },
+      ],
+      elseBranch: { enabled: true },
+    };
+    const evaluate = jest.fn().mockRejectedValueOnce(new Error('Invalid condition'));
+
+    await expect(selectIfConditionBranch(definition, evaluate)).rejects.toThrow('Invalid condition');
+    expect(evaluate).toHaveBeenCalledTimes(1);
+  });
 });

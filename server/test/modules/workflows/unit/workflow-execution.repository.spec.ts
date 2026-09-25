@@ -98,6 +98,11 @@ describe('WorkflowExecutionRepository.applyListFilters', () => {
 });
 
 describe('ListExecutionsDto validation', () => {
+  const validationProperties = async (input: Record<string, unknown>) => {
+    const errors = await validate(plainToInstance(ListExecutionsDto, input));
+    return errors.map((error) => error.property);
+  };
+
   it('accepts a recognised status list', async () => {
     const dto = plainToInstance(ListExecutionsDto, { status: ['running', 'success'] });
     const errors = await validate(dto);
@@ -120,6 +125,39 @@ describe('ListExecutionsDto validation', () => {
     const dto = plainToInstance(ListExecutionsDto, { trigger: ['bogus'] });
     const errors = await validate(dto);
     expect(errors.some((error) => error.property === 'trigger')).toBe(true);
+  });
+
+  it.each([
+    ['app_id', 'not-a-uuid'],
+    ['folder_id', 'not-a-uuid'],
+    ['environment_id', 'not-a-uuid'],
+  ])('rejects an invalid %s identifier', async (property, value) => {
+    await expect(validationProperties({ [property]: value })).resolves.toContain(property);
+  });
+
+  it.each([
+    ['from', 'not-a-date'],
+    ['to', '2026-99-99'],
+  ])('rejects an invalid %s date', async (property, value) => {
+    await expect(validationProperties({ [property]: value })).resolves.toContain(property);
+  });
+
+  it.each([
+    ['page', 0],
+    ['page', -1],
+    ['page', 1.5],
+    ['per_page', 0],
+    ['per_page', 101],
+    ['per_page', 1.5],
+  ])('rejects %s=%p outside the pagination contract', async (property, value) => {
+    await expect(validationProperties({ [property]: value })).resolves.toContain(property);
+  });
+
+  it.each([
+    ['status', ['running', 'bogus']],
+    ['trigger', ['manual', 'bogus']],
+  ])('rejects a %s list when any member is invalid', async (property, value) => {
+    await expect(validationProperties({ [property]: value })).resolves.toContain(property);
   });
 
   it('keeps the DTO status filters and the repository status keys in sync', () => {

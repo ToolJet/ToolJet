@@ -16,15 +16,22 @@ describe('resolveWorkflowParameters', () => {
     ).toEqual({ region: 'EU', limit: 10 });
   });
 
-  it('should reject missing required workflow inputs for every new-model trigger', () => {
-    expect(() =>
-      resolveWorkflowParameters({
-        workflowInputs: [{ key: 'region', type: 'string', required: true }],
-        triggerParams: {},
-        trigger: 'manual',
-      })
-    ).toThrow('Parameter region is required');
-  });
+  it.each([
+    ['manual', {}, 'Parameter region is required'],
+    ['webhook', { region: undefined }, 'Parameter region is required'],
+    ['schedule', { region: null }, 'region has incorrect datatype'],
+  ] as const)(
+    'should reject an absent or invalid required workflow input for the %s trigger',
+    (trigger, triggerParams, expectedMessage) => {
+      expect(() =>
+        resolveWorkflowParameters({
+          workflowInputs: [{ key: 'region', type: 'string', required: true }],
+          triggerParams,
+          trigger,
+        })
+      ).toThrow(expectedMessage);
+    }
+  );
 
   it('should retain legacy webhook validation behavior', () => {
     expect(() =>
@@ -48,13 +55,39 @@ describe('resolveWorkflowParameters', () => {
     ).toEqual({ limit: 10 });
   });
 
-  it('should reject values that do not match the configured type', () => {
+  it.each(
+    (['manual', 'webhook', 'schedule'] as const).flatMap(
+      (trigger) =>
+        [
+          [trigger, 'string', 42],
+          [trigger, 'string', false],
+          [trigger, 'number', '42'],
+          [trigger, 'number', true],
+          [trigger, 'boolean', 'true'],
+          [trigger, 'boolean', 1],
+        ] as const
+    )
+  )('should reject a %s-triggered %s workflow input supplied as %p', (trigger, type, value) => {
     expect(() =>
       resolveWorkflowParameters({
-        workflowInputs: [{ key: 'enabled', type: 'boolean', required: false }],
-        triggerParams: { enabled: 'true' },
-        trigger: 'webhook',
+        workflowInputs: [{ key: 'value', type, required: false }],
+        triggerParams: { value },
+        trigger,
       })
-    ).toThrow('enabled has incorrect datatype');
+    ).toThrow('value has incorrect datatype');
+  });
+
+  it.each([
+    ['string', 42],
+    ['number', '42'],
+    ['boolean', 'false'],
+  ] as const)('should reject a default value that does not match its configured %s type', (type, defaultValue) => {
+    expect(() =>
+      resolveWorkflowParameters({
+        workflowInputs: [{ key: 'value', type, required: false, defaultValue }],
+        triggerParams: {},
+        trigger: 'schedule',
+      })
+    ).toThrow('value has incorrect datatype');
   });
 });

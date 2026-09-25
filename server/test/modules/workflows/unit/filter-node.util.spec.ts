@@ -31,7 +31,7 @@ describe('filterNodeValues', () => {
     await expect(filterNodeValues({ predicateExpression: 'value' }, evaluate)).resolves.toEqual(['keep']);
   });
 
-  it.each([null, undefined, {}, 'value', 1])('should reject non-filterable input %p', async (input) => {
+  it.each([null, undefined, {}, 'value', 1, true, () => []])('should reject non-filterable input %p', async (input) => {
     const evaluate = jest.fn().mockResolvedValue(input);
 
     await expect(filterNodeValues({ inputExpression: 'query1.data' }, evaluate)).rejects.toThrow(
@@ -43,5 +43,12 @@ describe('filterNodeValues', () => {
     const evaluate = jest.fn().mockResolvedValueOnce([1]).mockRejectedValueOnce(new Error('Invalid predicate'));
 
     await expect(filterNodeValues({ predicateExpression: 'invalid' }, evaluate)).rejects.toThrow('Invalid predicate');
+  });
+
+  it('should stop filtering after the first predicate evaluation error', async () => {
+    const evaluate = jest.fn().mockResolvedValueOnce([1, 2]).mockRejectedValueOnce(new Error('Invalid predicate'));
+
+    await expect(filterNodeValues({ predicateExpression: 'invalid' }, evaluate)).rejects.toThrow('Invalid predicate');
+    expect(evaluate).toHaveBeenCalledTimes(2);
   });
 });
