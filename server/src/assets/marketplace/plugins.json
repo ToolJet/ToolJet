@@ -407,5 +407,17 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "TypeSafe",
+    "description": "Typed decisions from the Jev model: route, classify, score, yes/no. Direct or via OpenRouter.",
+    "version": "1.0.0",
+    "id": "typesafe",
+    "author": "Tooljet",
+    "timestamp": "Sat, 19 Sep 2026 22:30:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
   }
 ]
