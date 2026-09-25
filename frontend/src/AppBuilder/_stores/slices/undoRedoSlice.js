@@ -54,6 +54,8 @@ export const createUndoRedoSlice = (set, get) => {
       let newParentId = null;
       let updateParent = false;
       let componenetPropertiesToUpdate = {};
+      let autoComputeLayoutToUpdate = null;
+      let targetLayout;
 
       const hasMoreThanOnePatchWithPropertyUpdate = patches.filter((patch) => patch.op === 'propertyUpdate').length > 1;
 
@@ -67,6 +69,7 @@ export const createUndoRedoSlice = (set, get) => {
           componentLayoutsToUpdate[componentId] = value.layouts;
           newParentId = value.parentId;
           updateParent = value.updateParent;
+          targetLayout = value.layoutName;
         }
 
         if (op === 'add') {
@@ -75,6 +78,10 @@ export const createUndoRedoSlice = (set, get) => {
 
         if (op === 'parentUpdate') {
           get().setParentComponent(componentId, value, undefined, true);
+        }
+
+        if (op === 'autoComputeLayoutUpdate') {
+          autoComputeLayoutToUpdate = value;
         }
 
         if (op === 'propertyUpdate') {
@@ -110,8 +117,27 @@ export const createUndoRedoSlice = (set, get) => {
         get().addComponentToCurrentPage(componentIdsToAdd, 'canvas', { skipUndoRedo: true });
       }
 
+      // Before the layouts: turning auto layout off first stops the compute effect re-stacking them.
+      if (autoComputeLayoutToUpdate !== null) {
+        get().setAutoComputeLayout(autoComputeLayoutToUpdate);
+      }
+
       if (!isEmpty(componentLayoutsToUpdate)) {
-        get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', { skipUndoRedo: true, updateParent });
+        // Guessing the layout corrupts the other one; skipping is recoverable.
+        if (!targetLayout) {
+          // eslint-disable-next-line no-console
+          console.warn('[undo] layout patch has no layout name — skipped to avoid writing to the wrong layout');
+        } else {
+          // A silent off-screen revert reads as "undo did nothing" and invites repeated presses.
+          if (targetLayout !== get().currentLayout) {
+            get().setCurrentLayout(targetLayout);
+          }
+          get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', {
+            skipUndoRedo: true,
+            updateParent,
+            targetLayout,
+          });
+        }
       }
 
       if (!isEmpty(componenetPropertiesToUpdate)) {
@@ -196,6 +222,12 @@ const filterAndFormatPatches = (patches) => {
     }
 
     if (op === 'replace' && /^modules\.canvas\.pages(\.\w+)*$/.test(joinedPath)) {
+      if (path[4] === 'autoComputeLayout') {
+        changeStack.push({
+          op: 'autoComputeLayoutUpdate',
+          value,
+        });
+      }
       if (path[6] === 'layouts') {
         const parentUpdatePatch = patches.find((patch) => {
           return patch.op === 'replace' && patch.path[7] === 'parent';
@@ -205,6 +237,7 @@ const filterAndFormatPatches = (patches) => {
           componentId: path[5],
           value: {
             layouts: value,
+            layoutName: path[7],
             parentId: parentUpdatePatch?.value,
             updateParent: !!parentUpdatePatch,
           },
