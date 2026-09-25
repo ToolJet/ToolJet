@@ -4,6 +4,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 const eligible = {
   failed: false,
+  awaitingInput: false,
   incomplete: false,
   cancelled: false,
   intent: 'create',
@@ -33,6 +34,13 @@ describe('AI build completion email eligibility', () => {
 
   it('stays silent when the build failed', () => {
     expect(shouldEmailBuildCompletion({ ...eligible, failed: true })).toBe(false);
+  });
+
+  it('does not consume the ready notification for a build that stopped to ask something', () => {
+    // A turn can create the app and then park on a gate — a datasource selection, an empty credit
+    // balance — and it still reports intent 'create'. The claim this email takes is once per app
+    // and is never released, so sending here would spend it on an app that is not finished.
+    expect(shouldEmailBuildCompletion({ ...eligible, awaitingInput: true })).toBe(false);
   });
 
   it('does not consume the ready notification for an incomplete build', () => {
