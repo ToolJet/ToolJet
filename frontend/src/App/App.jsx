@@ -208,7 +208,7 @@ class AppComponent extends React.Component {
     };
     let toastOptions = {
       style: {
-        overflowWrap: 'anywhere',
+        overflowWrap: 'break-word',
       },
     };
 
@@ -219,7 +219,7 @@ class AppComponent extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          overflowWrap: 'anywhere',
+          overflowWrap: 'break-word',
         },
       };
     }

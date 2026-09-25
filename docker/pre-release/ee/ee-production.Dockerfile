@@ -1,3 +1,13 @@
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+FROM node:22.15.1 AS mcp-builder
+WORKDIR /mcp
+ARG CUSTOM_GITHUB_TOKEN
+ARG TOOLJET_MCP_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN npm ci && npm run build:plugin
+
+
 FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -233,6 +243,12 @@ COPY ./docker/pre-release/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
+# tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
+
 
 # Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \
