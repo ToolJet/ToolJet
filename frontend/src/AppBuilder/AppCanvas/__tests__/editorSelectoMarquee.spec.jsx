@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent } from '@testing-library/react';
 import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';
-import EditorSelecto from '../../Selecto';
+import EditorSelecto from '../Selecto';
 
 const scenario = defineAppBuilderScenario({
   id: 'editor-selecto-marquee',

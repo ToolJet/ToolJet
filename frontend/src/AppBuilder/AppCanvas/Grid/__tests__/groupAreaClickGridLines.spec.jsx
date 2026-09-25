@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';
-import Grid from '../../Grid';
+import Grid from '../Grid';
 
 const scenario = defineAppBuilderScenario({
   id: 'grid-group-area-click',
