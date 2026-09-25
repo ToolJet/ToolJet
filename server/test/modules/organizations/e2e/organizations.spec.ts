@@ -11,7 +11,7 @@ import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
  * @group platform
  */
 describe('OrganizationsController', () => {
-  describe('EE (plan: enterprise)', () => {
+  describe('with the default plan', () => {
     let app: INestApplication;
     let userRepository: Repository<User>;
     let configService: ConfigService;
@@ -328,7 +328,7 @@ describe('OrganizationsController', () => {
     }, 60000);
   });
 
-  describe('EE (plan: team)', () => {
+  describe('on the team plan', () => {
     let app: INestApplication;
     let instanceSettingsRepository: Repository<InstanceSettings>;
 

@@ -9,181 +9,179 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 
 /** @group platform */
 describe('OAuthController', () => {
-  describe('EE (plan: enterprise)', () => {
-    let app: INestApplication;
-    let configService: ConfigService;
-    let userRepository: Repository<User>;
-    let orgUserRepository: Repository<OrganizationUser>;
+  let app: INestApplication;
+  let configService: ConfigService;
+  let userRepository: Repository<User>;
+  let orgUserRepository: Repository<OrganizationUser>;
 
-    const token = 'some-Token';
+  const token = 'some-Token';
 
-    beforeAll(async () => {
-      ({ app } = await initTestApp());
-      configService = app.get(ConfigService);
-      userRepository = getEntityRepository(User);
-      orgUserRepository = getEntityRepository(OrganizationUser);
-      await ensureInstanceSSOConfigs();
+  beforeAll(async () => {
+    ({ app } = await initTestApp());
+    configService = app.get(ConfigService);
+    userRepository = getEntityRepository(User);
+    orgUserRepository = getEntityRepository(OrganizationUser);
+    await ensureInstanceSSOConfigs();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60_000);
+
+  // ---------------------------------------------------------------------------
+  // Instance SSO | super-admin flows
+  // ---------------------------------------------------------------------------
+  describe('POST /api/oauth/sign-in/:configId | Google instance SSO (super admin)', () => {
+    let current_user: User;
+
+    beforeEach(() => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+            return 'google-client-id';
+          case 'SSO_GIT_OAUTH2_CLIENT_ID':
+            return 'git-client-id';
+          case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+            return 'git-secret';
+          default:
+            return process.env[key];
+        }
+      });
     });
 
-    afterEach(() => {
-      jest.resetAllMocks();
-      jest.clearAllMocks();
+    describe('Setup first user', () => {
+      it('First user should be super admin', async () => {
+        const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+        googleVerifyMock.mockImplementation(() => ({
+          getPayload: () => ({
+            sub: 'someSSOId',
+            email: 'ssouser@tooljet.io',
+            name: 'SSO User',
+            hd: 'tooljet.io',
+          }),
+        }));
+
+        const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
+
+        expect(googleVerifyMock).toHaveBeenCalledWith({
+          idToken: token,
+          audience: 'google-client-id',
+        });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
+      });
+
+      it('Second user should not be super admin', async () => {
+        await createUser(app, {
+          email: 'anotherUser@tooljet.io',
+          userType: 'instance',
+        });
+        const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+        googleVerifyMock.mockImplementation(() => ({
+          getPayload: () => ({
+            sub: 'someSSOId',
+            email: 'ssouser@tooljet.io',
+            name: 'SSO User',
+            hd: 'tooljet.io',
+          }),
+        }));
+
+        const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
+
+        expect(googleVerifyMock).toHaveBeenCalledWith({
+          idToken: token,
+          audience: 'google-client-id',
+        });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.email).toBe('ssouser@tooljet.io');
+        expect(response.body.super_admin).toBe(false);
+      });
     });
 
-    afterAll(async () => {
-      await closeTestApp(app);
-    }, 60_000);
+    describe('sign in via Google OAuth', () => {
+      beforeAll(async () => {
+        const { user } = await createUser(app, {
+          email: 'superadmin@tooljet.io',
+          userType: 'instance',
+        });
+        current_user = user;
+      });
 
-    // ---------------------------------------------------------------------------
-    // Instance SSO | super-admin flows
-    // ---------------------------------------------------------------------------
-    describe('POST /api/oauth/sign-in/:configId | Google instance SSO (super admin)', () => {
-      let current_user: User;
+      it('Workspace Login - should return 201 when the super admin log in', async () => {
+        const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+        googleVerifyMock.mockImplementation(() => ({
+          getPayload: () => ({
+            sub: 'someSSOId',
+            email: 'ssouser@tooljet.io',
+            name: 'SSO User',
+            hd: 'tooljet.io',
+          }),
+        }));
 
-      beforeEach(() => {
-        jest.spyOn(configService, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-              return 'google-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_ID':
-              return 'git-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-              return 'git-secret';
-            default:
-              return process.env[key];
-          }
+        await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
+
+        expect(googleVerifyMock).toHaveBeenCalledWith({
+          idToken: token,
+          audience: 'google-client-id',
+        });
+
+        const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
+        expect(orgCount).toBe(1);
+      });
+
+      it('Workspace Login - should return 201 when the super admin status is invited in the organization', async () => {
+        const adminUser = await userRepository.findOneOrFail({
+          where: { email: 'superadmin@tooljet.io' },
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+        const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+        googleVerifyMock.mockImplementation(() => ({
+          getPayload: () => ({
+            sub: 'someSSOId',
+            email: 'ssouser@tooljet.io',
+            name: 'SSO User',
+            hd: 'tooljet.io',
+          }),
+        }));
+
+        await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
+
+        expect(googleVerifyMock).toHaveBeenCalledWith({
+          idToken: token,
+          audience: 'google-client-id',
         });
       });
 
-      describe('Setup first user', () => {
-        it('First user should be super admin', async () => {
-          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
-          googleVerifyMock.mockImplementation(() => ({
-            getPayload: () => ({
-              sub: 'someSSOId',
-              email: 'ssouser@tooljet.io',
-              name: 'SSO User',
-              hd: 'tooljet.io',
-            }),
-          }));
-
-          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
-
-          expect(googleVerifyMock).toHaveBeenCalledWith({
-            idToken: token,
-            audience: 'google-client-id',
-          });
-
-          expect(response.statusCode).toBe(201);
-          expect(response.body.email).toBe('ssouser@tooljet.io');
-          expect(response.body.super_admin).toBe(false);
+      it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
+        const adminUser = await userRepository.findOneOrFail({
+          where: { email: 'superadmin@tooljet.io' },
         });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
-        it('Second user should not be super admin', async () => {
-          await createUser(app, {
-            email: 'anotherUser@tooljet.io',
-            userType: 'instance',
-          });
-          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
-          googleVerifyMock.mockImplementation(() => ({
-            getPayload: () => ({
-              sub: 'someSSOId',
-              email: 'ssouser@tooljet.io',
-              name: 'SSO User',
-              hd: 'tooljet.io',
-            }),
-          }));
+        const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+        googleVerifyMock.mockImplementation(() => ({
+          getPayload: () => ({
+            sub: 'someSSOId',
+            email: 'ssouser@tooljet.io',
+            name: 'SSO User',
+            hd: 'tooljet.io',
+          }),
+        }));
 
-          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token });
+        await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
 
-          expect(googleVerifyMock).toHaveBeenCalledWith({
-            idToken: token,
-            audience: 'google-client-id',
-          });
-
-          expect(response.statusCode).toBe(201);
-          expect(response.body.email).toBe('ssouser@tooljet.io');
-          expect(response.body.super_admin).toBe(false);
-        });
-      });
-
-      describe('sign in via Google OAuth', () => {
-        beforeAll(async () => {
-          const { user } = await createUser(app, {
-            email: 'superadmin@tooljet.io',
-            userType: 'instance',
-          });
-          current_user = user;
-        });
-
-        it('Workspace Login - should return 201 when the super admin log in', async () => {
-          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
-          googleVerifyMock.mockImplementation(() => ({
-            getPayload: () => ({
-              sub: 'someSSOId',
-              email: 'ssouser@tooljet.io',
-              name: 'SSO User',
-              hd: 'tooljet.io',
-            }),
-          }));
-
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
-
-          expect(googleVerifyMock).toHaveBeenCalledWith({
-            idToken: token,
-            audience: 'google-client-id',
-          });
-
-          const orgCount = await orgUserRepository.count({ where: { userId: current_user.id } });
-          expect(orgCount).toBe(1);
-        });
-
-        it('Workspace Login - should return 201 when the super admin status is invited in the organization', async () => {
-          const adminUser = await userRepository.findOneOrFail({
-            where: { email: 'superadmin@tooljet.io' },
-          });
-          await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
-
-          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
-          googleVerifyMock.mockImplementation(() => ({
-            getPayload: () => ({
-              sub: 'someSSOId',
-              email: 'ssouser@tooljet.io',
-              name: 'SSO User',
-              hd: 'tooljet.io',
-            }),
-          }));
-
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
-
-          expect(googleVerifyMock).toHaveBeenCalledWith({
-            idToken: token,
-            audience: 'google-client-id',
-          });
-        });
-
-        it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
-          const adminUser = await userRepository.findOneOrFail({
-            where: { email: 'superadmin@tooljet.io' },
-          });
-          await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
-
-          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
-          googleVerifyMock.mockImplementation(() => ({
-            getPayload: () => ({
-              sub: 'someSSOId',
-              email: 'ssouser@tooljet.io',
-              name: 'SSO User',
-              hd: 'tooljet.io',
-            }),
-          }));
-
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(201);
-
-          expect(googleVerifyMock).toHaveBeenCalledWith({
-            idToken: token,
-            audience: 'google-client-id',
-          });
+        expect(googleVerifyMock).toHaveBeenCalledWith({
+          idToken: token,
+          audience: 'google-client-id',
         });
       });
     });
