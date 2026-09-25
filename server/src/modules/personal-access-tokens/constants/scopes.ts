@@ -109,6 +109,8 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.METADATA, // instance metadata
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.ROOT, // health and version
+  // Uploads and publishes JS bundles that execute inside every app that uses them.
+  MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];
 
 /**
