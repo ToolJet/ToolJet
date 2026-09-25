@@ -5,8 +5,6 @@ title: Filter Operation
 
 This guide explains how to implement a server side filter operation on the **Table** component in ToolJet.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Add Table Component
 
 Before implementing the filter operation, add the **Table** component and populate it with data:
@@ -22,10 +20,6 @@ LIMIT 100
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/fetch-data-query.png" alt="Fetch data from the data source" />
 
 3. Set the value of the **Data** property of the **Table** component to `{{queries.<query_name>.data}}` to populate the **Table** component with the data retrieved by the query.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Server Side Filter
 
@@ -112,5 +106,3 @@ This will run the query and fetch the data every time a filter changes.
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/filter-loading.png" alt="Fetch data from the data source" />
 
 This is how server side filtering is implemented in ToolJet's **Table** component. When one or more filters are applied to the **Table** component, the query is executed on the server, ensuring that the filtering affects all records in the dataset, not just the data currently loaded into the **Table** component.
-
-</div>

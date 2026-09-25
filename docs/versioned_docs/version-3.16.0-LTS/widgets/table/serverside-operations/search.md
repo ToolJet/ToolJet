@@ -5,8 +5,6 @@ title: Search Operation
 
 This guide explains how to perform a server side search operation on the **Table** component in ToolJet.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Add Table Component
 
 Before performing the search operation, add the **Table** component and populate it with data:
@@ -22,10 +20,6 @@ LIMIT 100
 <img className="screenshot-full img-full" src="/img/widgets/table/serverside-operations/fetch-data-query.png" alt="Fetch data from the data source" />
     
 3. Set the value of the **Data** property of the **Table** component to `{{queries.<query_name>.data}}` to populate the **Table** component with the data retrieved by the query.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Server Side Search
 
@@ -63,5 +57,3 @@ This will run the query and fetch the data every time something is searched.
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/search-loading.png" alt="Add loading state" />
 
 This is how server side search operation is implemented in ToolJet's **Table** component. Now when a search is performed in the **Table** component, the query is executed on the server, allowing the search to be applied across the entire dataset.
-
-</div>
