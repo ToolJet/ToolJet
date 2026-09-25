@@ -1,5 +1,24 @@
-import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  AddGroupUserDto,
+  CreateGroupPermissionDto,
+  DuplicateGroupDtoBase,
+  GroupUserResponseDto,
+  UpdateGroupPermissionDto,
+} from './dto';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { GroupPermissionsService } from './service';
 import { GroupExistenceGuard } from '@modules/group-permissions/guards/group-existance.guard';
@@ -12,7 +31,6 @@ import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { IGroupPermissionsControllerV2 } from './interfaces/IController';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GetUsersResponse } from './types';
-import { GroupUsers } from '@entities/group_users.entity';
 import { Group } from './decorators/group.decorator';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
@@ -23,6 +41,7 @@ import { UserPermissions } from '@modules/ability/types';
 })
 @InitModule(MODULES.GROUP_PERMISSIONS)
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class GroupPermissionsControllerV2 implements IGroupPermissionsControllerV2 {
   constructor(protected groupPermissionsService: GroupPermissionsService) {}
 
@@ -116,8 +135,9 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @User() user: UserEntity,
     @Query('input') searchInput: string,
     @Group() group: GroupPermissions
-  ): Promise<GroupUsers[]> {
-    return await this.groupPermissionsService.getAllGroupUsers(group, user.organizationId, searchInput);
+  ): Promise<GroupUserResponseDto[]> {
+    const groupUsers = await this.groupPermissionsService.getAllGroupUsers(group, user.organizationId, searchInput);
+    return plainToInstance(GroupUserResponseDto, groupUsers);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)
