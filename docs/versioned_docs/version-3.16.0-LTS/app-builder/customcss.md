@@ -3,105 +3,115 @@ id: customstyles
 title: Custom Styles
 ---
 
-<PlanBadge type="pro" />
+The Custom Styles feature in ToolJet allows users to apply their own CSS, overriding the default app styles. This is useful for styling that isn't covered by App Themes - such as fonts, shadows, spacing, and other component-specific details - giving you full control over the finer points of your app's appearance.
 
-The Custom Styles feature in ToolJet allows users to apply their own CSS, overriding the default app styles. This enables easy customization of app appearance, and maintains consistent themes across all ToolJet apps. By using standardized styles, users avoid the repetitive task of manually styling components for each new app, enhancing development efficiency and ensuring visual coherence for a seamless user experience
+:::note
+For most branding needs, configure an **[App Theme](/docs/app-builder/custom-theme)** first, it gives you a reusable, workspace-wide design system (brand colors, text, borders, system states) without writing any CSS. Use Custom Styles only for styling that App Themes don't expose.
+:::
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-v2.gif" alt="Custom CSS" /> 
-</div>
+<!-- <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/customcss-v2.gif" alt="Custom CSS" /> -->
 
-## Applying Custom Styles To All Components
+## Configuring Custom Styles
 
-Follow these steps to apply custom styles in your ToolJet apps:
+Custom Styles are applied at the workspace level by writing CSS that targets a class — any component across the workspace that shares that class will share the styling. You can target every component of a given type across the workspace, one individual component, or define your own class and add it to different components.
 
-- Navigate to the **Custom Styles** page from **Workspace Settings** on the ToolJet dashboard
+1. Navigate to the **Custom Styles** page from **Workspace Settings** on the ToolJet dashboard.
+    <img className="screenshot-full img-full" src="/img/app-builder/customcss/config.png" alt="Custom CSS" />
+2. Write CSS in the editor, targeting the class of the component you want to style. For example, the CSS below changes the font family of every Button component in the app: <br/>
+    ```css
+    ._tooljet-Button button {
+        font-family: 'Georgia', serif !important;
+    }
+    ```
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/custom-styles.png" alt="Custom CSS" />
-</div>
-<br/>
+    <div style={{ display: 'flex' }} >
 
-- To modify the default colors of components, use their class names, which follow the format `_tooljet-<component>`. 
+    <div style = {{ width:'40%' }} >
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/component-class.png" alt="Component Class" />
-</div>
-<br/>
+    #### Before
+    <img className="screenshot-full" src="/img/app-builder/customcss/btn-before.png" alt="Button Custom CSS" />
 
-- You'll need to identify the specific sub-class(or HTML tags) of each component to target particular attributes. The browser's inspector will allow you to easily find the sub-class(or HTML tags) of the specific 
-properties. 
+    </div>
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/button-class-subclass.png" alt="Sub-Class" />
-</div>
-<br/>
+    <div style = {{ width:'5%' }} > </div>
 
-- After locating the specific sub-class(or HTML tag), refer it in the **Custom Styles** section and add styling to it. For instance, for the Button component above, the the below CSS will change the background color:
+    <div style = {{ width:'40%' }} >
 
+    #### After
+    <img className="screenshot-full" src="/img/app-builder/customcss/btn-after.png" alt="Button Custom CSS" />
+
+    </div>
+
+    </div>
+
+## Finding the CSS Class to Target
+
+Every component gets one or two classes you can target out of the box, and you can also assign your own.
+
+### Component's Default Class (All Components of a Type)
+
+To style every component of a given type across your app, target its default class, which follows the format `_tooljet-<component>`.
+
+<img className="screenshot-full img-full" src="/img/app-builder/customcss/component-class.png" alt="Component Class" />
+
+You'll then need to identify the specific sub-class (or HTML tag) to target the particular attribute you want to change — the browser's inspector will help you find this.
+
+<img className="screenshot-full img-full" src="/img/app-builder/customcss/sub-class.png" alt="Sub-Class" />
+
+For example, the code below changes the font weight of the button component:
 ```css
-._tooljet-Button button {
-    background-color: #152A65 !important;
+._tooljet-Button .tj-text-sm {
+  font-weight: 1000 !important; 
 }
 ```
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/button-component-customcss.png" alt="Button Custom CSS" />
+<div style={{ display: 'flex' }} >
+
+<div style = {{ width:'40%' }} >
+
+#### Before
+<img className="screenshot-full" src="/img/app-builder/customcss/btn-style-before.png" alt="Button Custom CSS" />
+
 </div>
-<br/>
 
-- Similarly, the code below can be used to change the background color of the Filter button on a Table component.
+<div style = {{ width:'5%' }} > </div>
 
+<div style = {{ width:'40%' }} >
+
+#### After
+<img className="screenshot-full" src="/img/app-builder/customcss/btn-style-after.png" alt="Button Custom CSS" />
+
+</div>
+
+</div>
+
+### Component's Name (Single Component)
+
+To style just one specific component, target the name given to that component in the app, which follows the format `_tooljet-<component_name>`.
+
+<img className="screenshot-full img-s" src="/img/app-builder/customcss/qr-before.png" alt="Individual Class Custom CSS" />
+
+For example, the border of this particular container (named `qrScanner`) can be changed using the code below, without affecting any other container in the workspace:
 ```css
-._tooljet-Table .table-card-header button {
-    background-color: #152A65 !important;
+._tooljet-qrScanner .jet-container {
+  border: 2px solid #E63946 !important;
 }
 ```
+<img className="screenshot-full img-s" src="/img/app-builder/customcss/qr-after.png" alt="Individual Class Custom CSS" />
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/filter-button-customcss.png" alt="Filter Custom CSS" />
-</div>
-<br/>
+### Adding a Custom CSS Class
 
-- The code below will change the font size and color of the Text Input and Number Input labels.
+Instead of relying on a component's default or name-based class, most components also expose a **CSS class** field under their **Style > Advanced** section. This field lets you enter one or more custom class names directly on that component, which you can then reference from the **Custom Styles** page.
 
-```css
-._tooljet-TextInput p  {
-	color: #152A65 !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
-}
+This is useful when:
 
-._tooljet-NumberInput p  {
-	color: #152A65 !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
-}
-```
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/input-fields-customcss.png" alt="Input Field Custom CSS" />
-</div>
+- You want a more readable, stable class name instead of hunting for the default or name-based class via the browser inspector.
+- You want to apply the same styling to a group of unrelated components at once — since a custom class isn't tied to a single component's default or name-based class, the same class name can be added to multiple components and targeted with one rule.
 
-
-## Applying Custom Styles To Individual Components
-
-To modify the colors of individual components, use their class names, which follow the format `_tooljet-<component_name>`. Here, the component name refers to the name of the component that is set in the application.
-
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/individual-class.png" alt="Individual Class Custom CSS" />
-</div>
-<br/>
-
-- The color of the Button component above can be changed using the code below:
+For example, adding the class name `highlight-card` to a few components and then adding the following in **Custom Styles** will style all of them together:
 
 ```css
-._tooljet-addIncomeButton button {
-    background-color: blue !important;
+.highlight-card {
+    box-shadow: 0 0 0 2px #E63946 !important;
 }
 ```
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/individual-customcss.png" alt="Individual Class Custom CSS" />
-</div>
-<br/>
-
-In conclusion, Custom CSS feature lets you override default styles with your own CSS. By providing the flexibility to apply both global and component-specific customizations, this feature enhances the visual coherence and branding of your apps. cs
