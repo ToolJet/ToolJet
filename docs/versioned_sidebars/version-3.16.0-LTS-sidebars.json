@@ -197,7 +197,18 @@
           "items": [
             "build-with-ai/mcp/overview",
             "build-with-ai/mcp/app-generation",
-            "build-with-ai/mcp/setup",
+            {
+              "type": "category",
+              "label": "Setup",
+              "items": [
+                "build-with-ai/mcp/setup/overview",
+                "build-with-ai/mcp/setup/claude-code",
+                "build-with-ai/mcp/setup/codex",
+                "build-with-ai/mcp/setup/microsoft-copilot",
+                "build-with-ai/mcp/setup/other-clients",
+                "build-with-ai/mcp/setup/troubleshooting"
+              ]
+            },
             "build-with-ai/mcp/supported-tools",
             "build-with-ai/mcp/security"
           ]
