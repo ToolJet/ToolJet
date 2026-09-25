@@ -211,6 +211,31 @@ describe('widget testing contract command', () => {
     expect(result.stderr).toContain(`production_changes is forbidden but ${runtime} was modified`);
   });
 
+  test('checks committed PR diffs against the merge-base with an upstream branch', () => {
+    const root = cliFixture();
+    git(root, 'branch', 'upstream');
+    write(root, runtime, 'export const value = 2;\n');
+    git(root, 'add', runtime);
+    git(root, 'commit', '-qm', 'change');
+    expect(cli(root).status).toBe(0);
+    const result = cli(root, ['--merge-base-with', 'upstream']);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('working tree against merge-base with upstream');
+    expect(result.stderr).toContain(`production_changes is forbidden but ${runtime} was modified`);
+  });
+
+  test('lets --merge-base-with override --pr fallback', () => {
+    const root = cliFixture();
+    git(root, 'branch', 'upstream');
+    write(root, runtime, 'export const value = 2;\n');
+    git(root, 'add', runtime);
+    git(root, 'commit', '-qm', 'change');
+    expect(cli(root, ['--pr']).stderr).toContain('Cannot resolve merge base with origin/lts-3.16');
+    expect(cli(root, ['--pr', '--merge-base-with', 'upstream']).stderr).toContain(
+      `production_changes is forbidden but ${runtime} was modified`
+    );
+  });
+
   test('reopens and reapproves a design while preserving previously approved test edits', () => {
     // Break this catches: retained test work makes the required preapproval audit unreachable.
     const root = cliFixture();
@@ -272,10 +297,14 @@ describe('widget testing contract command', () => {
     const root = cliFixture();
     for (const args of [
       ['--changed-files-stdin', '--base-ref', 'HEAD'],
+      ['--changed-files-stdin', '--pr'],
       ['--base-ref'],
+      ['--base-ref', 'HEAD', '--pr'],
+      ['--merge-base-with'],
       ['--unknown'],
       ['--base-ref', 'missing-ref'],
       ['--design-only', '--design-only'],
+      ['--pr', '--pr'],
     ]) {
       expect(cli(root, [...modeArgs, ...args]).status).toBe(1);
     }
