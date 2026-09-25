@@ -36,6 +36,13 @@ export class DataSourceVersion {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
+  // Git-sync dirty flag: flipped true by an edit (datasource options/config change) made while
+  // isSynced is already true, i.e. content changed since the last push. Cleared back to false on
+  // the next successful push. Content-blind by design — an edit followed by a revert back to
+  // identical content still leaves this true until the next (no-op) push.
+  @Column({ name: 'has_uncommitted_changes', default: false })
+  hasUncommittedChanges: boolean;
+
   // Git-sync change token: git tree SHA of data-sources/<ds>/ that was last
   // applied to this DSV. Pull skips the per-env options re-apply when the incoming
   // tree SHA matches this and is_synced is true.

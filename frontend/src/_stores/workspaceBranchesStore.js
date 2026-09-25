@@ -13,6 +13,7 @@ const initialState = {
   isPushing: false,
   isPulling: false,
   lastPullAt: null,
+  lastDatasourcePushAt: null,
   pullingModuleComponentId: null,
   remoteBranches: [],
   visibleCount: 10,
@@ -20,6 +21,16 @@ const initialState = {
   isDeletingBranch: false,
   deleteBranchError: null,
   hasUnsyncedDatasources: false,
+  // True when ANY global datasource's active-branch version has been edited since its last git
+  // push (hasUncommittedChanges=true) — an aggregate signal for the data-sources page, not a
+  // per-datasource one. Computed client-side from the already-loaded datasource list, same as
+  // hasUnsyncedDatasources above.
+  hasUncommittedDatasources: false,
+  // Same idea, for the Applications and Modules lists — kept as two separate flags (not one
+  // combined signal) since HomePage is shared between the two pages (gated by appType) and each
+  // page's tag must reflect only its own resource type.
+  hasUncommittedApps: false,
+  hasUncommittedModules: false,
   // When false (single-branch mode) only the default branch is available; the UI hides feature
   // branches and disables branch create / switch. Defaults to true (multi-branch).
   isMultiBranchingEnabled: true,
@@ -233,7 +244,16 @@ export const useWorkspaceBranchesStore = create(
               ...options,
               ...(scope && { scope }),
             });
-            set({ isPushing: false });
+            set({
+              isPushing: false,
+              ...(scope === 'datasource'
+                ? {
+                    hasUncommittedDatasources: false,
+                    ...(options.onlyUnsyncedDatasources && { hasUnsyncedDatasources: false }),
+                    lastDatasourcePushAt: Date.now(),
+                  }
+                : { hasUncommittedApps: false, hasUncommittedModules: false }),
+            });
             return result;
           } catch (error) {
             set({ isPushing: false });
@@ -297,6 +317,18 @@ export const useWorkspaceBranchesStore = create(
 
         setHasUnsyncedDatasources(value) {
           set({ hasUnsyncedDatasources: value });
+        },
+
+        setHasUncommittedDatasources(value) {
+          set({ hasUncommittedDatasources: value });
+        },
+
+        setHasUncommittedApps(value) {
+          set({ hasUncommittedApps: value });
+        },
+
+        setHasUncommittedModules(value) {
+          set({ hasUncommittedModules: value });
         },
 
         async fetchRemoteBranches() {

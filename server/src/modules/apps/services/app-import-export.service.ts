@@ -3802,6 +3802,8 @@ export class AppImportExportService {
           // imports are excluded: that's genuinely new, unpushed content on that branch, so the
           // push flow still needs to pick it up.
           isSynced: isGitApp && isGitSyncConfigured && !isSubBranch ? true : undefined,
+          // Multi-branch: a feature-branch import is uncommitted from creation, regardless of isSynced.
+          hasUncommittedChanges: isSubBranch,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {

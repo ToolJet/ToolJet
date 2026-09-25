@@ -368,6 +368,18 @@ class HomePageComponent extends React.Component {
         searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
         isLoading: false,
       });
+      // Aggregate signal for the header tag, not per-app/module — kept separate per resource
+      // type since this component is shared between the Applications and Modules pages (see
+      // gitsync/uncomitted-cahnge-detection.md).
+      const anyUncommitted = (data.apps || []).some(
+        (a) => a?.has_uncommitted_changes === true || a?.hasUncommittedChanges === true
+      );
+      const branchActions = useWorkspaceBranchesStore.getState().actions;
+      if (this.props.appType === 'module') {
+        branchActions.setHasUncommittedModules(anyUncommitted);
+      } else {
+        branchActions.setHasUncommittedApps(anyUncommitted);
+      }
     });
   };
 

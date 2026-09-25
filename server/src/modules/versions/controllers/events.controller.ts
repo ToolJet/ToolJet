@@ -1,6 +1,6 @@
 import { MODULES } from '@modules/app/constants/modules';
 import { InitModule } from '@modules/app/decorators/init-module';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FEATURE_KEY } from '../constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
@@ -11,6 +11,8 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
 import { CreateEventHandlerDto, UpdateEventHandlerDto, BulkCreateEventHandlerDto } from '@modules/apps/dto/event';
 import { IEventsController } from '../interfaces/controllers/IEventsController';
+import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
+import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -29,6 +31,8 @@ export class EventsController implements IEventsController {
 
   @InitFeature(FEATURE_KEY.CREATE_EVENT)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/events')
   async createEvent(@App() app: AppEntity, @Body() createEventHandlerDto: CreateEventHandlerDto) {
     return this.eventService.createEvent(createEventHandlerDto, app.appVersions[0].id);
@@ -36,6 +40,8 @@ export class EventsController implements IEventsController {
 
   @InitFeature(FEATURE_KEY.CREATE_EVENT)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Post(':id/versions/:versionId/events/bulk')
   async bulkCreateEvents(@App() app: AppEntity, @Body() bulkCreateEventHandlerDto: BulkCreateEventHandlerDto) {
     return this.eventService.bulkCreateEvents(bulkCreateEventHandlerDto, app.appVersions[0].id);
@@ -43,6 +49,8 @@ export class EventsController implements IEventsController {
 
   @InitFeature(FEATURE_KEY.UPDATE_EVENT)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Put(':id/versions/:versionId/events')
   updateEvents(@App() app: AppEntity, @Body() updateEventHandlerDto: UpdateEventHandlerDto) {
     const { events, updateType } = updateEventHandlerDto;
@@ -51,6 +59,8 @@ export class EventsController implements IEventsController {
 
   @InitFeature(FEATURE_KEY.DELETE_EVENT)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Delete(':id/versions/:versionId/events/:eventId')
   async deleteEvents(@App() app: AppEntity, @Param('eventId') eventId) {
     return await this.eventService.deleteEvent(eventId, app.appVersions[0].id);

@@ -197,6 +197,8 @@ export class AppsUtilService implements IAppsUtilService {
                 // it must start unsynced so it's treated as new content until its first push
                 // (which flips is_synced=true). Explicit so it doesn't depend on the column default.
                 isSynced: false,
+                // Multi-branch: a feature-branch draft is uncommitted from creation, regardless of isSynced.
+                hasUncommittedChanges: true,
                 showViewerNavigation: type === 'module' ? false : true,
                 globalSettings: defaultSettings,
                 pageSettings: {},
@@ -924,6 +926,29 @@ export class AppsUtilService implements IAppsUtilService {
     );
     const syncedIds = new Set(rows.map((r) => r.app_id));
     apps.forEach((a) => ((a as any).isAppSynced = syncedIds.has(a.id)));
+    await this.stampHasUncommittedChanges(apps, branchId, type);
+  }
+
+  // Batch-check whether the draft has been edited since its last push (hasUncommittedChanges=true).
+  // Same shape as stampIsAppSynced above, minus its version_type='version' filter — that scopes
+  // it to the default branch only, but this needs to work on feature branches too (branchId
+  // already disambiguates, so the type filter would just make this always false there).
+  async stampHasUncommittedChanges(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
+    if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
+    const rows: { app_id: string }[] = await this.appRepository.manager.query(
+      `SELECT DISTINCT av.app_id FROM app_versions av
+       WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2::uuid AND av.has_uncommitted_changes = true
+         AND (
+           av.status = 'DRAFT'
+           OR NOT EXISTS (
+             SELECT 1 FROM app_versions av_draft
+             WHERE av_draft.app_id = av.app_id AND av_draft.branch_id = $2::uuid AND av_draft.status = 'DRAFT'
+           )
+         )`,
+      [apps.map((a) => a.id), branchId]
+    );
+    const dirtyIds = new Set(rows.map((r) => r.app_id));
+    apps.forEach((a) => ((a as any).hasUncommittedChanges = dirtyIds.has(a.id)));
   }
 
   private async buildViewableAppsQuery(
