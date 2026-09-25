@@ -70,7 +70,7 @@ export const stepsConfig = {
       type: 'code',
       displayName: 'Current step',
       validation: {
-        schema: { type: 'number' },
+        schema: { type: 'union', schemas: [{ type: 'number' }, { type: 'string' }] },
         defaultValue: 1,
       },
     },
