@@ -31,7 +31,7 @@ class OpenapiComponent extends React.Component {
         path: options?.path,
       },
       spec: selectedDataSource.options?.spec?.value,
-      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path]?.[options?.operation] || null,
+      selectedOperation: selectedDataSource.options?.spec?.value?.paths?.[options?.path]?.[options?.operation] || null,
       operationParams: {},
     };
   }
@@ -246,7 +246,12 @@ class OpenapiComponent extends React.Component {
 
   render() {
     const { options, spec, selectedOperation } = this.state;
-    let baseUrls = spec ? this.resolveHosts() : [];
+    if (!spec?.paths) {
+      return (
+        <div className="p-3">{this.props.t('openApi.noValidOpenApi', 'Valid OpenAPI Spec is not available!.')}</div>
+      );
+    }
+    let baseUrls = this.resolveHosts();
     let pathParams = [];
     let headerParams = [];
     let queryParams = [];
@@ -265,10 +270,6 @@ class OpenapiComponent extends React.Component {
 
     return (
       <div>
-        {!spec && (
-          <div className="p-3">{this.props.t('openApi.noValidOpenApi', 'Valid OpenAPI Spec is not available!.')}</div>
-        )}
-
         {options && spec && (
           <div>
             {baseUrls.length > 0 && (
