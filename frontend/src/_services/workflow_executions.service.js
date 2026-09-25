@@ -19,6 +19,7 @@ export const workflowExecutionsService = {
   getExecutionStates,
   getWorkspaceExecutions,
   getWorkspaceExecutionStates,
+  getUpcomingRuns,
 };
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
@@ -224,4 +225,21 @@ function getWorkspaceExecutionStates(executionIds) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Scheduled runs that have not happened yet.
+ *
+ * Deliberately not part of `getWorkspaceExecutions`: an upcoming run has no `workflow_executions`
+ * row at all, so it cannot appear in a list built from that table. Only the environment narrows it
+ * — status, trigger and date filters are history concepts that mean nothing for a future run.
+ */
+function getUpcomingRuns(environmentId, signal) {
+  const params = new URLSearchParams();
+  if (environmentId) params.set('environment_id', environmentId);
+
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include', signal };
+  return fetch(`${config.apiUrl}/workflow_executions/workspace/upcoming?${params.toString()}`, requestOptions).then(
+    handleResponse
+  );
 }

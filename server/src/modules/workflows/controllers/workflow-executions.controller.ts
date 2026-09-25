@@ -12,6 +12,7 @@ import { FEATURE_KEY } from '@modules/workflows/constants';
 import { Observable } from 'rxjs';
 import { ListExecutionsDto } from '@modules/workflows/dto/list-executions.dto';
 import { ExecutionListItem } from '@modules/workflows/types/execution-list';
+import { UpcomingRun } from '@modules/workflows/types/upcoming-runs';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow_executions')
@@ -30,6 +31,20 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Query() query: ListExecutionsDto,
     @User() user?: any
   ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
+    throw new Error('Method not implemented.');
+  }
+
+  // Upcoming runs are derived from schedules, not from workflow_executions rows — a run that has
+  // not started has no row — but they answer the same page's question and are gated by the same
+  // grant, so they live beside the other workspace routes rather than on the schedules controller.
+  @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
+  @Get('workspace/upcoming')
+  // Explicit return type to match the EE override, or the EE subclass trips TS2416 (its concrete
+  // return isn't assignable to an inferred Promise<void>).
+  async upcomingForWorkspace(
+    @Query('environment_id') environmentId?: string,
+    @User() user?: any
+  ): Promise<{ upcoming: UpcomingRun[] }> {
     throw new Error('Method not implemented.');
   }
 

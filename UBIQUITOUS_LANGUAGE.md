@@ -138,7 +138,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated, waiting | — |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
 | **Wait Node** | A workflow node that pauses an execution for a configured duration, then continues through its single output | — |
-| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | — |
+| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs. Registered as a BullMQ job scheduler keyed by schedule id; the Postgres row and that registration are independent, so an *active* schedule may hold no registration and never fire | — |
+| **Upcoming Run** | A future firing of a Workflow Schedule, shown on the executions dashboard. Not a Workflow Execution: no `workflow_executions` row exists until it starts | Workflow Execution — an Upcoming Run is a prediction, an Execution is a record |
 | **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | — |
 | **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | — |
 | **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
