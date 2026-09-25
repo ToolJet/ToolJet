@@ -8,20 +8,34 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { ExecutionListFilters, ExecutionListRow } from '../types/execution-list';
 
 // The UI's status vocabulary is derived from three stores (DB status, BullMQ job state, a Redis
-// flag). Only the DB half can be a SQL predicate. `running` therefore means "in flight" — no
-// terminal status yet — and the finer Queued/Running/Stopping/Unknown split is refined in the
-// browser from polled job state.
-// Exported (alongside IN_FLIGHT_FILTER below) so a test can assert this stays in lockstep with
-// `EXECUTION_STATUS_FILTERS` in `../dto/list-executions.dto` — one status vocabulary, checked
-// from both ends, rather than two lists that can silently drift apart.
-export const STATUS_FILTER_TO_DB: Record<string, string[]> = {
-  waiting: ['waiting', 'waiting_for_delay'],
-  success: ['success'],
-  failed: ['failure'],
-  terminated: ['terminated'],
+// flag). Only the DB half can be a SQL predicate. `running` therefore means "in flight" — not
+// finished — and the finer Queued/Running/Stopping/Unknown split is refined in the browser from
+// polled job state.
+//
+// `executed`, not `status`, is what separates a finished run from a live one. `status` is
+// NOT NULL DEFAULT 'success' (migration 1722934934124-AddStatusToWorkflowExecution), so every row
+// carries 'success' from the instant it is inserted — before the workflow has run a single node.
+// `saveExecutionStatus` is the only writer that means it, and it always sets `executed = true` in
+// the same statement. So a bare `status = 'success'` matches every in-flight run as well as every
+// successful one, and `status IS NULL` matches nothing at all.
+//
+// Exported so a test can assert this stays in lockstep with `EXECUTION_STATUS_FILTERS` in
+// `../dto/list-executions.dto` — one status vocabulary, checked from both ends, rather than two
+// lists that can silently drift apart. The literals below are compile-time constants, never user
+// input: the DTO rejects an unrecognized filter before it reaches this map.
+export const STATUS_FILTER_TO_PREDICATE: Record<string, string> = {
+  // In flight: not finished, and not parked in a status that already means something definite.
+  // A live run's status is the 'success' column default, which is why this cannot test for NULL.
+  running:
+    "(execution.executed = false AND execution.status NOT IN ('waiting', 'waiting_for_delay', 'terminated', 'failure'))",
+  // A suspended run is authoritative in the database and deliberately leaves `executed` false.
+  waiting: "(execution.status IN ('waiting', 'waiting_for_delay'))",
+  success: "(execution.executed = true AND execution.status = 'success')",
+  failed: "(execution.executed = true AND execution.status = 'failure')",
+  // Not gated on `executed`: terminate only began stamping `executed = true` in this branch, and
+  // runs stopped before that are still legitimately Stopped.
+  terminated: "(execution.status = 'terminated')",
 };
-export const IN_FLIGHT_FILTER = 'running';
-const IN_FLIGHT_PREDICATE = '(execution.executed = false AND execution.status IS NULL)';
 
 @Injectable()
 export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
@@ -87,13 +101,10 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
 
   private applyListFilters(query: SelectQueryBuilder<WorkflowExecution>, filters: ExecutionListFilters): void {
     if (filters.statuses?.length) {
-      const wantsInFlight = filters.statuses.includes(IN_FLIGHT_FILTER);
-      const dbStatuses = filters.statuses.flatMap((status) => STATUS_FILTER_TO_DB[status] ?? []);
-
-      const predicates: string[] = [];
-      if (wantsInFlight) predicates.push(IN_FLIGHT_PREDICATE);
-      if (dbStatuses.length) predicates.push('execution.status IN (:...dbStatuses)');
-      if (predicates.length) query.andWhere(`(${predicates.join(' OR ')})`, { dbStatuses });
+      const predicates = filters.statuses
+        .map((status) => STATUS_FILTER_TO_PREDICATE[status])
+        .filter((predicate): predicate is string => !!predicate);
+      if (predicates.length) query.andWhere(`(${predicates.join(' OR ')})`);
     }
     if (filters.appId) {
       query.andWhere('execution.app_id = :appId', { appId: filters.appId });

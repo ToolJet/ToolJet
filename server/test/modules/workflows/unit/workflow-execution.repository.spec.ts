@@ -4,8 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import {
   WorkflowExecutionRepository,
-  STATUS_FILTER_TO_DB,
-  IN_FLIGHT_FILTER,
+  STATUS_FILTER_TO_PREDICATE,
 } from '@modules/workflows/repositories/workflow-execution.repository';
 import { ListExecutionsDto, EXECUTION_STATUS_FILTERS } from '@modules/workflows/dto/list-executions.dto';
 
@@ -30,28 +29,45 @@ const applyFilters = (filters: any) => {
 };
 
 describe('WorkflowExecutionRepository.applyListFilters', () => {
-  it('translates the running filter into in-flight rows, which have no DB status', () => {
+  // `status` is NOT NULL DEFAULT 'success', so a live run already carries 'success' before it has
+  // run anything. These four pin the consequence: in-flight is expressed through `executed`, and
+  // no predicate may test `status IS NULL` (which matches nothing) or a bare `status = 'success'`
+  // (which matches every in-flight run as well as every successful one).
+  it('translates the running filter into unfinished rows, not rows with a null status', () => {
     const calls = applyFilters({ statuses: ['running'] });
     expect(calls).toHaveLength(1);
     expect(calls[0].clause).toContain('execution.executed = false');
-    expect(calls[0].clause).toContain('execution.status IS NULL');
+    expect(calls[0].clause).not.toContain('IS NULL');
+  });
+
+  it('excludes the definite statuses from the running filter', () => {
+    const calls = applyFilters({ statuses: ['running'] });
+    // A waiting, stopped or failed run is unfinished or not, but it is never "in flight".
+    expect(calls[0].clause).toContain("NOT IN ('waiting', 'waiting_for_delay', 'terminated', 'failure')");
+  });
+
+  it('gates the success filter on executed, so an in-flight run is not reported as a success', () => {
+    const calls = applyFilters({ statuses: ['success'] });
+    expect(calls[0].clause).toContain('execution.executed = true');
+    expect(calls[0].clause).toContain("execution.status = 'success'");
   });
 
   it('treats waiting and waiting_for_delay as one waiting filter', () => {
     const calls = applyFilters({ statuses: ['waiting'] });
-    expect(calls[0].params.dbStatuses).toEqual(['waiting', 'waiting_for_delay']);
+    expect(calls[0].clause).toContain("execution.status IN ('waiting', 'waiting_for_delay')");
   });
 
   it('maps the failed filter onto the failure status the DB actually stores', () => {
     const calls = applyFilters({ statuses: ['failed'] });
-    expect(calls[0].params.dbStatuses).toEqual(['failure']);
+    expect(calls[0].clause).toContain("execution.status = 'failure'");
   });
 
   it('combines running with terminal statuses in one predicate', () => {
     const calls = applyFilters({ statuses: ['running', 'success'] });
     expect(calls).toHaveLength(1);
     expect(calls[0].clause).toContain('OR');
-    expect(calls[0].params.dbStatuses).toEqual(['success']);
+    expect(calls[0].clause).toContain('execution.executed = false');
+    expect(calls[0].clause).toContain('execution.executed = true');
   });
 
   it('filters folders by subquery, never by join, to protect index-ordered pagination', () => {
@@ -107,7 +123,7 @@ describe('ListExecutionsDto validation', () => {
   });
 
   it('keeps the DTO status filters and the repository status keys in sync', () => {
-    const repositoryStatusKeys = [IN_FLIGHT_FILTER, ...Object.keys(STATUS_FILTER_TO_DB)].sort();
+    const repositoryStatusKeys = Object.keys(STATUS_FILTER_TO_PREDICATE).sort();
     expect([...EXECUTION_STATUS_FILTERS].sort()).toEqual(repositoryStatusKeys);
   });
 });
