@@ -18,7 +18,6 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import * as fs from 'fs';
-import * as path from 'path';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { setConnectionInstance } from '@helpers/database.helper';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -97,15 +96,6 @@ interface CachedAppSlot {
 }
 
 const _cache: Record<string, CachedAppSlot> = {};
-
-/**
- * A cold 'ce'/'cloud' bootstrap as the first app in a worker process fails DI: LicenseModule's
- * global exports aren't visible to their consumers (RolesService, ...), though the wiring is
- * correct. Building an 'ee' app first anywhere in the process avoids it; a repeated cold 'ce'
- * build never self-heals. Root cause not pinned down (DEV-108). Skipped on clones without the
- * submodule, where that app can't be built.
- */
-let _eeWarmed = !fs.existsSync(path.join(__dirname, '../../ee/licensing'));
 
 /**
  * Closes all cached NestJS apps so DB connections are released gracefully.
@@ -460,11 +450,6 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
       // DataSource retrieval failed — app was destroyed externally
     }
     delete _cache[cacheKey];
-  }
-
-  if (edition !== 'ee' && !_eeWarmed) {
-    _eeWarmed = true;
-    await initTestApp({ edition: 'ee' });
   }
 
   // Set edition env var so AppModule and getImportPath() resolve correctly.
