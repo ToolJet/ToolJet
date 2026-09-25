@@ -387,6 +387,21 @@ describe('FoldersController', () => {
       expect(response.body.message).toBe('This folder name is already taken.');
     });
 
+    it('should return 400 when the folder name is missing', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+      });
+      const loggedUser = await login(nestApp);
+
+      const response = await request(nestApp.getHttpServer())
+        .post('/api/folders')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ type: FOLDER_TYPE });
+
+      expect(response.statusCode).toBe(400);
+    });
+
     // Parallel to the FOLDER (front-end) create case above, but for a WORKFLOW
     // folder: the group must have workflowFolderCreate (not folderCreate) to
     // create it — proves the canCreateFolder branch in folders/ability/index.ts,
