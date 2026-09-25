@@ -1,0 +1,1 @@
+{"area":"C9 Expanded row content","status":"done","tests":3,"passed":2,"notes":"Real drag of a Text widget into an expanded row works and renders per row; static text and table exposed values resolve; rowData expressions render empty (bug)"}

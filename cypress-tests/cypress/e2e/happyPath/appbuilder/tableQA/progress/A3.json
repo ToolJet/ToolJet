@@ -1,0 +1,1 @@
+{"area":"A3 Editing, changeSet, add row, validation","status":"done","tests":36,"passed":30,"notes":"inline edit per type, changeSet/updatedData shape, save/discard, validation rules, add-new-row popup, nested keys. Not covered: Select/Date Picker edit via dropdown (test selectors unresolved)"}

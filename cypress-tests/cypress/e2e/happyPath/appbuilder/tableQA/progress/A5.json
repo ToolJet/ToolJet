@@ -1,0 +1,1 @@
+{"area":"A5 Pagination, selection, expandable rows","status":"done","tests":53,"passed":38,"notes":"rowsPerPage matrix, go-to-page, setPage edges, selection modes, bulk select, deselection, expandable rows"}

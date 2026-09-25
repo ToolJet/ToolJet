@@ -1,0 +1,1 @@
+{"area":"C1 Query-fed table","status":"done","tests":2,"passed":2,"notes":"RunJS page-load query: loading state shows while running; refresh via On refresh → Run query. Bugs: refresh discards unsaved edits/selection/page; one click runs the query twice"}

@@ -1,0 +1,469 @@
+{
+  "_meta": {
+    "generatedBy": "source-code-only inventory (no live app inspection)",
+    "basePath": "frontend/src/AppBuilder",
+    "sources": {
+      "inspector": [
+        "RightSideBar/Inspector/Components/Table/ColumnManager/PropertiesTabElements.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/StylesTabElements.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/ValidationProperties.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/DatepickerProperties.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/ButtonPropertiesTab.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/ButtonStylesTab.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/ButtonListManager.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/RatingColumn/RatingColumnProperties.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/RatingColumn/RatingIconToggle.jsx",
+        "RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg.jsx",
+        "RightSideBar/Inspector/Components/Table/SelectOptionsList/OptionsList.jsx",
+        "RightSideBar/Inspector/Components/Table/ProgramaticallyHandleProperties.jsx",
+        "RightSideBar/Inspector/Components/Table/utils.js",
+        "RightSideBar/Inspector/Components/Table/hooks/useColumnManager.js",
+        "RightSideBar/Inspector/Components/shared/hooks/useListItemManager.js"
+      ],
+      "runtime": [
+        "Widgets/NewTable/_utils/generateColumnsData.js",
+        "Widgets/NewTable/_components/DataTypes/adapters/*.jsx",
+        "Widgets/NewTable/_components/DataTypes/Rating.jsx",
+        "Shared/DataTypes/renderers/*.jsx",
+        "Shared/DataTypes/hooks/useValidation.js",
+        "Widgets/NewTable/_components/Footer/_components/AddNewRow.jsx",
+        "Widgets/NewTable/_components/TableContainer/TableContainer.jsx",
+        "Widgets/NewTable/_utils/transformTableData.js"
+      ]
+    }
+  },
+
+  "common": [
+    {
+      "key": "columnType",
+      "label": "Column type",
+      "control": "select (custom dropdown w/ icons + deprecated badge)",
+      "default": "string",
+      "showsWhen": "always",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:129 (columnType read from column, drives switch at line 199)"
+    },
+    {
+      "key": "name",
+      "label": "Column name",
+      "control": "code (CodeHinter)",
+      "default": "auto-generated 'new_column_<n>' via generateUniqueName",
+      "showsWhen": "always (hidden once a button sub-row is selected)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:165 (header: getResolvedValue(column.name))"
+    },
+    {
+      "key": "key",
+      "label": "Key",
+      "control": "code (CodeHinter)",
+      "default": "= name at creation time (defaultItemProps.includeKey, RightSideBar/Inspector/Components/shared/hooks/useListItemManager.js:58-67)",
+      "showsWhen": "always (hidden once a button sub-row is selected)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:164 (accessorKey: column.key || column.name); also Widgets/NewTable/_components/TableContainer/TableContainer.jsx:67-70 (changeSet keyed by column.key||column.name)"
+    },
+    {
+      "key": "transformation",
+      "label": "Transformation",
+      "control": "code (CodeHinter, preview disabled)",
+      "default": "{{cellValue}}",
+      "showsWhen": "columnType !== 'button' (PropertiesTabElements.jsx:200-218)",
+      "consumedAt": "Widgets/NewTable/Table.jsx:318 -> Widgets/NewTable/_utils/transformTableData.js:3-45 (applied to raw table data before column generation)"
+    },
+    {
+      "key": "isEditable",
+      "label": "Make editable",
+      "control": "toggle (fx-capable)",
+      "default": "{{false}}",
+      "showsWhen": "columnType not in ['image','link','button'] (PropertiesTabElements.jsx:385-399)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:146,198 (isEditable resolved per-cell, forwarded to every adapter); link/image are additionally force-non-editable via nonEditableTypes in RightSideBar/Inspector/Components/Table/hooks/useColumnManager.js:108"
+    },
+    {
+      "key": "columnVisibility",
+      "label": "Visibility",
+      "control": "toggle (fx-capable)",
+      "default": "{{true}}",
+      "showsWhen": "columnType !== 'button' (own Visibility row inside button's properties instead, PropertiesTabElements.jsx:252-263) - always present otherwise (PropertiesTabElements.jsx:449-466)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:147,160,182 (isVisible; column entirely dropped from output when false)"
+    },
+    {
+      "key": "pinPosition",
+      "label": "Freeze column",
+      "control": "3-way toggle-group (left/unpinned/right)",
+      "default": "unpinned",
+      "showsWhen": "always",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:150-158,184"
+    },
+    {
+      "key": "horizontalAlignment",
+      "label": "Text alignment / Alignment",
+      "control": "3-way toggle-group (left/center/right)",
+      "default": "left",
+      "showsWhen": "columnType !== 'button' (StylesTabElements.jsx:29-52); label text swaps to 'Alignment' for boolean/image/rating",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:179 (meta) and per-adapter prop, e.g. line 209,227,244,266,329,375"
+    },
+    {
+      "key": "textColor",
+      "label": "Text color",
+      "control": "colorSwatches (fx-capable)",
+      "default": "#11181C",
+      "showsWhen": "columnType in ['string','default',undefined,'number','json','markdown','html','select','text','newMultiSelect','tagsV2','datepicker'] (StylesTabElements.jsx:131-162); boolean excluded even though in the list (line 147 condition)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:177,208,226,243,330,376,446,490,506,522,538 (getResolvedValue(column.textColor,...) per type)"
+    },
+    {
+      "key": "cellBackgroundColor",
+      "label": "Cell color",
+      "control": "colorSwatches (fx-capable)",
+      "default": "var(--cc-surface1-surface)",
+      "showsWhen": "columnType in the same style-list as textColor (StylesTabElements.jsx:163-177), plus a separate 'Cell color' row for button (StylesTabElements.jsx:264-281)",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:178 (meta.cellBackgroundColor, universal) and line 560 (button, via getResolvedValue with cellValue/rowData context)"
+    },
+    {
+      "key": "fxActiveFields",
+      "label": "(internal) which props currently have fx toggled on",
+      "control": "internal array, not directly user-facing",
+      "default": "[]",
+      "showsWhen": "n/a - drives whether CodeHinter/plain-control renders for isEditable/columnVisibility/fieldVisibility/jsonIndentation/linkTarget etc.",
+      "consumedAt": "RightSideBar/Inspector/Components/Table/ProgramaticallyHandleProperties.jsx:104-147 (calcFxActiveState/calculateFxActiveFields)"
+    },
+    {
+      "key": "columnSize",
+      "label": "(column width, set by dragging the resizer, not an inspector field)",
+      "control": "drag-resize",
+      "default": "150 (defaultColumn.width)",
+      "showsWhen": "always",
+      "consumedAt": "Widgets/NewTable/_utils/generateColumnsData.js:126-128,171 (columnSizes[id/name] fallback to column.columnSize fallback to defaultColumn.width)"
+    },
+    {
+      "key": "events",
+      "label": "Events (On change / On click, etc.)",
+      "control": "EventManager popover",
+      "default": "[]",
+      "showsWhen": "toggle column: On change (PropertiesTabElements.jsx:228-247); button sub-row: On click (ButtonPropertiesTab.jsx:107-132)",
+      "consumedAt": "fired via fireEvent('OnTableToggleCellChanged'/'OnTableButtonColumnClicked', generateColumnsData.js:416-421,590-594"
+    }
+  ],
+
+  "types": [
+    {
+      "type": "string",
+      "label": "String",
+      "properties": [],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:209" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:208" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "regex", "label": "Regex", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/StringColumnAdapter.jsx:37 -> Shared/DataTypes/hooks/useValidation.js:23" },
+        { "key": "minLength", "label": "Min length", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "Shared/DataTypes/hooks/useValidation.js:24" },
+        { "key": "maxLength", "label": "Max length", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "Shared/DataTypes/hooks/useValidation.js:25" },
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "Shared/DataTypes/hooks/useValidation.js:26" }
+      ],
+      "editable": { "supported": true, "howEdited": "inline input (click-to-edit via StringRenderer)", "valueWrittenToChangeSet": "raw string value; TableContainer.jsx:66-70 merges {[column.key||name]: value} into editedFields/editedRows map" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "StringColumn", "cite": "generateColumnsData.js:200-218" }
+    },
+    {
+      "type": "number",
+      "label": "Number",
+      "properties": [
+        { "key": "decimalPlaces", "label": "Decimal Places", "control": "code", "default": null, "showsWhen": "always", "consumedAt": "adapters/NumberColumnAdapter.jsx:25,61" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:244" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:243" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "regex", "label": "Regex", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/NumberColumnAdapter.jsx:35-37" },
+        { "key": "minValue", "label": "Min value", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/NumberColumnAdapter.jsx:29-31" },
+        { "key": "maxValue", "label": "Max value", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/NumberColumnAdapter.jsx:32-34" },
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/NumberColumnAdapter.jsx:38-40" }
+      ],
+      "editable": { "supported": true, "howEdited": "inline numeric input (NumberRenderer)", "valueWrittenToChangeSet": "numeric value (decimal-truncated per decimalPlaces); TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "NumberColumn", "cite": "generateColumnsData.js:238-254" }
+    },
+    {
+      "type": "text",
+      "label": "Text",
+      "properties": [],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:227" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:226" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "regex", "label": "Regex", "control": "code", "default": null, "showsWhen": "Make editable is on (shown due to a bug, see deadControls)", "consumedAt": null },
+        { "key": "minLength", "label": "Min length", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/TextColumnAdapter.jsx:31" },
+        { "key": "maxLength", "label": "Max length", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/TextColumnAdapter.jsx:32" },
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/TextColumnAdapter.jsx:33" }
+      ],
+      "editable": { "supported": true, "howEdited": "inline multiline input (TextRenderer)", "valueWrittenToChangeSet": "raw string; TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "TextColumn", "cite": "generateColumnsData.js:220-236" }
+    },
+    {
+      "type": "datepicker",
+      "label": "Date Picker",
+      "properties": [
+        { "key": "isDateSelectionEnabled", "label": "Enable date", "control": "toggle", "default": true, "showsWhen": "always", "consumedAt": "generateColumnsData.js:439-441 (also drives sort format via getDateTimeFormat, line 656)" },
+        { "key": "dateFormat", "label": "Date format", "control": "select (or code when fx toggled via FxButton, non-standard fx mechanism)", "default": "DD/MM/YYYY", "showsWhen": "isDateSelectionEnabled true", "consumedAt": "generateColumnsData.js:432 (dateDisplayFormat)" },
+        { "key": "notActiveFxActiveFields", "label": "(internal) tracks fx-off state for dateFormat/parseDateFormat", "control": "internal array", "default": "[]", "showsWhen": "n/a", "consumedAt": "DatepickerProperties.jsx:82-89,127-134,300-308 (inspector-only, not read at runtime)" },
+        { "key": "isTimeChecked", "label": "Enable time", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:433,647" },
+        { "key": "timeFormat", "label": "Time Format", "control": "select (single option 'HH:mm')", "default": "HH:mm", "showsWhen": "isTimeChecked true && dateFormat not in fx mode", "consumedAt": null },
+        { "key": "isTwentyFourHrFormatEnabled", "label": "Enable 24 hr time format", "control": "toggle", "default": false, "showsWhen": "isTimeChecked true", "consumedAt": "generateColumnsData.js:442-444,649; Shared/DataTypes/renderers/DatePickerRenderer.jsx:59,168" },
+        { "key": "timeZoneDisplay", "label": "Time zone", "control": "select", "default": "''", "showsWhen": "isTimeChecked true", "consumedAt": "generateColumnsData.js:430-431 (timeZoneDisplay)" },
+        { "key": "parseInUnixTimestamp", "label": "Parse in unix timestamp", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:145,450" },
+        { "key": "unixTimestamp", "label": "Unix timestamp", "control": "select (s/ms)", "default": "seconds", "showsWhen": "parseInUnixTimestamp true", "consumedAt": "generateColumnsData.js:451,660" },
+        { "key": "parseDateFormat", "label": "Date (parse format)", "control": "select (or code when fx toggled)", "default": "DD/MM/YYYY", "showsWhen": "parseInUnixTimestamp false && isDateSelectionEnabled true", "consumedAt": "generateColumnsData.js:436,652-657" },
+        { "key": "parseTimeFormat", "label": "Time (parse format)", "control": "select (single option 'HH:mm')", "default": "HH:mm", "showsWhen": "parseInUnixTimestamp false && isTimeChecked true && parseDateFormat not in fx mode", "consumedAt": null },
+        { "key": "timeZoneValue", "label": "Time zone (parse)", "control": "select", "default": "''", "showsWhen": "parseInUnixTimestamp false && isTimeChecked true", "consumedAt": "generateColumnsData.js:430,658" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js (meta, line 179)" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:446" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "minDate", "label": "Minimum date", "control": "datepicker widget", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/Datepicker.jsx:34-36" },
+        { "key": "maxDate", "label": "Maximum date", "control": "datepicker widget", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/Datepicker.jsx:37-39" },
+        { "key": "minTime", "label": "Minimum time", "control": "timepicker widget", "default": null, "showsWhen": "Make editable is on && isTimeChecked", "consumedAt": "adapters/Datepicker.jsx:40-42" },
+        { "key": "maxTime", "label": "Maximum time", "control": "timepicker widget", "default": null, "showsWhen": "Make editable is on && isTimeChecked", "consumedAt": "adapters/Datepicker.jsx:43-45" },
+        { "key": "disabledDates", "label": "Disabled dates", "control": "code", "default": "{{[]}}", "showsWhen": "Make editable is on", "consumedAt": "generateColumnsData.js:144,449 -> Shared/DataTypes/renderers/DatePickerRenderer.jsx:281-287" },
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/Datepicker.jsx:49-51" }
+      ],
+      "editable": { "supported": true, "howEdited": "popup calendar (react-datepicker) via DatePickerRenderer", "valueWrittenToChangeSet": "formatted display string (per dateDisplayFormat/timeFormat); TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "DatepickerColumn", "cite": "generateColumnsData.js:427-455" }
+    },
+    {
+      "type": "select",
+      "label": "Select",
+      "properties": [
+        { "key": "options", "label": "Options (label/value/labelColor/optionColor/makeDefaultOption per row)", "control": "options-list (draggable, popover editor)", "default": "DEFAULT_SELECT_COLUMN_OPTIONS (Reading/Traveling/Photography/Music)", "showsWhen": "useDynamicOptions is false", "consumedAt": "generateColumnsData.js:301-309 (mapped to selectOptions)" },
+        { "key": "autoAssignColors", "label": "Auto assign colors", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:149,323" },
+        { "key": "useDynamicOptions", "label": "Dynamic option", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:296" },
+        { "key": "dynamicOptions", "label": "(dynamic options code editor)", "control": "code", "default": null, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:298-299" },
+        { "key": "optionsLoadingState", "label": "Options loading state", "control": "toggle", "default": false, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:320-322" },
+        { "key": "defaultOptionsList", "label": "(internal: options flagged 'makeDefaultOption')", "control": "internal array, set via 'Make this option as default' toggle in the option popover", "default": "[]", "showsWhen": "n/a", "consumedAt": "generateColumnsData.js:319 (defaultOptionsList passed to CustomSelectColumn/SelectRenderer)" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:329" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:330" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/SelectColumnAdapter.jsx:43" }
+      ],
+      "editable": { "supported": true, "howEdited": "dropdown (SelectRenderer, react-select style)", "valueWrittenToChangeSet": "selected option's value (or full option object shape, depends on SelectRenderer onChange); TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "CustomSelectColumn", "cite": "generateColumnsData.js:293-334" }
+    },
+    {
+      "type": "newMultiSelect",
+      "label": "MultiSelect",
+      "properties": [
+        { "key": "options", "label": "Options", "control": "options-list", "default": "DEFAULT_SELECT_COLUMN_OPTIONS", "showsWhen": "useDynamicOptions false", "consumedAt": "generateColumnsData.js:301-309 (shared branch with 'select')" },
+        { "key": "autoAssignColors", "label": "Auto assign colors", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:149,323" },
+        { "key": "useDynamicOptions", "label": "Dynamic option", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:296" },
+        { "key": "dynamicOptions", "label": "(dynamic options code editor)", "control": "code", "default": null, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:298-299" },
+        { "key": "optionsLoadingState", "label": "Options loading state", "control": "toggle", "default": false, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:320-322" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:329" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:330" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/SelectColumnAdapter.jsx:43 (shared with 'select', reads column.customRule identically)" }
+      ],
+      "editable": { "supported": true, "howEdited": "multi-select dropdown (SelectRenderer, isMulti=true)", "valueWrittenToChangeSet": "array of selected values; TableContainer.jsx:66-70", "extraNote": "seeded with makeDefaultOption support at column-type-change time (useColumnManager.js:25-35)" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "CustomSelectColumn (isMulti)", "cite": "generateColumnsData.js:293-334" }
+    },
+    {
+      "type": "tagsV2",
+      "label": "Tags",
+      "properties": [
+        { "key": "sortTags", "label": "Sort tags", "control": "3-way toggle-group (none/a-z/z-a)", "default": "none", "showsWhen": "always", "consumedAt": "generateColumnsData.js:353,371" },
+        { "key": "autoAssignColors", "label": "Auto assign colors", "control": "toggle", "default": true, "showsWhen": "always", "consumedAt": "generateColumnsData.js:352,368" },
+        { "key": "allowMultipleSelection", "label": "Allow multiple selection", "control": "toggle", "default": true, "showsWhen": "always", "consumedAt": "generateColumnsData.js:354,370" },
+        { "key": "useDynamicOptions", "label": "Dynamic option", "control": "toggle", "default": false, "showsWhen": "always", "consumedAt": "generateColumnsData.js:337" },
+        { "key": "dynamicOptions", "label": "(dynamic options code editor)", "control": "code", "default": null, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:339-340" },
+        { "key": "optionsLoadingState", "label": "Options loading state", "control": "toggle", "default": false, "showsWhen": "useDynamicOptions true", "consumedAt": "generateColumnsData.js:365-367" },
+        { "key": "options", "label": "Tags (label/value/labelColor/optionColor/makeDefaultOption per row)", "control": "options-list", "default": "DEFAULT_SELECT_COLUMN_OPTIONS", "showsWhen": "useDynamicOptions false", "consumedAt": "generateColumnsData.js:342-350" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:375" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:376" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [
+        { "key": "customRule", "label": "Custom rule", "control": "code", "default": null, "showsWhen": "Make editable is on", "consumedAt": "adapters/TagsV2ColumnAdapter.jsx:35" }
+      ],
+      "editable": { "supported": true, "howEdited": "multi/single-select tag picker (TagsRenderer)", "valueWrittenToChangeSet": "array of {label,value} objects (or single object when allowMultipleSelection false); adapters/TagsV2ColumnAdapter.jsx:42-80 normalizes before calling onChange -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "TagsV2Column", "cite": "generateColumnsData.js:336-380" }
+    },
+    {
+      "type": "boolean",
+      "label": "Boolean",
+      "properties": [],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:266" },
+        { "key": "toggleOnBg", "label": "Checked", "control": "Color picker (not fx-capable, plain Color component)", "default": "#3A5CCC (light) / #849DFF (dark)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:264" },
+        { "key": "toggleOffBg", "label": "Unchecked", "control": "Color picker (not fx-capable)", "default": "#D7DBDF (light) / #3A3F42 (dark)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:265" }
+      ],
+      "validation": [],
+      "editable": { "supported": true, "howEdited": "toggle switch (BooleanRenderer)", "valueWrittenToChangeSet": "boolean; generateColumnsData.js:261-263 -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "BooleanColumn", "cite": "generateColumnsData.js:256-268" }
+    },
+    {
+      "type": "image",
+      "label": "Image",
+      "properties": [
+        { "key": "borderRadius", "label": "Border radius", "control": "code", "default": null, "showsWhen": "always", "consumedAt": "generateColumnsData.js:477 -> adapters/ImageColumnAdapter.jsx:16" },
+        { "key": "objectFit", "label": "Image fit", "control": "select (Cover/Contain/Fill)", "default": null, "showsWhen": "always", "consumedAt": "generateColumnsData.js:478 -> adapters/ImageColumnAdapter.jsx:17" }
+      ],
+      "styles": [],
+      "validation": [],
+      "editable": { "supported": false, "howEdited": "n/a - image is force non-editable (nonEditableTypes in useColumnManager.js:108); no 'Make editable' toggle rendered (PropertiesTabElements.jsx:385)" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "ImageColumn (read-only)", "cite": "generateColumnsData.js:471-481" }
+    },
+    {
+      "type": "link",
+      "label": "Link",
+      "properties": [
+        { "key": "displayText", "label": "Display text", "control": "code", "default": null, "showsWhen": "always", "consumedAt": "generateColumnsData.js:465" },
+        { "key": "linkTarget", "label": "Open in new tab", "control": "toggle (fx-capable, via ProgramaticallyHandleProperties)", "default": "{{true}}", "showsWhen": "always", "consumedAt": "generateColumnsData.js:461 -> adapters/LinkColumnAdapter.jsx"}
+      ],
+      "styles": [
+        { "key": "linkColor", "label": "Text color", "control": "color (fx-capable)", "default": "#1B1F24", "showsWhen": "always", "consumedAt": "generateColumnsData.js:462" },
+        { "key": "underlineColor", "label": "Underline color", "control": "color (fx-capable)", "default": "#4368E3", "showsWhen": "always", "consumedAt": "generateColumnsData.js:463" },
+        { "key": "underline", "label": "Show underline", "control": "2-way toggle-group (hover/always)", "default": "hover", "showsWhen": "always", "consumedAt": "generateColumnsData.js:464" }
+      ],
+      "validation": [],
+      "editable": { "supported": false, "howEdited": "n/a - link is force non-editable (useColumnManager.js:108); no 'Make editable' toggle rendered" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "LinkColumn (read-only)", "cite": "generateColumnsData.js:457-469" }
+    },
+    {
+      "type": "json",
+      "label": "JSON",
+      "properties": [
+        { "key": "jsonIndentation", "label": "Indent", "control": "toggle (fx-capable)", "default": "{{true}}", "showsWhen": "always", "consumedAt": "generateColumnsData.js:487" }
+      ],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:491" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:490" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [],
+      "editable": { "supported": true, "howEdited": "inline JSON editor (JSONRenderer)", "valueWrittenToChangeSet": "raw JSON-serializable value; adapters/JsonColumnAdapter.jsx:27-29 -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "JsonColumn", "cite": "generateColumnsData.js:483-497" }
+    },
+    {
+      "type": "markdown",
+      "label": "Markdown",
+      "properties": [],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:505" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:506" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [],
+      "editable": { "supported": true, "howEdited": "inline editor (MarkdownRenderer)", "valueWrittenToChangeSet": "raw markdown string; adapters/MarkdownColumnAdapter.jsx:33-35 -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "MarkdownColumn", "cite": "generateColumnsData.js:499-514" }
+    },
+    {
+      "type": "html",
+      "label": "HTML",
+      "properties": [],
+      "styles": [
+        { "key": "horizontalAlignment", "label": "Text Alignment", "control": "toggle-group", "default": "left", "showsWhen": "always", "consumedAt": "generateColumnsData.js:521" },
+        { "key": "textColor", "label": "Text color", "control": "colorSwatches", "default": "#11181C", "showsWhen": "always", "consumedAt": "generateColumnsData.js:522" },
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "always", "consumedAt": "generateColumnsData.js:178" }
+      ],
+      "validation": [],
+      "editable": { "supported": true, "howEdited": "inline editor (HTMLRenderer)", "valueWrittenToChangeSet": "raw HTML string; adapters/HtmlColumnAdapter.jsx:32-34 -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "HTMLColumn", "cite": "generateColumnsData.js:515-530" }
+    },
+    {
+      "type": "rating",
+      "label": "Rating",
+      "properties": [
+        { "key": "iconType", "label": "Icon (star/heart toggle)", "control": "RatingIconToggle (2-way)", "default": "stars", "showsWhen": "always", "consumedAt": "DataTypes/Rating.jsx:26,71,100,112,128,132" },
+        { "key": "maxRating", "label": "Max rating", "control": "code", "default": "5 (placeholder only; actual default when unset is 5 via ?? in adapter)", "showsWhen": "always", "consumedAt": "DataTypes/Rating.jsx:24" },
+        { "key": "defaultRating", "label": "Default rating", "control": "code", "default": "3 (placeholder only; actual runtime default when unset is 0)", "showsWhen": "always", "consumedAt": "DataTypes/Rating.jsx:37" },
+        { "key": "allowHalfStar", "label": "Allow half rating", "control": "toggle (fx-capable)", "default": "{{false}}", "showsWhen": "always", "consumedAt": "DataTypes/Rating.jsx:25" },
+        { "key": "tooltips", "label": "(no inspector control - runtime-only, undocumented in UI)", "control": "n/a", "default": null, "showsWhen": "n/a", "consumedAt": "DataTypes/Rating.jsx:27,86-88 - read from column.tooltips but there is no inspector field to set it (settable only via component JSON / other means)" }
+      ],
+      "styles": [
+        { "key": "selectedBgColorStars", "label": "Selected color (when icon=stars)", "control": "colorSwatches (fx-capable)", "default": "#EFB82D", "showsWhen": "iconType === 'stars'", "consumedAt": "DataTypes/Rating.jsx:28" },
+        { "key": "selectedBgColorHearts", "label": "Selected color (when icon=hearts)", "control": "colorSwatches (fx-capable)", "default": "#EE5B67", "showsWhen": "iconType === 'hearts'", "consumedAt": "DataTypes/Rating.jsx:29" },
+        { "key": "unselectedBgColor", "label": "Unselected color", "control": "colorSwatches (fx-capable)", "default": "var(--cc-surface3-surface)", "showsWhen": "always", "consumedAt": "DataTypes/Rating.jsx:30" }
+      ],
+      "validation": [],
+      "editable": { "supported": true, "howEdited": "click a star/heart icon (RatingColumn handleClick)", "valueWrittenToChangeSet": "1-based numeric rating; DataTypes/Rating.jsx:63-68 -> TableContainer.jsx:66-70" },
+      "addNewRow": { "appearsInPopup": true, "renderedAs": "RatingColumn", "cite": "generateColumnsData.js:532-549" }
+    },
+    {
+      "type": "button",
+      "label": "Button",
+      "properties": [
+        { "key": "columnVisibility", "label": "Visibility (column-level)", "control": "toggle", "default": true, "showsWhen": "always", "consumedAt": "generateColumnsData.js:147,160,182" },
+        { "key": "buttons", "label": "(list of action buttons)", "control": "SortableTree list (ButtonListManager) + 'Add new action button'", "default": "[]", "showsWhen": "always", "consumedAt": "generateColumnsData.js:551-598 (ButtonColumnGroup)" },
+        { "key": "buttons[].buttonLabel", "label": "Button label", "control": "code", "default": "Button", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:23" },
+        { "key": "buttons[].buttonTooltip", "label": "Tooltip", "control": "code", "default": "''", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:36" },
+        { "key": "buttons[].loadingState", "label": "Loading state", "control": "toggle (fx-capable)", "default": "{{false}}", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:26" },
+        { "key": "buttons[].buttonVisibility", "label": "Visibility (per-button)", "control": "toggle (fx-capable)", "default": "{{true}}", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:20" },
+        { "key": "buttons[].disableButton", "label": "Disable action button", "control": "toggle (fx-capable)", "default": "{{false}}", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:25" },
+        { "key": "(button events)", "label": "On click", "control": "EventManager", "default": "[]", "showsWhen": "a button sub-row is selected", "consumedAt": "generateColumnsData.js:571-594 (fireEvent OnTableButtonColumnClicked, filtered by `${columnKey}::${buttonId}`)" }
+      ],
+      "styles": [
+        { "key": "cellBackgroundColor", "label": "Cell color", "control": "colorSwatches", "default": "var(--cc-surface1-surface)", "showsWhen": "no button sub-row selected", "consumedAt": "generateColumnsData.js:560" },
+        { "key": "buttons[].buttonType", "label": "Button type (Solid/Outline)", "control": "2-way toggle-group", "default": "solid", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:24 -> adapters/ButtonColumnAdapter.jsx:28-29" },
+        { "key": "buttons[].buttonBackgroundColor", "label": "Background", "control": "colorSwatches (fx-capable)", "default": "var(--cc-primary-brand)", "showsWhen": "buttonType === 'solid'", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:27" },
+        { "key": "buttons[].buttonLabelColor", "label": "Label color", "control": "colorSwatches (fx-capable)", "default": "var(--cc-surface1-surface) (auto-swaps solid/outline defaults, ButtonStylesTab.jsx:30-39)", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:28" },
+        { "key": "buttons[].buttonBorderColor", "label": "Border color", "control": "colorSwatches (fx-capable)", "default": "var(--cc-weak-border)", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:34" },
+        { "key": "buttons[].buttonLoaderColor", "label": "Loader color", "control": "colorSwatches (fx-capable)", "default": "var(--cc-surface1-surface)", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:33" },
+        { "key": "buttons[].buttonIconName", "label": "Icon", "control": "IconPicker", "default": "IconHome2", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:29" },
+        { "key": "buttons[].buttonIconVisibility", "label": "Icon visibility", "control": "IconPicker visibility toggle", "default": false, "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:30" },
+        { "key": "buttons[].buttonIconColor", "label": "Icon color", "control": "colorSwatches (fx-capable)", "default": "var(--cc-surface1-surface)", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:31" },
+        { "key": "buttons[].buttonIconAlignment", "label": "Icon alignment", "control": "2-way toggle-group (left/right)", "default": "left", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:32" },
+        { "key": "buttons[].buttonBorderRadius", "label": "Border radius", "control": "numberInput (fx-capable)", "default": "6", "showsWhen": "a button sub-row is selected", "consumedAt": "adapters/ButtonColumnGroupAdapter.jsx:35" }
+      ],
+      "validation": [],
+      "editable": { "supported": false, "howEdited": "n/a - clicking fires an event, no cell-value edit; no 'Make editable' toggle rendered (PropertiesTabElements.jsx:385)" },
+      "addNewRow": { "appearsInPopup": false, "renderedAs": "explicit <span/> placeholder - button columns are skipped in the Add New Row popup", "cite": "generateColumnsData.js:551-552" }
+    }
+  ],
+
+  "deprecated": [
+    { "type": "default", "label": "Default", "currentAlternative": "String" },
+    { "type": "dropdown", "label": "Dropdown", "currentAlternative": "Single select" },
+    { "type": "multiselect", "label": "Multiselect", "currentAlternative": "Multiselect (newMultiSelect)" },
+    { "type": "toggle", "label": "Toggle switch", "currentAlternative": "Single select" },
+    { "type": "radio", "label": "Radio", "currentAlternative": "Single select" },
+    { "type": "badge", "label": "Badge", "currentAlternative": "Multiselect" },
+    { "type": "badges", "label": "Multiple badges", "currentAlternative": "Multiselect" },
+    { "type": "tags", "label": "Tags", "currentAlternative": "Multiselect (tagsV2, also labeled 'Tags' - same display label as this deprecated type)" }
+  ],
+
+  "deadControls": [
+    {
+      "type": "text",
+      "key": "regex",
+      "label": "Regex",
+      "reason": "ValidationProperties.jsx:39 checks `item.itemType !== 'text'` to skip regex for text columns, but `item` (the column object) has no `itemType` property - the real field is `columnType`, and the switch's own `itemType` argument is never checked. So `item.itemType` is always undefined, the condition is always true, and Regex is shown for 'text' columns too. adapters/TextColumnAdapter.jsx:29-34 only wires minLength/maxLength/customRule into validateWidget - regex is never read for 'text', so the field does nothing."
+    },
+    {
+      "type": "datepicker",
+      "key": "timeFormat",
+      "label": "Time Format",
+      "reason": "DatepickerProperties.jsx:186-205 renders a select bound to column.timeFormat (single option 'HH:mm'), but Shared/DataTypes/renderers/DatePickerRenderer.jsx derives its actual time format purely from isTwentyFourHrFormatEnabled (lines 59-61,168-169,383) and never reads column.timeFormat anywhere in Widgets/NewTable or Shared/DataTypes."
+    },
+    {
+      "type": "datepicker",
+      "key": "parseTimeFormat",
+      "label": "Time (parse format)",
+      "reason": "DatepickerProperties.jsx:343-360 renders a select bound to column.parseTimeFormat, but it is never read anywhere in Widgets/NewTable or Shared/DataTypes (same root cause as timeFormat - only isTwentyFourHrFormatEnabled matters)."
+    },
+    {
+      "type": "dropdown",
+      "key": "customRule",
+      "label": "Custom rule",
+      "reason": "ValidationProperties.jsx:97-108 shows 'Custom rule' when Make editable is on for the deprecated 'dropdown' column type, but generateColumnsData.js:273-291 (the 'dropdown'/'multiselect' render branch) renders a plain react-select-search with no validateWidget/isValid/validationError call at all - customRule is never read for this type."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"area":"A11 Add new row, every column type","status":"done","tests":6,"passed":6,"notes":"popup input per type, initial newRows per type, typed values per type, read-only/hidden/fx columns, popup validation + save, add another/discard/close"}

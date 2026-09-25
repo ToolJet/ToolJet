@@ -1,0 +1,1 @@
+{"area":"A7 Styles & layout states","status":"done","tests":51,"passed":42,"notes":"container and per-column styles, wrap, row height, disabled/loading/visibility states. Container colour/border/shadow assertions unresolved (wrong element)"}

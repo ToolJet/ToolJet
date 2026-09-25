@@ -1,0 +1,1 @@
+{"area":"A2 Column types (display)","status":"done","tests":99,"passed":91,"notes":"all 15 column types x value variants (null, wrong type, unicode, HTML chars), per-type display options"}

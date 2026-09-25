@@ -1,0 +1,1 @@
+{"area":"A8 Column-type validation (UI/UX)","status":"done","tests":42,"passed":30,"notes":"35-case matrix across String, Text, Number, Select, MultiSelect, Tags, Date Picker (min/max length, regex, min/max value, custom rule, min/max/disabled dates, read-only vs editable, empty/numeric data, conflicting config, message truncation) plus edit flow"}

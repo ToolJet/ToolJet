@@ -1,0 +1,1 @@
+{"area":"C5 Transformations & timezone","status":"done","tests":7,"passed":7,"notes":"Timezone: ISO/unix dates convert correctly to browser zone (IST vs Los Angeles), plain dates stable. Transformations never crash the table. Bug: transformed values leak into updatedData/editor; failing transform writes """}

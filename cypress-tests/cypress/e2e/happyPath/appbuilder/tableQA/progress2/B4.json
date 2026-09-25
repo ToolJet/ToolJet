@@ -1,0 +1,1 @@
+{"area":"B4 Button column and options","status":"done","tests":4,"passed":4,"notes":"Button labels, tooltip, loading, hidden, disabled, per-row fx disabled, outline/colours/radius/icon, click event with the correct row: all work. Dynamic options work. Default option shown but not stored. 7 of 8 deprecated types render existing data (legacy Tags does not; logged in Part 1)"}

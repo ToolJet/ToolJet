@@ -1,0 +1,1 @@
+{"area":"A10 Edit, every column type","status":"done","tests":16,"passed":16,"notes":"edit per type (string, text, markdown, html, json, number incl. stepper/decimals/letters/clear, select, multiselect, tags single+multi, boolean, rating incl. half-star), Escape, per-row editability fx, Make all editable, forced non-editable link/image, discard"}

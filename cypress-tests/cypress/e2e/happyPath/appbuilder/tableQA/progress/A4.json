@@ -1,0 +1,1 @@
+{"area":"A4 Search, filter, sort","status":"done","tests":33,"passed":21,"notes":"search per type and special chars, all 12 filter operators, multi-filter, sort per type, server-side flags"}
