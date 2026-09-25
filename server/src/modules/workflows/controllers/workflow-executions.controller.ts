@@ -43,6 +43,8 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   // return isn't assignable to an inferred Promise<void>).
   async upcomingForWorkspace(
     @Query('environment_id') environmentId?: string,
+    @Query('app_id') appId?: string,
+    @Query('folder_id') folderId?: string,
     @User() user?: any
   ): Promise<{ upcoming: UpcomingRun[] }> {
     throw new Error('Method not implemented.');

@@ -19,6 +19,18 @@ export type ScheduleRow = {
   environmentName: string | null;
 };
 
+/**
+ * How the panel is narrowed.
+ *
+ * Only the executions list's *scope* selectors appear here. Status, trigger and date range are
+ * properties of a run that already happened and have no meaning for one that has not.
+ */
+export type UpcomingRunFilters = {
+  environmentId?: string;
+  appId?: string;
+  folderId?: string;
+};
+
 /** One row of the panel. */
 export type UpcomingRun = {
   scheduleId: string;
