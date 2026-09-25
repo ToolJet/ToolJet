@@ -145,6 +145,13 @@ describe('Personal access token session exchange', () => {
       await exchange(token).send({ appId: foreignAppId }).expect(404);
     });
 
+    it.each(['workflow', 'module'])('should refuse a %s id in place of an app', async (type) => {
+      const { token } = await createPat(`not-an-app-${type}`);
+      const resource = await createApplication(app, { name: `pinned-${type}`, user: owner, type });
+
+      await exchange(token).send({ appId: resource.id }).expect(404);
+    });
+
     it('should refuse an app that does not exist', async () => {
       const { token } = await createPat('missing-app');
       await exchange(token).send({ appId: '00000000-0000-0000-0000-000000000000' }).expect(404);
