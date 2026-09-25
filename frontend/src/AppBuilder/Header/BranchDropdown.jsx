@@ -29,7 +29,13 @@ const resolveDefaultBranchName = (orgGit) =>
 const resolveGitType = (orgGit) =>
   orgGit?.git_type ||
   orgGit?.gitType ||
-  (orgGit?.git_lab?.is_enabled ? 'gitlab' : orgGit?.git_https?.is_enabled ? 'github_https' : undefined);
+  (orgGit?.git_lab?.is_enabled
+    ? 'gitlab'
+    : orgGit?.git_https?.is_enabled
+    ? 'github_https'
+    : orgGit?.git_bitbucket?.is_enabled
+    ? 'bitbucket'
+    : undefined);
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
