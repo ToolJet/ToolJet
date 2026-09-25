@@ -1,0 +1,3 @@
+logs/
+report*.html
+!_report-head*.html

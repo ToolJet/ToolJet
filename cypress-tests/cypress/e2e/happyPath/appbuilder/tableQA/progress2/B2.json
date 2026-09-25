@@ -1,0 +1,1 @@
+{"area":"B2 Downloads (Excel, PDF)","status":"done","tests":2,"passed":2,"notes":"Excel + PDF generated and parsed offline under an active search; same defects as CSV. XLSX lacks docProps/core.xml (valid, breaks old readers)"}

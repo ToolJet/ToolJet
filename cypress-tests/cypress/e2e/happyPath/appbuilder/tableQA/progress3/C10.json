@@ -1,0 +1,1 @@
+{"area":"C10 Publish, permissions, collaboration","status":"done","tests":4,"passed":3,"notes":"Save → promote (dev→staging→production) → release → public app opened logged out: table renders, events, editing and search work for end users. Second session edit: no live update, silent last-write-wins (bug). Promote past production → 500 (bug)"}

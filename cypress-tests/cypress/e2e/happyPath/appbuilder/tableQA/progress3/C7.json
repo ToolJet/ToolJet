@@ -1,0 +1,1 @@
+{"area":"C7 Large data","status":"done","tests":6,"passed":5,"notes":"5,000 rows render in ~9–13s (query or inline, paginated or not), virtualised (13–16 tr in DOM), scroll to row 5000, edit row 4998 lands on key 4997, select all = 5000, search ~0.6s, first/last/more-pages controls. Bug: footer count hidden with pagination off"}

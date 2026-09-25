@@ -1,0 +1,1 @@
+{"area":"A6 Download, action buttons, events, CSAs","status":"done","tests":50,"passed":25,"notes":"CSV download content under search/filter/sort, action buttons, CSAs. Not covered: event handlers (spec setup broken), Excel/PDF content"}

@@ -1,0 +1,1 @@
+{"area":"C2 Server-side pagination","status":"done","tests":1,"passed":1,"notes":"Pages 1→5 fetched via On page changed, sort and filter passed to the query via sortApplied/filters. Bugs: page not reset on sort/filter (empty table); Next enabled on last page"}

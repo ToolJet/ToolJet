@@ -1,0 +1,1 @@
+{"area":"B5 Inspector","status":"done","tests":31,"passed":29,"notes":"Properties (editable off/on) and Styles tab fields captured for all 15 types and matched against the code inventory. Bugs: no warning for conflicting ranges, misleading Default rating placeholder, Number regex example, no Cell colour on Link/Rating/Image"}

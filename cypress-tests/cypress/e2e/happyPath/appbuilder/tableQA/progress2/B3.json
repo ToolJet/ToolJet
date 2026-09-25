@@ -1,0 +1,1 @@
+{"area":"B3 Add new row validation","status":"done","tests":1,"passed":1,"notes":"Select/Tags custom rules and Date Picker min date inside the popup: errors show on a blank row; out-of-range date still written to newRows"}

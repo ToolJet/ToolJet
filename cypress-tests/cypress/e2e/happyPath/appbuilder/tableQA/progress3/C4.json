@@ -1,0 +1,1 @@
+{"area":"C4 Keyboard & accessibility","status":"done","tests":2,"passed":2,"notes":"Cells focusable, Enter opens the editor. Dark mode (app theme = dark): table switches to dark-theme, all text ≥ 6.7:1 contrast, editor inherits dark colours. Bugs: unnamed icon buttons, no aria-sort/scope, unlabeled checkboxes"}

@@ -1,0 +1,1 @@
+{"area":"C3 Component actions with arguments","status":"done","tests":10,"passed":10,"notes":"setFilters, clearFilters (works via action, unlike the UI Clear button), selectRow by id/name, selectRows, setSort (bad args ignored), downloadTableData csv/xlsx. Bug: setFilters with unknown column wipes filters"}

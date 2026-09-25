@@ -1,0 +1,1 @@
+{"area":"C6 Containers & multiple tables","status":"done","tests":3,"passed":3,"notes":"Table in a Container renders and edits. Two tables isolate cells, search and selection. Bug: shared header selectors. Table/expanded-row children using listItem/rowData could not be created through the API (rendered empty; not logged as a product bug)"}
