@@ -94,6 +94,7 @@ const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect
 const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
+const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -153,6 +154,7 @@ export const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  LibraryComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,
