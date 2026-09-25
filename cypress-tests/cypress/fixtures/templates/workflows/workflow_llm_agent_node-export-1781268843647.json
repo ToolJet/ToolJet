@@ -1,0 +1,1874 @@
+{
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "47981669-747a-4440-ad0f-4d6fe10cd49f",
+          "type": "workflow",
+          "name": "workflow_llm_agent_node",
+          "slug": "47981669-747a-4440-ad0f-4d6fe10cd49f",
+          "isPublic": false,
+          "isMaintenanceOn": true,
+          "icon": "shield",
+          "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+          "currentVersionId": null,
+          "userId": "b5b52254-4583-40e3-be54-c4f35b66c983",
+          "workflowApiToken": null,
+          "workflowEnabled": false,
+          "isInitialisedFromPrompt": false,
+          "appGeneratedFromPrompt": false,
+          "appBuilderMode": "visual",
+          "aiGenerationMetadata": null,
+          "createdAt": "2026-06-12T12:42:47.207Z",
+          "creationMode": "DEFAULT",
+          "updatedAt": "2026-06-12T12:53:49.995Z",
+          "__loaded": true,
+          "editingVersion": {
+            "id": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+            "name": "v1",
+            "definition": {
+              "nodes": [
+                {
+                  "id": "75de96fb-fd29-40d1-88b6-7442e87b60d9",
+                  "data": {
+                    "nodeType": "start",
+                    "label": "Start trigger"
+                  },
+                  "position": {
+                    "x": -526,
+                    "y": 70.79999999999995
+                  },
+                  "type": "input",
+                  "sourcePosition": "right",
+                  "deletable": false,
+                  "width": 206,
+                  "height": 41,
+                  "selected": true,
+                  "positionAbsolute": {
+                    "x": -526,
+                    "y": 70.79999999999995
+                  }
+                },
+                {
+                  "id": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                  "type": "agent",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "nodeType": "agent",
+                    "label": "Agent",
+                    "nodeName": "agent1",
+                    "options": {
+                      "systemPrompt": "You are a tool-calling agent.\n\n  You have one tool available named multiplyNumbers.\n  The multiplyNumbers tool multiplies two numbers. You may only use this tool to multiply numbers and cannot do in internally.\n  You must extract these two values from the user prompt:\n      - firstNumber\n      - secondNumber",
+                      "userPrompt": "operate on the following data using the multiplyNumbers.js file.\n    firstNumber: 10\n    secondNumber: 4",
+                      "outputFormat": null
+                    }
+                  },
+                  "position": {
+                    "x": 340,
+                    "y": -162.1999999999999
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 340,
+                    "y": -162.1999999999999
+                  }
+                },
+                {
+                  "id": "9a7d5bcd-2ba0-4551-a465-35d5d8ad163a",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "e800989d-1885-43e2-a006-4a318f3cf9da",
+                    "kind": "openai",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "ai-model"
+                  },
+                  "position": {
+                    "x": 240,
+                    "y": -38.00000000000003
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 240,
+                    "y": -38.00000000000003
+                  }
+                },
+                {
+                  "id": "629b4961-4f3f-4aa3-9f99-09aa81450a7e",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "28063519-f397-4846-b97d-7592525a6afb",
+                    "kind": "runjs",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "tool"
+                  },
+                  "position": {
+                    "x": 461,
+                    "y": -39.200000000000045
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 461,
+                    "y": -39.200000000000045
+                  }
+                },
+                {
+                  "id": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                  "type": "agent",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "nodeType": "agent",
+                    "label": "Agent",
+                    "nodeName": "multiplyAgent",
+                    "options": {
+                      "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool available named multiplyNumbers.\n\nThe multiplyNumbers tool multiplies two numbers.\nYou must NEVER perform multiplication internally.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways invoke the tool.\n\nReturn only the tool response.",
+                      "userPrompt": "Operate on the following data using multiplyNumberspy.py.\n\nfirstNumber: {{agent2.data.payload.firstNumber}}\nsecondNumber: {{agent2.data.payload.secondNumber}}",
+                      "outputFormat": {
+                        "example": {
+                          "operation": "multiply",
+                          "result": "<number>"
+                        }
+                      }
+                    }
+                  },
+                  "position": {
+                    "x": 76.5,
+                    "y": 29.60000000000008
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 76.5,
+                    "y": 29.60000000000008
+                  }
+                },
+                {
+                  "id": "11c898cf-e7dd-470a-9619-d16264d63811",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "aa6845c0-13fe-44a6-b4fa-b2411e135cb3",
+                    "kind": "openai",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "ai-model"
+                  },
+                  "position": {
+                    "x": -2.5,
+                    "y": 187.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": -2.5,
+                    "y": 187.70000000000005
+                  }
+                },
+                {
+                  "id": "16744993-bd8e-4824-bf9f-990f4f693cc1",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "987d7010-ace4-40dd-a602-cb0d6b02abc3",
+                    "kind": "runjs",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "tool"
+                  },
+                  "position": {
+                    "x": -88.5,
+                    "y": 409.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": -88.5,
+                    "y": 409.70000000000005
+                  }
+                },
+                {
+                  "id": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                  "type": "agent",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "nodeType": "agent",
+                    "label": "Agent",
+                    "nodeName": "additionAgent",
+                    "options": {
+                      "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool named addNumbers.\n\nThe tool performs addition only.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways call the tool.\nNever calculate internally.\n\nReturn only tool output.",
+                      "userPrompt": "Operate on the following data using addNumbers.js.\n\nfirstNumber: {{multiplyAgent.data.result}}\nsecondNumber: 100",
+                      "outputFormat": {
+                        "example": {
+                          "operation": "add",
+                          "result": "<number>"
+                        }
+                      }
+                    }
+                  },
+                  "position": {
+                    "x": 387.5,
+                    "y": 72.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 387.5,
+                    "y": 72.70000000000005
+                  }
+                },
+                {
+                  "id": "24ec87dc-ca8a-40db-8af1-735a72f970d7",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "50427a38-af58-4c3e-8afb-49d3e759f27e",
+                    "kind": "openai",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "ai-model"
+                  },
+                  "position": {
+                    "x": 324.5,
+                    "y": 294.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 324.5,
+                    "y": 294.70000000000005
+                  }
+                },
+                {
+                  "id": "53a71622-9373-4088-9cac-f4bdb3db0a12",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "eaf33976-f4a7-4710-b3d8-6660602b0974",
+                    "kind": "runjs",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "tool"
+                  },
+                  "position": {
+                    "x": 445.5,
+                    "y": 219.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 445.5,
+                    "y": 219.70000000000005
+                  }
+                },
+                {
+                  "id": "48e02973-80ca-403e-a494-0fb2548799b2",
+                  "type": "agent",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "nodeType": "agent",
+                    "label": "Agent",
+                    "nodeName": "divisionAgent",
+                    "options": {
+                      "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool named divideNumbers.\n\nThe tool performs division only.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways call the tool.\nNever calculate internally.",
+                      "userPrompt": "Operate on the following data using divideNumbers.js.\n\nfirstNumber: {{additionAgent.data.result}}\nsecondNumber: 2",
+                      "outputFormat": {
+                        "example": {
+                          "operation": "divide",
+                          "result": "<number>"
+                        }
+                      }
+                    }
+                  },
+                  "position": {
+                    "x": 689.5,
+                    "y": 73.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 689.5,
+                    "y": 73.70000000000005
+                  }
+                },
+                {
+                  "id": "02916cde-5a35-4c49-a64d-dcb2dcaa8caf",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "d072cc95-915e-4bfd-ae0e-2517162e0e2c",
+                    "kind": "openai",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "ai-model"
+                  },
+                  "position": {
+                    "x": 626.5,
+                    "y": 301.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 626.5,
+                    "y": 301.70000000000005
+                  }
+                },
+                {
+                  "id": "8a005259-273c-44fe-9d5e-b6fe32e22b4d",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "7f9e0834-024e-44c5-a7c2-ab661b75bdc2",
+                    "kind": "runjs",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "tool"
+                  },
+                  "position": {
+                    "x": 748.5,
+                    "y": 220.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 748.5,
+                    "y": 220.70000000000005
+                  }
+                },
+                {
+                  "id": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                  "type": "agent",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "nodeType": "agent",
+                    "label": "Agent",
+                    "nodeName": "agent2",
+                    "options": {
+                      "systemPrompt": "You are an orchestration agent.\n\nYou do not solve calculations.\n\nExecute operations sequentially.\n\nOrder:\n1. multiplication → multiplyAgent\n2. division → divisionAgent\n3. addition → additionAgent\n\nExtract values from the request.\n\nPass intermediate outputs to the next agent.\n\nReturn final result only.",
+                      "userPrompt": "Multiply 12 and 12.\nDivide result by 2.\nAdd 100.",
+                      "outputFormat": {
+                        "example": {
+                          "currentOperation": "string",
+                          "nextAgent": "string",
+                          "payload": {
+                            "firstNumber": 0,
+                            "secondNumber": 0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "position": {
+                    "x": -203.5,
+                    "y": 73.20000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": -203.5,
+                    "y": 73.20000000000005
+                  }
+                },
+                {
+                  "id": "c554dcd9-bbb9-44b2-8f23-f090790967c3",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "bf479bee-eea5-467f-8eb7-decfdbb075ea",
+                    "kind": "openai",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "ai-model"
+                  },
+                  "position": {
+                    "x": -233.10000000000002,
+                    "y": 271.70000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": -233.10000000000002,
+                    "y": 271.70000000000005
+                  }
+                },
+                {
+                  "id": "e49f3c80-e4d9-4348-9d37-73ea979fe36b",
+                  "data": {
+                    "nodeType": "response",
+                    "label": "Response",
+                    "code": "// Use this section to define the expected API response\n\nreturn divisionAgent.data.result",
+                    "statusCode": {
+                      "fxActive": false,
+                      "value": "200"
+                    },
+                    "nodeName": "response1"
+                  },
+                  "position": {
+                    "x": 1030.8000000000002,
+                    "y": 94.20000000000005
+                  },
+                  "type": "output",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false
+                },
+                {
+                  "id": "df9bac44-d8ac-4cc5-95f4-4132e0bebc65",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "9b1e6dee-0d7e-4d97-bae6-0ff4ba8d3522",
+                    "kind": "runpy",
+                    "options": {},
+                    "isChildOfAgent": true,
+                    "agentConnectionType": "tool"
+                  },
+                  "position": {
+                    "x": 102.30000000000024,
+                    "y": 305.20000000000005
+                  },
+                  "deletable": false,
+                  "width": 206,
+                  "height": 40,
+                  "selected": false,
+                  "positionAbsolute": {
+                    "x": 102.30000000000024,
+                    "y": 305.20000000000005
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "8be91387-3211-410c-8a25-1691388bbc25",
+                  "source": "9a7d5bcd-2ba0-4551-a465-35d5d8ad163a",
+                  "target": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                  "sourceHandle": "output",
+                  "targetHandle": "ai-model",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "d4252f66-47aa-41fc-9401-34d9bad95520",
+                  "source": "629b4961-4f3f-4aa3-9f99-09aa81450a7e",
+                  "target": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                  "sourceHandle": "output",
+                  "targetHandle": "tool",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "99961a2a-dbde-4ca3-8577-69b94b85c43f",
+                  "source": "11c898cf-e7dd-470a-9619-d16264d63811",
+                  "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                  "sourceHandle": "output",
+                  "targetHandle": "ai-model",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "e3f7cb58-cd63-45ad-9327-13dd188e90b1",
+                  "source": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                  "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                  "sourceHandle": "output",
+                  "targetHandle": null,
+                  "type": "custom"
+                },
+                {
+                  "id": "a6efb1fe-c5d4-4bcd-a5e8-cbd979b958b3",
+                  "source": "24ec87dc-ca8a-40db-8af1-735a72f970d7",
+                  "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                  "sourceHandle": "output",
+                  "targetHandle": "ai-model",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "e77ed04e-e47a-4646-9c4b-080f29ec830e",
+                  "source": "53a71622-9373-4088-9cac-f4bdb3db0a12",
+                  "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                  "sourceHandle": "output",
+                  "targetHandle": "tool",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "03d072f0-da52-49c4-9df4-32e05186c0aa",
+                  "source": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                  "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                  "sourceHandle": "output",
+                  "targetHandle": null,
+                  "type": "custom"
+                },
+                {
+                  "id": "5708c559-27ee-4ba5-8c5e-58709946d67e",
+                  "source": "02916cde-5a35-4c49-a64d-dcb2dcaa8caf",
+                  "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                  "sourceHandle": "output",
+                  "targetHandle": "ai-model",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "2cf0b8ce-c1f4-4f83-8d83-0004000c3c4d",
+                  "source": "8a005259-273c-44fe-9d5e-b6fe32e22b4d",
+                  "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                  "sourceHandle": "output",
+                  "targetHandle": "tool",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "id": "b2e6e731-1c20-4c33-bff2-e797e095030a",
+                  "source": "c554dcd9-bbb9-44b2-8f23-f090790967c3",
+                  "target": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                  "sourceHandle": "output",
+                  "targetHandle": "ai-model",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                },
+                {
+                  "type": "custom",
+                  "source": "75de96fb-fd29-40d1-88b6-7442e87b60d9",
+                  "sourceHandle": null,
+                  "target": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                  "targetHandle": null,
+                  "id": "reactflow__edge-75de96fb-fd29-40d1-88b6-7442e87b60d9-9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b"
+                },
+                {
+                  "type": "custom",
+                  "source": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                  "sourceHandle": "output",
+                  "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                  "targetHandle": null,
+                  "id": "reactflow__edge-9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7boutput-37c8fa27-604c-481a-bbbe-641ec4cd8452"
+                },
+                {
+                  "id": "d22a0111-8074-415e-8a62-bbabebc43f18",
+                  "source": "48e02973-80ca-403e-a494-0fb2548799b2",
+                  "target": "e49f3c80-e4d9-4348-9d37-73ea979fe36b",
+                  "sourceHandle": "output",
+                  "targetHandle": null,
+                  "type": "custom"
+                },
+                {
+                  "id": "ef1add01-7772-4c1b-9666-a50b4b6da7f4",
+                  "source": "df9bac44-d8ac-4cc5-95f4-4132e0bebc65",
+                  "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                  "sourceHandle": "output",
+                  "targetHandle": "tool",
+                  "type": "custom",
+                  "data": {
+                    "direction": "vertical"
+                  }
+                }
+              ],
+              "queries": [
+                {
+                  "idOnDefinition": "7f9e0834-024e-44c5-a7c2-ab661b75bdc2",
+                  "id": "8d38f7ee-e305-40d0-bff7-6a0a9f9176ab"
+                },
+                {
+                  "idOnDefinition": "eaf33976-f4a7-4710-b3d8-6660602b0974",
+                  "id": "76ae0313-c0b1-4702-9d21-2c6373295206"
+                },
+                {
+                  "idOnDefinition": "987d7010-ace4-40dd-a602-cb0d6b02abc3",
+                  "id": "b7089b02-b8a9-49dd-b003-1c6961d1abb4"
+                },
+                {
+                  "idOnDefinition": "28063519-f397-4846-b97d-7592525a6afb",
+                  "id": "9e9c318e-9c6a-4178-8855-22696b1a5c5c"
+                },
+                {
+                  "idOnDefinition": "9b1e6dee-0d7e-4d97-bae6-0ff4ba8d3522",
+                  "id": "bc4bf1c1-3b94-43f7-87b4-a18415cdef55"
+                },
+                {
+                  "idOnDefinition": "bf479bee-eea5-467f-8eb7-decfdbb075ea",
+                  "id": "4c2733c4-0871-4d9e-9cbf-047cdec2e653"
+                },
+                {
+                  "idOnDefinition": "d072cc95-915e-4bfd-ae0e-2517162e0e2c",
+                  "id": "b16c45c0-a62f-4f2b-b793-123ad14cdc29"
+                },
+                {
+                  "idOnDefinition": "50427a38-af58-4c3e-8afb-49d3e759f27e",
+                  "id": "390dbc33-04f1-4f91-a817-e44038123754"
+                },
+                {
+                  "idOnDefinition": "aa6845c0-13fe-44a6-b4fa-b2411e135cb3",
+                  "id": "022eb3ef-3a4b-4a48-9d9e-b83d69314b0d"
+                },
+                {
+                  "idOnDefinition": "e800989d-1885-43e2-a006-4a318f3cf9da",
+                  "id": "85b68d0e-6ef4-4a18-86a4-8125fc1fe3f8"
+                }
+              ],
+              "webhookParams": [],
+              "defaultParams": "{}",
+              "dependencies": {
+                "javascript": {
+                  "dependencies": {}
+                },
+                "python": {
+                  "dependencies": ""
+                }
+              },
+              "setupScript": {
+                "javascript": "// lodash\n// const _ = require('lodash');\n",
+                "python": "# pandas\n# import pandas as pd\n# numpy\n# import numpy as np\n# requests\n# import requests\n"
+              }
+            },
+            "globalSettings": {
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "pageSettings": {
+              "properties": {
+                "disableMenu": {
+                  "value": "{{false}}",
+                  "fxActive": false
+                }
+              }
+            },
+            "showViewerNavigation": true,
+            "homePageId": "dac6e38b-d0d7-47dc-b439-e45ddcce4a2e",
+            "appId": "47981669-747a-4440-ad0f-4d6fe10cd49f",
+            "currentEnvironmentId": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+            "promotedFrom": null,
+            "parentVersionId": null,
+            "status": "DRAFT",
+            "description": null,
+            "publishedAt": null,
+            "releasedAt": null,
+            "createdAt": "2026-06-12T12:42:47.307Z",
+            "updatedAt": "2026-06-12T12:52:23.867Z"
+          },
+          "components": [],
+          "pages": [
+            {
+              "id": "dac6e38b-d0d7-47dc-b439-e45ddcce4a2e",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": false,
+              "hidden": false,
+              "icon": null,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z",
+              "autoComputeLayout": true,
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "pageGroupIndex": null,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "pageHeader": {
+                "border": "var(--cc-weak-border)",
+                "height": 60,
+                "showOnMobile": false,
+                "showOnDesktop": false,
+                "backgroundColor": "var(--cc-surface1-surface)"
+              },
+              "pageFooter": {
+                "border": "var(--cc-weak-border)",
+                "height": 60,
+                "showOnMobile": false,
+                "showOnDesktop": false,
+                "backgroundColor": "var(--cc-surface1-surface)"
+              },
+              "appId": ""
+            }
+          ],
+          "events": [],
+          "dataQueries": [
+            {
+              "id": "b16c45c0-a62f-4f2b-b793-123ad14cdc29",
+              "name": "openai4",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "76ae0313-c0b1-4702-9d21-2c6373295206",
+              "name": "addNumbers",
+              "options": {
+                "code": "const a = Number(aiParameters.firstNumber);\nconst b = Number(aiParameters.secondNumber);\n\nif (!Number.isFinite(a) || !Number.isFinite(b)) {\n  return {\n    error: \"Invalid numbers\"\n  };\n}\n\nreturn {\n  operation: \"add\",\n  result: a + b\n};",
+                "parameters": []
+              },
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "4c2733c4-0871-4d9e-9cbf-047cdec2e653",
+              "name": "openai5",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "022eb3ef-3a4b-4a48-9d9e-b83d69314b0d",
+              "name": "openai2",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "b7089b02-b8a9-49dd-b003-1c6961d1abb4",
+              "name": "multiplyNumberss",
+              "options": {
+                "code": "const a = Number(aiParameters.firstNumber);\nconst b = Number(aiParameters.secondNumber);\n\nif (!Number.isFinite(a) || !Number.isFinite(b)) {\n  return {\n    error: \"Invalid numbers\"\n  };\n}\n\nreturn {\n  operation: \"multiply\",\n  result: a * b\n};",
+                "parameters": []
+              },
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "bc4bf1c1-3b94-43f7-87b4-a18415cdef55",
+              "name": "multiplyNumberspy",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "code": "first = aiParameters.get(\"firstNumber\")\nsecond = aiParameters.get(\"secondNumber\")\n\ntry:\n  a = float(first)\n  b = float(second)\n  result = {\"operation\": \"multiply\", \"value1\": a, \"value2\": b, \"result\": a * b}\nexcept Exception:\n  result = {\"error\": \"Invalid numbers\", \"received\": aiParameters}"
+              },
+              "dataSourceId": "ea10c30f-eac0-4cd6-99c3-7b7992a8c1d2",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:43:38.246Z"
+            },
+            {
+              "id": "390dbc33-04f1-4f91-a817-e44038123754",
+              "name": "openai3",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "8d38f7ee-e305-40d0-bff7-6a0a9f9176ab",
+              "name": "divideNumbers",
+              "options": {
+                "code": "const a = Number(aiParameters.firstNumber);\nconst b = Number(aiParameters.secondNumber);\n\nif (!Number.isFinite(a) || !Number.isFinite(b)) {\n  return {\n    error: \"Invalid numbers\"\n  };\n}\n\nif (b === 0) {\n  return {\n    error: \"Division by zero not allowed\"\n  };\n}\n\nreturn {\n  operation: \"divide\",\n  result: a / b\n};",
+                "parameters": []
+              },
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "85b68d0e-6ef4-4a18-86a4-8125fc1fe3f8",
+              "name": "openai1",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "temperature": "",
+                "maxTokens": "",
+                "stopSequences": [],
+                "topP": "",
+                "maxSteps": "",
+                "model": "gpt-4o",
+                "maxRetries": ""
+              },
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "9e9c318e-9c6a-4178-8855-22696b1a5c5c",
+              "name": "multiplyNumbers",
+              "options": {
+                "code": "const firstNumber = aiParameters?.firstNumber;\nconst secondNumber = aiParameters?.secondNumber;\n\n// Log raw inputs\nconsole.log(\"Received aiParameters:\", aiParameters);\n\n// Validate existence\nif (firstNumber === undefined || secondNumber === undefined) {\n  return {\n    success: false,\n    error: \"Required parameters missing\",\n    missing: {\n      firstNumber: firstNumber === undefined,\n      secondNumber: secondNumber === undefined\n    },\n    receivedParameters: aiParameters\n  };\n}\n\n// Convert values\nconst a = Number(firstNumber);\nconst b = Number(secondNumber);\n\n// Validate conversion\nif (!Number.isFinite(a) || !Number.isFinite(b)) {\n  return {\n    success: false,\n    error: \"Parameters must be valid numbers\",\n    receivedParameters: aiParameters,\n    convertedValues: {\n      firstNumber: a,\n      secondNumber: b\n    }\n  };\n}\n\n// Multiply\nconst result = a * b;\n\n// Return detailed output\nreturn {\n  success: true,\n  inputs: {\n    firstNumber: a,\n    secondNumber: b\n  },\n  operation: \"multiply\",\n  operatedInteger: result,\n  metadata: {\n    inputTypes: {\n      firstNumber: typeof firstNumber,\n      secondNumber: typeof secondNumber\n    },\n    timestamp: new Date().toISOString()\n  }\n};",
+                "parameters": []
+              },
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "appVersionId": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "name": "openai",
+              "kind": "openai",
+              "type": "default",
+              "pluginId": "293916e0-ec6e-48e7-b90c-bbe718f28eb8",
+              "appVersionId": null,
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "scope": "global",
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "name": "runjsdefault",
+              "kind": "runjs",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "scope": "global",
+              "createdAt": "2026-06-12T11:46:27.357Z",
+              "updatedAt": "2026-06-12T11:46:27.357Z"
+            },
+            {
+              "id": "ea10c30f-eac0-4cd6-99c3-7b7992a8c1d2",
+              "name": "runpydefault",
+              "kind": "runpy",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "scope": "global",
+              "createdAt": "2026-06-12T11:46:27.359Z",
+              "updatedAt": "2026-06-12T11:46:27.359Z"
+            }
+          ],
+          "dataQueryFolders": [],
+          "dataQueryFolderMappings": [
+            {
+              "id": "d403cdd7-e110-4e38-a30d-d2adc37700db",
+              "parentId": null,
+              "childId": "85b68d0e-6ef4-4a18-86a4-8125fc1fe3f8",
+              "childType": "query",
+              "index": 9,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "688a69e6-f793-4c73-b1c4-f2898c75c03e",
+              "parentId": null,
+              "childId": "9e9c318e-9c6a-4178-8855-22696b1a5c5c",
+              "childType": "query",
+              "index": 8,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "d0d43037-7cd0-49ab-b004-0eea1e0a39f4",
+              "parentId": null,
+              "childId": "022eb3ef-3a4b-4a48-9d9e-b83d69314b0d",
+              "childType": "query",
+              "index": 7,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "b9b948a7-84a6-4571-987f-926b06521513",
+              "parentId": null,
+              "childId": "b7089b02-b8a9-49dd-b003-1c6961d1abb4",
+              "childType": "query",
+              "index": 6,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "9d6774c2-ef37-461d-9b4c-2634c6e11b97",
+              "parentId": null,
+              "childId": "390dbc33-04f1-4f91-a817-e44038123754",
+              "childType": "query",
+              "index": 5,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "b7cbe535-7aa5-4e9f-85bc-86cc30bb1efd",
+              "parentId": null,
+              "childId": "76ae0313-c0b1-4702-9d21-2c6373295206",
+              "childType": "query",
+              "index": 4,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "f9e153fc-7406-4b71-9d5d-f6bdb5ae0c15",
+              "parentId": null,
+              "childId": "b16c45c0-a62f-4f2b-b793-123ad14cdc29",
+              "childType": "query",
+              "index": 3,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "48679aaf-2a5a-4be5-8645-3f3c1cfd659c",
+              "parentId": null,
+              "childId": "8d38f7ee-e305-40d0-bff7-6a0a9f9176ab",
+              "childType": "query",
+              "index": 2,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "10983617-3105-4a6c-8dfd-2000ff98b6ca",
+              "parentId": null,
+              "childId": "4c2733c4-0871-4d9e-9cbf-047cdec2e653",
+              "childType": "query",
+              "index": 1,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            },
+            {
+              "id": "988423a4-9dc6-4b8d-a4ea-153a63096642",
+              "parentId": null,
+              "childId": "bc4bf1c1-3b94-43f7-87b4-a18415cdef55",
+              "childType": "query",
+              "index": 0,
+              "createdAt": "2026-06-12T12:42:47.195Z",
+              "updatedAt": "2026-06-12T12:42:47.195Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "e5b8d308-7daf-4185-b51a-d159d60aef8a",
+              "name": "v1",
+              "definition": {
+                "nodes": [
+                  {
+                    "id": "75de96fb-fd29-40d1-88b6-7442e87b60d9",
+                    "data": {
+                      "nodeType": "start",
+                      "label": "Start trigger"
+                    },
+                    "position": {
+                      "x": -526,
+                      "y": 70.79999999999995
+                    },
+                    "type": "input",
+                    "sourcePosition": "right",
+                    "deletable": false,
+                    "width": 206,
+                    "height": 41,
+                    "selected": true,
+                    "positionAbsolute": {
+                      "x": -526,
+                      "y": 70.79999999999995
+                    }
+                  },
+                  {
+                    "id": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                    "type": "agent",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "nodeType": "agent",
+                      "label": "Agent",
+                      "nodeName": "agent1",
+                      "options": {
+                        "systemPrompt": "You are a tool-calling agent.\n\n  You have one tool available named multiplyNumbers.\n  The multiplyNumbers tool multiplies two numbers. You may only use this tool to multiply numbers and cannot do in internally.\n  You must extract these two values from the user prompt:\n      - firstNumber\n      - secondNumber",
+                        "userPrompt": "operate on the following data using the multiplyNumbers.js file.\n    firstNumber: 10\n    secondNumber: 4",
+                        "outputFormat": null
+                      }
+                    },
+                    "position": {
+                      "x": 340,
+                      "y": -162.1999999999999
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 340,
+                      "y": -162.1999999999999
+                    }
+                  },
+                  {
+                    "id": "9a7d5bcd-2ba0-4551-a465-35d5d8ad163a",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "e800989d-1885-43e2-a006-4a318f3cf9da",
+                      "kind": "openai",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "ai-model"
+                    },
+                    "position": {
+                      "x": 240,
+                      "y": -38.00000000000003
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 240,
+                      "y": -38.00000000000003
+                    }
+                  },
+                  {
+                    "id": "629b4961-4f3f-4aa3-9f99-09aa81450a7e",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "28063519-f397-4846-b97d-7592525a6afb",
+                      "kind": "runjs",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "tool"
+                    },
+                    "position": {
+                      "x": 461,
+                      "y": -39.200000000000045
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 461,
+                      "y": -39.200000000000045
+                    }
+                  },
+                  {
+                    "id": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                    "type": "agent",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "nodeType": "agent",
+                      "label": "Agent",
+                      "nodeName": "multiplyAgent",
+                      "options": {
+                        "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool available named multiplyNumbers.\n\nThe multiplyNumbers tool multiplies two numbers.\nYou must NEVER perform multiplication internally.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways invoke the tool.\n\nReturn only the tool response.",
+                        "userPrompt": "Operate on the following data using multiplyNumberspy.py.\n\nfirstNumber: {{agent2.data.payload.firstNumber}}\nsecondNumber: {{agent2.data.payload.secondNumber}}",
+                        "outputFormat": {
+                          "example": {
+                            "operation": "multiply",
+                            "result": "<number>"
+                          }
+                        }
+                      }
+                    },
+                    "position": {
+                      "x": 76.5,
+                      "y": 29.60000000000008
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 76.5,
+                      "y": 29.60000000000008
+                    }
+                  },
+                  {
+                    "id": "11c898cf-e7dd-470a-9619-d16264d63811",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "aa6845c0-13fe-44a6-b4fa-b2411e135cb3",
+                      "kind": "openai",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "ai-model"
+                    },
+                    "position": {
+                      "x": -2.5,
+                      "y": 187.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": -2.5,
+                      "y": 187.70000000000005
+                    }
+                  },
+                  {
+                    "id": "16744993-bd8e-4824-bf9f-990f4f693cc1",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "987d7010-ace4-40dd-a602-cb0d6b02abc3",
+                      "kind": "runjs",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "tool"
+                    },
+                    "position": {
+                      "x": -88.5,
+                      "y": 409.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": -88.5,
+                      "y": 409.70000000000005
+                    }
+                  },
+                  {
+                    "id": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                    "type": "agent",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "nodeType": "agent",
+                      "label": "Agent",
+                      "nodeName": "additionAgent",
+                      "options": {
+                        "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool named addNumbers.\n\nThe tool performs addition only.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways call the tool.\nNever calculate internally.\n\nReturn only tool output.",
+                        "userPrompt": "Operate on the following data using addNumbers.js.\n\nfirstNumber: {{multiplyAgent.data.result}}\nsecondNumber: 100",
+                        "outputFormat": {
+                          "example": {
+                            "operation": "add",
+                            "result": "<number>"
+                          }
+                        }
+                      }
+                    },
+                    "position": {
+                      "x": 387.5,
+                      "y": 72.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 387.5,
+                      "y": 72.70000000000005
+                    }
+                  },
+                  {
+                    "id": "24ec87dc-ca8a-40db-8af1-735a72f970d7",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "50427a38-af58-4c3e-8afb-49d3e759f27e",
+                      "kind": "openai",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "ai-model"
+                    },
+                    "position": {
+                      "x": 324.5,
+                      "y": 294.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 324.5,
+                      "y": 294.70000000000005
+                    }
+                  },
+                  {
+                    "id": "53a71622-9373-4088-9cac-f4bdb3db0a12",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "eaf33976-f4a7-4710-b3d8-6660602b0974",
+                      "kind": "runjs",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "tool"
+                    },
+                    "position": {
+                      "x": 445.5,
+                      "y": 219.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 445.5,
+                      "y": 219.70000000000005
+                    }
+                  },
+                  {
+                    "id": "48e02973-80ca-403e-a494-0fb2548799b2",
+                    "type": "agent",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "nodeType": "agent",
+                      "label": "Agent",
+                      "nodeName": "divisionAgent",
+                      "options": {
+                        "systemPrompt": "You are a tool-calling agent.\n\nYou have one tool named divideNumbers.\n\nThe tool performs division only.\n\nExtract:\n- firstNumber\n- secondNumber\n\nAlways call the tool.\nNever calculate internally.",
+                        "userPrompt": "Operate on the following data using divideNumbers.js.\n\nfirstNumber: {{additionAgent.data.result}}\nsecondNumber: 2",
+                        "outputFormat": {
+                          "example": {
+                            "operation": "divide",
+                            "result": "<number>"
+                          }
+                        }
+                      }
+                    },
+                    "position": {
+                      "x": 689.5,
+                      "y": 73.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 689.5,
+                      "y": 73.70000000000005
+                    }
+                  },
+                  {
+                    "id": "02916cde-5a35-4c49-a64d-dcb2dcaa8caf",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "d072cc95-915e-4bfd-ae0e-2517162e0e2c",
+                      "kind": "openai",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "ai-model"
+                    },
+                    "position": {
+                      "x": 626.5,
+                      "y": 301.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 626.5,
+                      "y": 301.70000000000005
+                    }
+                  },
+                  {
+                    "id": "8a005259-273c-44fe-9d5e-b6fe32e22b4d",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "7f9e0834-024e-44c5-a7c2-ab661b75bdc2",
+                      "kind": "runjs",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "tool"
+                    },
+                    "position": {
+                      "x": 748.5,
+                      "y": 220.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 748.5,
+                      "y": 220.70000000000005
+                    }
+                  },
+                  {
+                    "id": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                    "type": "agent",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "nodeType": "agent",
+                      "label": "Agent",
+                      "nodeName": "agent2",
+                      "options": {
+                        "systemPrompt": "You are an orchestration agent.\n\nYou do not solve calculations.\n\nExecute operations sequentially.\n\nOrder:\n1. multiplication → multiplyAgent\n2. division → divisionAgent\n3. addition → additionAgent\n\nExtract values from the request.\n\nPass intermediate outputs to the next agent.\n\nReturn final result only.",
+                        "userPrompt": "Multiply 12 and 12.\nDivide result by 2.\nAdd 100.",
+                        "outputFormat": {
+                          "example": {
+                            "currentOperation": "string",
+                            "nextAgent": "string",
+                            "payload": {
+                              "firstNumber": 0,
+                              "secondNumber": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "position": {
+                      "x": -203.5,
+                      "y": 73.20000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": -203.5,
+                      "y": 73.20000000000005
+                    }
+                  },
+                  {
+                    "id": "c554dcd9-bbb9-44b2-8f23-f090790967c3",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "bf479bee-eea5-467f-8eb7-decfdbb075ea",
+                      "kind": "openai",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "ai-model"
+                    },
+                    "position": {
+                      "x": -233.10000000000002,
+                      "y": 271.70000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": -233.10000000000002,
+                      "y": 271.70000000000005
+                    }
+                  },
+                  {
+                    "id": "e49f3c80-e4d9-4348-9d37-73ea979fe36b",
+                    "data": {
+                      "nodeType": "response",
+                      "label": "Response",
+                      "code": "// Use this section to define the expected API response\n\nreturn divisionAgent.data.result",
+                      "statusCode": {
+                        "fxActive": false,
+                        "value": "200"
+                      },
+                      "nodeName": "response1"
+                    },
+                    "position": {
+                      "x": 1030.8000000000002,
+                      "y": 94.20000000000005
+                    },
+                    "type": "output",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false
+                  },
+                  {
+                    "id": "df9bac44-d8ac-4cc5-95f4-4132e0bebc65",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "9b1e6dee-0d7e-4d97-bae6-0ff4ba8d3522",
+                      "kind": "runpy",
+                      "options": {},
+                      "isChildOfAgent": true,
+                      "agentConnectionType": "tool"
+                    },
+                    "position": {
+                      "x": 102.30000000000024,
+                      "y": 305.20000000000005
+                    },
+                    "deletable": false,
+                    "width": 206,
+                    "height": 40,
+                    "selected": false,
+                    "positionAbsolute": {
+                      "x": 102.30000000000024,
+                      "y": 305.20000000000005
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "8be91387-3211-410c-8a25-1691388bbc25",
+                    "source": "9a7d5bcd-2ba0-4551-a465-35d5d8ad163a",
+                    "target": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                    "sourceHandle": "output",
+                    "targetHandle": "ai-model",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "d4252f66-47aa-41fc-9401-34d9bad95520",
+                    "source": "629b4961-4f3f-4aa3-9f99-09aa81450a7e",
+                    "target": "23e58cac-b6b0-459e-8f14-f759e380787b",
+                    "sourceHandle": "output",
+                    "targetHandle": "tool",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "99961a2a-dbde-4ca3-8577-69b94b85c43f",
+                    "source": "11c898cf-e7dd-470a-9619-d16264d63811",
+                    "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                    "sourceHandle": "output",
+                    "targetHandle": "ai-model",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "e3f7cb58-cd63-45ad-9327-13dd188e90b1",
+                    "source": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                    "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                    "sourceHandle": "output",
+                    "targetHandle": null,
+                    "type": "custom"
+                  },
+                  {
+                    "id": "a6efb1fe-c5d4-4bcd-a5e8-cbd979b958b3",
+                    "source": "24ec87dc-ca8a-40db-8af1-735a72f970d7",
+                    "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                    "sourceHandle": "output",
+                    "targetHandle": "ai-model",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "e77ed04e-e47a-4646-9c4b-080f29ec830e",
+                    "source": "53a71622-9373-4088-9cac-f4bdb3db0a12",
+                    "target": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                    "sourceHandle": "output",
+                    "targetHandle": "tool",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "03d072f0-da52-49c4-9df4-32e05186c0aa",
+                    "source": "c8b79074-c031-4fbd-8c0e-a5a46bdf3cf5",
+                    "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                    "sourceHandle": "output",
+                    "targetHandle": null,
+                    "type": "custom"
+                  },
+                  {
+                    "id": "5708c559-27ee-4ba5-8c5e-58709946d67e",
+                    "source": "02916cde-5a35-4c49-a64d-dcb2dcaa8caf",
+                    "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                    "sourceHandle": "output",
+                    "targetHandle": "ai-model",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "2cf0b8ce-c1f4-4f83-8d83-0004000c3c4d",
+                    "source": "8a005259-273c-44fe-9d5e-b6fe32e22b4d",
+                    "target": "48e02973-80ca-403e-a494-0fb2548799b2",
+                    "sourceHandle": "output",
+                    "targetHandle": "tool",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "id": "b2e6e731-1c20-4c33-bff2-e797e095030a",
+                    "source": "c554dcd9-bbb9-44b2-8f23-f090790967c3",
+                    "target": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                    "sourceHandle": "output",
+                    "targetHandle": "ai-model",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  },
+                  {
+                    "type": "custom",
+                    "source": "75de96fb-fd29-40d1-88b6-7442e87b60d9",
+                    "sourceHandle": null,
+                    "target": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                    "targetHandle": null,
+                    "id": "reactflow__edge-75de96fb-fd29-40d1-88b6-7442e87b60d9-9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b"
+                  },
+                  {
+                    "type": "custom",
+                    "source": "9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7b",
+                    "sourceHandle": "output",
+                    "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                    "targetHandle": null,
+                    "id": "reactflow__edge-9d5d7d5c-6f33-4eec-9c46-3f5bc77b5e7boutput-37c8fa27-604c-481a-bbbe-641ec4cd8452"
+                  },
+                  {
+                    "id": "d22a0111-8074-415e-8a62-bbabebc43f18",
+                    "source": "48e02973-80ca-403e-a494-0fb2548799b2",
+                    "target": "e49f3c80-e4d9-4348-9d37-73ea979fe36b",
+                    "sourceHandle": "output",
+                    "targetHandle": null,
+                    "type": "custom"
+                  },
+                  {
+                    "id": "ef1add01-7772-4c1b-9666-a50b4b6da7f4",
+                    "source": "df9bac44-d8ac-4cc5-95f4-4132e0bebc65",
+                    "target": "37c8fa27-604c-481a-bbbe-641ec4cd8452",
+                    "sourceHandle": "output",
+                    "targetHandle": "tool",
+                    "type": "custom",
+                    "data": {
+                      "direction": "vertical"
+                    }
+                  }
+                ],
+                "queries": [
+                  {
+                    "idOnDefinition": "7f9e0834-024e-44c5-a7c2-ab661b75bdc2",
+                    "id": "8d38f7ee-e305-40d0-bff7-6a0a9f9176ab"
+                  },
+                  {
+                    "idOnDefinition": "eaf33976-f4a7-4710-b3d8-6660602b0974",
+                    "id": "76ae0313-c0b1-4702-9d21-2c6373295206"
+                  },
+                  {
+                    "idOnDefinition": "987d7010-ace4-40dd-a602-cb0d6b02abc3",
+                    "id": "b7089b02-b8a9-49dd-b003-1c6961d1abb4"
+                  },
+                  {
+                    "idOnDefinition": "28063519-f397-4846-b97d-7592525a6afb",
+                    "id": "9e9c318e-9c6a-4178-8855-22696b1a5c5c"
+                  },
+                  {
+                    "idOnDefinition": "9b1e6dee-0d7e-4d97-bae6-0ff4ba8d3522",
+                    "id": "bc4bf1c1-3b94-43f7-87b4-a18415cdef55"
+                  },
+                  {
+                    "idOnDefinition": "bf479bee-eea5-467f-8eb7-decfdbb075ea",
+                    "id": "4c2733c4-0871-4d9e-9cbf-047cdec2e653"
+                  },
+                  {
+                    "idOnDefinition": "d072cc95-915e-4bfd-ae0e-2517162e0e2c",
+                    "id": "b16c45c0-a62f-4f2b-b793-123ad14cdc29"
+                  },
+                  {
+                    "idOnDefinition": "50427a38-af58-4c3e-8afb-49d3e759f27e",
+                    "id": "390dbc33-04f1-4f91-a817-e44038123754"
+                  },
+                  {
+                    "idOnDefinition": "aa6845c0-13fe-44a6-b4fa-b2411e135cb3",
+                    "id": "022eb3ef-3a4b-4a48-9d9e-b83d69314b0d"
+                  },
+                  {
+                    "idOnDefinition": "e800989d-1885-43e2-a006-4a318f3cf9da",
+                    "id": "85b68d0e-6ef4-4a18-86a4-8125fc1fe3f8"
+                  }
+                ],
+                "webhookParams": [],
+                "defaultParams": "{}",
+                "dependencies": {
+                  "javascript": {
+                    "dependencies": {}
+                  },
+                  "python": {
+                    "dependencies": ""
+                  }
+                },
+                "setupScript": {
+                  "javascript": "// lodash\n// const _ = require('lodash');\n",
+                  "python": "# pandas\n# import pandas as pd\n# numpy\n# import numpy as np\n# requests\n# import requests\n"
+                }
+              },
+              "globalSettings": {
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "pageSettings": {
+                "properties": {
+                  "disableMenu": {
+                    "value": "{{false}}",
+                    "fxActive": false
+                  }
+                }
+              },
+              "showViewerNavigation": true,
+              "homePageId": "dac6e38b-d0d7-47dc-b439-e45ddcce4a2e",
+              "appId": "47981669-747a-4440-ad0f-4d6fe10cd49f",
+              "currentEnvironmentId": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+              "promotedFrom": null,
+              "parentVersionId": null,
+              "status": "DRAFT",
+              "description": null,
+              "publishedAt": null,
+              "releasedAt": null,
+              "createdAt": "2026-06-12T12:42:47.307Z",
+              "updatedAt": "2026-06-12T12:52:23.867Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true,
+              "createdAt": "2026-06-12T11:46:27.150Z",
+              "updatedAt": "2026-06-12T11:46:27.150Z"
+            },
+            {
+              "id": "5b90e5c4-80ff-4ef6-b895-1c3264df27be",
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true,
+              "createdAt": "2026-06-12T11:46:27.154Z",
+              "updatedAt": "2026-06-12T11:46:27.154Z"
+            },
+            {
+              "id": "c247d5fb-bb4d-4e4c-9075-b30b6b458a9c",
+              "organizationId": "51076121-8cee-43e3-8d7d-0a703c18af4e",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2026-06-12T11:46:27.155Z",
+              "updatedAt": "2026-06-12T11:46:27.155Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "86d06bda-d236-4a87-9be6-d3aa791d6732",
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "environmentId": "5b90e5c4-80ff-4ef6-b895-1c3264df27be",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.358Z",
+              "updatedAt": "2026-06-12T11:46:27.358Z"
+            },
+            {
+              "id": "b46e6cbc-08a0-47fa-8640-447e2d7a1e7a",
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "environmentId": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.358Z",
+              "updatedAt": "2026-06-12T11:46:27.358Z"
+            },
+            {
+              "id": "43af5608-2eb9-4855-a06f-20423a19afd7",
+              "dataSourceId": "d202b876-7162-483b-bc5f-b3cba897bcb6",
+              "environmentId": "c247d5fb-bb4d-4e4c-9075-b30b6b458a9c",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.358Z",
+              "updatedAt": "2026-06-12T11:46:27.358Z"
+            },
+            {
+              "id": "5deb933d-401a-4623-a793-2966570435ab",
+              "dataSourceId": "ea10c30f-eac0-4cd6-99c3-7b7992a8c1d2",
+              "environmentId": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.360Z",
+              "updatedAt": "2026-06-12T11:46:27.360Z"
+            },
+            {
+              "id": "482180a7-4fba-44f6-b456-552fa73166c9",
+              "dataSourceId": "ea10c30f-eac0-4cd6-99c3-7b7992a8c1d2",
+              "environmentId": "5b90e5c4-80ff-4ef6-b895-1c3264df27be",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.360Z",
+              "updatedAt": "2026-06-12T11:46:27.360Z"
+            },
+            {
+              "id": "c4f9b385-6d61-42c2-b3c3-83b69590c912",
+              "dataSourceId": "ea10c30f-eac0-4cd6-99c3-7b7992a8c1d2",
+              "environmentId": "c247d5fb-bb4d-4e4c-9075-b30b6b458a9c",
+              "options": null,
+              "createdAt": "2026-06-12T11:46:27.360Z",
+              "updatedAt": "2026-06-12T11:46:27.360Z"
+            },
+            {
+              "id": "bb028d70-aa61-4882-9d77-f7e7eff7275e",
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "environmentId": "c247d5fb-bb4d-4e4c-9075-b30b6b458a9c",
+              "options": {
+                "apiKey": {
+                  "value": "",
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2026-06-12T12:42:47.430Z",
+              "updatedAt": "2026-06-12T12:42:47.430Z"
+            },
+            {
+              "id": "ba2fa84f-2e68-40ab-a52d-7ccf4265e178",
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "environmentId": "5b90e5c4-80ff-4ef6-b895-1c3264df27be",
+              "options": {
+                "apiKey": {
+                  "value": "",
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2026-06-12T12:42:47.432Z",
+              "updatedAt": "2026-06-12T12:42:47.432Z"
+            },
+            {
+              "id": "aa50f848-8bd9-40fd-90ad-befc9f06c8ee",
+              "dataSourceId": "863a67f1-2e56-4807-b023-941b6e3252b5",
+              "environmentId": "ec74d509-1ad7-40d4-80d9-85509a1c74b3",
+              "options": {
+                "apiKey": {
+                  "value": "",
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2026-06-12T12:42:47.433Z",
+              "updatedAt": "2026-06-12T12:42:47.433Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          }
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.20.178-ee-lts"
+}

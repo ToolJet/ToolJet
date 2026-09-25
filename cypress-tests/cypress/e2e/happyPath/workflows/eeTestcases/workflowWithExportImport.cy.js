@@ -6,6 +6,7 @@ import {
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
   cleanupWorkflows,
+  cleanupDataSources,
 } from "Support/utils/workFlows";
 
 // Round trip: build a working workflow, export it, delete it, re-import it and
@@ -26,11 +27,12 @@ describe("Workflows - export and import round trip", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  // Teardown also runs here so a test that fails part-way still cleans up.
-  // Without it a failed case leaks its workflow onto the shared instance, and
-  // later specs that open card menus then see more than one workflow card.
+  // Teardown runs here so a test that fails part-way still cleans up — a leaked
+  // workflow or data source breaks later specs on the same instance. Workflows
+  // go first: a data source still used by a workflow query can't be deleted.
   afterEach(() => {
     cleanupWorkflows([data.workflowName, `${data.workflowName}-runjs`, `${data.workflowName}-pg`]);
+    cleanupDataSources([`cypress-${data.dataSourceName}-manual-pgsql`]);
   });
 
   it("A RunJS workflow survives an export/import round trip and still executes", () => {
@@ -87,10 +89,6 @@ describe("Workflows - export and import round trip", () => {
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    // The data source can't be deleted while a workflow still references it
-    // through this query node, so the workflow goes first.
-    cy.apiDeleteWorkflow(workflowName);
-    cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });
