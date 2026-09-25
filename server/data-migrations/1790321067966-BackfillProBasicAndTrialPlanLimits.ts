@@ -6,7 +6,7 @@ const NEW_DATABASE_LIMITS = JSON.stringify({ table: 10, row: 500 });
 
 export class BackfillProBasicAndTrialPlanLimits1790321067966 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const updated: { id: string }[] = await queryRunner.query(
+    const [updatedRows]: [{ id: string }[], number] = await queryRunner.query(
       `
       UPDATE organization_license
       SET terms = jsonb_set(
@@ -24,7 +24,7 @@ export class BackfillProBasicAndTrialPlanLimits1790321067966 implements Migratio
     );
 
     console.log(
-      `${MIGRATION_NAME}: [SUCCESS] Updated apps/table/row limits for ${updated.length} pro/basic/trial organization(s)`
+      `${MIGRATION_NAME}: [SUCCESS] Updated apps/table/row limits for ${updatedRows.length} pro/basic/trial organization(s)`
     );
   }
 
