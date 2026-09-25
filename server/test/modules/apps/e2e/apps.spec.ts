@@ -2518,16 +2518,18 @@ describe('AppsController', () => {
         const loggedUser = await login(app, 'viewer@tooljet.io');
         viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        const application = await createApplication(
-          app,
-          { name: 'Marketing Dashboard', user: adminUserData.user, slug: 'restricted-app-with-folder' },
-          false
-        );
+        const application = await createApplication(app, {
+          name: 'Marketing Dashboard',
+          user: adminUserData.user,
+          slug: 'restricted-app-with-folder',
+        });
+        await createApplicationVersion(app, application);
         const folder = await createFolder(app, { name: 'Analytics', organizationId: adminUserData.organization.id });
         await addAppToFolder(app, application, folder);
 
         const response = await request(app.getHttpServer())
           .get('/api/apps/restricted-access-info/restricted-app-with-folder')
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Cookie', viewerUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
@@ -2548,14 +2550,16 @@ describe('AppsController', () => {
         const loggedUser = await login(app, 'viewer@tooljet.io');
         viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        await createApplication(
-          app,
-          { name: 'All Apps Dashboard', user: adminUserData.user, slug: 'restricted-app-no-folder' },
-          false
-        );
+        const application = await createApplication(app, {
+          name: 'All Apps Dashboard',
+          user: adminUserData.user,
+          slug: 'restricted-app-no-folder',
+        });
+        await createApplicationVersion(app, application);
 
         const response = await request(app.getHttpServer())
           .get('/api/apps/restricted-access-info/restricted-app-no-folder')
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Cookie', viewerUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
@@ -2575,14 +2579,16 @@ describe('AppsController', () => {
         const loggedUser = await login(app, 'another@tooljet.io');
         anotherOrgUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        await createApplication(
-          app,
-          { name: 'name', user: adminUserData.user, slug: 'restricted-app-cross-org' },
-          false
-        );
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+          slug: 'restricted-app-cross-org',
+        });
+        await createApplicationVersion(app, application);
 
         const response = await request(app.getHttpServer())
           .get('/api/apps/restricted-access-info/restricted-app-cross-org')
+          .set('tj-workspace-id', anotherOrgUserData.user.defaultOrganizationId)
           .set('Cookie', anotherOrgUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(404);
