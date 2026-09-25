@@ -24,7 +24,7 @@ export class GitSyncConfigsRepository extends Repository<OrganizationGitSync> {
   findOrgGitByOrganizationId(organizationId: string, manager?: EntityManager): Promise<OrganizationGitSync | null> {
     return this.getRepo(OrganizationGitSync, manager).findOne({
       where: { organizationId },
-      relations: ['gitHttps', 'gitLab'],
+      relations: ['gitHttps', 'gitLab', 'gitBitbucket'],
     });
   }
 
