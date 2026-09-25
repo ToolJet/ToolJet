@@ -74,8 +74,9 @@ describe('building the gate section', () => {
     expect(section.index).toBe(3);
   });
 
-  it('asks the question in the widget itself', () => {
+  it('retains the question for both display and fresh-run conversation history', () => {
     expect(section.header.title).toBe('Use another connected source?');
+    expect(section.content).toBe(section.header.title);
   });
 
   it('keeps the agent’s order, because the agent resolves the answer by index', () => {
