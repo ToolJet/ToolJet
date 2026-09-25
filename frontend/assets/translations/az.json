@@ -1,0 +1,1077 @@
+{
+    "globals": {
+        "readDocumentation": "Sənədləri oxu",
+        "cancel": "Ləğv et",
+        "save": "Yadda saxla",
+        "savechanges": "Dəyişiklikləri yadda saxla",
+        "execute": "İcra et",
+        "Build": "Qur",
+        "back": "Geri",
+        "edit": "Redaktə et",
+        "search": "Axtarış",
+        "update": "Yenilə",
+        "delete": "Sil",
+        "remove": "Çıxar",
+        "add": "Əlavə et",
+        "view": "Bax",
+        "create": "Yarat",
+        "enabled": "Aktivdir",
+        "disabled": "Deaktiv",
+        "yes": "Bəli",
+        "submit": "Təqdim et",
+        "select": "Seç",
+        "environmentVar": "İş sahəsinin sabitləri/dəyişənləri",
+        "saving": "Yadda saxlanılır...",
+        "saveDatasource": "Verilənlər mənbəyini yadda saxla",
+        "authorize": "İcazə ver",
+        "connect": "Qoşul",
+        "reconnect": "Yenidən qoşul",
+        "components": "Komponentlər",
+        "send": "Göndər",
+        "noConnection": "Qoşulmaq mümkün olmadı",
+        "connectionVerified": "Əlaqə təsdiqləndi",
+        "left": "Sol",
+        "center": "Mərkəz",
+        "right": "Sağ",
+        "justified": "Hər iki kənara düzləndirilmiş",
+        "host": "Qovşaq",
+        "operation": "Əməliyyat",
+        "header": "Başlıq",
+        "path": "Yol",
+        "query": "Sorğu",
+        "requestBody": "Sorğunun gövdəsi",
+        "page": "Səhifə",
+        "searchItem": "Bu iş sahəsində tətbiq axtarışı",
+        "workflowsSearchItem": "Bu iş sahəsində iş axını axtarışı",
+        "searchComponents": "Komponent axtarışı",
+        "promote": "Növbəti mühitə keçir",
+        "release": "Yayımla"
+    },
+    "errorBoundary": "Xəta baş verdi.",
+    "viewer": "Üzr istəyirik! Bu tətbiqdə texniki xidmət aparılır",
+    "app": {
+        "updateAvailable": "Yeniləmə mövcuddur",
+        "newVersionReleased": "ToolJet-in yeni versiyası yayımlanıb.",
+        "readReleaseNotes": "Buraxılış qeydlərini oxu və yenilə",
+        "skipVersion": "Bu versiyanı ötür"
+    },
+    "stripe": "Stripe üçün OpenAPI spesifikasiyası yüklənərkən gözləyin.",
+    "openApi": {
+        "noValidOpenApi": "Etibarlı OpenAPI spesifikasiyası mövcud deyil!",
+        "selectHost": "Qovşaq seç",
+        "selectOperation": "Əməliyyat seç"
+    },
+    "slack": {
+        "authorize": "İcazə ver",
+        "connectToolJetToSlack": "{{whiteLabelText}} Slack-ə qoşula, istifadəçiləri siyahıya ala, mesaj göndərə və digər əməliyyatları yerinə yetirə bilər. Müvafiq icazə əhatələrini seçin.",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "{{whiteLabelText}} tətbiqiniz istifadəçiləri siyahıya ala, istifadəçilərə və kanallara mesaj göndərə biləcək.",
+        "connectSlack": "Slack-ə qoşul"
+    },
+    "googleSheets": {
+        "readOnly": "Yalnız oxuma",
+        "enableReadAndWrite": "{{whiteLabelText}} tətbiqlərinizin Google cədvəllərinizi dəyişdirməsini istəyirsinizsə, oxuma və yazma icazəsini seçdiyinizə əmin olun",
+        "readDataFromSheets": "{{whiteLabelText}} tətbiqləriniz yalnız Google cədvəllərindən məlumat oxuya bilər",
+        "readWrite": "Oxuma və yazma",
+        "readModifySheets": "{{whiteLabelText}} tətbiqləriniz cədvəllərdən məlumat oxuya, cədvəlləri dəyişdirə və digər əməliyyatları yerinə yetirə bilər.",
+        "toGoogleSheets": "Google Sheets-ə"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "{{whiteLabelText}} tətbiqlərinizin Zendesk resurslarınızı dəyişdirməsini istəyirsinizsə, oxuma və yazma icazəsini seçdiyinizə əmin olun",
+        "readDataFromResources": "{{whiteLabelText}} tətbiqləriniz yalnız resurslardan məlumat oxuya bilər",
+        "readModifySheets": "{{whiteLabelText}} tətbiqləriniz resurslardan məlumat oxuya, resursları dəyişdirə və digər əməliyyatları yerinə yetirə bilər."
+    },
+    "profile": {
+        "profileSettings": "Profil parametrləri"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "E-poçt",
+        "enterFullName": "Tam adınızı daxil edin",
+        "enterNewPassword": "Yeni parol daxil edin",
+        "name": "Ad",
+        "password": "Parol",
+        "acceptInvite": "Dəvəti qəbul et",
+        "successfullyVerifiedEmail": "E-poçt uğurla təsdiqləndi",
+        "setupTooljet": "{{whiteLabelText}} platformasını quraşdır"
+    },
+    "loginSignupPage": {
+        "forgotPassword": "Parolu unutmusunuz",
+        "emailAddress": "E-poçt ünvanı",
+        "enterEmail": "E-poçt daxil edin",
+        "dontHaveAccount": "Hələ hesabınız yoxdur?",
+        "enterBusinessEmail": "İş e-poçtunuzu daxil edin",
+        "alreadyHaveAnAccount": "Artıq hesabınız var?",
+        "resetPassword": "Parolu sıfırla",
+        "signIn": "Daxil ol",
+        "signUp": "Qeydiyyatdan keç",
+        "createToolJetAccount": "Hesab yarat",
+        "password": "Parol",
+        "showPassword": "Parolu göstər",
+        "loginTo": "Daxil ol",
+        "yourAccount": "Hesabınız",
+        "noLoginMethodsEnabled": "Bu iş sahəsi üçün heç bir giriş üsulu aktiv deyil",
+        "emailConfirmLink": "Təsdiq keçidi üçün e-poçtunuzu yoxlayın",
+        "newPassword": "Yeni parol",
+        "passwordConfirmation": "Parolun təsdiqi",
+        "newToTooljet": "{{whiteLabelText}} sizin üçün yenidir?",
+        "newToWorkspace": "Bu iş sahəsində yenisiniz?",
+        "enterWorkEmail": "İş e-poçtunuzu daxil edin",
+        "enterPassword": "Parol daxil edin",
+        "forgot": "Unutmusunuz?",
+        "workEmail": "E-poçt",
+        "joinTooljet": "{{whiteLabelText}} platformasına qoşul",
+        "getStartedForFree": "Ödənişsiz başla",
+        "passwordCharacter": "Parol ən azı 5 simvoldan ibarət olmalıdır",
+        "enterFullName": "Tam adınızı daxil edin",
+        "enterNewPassword": "Yeni parol daxil edin"
+    },
+    "editor": {
+        "preview": "Önbaxış",
+        "share": "Paylaş",
+        "shareModal": {
+            "makeApplicationPublic": "Tətbiqi hamı üçün əlçatan et",
+            "shareableLink": "Paylaşıla bilən tətbiq keçidi",
+            "copy": "Kopyala",
+            "embeddableLink": "Yerləşdirilmiş tətbiqin keçidi",
+            "manageUsers": "İstifadəçilər"
+        },
+        "appVersionManager": {
+            "version": "Versiya",
+            "currentlyReleased": "Hazırda yayımlanmış",
+            "createVersion": "Versiya yarat",
+            "saveVersion": "Versiyanı yadda saxla",
+            "createDraftVersion": "Qaralama versiya yarat",
+            "versionName": "Versiyanın adı",
+            "versionDescription": "Versiyanın təsviri",
+            "createVersionFrom": "Versiyadan yarat",
+            "save": "Yadda saxla",
+            "create": "Versiya yarat",
+            "editVersion": "Versiyanı redaktə et",
+            "deleteVersion": "Bu versiyanı ({{version}}) silmək istədiyinizə əminsiniz?",
+            "enterVersionName": "Versiyanın adını daxil edin",
+            "enterVersionDescription": "Versiyanın təsvirini daxil edin",
+            "versionNameHelper": "Versiyanın adında boşluqlar və xüsusi simvollar ola bilməz, uzunluğu isə 25 simvoldan çox olmamalıdır",
+            "versionDescriptionHelper": "Təsvir ən çox 500 simvoldan ibarət olmalıdır",
+            "versionAlreadyReleased": "Artıq yayımlanmış versiyada dəyişiklik edə bilməzsiniz. \n Dəyişiklik etmək istəyirsinizsə, yeni versiya yaradın və ya başqa versiyaya keçin."
+        },
+        "queries": "Sorğular",
+        "inspectComponent": "Yoxlamaq üçün komponent seçin",
+        "release": "Yayımla",
+        "searchQueries": "Sorğu axtarışı",
+        "createQuery": "Sorğu yarat",
+        "queryManager": {
+            "general": "Ümumi",
+            "advanced": "Əlavə",
+            "preview": "Önbaxış",
+            "Save": "Yadda saxla",
+            "selectDatasource": "Verilənlər mənbəyi seç",
+            "addDatasource": "Verilənlər mənbəyi əlavə et",
+            "dataSourceManager": {
+                "toast": {
+                    "success": {
+                        "dataSourceAdded": "Verilənlər mənbəyi əlavə edildi",
+                        "dataSourceSaved": "Verilənlər mənbəyi yadda saxlanıldı"
+                    },
+                    "error": {
+                        "noEmptyDsName": "Verilənlər mənbəyinin adı boş olmamalıdır"
+                    }
+                },
+                "suggestDataSource": "Verilənlər mənbəyi təklif et",
+                "suggestAnIntegration": "İnteqrasiya təklif et",
+                "whatLookingFor": "Nə axtardığınızı bizə deyə bilərsiniz?",
+                "noResultFound": "Axtardığınızı görmürsünüz?",
+                "suggest": "Təklif et",
+                "addNewDataSource": "Yeni verilənlər mənbəyi əlavə et",
+                "whiteListIP": "Verilənlər mənbəyi hamı üçün əlçatan deyilsə, IP ünvanımızı icazə verilənlər siyahısına əlavə edin",
+                "copied": "Kopyalandı",
+                "copy": "Kopyala",
+                "saving": "Yadda saxlanılır",
+                "noResultsFor": "Nəticə tapılmadı:",
+                "noteTaken": "Təşəkkür edirik, bunu qeyd etdik!",
+                "goToAllDatasources": "Bütün verilənlər mənbələrinə keç",
+                "send": "Göndər"
+            },
+            "runQueryOnApplicationLoad": "Tətbiq yüklənəndə bu sorğunu icra et",
+            "confirmBeforeQueryRun": "Sorğunu icra etməzdən əvvəl təsdiq istə",
+            "notificationOnSuccess": "Uğurlu olduqda bildiriş göstər",
+            "runOnDependencyChange": "Asılılıq dəyişəndə bu sorğunu icra et",
+            "successMessage": "Uğur mesajı",
+            "queryRanSuccessfully": "Sorğu uğurla icra edildi",
+            "notificationDuration": "Bildirişin müddəti (san.)",
+            "events": "Hadisələr",
+            "transformation": {
+                "transformationToolTip": "Sorğu nəticələrini çevirmək üçün sorğularda çevirmələri aktivləşdirmək olar. ToolJet sorğu nəticələrini iki proqramlaşdırma dili ilə çevirməyə imkan verir: JavaScript və Python",
+                "transformations": "Çevirmələr"
+            }
+        },
+        "inspector": {
+            "eventManager": {
+                "event": "Hadisə",
+                "action": "Əməl",
+                "debounce": "Təkrar çağırışları gecikdir",
+                "actionOptions": "Əməl seçimləri",
+                "message": "Mesaj",
+                "alertType": "Xəbərdarlıq növü",
+                "url": "URL",
+                "modal": "Modal pəncərə",
+                "text": "Mətn",
+                "query": "Sorğu",
+                "key": "Açar",
+                "value": "Dəyər",
+                "type": "Növ",
+                "fileName": "Faylın adı",
+                "data": "Məlumat",
+                "table": "Cədvəl",
+                "pageIndex": "Səhifə indeksi",
+                "component": "Komponent",
+                "addHandler": "Yeni hadisə işləyicisi",
+                "addNewEvent": "Yeni hadisə əlavə et",
+                "addEventHandler": "+ Hadisə işləyicisi əlavə et",
+                "emptyMessage": "Bu {{componentName}} üçün heç bir hadisə işləyicisi yoxdur",
+                "page": "Səhifə",
+                "addKeyValueParam": "{{parameter}} əlavə et"
+            }
+        }
+    },
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "Açıq rejimi aktivləşdir",
+            "activateDarkMode": "Tünd rejimi aktivləşdir"
+        },
+        "languageSelection": {
+            "changeLanguage": "Dili dəyiş",
+            "searchLanguage": "Dil axtarışı"
+        },
+        "notificationCenter": {
+            "notifications": "Bildirişlər",
+            "markAllAs": "Hamısını belə işarələ:",
+            "read": "Oxunmuş",
+            "un": "Oxunmamış",
+            "youDontHaveany": "Sizdə yoxdur:",
+            "youAreCaughtUp": "Bütün yeniliklərdən xəbərdarsınız!",
+            "view": "Bax"
+        },
+        "organization": {
+            "addNewWorkSpace": "Yeni iş sahəsi əlavə et",
+            "loadOrganizations": "İş sahələrini yüklə",
+            "createWorkspace": "İş sahəsi yarat",
+            "workspaceName": "İş sahəsinin adı",
+            "editWorkspace": "İş sahəsini redaktə et",
+            "menus": {
+                "addWorkspace": "İş sahəsi əlavə et",
+                "instanceLogout": {
+                    "title": "Bu instansiyadan çıxış",
+                    "customLogoutUrl": {
+                        "label": "Xüsusi çıxış URL-i",
+                        "helperText": "Bu instansiyadan çıxış edən istifadəçilər üçün fərdiləşdirilmiş çıxış URL-i təyin edin."
+                    }
+                },
+                "menusList": {
+                    "manageUsers": "İstifadəçilər",
+                    "manageGroups": "Qruplar",
+                    "manageSso": "SSO",
+                    "manageEnv": "İş sahəsinin dəyişənləri"
+                },
+                "manageUsers": {
+                    "usersAndPermission": "İstifadəçilər və icazələr",
+                    "inviteNewUser": "Bir istifadəçini dəvət et",
+                    "inviteUsers": "İstifadəçiləri dəvət et",
+                    "name": "Ad",
+                    "email": "E-poçt",
+                    "status": "Vəziyyət",
+                    "archive": "Arxivlə",
+                    "unarchive": "Arxivdən çıxar",
+                    "addNewUser": "İstifadəçilər əlavə et",
+                    "emailAddress": "E-poçt ünvanı",
+                    "createUser": "İstifadəçi yarat",
+                    "enterFirstName": "Ad daxil edin",
+                    "enterLastName": "Soyad daxil edin",
+                    "enterEmail": "E-poçt ünvanını daxil edin",
+                    "enterFullName": "Tam ad daxil edin",
+                    "inviteNewUsers": "Yeni istifadəçiləri dəvət et"
+                },
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "İstifadəçi qrupları",
+                        "createNewGroup": "Yeni qrup yarat",
+                        "updateGroup": "Qrupu yenilə",
+                        "addNewGroup": "Yeni qrup əlavə et",
+                        "enterName": "Qrupun adını daxil edin",
+                        "createGroup": "Qrup yarat",
+                        "name": "Ad"
+                    },
+                    "permissionResources": {
+                        "userGroup": "İstifadəçi qrupu",
+                        "apps": "Tətbiqlər",
+                        "workflows": "İş axınları",
+                        "users": "İstifadəçilər",
+                        "permissions": "İcazələr",
+                        "addAppsToGroup": "Qrupa əlavə etmək üçün tətbiqləri seçin",
+                        "addWorkflowsToGroup": "Qrupa əlavə etmək üçün iş axınlarını seçin",
+                        "name": "Ad",
+                        "addUsersToGroup": "Qrupa əlavə etmək üçün istifadəçiləri seçin",
+                        "email": "E-poçt",
+                        "resource": "Resurs",
+                        "createUpdateDelete": "Yarat/yenilə/sil",
+                        "folder": "Tətbiq qovluğu",
+                        "dataSource": "Verilənlər mənbələri",
+                        "tooljetDatabase": "ToolJet verilənlər bazası"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "Qrupu sil",
+                        "duplicateGroup": "Qrupun surətini yarat"
+                    }
+                },
+                "manageSSO": {
+                    "manageSso": "SSO",
+                    "generalSettings": {
+                        "title": "Ümumi parametrlər",
+                        "enableSignup": "Qeydiyyatı aktivləşdir",
+                        "newAccountWillBeCreated": "İstifadəçi ilk dəfə SSO ilə daxil olduqda yeni hesab yaradılacaq",
+                        "allowedDomains": "İcazə verilən domenlər",
+                        "enterDomains": "Domenləri daxil edin",
+                        "supportMultiDomains": "Bir neçə domen dəstəklənir. Domen adlarını vergüllə ayıraraq daxil edin. Məsələn: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl": "Giriş URL-i",
+                        "workspaceLogin": "Birbaşa bu iş sahəsinə daxil olmaq üçün bu URL-dən istifadə edin",
+                        "allowDefaultSso": "Standart SSO-ya icazə ver",
+                        "ssoAuth": "İstifadəçilərin standart SSO vasitəsilə şəxsiyyətini təsdiqləməsinə icazə ver. Standart SSO parametrləri \n iş sahəsi səviyyəsində SSO parametrləri ilə əvəz edilə bilər.",
+                        "customLogoutUrl": "Xüsusi çıxış URL-i"
+                    },
+                    "google": {
+                        "title": "Google",
+                        "enabled": "Aktivdir",
+                        "disabled": "Deaktiv",
+                        "clientId": "Müştəri identifikatoru",
+                        "enterClientId": "Müştəri identifikatorunu daxil edin",
+                        "redirectUrl": "Yönləndirmə URL-i"
+                    },
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "Qovşağın adı",
+                        "enterHostName": "Qovşağın adını daxil edin",
+                        "requiredGithub": "GitHub öz serverinizdə yerləşdirildikdə tələb olunur",
+                        "clientId": "Müştəri identifikatoru",
+                        "enterClientId": "Müştəri identifikatorunu daxil edin",
+                        "clientSecret": "Müştəri sirri",
+                        "enterClientSecret": "Müştəri sirrini daxil edin",
+                        "encrypted": "Şifrələnmiş",
+                        "redirectUrl": "Yönləndirmə URL-i"
+                    },
+                    "passwordLogin": "Parolla giriş",
+                    "environmentVar": {
+                        "noEnvConfig": "Hələ heç bir iş sahəsi dəyişəni təyin etməmisiniz. Birini yaratmaq üçün 'Yeni dəyişən əlavə et' düyməsinə basın",
+                        "envWillBeDeleted": "Dəyişən silinəcək, davam etmək istəyirsiniz?",
+                        "addNewVariable": "Yeni dəyişən əlavə et",
+                        "variableForm": {
+                            "addNewVariable": "Yeni dəyişən əlavə et",
+                            "updatevariable": "Dəyişəni yenilə",
+                            "name": "Ad",
+                            "value": "Dəyər",
+                            "enterVariableName": "Dəyişənin adını daxil edin",
+                            "enterValue": "Dəyər daxil edin",
+                            "type": "Növ",
+                            "enableEncryption": "Şifrələməni aktivləşdir",
+                            "addVariable": "Dəyişən əlavə et"
+                        },
+                        "variableTable": {
+                            "name": "Ad",
+                            "value": "Dəyər",
+                            "type": "Növ",
+                            "secret": "Sirr"
+                        }
+                    }
+                }
+            }
+        },
+        "profileSettingPage": {
+            "profileSettings": "Profil parametrləri",
+            "firstName": "Ad",
+            "lastName": "Soyad",
+            "enterFirstName": "Ad daxil edin",
+            "enterLastName": "Soyad daxil edin",
+            "email": "E-poçt ünvanı",
+            "avatar": "Avatar",
+            "update": "Yenilə",
+            "profile": "Profil",
+            "changePassword": "Parolu dəyiş",
+            "currentPassword": "Cari parol",
+            "newPassword": "Yeni parol",
+            "confirmNewPassword": "Yeni parolu təsdiqlə",
+            "enterCurrentPassword": "Cari parolu daxil edin",
+            "enterNewPassword": "Yeni parol daxil edin",
+            "inviteUsers": "İstifadəçiləri dəvət et"
+        },
+        "profile": "Profil",
+        "logout": "Çıxış"
+    },
+    "homePage": {
+        "appCard": {
+            "changeIcon": "İşarəni dəyiş",
+            "addToFolder": "Qovluğa əlavə et",
+            "move": "Köçür",
+            "to": "Hədəf qovluq",
+            "selectFolder": "Qovluq seç",
+            "deleteApp": "Tətbiqi sil",
+            "exportApp": "Tətbiqi ixrac et",
+            "cloneApp": "Tətbiqin surətini yarat",
+            "launch": "İşə sal",
+            "maintenance": "Texniki xidmət",
+            "noDeployedVersion": "Tətbiqin yerləşdirilmiş versiyası yoxdur",
+            "openInAppViewer": "Tətbiqə baxış pəncərəsində aç",
+            "removeFromFolder": "Qovluqdan çıxar"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Yeni ToolJet iş sahənizə xoş gəlmisiniz",
+            "getStartedCreateNewApp": "Yeni tətbiq yaradaraq və ya ToolJet kitabxanasındakı şablondan istifadə edərək tətbiq yaratmaqla başlaya bilərsiniz.",
+            "importApplication": "Tətbiq idxal et"
+        },
+        "foldersSection": {
+            "allApplications": "Bütün tətbiqlər",
+            "folders": "Qovluqlar",
+            "createNewFolder": "+ Yeni yarat",
+            "noFolders": "Hələ heç bir qovluq yaratmamısınız. Tətbiqlərinizi təşkil etmək üçün qovluqlardan istifadə edin",
+            "createFolder": "Qovluq yarat",
+            "updateFolder": "Qovluğu yenilə",
+            "editFolder": "Qovluğu redaktə et",
+            "deleteFolder": "Qovluğu sil",
+            "folderName": "Qovluğun adı",
+            "wishToDeleteFolder": "{{folderName}} qovluğunu silmək istədiyinizə əminsiniz? Qovluqdakı tətbiqlər silinməyəcək."
+        },
+        "header": {
+            "createNewApplication": "Tətbiq yarat",
+            "import": "Cihazdan idxal et",
+            "chooseFromTemplate": "Şablondan seç"
+        },
+        "pagination": {
+            "showing": "Göstərilir",
+            "of": "cəmi",
+            "to": "ilə"
+        },
+        "noApplicationFound": "Tətbiq tapılmadı",
+        "noWorkflowFound": "İş axını tapılmadı",
+        "thisFolderIsEmpty": "Bu qovluq boşdur",
+        "nonAccessibleFolderApps": "Bu qovluqdakı heç bir tətbiqə giriş icazəniz yoxdur.",
+        "deleteAppAndData": "{{appName}} tətbiqi və əlaqəli məlumatlar həmişəlik silinəcək, davam etmək istəyirsiniz?",
+        "deleteWorkflowAndData": "{{appName}} iş axını və əlaqəli məlumatlar həmişəlik silinəcək, davam etmək istəyirsiniz?",
+        "removeAppFromFolder": "Tətbiq bu qovluqdan çıxarılacaq, davam etmək istəyirsiniz?",
+        "change": "Dəyiş",
+        "templateCard": {
+            "use": "İstifadə et",
+            "preview": "Önbaxış",
+            "leadGeneretion": "Potensial müştərilərin cəlb edilməsi"
+        },
+        "templateLibraryModal": {
+            "select": "Şablon seç",
+            "createAppfromTemplate": "Şablondan tətbiq yarat"
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "İcra et",
+            "openInWorkflowEditor": "İş axını redaktorunda aç"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Yeni ToolJet iş sahənizə xoş gəlmisiniz",
+            "getStartedCreateNewApp": "Yeni tətbiq yaradaraq və ya ToolJet kitabxanasındakı şablondan istifadə edərək tətbiq yaratmaqla başlaya bilərsiniz.",
+            "importApplication": "Tətbiq idxal et"
+        },
+        "foldersSection": {
+            "allApplications": "Bütün iş axınları",
+            "folders": "Qovluqlar",
+            "createNewFolder": "+ Yeni yarat",
+            "noFolders": "Hələ heç bir qovluq yaratmamısınız. Tətbiqlərinizi təşkil etmək üçün qovluqlardan istifadə edin",
+            "createFolder": "Qovluq yarat",
+            "updateFolder": "Qovluğu yenilə",
+            "editFolder": "Qovluğu redaktə et",
+            "deleteFolder": "Qovluğu sil",
+            "folderName": "Qovluğun adı",
+            "wishToDeleteFolder": "Qovluğu silmək istədiyinizə əminsiniz? Qovluqdakı tətbiqlər silinməyəcək."
+        },
+        "header": {
+            "createNewApplication": "Yeni iş axını yarat",
+            "import": "İdxal et",
+            "chooseFromTemplate": "Şablondan seç"
+        },
+        "pagination": {
+            "showing": "Göstərilir",
+            "of": "cəmi",
+            "to": "ilə"
+        },
+        "noApplicationFound": "Tətbiq tapılmadı",
+        "thisFolderIsEmpty": "Bu qovluq boşdur",
+        "deleteAppAndData": "Tətbiq və əlaqəli məlumatlar həmişəlik silinəcək, davam etmək istəyirsiniz?",
+        "removeAppFromFolder": "Tətbiq bu qovluqdan çıxarılacaq, davam etmək istəyirsiniz?",
+        "change": "Dəyiş",
+        "templateCard": {
+            "use": "İstifadə et",
+            "preview": "Önbaxış",
+            "leadGeneretion": "Potensial müştərilərin cəlb edilməsi"
+        },
+        "templateLibraryModal": {
+            "select": "Şablon seç",
+            "createAppfromTemplate": "Şablondan tətbiq yarat"
+        }
+    },
+    "confirmationPage": {
+        "setupAccount": "Hesabınızı qurun",
+        "signupWithGoogle": "Google ilə qeydiyyatdan keç",
+        "signupWithGitHub": "GitHub ilə qeydiyyatdan keç",
+        "signupWithOpenid": "Qeydiyyatdan keç:",
+        "or": "Və ya",
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "company": "Şirkət",
+        "role": "Rol",
+        "pleaseSelect": "Seçin",
+        "password": "Parol",
+        "confirmPassword": "Parolu təsdiqlə",
+        "clickAndAgree": "Aşağıdakı düyməyə basmaqla bunlarla razılaşırsınız:",
+        "termsAndConditions": "Şərtlər və qaydalar",
+        "finishAccountSetup": "Hesabın qurulmasını tamamla",
+        "acceptInvite": "Dəvəti qəbul et",
+        "accountExists": "Artıq hesabınız var?",
+        "and": "Və"
+    },
+    "onBoarding": {
+        "finishToolJetInstallation": "ToolJet-in quraşdırılmasını tamamla",
+        "organization": "İş sahəsi",
+        "name": "Ad",
+        "email": "E-poçt",
+        "receiveUpdatesFromToolJet": "ToolJet komandasından yeniliklər alacaqsınız (ayda 1–2 e-poçt, spam göndərmirik)",
+        "finishSetup": "Quraşdırmanı tamamla",
+        "skip": "Ötür"
+    },
+    "redirectSso": {
+        "upgradingTov1.13.0": "v1.13.0 və daha yeni versiyalara yenilənir.",
+        "fromV1.13.0": "v1.13.0 versiyasından etibarən təqdim edirik:",
+        "multiWorkspace": "Çoxsaylı iş sahələri",
+        "singleSignOnConfig": "Vahid giriş parametrləri iş sahəsinin dəyişənlərindən verilənlər bazasına köçürülüb. Bu mənbəyə baxın:",
+        "link": "Keçid",
+        "toConfigureSSO": "SSO-nu konfiqurasiya etmək üçün.",
+        "haveGoogleGithubSSo": "Yeniləmədən əvvəl Google və ya GitHub SSO parametrləriniz varsa və çoxsaylı iş sahələrini deaktiv etmisinizsə, SSO parametrləri yeniləmə zamanı köçürüləcək, lakin SSO təminatçısı tərəfində yönləndirmə URL-ini yenidən təyin etməlisiniz. Hər bir SSO üçün yönləndirmə URL-ləri aşağıda verilib.",
+        "isMultiWorkspaceEnabled": "Çoxsaylı iş sahələrini aktivləşdirmisinizsə, SSO parametrləri yeniləmə zamanı köçürülməyəcək, buna görə müvafiq iş sahəsində SSO-nu yenidən konfiqurasiya etməlisiniz.",
+        "youHaveEnabled": "Aktivləşdirmisiniz",
+        "setupSsoWorkspace": "Parolla daxil olun və iş sahəsində SSO-nu quraşdırmaq üçün bu menyudan istifadə edin:",
+        "manageSsoMenu": "SSO idarəetmə menyusu.",
+        "youHaveDisabled": "Deaktiv etmisiniz",
+        "configureRedirectUrl": "SSO təminatçısı tərəfində yönləndirmə URL-ini təyin edin.",
+        "google": "Google",
+        "redirectUrl": "Yönləndirmə URL-i:",
+        "gitHub": "GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait": "Gözləyin...",
+        "authSuccess": "Şəxsiyyət təsdiqləndi, indi bu vərəqi bağlaya bilərsiniz.",
+        "authFailed": "Şəxsiyyət təsdiqlənmədi"
+    },
+    "widgetManager": {
+        "commonlyUsed": "Tez-tez istifadə olunanlar",
+        "layouts": "Düzənlər",
+        "forms": "Formalar",
+        "integrations": "İnteqrasiyalar",
+        "others": "Digərləri",
+        "noResults": "Nəticə tapılmadı",
+        "tryAdjustingFilterMessage": "Axtardığınızı tapmaq üçün axtarışı və ya filtri dəyişməyə çalışın.",
+        "clearQuery": "Sorğunu təmizlə"
+    },
+    "widget": {
+        "common": {
+            "properties": "Xüsusiyyətlər",
+            "events": "Hadisələr",
+            "layout": "Düzən",
+            "devices": "Cihazlar",
+            "styles": "Üslublar",
+            "general": "Ümumi",
+            "validation": "Doğrulama",
+            "structure": "Struktur",
+            "data": "Məlumat",
+            "additionalActions": "Əlavə əməllər",
+            "documentation": "{{componentMeta}} üçün sənədləri oxu",
+            "widgetNameEmptyError": "Komponentin adı boş ola bilməz",
+            "componentNameExistsError": "Komponentin adı artıq mövcuddur",
+            "invalidWidgetName": "Komponentin adı etibarsızdır. Ad unikal olmalı və yalnız hərflərdən, rəqəmlərdən və alt xətdən ibarət olmalıdır."
+        },
+        "commonProperties": {
+            "visibility": "Görünmə",
+            "disable": "Deaktiv et",
+            "borderRadius": "Çərçivənin künc radiusu",
+            "transformation": "Çevirmə",
+            "boxShadow": "Qutunun kölgəsi",
+            "tooltip": "İzahedici mətn",
+            "showOnDesktop": "Masaüstündə göstər",
+            "showOnMobile": "Mobil cihazda göstər",
+            "showLoadingState": "Yüklənmə vəziyyətini göstər",
+            "backgroundColor": "Fon rəngi",
+            "textColor": "Mətnin rəngi",
+            "loaderColor": "Yüklənmə göstəricisinin rəngi",
+            "defaultValue": "Standart dəyər",
+            "placeholder": "Yer tutucu",
+            "label": "Etiket",
+            "title": "Başlıq",
+            "code": "Kod",
+            "data": "Məlumat",
+            "tableData": "Cədvəl məlumatları",
+            "tableColumns": "Cədvəlin sütunları",
+            "loadingState": "Yüklənmə vəziyyəti",
+            "serverSidePagination": "Server tərəfində səhifələmə",
+            "clientSidePagination": "Müştəri tərəfində səhifələmə",
+            "serverSideSearch": "Server tərəfində axtarış",
+            "showSearchBox": "Axtarış xanasını göstər",
+            "showDownloadButton": "Endirmə düyməsini göstər",
+            "showFilterButton": "Filtr düyməsini göstər",
+            "showBulkUpdateActions": "Yeniləmə düymələrini göstər",
+            "bulkSelection": "Toplu seçim",
+            "highlightSelectedRow": "Seçilmiş sətri vurğula",
+            "actionButtonRadius": "Əməl düyməsinin radiusu",
+            "tableType": "Cədvəlin növü",
+            "cellSize": "Xananın ölçüsü",
+            "setPage": "Səhifəni təyin et",
+            "page": "Səhifə",
+            "buttonText": "Düymənin mətni",
+            "click": "Kliklə",
+            "setText": "Mətni təyin et",
+            "text": "Mətn",
+            "markerColor": "Nişanın rəngi",
+            "showAxes": "Oxu göstər",
+            "showGridLines": "Tor xətlərini göstər",
+            "chartType": "Diaqramın növü",
+            "jsonDescription": "JSON təsviri",
+            "usePlotlyJsonSchema": "Plotly JSON sxemindən istifadə et",
+            "padding": "Daxili boşluq",
+            "hideTitleBar": "Başlıq zolağını gizlət",
+            "hideCloseButton": "Bağlama düyməsini gizlət",
+            "hideOnEscape": "Escape düyməsinə basıldıqda gizlət",
+            "modalSize": "Modal pəncərənin ölçüsü",
+            "open": "Aç",
+            "close": "Bağla",
+            "regex": "Müntəzəm ifadə",
+            "minLength": "Minimum uzunluq",
+            "maxLength": "Maksimum uzunluq",
+            "customValidation": "Xüsusi doğrulama",
+            "clear": "Təmizlə",
+            "minimumValue": "Minimum dəyər",
+            "maximumValue": "Maksimum dəyər",
+            "format": "Format",
+            "enableTimeSelection": "Vaxt seçimini aktivləşdir?",
+            "enableDateSelection": "Tarix seçimini aktivləşdir?",
+            "disabledDates": "Deaktiv tarixlər",
+            "minDate": "Minimum tarix",
+            "maxDate": "Maksimum tarix",
+            "makeThisFieldMandatory": "Bu sahəni məcburi et",
+            "setChecked": "İşarələnmiş olaraq təyin et",
+            "status": "Vəziyyət",
+            "defaultStatus": "Standart vəziyyət",
+            "checkboxColor": "Seçim xanasının rəngi",
+            "optionValues": "Seçimlərin dəyərləri",
+            "optionLabels": "Seçimlərin etiketləri",
+            "activeColor": "Aktiv rəng",
+            "selectOption": "Seçim et",
+            "option": "Seçim",
+            "toggleSwitchColor": "Keçiricinin rəngi",
+            "defaultStartDate": "Standart başlanğıc tarixi",
+            "defaultEndDate": "Standart bitmə tarixi",
+            "textSize": "Mətnin ölçüsü",
+            "alignText": "Mətni düzləndir",
+            "url": "URL",
+            "alternativeText": "Alternativ mətn",
+            "zoomButton": "Miqyas düyməsi",
+            "borderType": "Çərçivənin növü",
+            "imageFit": "Şəklin uyğunlaşdırılması",
+            "optionsLoadingState": "Seçimlərin yüklənmə vəziyyəti",
+            "selectedTextColor": "Seçilmiş mətnin rəngi",
+            "select": "Seç",
+            "deselectOption": "Seçimi ləğv et",
+            "clearSelections": "Seçimləri təmizlə",
+            "enableSelectAllOption": "Hamısını seç imkanını aktivləşdir",
+            "initialLocation": "İlkin məkan",
+            "defaultMarkers": "Standart nişanlar",
+            "addNewMarkers": "Yeni nişanlar əlavə et",
+            "searchForPlaces": "Məkan axtarışı",
+            "setLocation": "Məkanı təyin et",
+            "latitude": "Coğrafi enlik",
+            "longitude": "Coğrafi uzunluq",
+            "numberOfStars": "Ulduzların sayı",
+            "defaultNoOfSelectedStars": "Seçilmiş ulduzların standart sayı",
+            "enableHalfStar": "Yarım ulduzu aktivləşdir",
+            "tooltips": "İzahedici mətnlər",
+            "starColor": "Ulduzun rəngi",
+            "labelColor": "Etiketin rəngi",
+            "dividerColor": "Ayırıcının rəngi",
+            "clearFiles": "Faylları təmizlə",
+            "instructionText": "Təlimat mətni",
+            "useDropZone": "Sürükləyib buraxma sahəsindən istifadə et",
+            "useFilePicker": "Fayl seçicisindən istifadə et",
+            "pickMultipleFiles": "Bir neçə fayl seç",
+            "maxFileCount": "Maksimum fayl sayı",
+            "acceptFileTypes": "Qəbul edilən fayl növləri",
+            "maxSizeLimitBytes": "Maksimum ölçü həddi (bayt)",
+            "minSizeLimitBytes": "Minimum ölçü həddi (bayt)",
+            "parseContent": "Məzmunu təhlil et",
+            "fileType": "Faylın növü",
+            "dateFormat": "Tarix formatı",
+            "timeFormat": "Vaxt formatı",
+            "displayIn": "Göstərmə saat qurşağı",
+            "storeIn": "Saxlama saat qurşağı",
+            "defaultDate": "Standart tarix",
+            "events": "Hadisələr",
+            "resources": "Resurslar",
+            "defaultView": "Standart baxış",
+            "startTimeOnWeekAndDayView": "Həftəlik və gündəlik baxışda başlanğıc vaxtı",
+            "endTimeOnWeekAndDayView": "Həftəlik və gündəlik baxışda bitmə vaxtı",
+            "showToolbar": "Alətlər panelini göstər",
+            "showViewSwitcher": "Baxış dəyişdiricisini göstər",
+            "highlightToday": "Bu günü vurğula",
+            "showPopoverWhenEventIsClicked": "Hadisəyə kliklədikdə açılan pəncərəni göstər",
+            "cellSizeInViewsClassifiedByResource": "Resursa görə qruplaşdırılmış baxışlarda xananın ölçüsü",
+            "headerDateFormatOnWeekView": "Həftəlik baxışda başlığın tarix formatı",
+            "showLineNumber": "Sətir nömrəsini göstər",
+            "mode": "Rejim",
+            "tabs": "Vərəqlər",
+            "defaultTab": "Standart vərəq",
+            "hideTabs": "Vərəqləri gizlət",
+            "highlightColor": "Vurğulama rəngi",
+            "tabWidth": "Vərəqin eni",
+            "setCurrentTab": "Cari vərəqi təyin et",
+            "id": "ID",
+            "timerType": "Taymerin növü",
+            "listData": "Siyahı məlumatları",
+            "rowHeight": "Sətrin hündürlüyü",
+            "showBottomBorder": "Alt çərçivəni göstər",
+            "tags": "Teqlər",
+            "numberOfPages": "Səhifələrin sayı",
+            "defaultPageIndex": "Standart səhifə indeksi",
+            "progress": "İrəliləyiş",
+            "color": "Rəng",
+            "strokeWidth": "Konturun qalınlığı",
+            "counterClockwise": "Saat əqrəbinin əksinə",
+            "circleRatio": "Dairə nisbəti",
+            "colour": "Rəng",
+            "size": "Ölçü",
+            "primaryValueLabel": "Əsas dəyərin etiketi",
+            "primaryValue": "Əsas dəyər",
+            "hideSecondaryValue": "İkinci dəyəri gizlət",
+            "secondaryValueLabel": "İkinci dəyərin etiketi",
+            "secondaryValue": "İkinci dəyər",
+            "secondarySignDisplay": "İkinci işarənin göstərilməsi",
+            "primaryLabelColour": "Əsas etiketin rəngi",
+            "primaryTextColour": "Əsas mətnin rəngi",
+            "secondaryLabelColour": "İkinci etiketin rəngi",
+            "secondaryTextColour": "İkinci mətnin rəngi",
+            "min": "Minimum",
+            "max": "Maksimum",
+            "value": "Dəyər",
+            "twoHandles": "İki tutacaq",
+            "lineColor": "Xəttin rəngi",
+            "handleColor": "Tutacağın rəngi",
+            "trackColor": "Zolağın rəngi",
+            "timelineData": "Zaman xəttinin məlumatları",
+            "hideDate": "Tarixi gizlət",
+            "svgData": "SVG məlumatları",
+            "rawHtml": "Xam HTML",
+            "values": "Dəyərlər",
+            "labels": "Etiketlər",
+            "defaultSelected": "Standart seçilmiş",
+            "enableMultipleSelection": "Çoxsaylı seçimi aktivləşdir",
+            "selectedTextColour": "Seçilmiş mətnin rəngi",
+            "selectedBackgroundColor": "Seçilmiş fon rəngi",
+            "fileUrl": "Faylın URL-i",
+            "scalePageToWidth": "Səhifəni enə uyğun miqyasla",
+            "showPageControls": "Səhifə idarəetmə elementlərini göstər",
+            "steps": "Addımlar",
+            "currentStep": "Cari addım",
+            "stepsSelectable": "Addımlar seçilə bilər",
+            "theme": "Tema",
+            "columns": "Sütunlar",
+            "cardData": "Kart məlumatları",
+            "enableAddCard": "Kart əlavə etməni aktivləşdir",
+            "width": "En",
+            "minWidth": "Minimum en",
+            "accentColor": "Vurğu rəngi",
+            "defaultColor": "Standart rəng",
+            "setColor": "Rəngi təyin et",
+            "structure": "Struktur",
+            "checkedValues": "İşarələnmiş dəyərlər",
+            "expandedValues": "Genişləndirilmiş dəyərlər"
+        },
+        "Table": {
+            "displayName": "Cədvəl",
+            "description": "Səhifələnmiş cədvəl məlumatlarını göstər",
+            "columnType": "Sütunun növü",
+            "columnName": "Sütunun adı",
+            "overflow": "Daşma",
+            "key": "Açar",
+            "textColor": "Mətnin rəngi",
+            "validation": "Doğrulama",
+            "regex": "Müntəzəm ifadə",
+            "minLength": "Minimum uzunluq",
+            "maxLength": "Maksimum uzunluq",
+            "customRule": "Xüsusi qayda",
+            "values": "Dəyərlər",
+            "labels": "Etiketlər",
+            "cellBgColor": "Xananın fon rəngi",
+            "dateDisplayformat": "Tarix formatı",
+            "dateParseformat": "Tarix",
+            "showTime": "Vaxtı göstər",
+            "makeEditable": "Redaktə edilə bilən et",
+            "buttonText": "Düymənin mətni",
+            "buttonPosition": "Düymənin mövqeyi",
+            "remove": "Çıxar",
+            "addButton": "+ Düymə əlavə et",
+            "addColumn": "Sütun əlavə et",
+            "addNewColumn": "Yeni sütun əlavə et",
+            "noActionMessage": "Bu cədvəldə heç bir əməl düyməsi yoxdur",
+            "horizontalAlignment": "Üfüqi düzləndirmə",
+            "textAlignment": "Mətnin düzləndirilməsi",
+            "deciamalPlaces": "Vergüldən sonrakı rəqəmlərin sayı",
+            "imageFit": "Şəklin uyğunlaşdırılması"
+        },
+        "Button": {
+            "displayName": "Düymə",
+            "description": "Əməlləri işə sal: sorğular, xəbərdarlıqlar, dəyişənlərin təyin edilməsi və s."
+        },
+        "Chart": {
+            "displayName": "Diaqram",
+            "description": "Məlumatları vizuallaşdır"
+        },
+        "Modal": {
+            "displayName": "Modal pəncərə",
+            "description": "Açılan pəncərələri göstər"
+        },
+        "TextInput": {
+            "displayName": "Mətn girişi",
+            "description": "İstifadəçinin mətn daxil etməsi üçün sahə"
+        },
+        "NumberInput": {
+            "displayName": "Ədəd girişi",
+            "description": "Ədəd daxil etmə sahəsi"
+        },
+        "PasswordInput": {
+            "displayName": "Parol girişi",
+            "description": "Təhlükəsiz mətn girişi"
+        },
+        "Datepicker": {
+            "displayName": "Tarix seçicisi",
+            "description": "Tarix və vaxt seç"
+        },
+        "Checkbox": {
+            "displayName": "Seçim xanası",
+            "description": "Tək seçim xanasının vəziyyətini dəyişdirmə"
+        },
+        "Radio-button": {
+            "displayName": "Tək seçim düyməsi",
+            "description": "Bir neçə seçimdən birini seç"
+        },
+        "ToggleSwitch": {
+            "displayName": "Keçirici",
+            "description": "İstifadəçinin idarə etdiyi açıb-bağlama keçiricisi"
+        },
+        "Textarea": {
+            "displayName": "Mətn sahəsi",
+            "description": "Çoxsətirli mətn girişi"
+        },
+        "DateRangePicker": {
+            "displayName": "Tarix aralığı seçicisi",
+            "description": "Tarix aralıqlarını seç"
+        },
+        "Text": {
+            "displayName": "Mətn",
+            "description": "Mətn və ya HTML göstər"
+        },
+        "Image": {
+            "displayName": "Şəkil",
+            "description": "Şəkil fayllarını göstər"
+        },
+        "Container": {
+            "displayName": "Konteyner",
+            "description": "Komponentləri qruplaşdır"
+        },
+        "Dropdown": {
+            "displayName": "Açılan siyahı",
+            "description": "Tək element seçicisi"
+        },
+        "Multiselect": {
+            "displayName": "Çoxsaylı seçim",
+            "description": "Çoxsaylı element seçicisi"
+        },
+        "RichTextEditor": {
+            "displayName": "Mətn redaktoru",
+            "description": "Zəngin mətn redaktoru"
+        },
+        "Map": {
+            "displayName": "Xəritə",
+            "description": "Xəritədə məkanları göstər"
+        },
+        "QrScanner": {
+            "displayName": "QR skaneri",
+            "description": "QR kodlarını skan et və məlumatlarını saxla"
+        },
+        "StarRating": {
+            "displayName": "Qiymətləndirmə",
+            "description": "Ulduzlarla qiymətləndirmə"
+        },
+        "Divider": {
+            "displayName": "Ayırıcı",
+            "description": "Komponentlər arasındakı ayırıcı"
+        },
+        "FilePicker": {
+            "displayName": "Fayl seçicisi",
+            "description": "Fayl seçicisi"
+        },
+        "Calendar": {
+            "displayName": "Təqvim",
+            "description": "Təqvim hadisələrini göstər"
+        },
+        "Iframe": {
+            "displayName": "Daxili çərçivə",
+            "description": "Xarici məzmunu yerləşdir"
+        },
+        "CodeEditor": {
+            "displayName": "Kod redaktoru",
+            "description": "Mənbə kodunu redaktə et"
+        },
+        "Tabs": {
+            "displayName": "Vərəqlər",
+            "description": "Məzmunu vərəqlərdə təşkil et"
+        },
+        "Timer": {
+            "displayName": "Taymer",
+            "description": "Geri sayım və ya saniyəölçən"
+        },
+        "Listview": {
+            "displayName": "Siyahı baxışı",
+            "description": "Bir neçə elementi siyahıya al"
+        },
+        "Tags": {
+            "displayName": "Teqlər",
+            "description": "Teq etiketlərini göstər"
+        },
+        "Pagination": {
+            "displayName": "Səhifələmə",
+            "description": "Səhifələr arasında keçid et"
+        },
+        "CircularProgressbar": {
+            "displayName": "Dairəvi irəliləyiş göstəricisi",
+            "description": "Dairəvi irəliləyişi göstər"
+        },
+        "Spinner": {
+            "displayName": "Yüklənmə göstəricisi",
+            "description": "Yüklənmə vəziyyətini göstər"
+        },
+        "Statistics": {
+            "displayName": "Statistika",
+            "description": "Əsas göstəriciləri göstər"
+        },
+        "RangeSlider": {
+            "displayName": "Aralıq sürüşdürməsi",
+            "description": "Dəyər aralığını tənzimlə"
+        },
+        "Timeline": {
+            "displayName": "Zaman xətti",
+            "description": "Hadisələrin zaman xəttini göstər"
+        },
+        "SvgImage": {
+            "displayName": "SVG şəkli",
+            "description": "SVG qrafikasını göstər"
+        },
+        "Html": {
+            "displayName": "HTML baxış pəncərəsi",
+            "description": "HTML məzmununa bax"
+        },
+        "VerticalDivider": {
+            "displayName": "Şaquli ayırıcı",
+            "description": "Şaquli xətt ayırıcısı"
+        },
+        "CustomComponent": {
+            "displayName": "Xüsusi komponent",
+            "description": "React komponentləri yarat"
+        },
+        "ButtonGroup": {
+            "displayName": "Düymə qrupu",
+            "description": "Düymələr qrupu"
+        },
+        "PDF": {
+            "displayName": "PDF",
+            "description": "PDF sənədlərini yerləşdir"
+        },
+        "Steps": {
+            "displayName": "Addımlar",
+            "description": "Addım-addım naviqasiya vasitəsi"
+        },
+        "KanbanBoard": {
+            "displayName": "Kanban lövhəsi",
+            "description": "Tapşırıqların idarəetmə lövhəsi"
+        },
+        "ColorPicker": {
+            "displayName": "Rəng seçicisi",
+            "description": "Palitradan rənglər seç"
+        },
+        "TreeSelect": {
+            "displayName": "Ağac seçimi",
+            "description": "İyerarxik element seçicisi"
+        }
+    },
+    "leftSidebar": {
+        "Inspector": {
+            "text": "Xüsusiyyət yoxlayıcısı",
+            "tip": "Xüsusiyyət yoxlayıcısı"
+        },
+        "Sources": {
+            "text": "Mənbələr",
+            "tip": "Verilənlər mənbələri əlavə et və ya redaktə et",
+            "dataSources": "Verilənlər mənbələri",
+            "addDataSource": "+ Verilənlər mənbəyi əlavə et"
+        },
+        "Debugger": {
+            "text": "Xəta sazlayıcısı",
+            "tip": "Xəta sazlayıcısı",
+            "errors": "Xətalar",
+            "noErrors": "Xəta tapılmadı",
+            "noLogs": "Jurnal qeydləri tapılmadı",
+            "clear": "Təmizlə"
+        },
+        "Comments": {
+            "text": "Şərhlər",
+            "tip": "Şərhləri göstər/gizlət",
+            "commentBody": "Göstəriləcək şərh yoxdur",
+            "typeComment": "Şərhinizi buraya yazın"
+        },
+        "Settings": {
+            "text": "İşəsalma şərtləri",
+            "tip": "Ümumi parametrlər",
+            "hideHeader": "İşə salınmış tətbiqlərdə başlığı gizlət",
+            "maintenanceMode": "Texniki xidmət rejimi",
+            "maxWidthOfCanvas": "İş səthinin maksimum eni",
+            "maxHeightOfCanvas": "İş səthinin maksimum hündürlüyü",
+            "backgroundColorOfCanvas": "İş səthinin fonu",
+            "appMode": "Tətbiq rejimi",
+            "exportApp": "Tətbiqi ixrac et"
+        },
+        "Back": {
+            "text": "Geri",
+            "tip": "Əsas səhifəyə qayıt"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "Yanvar",
+            "february": "Fevral",
+            "march": "Mart",
+            "april": "Aprel",
+            "may": "May",
+            "june": "İyun",
+            "july": "İyul",
+            "august": "Avqust",
+            "september": "Sentyabr",
+            "october": "Oktyabr",
+            "november": "Noyabr",
+            "december": "Dekabr"
+        }
+    },
+    "notifications": {
+        "empty": "Bildiriş yoxdur",
+        "markAllRead": "Hamısını oxunmuş kimi işarələ",
+        "technicalDetails": "Texniki təfərrüatlar",
+        "copy": "Kopyala",
+        "copied": "Kopyalandı"
+    }
+}
