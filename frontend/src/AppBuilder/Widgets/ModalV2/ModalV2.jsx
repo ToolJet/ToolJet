@@ -18,6 +18,9 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
+// Upper bound on how long open() waits for the enter transition
+const OPEN_TIMEOUT_MS = 1000;
+
 export const ModalV2 = function Modal({
   id,
   component,
@@ -115,59 +118,49 @@ export const ModalV2 = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // open(callback) calls waiting for the modal to finish entering, so the callback sees mounted children
-  const pendingOpenCallbacksRef = useRef([]);
+  // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children
+  const pendingOpensRef = useRef([]);
   const hasEnteredRef = useRef(false);
 
-  const runPendingOpenCallbacks = () => {
-    const pending = pendingOpenCallbacksRef.current;
+  const resolvePendingOpens = () => {
+    const pending = pendingOpensRef.current;
     if (!pending.length) return;
-    pendingOpenCallbacksRef.current = [];
-    const store = useStore.getState();
-    store.flushImplicitBatchEntries();
-    const { components } = store.getResolvedState(moduleId);
-    pending.forEach(({ callback, resolve, reject }) => {
-      Promise.resolve()
-        .then(() => callback(components))
-        .then(resolve, reject);
-    });
-  };
-
-  const dropPendingOpenCallbacks = () => {
-    pendingOpenCallbacksRef.current.forEach(({ resolve }) => resolve());
-    pendingOpenCallbacksRef.current = [];
+    pendingOpensRef.current = [];
+    useStore.getState().flushImplicitBatchEntries();
+    pending.forEach((resolve) => resolve());
   };
 
   const onModalEntered = () => {
     hasEnteredRef.current = true;
-    runPendingOpenCallbacks();
+    resolvePendingOpens();
   };
 
   function hideModal() {
     hasEnteredRef.current = false;
-    dropPendingOpenCallbacks();
+    resolvePendingOpens();
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
   }
 
-  function openModal(callback) {
-    const opened =
-      typeof callback === 'function'
-        ? new Promise((resolve, reject) => pendingOpenCallbacksRef.current.push({ callback, resolve, reject }))
-        : undefined;
+  function openModal() {
+    const opened = new Promise((resolve) => {
+      pendingOpensRef.current.push(resolve);
+      // Never block the caller if the modal doesn't finish entering
+      setTimeout(resolvePendingOpens, OPEN_TIMEOUT_MS);
+    });
     setExposedVariable('show', true);
     if (hasEnteredRef.current) {
-      runPendingOpenCallbacks();
+      resolvePendingOpens();
     } else {
       setShowModal(true);
     }
     return opened;
   }
 
-  const onShowModal = (callback) => {
+  const onShowModal = () => {
     setSelectedComponentAsModal(id);
-    return openModal(callback);
+    return openModal();
   };
 
   const onHideModal = () => {
@@ -203,7 +196,7 @@ export const ModalV2 = function Modal({
   // the next page unscrollable.
   useEffect(() => {
     return () => {
-      dropPendingOpenCallbacks();
+      resolvePendingOpens();
       if (showModalRef.current) {
         onHideSideEffects();
       }
