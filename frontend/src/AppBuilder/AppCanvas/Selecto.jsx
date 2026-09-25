@@ -40,7 +40,9 @@ const EditorSelecto = () => {
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      let isMultiSelect = null;
+      // Only Shift adds to the existing selection; a plain lasso replaces it, so a selection in
+      // another canvas can't ride along into a follow-up delete.
+      const isMultiSelect = e.inputEvent.shiftKey;
       // Select everything under the lasso. `added` alone is relative to Selecto's own last
       // selection, which goes stale when selection changes elsewhere (clicks, canvas mouseup).
       // With Shift held Selecto toggles, so what was already remembered shows up as
@@ -48,11 +50,7 @@ const EditorSelecto = () => {
       const lassoedTargets = e.inputEvent.shiftKey
         ? [...e.added, ...e.beforeSelected.filter((el) => !e.selected.includes(el))]
         : e.selected;
-      const selectedIds = lassoedTargets.map((el, index) => {
-        const id = el.getAttribute('widgetid');
-        isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-        return id;
-      });
+      const selectedIds = lassoedTargets.map((el) => el.getAttribute('widgetid'));
 
       if (selectedIds.length > 0) {
         // Only the marquee's own hits are scoped.
