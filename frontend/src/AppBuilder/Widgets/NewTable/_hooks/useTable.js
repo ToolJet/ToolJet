@@ -9,6 +9,7 @@ import {
 import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
 
 export function useTable({
+  id,
   data,
   columns,
   enableSorting,
@@ -21,6 +22,7 @@ export function useTable({
   globalFilter,
   setGlobalFilter,
   expandedRows,
+  getEditedFieldsOnIndex,
 }) {
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -101,7 +103,14 @@ export function useTable({
       },
     },
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = String(row.getValue(columnId) || '').toLowerCase();
+      const accessorKey = row.getAllCells().find((cellItem) => cellItem.column.id === columnId)?.column
+        .columnDef.accessorKey;
+      const editedFields = accessorKey ? getEditedFieldsOnIndex?.(id, row.index) : undefined;
+      const cellValue =
+        editedFields && Object.prototype.hasOwnProperty.call(editedFields, accessorKey)
+          ? editedFields[accessorKey]
+          : row.getValue(columnId);
+      const value = String(cellValue || '').toLowerCase();
       return value.includes(String(filterValue).toLowerCase());
     },
     getColumnCanGlobalFilter: (column) => column.getIsVisible(),

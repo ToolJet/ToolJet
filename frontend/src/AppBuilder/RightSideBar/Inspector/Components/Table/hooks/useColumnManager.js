@@ -54,6 +54,14 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       };
     }
 
+    // Handle json column initialization — Indent toggle defaults to visually on, so seed the real value to match
+    if (property === 'columnType' && value === 'json') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        jsonIndentation: true,
+      };
+    }
+
     // Handle button column initialization — starts with empty buttons array
     if (property === 'columnType' && value === 'button') {
       modifiedColumn = {
@@ -105,7 +113,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     config: {
       propertyName: 'columns',
       typeProp: 'columnType',
-      nonEditableTypes: ['link', 'image'],
+      nonEditableTypes: ['link', 'image', 'button'],
       namePrefix: 'new_column',
       defaultItemProps: {
         includeKey: true,

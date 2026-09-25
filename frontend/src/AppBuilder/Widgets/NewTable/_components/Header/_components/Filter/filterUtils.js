@@ -38,11 +38,15 @@ export const filterFunctions = {
   },
   isEmpty: (row, columnId) => {
     const value = row.getValue(columnId);
-    return !value || value.length === 0;
+    if (value === null || value === undefined || value === '') return true;
+    if (Array.isArray(value) || typeof value === 'string') return value.length === 0;
+    return false;
   },
   isNotEmpty: (row, columnId) => {
     const value = row.getValue(columnId);
-    return value && value.length > 0;
+    if (value === null || value === undefined || value === '') return false;
+    if (Array.isArray(value) || typeof value === 'string') return value.length > 0;
+    return true;
   },
   gt: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);

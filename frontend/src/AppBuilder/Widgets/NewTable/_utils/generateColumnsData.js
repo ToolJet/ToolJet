@@ -162,7 +162,7 @@ export default function generateColumnsData({
       const columnDef = {
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
-        header: getResolvedValue(column.name) ?? '',
+        header: String(getResolvedValue(column.name) ?? ''),
         // enableSorting: !disableSort,
         enableResizing: true,
         enableHiding: true,
@@ -492,6 +492,7 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   column={column}
                   containerWidth={columnSize}
+                  cell={cell}
                   id={id}
                 />
               );
