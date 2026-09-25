@@ -176,6 +176,14 @@ test/
 └── __mocks__/        # Module mocks (mariadb)
 ```
 
+### Where a spec lives
+
+A spec lives where the code it needs lives.
+
+- `test/` is the public tree. It runs as CE and must pass on a clone without the private submodules. CI checks this in the `Test Suite · server (CE, no submodules)` job. A bare `initTestApp()` here boots a CE app.
+- A spec that imports `@ee/`, `@licensing/` or `@instance-settings/`, or only passes against an `ee`/`cloud` app, goes in the submodule's `ee/test/`. That tree uses the same `modules/<module>/{e2e,unit}` layout. `server/scripts/check-ee-leak.sh` runs on pre-push and in CI, and rejects EE imports under `test/`.
+- A spec with both kinds of cases gets split. The CE cases stay in `test/`, and the rest move to a same-named file under `ee/test/`.
+
 ## Test isolation
 
 Suite-level transactions with per-test SAVEPOINTs replace per-test TRUNCATE:
@@ -280,7 +288,7 @@ Read top to bottom as a sentence: *SessionController → EE (plan: enterprise) �
 
 ## Edition and plan
 
-Same file, separate describe blocks per edition. Each gets its own `beforeAll(initTestApp({ edition, plan }))`.
+Separate describe blocks per edition, each with its own `beforeAll(initTestApp({ edition, plan }))`. `ee`/`cloud` blocks live in `ee/test/` (see [Where a spec lives](#where-a-spec-lives)); the examples below show the shape.
 
 | Scenario | Sections to write |
 |----------|------------------|
@@ -366,6 +374,8 @@ Test both success and failure paths (401, 403, 404).
 ## Helpers — stratified design
 
 Each layer is one abstraction level. Import from `'test-helper'` (mapped via `moduleNameMapper`), never directly from helper files.
+
+`'test-helper'` resolves to `test/test.helper.ts` when the run is CE (`TOOLJET_EDITION=ce`, or no `ee/test/` on disk). Otherwise it resolves to the submodule's barrel, which re-exports everything here and defaults `initTestApp()` to an `ee` app.
 
 | Layer | File | Functions | Abstraction |
 |-------|------|-----------|-------------|

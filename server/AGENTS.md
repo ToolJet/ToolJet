@@ -106,6 +106,7 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 5. Which matrix cells does this cover — and which are deliberately skipped because they short-circuit or don't interact?
 
 - Location: `test/modules/` mirrors `src/modules/`; each module gets `e2e/` and optional `unit/`.
+- Placement: a spec lives where the code it needs lives. `test/` runs as CE and must pass without the private submodules. Specs that import EE code or need an `ee`/`cloud` app go in `ee/test/` (same layout). Mixed specs get split. `scripts/check-ee-leak.sh` enforces this on pre-push and in CI.
 - Isolation: one-time TRUNCATE in global setup, then **suite-level transaction per spec file with per-test SAVEPOINTs** (no per-test TRUNCATE). A no-op QueryRunner proxy routes service "transactions" through the suite TX; `withRealTransactions(fn)` opts out for tests verifying real rollback.
 - Seed data in `beforeAll` (persists across tests in the suite); per-test mocks/config in `beforeEach`; `jest.resetAllMocks()` in `afterEach`; `closeTestApp(app)` in `afterAll` (60s timeout).
 - Describe naming: `Controller` → edition (`EE (plan: enterprise)` / `CE` / `Cloud`) → `POST /api/x | Intent` → `it('should ... with ...')`. Reads top-to-bottom as a sentence.
