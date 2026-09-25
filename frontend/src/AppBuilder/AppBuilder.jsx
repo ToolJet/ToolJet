@@ -37,6 +37,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
+  const setCurrentLayout = useStore((state) => state.setCurrentLayout, shallow);
   const navigate = useNavigate();
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
@@ -52,6 +53,10 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }
   }, [hasModuleAccess, isModuleEditor]);
 
+  // Store survives navigation between apps. Keyed on appId so page switches keep the current layout.
+  useEffect(() => {
+    setCurrentLayout('desktop');
+  }, [appId, setCurrentLayout]);
   const currentVersionId = useStore((state) => state.currentVersionId, shallow);
 
   // Tag every Sentry event raised while the editor is open — including handler/async

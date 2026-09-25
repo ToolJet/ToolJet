@@ -63,11 +63,13 @@ const ViewerApp = () => {
           background: '#333',
           color: '#fff',
           overflowWrap: 'break-word',
+          maxWidth: '400px',
         },
       }
     : {
         style: {
           overflowWrap: 'break-word',
+          maxWidth: '400px',
         },
       };
 
