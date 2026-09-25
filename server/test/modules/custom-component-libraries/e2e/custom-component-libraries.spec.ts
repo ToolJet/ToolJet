@@ -33,16 +33,16 @@ import {
   closeTestApp,
   createApplication,
   createApplicationVersion,
-  updateEntity,
   createPat,
   createLibrary,
   createLibraryRevision,
+  createLibraryComponent,
   createDevBundle,
+  pinLibraryToVersion,
   buildManifest,
   BUNDLE_JS,
   BUNDLE_CSS,
 } from 'test-helper';
-import { AppVersion } from '@entities/app_version.entity';
 
 describe('CustomComponentLibrariesController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -390,16 +390,16 @@ describe('CustomComponentLibrariesController', () => {
           .expect(404);
       });
 
-      it('blocks deletion when an app pins the library (409)', async () => {
+      it('blocks deletion when an app still has a component from the library (409)', async () => {
         const admin = await createAdmin(app, 'ccl-del-inuse@tooljet.io');
         const library = await createLibrary(admin.workspace.id);
-        const pinKey = library.correlationId.replace(/-/g, '');
 
         const testApp = await createApplication(app, { name: 'pinning-app', user: admin.user as any });
         const version = await createApplicationVersion(app, testApp as any);
-        await updateEntity(AppVersion, version.id, {
-          globalSettings: { ...version.globalSettings, customComponentLibraries: { [pinKey]: '1.0.0' } } as any,
-        });
+        // A pin alone never blocks a delete (stale pins outlive their components) -- the
+        // component instance is what makes this real usage. Both cases: service unit spec.
+        await pinLibraryToVersion(version, library);
+        await createLibraryComponent(version.homePageId, library.correlationId);
 
         const res = await api()
           .delete(`/api/custom-component-libraries/${library.id}`)
@@ -488,13 +488,28 @@ describe('CustomComponentLibrariesController', () => {
       await closeTestApp(app);
     }, 60000);
 
-    it('denies list access when the plan lacks the custom-component-libraries feature (451)', async () => {
+    it('denies authoring access when the plan lacks the custom-component-libraries feature (451)', async () => {
       const admin = await createAdmin(app, 'ccl-license-basic@tooljet.io');
+      const library = await createLibrary(admin.workspace.id);
+
       await request(app.getHttpServer())
-        .get('/api/custom-component-libraries')
+        .delete(`/api/custom-component-libraries/${library.id}`)
         .set('Cookie', admin.cookie)
         .set('tj-workspace-id', admin.workspace.id)
         .expect(451);
+    });
+
+    it('still lists libraries on an unlicensed plan (200)', async () => {
+      // LIST_LIBRARIES and SERVE_BUNDLE are deliberately ungated (constants/feature.ts).
+      const admin = await createAdmin(app, 'ccl-license-basic-list@tooljet.io');
+      await createLibrary(admin.workspace.id);
+
+      const res = await request(app.getHttpServer())
+        .get('/api/custom-component-libraries')
+        .set('Cookie', admin.cookie)
+        .set('tj-workspace-id', admin.workspace.id)
+        .expect(200);
+      expect(res.body).toHaveLength(1);
     });
   });
 });

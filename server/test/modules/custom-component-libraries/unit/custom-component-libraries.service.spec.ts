@@ -18,24 +18,22 @@ import {
   createUser,
   createApplication,
   createApplicationVersion,
-  updateEntity,
   findEntity,
   createLibrary,
   createLibraryRevision,
+  createLibraryComponent,
   createDevBundle,
+  pinLibraryToVersion,
   buildManifest,
   BUNDLE_JS,
   BUNDLE_CSS,
   countEntities,
-  getDefaultDataSource,
 } from 'test-helper';
 import { CustomComponentLibrariesService } from '@ee/custom-component-libraries/service';
 import { StorageService } from '@modules/custom-component-libraries/storage.service';
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 import { CustomComponentLibraryRevision } from '@entities/custom_component_library_revision.entity';
 import { CustomComponentDevBundle } from '@entities/custom_component_dev_bundle.entity';
-import { AppVersion } from '@entities/app_version.entity';
-import { Component } from '@entities/component.entity';
 
 describe('CustomComponentLibrariesService', () => {
   let app: INestApplication;
@@ -321,33 +319,14 @@ describe('CustomComponentLibrariesService', () => {
       expect(deleteFolderSpy).toHaveBeenCalledWith(`${organizationId}/${library.id}`);
     });
 
-    async function pinLibrary(version: AppVersion, library: CustomComponentLibrary, ver = '1.0.0') {
-      const pinKey = library.correlationId.replace(/-/g, '');
-      await updateEntity(AppVersion, version.id, {
-        globalSettings: { ...version.globalSettings, customComponentLibraries: { [pinKey]: ver } } as any,
-      });
-    }
-
-    async function addLibraryComponent(pageId: string, correlationId: string) {
-      const componentRepository = getDefaultDataSource().getRepository(Component);
-      return componentRepository.save(
-        componentRepository.create({
-          name: 'librarycomponent1',
-          type: 'LibraryComponent',
-          pageId,
-          properties: { correlationId: { value: correlationId } } as any,
-        })
-      );
-    }
-
     it('throws ConflictException listing app names when a component still references the library', async () => {
       const { organization, user } = await createUser(app, { email: `ccl-unit-pinuser-${Date.now()}@tooljet.io` });
       const library = await createLibrary(organization.id);
 
       const testApp = await createApplication(app, { name: 'pinning-app-unit', user: user as any });
       const version = await createApplicationVersion(app, testApp as any);
-      await pinLibrary(version, library);
-      await addLibraryComponent(version.homePageId, library.correlationId);
+      await pinLibraryToVersion(version, library);
+      await createLibraryComponent(version.homePageId, library.correlationId);
 
       // The global exception filter only forwards `.message` to the HTTP response (see the
       // e2e spec's equivalent test) -- `apps` only survives at this service layer, so it's
@@ -368,7 +347,7 @@ describe('CustomComponentLibrariesService', () => {
 
       const testApp = await createApplication(app, { name: 'stale-pin-app', user: user as any });
       const version = await createApplicationVersion(app, testApp as any);
-      await pinLibrary(version, library);
+      await pinLibraryToVersion(version, library);
       jest.spyOn(storageService, 'deleteFolder').mockResolvedValue();
 
       await expect(service.deleteLibrary(organization.id, library.id)).resolves.toBeUndefined();
@@ -384,8 +363,8 @@ describe('CustomComponentLibrariesService', () => {
 
       const testApp = await createApplication(app, { name: 'other-lib-app', user: user as any });
       const version = await createApplicationVersion(app, testApp as any);
-      await pinLibrary(version, otherLibrary);
-      await addLibraryComponent(version.homePageId, otherLibrary.correlationId);
+      await pinLibraryToVersion(version, otherLibrary);
+      await createLibraryComponent(version.homePageId, otherLibrary.correlationId);
       jest.spyOn(storageService, 'deleteFolder').mockResolvedValue();
 
       await expect(service.deleteLibrary(organization.id, library.id)).resolves.toBeUndefined();
