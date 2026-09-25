@@ -5,13 +5,13 @@ import {
   isClarificationGateInterrupt,
 } from '@ee/ai/helpers/clarification-gate-widget';
 
-// The six the datasource gate actually stored on a real message, in the agent's own order.
+// A datasource gate's options in the shape the agent writes them: one row per connected source,
+// then its own way out, last.
 const GATE = [
-  'Use quickbooks2 (quickbooks)',
-  'Use quickbooks (quickbooks)',
-  'Use xero (xero)',
-  'Use sharepoint (sharepoint)',
-  'Use microsoft_graph (microsoft_graph)',
+  'Use orders-primary (postgresql)',
+  'Use orders-replica (postgresql)',
+  'Use inventory-sheet (googlesheets)',
+  'Use support-desk (zendesk)',
   'Stop and leave the app unchanged',
 ];
 
@@ -22,8 +22,8 @@ describe('deciding whether a pause can be rendered as a gate', () => {
   });
 
   it('declines the object form, which belongs to a pause that already sent its own widget', () => {
-    // Every message carrying this shape in a real workspace also carries a rendered widget;
-    // synthesising a second one would double the question.
+    // A pause carrying this shape has already sent a widget of its own; synthesising a second one
+    // would double the question.
     expect(clarificationSuggestions([{ title: 'Approve & continue', content: 'Approve & continue' }])).toBeNull();
   });
 
@@ -37,9 +37,32 @@ describe('deciding whether a pause can be rendered as a gate', () => {
     });
   });
 
-  it('drops blank labels but keeps the list when something usable remains', () => {
-    expect(clarificationSuggestions(['   ', 'Cancel build'])).toEqual(['Cancel build']);
+  it('trims labels without moving them', () => {
+    expect(clarificationSuggestions(['  Keep the draft ', 'Cancel build'])).toEqual(['Keep the draft', 'Cancel build']);
+  });
+
+  it('declines the whole list when any label is blank, rather than dropping it', () => {
+    // The agent resolves selectedOption against its own unfiltered options. Dropping the blank one
+    // would put "Cancel build" at index 0, where the agent reads the continue option.
+    expect(clarificationSuggestions(['   ', 'Cancel build'])).toBeNull();
+    expect(clarificationSuggestions(['Keep the draft', ''])).toBeNull();
     expect(clarificationSuggestions(['  ', ''])).toBeNull();
+  });
+
+  it('keeps every rendered index pointing at the agent option it came from', () => {
+    // The contract itself: the widget's index for each label, looked up in the agent's list, must
+    // be that same label, and the free-text option must fall outside the list.
+    const agentOptions = [
+      { label: 'Archive the old page', action: 'continue' },
+      { label: 'Keep both pages', action: 'keep' },
+      { label: 'Cancel build', action: 'cancel' },
+    ];
+    const labels = clarificationSuggestions(agentOptions.map((option) => option.label));
+    const section = buildClarificationGateSection('Replace the old page?', labels, 0);
+    section.responseActions.forEach((action, index) => {
+      if (typeof action === 'string') expect(agentOptions[index].label).toBe(action);
+      else expect(index).toBeGreaterThanOrEqual(agentOptions.length);
+    });
   });
 });
 
