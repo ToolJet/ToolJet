@@ -264,6 +264,11 @@
       "status": "not-started"
     },
     {
+      "componentType": "LibraryComponent",
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
+    },
+    {
       "componentType": "Html",
       "status": "verified",
       "contract": "ee/test/app-builder/widgets/Html/TESTING.md"
