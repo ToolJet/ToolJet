@@ -99,7 +99,7 @@ export const textConfig = {
     },
   },
   defaultSize: {
-    width: 6,
+    width: 2,
     height: 40,
   },
   events: {

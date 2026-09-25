@@ -4,7 +4,7 @@ export const datePickerV2Config = {
   description: 'Choose date',
   component: 'DatePickerV2',
   defaultSize: {
-    width: 10,
+    width: 3,
     height: 40,
   },
   validation: {

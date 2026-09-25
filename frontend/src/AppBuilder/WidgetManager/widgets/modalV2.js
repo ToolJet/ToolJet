@@ -4,7 +4,7 @@ export const modalV2Config = {
   description: 'Show pop-up windows',
   component: 'ModalV2',
   defaultSize: {
-    width: 10,
+    width: 3,
     height: 40,
   },
   others: {
