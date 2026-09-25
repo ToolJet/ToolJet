@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
 import { IGitSyncEnvUtilService } from '@modules/organization-env/interfaces/IGitSyncEnvUtilService';
-import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig } from '@modules/organization-env/types';
+import {
+  EnvProviderState,
+  GitHttpsEnvConfig,
+  GitLabEnvConfig,
+  BitbucketEnvConfig,
+} from '@modules/organization-env/types';
 
 @Injectable()
 export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
@@ -13,6 +18,9 @@ export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
   hasGitLabConfig(_workspaceId: string): boolean {
     return false;
   }
+  hasBitbucketConfig(_workspaceId: string): boolean {
+    return false;
+  }
 
   async getGitHttpsConfig(_workspaceId: string): Promise<GitHttpsEnvConfig | null> {
     return null;
@@ -20,11 +28,17 @@ export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
   async getGitLabConfig(_workspaceId: string): Promise<GitLabEnvConfig | null> {
     return null;
   }
+  async getBitbucketConfig(_workspaceId: string): Promise<BitbucketEnvConfig | null> {
+    return null;
+  }
 
   async getGitHttpsTemplateConfig(_workspaceId: string): Promise<Partial<GitHttpsEnvConfig> | null> {
     return null;
   }
   async getGitLabTemplateConfig(_workspaceId: string): Promise<Partial<GitLabEnvConfig> | null> {
+    return null;
+  }
+  async getBitbucketTemplateConfig(_workspaceId: string): Promise<Partial<BitbucketEnvConfig> | null> {
     return null;
   }
 
