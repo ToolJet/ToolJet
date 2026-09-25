@@ -8,9 +8,13 @@ import { ToolTip } from '@/_components';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
-import { dataTypes, getColumnDataType } from '../constants';
+import { dataTypes } from '../constants';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import DeleteTableModal from '../DeleteTableModal';
+import ExportCsvModal from '../ExportCsvModal';
+import generateFile from '@/_lib/generate-file';
 
-export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
+export const ListItem = ({ active, onClick, text = '', tableId, onDeleteCallback }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     organizationId,
@@ -18,20 +22,31 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     selectedTable,
     setSelectedTable,
     selectedTableData,
-    setPageCount,
     handleRefetchQuery,
-    pageSize,
     setColumns,
     setForeignKeys,
     setConfigurations,
     canEditTjdb,
+    canEditSchema,
+    tables,
   } = useContext(TooljetDatabaseContext);
+  const pageSize = useTjdbStore((state) => state.pageSize);
+  const environments = useTjdbStore((state) => state.environments);
+  const { fetchTableMetadata, setPageCount, bumpMigrations } = useTjdbActions();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDropDownMenu, setShowDropDownMenu] = useState(false);
   const [focused, setFocused] = useState(false);
   const [isAddNewColumnDrawerOpen, setIsAddNewColumnDrawerOpen] = useState(false);
   const [referencedColumnDetails, setReferencedColumnDetails] = useState([]);
+  const [deleteModalState, setDeleteModalState] = useState({
+    isOpen: false,
+    loading: false,
+    submitting: false,
+    dependents: null,
+    error: null,
+  });
+  const [isExportCsvModalOpen, setIsExportCsvModalOpen] = useState(false);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -46,16 +61,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       .then((data) => {
         const tableName = selectedTable.table_name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${tableName}-export-${new Date().getTime()}`;
-        // simulate link click download
         const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = fileName + '.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        generateFile(fileName + '.json', json, 'json');
       })
       .catch(() => {
         toast.error('Could not export table.', {
@@ -64,20 +71,48 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       });
   };
 
-  const handleDeleteTable = async () => {
-    const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
-    if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteTable(organizationId, text);
+  const handleDeleteTable = () => {
+    setDeleteModalState({ isOpen: true, loading: true, submitting: false, dependents: null, error: null });
+    tooljetDatabaseService.getTableDependents(organizationId, tableId).then(({ data, error }) => {
+      setDeleteModalState((prev) => {
+        // Modal was cancelled before this resolved - nothing to update.
+        if (!prev.isOpen) return prev;
+        return {
+          ...prev,
+          loading: false,
+          dependents: error ? null : data?.result,
+          error: error ? 'Failed to check if table is in use. Proceed with caution.' : null,
+        };
+      });
+    });
+  };
 
+  const closeDeleteModal = () => setDeleteModalState((prev) => ({ ...prev, isOpen: false }));
+
+  const confirmDeleteTable = () => {
+    setDeleteModalState((prev) => ({ ...prev, submitting: true, error: null }));
+    const migrationName = `Drop table "${text}"`;
+    tooljetDatabaseService.deleteTable(organizationId, text, migrationName).then(({ error }) => {
       if (error) {
-        toast.error(error?.message ?? `Failed to delete table "${text}"`);
+        setDeleteModalState((prev) => ({
+          ...prev,
+          submitting: false,
+          error: error?.message ?? 'Failed to delete table',
+        }));
         return;
       }
-
       toast.success(`Table "${text}" deleted successfully`);
+      bumpMigrations();
+      closeDeleteModal();
       onDeleteCallback && onDeleteCallback();
-    }
+    });
   };
+
+  const deleteModalDependents = deleteModalState.dependents;
+  const deleteModalBlocked =
+    !deleteModalState.loading &&
+    !!deleteModalDependents &&
+    (deleteModalDependents.count > 0 || (deleteModalDependents.foreignKeyTables?.length ?? 0) > 0);
 
   const formColumns = columns.reduce((acc, column, currentIndex) => {
     acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
@@ -106,29 +141,11 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   };
 
   const isEditTable = (tableName) => {
-    tooljetDatabaseService.viewTable(organizationId, tableName).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      setConfigurations(data?.result?.configurations || {});
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
+    fetchTableMetadata(organizationId, tableName).then((metadata) => {
+      if (!metadata) return;
+      setConfigurations(metadata.configurations);
+      if (metadata.columns.length > 0) setColumns(metadata.columns);
+      setForeignKeys([...metadata.foreignKeys]);
     });
     handleRefetchQuery({}, {}, 1, pageSize);
     setPageCount(1);
@@ -182,12 +199,17 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             onDelete={handleDeleteTable}
             darkMode={darkMode}
             handleExportTable={handleExportTable}
+            onExportCsv={() => {
+              setShowDropDownMenu(false);
+              setIsExportCsvModalOpen(true);
+            }}
             onMenuToggle={onMenuToggle}
             onAddNewColumnBtnClick={() => {
               setShowDropDownMenu(false);
               setIsAddNewColumnDrawerOpen(true);
             }}
             canEditTjdb={canEditTjdb}
+            canEditSchema={canEditSchema}
           />
         </div>
       )}
@@ -216,6 +238,28 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         rows={selectedTableData}
         referencedColumnDetails={referencedColumnDetails}
         setReferencedColumnDetails={setReferencedColumnDetails}
+      />
+      <DeleteTableModal
+        show={deleteModalState.isOpen}
+        darkMode={darkMode}
+        tableName={text}
+        loading={deleteModalState.loading}
+        blocked={deleteModalBlocked}
+        dependents={deleteModalDependents}
+        error={deleteModalState.error}
+        submitting={deleteModalState.submitting}
+        onConfirm={confirmDeleteTable}
+        onCancel={closeDeleteModal}
+      />
+      <ExportCsvModal
+        show={isExportCsvModalOpen}
+        darkMode={darkMode}
+        tableName={text}
+        tableId={tableId}
+        organizationId={organizationId}
+        environments={environments}
+        relationsByEnvironment={tables?.find((table) => table.id === tableId)?.environments ?? []}
+        onCancel={() => setIsExportCsvModalOpen(false)}
       />
     </div>
   );

@@ -44,9 +44,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -57,6 +62,11 @@ export class TooljetDbUtilService {
       tablesInvolvedList,
       organizationId
     );
+
+    // External API v2 has no environment selector on this route yet — undefined resolves to the
+    // workspace's development environment (relationResolverService's documented default), same as
+    // the view_table call above. Revisit once/if this surface grows environment awareness.
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
 
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
@@ -117,7 +127,7 @@ export class TooljetDbUtilService {
       await this.bulkUpsertRows(
         tooljetDbManager,
         rowsToUpsert,
-        internalTableId,
+        relation.id,
         internalTableDatabaseColumn,
         organizationId,
         internalTables
@@ -130,7 +140,7 @@ export class TooljetDbUtilService {
   async bulkUpsertRows(
     tooljetDbManager: EntityManager,
     rowsToUpsert: unknown[],
-    internalTableId: string,
+    relationId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     organizationId: string,
     internalTables: InternalTable[]
@@ -183,7 +193,7 @@ export class TooljetDbUtilService {
     const columnsQuoted = allColumns.map((column) => `"${column}"`);
     const tenantSchema = findTenantSchema(organizationId);
     const queryText =
-      `INSERT INTO "${tenantSchema}"."${internalTableId}" (${columnsQuoted.join(', ')}) ` +
+      `INSERT INTO "${tenantSchema}"."${relationId}" (${columnsQuoted.join(', ')}) ` +
       `VALUES ${allValueSets.join(', ')} ` +
       `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
       `DO UPDATE SET ${onConflictUpdate};`;
@@ -214,9 +224,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -227,6 +242,9 @@ export class TooljetDbUtilService {
       tablesInvolvedList,
       organizationId
     );
+
+    // See bulkUploadCsv above — same undefined-environment reasoning.
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
 
     const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
       (colDetails) => colDetails.keytype === 'PRIMARY KEY'
@@ -301,7 +319,7 @@ export class TooljetDbUtilService {
       return this.bulkUpdateRows(
         tooljetDbManager,
         rowsToUpdate,
-        internalTableId,
+        relation.id,
         primaryKeyColumnsInCsv,
         dataColumnsInCsv,
         organizationId,
@@ -316,7 +334,7 @@ export class TooljetDbUtilService {
   async bulkUpdateRows(
     tooljetDbManager: EntityManager,
     rowsToUpdate: Record<string, any>[],
-    internalTableId: string,
+    relationId: string,
     primaryKeyColumns: string[],
     dataColumns: string[],
     organizationId: string,
@@ -351,7 +369,7 @@ export class TooljetDbUtilService {
     const whereClause = primaryKeyColumns.map((col) => `t."${col}" = v."${col}"`).join(' AND ');
 
     const queryText =
-      `UPDATE "${tenantSchema}"."${internalTableId}" AS t ` +
+      `UPDATE "${tenantSchema}"."${relationId}" AS t ` +
       `SET ${setClause} ` +
       `FROM (VALUES ${allValueSets.join(', ')}) AS v(${valuesColumnsAliased}) ` +
       `WHERE ${whereClause} ` +
@@ -384,9 +402,14 @@ export class TooljetDbUtilService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -397,6 +420,9 @@ export class TooljetDbUtilService {
       tablesInvolvedList,
       organizationId
     );
+
+    // See bulkUploadCsv above — same undefined-environment reasoning.
+    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
 
     const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
       (colDetails) => colDetails.keytype === 'PRIMARY KEY'
@@ -457,7 +483,7 @@ export class TooljetDbUtilService {
       return this.bulkDeleteRows(
         tooljetDbManager,
         rowsToDelete,
-        internalTableId,
+        relation.id,
         primaryKeyColumnsInCsv,
         organizationId,
         internalTables,
@@ -471,7 +497,7 @@ export class TooljetDbUtilService {
   async bulkDeleteRows(
     tooljetDbManager: EntityManager,
     rowsToDelete: Record<string, any>[],
-    internalTableId: string,
+    relationId: string,
     primaryKeyColumns: string[],
     organizationId: string,
     internalTables: InternalTable[],
@@ -499,7 +525,7 @@ export class TooljetDbUtilService {
     }
 
     const queryText =
-      `DELETE FROM "${tenantSchema}"."${internalTableId}" ` +
+      `DELETE FROM "${tenantSchema}"."${relationId}" ` +
       `WHERE (${primaryKeyColumnsQuoted}) IN (VALUES ${allValueSets.join(', ')}) ` +
       `RETURNING "${primaryKeyColumns[0]}";`;
 

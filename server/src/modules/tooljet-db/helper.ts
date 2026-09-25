@@ -16,10 +16,9 @@ export async function reconfigurePostgrest(
         await tooljetDbManager.transaction(async (transactionalEntityManager) => {
           await transactionalEntityManager.queryRunner.query('CREATE SCHEMA IF NOT EXISTS postgrest');
 
-          // Check if the grant already exists before applying it
           const grantExists = await transactionalEntityManager.queryRunner.query(
             `
-            SELECT 1 FROM information_schema.usage_privileges 
+            SELECT 1 FROM information_schema.usage_privileges
             WHERE grantee = $1 AND object_schema = 'postgrest' AND privilege_type = 'USAGE'
           `,
             [options.user]
@@ -44,7 +43,6 @@ export async function reconfigurePostgrest(
           );
         });
       } finally {
-        // Always release the advisory lock (outside of transaction)
         try {
           await tooljetDbManager.query('SELECT pg_advisory_unlock(123456788)');
         } catch (unlockError) {
@@ -52,12 +50,10 @@ export async function reconfigurePostgrest(
         }
       }
 
-      // If we reach here, the operation was successful
       return;
     } catch (error) {
       console.error(`The tooljet database reconfiguration process encountered an error on attempt ${attempt}:`, error);
 
-      // Check if it's a concurrency error or transaction abort
       if (
         (error.code === 'XX000' && error.message?.includes('tuple concurrently updated')) ||
         (error.code === '25P02' && error.message?.includes('current transaction is aborted'))
@@ -69,7 +65,6 @@ export async function reconfigurePostgrest(
         }
       }
 
-      // If it's not a retryable error or we've exhausted retries, throw the error
       throw error;
     }
   }
@@ -95,10 +90,9 @@ export async function reconfigurePostgrestWithoutSchemaSync(
         await tooljetDbManager.transaction(async (transactionalEntityManager) => {
           await transactionalEntityManager.queryRunner.query('CREATE SCHEMA IF NOT EXISTS postgrest');
 
-          // Check if the grant already exists before applying it
           const grantExists = await transactionalEntityManager.queryRunner.query(
             `
-            SELECT 1 FROM information_schema.usage_privileges 
+            SELECT 1 FROM information_schema.usage_privileges
             WHERE grantee = $1 AND object_schema = 'postgrest' AND privilege_type = 'USAGE'
           `,
             [options.user]
@@ -120,7 +114,6 @@ export async function reconfigurePostgrestWithoutSchemaSync(
           );
         });
       } finally {
-        // Always release the advisory lock (outside of transaction)
         try {
           await tooljetDbManager.query('SELECT pg_advisory_unlock(123456789)');
         } catch (unlockError) {
@@ -128,12 +121,10 @@ export async function reconfigurePostgrestWithoutSchemaSync(
         }
       }
 
-      // If we reach here, the operation was successful
       return;
     } catch (error) {
       console.error(`The tooljet database reconfiguration process encountered an error on attempt ${attempt}:`, error);
 
-      // Check if it's a concurrency error or transaction abort
       if (
         (error.code === 'XX000' && error.message?.includes('tuple concurrently updated')) ||
         (error.code === '25P02' && error.message?.includes('current transaction is aborted'))
@@ -145,7 +136,6 @@ export async function reconfigurePostgrestWithoutSchemaSync(
         }
       }
 
-      // If it's not a retryable error or we've exhausted retries, throw the error
       throw error;
     }
   }

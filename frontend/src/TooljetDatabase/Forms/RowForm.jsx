@@ -338,7 +338,7 @@ const RowForm = ({
       setFetching(false);
       return;
     }
-    const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
+    const { error } = await tooljetDatabaseService.createRow(selectedTable.id, data);
     setFetching(false);
     if (error) {
       // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over

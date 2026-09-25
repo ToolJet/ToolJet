@@ -243,7 +243,7 @@ function DataSourceSelect({
     query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
 
     tooljetDatabaseService
-      .findOne(organizationId, referencedColumns?.referenced_table_id, query)
+      .findOne(referencedColumns?.referenced_table_id, query)
       .then(({ headers, data = [], error }) => {
         if (error) {
           setIsLoadingFKDetails(false);

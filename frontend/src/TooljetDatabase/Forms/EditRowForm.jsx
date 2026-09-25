@@ -327,7 +327,7 @@ const EditRowForm = ({
     });
 
     const query = `${filterQuery.url.toString()}&${sortQuery.url.toString()}`;
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
+    const { error } = await tooljetDatabaseService.updateRows(selectedTable.id, rowData, query);
     // TODO: Need all of this logic on the backend should ideally just get list of columns with error messages to map over
     if (error) {
       if (error?.code === postgresErrorCode.UniqueViolation) {

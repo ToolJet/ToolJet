@@ -6,9 +6,11 @@ import { operators } from '../constants';
 import { debounce } from 'lodash';
 import { ToolTip } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTjdbActions } from '../_stores/tjdbStore';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '', generateMessage }) => {
-  const { columns, setPageCount } = useContext(TooljetDatabaseContext);
+  const { columns } = useContext(TooljetDatabaseContext);
+  const { setPageCount } = useTjdbActions();
 
   const [filterInputValue, setFilterInputValue] = useState(value);
 

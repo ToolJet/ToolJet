@@ -59,7 +59,7 @@ function dropDb(envVars, dbName) {
     if (error.message.includes(errorMessage)) {
       console.log(errorMessage);
     } else {
-      console.error(errorMessage);
+      console.error(error.message);
       process.exit(1);
     }
   }

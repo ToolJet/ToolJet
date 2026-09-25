@@ -188,8 +188,8 @@ export const Tags = function Tags({
       tag?.iconVisibility?.value !== undefined
         ? tag.iconVisibility.value
         : tag?.iconVisibility !== undefined
-        ? tag.iconVisibility
-        : false;
+          ? tag.iconVisibility
+          : false;
 
     if (!iconName || !iconVisible) return null;
 

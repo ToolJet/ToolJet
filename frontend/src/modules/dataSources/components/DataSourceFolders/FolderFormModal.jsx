@@ -16,7 +16,7 @@ export const FolderFormModal = ({ show, mode, folder, onClose, onCreate, onRenam
 
   useEffect(() => {
     if (show) {
-      setName(isRename ? folder?.name ?? '' : '');
+      setName(isRename ? (folder?.name ?? '') : '');
       setErrorText('');
       setIsSubmitting(false);
     }

@@ -22,7 +22,17 @@
                 "type": "string"
               },
               "data_type": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "character varying",
+                  "integer",
+                  "bigint",
+                  "serial",
+                  "double precision",
+                  "boolean",
+                  "timestamp with time zone",
+                  "jsonb"
+                ]
               },
               "column_default": {
                 "type": ["string", "null", "object", "array"]

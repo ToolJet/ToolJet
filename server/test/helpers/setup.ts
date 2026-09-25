@@ -27,6 +27,7 @@ import { Terms } from '@modules/licensing/interfaces/terms';
 import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
+import { setConnectionInstance } from '@helpers/database.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 
 // ---------------------------------------------------------------------------
@@ -71,6 +72,12 @@ export function setDataSources(nestApp: INestApplication) {
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
+  // GetConnection's constructor sets this on first instantiation, but reusing a cached app
+  // (initTestApp's cache-hit path) never re-runs it — dbTransactionWrap-based service code
+  // (getConnectionInstance()) would keep reading whichever app's DataSource happened to be
+  // built last, diverging from _defaultDataSource and making writes from one app invisible
+  // to reads from the other. Keep them in lockstep here instead.
+  setConnectionInstance(_defaultDataSource);
 }
 
 /** Returns the default TypeORM DataSource. Throws if setDataSources() was not called. */
@@ -362,7 +369,12 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   app: {
     pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
     permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
+    features: {
+      promote: true,
+      release: true,
+      history: true,
+      jsLibraries: false,
+    },
   },
   modules: { enabled: true },
   permissions: { customGroups: true },
