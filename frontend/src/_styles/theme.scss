@@ -3998,17 +3998,6 @@ input[type="text"] {
   }
 }
 
-.empty-welcome-header {
-  font-style: normal;
-  font-weight: 500;
-  font-size: 32px;
-  line-height: 40px;
-  margin-bottom: 16px;
-  margin-top: 40px;
-  color: var(--slate12);
-  font-family: Inter;
-}
-
 .homepage-empty-image {
   width: 100%;
 }
@@ -7724,10 +7713,6 @@ tbody {
   @media only screen and (max-width: 767px) {
     display: none;
   }
-}
-
-.empty-home-page-image {
-  margin-top: 14px;
 }
 
 .create-new-app-dropdown {
@@ -14916,23 +14901,6 @@ tbody {
   align-items: center;
   justify-content: center;
   padding-top: 1.5rem;
-}
-
-.blank-page-wrapper {
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
-}
-
-.blank-page-wrapper-mobile {
-  display: none !important;
-
-  @media only screen and (max-width: 768px) {
-    transform: translateY(50%);
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-  }
 }
 
 .reset-password-info-banner {
