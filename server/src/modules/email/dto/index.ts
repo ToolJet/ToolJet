@@ -58,6 +58,20 @@ export interface SendCommentMentionEmailPayload {
   organizationId: string;
 }
 
+export interface SendAppBuildCompletedEmailPayload {
+  to: string;
+  name: string;
+  appName: string;
+  /**
+   * The app's URL slug, not its name. Defaults to the app's UUID on creation and only changes if
+   * someone deliberately edits it, so the link survives the rename the AI performs mid-build.
+   */
+  appSlug: string;
+  /** Organization slug, falling back to the organization id — both resolve as the workspace segment. */
+  workspaceSlug: string;
+  organizationId: string;
+}
+
 export interface SendUserBannedEmailPayload {
   to: string;
   name: string;

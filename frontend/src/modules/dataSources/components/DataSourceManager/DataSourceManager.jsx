@@ -43,7 +43,7 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
-class DataSourceManagerComponent extends React.Component {
+export class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -187,7 +187,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
+    !this.state.selectedDataSource?.id &&
+      this.props.environmentChanged?.(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -282,7 +283,7 @@ class DataSourceManagerComponent extends React.Component {
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
-    const pluginId = selectedDataSourcePluginId;
+    const pluginId = selectedDataSource?.pluginId ?? selectedDataSourcePluginId;
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
@@ -350,6 +351,7 @@ class DataSourceManagerComponent extends React.Component {
           });
       } else {
         this.setState({ isSaving: true, addingDataSource: true });
+        this.props.setGlobalDataSourceStatus({ isSaving: true, isEditing: false });
         service
           .create({
             plugin_id: pluginId,
@@ -374,10 +376,11 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.resetDataSourceConfirmModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false, addingDataSource: false });
-            this.hideModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: true });
             error && toast.error(error, { position: 'top-center' });
             this.resetDataSourceConfirmModal();
           });
@@ -1003,8 +1006,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
