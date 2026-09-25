@@ -546,7 +546,10 @@ export const createGridSlice = (set, get) => {
         return !!document.querySelector(selector);
       };
 
+      // Shift+mouseup ends an add-to-selection gesture (e.g. a Shift+lasso released on the canvas);
+      // clearing here would make Selecto's selectEnd, which runs next, replace the selection.
       if (
+        !e.shiftKey &&
         !isClickedOnSubcontainer &&
         ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
         !selectedText &&
