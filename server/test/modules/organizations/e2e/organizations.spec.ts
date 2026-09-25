@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { createUser, initTestApp, login, getEntityRepository, closeTestApp } from 'test-helper';
 import { Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
+import { SSOConfigs } from '@entities/sso_config.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 
@@ -15,11 +16,13 @@ describe('OrganizationsController', () => {
     let app: INestApplication;
     let userRepository: Repository<User>;
     let configService: ConfigService;
+    let ssoConfigsRepository: Repository<SSOConfigs>;
 
     beforeAll(async () => {
       ({ app } = await initTestApp());
       configService = app.get(ConfigService);
       userRepository = getEntityRepository(User);
+      ssoConfigsRepository = getEntityRepository(SSOConfigs);
     });
 
     afterEach(() => {
@@ -30,6 +33,33 @@ describe('OrganizationsController', () => {
     describe('GET /api/organization-users | List organization users', () => {
       it('should allow only authenticated users to list org users', async () => {
         await request(app.getHttpServer()).get('/api/organization-users').expect(401);
+      });
+
+      it('should list organization users if the user is admin', async () => {
+        const { user, orgUser } = await createUser(app, { email: 'admin@tooljet.io' });
+        const loggedUser = await login(app);
+
+        const response = await request(app.getHttpServer())
+          .get('/api/organization-users?page=1')
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.users.length).toBe(1);
+
+        await orgUser.reload();
+
+        expect(response.body.users[0]).toMatchObject({
+          email: user.email,
+          user_id: user.id,
+          first_name: user.firstName,
+          id: orgUser.id,
+          last_name: user.lastName,
+          name: `${user.firstName} ${user.lastName}`,
+          role: orgUser.role,
+          status: orgUser.status,
+          avatar_id: user.avatarId,
+        });
       });
 
       describe('POST /api/organizations | Create organization', () => {
@@ -103,6 +133,18 @@ describe('OrganizationsController', () => {
           expect(response.statusCode).toBe(400);
         });
 
+        it('should throw error if slug is missing', async () => {
+          const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+          const loggedUser = await login(app);
+          const response = await request(app.getHttpServer())
+            .post('/api/organizations')
+            .send({ name: 'My workspace' })
+            .set('tj-workspace-id', user.defaultOrganizationId)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(response.statusCode).toBe(400);
+        });
+
         it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
           const { user, organization } = await createUser(app, {
             email: 'admin@tooljet.io',
@@ -149,6 +191,32 @@ describe('OrganizationsController', () => {
 
           expect(response.statusCode).toBe(403);
         });
+
+        it('should change organization params if changes are done by admin', async () => {
+          const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
+          const loggedUser = await login(app);
+
+          const nameResponse = await request(app.getHttpServer())
+            .patch('/api/organizations')
+            .send({ name: 'new name' })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(nameResponse.statusCode).toBe(200);
+
+          const generalResponse = await request(app.getHttpServer())
+            .patch('/api/login-configs/organization-general')
+            .send({ domain: 'tooljet.io', enableSignUp: true })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(generalResponse.statusCode).toBe(200);
+
+          await organization.reload();
+          expect(organization.name).toBe('new name');
+          expect(organization.domain).toBe('tooljet.io');
+          expect(organization.enableSignUp).toBeTruthy();
+        });
       });
       describe('PATCH /api/login-configs/organization-sso | Update SSO config', () => {
         it('should not change organization configs if changes are not done by admin', async () => {
@@ -165,6 +233,25 @@ describe('OrganizationsController', () => {
 
           expect(response.statusCode).toBe(403);
         });
+
+        it('should change organization configs if changes are done by admin', async () => {
+          const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
+          const loggedUser = await login(app);
+
+          const response = await request(app.getHttpServer())
+            .patch('/api/login-configs/organization-sso')
+            .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(response.statusCode).toBe(200);
+          const ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
+          expect(ssoConfigs.sso).toBe('git');
+          expect(ssoConfigs.enabled).toBeTruthy();
+          const gitConfigs = ssoConfigs.configs as Record<string, any>;
+          expect(gitConfigs['clientId']).toBe('client-id');
+          expect(gitConfigs['clientSecret']).not.toBe('client-secret');
+        });
       });
       describe('GET /api/login-configs/organization | Get SSO config', () => {
         it('should not get organization configs if request not done by admin', async () => {
@@ -179,6 +266,31 @@ describe('OrganizationsController', () => {
             .set('Cookie', loggedUser.tokenCookie);
 
           expect(response.statusCode).toBe(403);
+        });
+
+        it('should get organization details if requested by admin', async () => {
+          const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
+          const loggedUser = await login(app);
+
+          const response = await request(app.getHttpServer())
+            .patch('/api/login-configs/organization-sso')
+            .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(response.statusCode).toBe(200);
+
+          const getResponse = await request(app.getHttpServer())
+            .get('/api/login-configs/organization')
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(getResponse.statusCode).toBe(200);
+          expect(getResponse.body.organization_details.id).toBe(organization.id);
+          expect(getResponse.body.organization_details.name).toBe(organization.name);
+          const ssoConfigs = getResponse.body.organization_details.sso_configs;
+          expect(ssoConfigs.find((ob) => ob.sso === 'form').organization_id).toBe(organization.id);
+          expect(ssoConfigs.find((ob) => ob.sso === 'git')).toBeTruthy();
         });
       });
 

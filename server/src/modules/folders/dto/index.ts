@@ -14,7 +14,8 @@ import { sanitizeInput } from 'src/helpers/utils.helper';
 class AllowedCharactersValidator implements ValidatorConstraintInterface {
   private errorMsg: string;
 
-  validate(value: string) {
+  validate(value: unknown) {
+    if (typeof value !== 'string') return true; // @IsString reports non-strings
     if (value.match(/^[a-zA-Z0-9 -]+$/) === null) {
       this.errorMsg = 'Special characters are not accepted.';
       return false;
