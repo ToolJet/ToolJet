@@ -284,8 +284,8 @@ function testDeclarations(source) {
           titleNode?.type === 'StringLiteral'
             ? titleNode.value
             : titleNode?.type === 'TemplateLiteral'
-            ? titleNode.quasis[0].value.cooked
-            : null;
+              ? titleNode.quasis[0].value.cooked
+              : null;
         if (title !== null) {
           if (!parts[0].includes('describe')) {
             const id = title.match(/^\[([A-Za-z0-9-]+)\]/)?.[1];

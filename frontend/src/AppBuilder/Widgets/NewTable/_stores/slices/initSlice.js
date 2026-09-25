@@ -52,11 +52,19 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
+        state.components[id].properties.addNewRowColumns = Array.isArray(properties?.addNewRowColumns)
+          ? properties.addNewRowColumns // an array is an explicit selection (empty array == none).
+          : null; // null (non-array) == "all columns" (default);
+        state.components[id].properties.downloadFileName =
+          typeof properties?.downloadFileName === 'string' ? properties.downloadFileName : '';
+        state.components[id].properties.downloadFilteredData = properties?.downloadFilteredData ?? false;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
         state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
         state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
         state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
+        state.components[id].properties.manageColumns = properties?.manageColumns ?? true;
+        state.components[id].properties.useHideColumnSelectorButton = properties?.useHideColumnSelectorButton ?? false;
         state.components[id].properties.serverSideSearch = properties?.serverSideSearch ?? false;
         state.components[id].properties.serverSideSort = properties?.serverSideSort ?? false;
         state.components[id].properties.serverSideFilter = properties?.serverSideFilter ?? false;
@@ -74,6 +82,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.enableExpandableRows = properties?.enableExpandableRows ?? false;
         state.components[id].properties.expansionHeight = properties?.expansionHeight ?? DEFAULT_EXPANSION_HEIGHT;
         state.components[id].properties.disableRowDeselection = properties?.disableRowDeselection ?? false;
+        state.components[id].properties.enableRowClickOnCheckbox = properties?.enableRowClickOnCheckbox ?? true;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;
