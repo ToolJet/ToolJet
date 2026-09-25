@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
@@ -102,20 +102,37 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
+  // `open`/`close` here are dead; hooks/useModalCSA.js registers the live versions later.
+  const onOpenCallbackRef = useRef(null);
+  // open() resolves only after the callback finishes, like runQuery.
+  const openPromiseResolverRef = useRef(null);
+  const openPromiseRef = useRef(null);
+
+  // Getter per name, not a snapshot, so reads after a write (e.g. setText) stay fresh.
+  const getFreshComponents = useCallback(() => {
+    const readComponents = () => {
+      useStore.getState().flushImplicitBatchEntries();
+      return useStore.getState().getResolvedState(moduleId, 'components').components;
     };
-    setExposedVariables(exposedVariables);
+    const freshComponents = {};
+    Object.keys(readComponents()).forEach((name) => {
+      Object.defineProperty(freshComponents, name, { enumerable: true, get: () => readComponents()[name] });
+    });
+    return freshComponents;
+  }, [moduleId]);
+
+  const handleModalEntered = useCallback(async () => {
+    fireEvent('onOpen');
+    const callback = onOpenCallbackRef.current;
+    onOpenCallbackRef.current = null;
+    if (callback) {
+      await callback(getFreshComponents());
+    }
+    openPromiseResolverRef.current?.();
+    openPromiseResolverRef.current = null;
+    openPromiseRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getFreshComponents]);
 
   function hideModal() {
     fireEvent('onClose');
@@ -123,14 +140,28 @@ export const ModalV2 = function Modal({
     setShowModal(false);
   }
 
-  function openModal() {
+  function openModal(callback) {
     setExposedVariable('show', true);
+    if (showModalRef.current) {
+      // Already open: already entered, nothing to wait for.
+      return Promise.resolve(callback ? callback(getFreshComponents()) : undefined);
+    }
+    if (openPromiseRef.current) {
+      // Redundant re-entry via onShow — reuse the pending promise, don't lose the resolver.
+      if (callback) onOpenCallbackRef.current = callback;
+      return openPromiseRef.current;
+    }
+    if (callback) onOpenCallbackRef.current = callback;
     setShowModal(true);
+    openPromiseRef.current = new Promise((resolve) => {
+      openPromiseResolverRef.current = resolve;
+    });
+    return openPromiseRef.current;
   }
 
-  const onShowModal = () => {
-    openModal();
+  const onShowModal = (callback) => {
     setSelectedComponentAsModal(id);
+    return openModal(callback);
   };
 
   const onHideModal = () => {
@@ -323,7 +354,6 @@ export const ModalV2 = function Modal({
         animation={false}
         onShow={() => {
           onShowModal();
-          fireEvent('onOpen');
         }}
         onHide={() => {
           onHideModal();
@@ -337,6 +367,7 @@ export const ModalV2 = function Modal({
           customStyles,
           parentRef,
           id,
+          onModalEntered: handleModalEntered,
           title,
           titleAlignment,
           hideTitleBar,
