@@ -1,0 +1,487 @@
+
+name: Render Preview Deploy (CE Fork)
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+
+concurrency:
+  group: ce-fork-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+  FORK_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+  RENDER_OWNER_ID: tea-caeo4bj19n072h3dddc0
+
+jobs:
+
+  create-ce-fork-review-app:
+    if: |
+      github.event.pull_request.head.repo.fork == true &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ce-fork-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Validate fork repo and branch
+        run: |
+          set -euo pipefail
+
+          FORK="${FORK_FULL_NAME}"
+          BRANCH="${BRANCH_NAME}"
+
+          # Owner: GitHub usernames/orgs are alphanumeric + single hyphens.
+          # Repo must be exactly "ToolJet". Whole string: <owner>/ToolJet.
+          if ! printf '%s' "$FORK" | grep -Eq '^[A-Za-z0-9](-?[A-Za-z0-9]){0,38}/ToolJet$'; then
+            echo "❌ Refusing: fork repo '$FORK' is not a valid <owner>/ToolJet name."
+            exit 1
+          fi
+
+          # Branch: allow the normal git branch character set only. No quotes,
+          # spaces, backticks, $(), etc. that could inject into JSON or shell.
+          if ! printf '%s' "$BRANCH" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "❌ Refusing: branch '$BRANCH' contains unexpected characters."
+            exit 1
+          fi
+
+          # Defense in depth: also reject a leading dash or any '..' path tricks.
+          case "$BRANCH" in
+            -*|*..*) echo "❌ Refusing: branch '$BRANCH' has an unsafe shape."; exit 1 ;;
+          esac
+
+          echo "FORK_OWNER=${FORK%/ToolJet}" >> "$GITHUB_ENV"
+          echo "✅ Validated fork '$FORK' on branch '$BRANCH'."
+
+      - name: Create CE review app (Render clones & builds the fork)
+        id: create-service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SMTP_USERNAME: ${{ secrets.RENDER_SMTP_USERNAME }}
+          RENDER_SMTP_PASSWORD: ${{ secrets.RENDER_SMTP_PASSWORD }}
+          MARKETPLACE_BUCKET: ${{ secrets.MARKETPLACE_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          # Build the fork URL from the VALIDATED owner only. Never interpolate
+          # the raw event value here.
+          REPO_URL="https://github.com/${FORK_OWNER}/ToolJet"
+
+          # Build the JSON body with jq so values are properly escaped — never
+          # hand-concatenate attacker-influenced strings into JSON.
+          BODY=$(jq -n \
+            --arg name        "ToolJet CE Fork PR #${PR_NUMBER}" \
+            --arg slug        "tooljet-ce-fork-pr-${PR_NUMBER}" \
+            --arg owner       "${RENDER_OWNER_ID}" \
+            --arg repo        "${REPO_URL}" \
+            --arg branch      "${BRANCH_NAME}" \
+            --arg host        "https://tooljet-ce-fork-pr-${PR_NUMBER}.onrender.com" \
+            --arg pgdb        "${PR_NUMBER}-ce-fork" \
+            --arg tjdb        "${PR_NUMBER}-ce-fork-tjdb" \
+            --arg pgrst_uri   "postgres://postgres:postgres@localhost/${PR_NUMBER}-ce-fork-tjdb" \
+            --arg smtp_user   "${RENDER_SMTP_USERNAME}" \
+            --arg smtp_pass   "${RENDER_SMTP_PASSWORD}" \
+            --arg mkt_url     "${MARKETPLACE_BUCKET}" \
+            --arg disk_name   "tooljet-ce-fork-pr-${PR_NUMBER}-postgresql" \
+            '{
+              autoDeploy: "no",
+              branch: $branch,
+              name: $name,
+              ownerId: $owner,
+              repo: $repo,
+              slug: $slug,
+              suspended: "not_suspended",
+              type: "web_service",
+              envVars: [
+                {key: "PG_HOST", value: "localhost"},
+                {key: "PG_PORT", value: "5432"},
+                {key: "PG_USER", value: "postgres"},
+                {key: "PG_PASS", value: "postgres"},
+                {key: "PG_DB", value: $pgdb},
+                {key: "TOOLJET_DB", value: $tjdb},
+                {key: "TOOLJET_DB_HOST", value: "localhost"},
+                {key: "TOOLJET_DB_USER", value: "postgres"},
+                {key: "TOOLJET_DB_PASS", value: "postgres"},
+                {key: "TOOLJET_DB_PORT", value: "5432"},
+                {key: "PGRST_DB_PRE_CONFIG", value: "postgrest.pre_config"},
+                {key: "PGRST_DB_URI", value: $pgrst_uri},
+                {key: "PGRST_HOST", value: "127.0.0.1:3000"},
+                {key: "PGRST_LOG_LEVEL", value: "info"},
+                {key: "PORT", value: "80"},
+                {key: "TOOLJET_HOST", value: $host},
+                {key: "DISABLE_TOOLJET_TELEMETRY", value: "true"},
+                {key: "SMTP_ADDRESS", value: "smtp.mailtrap.io"},
+                {key: "SMTP_DOMAIN", value: "smtp.mailtrap.io"},
+                {key: "SMTP_PORT", value: "2525"},
+                {key: "SMTP_USERNAME", value: $smtp_user},
+                {key: "SMTP_PASSWORD", value: $smtp_pass},
+                {key: "TOOLJET_MARKETPLACE_URL", value: $mkt_url}
+              ],
+              serviceDetails: {
+                disk: {
+                  name: $disk_name,
+                  mountPath: "/var/lib/postgresql/13/main",
+                  sizeGB: 10
+                },
+                env: "docker",
+                envSpecificDetails: {
+                  dockerCommand: "",
+                  dockerContext: "./",
+                  dockerfilePath: "./docker/ce-fork.Dockerfile"
+                },
+                healthCheckPath: "/api/health",
+                numInstances: 1,
+                openPorts: [{port: 80, protocol: "TCP"}],
+                plan: "standard",
+                pullRequestPreviewsEnabled: "no",
+                region: "oregon"
+              }
+            }')
+
+          RESPONSE=$(curl --silent --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" \
+            --data "${BODY}")
+
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.service.id // empty')
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+
+          echo "service_id=$SERVICE_ID" >> "$GITHUB_OUTPUT"
+          echo "✅ Service created: $SERVICE_ID"
+
+      - name: Comment deployment started
+        uses: actions/github-script@v7
+        env:
+          SERVICE_ID: ${{ steps.create-service.outputs.service_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const serviceId = process.env.SERVICE_ID;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 CE Fork Review App deployment started\n\n` +
+                    `Render is cloning the fork and building it. ` +
+                    `The live URL will be posted here once the deploy is complete.\n\n` +
+                    `🔍 [Render Dashboard](https://dashboard.render.com/web/${serviceId})`
+            });
+
+      - name: Wait for deployment to go live
+        id: wait-deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ steps.create-service.outputs.service_id }}
+        run: |
+          set -euo pipefail
+          echo "⏳ Waiting for Render to build the fork and deploy..."
+          sleep 30
+
+          STATUS="pending"
+          for i in $(seq 1 60); do
+            STATUS=$(curl --silent --request GET \
+              --url "https://api.render.com/v1/services/${SERVICE_ID}/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header "Authorization: Bearer ${RENDER_API_KEY}" \
+              | jq -r '.[0].deploy.status // "pending"')
+
+            echo "Deploy status: $STATUS (attempt $i/60)"
+
+            case "$STATUS" in
+              live)
+                echo "✅ Deployment is live."
+                echo "deploy_status=live" >> "$GITHUB_OUTPUT"
+                exit 0
+                ;;
+              build_failed|update_failed|canceled|deactivated|pre_deploy_failed)
+                echo "❌ Deployment ended with status: $STATUS"
+                echo "deploy_status=$STATUS" >> "$GITHUB_OUTPUT"
+                exit 1
+                ;;
+            esac
+            sleep 30
+          done
+
+          echo "⌛ Timed out waiting for deploy (last status: $STATUS)."
+          echo "deploy_status=timeout" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Comment success
+        if: success()
+        uses: actions/github-script@v7
+        env:
+          SERVICE_ID: ${{ steps.create-service.outputs.service_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.SERVICE_ID;
+            const appUrl = `https://tooljet-ce-fork-pr-${prNumber}.onrender.com`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ✅ CE Fork Review App is live\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | ${appUrl} |\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
+                    `Built by Render from the fork's public repository.`
+            });
+
+      - name: Comment failure
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          DEPLOY_STATUS: ${{ steps.wait-deploy.outputs.deploy_status }}
+          SERVICE_ID: ${{ steps.create-service.outputs.service_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.SERVICE_ID || '';
+            const status = process.env.DEPLOY_STATUS || 'error';
+            const dash = serviceId
+              ? `\n\n🔍 [Render Dashboard](https://dashboard.render.com/web/${serviceId})`
+              : '';
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ❌ CE Fork Review App failed to deploy\n\n` +
+                    `Status: \`${status}\`. ` +
+                    `Check the workflow run and Render logs.${dash}`
+            });
+
+      - name: Update labels
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ce-fork-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-fork-review-app']
+            });
+
+
+  suspend-ce-fork-review-app:
+    if: |
+      github.event.pull_request.head.repo.fork == true &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ce-fork-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Find and suspend service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          set -euo pipefail
+          SERVICE_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20Fork%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ No CE fork service found for PR #${PR_NUMBER}."
+            exit 1
+          fi
+
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/${SERVICE_ID}/suspend" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}"
+          echo "✅ Service suspended"
+
+      - name: Update labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ce-fork-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+
+  resume-ce-fork-review-app:
+    if: |
+      github.event.pull_request.head.repo.fork == true &&
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ce-fork-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Find and resume service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          set -euo pipefail
+          SERVICE_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20Fork%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ No CE fork service found for PR #${PR_NUMBER}."
+            exit 1
+          fi
+
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/${SERVICE_ID}/resume" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}"
+          echo "✅ Service resumed (using existing image — no rebuild)"
+
+      - name: Update labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-fork-review-app']
+            });
+
+
+  rebuild-ce-fork-review-app:
+    if: |
+      github.event.pull_request.head.repo.fork == true &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if a fork review app is active
+        id: check-active
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const active = labels.data.some(l => l.name === 'active-ce-fork-review-app');
+            core.setOutput('is_active', active);
+            return active;
+
+      - name: Trigger Render redeploy (re-clones fork at new commit)
+        if: steps.check-active.outputs.is_active == 'true'
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          set -euo pipefail
+          SERVICE_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20Fork%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ No CE fork service found for PR #${PR_NUMBER}."
+            exit 1
+          fi
+
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" \
+            --data '{"clearCache": "do_not_clear"}'
+          echo "✅ Redeploy triggered"
+
+      - name: Comment rebuild status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = (process.env.HEAD_SHA || '').substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 CE Fork Review App rebuilding\n\n` +
+                    `New commit \`${sha}\` pushed. Render is re-cloning the fork ` +
+                    `and redeploying. The app URL stays the same once it's live.`
+            });
+
+
+  destroy-ce-fork-review-app:
+    if: |
+      (github.event.pull_request.head.repo.fork == true &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'destroy-ce-fork-review-app') ||
+      (github.event.pull_request.head.repo.fork == true &&
+       github.event.action == 'closed')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Find and delete service
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          set -euo pipefail
+          SERVICE_ID=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20CE%20Fork%20PR%20%23${PR_NUMBER}&limit=1" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}" | jq -r '.[0].service.id // empty')
+
+          if [ -z "$SERVICE_ID" ]; then
+            echo "No CE fork service found for PR #${PR_NUMBER}. Nothing to delete."
+            exit 0
+          fi
+
+          curl --silent --request DELETE \
+            --url "https://api.render.com/v1/services/${SERVICE_ID}" \
+            --header 'accept: application/json' \
+            --header "Authorization: Bearer ${RENDER_API_KEY}"
+          echo "✅ Service deleted"
+
+      - name: Clean up labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            for (const label of ['destroy-ce-fork-review-app', 'suspend-ce-fork-review-app', 'active-ce-fork-review-app']) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
