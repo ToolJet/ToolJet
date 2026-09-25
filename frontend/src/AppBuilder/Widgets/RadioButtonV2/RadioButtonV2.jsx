@@ -287,7 +287,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0"
+            className="d-flex tw-items-center tw-px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
@@ -307,30 +307,35 @@ export const RadioButtonV2 = ({
                         optionsTextColor !== '#1B1F24'
                           ? optionsTextColor
                           : isDisabled || isLoading
-                          ? 'var(--text-disabled)'
-                          : 'var(--text-primary)',
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
                     }}
                   >
                     {String(option.label)}
                   </span>
                   <input
                     data-cy={`${dataCy}-option-input-${index}`}
+                    className="tw-peer"
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
                     checked={checkedValue == option.value}
                     type="radio"
+                    name={`radio-group-${id}`}
                     value={option.value}
                     onChange={() => {
                       onSelect(option.value);
                       fireEvent('onSelectionChange');
                     }}
-                    disabled={option.isDisabled}
+                    // widget-level Disable/Loading must disable every option, not
+                    // just the per-option flag — native disabled also drops it from
+                    // the tab order + blocks Space/arrow selection
+                    disabled={isDisabled || isLoading || option.isDisabled}
                     id={inputId}
                   />
                   <span
-                    className="checkmark"
+                    className="checkmark peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
                     style={{
                       backgroundColor:
                         !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),

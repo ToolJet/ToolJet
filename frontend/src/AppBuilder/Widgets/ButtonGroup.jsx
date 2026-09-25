@@ -167,7 +167,9 @@ export const ButtonGroup = function Button({
               }}
               key={index}
               disabled={disabledState}
-              className={'group-button overflow-hidden'}
+              className={
+                'group-button overflow-hidden focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+              }
               onClick={(event) => {
                 event.stopPropagation();
                 buttonClick(index);

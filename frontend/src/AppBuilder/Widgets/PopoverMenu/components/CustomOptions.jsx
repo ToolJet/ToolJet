@@ -158,10 +158,15 @@ export const CustomOptions = (props) => {
         const isIconVisible = iconVisibility && iconName;
         return (
           <div
-            className={cx('popover-option', {
-              'popover-option-disabled': disable,
-              'popover-option-selected': index === exposedVariablesTemporaryState.selectedOptionIndex,
-            })}
+            className={cx(
+              'popover-option',
+              // inset outline so the keyboard focus ring isn't clipped by the scrollable listbox
+              'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:-tw-outline-offset-2',
+              {
+                'popover-option-disabled': disable,
+                'popover-option-selected': index === exposedVariablesTemporaryState.selectedOptionIndex,
+              }
+            )}
             key={option.value || index}
             id={optionId}
             role="option"

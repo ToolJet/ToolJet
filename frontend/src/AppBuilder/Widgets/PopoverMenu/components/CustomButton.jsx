@@ -71,8 +71,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : buttonType === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedHoverBgColor =
     buttonType === 'primary'
@@ -148,7 +148,6 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       style={{
         position: 'relative',
       }}
-      disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
       ref={forwardedRef}
       {...(trigger === 'hover' && {
         onMouseEnter: openPopoverOnHover,
@@ -156,8 +155,14 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       })}
     >
       <button
-        className={cx('overflow-hidden jet-btn')}
+        className={cx(
+          'overflow-hidden jet-btn',
+          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+        )}
         style={computedStyles}
+        // native disabled on the real button — the trigger had no disabled semantics
+        // at all before (removes it from tab order + blocks Enter/Space/click)
+        disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
         {...(trigger === 'click' && {
           onClick: () => {
             const newPopoverState = !exposedVariablesTemporaryState.showPopover;

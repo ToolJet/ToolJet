@@ -14,7 +14,7 @@ export const buttonGroupV2Config = {
     },
     advanced: {
       type: 'toggle',
-      displayName: 'Mapped button',
+      displayName: 'Mapped buttons',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -327,10 +327,6 @@ export const buttonGroupV2Config = {
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
-      },
-      conditionallyRender: {
-        key: 'buttonType',
-        value: 'primary',
       },
       accordian: 'Buttons',
     },
