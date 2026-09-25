@@ -1,6 +1,19 @@
 import { datasourceService, globalDatasourceService } from '@/_services';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
+function updateExposedDataSources(state) {
+  const allSources = [...(state.dataSources || []), ...(state.globalDataSources || [])];
+  const exposed = {};
+  for (const ds of allSources) {
+    if (ds.name) {
+      exposed[ds.name] = { id: ds.id, name: ds.name, kind: ds.kind };
+    }
+  }
+  if (state.resolvedStore?.modules?.canvas?.exposedValues) {
+    state.resolvedStore.modules.canvas.exposedValues.dataSources = exposed;
+  }
+}
+
 const initialState = {
   dataSources: [],
   loadingDataSources: true,
@@ -15,12 +28,13 @@ const initialState = {
   isFetchingAiTaggableDataSources: false,
 };
 
-export const createDataSourceSlice = (set) => ({
+export const createDataSourceSlice = (set, get) => ({
   ...initialState,
   setDataSources: (dataSources) =>
     set(
       (state) => {
         state.dataSources = dataSources;
+        updateExposedDataSources(state);
       },
       false,
       'setDataSources'
@@ -28,10 +42,16 @@ export const createDataSourceSlice = (set) => ({
   fetchDataSources: (appId, environmentId) => {
     set({ loadingDataSources: true });
     datasourceService.getAll(appId, environmentId).then((data) => {
-      set({
-        dataSources: data.data_sources,
-        loadingDataSources: false,
-      });
+      set(
+        (state) => {
+          state.dataSources = data.data_sources;
+          state.loadingDataSources = false;
+          updateExposedDataSources(state);
+        },
+        false,
+        'fetchDataSources'
+      );
+      get().rebuildDataSourceHints?.();
     });
   },
 
@@ -40,11 +60,17 @@ export const createDataSourceSlice = (set) => ({
     globalDatasourceService
       .getForApp(organizationId, appVersionId, environmentId)
       .then((data) => {
-        set({
-          globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
-          sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
-          loadingDataSources: false,
-        });
+        set(
+          (state) => {
+            state.globalDataSources = data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE);
+            state.sampleDataSource = data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0];
+            state.loadingDataSources = false;
+            updateExposedDataSources(state);
+          },
+          false,
+          'fetchGlobalDataSources'
+        );
+        get().rebuildDataSourceHints?.();
         options?.onSuccess?.(data);
       })
       .catch((err) => {

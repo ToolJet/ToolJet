@@ -105,7 +105,7 @@ function orderSuggestions(suggestions, validationType) {
 export const generateHints = (hints, totalReferences = 1, input, searchText) => {
   if (!hints) return [];
 
-  const suggestions = hints.map(({ hint, type, isContext, isRowScoped }) => {
+  const suggestions = hints.map(({ hint, type, isContext, isRowScoped, insertHint }) => {
     let displayedHint =
       type === 'js_method' || (type === 'Function' && !(hint.endsWith('.run()') || hint.endsWith('.reset()')))
         ? `${hint}()`
@@ -141,6 +141,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
     return {
       displayLabel,
       label: displayedHint,
+      insertHint: insertHint || displayedHint,
       info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
       section,
@@ -155,7 +156,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
         const pickedCompletionConfig = {
           from: pickedFrom,
           to: to,
-          insert: completion.label,
+          insert: completion.insertHint || completion.label,
         };
 
         let anchorSelection = pickedCompletionConfig.insert.length + 2;
