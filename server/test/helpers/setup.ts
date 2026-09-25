@@ -7,6 +7,7 @@ import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { AppModule } from '@modules/app/module';
 import { AuditLogsModule } from '@ee/audit-logs/module';
+import { WorkflowsModule } from '@modules/workflows/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
@@ -362,7 +363,7 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   app: {
     pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
     permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
+    features: { promote: true, release: true, history: true, customComponentLibraries: true },
   },
   modules: { enabled: true },
   permissions: { customGroups: true },
@@ -577,6 +578,8 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     imports: [
       await AppModule.register({ IS_GET_CONTEXT: true }),
       await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
+      // AppModule skips WorkflowsModule when IS_GET_CONTEXT is set, so mount its controllers here.
+      await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true),
     ],
   });
 

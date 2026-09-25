@@ -1554,6 +1554,7 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      updateDependencyValues,
       checkIfParentIsFormAndDeleteField,
       getCurrentPageId,
       checkIfComponentIsModule,
@@ -1577,6 +1578,8 @@ export const createComponentsSlice = (set, get) => ({
     const flexChildOrderUpdates = {};
     const allComponents = getCurrentPageComponents(moduleId);
     const affectedFormIds = new Set(); // Track which Forms need their fields updated
+    // {id, keys}[] for deleted components, so dependents can be notified after the delete below commits.
+    const pendingDependencyUpdates = [];
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -1645,13 +1648,13 @@ export const createComponentsSlice = (set, get) => ({
           componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
+          pendingDependencyUpdates.push({ id, keys: Object.keys(componentsExposedValues[id] || {}) });
           delete page.components[id]; // Remove the component from the page
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
             get().clearSelectedComponents();
           }
-          removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
           state.widgetDeleteConfirmationTargets = null;
         });
@@ -1662,6 +1665,14 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
+    // Run as top-level calls, not nested in the set() above — a set() called
+    // from inside another set()'s producer gets clobbered when the outer one
+    // commits. Update dependents before removeNode strips their graph edges.
+    pendingDependencyUpdates.forEach(({ id, keys }) => {
+      keys.forEach((key) => updateDependencyValues(`components.${id}.${key}`, moduleId));
+      removeNode(`components.${id}`, moduleId);
+    });
 
     // Handle save after state update
     if (saveAfterAction) {
@@ -2925,7 +2936,12 @@ export const createComponentsSlice = (set, get) => ({
       findNearestSubcontainerAncestor,
       updateRowScope,
     } = get();
-    const [entityType, entityId, type, key] = dependency.split('.');
+    const [entityType, entityId, type, ...keys] = dependency.split('.');
+    // Array properties (eg. menuItems[0].label) carry dots after the index, so the tail must be
+    // rejoined and written through its parsed path. Writing it as a flat key would store
+    // properties['menuItems[0].label'] and leave the actual array entry stale forever.
+    const key = keys.join('.');
+    const propertyPath = hasArrayNotation(key) ? parsePropertyPath(key) : null;
     const parentId = getParentIdFromDependency(dependency, moduleId);
     // Walk up to find the nearest ListView ancestor for customResolvables lookup
     const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
@@ -2948,12 +2964,14 @@ export const createComponentsSlice = (set, get) => ({
     // For lazy parents (eg. Table expandable rows),
     // only resolve required rows instead of all 0..length-1.
     // This is a no-op for ListView/Kanban.
+    // Index 0 is always included: it is the template a row falls back to until it is expanded and
+    // resolved, so a stale index 0 would make a row expanded after this update show an old value.
     const { isLazyResolvableParent, getLazyRowIndices } = get();
     const isLazy = isLazyResolvableParent(resolvableParentId, moduleId);
     const indicesToResolve = isLazy
-      ? getLazyRowIndices(resolvableParentId, moduleId)
+      ? getLazyRowIndices(resolvableParentId, moduleId, true)
       : Array.from({ length }, (_, i) => i);
-    if (isLazy && indicesToResolve.length === 0) return;
+    if (indicesToResolve.length === 0) return;
 
     const updates = [];
     for (const i of indicesToResolve) {
@@ -2967,9 +2985,34 @@ export const createComponentsSlice = (set, get) => ({
       updates.push({ index: i, value: validatedValue });
     }
 
+    // Writes one row's resolved value, honouring array notation in the property path.
+    const writeResolvedValue = (rowEntry, value) => {
+      if (!rowEntry[type]) rowEntry[type] = {};
+      if (propertyPath) lodashSet(rowEntry, [type, ...propertyPath], value);
+      else rowEntry[type][key] = value;
+    };
+
+    // Builds a missing row entry from the template row. For array properties the branch of the
+    // template being written into is cloned, otherwise every row would share one array instance.
+    const createRowEntry = (template) => {
+      const typeValues = { ...(template?.[type] || {}) };
+      if (propertyPath) {
+        typeValues[propertyPath[0]] = cloneDeep(typeValues[propertyPath[0]]);
+      }
+      return { ...(template || DEFAULT_COMPONENT_STRUCTURE), [type]: typeValues };
+    };
+
     // Single batched update instead of N individual set() calls
     set(
       (state) => {
+        // Lazy parents skip updateChildComponentsLength, so a descendant may still hold its
+        // pre-row plain object — seed it as the row 0 template before writing row entries.
+        if (!Array.isArray(state.resolvedStore.modules[moduleId][entityType][entityId])) {
+          const existing = state.resolvedStore.modules[moduleId][entityType][entityId];
+          state.resolvedStore.modules[moduleId][entityType][entityId] = [
+            existing || { ...DEFAULT_COMPONENT_STRUCTURE },
+          ];
+        }
         const entityStore = state.resolvedStore.modules[moduleId][entityType][entityId];
         if (parentIndices.length === 0) {
           updates.forEach(({ index, value }) => {
@@ -2980,19 +3023,9 @@ export const createComponentsSlice = (set, get) => ({
             // Also guard entityStore[0] used as template
             const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
             if (!entityStore[index]) {
-              entityStore[index] = {
-                ...template,
-                [type]: {
-                  ...(template?.[type] || {}),
-                  [key]: value,
-                },
-              };
-            } else {
-              if (!entityStore[index][type]) {
-                entityStore[index][type] = {};
-              }
-              entityStore[index][type][key] = value;
+              entityStore[index] = createRowEntry(template);
             }
+            writeResolvedValue(entityStore[index], value);
           });
         } else {
           // Navigate to the correct nested level using parentIndices
@@ -3023,15 +3056,9 @@ export const createComponentsSlice = (set, get) => ({
               if (source && Array.isArray(source)) {
                 source = source[0];
               }
-              current[lastIdx] = source
-                ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
-                : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
-            } else {
-              if (!current[lastIdx][type]) {
-                current[lastIdx][type] = {};
-              }
-              current[lastIdx][type][key] = value;
+              current[lastIdx] = createRowEntry(source);
             }
+            writeResolvedValue(current[lastIdx], value);
           });
         }
       },
@@ -3149,16 +3176,16 @@ export const createComponentsSlice = (set, get) => ({
       queries: getQueryIdNameMapping(moduleId),
     };
 
+    // The trailing path (".value", "?.value", "[0].name", ...) is matched with an include-list
+    // of what a JS member-path can actually contain, instead of an exclude-list of characters
+    // that "shouldn't" appear there — an exclude-list has to anticipate every operator that
+    // might sit next to a reference (this is what missed `<`/`>` previously); an include-list
+    // of valid identifier/index characters can't miss anything because it's a closed set.
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)?([^\s:?[\]'"+\-&|}}]+)?/g;
-    return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?((?:\??\.[A-Za-z_$][\w$]*|\[\d+\]|\['[^']*'\]|\["[^"]*"\])*)/g;
+    return input.replace(regex, (match, category, prefix, id, closingBracket, path) => {
       if (mappings[category] && mappings[category][id]) {
-        let name;
-        if (category === 'components') {
-          name = mappings[category][id];
-        } else {
-          name = mappings[category][id];
-        }
+        const name = mappings[category][id];
 
         // Reconstruct the string with the name instead of UUID
         let result = `${category}`;
@@ -3177,15 +3204,8 @@ export const createComponentsSlice = (set, get) => ({
           result += name;
         }
 
-        // Handle optional chaining after the name
-        if (optionalChaining) {
-          result += optionalChaining;
-        }
-
-        // Add the property if it exists
-        if (property) {
-          result += property;
-        }
+        // Append the rest of the member path as-is (already validated by the regex above)
+        result += path;
 
         return result;
       }
