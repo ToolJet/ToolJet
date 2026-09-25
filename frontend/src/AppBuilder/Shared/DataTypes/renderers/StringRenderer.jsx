@@ -175,7 +175,7 @@ export const StringRenderer = ({
             onBlur={enableTabNavigation ? () => (pointerFocusRef.current = false) : undefined}
             className={`${
               !isValid ? 'is-invalid' : ''
-            } h-100 text-container long-text-input d-flex align-items-center ${
+            } h-100 text-container long-text-input d-flex align-items-safe-center ${
               darkMode ? 'textarea-dark-theme' : ''
             } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
             style={{
