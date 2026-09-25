@@ -3,6 +3,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
+import { OrganizationBitbucket } from '@entities/gitsync_entities/organization_bitbucket.entity';
 import { OrganizationGitCreateDto } from '@dto/organization_git.dto';
 import { getProviderDescriptor } from './provider-descriptors';
 
@@ -99,7 +100,9 @@ export class GitSyncConfigsRepository extends Repository<OrganizationGitSync> {
     await repo.delete({ configId: organizationGitId } as any);
   }
 
-  private providerEntity(gitType: GITConnectionType): { new (): OrganizationGitHttps | OrganizationGitLab } | null {
+  private providerEntity(
+    gitType: GITConnectionType
+  ): { new (): OrganizationGitHttps | OrganizationGitLab | OrganizationBitbucket } | null {
     // Data-driven via the shared descriptor registry — adding a provider needs no edit here.
     return getProviderDescriptor(gitType)?.entity ?? null;
   }

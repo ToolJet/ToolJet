@@ -2,9 +2,10 @@ import { GITConnectionType } from '@entities/organization_git_sync.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
+import { OrganizationBitbucket } from '@entities/gitsync_entities/organization_bitbucket.entity';
 
-type ProviderRelationKey = 'gitHttps' | 'gitLab';
-type ProviderRow = OrganizationGitHttps | OrganizationGitLab;
+type ProviderRelationKey = 'gitHttps' | 'gitLab' | 'gitBitbucket';
+type ProviderRow = OrganizationGitHttps | OrganizationGitLab | OrganizationBitbucket;
 
 /**
  * Data-only description of where each git provider keeps its config on OrganizationGitSync. This is
@@ -43,6 +44,14 @@ export const GIT_PROVIDER_CONFIG_DESCRIPTORS: readonly GitProviderConfigDescript
     repoUrlField: 'gitlabUrl',
     branchField: 'gitlabBranch',
     secretField: 'gitlabProjectAccessToken',
+  },
+  {
+    gitType: GITConnectionType.BITBUCKET,
+    relationKey: 'gitBitbucket',
+    entity: OrganizationBitbucket,
+    repoUrlField: 'bitbucketRepoSlug',
+    branchField: 'bitbucketBranch',
+    secretField: 'bitbucketAccessToken',
   },
 ];
 
