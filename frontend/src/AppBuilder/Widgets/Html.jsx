@@ -24,11 +24,10 @@ export const Html = function ({
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
   const baseStyle = {
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
     width: '100%',
   };
-  const { boxShadow } = styles || {};
+  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles || {};
 
   const isInitialRender = useRef(true);
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -150,10 +149,11 @@ export const Html = function ({
       aria-disabled={exposedVariablesTemporaryState.isDisabled}
       inert={exposedVariablesTemporaryState.isDisabled ? '' : undefined}
       style={{
-        background: exposedVariablesTemporaryState.isLoading && 'var(--cc-surface1-surface)',
+        backgroundColor,
         display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
-        border: exposedVariablesTemporaryState.isLoading && '1px solid var(--cc-default-border)',
-        borderRadius: exposedVariablesTemporaryState.isLoading && '6px',
+        border: '1px solid',
+        borderColor,
+        borderRadius: `${borderRadius}px`,
         width: '100%',
         height: isDynamicHeightEnabled ? 'auto' : height,
         ...(isDynamicHeightEnabled && { minHeight: height }), // overflow-y is driven by the `dynamic-height` class in html.scss

@@ -7,6 +7,7 @@ import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
+import Spinner from '@/_ui/Spinner';
 import { getSafeRenderableValue } from '../utils';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
@@ -180,52 +181,71 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       };
     });
 
+  const { visibility, disabledState, loadingState } = properties;
+  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{
+        display: visibility ? 'block' : 'none',
+        height: height,
+        backgroundColor,
+        border: '1px solid',
+        borderColor,
+        borderRadius: `${borderRadius}px`,
+        boxShadow,
+      }}
       className="bounded-box relative"
+      data-disabled={disabledState}
+      aria-busy={loadingState}
     >
-      <Annotation
-        src={`${properties.imageUrl}`}
-        annotations={annotationsState}
-        type={typeState}
-        ref={annotateRef}
-        value={annotationState}
-        onChange={(annotation) => onChange(annotation)}
-        renderSelector={({ annotation, active }) => (
-          <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
-        )}
-        renderEditor={({ annotation }) => {
-          return (
-            <RenderEditor
+      {loadingState ? (
+        <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
+          <Spinner />
+        </div>
+      ) : (
+        <Annotation
+          src={`${properties.imageUrl}`}
+          annotations={annotationsState}
+          type={typeState}
+          ref={annotateRef}
+          value={annotationState}
+          onChange={(annotation) => onChange(annotation)}
+          renderSelector={({ annotation, active }) => (
+            <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
+          )}
+          renderEditor={({ annotation }) => {
+            return (
+              <RenderEditor
+                annotation={annotation}
+                labels={labels}
+                setAnnotation={setAnnotation}
+                setAnnotations={setAnnotations}
+                setExposedVariable={setExposedVariable}
+                fireEvent={fireEvent}
+                darkMode={darkMode}
+                selectElementStyles={selectElementStyles}
+                getExposedAnnotations={getExposedAnnotations}
+              />
+            );
+          }}
+          renderHighlight={({ annotation }) => (
+            <RenderHighlight
               annotation={annotation}
-              labels={labels}
-              setAnnotation={setAnnotation}
               setAnnotations={setAnnotations}
               setExposedVariable={setExposedVariable}
               fireEvent={fireEvent}
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
+              labels={labels}
               getExposedAnnotations={getExposedAnnotations}
             />
-          );
-        }}
-        renderHighlight={({ annotation }) => (
-          <RenderHighlight
-            annotation={annotation}
-            setAnnotations={setAnnotations}
-            setExposedVariable={setExposedVariable}
-            fireEvent={fireEvent}
-            darkMode={darkMode}
-            selectElementStyles={selectElementStyles}
-            labels={labels}
-            getExposedAnnotations={getExposedAnnotations}
-          />
-        )}
-        renderContent={() => null}
-        disableAnnotation={styles.disabledState}
-      />
+          )}
+          renderContent={() => null}
+          disableAnnotation={disabledState}
+        />
+      )}
     </div>
   );
 };
