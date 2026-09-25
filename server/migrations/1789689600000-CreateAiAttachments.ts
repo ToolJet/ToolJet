@@ -10,11 +10,10 @@ export class CreateAiAttachments1789689600000 implements MigrationInterface {
         "name" varchar(255) NOT NULL,
         "type" varchar(255) NOT NULL,
         "size" integer NOT NULL CHECK ("size" BETWEEN 0 AND 10485760),
-        "s3_bucket" text NOT NULL,
-        "s3_key" text NOT NULL,
-        "status" varchar(16) NOT NULL DEFAULT 'pending' CHECK ("status" IN ('pending', 'ready', 'failed')),
+        "data" bytea NOT NULL,
+        "attached_at" timestamptz,
         "created_at" timestamptz NOT NULL DEFAULT now(),
-        CONSTRAINT "uq_ai_attachments_object" UNIQUE ("s3_bucket", "s3_key")
+        CONSTRAINT "ck_ai_attachments_data_size" CHECK (octet_length("data") = "size")
       )
     `);
     await queryRunner.query(`
@@ -24,7 +23,6 @@ export class CreateAiAttachments1789689600000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Rollback removes only metadata; uploaded S3 objects are deliberately retained.
     await queryRunner.query('DROP TABLE "ai_attachments"');
   }
 }

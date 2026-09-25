@@ -5,6 +5,7 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 export const aiService = {
   uploadAttachment,
   downloadAttachment,
+  removeAttachment,
   sendMessage,
   voteMessage,
   getCopilotSuggestion,
@@ -46,6 +47,14 @@ async function downloadAttachment(id, signal) {
   });
   if (!response.ok) throw new Error('Unable to load attachment');
   return response.blob();
+}
+
+function removeAttachment(id) {
+  return fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeader(true),
+    credentials: 'include',
+  }).then(handleAITextResponse);
 }
 
 function handleAITextResponse(response) {
