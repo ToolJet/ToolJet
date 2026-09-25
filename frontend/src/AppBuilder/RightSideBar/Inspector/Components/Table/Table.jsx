@@ -523,9 +523,18 @@ export const Table = (props) => {
                           const resolvedItemName = getSafeRenderableValue(resolveReferences(item.name));
                           const isEditable = resolveReferences(item.isEditable);
                           const columnVisibility = item?.columnVisibility ?? true;
+                          // react-beautiful-dnd requires a stable, unique draggableId per row.
+                          // Legacy/externally-authored columns can lack a persisted `item.id`;
+                          // falling back to the raw (undefined) id collapses every row onto the
+                          // same registry key and breaks dragging entirely. This fallback is
+                          // render-only — it's never written back into the stored column config.
+                          // `index` is always appended: `key`/`name` are not guaranteed unique
+                          // (two columns can intentionally read the same JSON field, or share
+                          // a display name), so key/name alone can still collide across columns.
+                          const dndId = item.id || `${item.key || item.name || 'col'}-${index}`;
 
                           return (
-                            <Draggable key={item.id} draggableId={item.id} index={index}>
+                            <Draggable key={dndId} draggableId={dndId} index={index}>
                               {(provided, snapshot) => (
                                 <div
                                   ref={provided.innerRef}
