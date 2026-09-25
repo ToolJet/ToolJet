@@ -28,6 +28,10 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
+  clampToGridBounds,
+  clampResizeToGridBounds,
+  getGridBoundsShift,
+  clampTop,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -209,9 +213,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         gw = gw ? gw : gridWidth;
 
         const parent = boxList.find((box) => box.id === id)?.component?.parent;
-        if (y < 0) {
-          y = 0;
-        }
+        y = clampTop(y);
         if (parent) {
           const parentElem = document.getElementById(`canvas-${parent}`);
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
@@ -221,18 +223,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             height = parentHeight;
             y = 0;
           }
-          let posX = Math.round(x / gw);
-          if (posX + newWidth > 43) {
-            newWidth = 43 - posX;
-          }
         }
+
+        const { left: newLeft, width: boundedWidth } = clampResizeToGridBounds(x / gw, newWidth);
 
         // Add to batched layouts instead of calling setComponentLayout immediately
         batchedLayouts[id] = {
           height: height ? height : GRID_HEIGHT,
-          width: newWidth ? newWidth : 1,
+          width: boundedWidth,
           top: y,
-          left: Math.round(x / gw),
+          left: newLeft,
         };
       });
 
@@ -420,34 +420,31 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     (boxPositions) => {
       let newParent = null;
       let oldParent = null;
-      const updatedLayouts = boxPositions.reduce((layouts, { id, x, y, parent }) => {
+      // Shifted as a unit, since clamping each box on its own would stack a multi-select drop
+      const placements = boxPositions.map(({ id, x, y, parent }) => {
         const currentWidget = boxList.find((box) => box.id === id);
         const containerWidth = parent ? useGridStore.getState().subContainerWidths[parent] : gridWidth;
+        let width = currentWidget.layouts[currentLayout].width;
 
-        let _width = currentWidget.layouts[currentLayout].width;
-        let _height = currentWidget.layouts[currentLayout].height;
-        // Adjust width if parent changed
         if (parent !== currentWidget.component?.parent) {
           const oldContainerWidth = currentWidget.component?.parent
             ? useGridStore.getState().subContainerWidths[currentWidget.component.parent]
             : gridWidth;
-          _width = Math.round((_width * oldContainerWidth) / containerWidth);
+          width = Math.round((width * oldContainerWidth) / containerWidth);
         }
 
-        // Ensure minimum width
-        _width = Math.max(_width, 1);
+        return { id, x, y, parent, currentWidget, containerWidth, left: Math.round(x / containerWidth), width };
+      });
+      const groupShift = getGridBoundsShift(placements);
 
-        // Calculate new left position
-        let _left = Math.round(x / containerWidth);
+      const updatedLayouts = placements.reduce((layouts, placement) => {
+        const { id, parent, currentWidget, containerWidth } = placement;
+        let y = placement.y;
+        let _height = currentWidget.layouts[currentLayout].height;
 
-        // Adjust position and width if exceeding grid bounds
-        if (_width + _left > NO_OF_GRIDS) {
-          _left = Math.max(0, NO_OF_GRIDS - _width);
-          _width = Math.min(_width, NO_OF_GRIDS);
-        }
+        const { left: _left, width: _width } = clampToGridBounds(placement.left + groupShift, placement.width);
 
-        // Round y position
-        y = Math.max(0, Math.round(y / GRID_HEIGHT) * GRID_HEIGHT);
+        y = clampTop(Math.round(y / GRID_HEIGHT) * GRID_HEIGHT);
         // Adjust height for certain parent components
         if (parent) {
           const parentElem = document.getElementById(`canvas-${parent}`);
