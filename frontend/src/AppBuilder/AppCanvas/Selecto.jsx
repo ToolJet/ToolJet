@@ -71,7 +71,11 @@ const EditorSelecto = () => {
       const canvasSelectEndId = realCanvasEl ? realCanvasEl.getAttribute('data-parentId') : null;
       const isCanvasSelectStartEndSame = canvasStartId.current === canvasSelectEndId;
       let isMultiSelect = null;
-      let selectedIds = e.added.map((el, index) => {
+      // A plain lasso selects everything under it. `added` is relative to Selecto's own last
+      // selection, which goes stale when selection changes elsewhere (clicks, canvas mouseup), so
+      // re-lassoing the same components would select nothing.
+      const lassoedTargets = e.inputEvent.shiftKey ? e.added : e.selected;
+      let selectedIds = lassoedTargets.map((el, index) => {
         const id = el.getAttribute('widgetid');
         isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
         return id;
