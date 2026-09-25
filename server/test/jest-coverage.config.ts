@@ -7,25 +7,23 @@
  *
  * Usage:
  *   import { coverageConfig } from './test/jest-coverage.config';
- *   coverageConfig()  →  'src/**\/*.ts'
+ *   coverageConfig(isCE)  →  'src/**\/*.ts' (+ 'ee/**\/*.ts' unless isCE)
  */
 import type { Config } from '@jest/types';
 
-export function coverageConfig(): Partial<Config.InitialOptions> {
+export function coverageConfig(isCE: boolean): Partial<Config.InitialOptions> {
   return {
     collectCoverageFrom: [
       'src/**/*.ts',
-      'ee/**/*.ts',
       // Exclude NestJS wiring — modules are DI glue, not logic
       '!src/**/module.ts',
       '!src/**/*.module.ts',
-      '!ee/**/module.ts',
-      '!ee/**/*.module.ts',
       // Exclude data definitions — entities and DTOs are schema, not behavior
       '!src/**/*.entity.ts',
       '!src/**/*.dto.ts',
-      '!ee/**/*.entity.ts',
-      '!ee/**/*.dto.ts',
+      ...(isCE
+        ? []
+        : ['ee/**/*.ts', '!ee/**/module.ts', '!ee/**/*.module.ts', '!ee/**/*.entity.ts', '!ee/**/*.dto.ts']),
       // Exclude entry point and migration helpers
       '!src/main.ts',
       '!src/migration-helpers/**',

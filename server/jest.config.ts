@@ -47,7 +47,7 @@ const config: Config.InitialOptions = {
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
     '^test-helper$': isCE ? '<rootDir>/test/test.helper.ts' : '<rootDir>/ee/test/test.helper.ts',
   },
-  ...coverageConfig(),
+  ...coverageConfig(isCE),
   coverageDirectory: '<rootDir>/coverage-unit',
   runner: 'groups',
   testTimeout: 30000,

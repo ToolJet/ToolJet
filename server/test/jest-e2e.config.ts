@@ -61,7 +61,7 @@ const config: Config.InitialOptions = {
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
     '^test-helper$': isCE ? '<rootDir>/test/test.helper.ts' : '<rootDir>/ee/test/test.helper.ts',
   },
-  ...coverageConfig(),
+  ...coverageConfig(isCE),
   // run-e2e.sh always overrides this per-shard (--coverageDirectory=.coverage/shard-N);
   // this is only the default for direct `jest --config test/jest-e2e.config.ts` invocations.
   coverageDirectory: '<rootDir>/coverage-e2e',
