@@ -762,13 +762,18 @@ const useAppData = (
         setResolvedGlobals(
           'environment',
           currentSelectedEnvironment
-            ? { id: currentSelectedEnvironment.id, name: currentSelectedEnvironment.name }
+            ? {
+                id: currentSelectedEnvironment.id,
+                name: currentSelectedEnvironment.name,
+              }
             : editorEnvironment,
           moduleId
         );
         setResolvedGlobals(
           'appVersion',
-          { name: editingVersion?.display_name || editingVersion?.displayName || editingVersion?.name },
+          {
+            name: editingVersion?.display_name || editingVersion?.displayName || editingVersion?.name,
+          },
           moduleId
         );
         setResolvedGlobals('mode', { value: mode }, moduleId);
@@ -1056,7 +1061,11 @@ const useAppData = (
           // hot reload to leave the version/env/history flows behaving exactly as before.
           setCurrentPageHandle(pageToLoad?.handle, moduleId);
           setResolvedPageConstants(
-            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
+            {
+              id: pageToLoad?.id,
+              handle: pageToLoad?.handle,
+              name: pageToLoad?.name,
+            },
             moduleId
           );
         }
@@ -1133,10 +1142,15 @@ const useAppData = (
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
 
-        setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('environment', {
+          id: selectedEnvironment?.id,
+          name: selectedEnvironment?.name,
+        });
         setResolvedGlobals(
           'appVersion',
-          { name: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name },
+          {
+            name: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+          },
           moduleId
         );
         setResolvedGlobals('mode', { value: mode });
