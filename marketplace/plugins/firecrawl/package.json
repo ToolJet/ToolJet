@@ -1,0 +1,31 @@
+{
+  "name": "@tooljet-marketplace/firecrawl",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "jest",
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
+  },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
+  "dependencies": {
+    "@tooljet-marketplace/common": "^1.0.0",
+    "firecrawl": "^4.32.2",
+    "got": "^11.8.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@vercel/ncc": "^0.38.3",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.0.5",
+    "typescript": "^4.7.4"
+  }
+}

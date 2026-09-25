@@ -79,6 +79,7 @@ To remove a plugin, follow these steps:
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
 - **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
+- **[Firecrawl](/docs/marketplace/plugins/marketplace-plugin-firecrawl)**
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
