@@ -13,7 +13,7 @@ export const IFrame = function IFrame({
 }) {
   // ===== PROPS DESTRUCTURING =====
   const { source, loadingState, disabledState, visibility } = properties;
-  const { boxShadow } = styles;
+  const { boxShadow, padding } = styles;
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -124,7 +124,7 @@ export const IFrame = function IFrame({
         <iframe
           ref={iframeRef}
           key={exposedVariablesTemporaryState.url}
-          width={width - 4}
+          width={width - (padding === 'none' ? 0 : 4)}
           height={height}
           src={exposedVariablesTemporaryState.url}
           title="IFrame Widget"

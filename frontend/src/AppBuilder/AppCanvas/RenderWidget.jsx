@@ -8,6 +8,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { resolveContainerBoxPadding } from './appCanvasUtils';
+import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
@@ -352,7 +353,7 @@ const RenderWidget = ({
           currentLayout={currentLayout}
           setExposedVariable={setExposedVariable}
           setExposedVariables={setExposedVariables}
-          height={widgetHeight - 4}
+          height={widgetHeight - (resolveContainerBoxPadding(resolvedStyles) === '0px' ? 0 : 2 * BOX_PADDING)}
           width={widgetWidth}
           parentId={parentId}
           fireEvent={fireEventWrapper}

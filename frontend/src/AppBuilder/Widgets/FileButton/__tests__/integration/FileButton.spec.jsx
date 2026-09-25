@@ -682,10 +682,8 @@ describe('FileButton: styling', () => {
     await screen.findByText('Upload file');
 
     const contentBox = container.querySelector('.fileButton-widget > div');
-    // Break this catches: dropping the `padding === 'none' ? height + 4 : height`
-    // compensation FileButton needs — RenderWidget always hands the widget
-    // `widgetHeight - 4`, reserving 4px for its own 2px/side wrapper padding, but
-    // zeroes that wrapper padding out when the widget's padding style is 'none'.
+    // Break this catches: RenderWidget reserving 4px for its 2px/side wrapper padding
+    // when the padding style is 'none' and that wrapper padding is zero.
     expect(contentBox).toHaveStyle({ height: '40px' });
   });
 

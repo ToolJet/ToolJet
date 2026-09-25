@@ -57,7 +57,6 @@ export const BaseDateComponent = ({
     auto: labelAutoWidth,
     iconColor,
     accentColor,
-    padding,
     errTextColor,
     widthType,
     labelFontSize,
@@ -68,7 +67,7 @@ export const BaseDateComponent = ({
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height,
     borderColor: focus
       ? accentColor != '#4368E3'
         ? accentColor

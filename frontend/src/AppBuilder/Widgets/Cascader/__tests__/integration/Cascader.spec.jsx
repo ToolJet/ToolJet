@@ -1287,8 +1287,8 @@ describe('Cascader widget', () => {
   });
 
   test('[Cascader-STYLE-016] Padding default vs none changes the control height calculation', async () => {
-    // Break this catches: padding none using height instead of height+4.
-    // RenderWidget passes height={widgetHeight - 4}; harness widgetHeight is 40 → 36.
+    // Break this catches: RenderWidget subtracting its 2px/side box padding from the
+    // widget height even when padding is 'none'. Harness widgetHeight is 40 → 36 / 40.
     widget.render({ styles: { padding: { value: 'default' } } });
     let control = await mounted();
     expect(control).toHaveStyle({ height: '36px', minHeight: '36px' });

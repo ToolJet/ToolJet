@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QrReader from 'react-qr-reader';
 import ErrorModal from './ErrorModal';
 
-export default function QrScanner({ styles, fireEvent, setExposedVariable, dataCy }) {
+export default function QrScanner({ styles, fireEvent, setExposedVariable, dataCy, height }) {
   const handleError = async (errorMessage) => {
     console.log(errorMessage);
     await setErrorOccured(true);
@@ -20,8 +20,17 @@ export default function QrScanner({ styles, fireEvent, setExposedVariable, dataC
   const { visibility, disabledState, boxShadow } = styles;
 
   return (
-    <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
-      {errorOccured ? <ErrorModal /> : <QrReader onError={handleError} onScan={handleScan} />}
+    <div
+      data-disabled={disabledState}
+      className="qr-scanner-widget"
+      style={{ display: visibility ? '' : 'none', boxShadow, height }}
+      data-cy={dataCy}
+    >
+      {errorOccured ? (
+        <ErrorModal />
+      ) : (
+        <QrReader onError={handleError} onScan={handleScan} style={{ height: '100%' }} />
+      )}
     </div>
   );
 }

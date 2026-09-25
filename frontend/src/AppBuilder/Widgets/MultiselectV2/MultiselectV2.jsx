@@ -87,7 +87,7 @@ export const MultiselectV2 = ({
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
   const menuBackgroundColor = getInputBackgroundColor({

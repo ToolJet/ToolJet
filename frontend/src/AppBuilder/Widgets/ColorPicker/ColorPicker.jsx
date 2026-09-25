@@ -241,7 +241,7 @@ export const ColorPicker = (props) => {
   };
 
   // ===== COMPUTED STYLES =====
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
 
   const isFocusedOrOpen = isFocused || showColorPicker;
   const buttonBorderColor = !isValid
