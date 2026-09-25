@@ -1315,22 +1315,21 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
-        onDragGroupStart={(e) => {
-          showGridLines();
-          handleActivateNonDraggingComponents();
-          // Don't start autoscroll if dragging via config handle
-          if (isGroupHandleHoverd) return;
-          // Start autoscroll for group drag with all target elements
-          const targets = e.targets || [];
-          if (targets.length > 0) {
-            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
-          }
-        }}
         onDragGroup={(ev) => {
           const { events } = ev;
           lastGroupDragEventRef.current = events;
           const parentElm = events[0]?.target?.closest('.real-canvas');
+          // Start-of-drag side effects wait for the first movement: a plain click inside the group
+          // area clears the selection on mouseup, which unmounts the group Moveable before
+          // onDragGroupEnd can undo them, leaving the grid lines stuck on.
           if (!isGroupDraggingRef.current) {
+            showGridLines();
+            handleActivateNonDraggingComponents();
+            // Don't start autoscroll if dragging via config handle
+            const targets = ev.targets || [];
+            if (!isGroupHandleHoverd && targets.length > 0) {
+              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
+            }
             useStore.getState().setIsGroupDragging(true);
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection
