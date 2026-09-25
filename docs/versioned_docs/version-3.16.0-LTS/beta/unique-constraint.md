@@ -61,15 +61,13 @@ If the branch that introduced the duplicate value still exists:
 
 ### Option 2: Branch Has Been Deleted
 
-If the branch was auto-deleted after the PR was merged, you cannot pull from main to fix it because pulling will try to bring the entire branch's state and due to the conflicting fields, it will fail. Instead, use a temporary workspace to bring in just the affected application so you can rename it cleanly.
+If the branch was auto-deleted after the PR was merged, you cannot pull from main to fix it because pulling will try to bring the entire branch's state and due to the conflicting fields, it will fail. Creating a feature branch or importing into a new workspace won't help either, since both will hit the same unique constraint error when pulling from main. Instead, revert the merge commit that introduced the conflict, fix it on a new branch, and merge that fix in before pulling again.
 
-1. **Create a new temporary workspace** in ToolJet.
-2. **Connect it to the same Git repository** using your existing Git credentials.
-3. **Import the affected application** using the import-from-Git option — do not use Pull, as that will try to bring the entire branch's state and will fail due to the conflicting fields.
-4. **Create a new branch** in the temporary workspace.
-5. **Rename the conflicting field** (e.g., update the app slug to something unique).
-6. **Commit, push, create a pull request**, and merge it into main.
-7. **Pull the latest commit from main** into your original workspace — the conflict is now resolved.
+1. **Revert the commit** on main that introduced the conflicting value.
+2. **Create a new branch** off main (after the revert).
+3. **Rename the conflicting field** (e.g., update the app slug to something unique).
+4. **Commit, push, create a pull request**, and merge it into main.
+5. **Pull the latest commit from main** into your workspace — the conflict is now resolved.
 
 :::info
 The error message shown in ToolJet will identify the specific app or resource (by name or ID) causing the conflict, which helps you locate the right branch or app to fix.
