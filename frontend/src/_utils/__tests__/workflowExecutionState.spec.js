@@ -1,5 +1,6 @@
 import {
   getExecutionDisplayState,
+  getExecutionDisplayConfig,
   getExecutionStatusText,
   isExecutionFinished,
   isExecutionInProgress,
@@ -72,5 +73,31 @@ describe('getExecutionDisplayState — unknown', () => {
     const staleExecution = { executed: false, status: null, startedAt: minutesAgo(60) };
     expect(isExecutionFinished(staleExecution)).toBe(true);
     expect(isExecutionInProgress(staleExecution)).toBe(false);
+  });
+});
+
+// I6: getExecutionDisplayConfig's icon mapping was never pinned when 'unknown' was added, so the
+// workflow editor's LogsPanel (RunItems.jsx) — the only production consumer of this icon field —
+// dispatched every unrecognised icon key to its Failure icon, turning a dead/jobless run into a
+// false "this failed" report. Pin the full icon map here, keyed by display state, so 'unknown'
+// staying distinct from both 'success' and 'error' cannot silently regress.
+describe('getExecutionDisplayConfig — icon mapping', () => {
+  it('assigns a distinct, neutral icon key to unknown — neither success nor error', () => {
+    const config = getExecutionDisplayConfig({ executed: false, status: null, startedAt: minutesAgo(60) });
+    expect(config.icon).toBe('unknown');
+    expect(config.icon).not.toBe('success');
+    expect(config.icon).not.toBe('error');
+  });
+
+  it('pins the icon key for every display state RunItems.jsx dispatches on', () => {
+    const iconFor = (execution) => getExecutionDisplayConfig(execution).icon;
+
+    expect(iconFor({ executed: true, status: 'success' })).toBe('success');
+    expect(iconFor({ executed: true, status: 'failure' })).toBe('error');
+    expect(iconFor({ executed: true, status: 'terminated' })).toBe('terminated');
+    expect(iconFor({ executed: false, status: 'waiting' })).toBe('waiting');
+    expect(iconFor({ executed: false, status: null, startedAt: minutesAgo(60) })).toBe('unknown');
+    // pending/running carry no icon — RunItems.jsx shows a spinner instead (showSpinner: true).
+    expect(iconFor({ executed: false, status: null, jobState: 'active' })).toBeNull();
   });
 });

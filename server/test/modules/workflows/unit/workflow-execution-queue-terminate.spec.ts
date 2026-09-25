@@ -11,6 +11,11 @@ import { WorkflowExecution } from '@entities/workflow_execution.entity';
 // double-clicked Stop call re-runs the same branch once status is already 'terminated'), so the
 // update must guard finishedAt with COALESCE rather than overwrite it with a fresh Date on every
 // call -- otherwise the dashboard's Duration column would keep moving forward on repeat clicks.
+//
+// executed: true must land alongside status: 'terminated' on every path too: the dashboard's
+// renderer (getExecutionDisplayState) only recognises status: 'terminated' as terminal when
+// executed is also true; without it, a filtered-for-"Terminated" row falls through to job state
+// and renders as "Unknown" once BullMQ evicts the job.
 describe('WorkflowExecutionQueueService.terminate', () => {
   const executionId = 'execution-1';
 
@@ -53,7 +58,7 @@ describe('WorkflowExecutionQueueService.terminate', () => {
     expect(update).toHaveBeenCalledWith(
       WorkflowExecution,
       { id: executionId },
-      expect.objectContaining({ status: 'terminated', finishedAt: rawSqlFinishedAt })
+      expect.objectContaining({ status: 'terminated', executed: true, finishedAt: rawSqlFinishedAt })
     );
   });
 
@@ -82,7 +87,7 @@ describe('WorkflowExecutionQueueService.terminate', () => {
     expect(update).toHaveBeenCalledWith(
       WorkflowExecution,
       { id: executionId },
-      expect.objectContaining({ status: 'terminated', finishedAt: rawSqlFinishedAt })
+      expect.objectContaining({ status: 'terminated', executed: true, finishedAt: rawSqlFinishedAt })
     );
   });
 
@@ -97,6 +102,7 @@ describe('WorkflowExecutionQueueService.terminate', () => {
     await service.terminate(executionId);
 
     const [, , payload] = update.mock.calls[0];
+    expect(payload.executed).toBe(true);
     expect(typeof payload.finishedAt).toBe('function');
     expect(payload.finishedAt()).toMatch(/COALESCE\(finished_at, ?NOW\(\)\)/i);
   });
