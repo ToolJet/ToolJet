@@ -1,9 +1,30 @@
 import { QueryOptions } from './types';
 import Anthropic from '@anthropic-ai/sdk';
 
-const getMaxSize = (max_size: number | string | undefined): number => {
+const DEFAULT_MODEL = 'claude-opus-5';
+
+const MODEL_MAX_OUTPUT_TOKENS: Record<string, number> = {
+  'claude-fable-5-1': 128000,
+  'claude-fable-5': 128000,
+  'claude-opus-5-5': 128000,
+  'claude-opus-5': 128000,
+  'claude-sonnet-5': 128000,
+  'claude-haiku-4-5': 64000,
+};
+
+// Sampling parameters are rejected with a 400 on these models
+const MODELS_WITHOUT_TEMPERATURE = new Set([
+  'claude-fable-5-1',
+  'claude-fable-5',
+  'claude-opus-5-5',
+  'claude-opus-5',
+  'claude-sonnet-5',
+]);
+
+const getMaxSize = (model: string, max_size: number | string | undefined): number => {
+  const cap = MODEL_MAX_OUTPUT_TOKENS[model] ?? 2048;
   const size = typeof max_size === 'string' ? parseInt(max_size) : max_size;
-  return isNaN(size) ? 256 : Math.max(1, Math.min(2048, size));
+  return isNaN(size) ? Math.min(256, cap) : Math.max(1, Math.min(cap, size));
 };
 
 const getTemperature = (temperature: number | string | undefined): number => {
@@ -41,15 +62,24 @@ export async function getChatCompletion(
     ];
   }
 
-  const response: any = await anthropicClient.messages.create({
-    model: model || 'claude-3-5-sonnet-20241022',
+  const selectedModel = model || DEFAULT_MODEL;
+
+  const payload: any = {
+    model: selectedModel,
     system: system_prompt || '',
     messages: messagesPayload,
-    max_tokens: getMaxSize(max_size),
-    temperature: getTemperature(temperature),
-  });
+    max_tokens: getMaxSize(selectedModel, max_size),
+  };
 
-  return response.content; //|| (response.choices && response.choices[0]?.text) || 'No output received';
+  if (!MODELS_WITHOUT_TEMPERATURE.has(selectedModel)) {
+    payload.temperature = getTemperature(temperature);
+  }
+
+  // streamed so that large max_tokens values do not hit the request timeout
+  const response: any = await anthropicClient.messages.stream(payload).finalMessage();
+
+  // models that reason by default emit an empty thinking block alongside the answer
+  return response.content.filter((block: any) => block.type !== 'thinking'); //|| (response.choices && response.choices[0]?.text) || 'No output received';
 } /*catch (error) {
     throw new Error(error?.message || 'An unexpected error occurred');
   }
