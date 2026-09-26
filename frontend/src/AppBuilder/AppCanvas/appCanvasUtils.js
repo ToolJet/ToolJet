@@ -255,16 +255,17 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       }
 
       if (_.isArray(styles) && styles.length > 0) {
-        styles.forEach((prop) => {
-          const accessor = customResolverVariable
-            ? `{{${customResolverVariable}.${accessorKey}}}`
-            : defaultValue[prop] || '';
+        // Styles are static even under a row resolver, and merge so untouched keys survive.
+        const newComponentStyles = {
+          ...componentData.definition.styles,
+        };
 
-          _.set(newComponentDefinition, prop, {
-            value: accessor,
+        styles.forEach((prop) => {
+          _.set(newComponentStyles, prop, {
+            value: defaultValue?.[prop] ?? '',
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {
