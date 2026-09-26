@@ -1,6 +1,7 @@
 import { DataSource } from '@entities/data_source.entity';
 import {
   BadRequestException,
+  Inject,
   ForbiddenException,
   Injectable,
   NotAcceptableException,
@@ -11,11 +12,20 @@ import {
 import * as protobuf from 'protobufjs';
 import got from 'got';
 import Ajv2020 from 'ajv/dist/2020';
-import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
+import {
+  CreateArgumentsDto,
+  GetDataSourceOauthUrlDto,
+  TestDataSourceDto,
+  CreateOpenApiSpecDto,
+  OpenApiSpecOperationsQueryDto,
+} from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, EntityNotFoundError } from 'typeorm';
+import { EntityManager, EntityNotFoundError, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
-import { DataSourceScopes, DataSourceTypes } from './constants';
+import { DataSourceScopes, DataSourceTypes, RUNTIME_EXCLUDED_OPTION_KEYS } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { CredentialsService } from '@modules/encryption/services/credentials.service';
 import { DataSourcesRepository } from './repository';
@@ -35,10 +45,26 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
+import { OpenApiSpecTerminationRegistry } from '@modules/openapi-spec/services/openapi-spec-termination-registry';
+import { OpenApiSpecJobData } from '@modules/openapi-spec/processors/openapi-spec.processor';
+import {
+  OPENAPI_SPEC_OPTION_KEYS,
+  OPENAPI_SPEC_PROCESSING_QUEUE,
+  OpenApiSpecSourceType,
+  OpenApiSpecStatus,
+  PROCESS_OPENAPI_SPEC_JOB,
+  OPENAPI_V2_DATASOURCE_KIND,
+} from '@modules/openapi-spec/constants';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
   constructor(
+    // Kept away from the @InjectQueue/@InjectRepository custom-token cluster below: a plain
+    // class-typed param placed adjacent to those was observed resolving to the wrong provider
+    // (the Queue meant for the next param) at full-app bootstrap.
+    @Inject(GitSyncConfigsUtilService) protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly credentialService: CredentialsService,
     protected readonly dataSourceRepository: DataSourcesRepository,
@@ -47,7 +73,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    @InjectQueue(OPENAPI_SPEC_PROCESSING_QUEUE) protected readonly openApiSpecQueue: Queue,
+    @InjectRepository(OpenApiSpecOperation)
+    protected readonly openApiSpecOperationsRepository: Repository<OpenApiSpecOperation>,
+    protected readonly openApiSpecTerminationRegistry: OpenApiSpecTerminationRegistry,
     @Optional() protected readonly customDomainCacheService?: CustomDomainCacheService
   ) {}
 
@@ -854,7 +883,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
       });
     } finally {
-      this.inMemoryCacheService.clear();
+      // Guarded: "inMemoryCacheService.clear is not a function" was seen on save (root cause
+      // unknown). A stale OAuth cache entry is better than a 500.
+      this.inMemoryCacheService?.clear?.();
     }
   }
 
@@ -946,6 +977,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       dataSource?.id
     );
     const parsedOptions = {};
+    const isOpenApiV2DataSource = dataSource?.kind === OPENAPI_V2_DATASOURCE_KIND;
+    const openApiSpecOptionKeys: string[] = isOpenApiV2DataSource ? Object.values(OPENAPI_SPEC_OPTION_KEYS) : [];
 
     if (dataSource?.options) {
       for (const key in dataSource.options) {
@@ -955,6 +988,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             credential_id: dataSource.options[key].credential_id,
             encrypted: dataSource.options[key].encrypted,
           };
+        } else if (openApiSpecOptionKeys.includes(key)) {
+          // Worker-managed spec keys are never submitted by the form; carry them over or a save wipes them.
+          parsedOptions[key] = dataSource.options[key];
         }
       }
     }
@@ -1562,6 +1598,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const constantMatcher = /\{\{(constants|secrets|globals.server)\..*?\}\}/g;
 
     for (const key of Object.keys(options)) {
+      // Never read by run(); skipping avoids resolving constants across a potentially huge raw spec.
+      if (RUNTIME_EXCLUDED_OPTION_KEYS.includes(key)) continue;
+
       const currentOption = options[key]?.['value'];
       constantMatcher.lastIndex = 0;
 
@@ -2034,5 +2073,371 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (existing) {
       throw new BadRequestException(`A data source with name "${name}" already exists in this workspace`);
     }
+  }
+  // --- OpenAPI v2 spec processing -------------------------------------------------------
+
+  async createOrReplaceOpenApiSpec(
+    dataSourceId: string,
+    organizationId: string,
+    dto: CreateOpenApiSpecDto,
+    userId: string,
+    branchId?: string
+  ) {
+    const batches = await this.resolveOpenApiSpecEnvironmentBatches(organizationId, dto.environmentId);
+    const rawSpec = dto.sourceType === OpenApiSpecSourceType.URL ? null : dto.definition;
+    // For notification copy only - resolved once here since the job only carries ids.
+    const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
+
+    const jobs = await Promise.all(
+      batches.map(async (environmentIds) => {
+        for (const environmentId of environmentIds) {
+          await this.writeOpenApiSpecOptions(
+            dataSourceId,
+            organizationId,
+            environmentId,
+            {
+              [OPENAPI_SPEC_OPTION_KEYS.SOURCE_TYPE]: dto.sourceType,
+              [OPENAPI_SPEC_OPTION_KEYS.URL]: dto.url || null,
+              [OPENAPI_SPEC_OPTION_KEYS.RAW_SPEC]: rawSpec,
+              [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.PENDING,
+              [OPENAPI_SPEC_OPTION_KEYS.ERROR]: null,
+            },
+            branchId
+          );
+        }
+
+        // Resolved once, after the write above has ensured this branch's DSV exists - the job
+        // carries this id rather than re-resolving "the current branch's DSV" later, since by
+        // then the branch context of the original request is gone.
+        const dataSourceVersionId = await dbTransactionWrap((manager: EntityManager) =>
+          DataSourcesRepository.resolveDsvForDataSource(manager, dataSourceId, branchId)
+        ).then((dsv: DataSourceVersion | null) => dsv?.id ?? null);
+
+        const jobData: OpenApiSpecJobData = {
+          dataSourceId,
+          dataSourceVersionId,
+          dataSourceName: dataSource.name,
+          userId,
+          organizationId,
+          environmentIds,
+          sourceType: dto.sourceType,
+          url: dto.url,
+          definition: dto.definition,
+        };
+        const job = await this.openApiSpecQueue.add(PROCESS_OPENAPI_SPEC_JOB, jobData);
+
+        for (const environmentId of environmentIds) {
+          await this.writeOpenApiSpecOptions(
+            dataSourceId,
+            organizationId,
+            environmentId,
+            {
+              [OPENAPI_SPEC_OPTION_KEYS.JOB_ID]: job.id,
+              [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.PROCESSING,
+            },
+            branchId
+          );
+        }
+
+        return { jobId: job.id, environmentIds };
+      })
+    );
+
+    return { status: OpenApiSpecStatus.PROCESSING, jobs };
+  }
+
+  async getOpenApiSpecStatus(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ): Promise<{ status: OpenApiSpecStatus | null; error: string | null }> {
+    const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
+    return {
+      status: options[OPENAPI_SPEC_OPTION_KEYS.STATUS]?.value || null,
+      error: options[OPENAPI_SPEC_OPTION_KEYS.ERROR]?.value || null,
+    };
+  }
+
+  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+    const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
+    return options[OPENAPI_SPEC_OPTION_KEYS.METADATA]?.value || null;
+  }
+
+  async cancelOpenApiSpecProcessing(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ) {
+    const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
+    const jobId = options[OPENAPI_SPEC_OPTION_KEYS.JOB_ID]?.value;
+
+    const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, branchId);
+    if (dataSourceVersionId) {
+      await this.openApiSpecTerminationRegistry.requestTermination(dataSourceVersionId, environmentId);
+    }
+
+    await this.openApiSpecTerminationRegistry.removeIfQueued(jobId);
+
+    await this.writeOpenApiSpecOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      {
+        [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.CANCELLED,
+      },
+      branchId
+    );
+
+    return { status: OpenApiSpecStatus.CANCELLED };
+  }
+
+  // Unlike cancel, waits for in-flight jobs in every environment to stop so none is still writing
+  // operations for a datasource being deleted. Throws on timeout; callers must abort the delete.
+  // Mirrors delete()'s own branch scoping (service.ts): a branchId means only that branch's DSV
+  // is being removed, so only its jobs need terminating; no branchId means the whole datasource
+  // (every DSV) is being removed, so every branch's jobs must be terminated.
+  async terminateOpenApiSpecJobsForDelete(
+    dataSourceId: string,
+    organizationId: string,
+    branchId?: string
+  ): Promise<void> {
+    const environments = await this.appEnvironmentUtilService.getAll(organizationId);
+    const branchIds = branchId
+      ? [branchId]
+      : (
+          await dbTransactionWrap((manager: EntityManager) =>
+            manager.find(DataSourceVersion, { where: { dataSourceId } })
+          )
+        ).map((dsv: DataSourceVersion) => dsv.branchId);
+
+    for (const currentBranchId of branchIds) {
+      for (const environment of environments) {
+        const options = await this.getResolvedOpenApiSpecOptions(
+          dataSourceId,
+          organizationId,
+          environment.id,
+          currentBranchId
+        );
+        const status = options[OPENAPI_SPEC_OPTION_KEYS.STATUS]?.value;
+        if (![OpenApiSpecStatus.PENDING, OpenApiSpecStatus.PROCESSING].includes(status)) continue;
+
+        const jobId = options[OPENAPI_SPEC_OPTION_KEYS.JOB_ID]?.value;
+        const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, currentBranchId);
+        if (!dataSourceVersionId) continue;
+        await this.openApiSpecTerminationRegistry.terminateAndWait(dataSourceVersionId, environment.id, jobId);
+      }
+    }
+  }
+
+  // Excludes the heavy jsonb columns (parameters, requestBodySchema); see getOpenApiSpecOperation.
+  async listOpenApiSpecOperations(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    query: OpenApiSpecOperationsQueryDto,
+    branchId?: string
+  ) {
+    const currentPage = parseInt(query.page) || 1;
+    const perPage = parseInt(query.perPage) || 1000;
+
+    const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, branchId);
+
+    const qb = this.openApiSpecOperationsRepository
+      .createQueryBuilder('operation')
+      .select([
+        'operation.id',
+        'operation.operationId',
+        'operation.serviceId',
+        'operation.path',
+        'operation.method',
+        'operation.name',
+        'operation.deprecated',
+        'operation.tags',
+        'operation.security',
+        'operation.hasRequestBody',
+      ])
+      .where('operation.dataSourceVersionId = :dataSourceVersionId', { dataSourceVersionId })
+      .andWhere('operation.environmentId = :environmentId', { environmentId });
+
+    if (query.service) {
+      qb.andWhere('operation.serviceId = :service', { service: query.service });
+    }
+    if (query.tag) {
+      // jsonb `?`: array contains this string.
+      qb.andWhere('operation.tags ? :tag', { tag: query.tag });
+    }
+    if (query.search) {
+      qb.andWhere(
+        '(operation.name ILIKE :search OR operation.path ILIKE :search OR operation.tags::text ILIKE :search)',
+        {
+          search: `%${query.search}%`,
+        }
+      );
+    }
+
+    const [operations, totalCount] = await qb
+      .orderBy('operation.path', 'ASC')
+      .addOrderBy('operation.method', 'ASC')
+      .skip((currentPage - 1) * perPage)
+      .take(perPage)
+      .getManyAndCount();
+
+    return {
+      meta: {
+        totalPages: Math.max(Math.ceil(totalCount / perPage), 1),
+        totalCount,
+        currentPage,
+      },
+      operations,
+    };
+  }
+
+  // Keyed by row id: operationId is optional in the spec and not guaranteed unique.
+  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string, branchId?: string) {
+    const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, branchId);
+    const operation = await this.openApiSpecOperationsRepository.findOne({
+      where: { dataSourceVersionId, environmentId, id },
+    });
+    if (!operation) throw new NotFoundException(`Operation '${id}' not found`);
+    return operation;
+  }
+
+  // Read-only DSV resolution for the operation-listing endpoints - no branchId means the default
+  // branch, and a branch with nothing uploaded yet just means an empty/not-found result, not an
+  // error, so this never auto-creates (contrast with the write path, ensureDsvForBranch).
+  private async resolveOpenApiSpecReadDsvId(dataSourceId: string, branchId?: string): Promise<string | null> {
+    const dsv = await dbTransactionWrap((manager: EntityManager) =>
+      DataSourcesRepository.resolveDsvForDataSource(manager, dataSourceId, branchId)
+    );
+    return dsv?.id ?? null;
+  }
+
+  // Each inner array becomes one job. Unlicensed: one job shared by all environments (options are
+  // duplicated everywhere). Licensed: one job per environment so a broken spec doesn't block others.
+  private async resolveOpenApiSpecEnvironmentBatches(
+    organizationId: string,
+    requestedEnvironmentId?: string
+  ): Promise<string[][]> {
+    const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+    const environments = await this.appEnvironmentUtilService.getAll(organizationId);
+    if (!environments.length) throw new BadRequestException('No environments found for organization');
+    if (!isMultiEnvEnabled) return [environments.map((env) => env.id)];
+    if (requestedEnvironmentId) return [[requestedEnvironmentId]];
+    return environments.map((env) => [env.id]);
+  }
+
+  private async getResolvedOpenApiSpecOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ) {
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      branchId
+    );
+    return dataSourceOptions?.options || {};
+  }
+
+  // Writes to the branch's own DSVO (auto-creating and seeding that branch's DSV first if it
+  // doesn't exist yet - see ensureDsvForBranch) when branchId is given, else the default DSV.
+  // Never falls back to "also update the default DSV" the way the general updateOptions() does -
+  // every caller of this (and every reader, via getResolvedOpenApiSpecOptions) is already
+  // branch-aware, so there's no untargeted legacy reader to keep in sync.
+  private async writeOpenApiSpecOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    patch: Record<string, any>,
+    branchId?: string
+  ): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      let dsv: DataSourceVersion | null;
+      if (branchId) {
+        const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId, manager);
+        const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
+        dsv = await this.ensureDsvForBranch(manager, dataSource, branchId, allEnvs);
+      } else {
+        dsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceId);
+      }
+      if (!dsv) return;
+
+      const existing = await manager.findOne(DataSourceVersionOptions, {
+        where: { dataSourceVersionId: dsv.id, environmentId },
+      });
+      const options = { ...(existing?.options || {}) };
+      for (const key of Object.keys(patch)) {
+        options[key] = { value: patch[key], encrypted: false };
+      }
+
+      if (existing) {
+        await manager.update(DataSourceVersionOptions, { id: existing.id }, { options, updatedAt: new Date() });
+      } else {
+        await manager.save(
+          manager.create(DataSourceVersionOptions, { dataSourceVersionId: dsv.id, environmentId, options })
+        );
+      }
+    });
+  }
+
+  // Returns the branch's existing DataSourceVersion, or auto-creates one seeded from the default
+  // DSV's current options if it doesn't exist yet (e.g. this datasource pre-dates the branch, or
+  // pre-dates git-sync being enabled) - mirrors update()'s own inline logic above (lines ~476-514
+  // / ~544-578) exactly, including cloning encrypted values into new credential rows so branches
+  // never share credential references.
+  private async ensureDsvForBranch(
+    manager: EntityManager,
+    dataSource: DataSource,
+    branchId: string,
+    allEnvs: AppEnvironment[]
+  ): Promise<DataSourceVersion> {
+    const existing = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId, isActive: true },
+    });
+    if (existing) return existing;
+
+    const dsv = await manager.save(
+      manager.create(DataSourceVersion, {
+        dataSourceId: dataSource.id,
+        branchId,
+        name: dataSource.name,
+        isActive: true,
+      })
+    );
+
+    const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
+    for (const env of allEnvs) {
+      let sourceOptions: any = {};
+      if (defaultDsv) {
+        const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
+        });
+        sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
+      }
+      for (const key of Object.keys(sourceOptions)) {
+        const opt = sourceOptions[key];
+        if (opt?.credential_id && opt?.encrypted) {
+          const originalValue = await this.credentialService.getValue(opt.credential_id);
+          const newCredential = await this.credentialService.create(originalValue || '', manager);
+          sourceOptions[key] = { ...opt, credential_id: newCredential.id };
+        }
+      }
+      await manager.save(
+        manager.create(DataSourceVersionOptions, {
+          dataSourceVersionId: dsv.id,
+          environmentId: env.id,
+          options: sourceOptions,
+        })
+      );
+    }
+
+    return dsv;
   }
 }

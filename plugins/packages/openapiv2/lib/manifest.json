@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenAPI 2.0 datasource",
+  "description": "OpenAPI datasource with backend spec processing - large specs (2.0 and 3.0) are validated, dereferenced, and indexed by a background worker instead of in the browser",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "OpenAPI 2.0",
+    "kind": "openapiv2",
+    "type": "api",
+    "customTesting": true
+  },
+  "properties": {
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Overrides the host defined in the OpenAPI spec"
+    },
+    "spec_source_type": {
+      "type": "string",
+      "title": "Spec source type",
+      "description": "Whether the spec is uploaded via URL or pasted definition",
+      "default": "url"
+    },
+    "spec_url": {
+      "type": "string",
+      "title": "Spec URL"
+    },
+    "raw_spec": {
+      "type": "string",
+      "title": "Spec definition"
+    },
+    "auth_key": {
+      "type": "string",
+      "title": "Authentication",
+      "description": "Security scheme selected from the ones declared by the uploaded spec"
+    },
+    "auth_type": {
+      "type": "string",
+      "title": "Authentication type",
+      "description": "Resolved from the selected security scheme (http/apiKey/oauth2)",
+      "default": "none"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    },
+    "bearer_token": {
+      "type": "string",
+      "title": "Bearer token",
+      "description": "Enter the bearer token"
+    },
+    "api_keys": {
+      "type": "array",
+      "title": "API keys",
+      "description": "Resolved API key fields for the selected security scheme"
+    },
+    "grant_type": {
+      "type": "string",
+      "title": "Grant type",
+      "default": "authorization_code"
+    },
+    "add_token_to": {
+      "type": "string",
+      "title": "Add token to",
+      "default": "header"
+    },
+    "header_prefix": {
+      "type": "string",
+      "title": "Header prefix",
+      "default": "Bearer "
+    },
+    "access_token_url": {
+      "type": "string",
+      "title": "Access token URL"
+    },
+    "client_id": {
+      "type": "string",
+      "title": "Client ID"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret"
+    },
+    "client_auth": {
+      "type": "string",
+      "title": "Client authentication",
+      "default": "header"
+    },
+    "auth_url": {
+      "type": "string",
+      "title": "Auth URL"
+    },
+    "scopes": {
+      "type": "string",
+      "title": "Scopes"
+    },
+    "audience": {
+      "type": "string",
+      "title": "Audience"
+    },
+    "custom_auth_params": {
+      "type": "array",
+      "title": "Custom auth params",
+      "default": [["", ""]]
+    },
+    "custom_query_params": {
+      "type": "array",
+      "title": "Custom query params",
+      "default": [["", ""]]
+    },
+    "access_token_custom_headers": {
+      "type": "array",
+      "title": "Access token custom headers",
+      "default": [["", ""]]
+    },
+    "multiple_auth_enabled": {
+      "type": "boolean",
+      "title": "Multiple auth enabled",
+      "default": false
+    },
+    "headers": {
+      "type": "array",
+      "title": "Headers",
+      "default": [["", ""]]
+    },
+    "url_parameters": {
+      "type": "array",
+      "title": "URL parameters",
+      "default": [["", ""]]
+    },
+    "body": {
+      "type": "array",
+      "title": "Body",
+      "default": [["", ""]]
+    },
+    "cookies": {
+      "type": "array",
+      "title": "Cookies",
+      "default": [["", ""]]
+    }
+  },
+  "tj:encrypted": ["password", "bearer_token", "client_secret"],
+  "required": [],
+  "tj:ui:properties": {
+    "host": {
+      "order": 0,
+      "$ref": "#/properties/host",
+      "key": "host",
+      "label": "Host",
+      "description": "Overrides the host defined in the OpenAPI spec",
+      "widget": "text-v3"
+    },
+    "spec": {
+      "order": 1,
+      "key": "spec",
+      "label": "Spec",
+      "description": "Upload an OpenAPI 2.0/3.0 spec - processed in the background, not in your browser",
+      "widget": "react-component-openapi-v2-config"
+    }
+  }
+}

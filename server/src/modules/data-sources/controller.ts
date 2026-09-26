@@ -13,8 +13,10 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
+  CreateOpenApiSpecDto,
   GetDataSourceOauthUrlDto,
   InvokeDataSourceMethodDto,
+  OpenApiSpecOperationsQueryDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
@@ -219,5 +221,99 @@ export class DataSourcesController implements IDataSourcesController {
     );
 
     return result;
+  }
+
+  // --- OpenAPI v2 spec processing ---
+  // Reuses UPDATE for mutations and TEST_CONNECTION for reads (like :id/invoke), which already
+  // cover every permission tier, instead of adding feature keys.
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/openapi-spec')
+  async processOpenApiSpec(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Body() createOpenApiSpecDto: CreateOpenApiSpecDto,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.createOrReplaceOpenApiSpec(
+      dataSourceId,
+      user.organizationId,
+      createOpenApiSpecDto,
+      user.id,
+      branchId
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get(':id/openapi-spec/status')
+  async getOpenApiSpecStatus(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.getOpenApiSpecStatus(dataSourceId, user.organizationId, environmentId, branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Delete(':id/openapi-spec/cancel')
+  async cancelOpenApiSpecProcessing(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.cancelOpenApiSpecProcessing(
+      dataSourceId,
+      user.organizationId,
+      environmentId,
+      branchId
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get(':id/openapi-spec/metadata')
+  async getOpenApiSpecMetadata(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.getOpenApiSpecMetadata(dataSourceId, user.organizationId, environmentId, branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get(':id/openapi-spec/operations')
+  async listOpenApiSpecOperations(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query() query: OpenApiSpecOperationsQueryDto,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.listOpenApiSpecOperations(
+      dataSourceId,
+      user.organizationId,
+      query.environmentId,
+      query,
+      branchId
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get(':id/openapi-spec/operations/:operationRecordId')
+  async getOpenApiSpecOperation(
+    @Param('id') dataSourceId: string,
+    // Row id, not the spec's operationId (optional, non-unique).
+    @Param('operationRecordId') operationRecordId: string,
+    @Query('environmentId') environmentId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.getOpenApiSpecOperation(dataSourceId, environmentId, operationRecordId, branchId);
   }
 }

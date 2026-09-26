@@ -29,3 +29,13 @@ export enum DataSourceScopes {
 }
 
 export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+
+// Option keys parseSourceOptions skips; never read by run().
+export const RUNTIME_EXCLUDED_OPTION_KEYS = [
+  'raw_spec',
+  'spec_metadata',
+  'spec_checksum',
+  'spec_status',
+  'spec_error',
+  'spec_job_id',
+];

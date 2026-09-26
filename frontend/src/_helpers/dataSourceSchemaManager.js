@@ -79,7 +79,7 @@ export default class DataSourceSchemaManager {
   }
 
   getSourceMetadata() {
-    const { name, kind, type } = this.schema['tj:source'];
+    const { name, kind, type, customTesting } = this.schema['tj:source'];
 
     if (!name || !kind || !type) {
       throw new Error('Schema is missing required source metadata');
@@ -89,6 +89,9 @@ export default class DataSourceSchemaManager {
       name,
       kind,
       type,
+      // Plugins that render their own connection-testing UI (e.g. openapiv2) set this in
+      // tj:source to suppress DataSourceManager's generic <TestConnection> footer button.
+      customTesting: !!customTesting,
       options: this._getOptionsMetadata(),
       // Can remove exposed variables?
       exposedVariables: {

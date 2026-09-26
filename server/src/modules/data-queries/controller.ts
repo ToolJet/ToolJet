@@ -21,6 +21,7 @@ import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/guard';
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
+import { ValidateOpenApiSpecStatusGuard } from './guards/validate-openapi-spec-status.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
@@ -54,7 +55,8 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
-    GitSyncQueryEditGuard
+    GitSyncQueryEditGuard,
+    ValidateOpenApiSpecStatusGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
@@ -74,7 +76,8 @@ export class DataQueriesController implements IDataQueriesController {
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard,
-    GitSyncQueryEditGuard
+    GitSyncQueryEditGuard,
+    ValidateOpenApiSpecStatusGuard
   )
   @Patch(':id/versions/:versionId')
   async updateDataQuery(

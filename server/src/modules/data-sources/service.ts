@@ -7,10 +7,13 @@ import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
 import { DataSourceScopes, DataSourceTypes } from './constants';
+import { OPENAPI_V2_DATASOURCE_KIND } from '@modules/openapi-spec/constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
+  CreateOpenApiSpecDto,
   GetDataSourceOauthUrlDto,
+  OpenApiSpecOperationsQueryDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
@@ -102,11 +105,23 @@ export class DataSourcesService implements IDataSourcesService {
       }
 
       if (dataSource.kind === 'openapi') {
+        // `spec` has user-authored keys (paths, header names) that must not be decamelized.
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
         const { spec, ...objExceptSpec } = options;
         const decamelizedOptions = decamelizeKeys(objExceptSpec);
         decamelizedOptions['spec'] = spec;
+        tempDs['options'] = decamelizedOptions;
+        return tempDs;
+      }
+
+      if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
+        // Same for `spec_metadata`.
+        const { options, ...objExceptOptions } = dataSource;
+        const tempDs = decamelizeKeys(objExceptOptions);
+        const { spec_metadata, ...objExceptSpecMetadata } = options;
+        const decamelizedOptions = decamelizeKeys(objExceptSpecMetadata);
+        decamelizedOptions['spec_metadata'] = spec_metadata;
         tempDs['options'] = decamelizedOptions;
         return tempDs;
       }
@@ -236,6 +251,17 @@ export class DataSourcesService implements IDataSourcesService {
     // gitsync-off reads resolve the active default-branch row, so a lingering inactive row
     // serves no purpose — remove it outright. With no branch context the whole DS is deleted.
     const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    if (dataSource.kind === OPENAPI_V2_DATASOURCE_KIND) {
+      // Throws, aborting the delete, if a running job doesn't stop in time. Scoped the same way
+      // the delete below is: effectiveBranchId set means only that DSV is being removed, so only
+      // its jobs need terminating; unset means the whole datasource (every DSV) is being removed.
+      await this.dataSourcesUtilService.terminateOpenApiSpecJobsForDelete(
+        dataSourceId,
+        user.organizationId,
+        effectiveBranchId
+      );
+    }
 
     if (effectiveBranchId) {
       await dbTransactionWrap(async (manager: EntityManager) => {
@@ -520,6 +546,60 @@ export class DataSourcesService implements IDataSourcesService {
       }
       throw error;
     }
+  }
+
+  // --- OpenAPI v2 spec processing -------
+
+  async createOrReplaceOpenApiSpec(
+    dataSourceId: string,
+    organizationId: string,
+    dto: CreateOpenApiSpecDto,
+    userId: string,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.createOrReplaceOpenApiSpec(dataSourceId, organizationId, dto, userId, branchId);
+  }
+
+  async getOpenApiSpecStatus(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecStatus(dataSourceId, organizationId, environmentId, branchId);
+  }
+
+  async cancelOpenApiSpecProcessing(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.cancelOpenApiSpecProcessing(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      branchId
+    );
+  }
+
+  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecMetadata(dataSourceId, organizationId, environmentId, branchId);
+  }
+
+  async listOpenApiSpecOperations(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    query: OpenApiSpecOperationsQueryDto,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.listOpenApiSpecOperations(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      query,
+      branchId
+    );
+  }
+
+  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string, branchId?: string) {
+    return this.dataSourcesUtilService.getOpenApiSpecOperation(dataSourceId, environmentId, id, branchId);
   }
 
   protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {
