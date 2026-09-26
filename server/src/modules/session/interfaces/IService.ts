@@ -23,14 +23,3 @@ export interface ISessionService {
 export interface ISessionUtilService {
   terminateAllSessions(userId: string): Promise<void>;
 }
-
-export interface JWTPayload {
-  sessionId: string;
-  username: string;
-  sub: string;
-  organizationIds: Array<string>;
-  isSSOLogin: boolean;
-  isPasswordLogin: boolean;
-  invitedOrganizationId?: string;
-  isPatLogin?: boolean;
-}

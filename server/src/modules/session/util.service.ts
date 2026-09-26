@@ -8,11 +8,12 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
-import { JWTPayload } from '@modules/session/interfaces/IService';
+import { JWTPayload, PermissionDataToAuthorize } from '@modules/session/types';
 import { Response } from 'express';
 import { UserRepository } from '@modules/users/repositories/repository';
 import * as _ from 'lodash';
@@ -23,12 +24,6 @@ import { SSOConfigs } from '@entities/sso_config.entity';
 import { MetadataUtilService } from '@modules/meta/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
-import {
-  UserAppsPermissions,
-  UserDataSourcePermissions,
-  UserFolderPermissions,
-  UserPermissions,
-} from '@modules/ability/types';
 import { JwtService } from '@nestjs/jwt';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
@@ -168,26 +163,7 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async getPermissionDataToAuthorize(
-    user: User,
-    manager: EntityManager
-  ): Promise<{
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    avatar_id: string;
-    admin: boolean;
-    superAdmin: boolean;
-    metadata: any;
-    ssoUserInfo: any;
-    appGroupPermissions: UserAppsPermissions;
-    dataSourceGroupPermissions: UserDataSourcePermissions;
-    folderGroupPermissions?: UserFolderPermissions;
-    role: GroupPermissions;
-    groupPermissions: GroupPermissions[];
-    userPermissions: UserPermissions;
-  }> {
+  async getPermissionDataToAuthorize(user: User, manager: EntityManager): Promise<PermissionDataToAuthorize> {
     const groupPermissions = await this.getAllGroupsOfUser(user, manager);
     const userPermissions = await this.abilityService.resourceActionsPermission(
       user,
@@ -257,12 +233,11 @@ export class SessionUtilService {
     return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
   }
 
-  // Resolves the org's default branch id. Used by the JWT strategy to populate user.branchId
-  // when a request carries no explicit `branch_id` query param. Applies to git and non-git
-  // workspaces alike: git-sync-disabled orgs show no branch on the client, but the server still
-  // resolves the default branch so reads land on the default-branch rows (every org has exactly
-  // one default branch, seeded on creation / backfilled). folder_apps is unaffected — it reads
-  // the raw query param (absent → IS NULL for non-git), not user.branchId.
+  // Resolves the org's default branch id. Applies to git and non-git workspaces alike:
+  // git-sync-disabled orgs show no branch on the client, but the server still resolves the
+  // default branch so reads land on the default-branch rows (every org has exactly one default
+  // branch, seeded on creation / backfilled). folder_apps is unaffected — it reads the raw query
+  // param (absent → IS NULL for non-git), not user.branchId.
   async getDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | null> {
     if (!organizationId) return null;
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -271,6 +246,32 @@ export class SessionUtilService {
         select: ['id'],
       });
       return branch?.id ?? null;
+    }, manager);
+  }
+
+  // Restores a user's last-active branch only if it still exists and belongs to this org;
+  // otherwise falls back to the org default. Used by the JWT strategy's fallback tier.
+  async getActiveOrDefaultBranchId(
+    organizationId: string,
+    userId?: string,
+    manager?: EntityManager
+  ): Promise<string | null> {
+    if (!organizationId) return null;
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (userId) {
+        const orgUser = await manager.findOne(OrganizationUser, {
+          where: { userId, organizationId },
+          select: ['lastBranchId'],
+        });
+        if (orgUser?.lastBranchId) {
+          const branch = await manager.findOne(WorkspaceBranch, {
+            where: { id: orgUser.lastBranchId, organizationId },
+            select: ['id'],
+          });
+          if (branch) return branch.id;
+        }
+      }
+      return this.getDefaultBranchId(organizationId, manager);
     }, manager);
   }
 

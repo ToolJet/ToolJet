@@ -167,7 +167,8 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
       const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
-      if (versionName) {
+      // Only migrates legacy viewer preview links — must not redirect the editor route.
+      if (versionName && componentType === 'viewer') {
         const restQueryParams = getQueryParams();
         const envFromUrl = restQueryParams.env;
 

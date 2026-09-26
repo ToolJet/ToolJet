@@ -18,6 +18,7 @@ import {
   getSafeEnvironment,
 } from '@/_helpers/environmentAccess';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
+import { setVersionInUrl } from '@/_helpers/active-branch';
 
 const initialState = {
   selectedVersion: null,
@@ -322,6 +323,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         state.appVersionsLazyLoaded = false;
       });
 
+      const renamedSelected = get().selectedVersion;
+      if (renamedSelected?.id === versionId && renamedSelected.versionType !== 'branch') {
+        setVersionInUrl(versionName);
+      }
+
       onSuccess();
     } catch (error) {
       console.log({ error });
@@ -457,6 +463,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }
 
       set((state) => ({ ...state, ...optionsToUpdate }));
+
+      // Direct call, not left to the reactive version-switch effect below: that effect only
+      // fires when currentVersionId's VALUE changes, but this action is also used to refresh
+      // state after an in-place rename/promotion of the same id (CreateVersionModal), where it
+      // wouldn't re-fire.
+      setVersionInUrl(selectedVersion.versionType === 'branch' ? null : selectedVersion.name);
 
       // The App Builder's own version-switch effect (useAppData.js:880, skipped here via
       // moduleMode) redoes all of the below unconditionally a moment after this action returns
@@ -893,6 +905,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+
+      setVersionInUrl(editorVersion.name);
 
       onSuccess(response);
     } catch (error) {
