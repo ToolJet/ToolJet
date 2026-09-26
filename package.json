@@ -20,6 +20,11 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0"
   },
+  "overrides": {
+    "external-editor": {
+      "tmp": "^0.2.6"
+    }
+  },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
     "prebuild:plugins": "npm run install:plugins",
