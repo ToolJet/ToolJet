@@ -24,7 +24,7 @@
     },
     {
       "componentType": "Chart",
-      "status": "not-started"
+      "status": "partial"
     },
     {
       "componentType": "KeyValuePair",

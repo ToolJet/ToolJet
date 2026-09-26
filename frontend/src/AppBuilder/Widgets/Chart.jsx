@@ -8,7 +8,8 @@ import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue, getModifiedColor } from './utils';
+import { getCssVarValue, getModifiedColor, buildChartAxis } from './utils';
+import { applyPlotlyCompat } from './plotlyCompat';
 
 var tinycolor = require('tinycolor2');
 
@@ -85,7 +86,12 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const chartTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
+  const authorTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
+  // An author may write the title either way round: `title: 'Sales'` or the
+  // modern `title: { text: 'Sales' }`. Passing the object straight through would
+  // nest it as title.text.text, which Plotly cannot read — it falls back to its
+  // placeholder and the author's title silently disappears.
+  const chartTitle = typeof authorTitle === 'object' && authorTitle !== null ? authorTitle.text : authorTitle;
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
@@ -104,6 +110,19 @@ export default function Chart({
     setExposedVariables(exposedVariables);
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
+  const axisDefaults = {
+    showgrid: showGridLines,
+    showline: true,
+    color: fontColor,
+    automargin: true,
+    visible: showAxes,
+    gridcolor: modifiedGridLines,
+    linecolor: modifiedAxisColor,
+    title: { font: { color: modifiedTextColor } },
+    tickfont: { color: modifiedTextColor },
+  };
+  const buildAxis = (userAxis) => buildChartAxis(userAxis, axisDefaults);
+
   const layout = {
     ...chartLayout,
     width: width - 6,
@@ -111,9 +130,13 @@ export default function Chart({
     plot_bgcolor: updatedBgColor,
     paper_bgcolor: updatedBgColor,
     title: {
+      // Keep the author's other title settings (x, xanchor, pad, ...) and font,
+      // rather than replacing the whole object with just our text and colour.
+      ...(typeof authorTitle === 'object' && authorTitle !== null ? authorTitle : {}),
       text: chartTitle,
       font: {
         color: modifiedTextColor,
+        ...(typeof authorTitle === 'object' ? authorTitle?.font : undefined),
       },
     },
     showlegend: chartLayout.showlegend ?? false,
@@ -124,64 +147,13 @@ export default function Chart({
       },
       ...chartLayout.legend,
     },
-    xaxis: {
-      showgrid: showGridLines,
-      showline: true,
-      color: fontColor,
-      automargin: true,
-      visible: showAxes,
-      gridcolor: modifiedGridLines,
-      linecolor: modifiedAxisColor,
-      title: {
-        font: {
-          color: modifiedTextColor,
-        },
-      },
-      tickfont: {
-        color: modifiedTextColor,
-      },
-      ...chartLayout.xaxis,
-    },
-    yaxis: {
-      showgrid: showGridLines,
-      showline: true,
-      color: fontColor,
-      automargin: true,
-      visible: showAxes,
-      gridcolor: modifiedGridLines,
-      linecolor: modifiedAxisColor,
-      title: {
-        font: {
-          color: modifiedTextColor,
-        },
-      },
-      tickfont: {
-        color: modifiedTextColor,
-      },
-      ...chartLayout.yaxis,
-    },
+    xaxis: buildAxis(chartLayout.xaxis),
+    yaxis: buildAxis(chartLayout.yaxis),
     // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
     ...Object.keys(chartLayout)
       .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
       .reduce((acc, key) => {
-        acc[key] = {
-          showgrid: showGridLines,
-          showline: true,
-          color: fontColor,
-          automargin: true,
-          visible: showAxes,
-          gridcolor: modifiedGridLines,
-          linecolor: modifiedAxisColor,
-          title: {
-            font: {
-              color: modifiedTextColor,
-            },
-          },
-          tickfont: {
-            color: modifiedTextColor,
-          },
-          ...chartLayout[key],
-        };
+        acc[key] = buildAxis(chartLayout[key]);
         return acc;
       }, {}),
     margin: {
@@ -239,6 +211,20 @@ export default function Chart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, dataString, chartType, modifiedMarkerColor]
   );
+
+  // Charts authored against Plotly 2.x can use syntax that Plotly 4 silently
+  // ignores rather than rejects — a filter that stops filtering still renders,
+  // just with the wrong rows. Rewrite the legacy syntax before Plotly sees it.
+  // Only custom-JSON charts can carry it; the native modes build their own spec.
+  const {
+    data: plotData,
+    layout: plotLayout,
+    unsupported,
+  } = useMemo(() => {
+    if (!plotFromJson) return { data: memoizedChartData, layout, unsupported: [] };
+    return applyPlotlyCompat(jsonChartData, layout, tinycolor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plotFromJson, memoizedChartData, jsonChartData, layout]);
 
   const handleClick = useCallback((data) => {
     if (!disabledState && data.length > 0) {
@@ -301,10 +287,19 @@ export default function Chart({
             <div className="spinner-border mt-5" role="status"></div>
           </center>
         </div>
+      ) : unsupported.length > 0 && plotData.length === 0 ? (
+        // Nothing renderable survived the migration. Say so — a blank chart with
+        // no explanation is worse than an unsupported-feature message.
+        <div className="p-3 d-flex align-items-center justify-content-center h-100 text-muted text-center">
+          <div>
+            <div className="mb-1">This chart type is no longer supported.</div>
+            <small>{unsupported.join('; ')}</small>
+          </div>
+        </div>
       ) : (
         <PlotComponent
-          data={plotFromJson ? jsonChartData : memoizedChartData}
-          layout={layout}
+          data={plotData}
+          layout={plotLayout}
           config={{
             displayModeBar: false,
           }}

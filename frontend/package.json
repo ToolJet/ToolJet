@@ -95,7 +95,7 @@
     "papaparse": "^5.3.2",
     "path-browserify": "^1.0.1",
     "pdfjs-dist": "5.3.93",
-    "plotly.js-dist-min": "^2.29.1",
+    "plotly.js-dist-min": "^4.1.1",
     "posthog-js": "^1.255.1",
     "process": "^0.11.10",
     "psl": "^1.9.0",
@@ -291,7 +291,19 @@
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
-    }
+    },
+    "react-plotly.js": {
+      "plotly.js": "npm:plotly.js-dist-min@^4.1.1"
+    },
+    "@xmldom/xmldom": "^0.8.15",
+    "@svgr/plugin-svgo": {
+      "svgo": "^2.8.4"
+    },
+    "postcss-svgo": {
+      "svgo": "^4.1.0"
+    },
+    "js-yaml@3": "^3.15.2",
+    "js-yaml@4": "^4.3.2"
   },
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
