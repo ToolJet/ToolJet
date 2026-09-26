@@ -1,45 +1,40 @@
 import { fake } from "Fixtures/fake";
 import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
-
 import {
-  enterJsonInputInStartNode,
+  buildLinearWorkflow,
   revealWorkflowToken,
-  navigateBackToWorkflowsDashboard
 } from "Support/utils/workFlows";
 
+// A webhook is a public entry point into a workflow. This case drives it for
+// real — it enables the webhook in the UI, reads back the endpoint and token,
+// then fires an actual HTTP request from outside the app.
+//
+// Only the happy path is covered. The disabled state and a bad/revoked token
+// are both untested.
 const data = {};
 
-describe("Workflows with Webhooks", () => {
+describe("Workflows - webhook trigger", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
     data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Creating workflows with runjs, triggering via webhook, and validating execution", () => {
-    cy.createWorkflowApp(data.workflowName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+  it("An enabled webhook triggers the workflow and returns its result", () => {
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.openWorkflow();
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsCodeForWebhooks,
+      responseReturn: workflowsText.responseNodeQuery,
     });
 
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsCodeForWebhooks, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
+    // Confirm the workflow works when run from the editor before trusting the
+    // webhook path — otherwise a webhook failure is ambiguous.
     cy.verifyTextInResponseOutput(workflowsText.runjsExpectedValueForWebhooks);
 
     cy.get(workflowSelector.workflowTriggerIcon).click();
@@ -49,7 +44,9 @@ describe("Workflows with Webhooks", () => {
     cy.get(workflowSelector.workflowEndpointUrl)
       .invoke("text")
       .then((url) => {
+        // The token is masked until revealed, and the reveal needs retrying.
         revealWorkflowToken(workflowSelector);
+
         cy.get(workflowSelector.workflowTokenField)
           .invoke("text")
           .then((token) => {
@@ -65,6 +62,7 @@ describe("Workflows with Webhooks", () => {
             });
           });
       });
+
     cy.apiDeleteWorkflow(data.workflowName);
   });
 });

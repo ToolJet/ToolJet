@@ -1,21 +1,19 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
-import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
-import { postgreSqlText } from "Texts/marketplace/postgreSql";
-import { deleteDatasource } from "Support/utils/marketplace/datasources/dataSource";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
 import {
-  enterJsonInputInStartNode,
-  verifyPreviewOutputText,
+  buildLinearWorkflow,
+  createPostgresDataSource,
   verifyTextInResponseOutputLimited,
-  navigateBackToWorkflowsDashboard,
+  cleanupWorkflows,
+  cleanupApps,
 } from "Support/utils/workFlows";
 
+// A workflow is consumed from an app as a query. These cases assert the
+// app-side path: add the workflow to an app and run it from there.
 const data = {};
 
-describe("Workflows in apps", () => {
+describe("Workflows - running from an app", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -26,120 +24,65 @@ describe("Workflows in apps", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Creating workflows with runjs and validating execution in apps", () => {
-    cy.createWorkflowApp(data.workflowName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
-
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
-    });
-
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
-    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-
-    cy.apiCreateApp(data.appName);
-    cy.openApp();
-
-    cy.addWorkflowInApp(data.workflowName);
-
-    cy.get(dataSourceSelector.queryPreviewButton).click();
-
-    // need to change after issue is fixed
-
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   `Query (${data.dataSourceName}) completed.`
-    // );
-    cy.apiDeleteApp();
-    cy.apiDeleteWorkflow(data.workflowName);
+  // Teardown also runs here so a test that fails part-way still cleans up.
+  // Without it a failed case leaks its workflow onto the shared instance, and
+  // later specs that open card menus then see more than one workflow card.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+    cleanupApps([data.appName]);
   });
 
-  it("Creating workflows with postgres and validating execution in apps", () => {
-    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
-
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateDataSource(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      dataSourceName,
-      "postgresql",
-      [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: Cypress.env("pg_host"), encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "username", value: Cypress.env("pg_user"), encrypted: false },
-        {
-          key: "password",
-          value: Cypress.env("pg_password"),
-          encrypted: false,
-        },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
-      ]
-    );
-
-    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
-      .should("be.visible")
-      .click();
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.reload();
-
-    cy.apiCreateWorkflow(data.workflowName)
+  it("An app can run a RunJS-backed workflow", () => {
+    cy.apiCreateWorkflow(data.workflowName);
     cy.openWorkflow();
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dataSourceName);
 
-    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeCode,
+      responseReturn: workflowsText.responseNodeQuery,
     });
-    cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
-      .click({ force: true })
-      .clearAndTypeOnCodeMirror("")
-      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
+    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.get("body").click(50, 50);
-    cy.wait(500);
+    // The workflow works standalone; now prove an app can drive it.
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.addWorkflowInApp(data.workflowName);
+    cy.get(dataSourceSelector.queryPreviewButton).click();
 
-    cy.connectNodeToResponseNode(
-      workflowsText.postgresqlNodeName,
-      workflowsText.postgresResponseNodeQuery
-    );
+    // KNOWN GAP: the completion toast is not asserted. The upstream spec had
+    // that assertion commented out pending a fix, and this rewrite did not
+    // change what it asserts.
+  });
+
+  it("An app can run a Postgres-backed workflow", () => {
+    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    createPostgresDataSource(dataSourceName);
+
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.openWorkflow();
+
+    buildLinearWorkflow({
+      blockLabel: dataSourceName,
+      nodeName: workflowsText.postgresqlNodeName,
+      inputField: workflowsText.pgsqlQueryInputField,
+      query: workflowsText.postgresNodeQuery,
+      responseReturn: workflowsText.postgresResponseNodeQuery,
+      clearBeforeTyping: true,
+    });
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
-
     cy.addWorkflowInApp(data.workflowName);
-
     cy.get(dataSourceSelector.queryPreviewButton).click();
 
-    // need to change after issue is fixed
+    // KNOWN GAP: see the RunJS case above.
 
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   `Query (${data.dataSourceName}) completed.`
-    // );
-    cy.apiDeleteApp();
+    // The data source can't be deleted while a workflow still references it
+    // through this query node, so the workflow goes first.
     cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.apiDeleteDataSource(dataSourceName);
   });
 });

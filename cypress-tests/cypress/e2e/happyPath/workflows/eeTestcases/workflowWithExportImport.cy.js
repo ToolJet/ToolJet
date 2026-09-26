@@ -1,22 +1,22 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
-import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
-import { postgreSqlText } from "Texts/marketplace/postgreSql";
-import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/marketplace/datasources/dataSource";
-import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
-
 import {
-  enterJsonInputInStartNode,
+  buildLinearWorkflow,
+  createPostgresDataSource,
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
-  navigateBackToWorkflowsDashboard
+  cleanupWorkflows,
 } from "Support/utils/workFlows";
 
+// Round trip: build a working workflow, export it, delete it, re-import it and
+// prove it still executes. The guarantee is that an exported definition stays
+// runnable — not merely that a file downloads.
+//
+// Note the coupling: the import half reads the fixture the export half wrote in
+// the same run, so a failure in export surfaces as a confusing import failure.
 const data = {};
 
-describe("Workflows Export/Import Sanity", () => {
+describe("Workflows - export and import round trip", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -26,108 +26,70 @@ describe("Workflows Export/Import Sanity", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("RunJS workflow - execute, export/import, re-execute", () => {
+  // Teardown also runs here so a test that fails part-way still cleans up.
+  // Without it a failed case leaks its workflow onto the shared instance, and
+  // later specs that open card menus then see more than one workflow card.
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName, `${data.workflowName}-runjs`, `${data.workflowName}-pg`]);
+  });
+
+  it("A RunJS workflow survives an export/import round trip and still executes", () => {
     const workflowName = `${data.workflowName}-runjs`;
 
-    cy.createWorkflowApp(workflowName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+    cy.apiCreateWorkflow(workflowName);
+    cy.openWorkflow();
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeCode,
+      responseReturn: workflowsText.responseNodeQuery,
     });
-
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
+    // exportWorkflowApp deletes the workflow from the dashboard itself as its
+    // last step, so there is nothing left here to delete before re-importing.
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
+
+    // Same name, rebuilt from the exported file: the re-imported workflow must
+    // produce the same result as the original.
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    cy.apiDeleteWorkflow(workflowName);
+
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
-  it("Postgres workflow - execute, export/import, re-execute", () => {
+  it("A Postgres workflow survives an export/import round trip, including its data source binding", () => {
     const workflowName = `${data.workflowName}-pg`;
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    createPostgresDataSource(dataSourceName);
 
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateDataSource(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      dataSourceName,
-      "postgresql",
-      [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
-        {
-          key: "password",
-          value: `${Cypress.env("pg_password")}`,
-          encrypted: false,
-        },
-      ]
-    );
-
-    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
-      .should("be.visible")
-      .click();
-
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
-
-    cy.reload();
-
-    cy.apiCreateWorkflow(data.workflowName)
+    cy.apiCreateWorkflow(workflowName);
     cy.openWorkflow();
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dataSourceName);
 
-    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: dataSourceName,
+      nodeName: workflowsText.postgresqlNodeName,
+      inputField: workflowsText.pgsqlQueryInputField,
+      query: workflowsText.postgresNodeQuery,
+      responseReturn: workflowsText.postgresResponseNodeQuery,
+      clearBeforeTyping: true,
     });
-
-    cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
-      .click({ force: true })
-      .clearAndTypeOnCodeMirror("")
-      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.postgresqlNodeName,
-      workflowsText.postgresResponseNodeQuery
-    );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
+    // exportWorkflowApp deletes the workflow from the dashboard itself as its
+    // last step, so there is nothing left here to delete before re-importing.
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
+
+    // The data source binding has to survive the round trip too, otherwise the
+    // re-imported query returns nothing.
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
+    // The data source can't be deleted while a workflow still references it
+    // through this query node, so the workflow goes first.
     cy.apiDeleteWorkflow(workflowName);
-
     cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });

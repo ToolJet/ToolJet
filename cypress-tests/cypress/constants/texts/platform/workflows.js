@@ -50,4 +50,22 @@ AND table_type = 'BASE TABLE';`,
   expectedStatusCodeText: 200,
   exportFixturePath: "cypress/fixtures/exportedApp.json",
   workflowLabel: "Workflow",
+
+  // Workflow card menu copy. Workflow-specific — do NOT substitute the app
+  // strings in Texts/common ("Delete app", "Clone app"): they do not render on a
+  // workflow card.
+  renameWorkflowOption: "Rename workflow",
+  changeIconOption: "Change Icon",
+  exportWorkflowOption: "Export workflow",
+  deleteWorkflowOption: "Delete workflow",
+  // No clone control renders on a workflow card. Both possible spellings are
+  // asserted absent.
+  cloneAppOption: "Clone app",
+  cloneWorkflowOption: "Clone workflow",
+
+  // Folder delete confirmation. The trailing sentence says "Apps ... will not be
+  // deleted" even on the workflows dashboard, so only the stable prefix is
+  // asserted. See the workflow-folders contract.
+  folderDeletePrefix: (folderName) =>
+    `Are you sure you want to delete the folder ${folderName}?`,
 };
