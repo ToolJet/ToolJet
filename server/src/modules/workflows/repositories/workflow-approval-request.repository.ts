@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { App } from '@entities/app.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
 
@@ -77,6 +78,7 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     const decorated = await this.createQueryBuilder('request')
       .leftJoinAndMapOne('request.app', App, 'app', 'app.id = request.app_id')
       .leftJoinAndMapOne('request.node', WorkflowExecutionNode, 'node', 'node.id = request.execution_node_id')
+      .leftJoinAndMapOne('request.environment', AppEnvironment, 'env', 'env.id = request.environment_id')
       .where('request.id IN (:...ids)', { ids })
       .getMany();
 
@@ -95,6 +97,9 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     }
     if (filters.appId) {
       query.andWhere('request.app_id = :appId', { appId: filters.appId });
+    }
+    if (filters.environmentId) {
+      query.andWhere('request.environment_id = :environmentId', { environmentId: filters.environmentId });
     }
     if (filters.folderId) {
       // A subquery rather than a join: `listForOrganization` depends on the id query staying

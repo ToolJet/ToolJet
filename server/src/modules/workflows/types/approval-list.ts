@@ -14,6 +14,7 @@ export interface ApprovalListFilters {
    * against in the first place.
    */
   folderId?: string;
+  environmentId?: string;
   /** Free-text match against the approvers snapshot (user id, group id or email). */
   approver?: string;
   from?: Date;
@@ -23,6 +24,7 @@ export interface ApprovalListFilters {
 export interface ApprovalListRow extends WorkflowApprovalRequest {
   app?: App;
   node?: WorkflowExecutionNode;
+  environment?: { id: string; name: string };
 }
 
 /** One party an approval can be addressed to, resolved to something a human can read. */
@@ -60,6 +62,7 @@ export interface ApprovalListItem {
   resolvedAt: Date | null;
   expiresAt: Date | null;
   workflow: { id: string | null; name: string | null };
+  environment: { id: string; name: string } | null;
   executionId: string;
   nodeName: string;
   description: string;

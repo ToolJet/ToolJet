@@ -17,9 +17,9 @@ describe('resolveWorkflowParameters', () => {
   });
 
   it.each([
-    ['manual', {}, 'Parameter region is required'],
-    ['webhook', { region: undefined }, 'Parameter region is required'],
-    ['schedule', { region: null }, 'region has incorrect datatype'],
+    ['manual', {}, 'Parameter "region" is required'],
+    ['webhook', { region: undefined }, 'Parameter "region" is required'],
+    ['schedule', { region: null }, 'Parameter "region" has an incorrect datatype'],
   ] as const)(
     'should reject an absent or invalid required workflow input for the %s trigger',
     (trigger, triggerParams, expectedMessage) => {
@@ -41,7 +41,7 @@ describe('resolveWorkflowParameters', () => {
         triggerParams: {},
         trigger: 'webhook',
       })
-    ).toThrow('Params - region is missing');
+    ).toThrow('Parameter "region" is required');
   });
 
   it('should not apply legacy webhook requirements to schedules or manual runs', () => {
@@ -74,7 +74,7 @@ describe('resolveWorkflowParameters', () => {
         triggerParams: { value },
         trigger,
       })
-    ).toThrow('value has incorrect datatype');
+    ).toThrow('Parameter "value" has an incorrect datatype');
   });
 
   it.each([
@@ -88,6 +88,6 @@ describe('resolveWorkflowParameters', () => {
         triggerParams: {},
         trigger: 'schedule',
       })
-    ).toThrow('value has incorrect datatype');
+    ).toThrow('Parameter "value" has an incorrect datatype');
   });
 });

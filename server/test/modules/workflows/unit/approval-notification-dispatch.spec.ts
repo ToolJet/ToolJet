@@ -1,4 +1,5 @@
 import { WorkflowExecutionsService } from '@ee/workflows/services/workflow-executions.service';
+import { EMAIL_EVENTS } from '@modules/email/constants';
 
 /** @group workflows */
 describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
@@ -6,6 +7,7 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
     const svc: any = Object.create(WorkflowExecutionsService.prototype);
     svc.logger = { log: jest.fn(), error: jest.fn(), warn: jest.fn() };
     svc.resolveWorkflowParameters = jest.fn(async (params: any) => params); // no-op fx resolve
+    svc.eventEmitter = { emit: jest.fn() };
     return svc as WorkflowExecutionsService & any;
   };
 
@@ -26,7 +28,8 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
       { id: 'req-1', token: 'tok-1', expiresAt: null },
       {},
       'org-1',
-      'development'
+      'development',
+      { workflowName: 'Production deployment' }
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
@@ -49,7 +52,8 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
       { id: 'req-1', token: 'tok-1', expiresAt: null },
       {},
       'org-1',
-      'development'
+      'development',
+      { workflowName: 'Production deployment' }
     );
     const [, options] = fetchMock.mock.calls[0];
     // Body is the template parsed then serialized once — no surrounding quotes/escaping.
@@ -122,5 +126,119 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
         'development'
       )
     ).resolves.toBeUndefined();
+  });
+
+  it('snapshots deduplicated email recipients from users, groups, and dynamic approvers', async () => {
+    const svc = makeService();
+    svc.resolveWorkflowParameters = jest.fn(async () => ({
+      value: ['dynamic@example.com', 'shared@example.com'],
+    }));
+    svc.userRepository = {
+      manager: {
+        find: jest
+          .fn()
+          .mockResolvedValueOnce([
+            { userId: 'user-1', user: { id: 'user-1', email: 'direct@example.com' } },
+            { userId: 'user-2', user: { id: 'user-2', email: 'shared@example.com' } },
+          ])
+          .mockResolvedValueOnce([{ userId: 'user-3' }, { userId: 'user-4' }, { userId: 'archived-user' }])
+          .mockResolvedValueOnce([
+            { userId: 'user-3', user: { id: 'user-3', email: 'group@example.com' } },
+            { userId: 'user-4', user: { id: 'user-4', email: 'shared@example.com' } },
+          ]),
+      },
+    };
+
+    const snapshot = await svc.resolveApprovers(
+      {
+        approvers: {
+          users: ['user-1', 'user-2'],
+          groups: ['group-1'],
+          dynamic: '{{ approverEmails }}',
+        },
+      },
+      { approverEmails: ['dynamic@example.com'] },
+      'org-1',
+      'development'
+    );
+
+    expect(snapshot).toMatchObject({
+      users: ['user-1', 'user-2'],
+      groups: ['group-1'],
+      emails: ['dynamic@example.com', 'shared@example.com'],
+      notificationEmails: ['direct@example.com', 'shared@example.com', 'group@example.com', 'dynamic@example.com'],
+    });
+    expect(svc.userRepository.manager.find).toHaveBeenNthCalledWith(
+      1,
+      expect.any(Function),
+      expect.objectContaining({
+        where: expect.objectContaining({ organizationId: 'org-1', status: 'active' }),
+        relations: { user: true },
+      })
+    );
+    expect(svc.userRepository.manager.find).toHaveBeenNthCalledWith(
+      3,
+      expect.any(Function),
+      expect.objectContaining({
+        where: expect.objectContaining({ organizationId: 'org-1', status: 'active' }),
+        relations: { user: true },
+      })
+    );
+  });
+
+  it('emits an approval email even when no webhook URL is configured', async () => {
+    const svc = makeService();
+
+    await svc.dispatchApprovalNotification(
+      { nodeName: 'Manager approval', description: 'Review this deployment' },
+      {
+        id: 'req-1',
+        token: 'tok-1',
+        expiresAt: null,
+        approversSnapshot: { notificationEmails: ['manager@example.com'] },
+      },
+      {},
+      'org-1',
+      'development',
+      { workflowName: 'Production deployment' }
+    );
+
+    expect(svc.eventEmitter.emit).toHaveBeenCalledWith('emailEvent', {
+      type: EMAIL_EVENTS.SEND_WORKFLOW_APPROVAL_EMAIL,
+      payload: {
+        to: ['manager@example.com'],
+        organizationId: 'org-1',
+        workflowName: 'Production deployment',
+        nodeName: 'Manager approval',
+        description: 'Review this deployment',
+        reminder: false,
+      },
+    });
+  });
+
+  it('marks reminder emails so their subject and copy can distinguish them', async () => {
+    const svc = makeService();
+
+    await svc.dispatchApprovalNotification(
+      { nodeName: 'Manager approval' },
+      {
+        id: 'req-1',
+        token: 'tok-1',
+        expiresAt: null,
+        approversSnapshot: { notificationEmails: ['manager@example.com'] },
+      },
+      {},
+      'org-1',
+      'development',
+      { reminder: true, workflowName: 'Production deployment' }
+    );
+
+    expect(svc.eventEmitter.emit).toHaveBeenCalledWith(
+      'emailEvent',
+      expect.objectContaining({
+        type: EMAIL_EVENTS.SEND_WORKFLOW_APPROVAL_EMAIL,
+        payload: expect.objectContaining({ reminder: true, workflowName: 'Production deployment' }),
+      })
+    );
   });
 });

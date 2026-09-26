@@ -9,6 +9,7 @@ import {
   initTestApp,
   closeTestApp,
   saveEntity,
+  findEntity,
   findEntityOrFail,
   setupOrganizationAndUser,
   createWorkflowForUser,
@@ -40,8 +41,9 @@ describe('human node — flat suspend/resume', () => {
   afterAll(async () => {
     await closeTestApp(app);
   }, 60000);
+  afterEach(() => jest.restoreAllMocks());
 
-  async function seedRun() {
+  async function seedRun(humanDefinition: Record<string, unknown> = {}) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId,
       startNodeId: null,
@@ -72,6 +74,7 @@ describe('human node — flat suspend/resume', () => {
       inputSchema: [],
       timeout: { enabled: false },
       notification: { url: 'https://example.test/hook' },
+      ...humanDefinition,
     });
     const okNode = await mk('output', 'okNode', { nodeType: 'response', nodeName: 'okNode' });
     const noNode = await mk('output', 'noNode', { nodeType: 'response', nodeName: 'noNode' });
@@ -103,6 +106,40 @@ describe('human node — flat suspend/resume', () => {
     });
     expect(req.token).toBeTruthy();
     expect(req.approversSnapshot).toMatchObject({ users: [userId], tokenBypass: true });
+  });
+
+  it.each([
+    [
+      { approvers: { users: [], groups: [], dynamic: '', tokenBypass: false } },
+      'Human approval requires at least one approver when token bypass is disabled',
+    ],
+    [{ outcomes: [] }, 'Human approval requires at least one outcome'],
+  ])('persists a fatal configuration failure before creating an approval request: %s', async (definition, message) => {
+    const { executionId, humanId } = await seedRun(definition);
+    const execution = await findEntityOrFail(WorkflowExecution, { id: executionId });
+    const notify = jest.spyOn(service, 'dispatchApprovalNotification');
+    const timers = jest.spyOn(
+      (service as unknown as { workflowApprovalTimeoutService: { scheduleTimers: () => Promise<void> } })
+        .workflowApprovalTimeoutService,
+      'scheduleTimers'
+    );
+    const suspend = jest.spyOn(service, 'saveSuspendedStatus');
+
+    const result = await service.execute(execution, { throwOnError: false });
+
+    expect(result).toMatchObject({ status: 'failed', exception: { message, node_failed: 'approval1' } });
+    expect(await findEntity(WorkflowApprovalRequest, { workflowExecutionId: executionId })).toBeNull();
+    expect(await findEntityOrFail(WorkflowExecution, { id: executionId })).toMatchObject({
+      status: 'failure',
+      executed: true,
+    });
+    expect(parse((await findEntityOrFail(WorkflowExecutionNode, { id: humanId })).result)).toMatchObject({
+      status: 'failed',
+      exception: { message },
+    });
+    expect(notify).not.toHaveBeenCalled();
+    expect(timers).not.toHaveBeenCalled();
+    expect(suspend).not.toHaveBeenCalled();
   });
 
   it('resumes down the chosen outcome branch and completes', async () => {

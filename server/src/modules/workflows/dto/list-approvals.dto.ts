@@ -15,6 +15,10 @@ export class ListApprovalsDto {
   folder_id?: string;
 
   @IsOptional()
+  @IsUUID()
+  environment_id?: string;
+
+  @IsOptional()
   @IsString()
   approver?: string;
 

@@ -215,7 +215,7 @@ describe('WorkflowWebhookController', () => {
         });
         const { message, statusCode } = response.body;
 
-        expect(message).toBe('name has incorrect datatype');
+        expect(message).toBe('Parameter "name" has an incorrect datatype');
         expect(statusCode).toBe(400);
       });
 
@@ -277,7 +277,7 @@ describe('WorkflowWebhookController', () => {
         const response = await triggerWorkflowViaWebhook(app, workflowWebhookApiToken, workflow?.id, 'development', {});
         const { message } = response.body;
 
-        expect(message).toBe('Params - name is missing');
+        expect(message).toBe('Parameter "name" is required');
         expect(response.statusCode).toBe(400);
       });
 

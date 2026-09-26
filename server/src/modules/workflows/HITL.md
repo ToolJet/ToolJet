@@ -31,12 +31,19 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    (named decision branches), `inputSchema` (structured fields the approver fills),
    `timeout`, `reminders[]`, `approvers`, and notification config.
 2. **Execute → suspend**: `processHumanNode` (EE `services/workflow-executions.service.ts`)
-   runs when the node is reached with no decision in state. It creates the approval request,
+   runs when the node is reached with no decision in state. Before dispatch,
+   `validateReachedNodeConfiguration` requires at least one outcome and, when token bypass is
+   explicitly disabled, a configured user, group, or non-blank dynamic approver expression.
+   Failure is logged and persisted on the Human node and stops the run before any approval
+   request, notification, timer, or waiting status is created. Valid configuration creates the approval request,
    dispatches the notification, schedules timeout+reminder timers, calls `saveSuspendedStatus`
    (`status='waiting'`, `executed=false`), disposes the shared isolate, and throws
    `WorkflowSuspendedSignal(executionId, requestId)`. The execution processor catches it and
    completes the BullMQ job as `waiting` (**not** failed).
-3. **Notify**: dispatched at suspend and re-dispatched by each reminder job (see below).
+3. **Notify**: dispatched at suspend and re-dispatched by each reminder job (see below). Every
+   dispatch sends a product email through ToolJet's SMTP/whitelabel email system to the deduplicated
+   approver-email snapshot, with a CTA to `/:workspaceSlug/workflows/approvals`. A configured webhook
+   is sent in addition to that email.
 4. **Resolve**: `POST workflow-approvals/:token/resolve` (`controllers/workflow-approvals.controller.ts`
    → `WorkflowApprovalsService.resolve`). Body `{ outcome, input }` (`dto/resolve-approval.dto.ts`).
    Re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision }, requestId })`
@@ -158,6 +165,14 @@ input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spe
 
 ## Behavioral invariants
 
+- **Validate on first entry.** Required configuration is checked only when an unexecuted node
+  is reached. A Human resume carrying `__humanDecision` skips first-entry configuration validation;
+  timed Wait validation likewise runs only before initial suspension (its resume marker must
+  match the current execution node). Fatal configuration failures never use Human outcomes or
+  other business/failure branches. An evaluated dynamic approver expression and the person's
+  decision remain separate runtime/business concerns.
+- **Input ownership.** Start owns workflow-input validation logs and persisted input failures.
+  Resuming at Human or Wait does not revisit Start or revalidate its input contract.
 - **HITL suspends the whole run.** Parallel branches off Start that have not executed are NOT
   run before suspension — only nodes upstream of the Human node execute, then the run pauses.
 - **Schedule overlap guard.** A scheduled workflow will not stack a new run while a prior run of

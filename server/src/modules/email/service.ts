@@ -16,10 +16,12 @@ import {
   SendEmailOtpPayload,
   SendUserBannedEmailPayload,
   SendWorkspaceBannedEmailPayload,
+  SendWorkflowApprovalEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
 import { WhiteLabellingUtilService } from '@modules/white-labelling/util.service';
+import { Organization } from '@entities/organization.entity';
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -66,7 +68,7 @@ export class EmailService implements IEmailService {
     this.emailUtilService.mailTransport(smtp);
   }
 
-  async sendEmail(to: string, subject: string, templateData: any) {
+  async sendEmail(to: string | string[], subject: string, templateData: any) {
     await this.emailUtilService.sendEmail(to, subject, templateData);
   }
 
@@ -84,6 +86,57 @@ export class EmailService implements IEmailService {
 
   protected stripTrailingSlash(hostname: string) {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
+  }
+
+  protected async getOrganization(organizationId: string): Promise<Pick<Organization, 'slug'>> {
+    return Organization.findOneOrFail({ where: { id: organizationId }, select: ['slug'] });
+  }
+
+  protected async getOrganizationHost(organizationId: string): Promise<string> {
+    return getHostForOrganization(organizationId, this.customDomainCacheService);
+  }
+
+  async sendWorkflowApprovalEmail(payload: SendWorkflowApprovalEmailPayload) {
+    const { to, organizationId, workflowName, nodeName, description, reminder } = payload;
+    if (!to.length) return;
+
+    const [whiteLabelSettings, smtp, organization, host] = await Promise.all([
+      this.emailUtilService.retrieveWhiteLabelSettings(organizationId),
+      this.emailUtilService.retrieveSmtpSettings(),
+      this.getOrganization(organizationId),
+      this.getOrganizationHost(organizationId),
+    ]);
+    const whiteLabelText = whiteLabelSettings?.white_label_text;
+    const whiteLabelLogo = whiteLabelSettings?.white_label_logo;
+    const effectiveHost = this.stripTrailingSlash(host);
+    const basePath = this.SUB_PATH ? `/${this.SUB_PATH.replace(/^\/+|\/+$/g, '')}/` : '/';
+    const approvalDashboardUrl = `${effectiveHost}${basePath}${organization.slug}/workflows/approvals`;
+    const subject = reminder
+      ? `Reminder: approval requested for ${workflowName}`
+      : `Approval requested: ${workflowName}`;
+    const htmlEmailContent = this.compileTemplate('workflow_approval.hbs', {
+      workflowName,
+      nodeName,
+      description,
+      reminder,
+      approvalDashboardUrl,
+      whiteLabelText,
+      whiteLabelLogo,
+      tooljetEdition: this.tooljetEdition,
+    });
+
+    const emailData = {
+      bodyHeader: subject,
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because an approval request requires your attention',
+      whiteLabelText,
+      whiteLabelLogo,
+    };
+    await Promise.all(
+      to.map((recipient) =>
+        this.emailUtilService.sendEmailWithSettings(recipient, subject, emailData, smtp, whiteLabelText)
+      )
+    );
   }
   async sendWelcomeEmail(payload: SendWelcomeEmailPayload) {
     const {

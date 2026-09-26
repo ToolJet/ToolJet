@@ -84,6 +84,20 @@ describe('workflowApprovalsService.getAll — other filters', () => {
     expect(sentParam('folder_id')).toBeNull();
   });
 
+  it('sends the environment filter as environment_id', async () => {
+    await workflowApprovalsService.getAll({ environmentId: 'env-1' });
+
+    expect(sentParam('environment_id')).toBe('env-1');
+  });
+
+  it('omits environment_id entirely when no environment is selected', async () => {
+    // "All environments" is the absence of the filter — sending the page's `all` sentinel would
+    // have the server look for an environment with that id and return nothing.
+    await workflowApprovalsService.getAll({ statuses: ['pending'] });
+
+    expect(sentParam('environment_id')).toBeNull();
+  });
+
   it('repeats `status` once per selected status', async () => {
     await workflowApprovalsService.getAll({ statuses: ['pending', 'resolved'] });
 

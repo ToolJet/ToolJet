@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowApprovalRequestRepository } from '@modules/workflows/repositories/workflow-approval-request.repository';
 import {
   initTestApp,
@@ -10,6 +11,7 @@ import {
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
+  getDefaultDataSource,
 } from 'test-helper';
 
 /** @group workflows */
@@ -21,6 +23,8 @@ describe('approval requests list query', () => {
   let appAId: string;
   let versionAId: string;
   let userAId: string;
+  let devEnvId: string;
+  let stagingEnvId: string;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
@@ -37,6 +41,10 @@ describe('approval requests list query', () => {
     const wfA = await createWorkflowForUser(app, userA, 'List wf A');
     appAId = wfA.id;
     versionAId = (await createWorkflowApplicationVersion(app, wfA)).id;
+
+    const environmentRepo = getDefaultDataSource().getRepository(AppEnvironment);
+    devEnvId = (await environmentRepo.findOne({ where: { organizationId: orgA, name: 'development' } })).id;
+    stagingEnvId = (await environmentRepo.findOne({ where: { organizationId: orgA, name: 'staging' } })).id;
 
     const { user: userB } = await setupOrganizationAndUser(app, {
       email: 'approvals-list-b@tooljet.io',
@@ -62,6 +70,7 @@ describe('approval requests list query', () => {
     status: string;
     createdAt?: Date;
     approversSnapshot?: Record<string, unknown>;
+    environmentId?: string;
   }) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId: opts.versionId,
@@ -70,6 +79,7 @@ describe('approval requests list query', () => {
       status: 'waiting',
       executingUserId: userAId,
       logs: [],
+      environmentId: opts.environmentId ?? null,
     });
     const node = await saveEntity(WorkflowExecutionNode, {
       type: 'human',
@@ -96,6 +106,7 @@ describe('approval requests list query', () => {
       approversSnapshot: opts.approversSnapshot ?? { users: [], groups: [], emails: [], tokenBypass: true },
       organizationId: opts.organizationId,
       appId: opts.appId,
+      environmentId: opts.environmentId ?? null,
       ...(opts.createdAt ? { createdAt: opts.createdAt } : {}),
     });
   }
@@ -122,6 +133,61 @@ describe('approval requests list query', () => {
 
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.status === 'resolved')).toBe(true);
+  });
+
+  it('filters by environment', async () => {
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'env-dev',
+      status: 'pending',
+      environmentId: devEnvId,
+    });
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'env-staging',
+      status: 'pending',
+      environmentId: stagingEnvId,
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, { environmentId: devEnvId }, 1, 10);
+
+    expect(rows.map((r) => r.token)).toContain('env-dev');
+    expect(rows.map((r) => r.token)).not.toContain('env-staging');
+  });
+
+  it('includes every environment when no environment filter is given, even rows carrying none', async () => {
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'env-none',
+      status: 'pending',
+      // No environmentId: a request raised before this column existed, or under an unlicensed
+      // multi-environment workspace. Must still surface with no filter applied.
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, {}, 1, 50);
+
+    expect(rows.map((r) => r.token)).toContain('env-none');
+  });
+
+  it('maps the environment name onto each row', async () => {
+    await seed({
+      versionId: versionAId,
+      organizationId: orgA,
+      appId: appAId,
+      token: 'env-mapped',
+      status: 'pending',
+      environmentId: devEnvId,
+    });
+
+    const { rows } = await repository.listForOrganization(orgA, { environmentId: devEnvId }, 1, 10);
+
+    expect(rows.find((r) => r.token === 'env-mapped')?.environment?.name).toBe('development');
   });
 
   it('orders newest first and paginates', async () => {

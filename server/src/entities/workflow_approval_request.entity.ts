@@ -57,6 +57,11 @@ export class WorkflowApprovalRequest {
   @Column({ name: 'app_id', type: 'uuid', nullable: true })
   appId: string | null;
 
+  // Denormalized from workflow_execution, same rationale as organizationId/appId above. No FK:
+  // the source column (workflow_execution.environmentId) carries none either.
+  @Column({ name: 'environment_id', type: 'uuid', nullable: true })
+  environmentId: string | null;
+
   @ManyToOne(() => WorkflowExecution)
   @JoinColumn({ name: 'workflow_execution_id' })
   workflowExecution: WorkflowExecution;
