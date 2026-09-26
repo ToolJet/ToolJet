@@ -15,6 +15,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Personal Workspace** | An individual user's private workspace, restrictable by Super Admin | — |
 | **Workspace Slug** | The URL-friendly identifier for a workspace (e.g., `app.corp.com/<slug>`) | Workspace ID (different — slug is user-facing) |
 | **User** | An authentication identity that can belong to multiple workspaces; statuses: invited, verified, active, archived | — |
+| **Workspace User** | A `User`'s membership in one specific workspace (role, workspace-scoped status, custom groups); archiving a Workspace User only ends that one membership, not the platform-wide `User` account | OrganizationUser (code entity name) |
 | **User Source** | How a user was created: signup, invite, google, git, openid, ldap, saml, workspace_signup | Auth method (that's the protocol, not the creation path) |
 | **Super Admin** | An instance-level administrator with unrestricted access across all workspaces, ToolJet Database, and instance settings | — |
 | **Session** | An authenticated login session tied to a user, device, and expiry | Token (a session contains tokens, but is not one) |
@@ -176,7 +177,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **SCIM** | System for Cross-domain Identity Management; automated user provisioning (EE feature) | — |
 | **SSO** | Single Sign-On; supported providers: OIDC, SAML, LDAP, Google, GitHub. Configured per workspace or at instance level (Instance SSO), workspaces can inherit instance config | — |
 | **Personal Access Token (PAT)** | An API token scoped to APP or WORKSPACE for external API access | API key (different — PATs have scoped permissions) |
-| **External API** | ToolJet's outward-facing REST API for programmatic access (import/export apps, trigger workflows) | — |
+| **External API** | ToolJet's outward-facing REST API for programmatic access: v1 covers import/export apps and git-sync; v2 (`/api/v2/ext/...`) adds platform-wide User and Workspace management, and Workspace User (membership) management | — |
 
 ---
 
