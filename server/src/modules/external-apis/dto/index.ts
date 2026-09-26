@@ -10,23 +10,28 @@ import {
   MaxLength,
   Matches,
   ValidateIf,
+  Validate,
   IsNotEmpty,
   IsDefined,
   IsObject,
   IsUrl,
   IsInt,
   Min,
+  Max,
   IsNumber,
   IsPositive,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type, Exclude, Expose } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
+import { sanitizeInput } from '@helpers/utils.helper';
+import { AllowedCharactersValidator } from '@modules/folders/dto';
+import { applyDecorators } from '@nestjs/common';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
@@ -600,4 +605,323 @@ export class UnbanWorkspaceDto {
   @IsNotEmpty()
   @IsString()
   slug?: string;
+}
+
+// Shared by every v2 create/rename DTO (Apps/Modules/Workflows) so the same name is rejected
+// consistently at create time and rename time, for all three resource types.
+const ResourceName = () =>
+  applyDecorators(
+    IsString(),
+    IsNotEmpty(),
+    MaxLength(50),
+    Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
+  );
+
+export class CreateAppV2Dto {
+  @ResourceName()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  @Transform(({ value }) => sanitizeInput(value))
+  slug?: string;
+
+  // accepts either the folder's id or its name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameAppV2Dto {
+  @IsOptional()
+  @ResourceName()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  slug?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
+export class ListAppsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "apps not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportAppV2Dto {
+  // Matches Export v2's { definition } so an export re-imports unchanged
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateModuleV2Dto {
+  @ResourceName()
+  name: string;
+}
+
+export class RenameModuleV2Dto {
+  @IsOptional()
+  @ResourceName()
+  name?: string;
+}
+
+export class ListModulesV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportModuleV2Dto {
+  // Matches Export v2's { definition } so an export re-imports unchanged
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateWorkflowV2Dto {
+  @ResourceName()
+  name: string;
+
+  // workflow folder, by id or name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameWorkflowV2Dto {
+  @IsOptional()
+  @ResourceName()
+  name?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
+export class ListWorkflowsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "workflows not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportWorkflowV2Dto {
+  // Matches Export v2's { definition } so an export re-imports unchanged
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty({ message: "Folder name can't be empty" })
+  @Transform(({ value }) => sanitizeInput(value ?? '').trim())
+  @Validate(AllowedCharactersValidator)
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  name: string;
+}
+
+export class UpdateFolderV2Dto {
+  @IsString()
+  @IsNotEmpty({ message: "Folder name can't be empty" })
+  @Transform(({ value }) => sanitizeInput(value ?? '').trim())
+  @Validate(AllowedCharactersValidator)
+  @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
+  name: string;
+}
+
+export class ListFoldersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+// --- v2 Response DTOs ---
+// Apps/Modules/Workflows/Folders v2 handlers build a plain object by hand (see service.ts) and
+// return it through these @Exclude-by-default DTOs via plainToInstance + ClassSerializerInterceptor,
+// so an accidental extra field on the hand-built object is dropped rather than silently shipped.
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class AppV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose({ name: 'folder_id' })
+  folderId: string | null;
+}
+
+@Exclude()
+export class ListAppsV2ResponseDto {
+  @Expose()
+  @Type(() => AppV2ResponseDto)
+  data: AppV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class ModuleV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListModulesV2ResponseDto {
+  @Expose()
+  @Type(() => ModuleV2ResponseDto)
+  data: ModuleV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class WorkflowV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose({ name: 'folder_id' })
+  folderId: string | null;
+}
+
+@Exclude()
+export class ListWorkflowsV2ResponseDto {
+  @Expose()
+  @Type(() => WorkflowV2ResponseDto)
+  data: WorkflowV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class FolderV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListFoldersV2ResponseDto {
+  @Expose()
+  @Type(() => FolderV2ResponseDto)
+  data: FolderV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+// Export's payload is the app/module/workflow definition blob itself (queries, pages, styles —
+// an open-ended shape, not an enumerable resource), already credential-scrubbed in service.ts
+// (#scrubDataSourceCredentials); this DTO only guarantees the top-level { definition } envelope.
+@Exclude()
+export class ResourceExportV2ResponseDto {
+  @Expose()
+  definition: Record<string, any>;
 }
