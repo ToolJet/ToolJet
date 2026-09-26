@@ -148,6 +148,10 @@ function buildRowScopedResolver({ get, nearestListviewId, rowIndex, moduleId, cu
   }
   return (value) => get().getResolvedValue(value, customResolveObjects, moduleId);
 }
+// Memoises `getComponentResolutionMapping` per `pages` array identity. Keyed weakly so a
+// replaced pages array (page switch, app reload) drops its entry without explicit cleanup.
+const componentResolutionMappingCache = new WeakMap();
+
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -1231,7 +1235,12 @@ export const createComponentsSlice = (set, get) => ({
     const refs = extractQueryReferences(kind, options);
     if (!refs.length) return;
 
-    const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+    // Resolution mapping, not the raw one: a query whose options carry another page's component
+    // id must register its dependency edge against the *current* page's equivalent component,
+    // otherwise `runOnDependencyChange` wires up an edge nothing ever writes to and the query
+    // silently never re-runs here. `initDependencyGraph` re-registers every query on each page
+    // switch, so the edge rebinds to whichever page is active.
+    const componentNameIdMapping = get().getComponentResolutionMapping(moduleId);
     const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
 
     refs.forEach((ref) => {
@@ -2662,6 +2671,61 @@ export const createComponentsSlice = (set, get) => ({
   getComponentNameIdMapping: (moduleId = 'canvas') => {
     const { modules } = get();
     return modules[moduleId].componentNameIdMapping;
+  },
+
+  /**
+   * Name->id mapping for the current page, plus rebind entries for component ids that
+   * belong to *other* pages.
+   *
+   * Queries are app-scoped but their options persist component references as page-absolute
+   * ids (`{{components.<uuid>.value}}`, written by `replaceQueryOptionsEntityReferencesWithIds`).
+   * Component ids, `componentNameIdMapping` and `exposedValues.components` are all page-scoped
+   * and wiped on every page switch, so a query carrying page A's id resolves to `undefined`
+   * everywhere else — which is what breaks "copy the components to page B, run the same query".
+   *
+   * The rebind entries key a foreign id to the current page's component of the same name AND
+   * type, so `preprocessExpression`'s existing `mapping[<uuid>]` lookup swaps it for the local
+   * id with no change to the resolver itself. Name+type is required, not name alone, so an
+   * unrelated same-named widget on another page can't silently capture the reference.
+   *
+   * IMPORTANT: this is for READ paths only (resolution, dependency registration). The write
+   * path must keep using `getComponentNameIdMapping`, or re-saving a query from page B would
+   * persist page B's id and break page A. See `updateDataQuery` in dataQuerySlice.
+   */
+  getComponentResolutionMapping: (moduleId = 'canvas') => {
+    const { modules, getCurrentPageId } = get();
+    const nameIdMapping = modules[moduleId].componentNameIdMapping;
+    const pages = modules[moduleId].pages;
+    const currentPageId = getCurrentPageId(moduleId);
+
+    // Any add/remove/rename/paste produces a new `pages` and/or `componentNameIdMapping`
+    // reference under immer, so identity plus the current page id is a sufficient cache key.
+    const cached = componentResolutionMappingCache.get(pages);
+    if (cached && cached.nameIdMapping === nameIdMapping && cached.currentPageId === currentPageId) {
+      return cached.value;
+    }
+
+    const currentPageIndex = pages.findIndex((page) => page.id === currentPageId);
+    const currentPageComponents = pages[currentPageIndex]?.components || {};
+
+    const localIdByNameAndType = new Map();
+    Object.entries(currentPageComponents).forEach(([componentId, { component }]) => {
+      localIdByNameAndType.set(`${component.name}|${component.component}`, componentId);
+    });
+
+    const rebinds = {};
+    pages.forEach((page, pageIndex) => {
+      if (pageIndex === currentPageIndex) return;
+      Object.entries(page.components || {}).forEach(([foreignId, { component }]) => {
+        if (currentPageComponents[foreignId]) return;
+        const localId = localIdByNameAndType.get(`${component.name}|${component.component}`);
+        if (localId) rebinds[foreignId] = localId;
+      });
+    });
+
+    const value = { ...nameIdMapping, ...rebinds };
+    componentResolutionMappingCache.set(pages, { nameIdMapping, currentPageId, value });
+    return value;
   },
   getComponentIdNameMapping: (moduleId = 'canvas') => {
     const { getComponentNameIdMapping } = get();
