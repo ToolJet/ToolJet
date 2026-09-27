@@ -12,6 +12,10 @@ export const DEFAULT_OPENAPI_SPEC_BATCH_SIZE = parseInt(process.env.OPENAPI_SPEC
 // specs are CPU/memory heavy.
 export const OPENAPI_SPEC_CONCURRENCY = parseInt(process.env.TOOLJET_OPENAPI_SPEC_CONCURRENCY || '1');
 
+// Caps a URL-sourced spec fetch (OPENAPI_SPEC_MAX_FETCH_BYTES) so a large or endless response body
+// can't OOM the worker. 50MB comfortably covers real-world specs (e.g. Microsoft Graph, ~44MB).
+export const OPENAPI_SPEC_MAX_FETCH_BYTES = parseInt(process.env.OPENAPI_SPEC_MAX_FETCH_BYTES) || 50 * 1024 * 1024;
+
 export enum OpenApiSpecStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',

@@ -8,6 +8,7 @@ import { chunk } from 'lodash';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { dereferenceInternal, getJsonSchemaRefParserDefaultOptions } from '@apidevtools/json-schema-ref-parser';
 import { Logger } from 'nestjs-pino';
+import { getSSRFProtectionOptions, validateUrlForSSRF } from '@tooljet/plugins/dist/packages/common/lib';
 import { OpenApiSpecOperation } from '@entities/openapi_spec_operation.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -18,6 +19,7 @@ import { pruneCircularRefs } from '../utils/circular-ref.util';
 import {
   DEFAULT_OPENAPI_SPEC_BATCH_SIZE,
   OPENAPI_SPEC_CONCURRENCY,
+  OPENAPI_SPEC_MAX_FETCH_BYTES,
   OPENAPI_SPEC_OPTION_KEYS,
   OPENAPI_SPEC_PROCESSING_QUEUE,
   OpenApiSpecSourceType,
@@ -112,11 +114,40 @@ export class OpenApiSpecProcessor extends WorkerHost {
       }
 
       // CreateOpenApiSpecDto guarantees url/definition is set for the matching sourceType.
-      const rawSpec =
-        sourceType === OpenApiSpecSourceType.URL
-          ? (await got(url as string, { timeout: { request: FETCH_TIMEOUT_MS } })).body
-          : (definition as string);
-      const parsedInput = this.parseSpecText(rawSpec);
+      const isUrlSourced = sourceType === OpenApiSpecSourceType.URL;
+
+      let rawSpec: string;
+      if (isUrlSourced) {
+        try {
+          rawSpec = await this.fetchSpecFromUrl(url as string);
+        } catch (error) {
+          this.logger.error(
+            `[openapi-spec:${job.id}] failed to fetch spec from URL for datasource ${dataSourceId}: ${
+              (error as Error).message
+            }`,
+            (error as Error).stack
+          );
+          throw new Error('Failed to fetch the OpenAPI spec from the provided URL');
+        }
+      } else {
+        rawSpec = definition as string;
+      }
+
+      let parsedInput: Record<string, any>;
+      try {
+        parsedInput = this.parseSpecText(rawSpec);
+      } catch (error) {
+        if (!isUrlSourced) throw error;
+        this.logger.error(
+          `[openapi-spec:${job.id}] failed to parse spec fetched from URL for datasource ${dataSourceId}: ${
+            (error as Error).message
+          }`,
+          (error as Error).stack
+        );
+        throw new Error(
+          'Failed to parse the OpenAPI spec fetched from the provided URL - verify it is valid JSON or YAML'
+        );
+      }
       // resolve() only builds the $refs map; unlike dereference() it does not expand the whole
       // document. Each operation is dereferenced lazily per batch below.
       const $refs = await SwaggerParser.resolve(parsedInput as any);
@@ -253,6 +284,29 @@ export class OpenApiSpecProcessor extends WorkerHost {
         channels: ['in_app'],
       })
       .catch((e) => this.logger.error(`failed to emit openapi-spec notification: ${(e as Error)?.message}`));
+  }
+
+  private async fetchSpecFromUrl(url: string): Promise<string> {
+    await validateUrlForSSRF(url);
+    const options = getSSRFProtectionOptions(undefined, { timeout: { request: FETCH_TIMEOUT_MS } });
+
+    return new Promise<string>((resolve, reject) => {
+      const stream = got.stream(url, options);
+      const chunks: Buffer[] = [];
+      let receivedBytes = 0;
+
+      stream.on('data', (chunk: Buffer) => {
+        receivedBytes += chunk.length;
+        if (receivedBytes > OPENAPI_SPEC_MAX_FETCH_BYTES) {
+          stream.destroy();
+          reject(new Error(`Spec response exceeded the ${OPENAPI_SPEC_MAX_FETCH_BYTES} byte limit and was aborted`));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
   }
 
   // yaml.load also parses JSON, but JSON.parse is far faster and lighter, so try it first.
