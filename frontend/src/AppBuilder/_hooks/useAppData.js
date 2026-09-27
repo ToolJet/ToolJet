@@ -427,12 +427,21 @@ const useAppData = (
           const taggedResources = state?.taggedResources;
           const hasTaggedResources =
             taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
-          sendMessage(state.prompt, {}, hasTaggedResources ? { taggedResources } : {}, moduleId);
+          sendMessage(
+            state.prompt,
+            {},
+            {
+              ...(hasTaggedResources ? { taggedResources } : {}),
+              attachments: state.attachments,
+            },
+            moduleId
+          );
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
           const {
             prompt: _prompt,
             taggedResources: _taggedResources,
+            attachments: _attachments,
             ...restUsrState
           } = window.history.state?.usr || {};
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
