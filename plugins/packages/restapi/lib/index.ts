@@ -23,10 +23,30 @@ import {
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
-import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
+import got, { HTTPError, OptionsOfTextResponseBody, TimeoutError } from 'got';
 import { SourceOptions } from './types';
 import { SignatureV4 } from '@smithy/signature-v4';
 import { Sha256 } from '@aws-crypto/sha256-js';
+
+// Default 120 secs, matching the default statement timeout of the SQL data sources
+const DEFAULT_REQUEST_TIMEOUT_MS = 120000;
+
+function toNonNegativeNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : undefined;
+}
+
+// Resolution order: the query's own timeout, then the data source's request timeout, then the default.
+// A value of 0 disables the timeout.
+export function resolveRequestTimeout(sourceOptions: any, queryOptions: any): number | undefined {
+  const timeout =
+    toNonNegativeNumber(queryOptions?.query_timeout) ??
+    toNonNegativeNumber(sourceOptions?.request_timeout) ??
+    DEFAULT_REQUEST_TIMEOUT_MS;
+  return timeout > 0 ? timeout : undefined;
+}
+
 function isFileObject(value: unknown): value is Record<string, string> {
   if (typeof value !== 'object' || value === null) return false;
   const objectKeys = Object.keys(value);
@@ -100,12 +120,14 @@ export default class RestapiQueryService implements QueryService {
     const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
     const method = queryOptions['method'];
     const searchParams = this.buildSearchParams(sourceOptions, queryOptions, hasDataSource, url);
+    const requestTimeout = resolveRequestTimeout(sourceOptions, queryOptions);
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers,
       searchParams,
       ...(queryOptions['retry_network_errors'] === true ? {} : { retry: 0 }),
+      ...(requestTimeout && { timeout: { request: requestTimeout } }),
     };
     this.addCookiesToRequest(sourceOptions, queryOptions, hasDataSource, _requestOptions);
 
@@ -302,6 +324,14 @@ export default class RestapiQueryService implements QueryService {
     console.error(
       `Error while calling REST API endpoint. Status code: ${error?.response?.statusCode}, Message: ${error?.response?.body}`
     );
+
+    if (error instanceof TimeoutError) {
+      throw new QueryError(
+        'Query timed out',
+        `${error.message}. Increase the query's timeout or the data source's request timeout if this endpoint needs more time.`,
+        {}
+      );
+    }
 
     let result = {};
     let metadata = {};
