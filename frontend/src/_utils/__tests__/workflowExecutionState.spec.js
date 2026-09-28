@@ -31,17 +31,15 @@ describe('getExecutionDisplayState — existing behaviour (regression pins)', ()
   });
 
   it('still reports a recent jobless run as completed, preserving the editor race behaviour', () => {
-    expect(
-      getExecutionDisplayState({ executed: false, status: null, startedAt: new Date().toISOString() })
-    ).toBe('completed');
+    expect(getExecutionDisplayState({ executed: false, status: null, startedAt: new Date().toISOString() })).toBe(
+      'completed'
+    );
   });
 });
 
 describe('getExecutionDisplayState — unknown', () => {
   it('reports a long-dead jobless run as unknown rather than completed', () => {
-    expect(
-      getExecutionDisplayState({ executed: false, status: null, startedAt: minutesAgo(60) })
-    ).toBe('unknown');
+    expect(getExecutionDisplayState({ executed: false, status: null, startedAt: minutesAgo(60) })).toBe('unknown');
   });
 
   it('does not mark a run unknown while it still has a live job', () => {
@@ -56,9 +54,7 @@ describe('getExecutionDisplayState — unknown', () => {
   });
 
   it('falls back to createdAt when startedAt was never written', () => {
-    expect(
-      getExecutionDisplayState({ executed: false, status: null, createdAt: minutesAgo(60) })
-    ).toBe('unknown');
+    expect(getExecutionDisplayState({ executed: false, status: null, createdAt: minutesAgo(60) })).toBe('unknown');
   });
 
   it('labels the unknown state', () => {
