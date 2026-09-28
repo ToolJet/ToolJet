@@ -1,5 +1,10 @@
 import { waitFor, within } from '@testing-library/react';
-import { createWidgetHarness, binding, store, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import {
+  createWidgetHarness,
+  binding,
+  store,
+  MODULE_ID,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import { svgImageConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/svgImage';
 import { svgImageConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/svgImage';
@@ -116,7 +121,7 @@ describe('SvgImage widget', () => {
     // ship a <script>, an inline event handler, or a javascript: link into every viewer's page.
     const hostile = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" onload="window.__svgPwned = true">',
-      '<script>window.__svgPwned = true;<\/script>',
+      '<script>window.__svgPwned = true;</script>',
       '<rect x="1" y="1" width="4" height="4" onclick="window.__svgPwned = true" />',
       '<a href="javascript:window.__svgPwned = true"><text x="1" y="20">go</text></a>',
       '</svg>',

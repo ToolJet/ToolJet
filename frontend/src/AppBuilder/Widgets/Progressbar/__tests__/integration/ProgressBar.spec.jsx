@@ -8,7 +8,12 @@ import { waitFor } from '@testing-library/react';
 import { progressbarConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/progressbar';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, binding, store, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import {
+  createWidgetHarness,
+  binding,
+  store,
+  MODULE_ID,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { progressbarConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/progressbar';
 
 const ID = 'pb1';
@@ -58,8 +63,7 @@ const widget = createWidgetHarness({
 });
 
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
-const canvasNode = (container, handle = HANDLE) =>
-  container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
+const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
 const labelNode = (componentId = ID) => document.getElementById(`${componentId}-label`);
 const track = (container, handle = HANDLE) => root(container, handle)?.lastElementChild?.firstElementChild;
 const fill = (container, handle = HANDLE) => {

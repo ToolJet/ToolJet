@@ -344,7 +344,9 @@ describe('Link widget', () => {
     await setStyle('verticalAlignment', 'top');
     await setStyle('boxShadow', SHADOW);
 
-    await waitFor(() => expect(root(container)).toHaveStyle({ alignItems: 'flex-start', textAlign: 'right', boxShadow: SHADOW }));
+    await waitFor(() =>
+      expect(root(container)).toHaveStyle({ alignItems: 'flex-start', textAlign: 'right', boxShadow: SHADOW })
+    );
     expect(linkText(container).parentElement).toHaveStyle({
       justifyContent: 'flex-end',
       fontSize: '20px',
@@ -373,9 +375,7 @@ describe('Link widget', () => {
     // cannot hide it after D-10's hidden default.
     const { container } = widget.render();
     await waitFor(() => expect(linkText(container)).not.toBeNull());
-    await expect(
-      waitFor(() => expect(iconNode(container)).not.toBeNull(), { timeout: 400 })
-    ).rejects.toThrow();
+    await expect(waitFor(() => expect(iconNode(container)).not.toBeNull(), { timeout: 400 })).rejects.toThrow();
 
     await setStyle('iconVisibility', '{{true}}');
     await waitFor(() => expect(iconNode(container)).not.toBeNull());

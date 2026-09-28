@@ -56,14 +56,12 @@ const widget = createWidgetHarness({
 });
 
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
-const canvasNode = (container, handle = HANDLE) =>
-  container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
+const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
 const milestones = (container, handle = HANDLE) => Array.from(root(container, handle).querySelectorAll('.milestone'));
 const milestone = (container, index, handle = HANDLE) => milestones(container, handle)[index];
 const labels = (container, handle = HANDLE) =>
   Array.from(root(container, handle).querySelectorAll('.label span')).map((node) => node.textContent);
-const activeMilestones = (container, handle = HANDLE) =>
-  root(container, handle).querySelectorAll('.milestone.active');
+const activeMilestones = (container, handle = HANDLE) => root(container, handle).querySelectorAll('.milestone.active');
 
 async function setProperty(property, value, componentId = ID) {
   await widget.session.store.act(() => widget.setComponentProperty(componentId, property, value, 'properties'));
@@ -372,7 +370,10 @@ describe('Steps widget', () => {
     await widget.act('setStepDisable', 3, true);
 
     await setProperty('variant', 'numbers');
-    await setProperty('steps', BASE_STEPS.map((row) => ({ ...row })));
+    await setProperty(
+      'steps',
+      BASE_STEPS.map((row) => ({ ...row }))
+    );
     expect(widget.exposed().steps.find(({ id }) => id === 1).visible).toBe(false);
     expect(widget.exposed().steps.find(({ id }) => id === 3).disabled).toBe(true);
 
@@ -549,8 +550,24 @@ describe('Steps widget', () => {
     const expected = {
       name: 'Steps',
       component: 'Steps',
-      propertyKeys: ['variant', 'schema', 'steps', 'stepsSelectable', 'disabledState', 'visibility', 'advanced', 'currentStep'],
-      styleKeys: ['incompletedAccent', 'incompletedLabel', 'completedAccent', 'completedLabel', 'currentStepLabel', 'padding'],
+      propertyKeys: [
+        'variant',
+        'schema',
+        'steps',
+        'stepsSelectable',
+        'disabledState',
+        'visibility',
+        'advanced',
+        'currentStep',
+      ],
+      styleKeys: [
+        'incompletedAccent',
+        'incompletedLabel',
+        'completedAccent',
+        'completedLabel',
+        'currentStepLabel',
+        'padding',
+      ],
       eventKeys: ['onSelect'],
       exposedVariables: { currentStepId: '3' },
       actions: [
