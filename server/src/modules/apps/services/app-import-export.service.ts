@@ -1330,6 +1330,15 @@ export class AppImportExportService {
     });
     if (alreadyOnBranch) return branchPinKeyOf(alreadyOnBranch);
 
+    // A stub here came from git (branch creation / pull), so git is the module's source of
+    // truth and may be shared with other git apps: keep it for hydration on open rather than
+    // overwriting it with the file's copy. The pin then resolves via the orphan fallback.
+    const gitStub = await manager.findOne(AppVersion, {
+      where: { appId: existingModule.id, branchId, isStub: true },
+      select: ['id'],
+    });
+    if (gitStub) return null;
+
     // Reuse the full create-path import against the existing App row (existingAppId),
     // so the module gets a real BRANCH DRAFT with its pages/components/queries on this
     // branch without minting a second module App.
@@ -3900,7 +3909,15 @@ export class AppImportExportService {
         }
       }
 
-      await manager.save(version);
+      await catchDbException(
+        () => manager.save(version),
+        [
+          {
+            dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+            message: 'This app name is already taken.',
+          },
+        ]
+      );
       appDefaultEnvironmentMapping[appVersion.id] = appEnvIds;
       appVersionMapping[appVersion.id] = version.id;
     }
