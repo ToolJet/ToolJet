@@ -94,7 +94,7 @@ describe('component-specific actions', () => {
   // Break this catches: adding setShowValidationError(true) to clearValue, which would
   // make Form clearForm paint an untouched form red; or adding a false write, which
   // would hide an error the user has already been shown.
-  test('[EmailInput-CSA-003] clear empties the field and fires onChange without changing message visibility', async () => {
+  test('[EmailInput-CSA-003] clear empties the field, fires onChange, and reports the empty field', async () => {
     harness.render({
       properties: { value: binding('ada@tooljet.com') },
       validation: { mandatory: binding('{{true}}') },
@@ -107,7 +107,10 @@ describe('component-specific actions', () => {
     expect(input().value).toBe('');
     expect(harness.exposed().value).toBe('');
     await waitFor(() => expect(callCount()).toBe(1));
-    expect(errorText()).toBeNull(); // never blurred, so still quiet
+    // This row previously pinned the opposite — the message stayed hidden — which was
+    // characterisation of the defect PhoneInput-CSA-011 covers, not a decision. The reveal sits on
+    // the CSA, not on the shared clear path, so a Form clearForm still stays silent.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
 
     // An already-blurred field keeps its error over the now-empty box.
     harness.render({
@@ -489,7 +492,37 @@ describe('clear button and Form', () => {
     expect(harness.exposed().value).toBe('');
     await waitFor(() => expect(callCount()).toBe(1));
     expect(document.activeElement).toBe(input());
-    expect(errorText()).toBeNull(); // no mid-edit accusation
+    // Clearing a mandatory field reports it. This row previously pinned the opposite — the
+    // error stayed hidden — which was characterization of the defect CLR-005 now covers, not
+    // a decision: a cleared mandatory field was left invalid with nothing on screen to say so.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+  });
+
+  // Break this catches: dropping the reveal from the clear button's handler, which leaves it
+  // to `handleBlur` alone.
+  //
+  // A field that loads with a default value and is never touched has `showValidationError`
+  // false, and the clear button suppresses the blur that would flip it — its `onMouseDown`
+  // calls `preventDefault()` so the field never loses focus. So emptying a mandatory field
+  // with the button left it silently invalid: no message, no red border, and `isValid`
+  // already false underneath. Interacting first masked it, because the blur had flipped the
+  // flag before the click.
+  test('[EmailInput-CLR-005] clearing a mandatory field reveals the error with no prior blur', async () => {
+    harness.render({
+      properties: { value: binding('ada@tooljet.com'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    // Loaded valid and untouched: nothing to say yet.
+    expect(errorText()).toBeNull();
+
+    // Straight to the button — never focused, never blurred.
+    await userEvent.click(clearButton());
+
+    expect(input().value).toBe('');
+    expect(harness.exposed().isValid).toBe(false);
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: reverting the clear button's vertical offset to a fixed
@@ -964,6 +997,40 @@ describe('styles', () => {
 
     await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
     expect(inlineStyle(errorText())).toContain('rgb(171, 205, 239)');
+  });
+
+  // Break this catches: dropping `tj-input-has-error` from the container, or dropping the
+  // `:not(.tj-input-has-error)` guard from the hover rule in baseInput.scss.
+  //
+  // The error border is an INLINE style, but `.tj-text-input-widget-container:hover` sets
+  // `border` with `!important`, which outranks it. So moving the pointer over an invalid
+  // field repainted the red border with the ordinary darker one and the field looked valid
+  // again until the pointer left. Verified in Chrome, since jsdom loads no stylesheets and
+  // computes no cascade: hovering turned the border from rgb(220,38,38) to the darker
+  // rgb(10,20,30), and the guard held it red. PhoneInput never had this because it renders a
+  // different container class that the rule does not match.
+  test('[EmailInput-STYLE-013] a revealed error opts the field out of the hover border rule', async () => {
+    harness.render({ validation: { mandatory: binding('{{true}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    // Valid and unrevealed: the field takes the ordinary hover treatment.
+    expect(fieldBox()).not.toHaveClass('tj-input-has-error');
+
+    fireEvent.blur(input());
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+
+    // Revealed: the flag is on, which is what keeps the hover rule off the error border.
+    // The error colour itself cannot be asserted here — it is `var(--cc-error-systemStatus)`,
+    // and jsdom's CSSOM drops `var()` on a standard property, so the declaration never lands.
+    expect(fieldBox()).toHaveClass('tj-input-has-error');
+
+    // Fixing the value drops the flag again, so the field goes back to hovering normally.
+    // The feedback node stays mounted and simply empties, so validity is read from the
+    // exposed variable rather than from the element's presence.
+    await userEvent.type(input(), 'ada@tooljet.com');
+    await waitFor(() => expect(harness.exposed().isValid).toBe(true));
+    expect(errorText()).toBeEmptyDOMElement();
+    expect(fieldBox()).not.toHaveClass('tj-input-has-error');
   });
 
   // Break this catches: dropping the legacy text-colour blocklist — a pre-theme app
