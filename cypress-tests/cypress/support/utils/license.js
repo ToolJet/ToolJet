@@ -109,7 +109,7 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
     );
 
     const toggleIcon =
-      label === "Workflows" || label === "Google" || label === "GitHub"
+      label === "Workflows" || label === "Google SSO" || label === "GitHub SSO"
         ? licenseSelectors.circularToggleEnabledIcon
         : isPlanEnabled
           ? licenseSelectors.circularToggleEnabledIcon
@@ -361,7 +361,7 @@ export const verifyTotalLimitsWithPlan = (
       resources.forEach((resource) => {
         const lowerRes = resource.toLowerCase();
         const key = keyMap[lowerRes] || resource;
-        const current = currentLimits[key];
+        const current = currentLimits[key] ?? currentLimits[key.toLowerCase()];
         const limit = plan[key];
         const expectedLabel = labelMap[lowerRes] || resource.toUpperCase();
 
