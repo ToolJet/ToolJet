@@ -244,7 +244,7 @@ describe('WorkflowApprovalsService.resolve', () => {
     await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
     expect(emitSpy).toHaveBeenCalledWith(
       'auditLogEntry',
-      expect.objectContaining({ actionType: 'WORKFLOW_APPROVAL_RESOLVED', resourceType: 'WORKFLOW' })
+      expect.objectContaining({ actionType: 'WORKFLOW_APPROVAL_RESOLVED', resourceType: 'workflows' })
     );
     emitSpy.mockRestore();
     enqueueSpy.mockRestore();

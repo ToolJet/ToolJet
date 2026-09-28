@@ -53,7 +53,10 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    `skipped` (same mechanism as if-condition), and the run continues. The decision applies only
    to the node whose id it carries: injected state reaches every node of the resumed segment, so
    a second Human node later in the run suspends with its own approval request. Logs accumulate across the
-   pause; resolve emits an `auditLogEntry`.
+   pause; resolve emits an `auditLogEntry` (`actionType: 'WORKFLOW_APPROVAL_RESOLVED'`,
+   `resourceType: MODULES.WORKFLOWS`, so the Workflows audit filter includes it; the action is
+   registered as `HUMAN_IN_THE_LOOP`'s `auditLogsKey` with `skipAuditLogs` so the interceptor does
+   not log the approval routes a second time).
 
 ## Semantics
 
