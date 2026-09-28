@@ -580,7 +580,7 @@ export default function generateColumnsData({
                       const button = buttons.find((b) => b.id === buttonId);
                       const inlineEvents = (button?.events || [])
                         .map((evt) => {
-                          const normalized = normalizeButtonEvent(evt, buttonId);
+                          const normalized = normalizeButtonEvent(evt, buttonId, id);
                           if (!normalized) return null;
                           return { event: { ...normalized, ref: `${columnKey}::${buttonId}` } };
                         })
