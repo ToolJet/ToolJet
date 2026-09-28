@@ -9,8 +9,10 @@ import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   getLabelFontSize,
+  getLabelHeight,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '../BaseComponents/hooks/useInput';
@@ -68,10 +70,19 @@ export const BaseDateComponent = ({
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
+  const isLabelOnTop =
+    alignment === 'top' &&
+    ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0));
+  const baseInputHeight = height == 36 ? (padding == 'default' ? 36 : 40) : padding == 'default' ? height : height + 4;
+
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    // The canvas adds TOP_ALIGNMENT_HEIGHT_INCREMENT (sized for the default 12px label) to the box when the
+    // label is on top, so only the label height in excess of that increment shrinks the field (see Label)
+    height: isLabelOnTop
+      ? baseInputHeight - (getLabelHeight(labelFontSize) - TOP_ALIGNMENT_HEIGHT_INCREMENT)
+      : baseInputHeight,
     borderColor: focus
       ? accentColor != '#4368E3'
         ? accentColor
@@ -143,10 +154,7 @@ export const BaseDateComponent = ({
   return (
     <div
       className={cx('d-flex datetimepicker-component', {
-        [alignment === 'top' &&
-        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : 'align-items-center']: true,
+        [isLabelOnTop ? 'flex-column' : 'align-items-center']: true,
         'flex-row-reverse': direction === 'right' && alignment === 'side',
         'text-right': direction === 'right' && alignment === 'top',
         invisible: !visibility,
