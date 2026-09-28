@@ -21,6 +21,12 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
   creation, backfilled by `migrations/1787800000000-AddOrganizationAndAppToApprovalRequests.ts`).
   Repository:
   `repositories/workflow-approval-request.repository.ts`.
+- **Foreign-key indexes.** Postgres does not index the referencing side of a foreign key, so
+  every FK on a cascade path of run history needs its own non-partial index
+  (`migrations/1790600000000-AddWorkflowRunHistoryForeignKeyIndexes.ts`: `parent_execution_id`,
+  `parent_node_id`, `schedule_id`, approval `workflow_execution_id` / `execution_node_id`). The
+  pending-only partial unique index cannot serve cascade lookups. Pinned by
+  `e2e/workflow-foreign-key-indexes.spec.ts`; add new run-history FKs to both.
 - **Execution status `waiting`** — a suspended run's DB `status` is `waiting`, non-terminal,
   `executed` stays `false`. Mapped to the frontend display state by `mapDbStatusToDisplayState`
   (`constants/queue-config.ts`).
