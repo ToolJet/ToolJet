@@ -76,6 +76,7 @@ export function useTable({
     data: newData,
     columns,
     enableSorting: true,
+    sortDescFirst: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
