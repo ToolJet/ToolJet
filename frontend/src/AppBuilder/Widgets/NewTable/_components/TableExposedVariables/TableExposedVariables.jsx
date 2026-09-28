@@ -334,14 +334,29 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
-      const item = index !== -1 ? data[index] : null;
-      if (item) {
-        setRowSelection({ [index]: true });
+      if (index === -1) {
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          kind: 'component',
+          key: `Table "${componentName}" - selectRow called with no matching row`,
+          componentId: id,
+          strace: 'page_level',
+          message: `selectRow() was called with key ${JSON.stringify(key)} and value ${JSON.stringify(
+            value
+          )}, which matched no row. The current selection was left unchanged.`,
+          error: { componentId: id, key, value },
+          errorTarget: 'Component Property',
+          timestamp: moment().toISOString(),
+        });
+        return;
       }
+      const item = data[index];
+      setRowSelection({ [index]: true });
       lastClickedRowRef.current = {};
       setExposedVariables({
-        selectedRow: item === null ? {} : item,
-        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
+        selectedRow: item,
+        selectedRowId: isNaN(index) ? String(index) : index,
       });
     }
 
