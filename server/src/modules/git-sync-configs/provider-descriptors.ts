@@ -73,8 +73,16 @@ export function getProviderRepoDetails(
 ): { repoUrl: string | null; defaultGitBranch: string | null } {
   const d = getProviderDescriptor(gitType);
   const row: any = d ? (orgGit as any)?.[d.relationKey] : null;
+  // Bitbucket has no single stored clone-URL field like GitHub/GitLab (httpsUrl/gitlabUrl) — its
+  // repo identity is workspace + repo slug, so the URL has to be composed from both.
+  const repoUrl =
+    gitType === GITConnectionType.BITBUCKET
+      ? row?.bitbucketWorkspace && row?.bitbucketRepoSlug
+        ? `https://bitbucket.org/${row.bitbucketWorkspace}/${row.bitbucketRepoSlug}`
+        : null
+      : (row?.[d!.repoUrlField] ?? null);
   return {
-    repoUrl: row?.[d!.repoUrlField] ?? null,
+    repoUrl,
     defaultGitBranch: row?.[d!.branchField] ?? null,
   };
 }

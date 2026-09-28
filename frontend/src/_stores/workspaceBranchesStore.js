@@ -63,8 +63,14 @@ function resolveGitConfigState(gitStatus, gitConfigResp) {
     effectiveGitConfig = {
       id: og.id,
       git_type: og.git_type,
-      repo_url: og.git_https?.https_url || og.git_lab?.gitlab_url || '',
-      default_git_branch: og.git_https?.github_branch || og.git_lab?.gitlab_branch || 'main',
+      repo_url:
+        og.git_https?.https_url ||
+        og.git_lab?.gitlab_url ||
+        (og.git_bitbucket?.bitbucket_workspace && og.git_bitbucket?.bitbucket_repo_slug
+          ? `https://bitbucket.org/${og.git_bitbucket.bitbucket_workspace}/${og.git_bitbucket.bitbucket_repo_slug}`
+          : ''),
+      default_git_branch:
+        og.git_https?.github_branch || og.git_lab?.gitlab_branch || og.git_bitbucket?.bitbucket_branch || 'main',
       is_branching_enabled: og.is_branching_enabled,
       is_git_sync_configured: providerConnected,
     };
