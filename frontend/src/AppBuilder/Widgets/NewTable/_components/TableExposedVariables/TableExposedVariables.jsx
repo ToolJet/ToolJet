@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import moment from 'moment';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -228,11 +229,41 @@ export const TableExposedVariables = ({
   // CSA to set page index
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
-      setExposedVariables({ pageIndex: targetPageIndex });
-      setPageIndex(targetPageIndex - 1);
+      const numericTarget = Number(targetPageIndex);
+      const isPositiveInteger = Number.isInteger(numericTarget) && numericTarget >= 1;
+      // Server-side pagination doesn't hand the widget enough rows to compute a real
+      // page count, so only reject an out-of-range target when it's actually knowable.
+      const pageCount = table.getPageCount();
+      const knowsUpperBound = !table.options.manualPagination && Number.isFinite(pageCount) && pageCount > 0;
+      const isInRange = !knowsUpperBound || numericTarget <= pageCount;
+
+      if (!isPositiveInteger || !isInRange) {
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          kind: 'component',
+          key: `Table "${componentName}" - setPage called with an invalid page`,
+          componentId: id,
+          strace: 'page_level',
+          message: knowsUpperBound
+            ? `setPage() was called with ${JSON.stringify(
+                targetPageIndex
+              )}, which is not a valid page number. Expected an integer between 1 and ${pageCount}.`
+            : `setPage() was called with ${JSON.stringify(
+                targetPageIndex
+              )}, which is not a valid page number. Expected a positive integer.`,
+          error: { componentId: id, value: targetPageIndex },
+          errorTarget: 'Component Property',
+          timestamp: moment().toISOString(),
+        });
+        return;
+      }
+
+      setExposedVariables({ pageIndex: numericTarget });
+      setPageIndex(numericTarget - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables]);
+  }, [setPageIndex, setExposedVariables, table, componentName, id]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
