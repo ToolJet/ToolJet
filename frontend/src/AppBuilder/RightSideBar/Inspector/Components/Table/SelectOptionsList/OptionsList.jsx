@@ -427,7 +427,7 @@ export const OptionsList = ({
               </Droppable>
             </DragDropContext>
             <div>
-              {column?.options?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
+              {column?.options?.length === 0 && <NoListItem text={'There are no options'} dataCy={`-options`} />}
               <div>
                 <ButtonComponent
                   leadingIcon="addrectangle"
