@@ -223,6 +223,20 @@ describe('WorkflowApprovalsService.resolve', () => {
     enqueueSpy.mockRestore();
   });
 
+  it('resolves for an email approver whose listed address differs only in case and spacing', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const { req } = await seedPending({
+      approversSnapshot: { users: [], groups: [], emails: ['  HITL-Approver@ToolJet.io '], tokenBypass: false },
+    });
+    const out = await service.resolve(
+      req.token,
+      { outcome: 'approved', input: {} },
+      { id: approverUserId, email: 'hitl-approver@tooljet.io' }
+    );
+    expect(out).toMatchObject({ status: 'resolved' });
+    enqueueSpy.mockRestore();
+  });
+
   it('emits a WORKFLOW_APPROVAL_RESOLVED audit log entry on resolve', async () => {
     const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
     const emitSpy = jest.spyOn(eventEmitter, 'emit');

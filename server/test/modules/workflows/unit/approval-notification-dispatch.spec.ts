@@ -186,6 +186,26 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
     );
   });
 
+  it('stores dynamic approver emails trimmed and lowercased, without blanks or duplicates', async () => {
+    const svc = makeService();
+    svc.resolveWorkflowParameters = jest.fn(async () => ({
+      value: ['  Manager@Example.COM ', 'manager@example.com', '', 42],
+    }));
+    svc.userRepository = { manager: { find: jest.fn() } };
+
+    const snapshot = await svc.resolveApprovers(
+      { approvers: { dynamic: '{{ approverEmails }}' } },
+      {},
+      'org-1',
+      'development'
+    );
+
+    expect(snapshot).toMatchObject({
+      emails: ['manager@example.com'],
+      notificationEmails: ['manager@example.com'],
+    });
+  });
+
   it('emits an approval email even when no webhook URL is configured', async () => {
     const svc = makeService();
 

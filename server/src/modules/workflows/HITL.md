@@ -98,7 +98,8 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
 In `WorkflowApprovalsService` (EE `services/workflow-approvals.service.ts`),
 `authorizeResolver()` returns `{ authorized, via }`, checked in order:
 1. **Token** — a valid `:token` bypasses user checks (the public link).
-2. **Listed approvers** — the node's `approvers`: `users.id`, emails, or custom groups.
+2. **Listed approvers** — the node's `approvers`: `users.id`, emails, or custom groups. Emails are
+   stored trimmed and lowercased in the snapshot and compared the same way against the caller's email.
 3. **Admin override** — `isWorkspaceAdmin(userId, orgId)` (queries default-admin
    `GroupPermissions` membership) → `via: 'workspace-admin'`; `isSuperAdmin(user)` →
    `via: 'super-admin'`. `ADMIN_OVERRIDE_CHANNELS = {'workspace-admin','super-admin'}`.
