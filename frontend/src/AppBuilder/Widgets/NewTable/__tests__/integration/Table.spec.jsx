@@ -642,6 +642,73 @@ describe('Table: search and filter', () => {
     expect(cellText('name', 0)).toBe('Orange');
   });
 
+  test('[Table-SEARCH-004] global search matches a select/tagsV2 columns configured option label, not only its raw stored value', async () => {
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([
+            { id: 1, status: 'A' },
+            { id: 2, status: 'I' },
+          ])}}}`
+        ),
+        columns: {
+          value: [
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              options: [
+                { label: 'Activated', value: 'A' },
+                { label: 'Inactive', value: 'I' },
+              ],
+            },
+          ],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    rtlFireEvent.change(searchInput(), { target: { value: 'Activated' } });
+    await waitFor(() => expect(exposed('searchText')).toBe('Activated'), { timeout: 2000 });
+
+    expect(bodyRowCount()).toBe(1);
+    expect(cell('status', 0).textContent).toContain('Activated');
+  });
+
+  test("[Table-SEARCH-005] global search matches a datepicker column's configured display format, not only its raw stored value", async () => {
+    const whenDisplay = require('moment-timezone').unix(1700000000).format('YYYY/MM/DD');
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, when: 1700000000 }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'when',
+              key: 'when',
+              id: 'col-when',
+              columnType: 'datepicker',
+              columnSize: 160,
+              isEditable: false,
+              parseInUnixTimestamp: true,
+              unixTimestamp: 'seconds',
+              dateFormat: 'YYYY/MM/DD',
+            },
+          ],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(cellText('when', 0)).toBe(whenDisplay));
+
+    rtlFireEvent.change(searchInput(), { target: { value: whenDisplay } });
+    await waitFor(() => expect(exposed('searchText')).toBe(whenDisplay), { timeout: 2000 });
+
+    expect(bodyRowCount()).toBe(1);
+  });
+
   test('[Table-FILTER-002] a configured filter condition narrows rendered rows via setFilters, and clearFilters restores them; onFilterChanged fires on each change', async () => {
     widget.render({
       properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{10}}') },
@@ -714,6 +781,101 @@ describe('Table: search and filter', () => {
     await waitFor(() => expect(bodyRowCount()).toBe(2));
 
     await widget.act('setFilters', [{ column: 'active', condition: 'isEmpty' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(0));
+  });
+
+  test('[Table-FILTER-004] a filter on a select/newMultiSelect/tagsV2 column matches either the stored option value or its configured label', async () => {
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([
+            { id: 1, status: 'A', tags: ['red'] },
+            { id: 2, status: 'I', tags: ['blue'] },
+          ])}}}`
+        ),
+        columns: {
+          value: [
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              options: [
+                { label: 'Activated', value: 'A' },
+                { label: 'Inactive', value: 'I' },
+              ],
+            },
+            {
+              name: 'tags',
+              key: 'tags',
+              id: 'col-tags',
+              columnType: 'tagsV2',
+              columnSize: 160,
+              options: [
+                { label: 'Red', value: 'red' },
+                { label: 'Blue', value: 'blue' },
+              ],
+            },
+          ],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(2));
+
+    // Matches the displayed label, not just the raw value ("A").
+    await widget.act('setFilters', [{ column: 'status', condition: 'equals', value: 'Activated' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+    expect(cell('status', 0).textContent).toContain('Activated');
+
+    // Raw value still matches too.
+    await widget.act('setFilters', [{ column: 'status', condition: 'equals', value: 'A' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+    expect(cell('status', 0).textContent).toContain('Activated');
+
+    // Same for a multi-value tagsV2 cell, by a selected tag's label.
+    await widget.act('setFilters', [{ column: 'tags', condition: 'contains', value: 'Red' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+    expect(cell('tags', 0).textContent).toContain('Red');
+  });
+
+  test('[Table-FILTER-005] a filter on a datepicker column matches its configured display format, not only the raw stored value', async () => {
+    // Computed, not hardcoded: the local display date can shift by a day depending on machine timezone.
+    const whenDisplay = require('moment-timezone').unix(1700000000).format('YYYY/MM/DD');
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, when: 1700000000 }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'when',
+              key: 'when',
+              id: 'col-when',
+              columnType: 'datepicker',
+              columnSize: 160,
+              isEditable: false,
+              parseInUnixTimestamp: true,
+              unixTimestamp: 'seconds',
+              dateFormat: 'YYYY/MM/DD',
+            },
+          ],
+        },
+        rowsPerPage: binding('{{10}}'),
+      },
+    });
+    await waitFor(() => expect(cellText('when', 0)).toBe(whenDisplay));
+
+    // Matches the displayed format.
+    await widget.act('setFilters', [{ column: 'when', condition: 'equals', value: whenDisplay }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+
+    // Raw value still matches too.
+    await widget.act('setFilters', [{ column: 'when', condition: 'equals', value: '1700000000' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+
+    // Neither form: no match.
+    await widget.act('setFilters', [{ column: 'when', condition: 'equals', value: '1999/01/01' }]);
     await waitFor(() => expect(bodyRowCount()).toBe(0));
   });
 
