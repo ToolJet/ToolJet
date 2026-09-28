@@ -89,8 +89,34 @@ export default function autogenerateColumns(
     }
   };
 
+  /*
+    A key containing a literal "." (e.g. "a.b") cannot be told apart from the dot-separated
+    path syntax used for one-level-nested auto-generated columns (e.g. "address.city"), and it
+    breaks TanStack Table's accessorKey resolution (which treats "." as a nested-path separator).
+    Such keys are not supported for column auto-generation, so they're skipped and reported.
+  */
+  const sanitizedFirstRow = Object.keys(firstRow).reduce((accumulator, key) => {
+    if (key.includes('.')) {
+      useStore.getState().debugger.log({
+        logLevel: 'error',
+        type: 'component',
+        kind: 'component',
+        key: `Table - column key contains "."`,
+        componentId,
+        strace: 'page_level',
+        message: `A key ("${key}") contains a "." which is not supported for auto-generated columns and was skipped.`,
+        error: { componentId, value: key },
+        errorTarget: 'Component Property',
+        timestamp: moment().toISOString(),
+      });
+    } else {
+      accumulator[key] = firstRow[key];
+    }
+    return accumulator;
+  }, {});
+
   // mapping the keys of first row with one level of nested elements.
-  const keysOfTableData = generateColumnKeys(firstRow, generateNestedColumns);
+  const keysOfTableData = generateColumnKeys(sanitizedFirstRow, generateNestedColumns);
 
   const keysOfExistingColumns = existingColumns.map((column) => column?.key || column?.name);
 
