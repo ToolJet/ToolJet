@@ -71,6 +71,7 @@ modules/{feature}/
 - **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
 - **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
 - Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
+- **Runner / atomicity:** `db:migrate` (and `:prod`) run through `src/migration-helpers/run-all-migrations.ts`, which executes all schema migrations then all data migrations in **one transaction** via two `MigrationExecutor` passes sharing a single query runner. A failure in either phase rolls back both — schema no longer commits ahead of a failing data migration. Don't merge the two migration globs into one datasource: TypeORM sorts by class-name timestamp and schema/data timestamps interleave, which would break the all-schema-before-all-data ordering. Keep long-running backfills mindful of `statement_timeout` — the schema locks are now held for the whole combined transaction.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
 ### Widget config sync (CRITICAL)
