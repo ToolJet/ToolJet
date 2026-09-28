@@ -21,6 +21,14 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
+// Matches react-select's default maxMenuHeight; the menu never renders taller than this.
+const MENU_MAX_HEIGHT = 300;
+
+const labelMatchesSearch = (label, search) =>
+  String(label ?? '')
+    .toLowerCase()
+    .includes(String(search ?? '').toLowerCase());
+
 const TagsInput = ({
   id,
   height,
@@ -94,6 +102,7 @@ const TagsInput = ({
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState('bottom');
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
   // Dynamic height support - only enabled in view mode (same as TextArea)
@@ -645,6 +654,14 @@ const TagsInput = ({
     }
   };
 
+  // react-select measures the menu before the custom "add" footer is appended, so it picks the wrong side.
+  useEffect(() => {
+    if (!isMenuOpen || !tagsRef.current) return;
+    const { top, bottom } = tagsRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - bottom;
+    setMenuPlacement(spaceBelow < MENU_MAX_HEIGHT && top > spaceBelow ? 'top' : 'bottom');
+  }, [isMenuOpen, selected.length, inputValue]);
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside, { capture: true });
     return () => {
@@ -697,7 +714,10 @@ const TagsInput = ({
       gap: '4px',
       alignItems: selected.length > 0 ? 'flex-start' : 'center',
       maxWidth: '100%',
-      overflow: 'visible',
+      // `visible` let the chip row paint over whatever sat above; the bar is hidden so it keeps no height.
+      overflow: 'auto',
+      scrollbarWidth: 'none',
+      '::-webkit-scrollbar': { width: 0, height: 0 },
       flex: 1,
       height: isDynamicHeightEnabled ? 'auto' : '100%',
     }),
@@ -736,6 +756,10 @@ const TagsInput = ({
     placeholder: (provided) => ({
       ...provided,
       color: 'var(--text-placeholder)',
+      // `valueContainer` is flex, not react-select's grid, so nothing else stacks this behind the input.
+      position: 'absolute',
+      pointerEvents: 'none',
+      margin: 0,
     }),
     option: (provided, state) => {
       // Use our controlled focus state instead of react-select's auto-focus
@@ -791,7 +815,7 @@ const TagsInput = ({
   const filteredOptions = useMemo(() => {
     return allOptions
       .filter((opt) => !selected.some((s) => s.value === opt.value))
-      .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
+      .filter((opt) => serverSideSearch === true || !inputValue || labelMatchesSearch(opt.label, inputValue));
   }, [allOptions, selected, inputValue, serverSideSearch]);
 
   return (
@@ -902,12 +926,12 @@ const TagsInput = ({
             isMulti
             hideSelectedOptions={true}
             filterOption={(option, inputValue) =>
-              serverSideSearch === true ? true : String(option.label ?? '').includes(inputValue)
+              serverSideSearch === true ? true : labelMatchesSearch(option.label, inputValue)
             }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
             onKeyDown={handleKeyDown}
-            menuPlacement="auto"
+            menuPlacement={menuPlacement}
             menuPortalTarget={document.body}
             minMenuHeight={300}
             // Custom props
