@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
-import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
+import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
-import { toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
+import { getCountryCallingCodeSafe, toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -68,9 +68,17 @@ export const useInput = ({
   const getCurrencyValidationValue = (val) =>
     val === undefined || val === null || val === '' ? '' : String(parseValueToNumber(val, numberFormat));
 
-  const [validationStatus, setValidationStatus] = useState(() =>
-    validate(inputType === 'currency' ? getCurrencyValidationValue(value) : value)
-  );
+  // The seed is judged by the SAME derivation every later write uses. Without this the very
+  // first verdict came from a different rule than every subsequent one, so whether a length rule
+  // counted the dial code depended on how the author happened to type the Default value.
+  const [validationStatus, setValidationStatus] = useState(() => {
+    if (inputType === 'currency') return validate(getCurrencyValidationValue(value));
+    if (inputType === 'phone') {
+      const code = getCountryCallingCodeSafe(properties.defaultCountry || 'US');
+      return validate(value?.replace(`+${code}`, '') ?? '');
+    }
+    return validate(value);
+  });
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
@@ -80,14 +88,6 @@ export const useInput = ({
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
   const decimalPlaces = properties?.decimalPlaces || 0;
-
-  const getCountryCallingCodeSafe = (country) => {
-    try {
-      return getCountryCallingCode(country);
-    } catch (error) {
-      return '';
-    }
-  };
 
   const formatNumber = (value, digits) => {
     const num = value?.toString();
@@ -259,6 +259,20 @@ export const useInput = ({
     isInitialRender.current = false;
   }, []);
 
+  // Every value write lands here, whatever the widget.
+  //  - A value has exactly three faces and they are named on the way in:
+  //     what the field STORES, what apps SEE, and what the validator JUDGES.
+  //  - Each setter below states all three in one call, so a widget can never update one of them and forget another
+  //  - `extras` are published in the same batch when a widget has more to say than `value`.
+  const writeValue = ({ state, exposed, extras, forValidation }) => {
+    setValue(state);
+    if (extras) setExposedVariables({ value: exposed, ...extras });
+    else setExposedVariable('value', exposed);
+    const validationStatus = validateRef.current(forValidation);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
   // Generic value setter shared by all input types.
   // `beforeSetInputValue`, when passed to useInput(), lets a specific widget transform
   // the value before it's stored/exposed/validated —
@@ -267,11 +281,8 @@ export const useInput = ({
     if (typeof beforeSetInputValueRef.current === 'function') {
       value = beforeSetInputValueRef.current(value);
     }
-    setValue(value);
-    setExposedVariable('value', value);
-    const validationStatus = validateRef.current(value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
+    // The identity case: what is stored, what is published and what is judged are one thing.
+    writeValue({ state: value, exposed: value, forValidation: value });
   };
 
   // Phone-only value setter.
@@ -279,16 +290,16 @@ export const useInput = ({
   // - a country switch passes the new one since the `country` state closure isn't updated yet in the same tick.
   const setPhoneInputValue = (value, selectedCountry = country) => {
     const countryCode = getCountryCallingCodeSafe(selectedCountry);
-    setValue(value);
-    setExposedVariables({
-      value,
-      country: selectedCountry,
-      countryCode: `+${countryCode}`,
-      formattedValue: formatPhoneNumberIntl(value), // Library util formats the E.164 value to a readable format.
+    writeValue({
+      state: value,
+      exposed: value,
+      extras: {
+        country: selectedCountry,
+        countryCode: `+${countryCode}`,
+        formattedValue: formatPhoneNumberIntl(value), // Library util formats the E.164 value to a readable format.
+      },
+      forValidation: value?.replace(`+${countryCode}`, ''),
     });
-    const validationStatus = validateRef.current(value?.replace(`+${countryCode}`, ''));
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   // Currency-only value setter.
@@ -300,12 +311,12 @@ export const useInput = ({
       numericValue != null && !Number.isNaN(numericValue)
         ? numericValue
         : parseValueToNumber(nextDisplay, numberFormat);
-    setValue(nextDisplay);
-    setExposedVariable('value', nextNumber);
-    // Validate a canonical numeric string; empty stays empty so mandatory catches a cleared field.
-    const validationStatus = validateRef.current(nextDisplay === '' ? '' : String(nextNumber));
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
+    writeValue({
+      state: nextDisplay,
+      exposed: nextNumber,
+      // Validate a canonical numeric string; empty stays empty so mandatory catches a cleared field.
+      forValidation: nextDisplay === '' ? '' : String(nextNumber),
+    });
   };
 
   // `revealValidation` is off by default because `useFormClear` calls this with no arguments: a
@@ -359,7 +370,6 @@ export const useInput = ({
     disable,
     country,
     setCountry,
-    validationStatus,
     showValidationError,
     setShowValidationError,
     isFocused,

@@ -466,15 +466,28 @@ describe('country, continued', () => {
     expect(harness.exposed().formattedValue).toBe('+1 987 654 3210');
   });
 
-  // Second mount for the same scenario. Characterization under D-04: an untouched empty
-  // field publishes the dial code and a trailing space, NOT '' — which is what `value`
-  // correctly reports. Pinned so any fix is deliberate.
-  test('[PhoneInput-CTY-009] an untouched empty field publishes a dial code and a trailing space', async () => {
+  // Second mount for the same scenario. An empty field reports itself empty through BOTH
+  // variables. This REPLACES the D-04 characterization, which pinned a dial code and a trailing
+  // space — an artifact of the mount publish building the string by hand out of the dial code and
+  // the field's DOM text. Break this catches: reintroducing a second formatting formula at mount.
+  test('[PhoneInput-CTY-009] an untouched empty field reports empty through both variables', async () => {
     harness.render({ properties: { value: binding('') } });
     await waitFor(() => expect(input()).toBeTruthy());
 
     expect(harness.exposed().value).toBe('');
-    expect(harness.exposed().formattedValue).toBe('+1 ');
+    expect(harness.exposed().formattedValue).toBe('');
+  });
+
+  // Third mount for the same scenario. A Default value carrying no digits IS an empty field, so
+  // it must publish exactly what the empty case above publishes. Break this catches: normalizing
+  // the seed only for text the library happens to accept, which would leave a digit-less Default
+  // value reporting itself empty through `value` but not through `formattedValue`.
+  test('[PhoneInput-CTY-009] a default value carrying no digits publishes as an empty field', async () => {
+    harness.render({ properties: { value: binding('abc') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    expect(harness.exposed().value).toBe('');
+    expect(harness.exposed().formattedValue).toBe('');
   });
 });
 
@@ -814,6 +827,26 @@ describe('remaining validation', () => {
     // The select takes the error colour from the same pair of flags, so the two halves
     // of one control never disagree about validity.
     expect(selectControlCss()).toContain('border-color: var(--status-error-strong)');
+  });
+
+  // Break this catches: judging the very first verdict on the raw Default value while every
+  // later write judges the national number. The field would then load reporting one verdict
+  // and flip to the opposite one the moment the user retyped the same number, so an app
+  // gating submit on `isValid` would act on an answer that was never about the phone number.
+  test('[PhoneInput-VAL-008] the first verdict is judged the same way as every later one', async () => {
+    // The raw Default value is fourteen characters and would clear a twelve-character
+    // minimum; the national number it denotes is ten digits and must not.
+    harness.render({ properties: { value: binding('(999) 999-9999') }, validation: { minLength: binding('12') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(harness.exposed().value).toBe('+19999999999');
+    expect(harness.exposed().isValid).toBe(false);
+
+    // Retyping the very same number must not move the verdict.
+    await userEvent.clear(input());
+    await userEvent.type(input(), '9999999999');
+
+    await waitFor(() => expect(harness.exposed().value).toBe('+19999999999'));
+    expect(harness.exposed().isValid).toBe(false);
   });
 });
 

@@ -21,10 +21,27 @@ import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const PhoneInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
+
+  // A Phone Input's value is E.164, always
+  // Applying it here, before the hook sees the authored value, means the very first render already
+  // holds a canonical value instead of raw text that four later writers each had to re-normalize.
+  // `toE164` is idempotent, so a value already in that shape passes through untouched.
+  const seedCountryCode = getCountryCallingCodeSafe(props.properties?.defaultCountry || 'US');
+
   const transformedProps = {
     ...props,
     inputType: 'phone',
+    properties: {
+      ...props.properties,
+      // An unknown country has no dial code to build on, so there is nothing to normalize to
+      // and the authored text passes through untouched.
+      // Without it an unresolvable country would prepend a bare `+`.
+      value: seedCountryCode
+        ? toE164(props.properties?.value, seedCountryCode, seedCountryCode)
+        : props.properties?.value,
+    },
   };
+
   const inputLogic = useInput(transformedProps);
   const {
     inputRef,
@@ -45,6 +62,7 @@ export const PhoneInput = (props) => {
     setCountry,
     setPhoneInputValue,
   } = inputLogic;
+
   const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
   const {
@@ -74,11 +92,9 @@ export const PhoneInput = (props) => {
   const countryCode = getCountryCallingCodeSafe(country);
   const safeCountry = countryCode ? country : 'US'; // fall back to a valid country so the library never gets an unknown one.
 
-  // Normalize to the E.164 value the library expects, so it never warns
-  // ("Expected E.164…") or fires a corrective onChange that flickers the value. This
-  // shares the same rule as every other write and is idempotent, so a value
-  // that has already been normalized passes through unchanged.
-  const inputValue = countryCode ? toE164(value, countryCode, countryCode) : `${value ?? ''}`.trim();
+  // Nothing to re-normalize: the seed is normalized above and every later write goes through
+  // `setPhoneInputValue`, so the state is always either E.164 or the library's own empty.
+  const inputValue = countryCode ? value : `${value ?? ''}`.trim();
 
   const options = useMemo(
     () =>
@@ -130,12 +146,11 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        countryCode: `+${getCountryCallingCodeSafe(country)}`,
-        formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-        value: value,
-      });
+      // Publish through the one writer every other entry point uses, so the mount-time variables
+      // are derived by exactly the same rules as every later write. This has to run: the hook's
+      // own mount effect republishes a bare `value` after the seed was written, and without this
+      // the derived views would still describe the seed while `value` had moved on.
+      setPhoneInputValue(value);
       isInitialRender.current = false;
     }
   }, []);
@@ -194,26 +209,26 @@ export const PhoneInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
     paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
