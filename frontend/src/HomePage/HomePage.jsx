@@ -15,7 +15,7 @@ import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
-import { BlankPage } from './BlankPage';
+import { AppsEmptyState, WorkflowsEmptyState } from '@/components/ui/Rocket/Empty/states';
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import Layout from '@/_ui/Layout';
@@ -1300,6 +1300,11 @@ class HomePageComponent extends React.Component {
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
+    // The apps/workflows list is empty and nothing is filtering it — a genuinely empty
+    // workspace rather than a search that found nothing.
+    const showEmptyState =
+      !isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey;
+
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
         return !moduleEnabled;
@@ -1498,8 +1503,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
+                  ? 'homePage.deleteAppAndData'
+                  : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1746,8 +1751,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1766,8 +1771,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -1863,7 +1868,19 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              <div className="w-100 mb-5 container home-page-content-container">
+              {/*
+                When empty, the container becomes a full-height flex column so the empty state —
+                which already carries `flex-1` and `justify-center` — centres in the space left
+                under the tab row, instead of sitting at the top of the scroll area. `mb-5` is
+                dropped in that case; with `h-full` it would push the column past its parent and
+                introduce a scrollbar.
+              */}
+              <div
+                className={cx('w-100 container home-page-content-container', {
+                  'mb-5': !showEmptyState,
+                  'tw-flex tw-h-full tw-flex-col': showEmptyState,
+                })}
+              >
                 {featuresLoaded && !isLoading ? (
                   <>
                     <AppTypeTab
@@ -1910,34 +1927,21 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading &&
-                  featuresLoaded &&
-                  meta?.total_count === 0 &&
-                  !currentFolder.id &&
-                  !appSearchKey &&
-                  (['front-end', 'workflow'].includes(this.props.appType) ? (
-                    <BlankPage
-                      canCreateApp={this.canCreateApp}
-                      isLoading={true}
-                      createApp={this.createApp}
-                      readAndImport={this.readAndImport}
-                      isImportingApp={isImportingApp}
-                      fileInput={this.fileInput}
-                      openCreateAppModal={this.openCreateAppModal}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-                      creatingApp={creatingApp}
-                      darkMode={this.props.darkMode}
-                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                      appType={this.props.appType}
-                      workflowsLimit={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                          ? workflowInstanceLevelLimit
-                          : workflowWorkspaceLevelLimit
+                {showEmptyState &&
+                  (this.props.appType === 'front-end' ? (
+                    /*
+                      Replaces the old "Welcome to your new workspace" page. Illustration and copy
+                      only — no action button: every route into creating an app (blank, import,
+                      template, git) already sits in the sidebar's split button a few pixels away,
+                      so repeating one of them here would just pick a winner among equals.
+                    */
+                    <AppsEmptyState data-cy="apps-empty-state" />
+                  ) : this.props.appType === 'workflow' ? (
+                    <WorkflowsEmptyState
+                      onCreateWorkflow={
+                        this.canCreateApp() && !getDisabledState() ? this.openCreateAppModal : undefined
                       }
+                      data-cy="workflows-empty-state"
                     />
                   ) : (
                     <div className="empty-module-container">
@@ -1984,8 +1988,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

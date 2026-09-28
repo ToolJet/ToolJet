@@ -75,6 +75,14 @@ export class App extends BaseEntity {
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
 
+  /**
+   * When the "your app is ready" email went out for this app, and the claim that stops it going
+   * out twice. Written by a conditional UPDATE that only matches while it is still null, so two
+   * concurrent builds cannot both win it.
+   */
+  @Column({ name: 'build_completion_email_sent_at', type: 'timestamp', nullable: true })
+  buildCompletionEmailSentAt: Date | null;
+
   @Column({
     type: 'enum',
     enumName: 'app_builder_mode',
