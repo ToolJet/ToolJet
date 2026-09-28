@@ -5,6 +5,8 @@ import { EntityManager } from 'typeorm';
 import { WorkflowExecutionQueueService } from '@ee/workflows/services/workflow-execution-queue.service';
 import { WorkflowTerminationRegistry } from '@ee/workflows/services/workflow-termination-registry';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
+import { WorkflowApprovalTimeoutService } from '@ee/workflows/services/workflow-approval-timeout.service';
 
 // terminate() is the Stop button behind the executions dashboard. finishedAt has to land on every
 // terminal path it can take, but terminate() is re-enterable for the same execution (a retried or
@@ -22,7 +24,8 @@ describe('WorkflowExecutionQueueService.terminate', () => {
   const makeService = () => {
     const update = jest.fn().mockResolvedValue({ affected: 1 });
     const findOne = jest.fn();
-    const entityManager = { findOne, update } as unknown as EntityManager;
+    const find = jest.fn().mockResolvedValue([]);
+    const entityManager = { findOne, find, update } as unknown as EntityManager;
 
     const getJob = jest.fn();
     const getDelayed = jest.fn().mockResolvedValue([]);
@@ -34,9 +37,18 @@ describe('WorkflowExecutionQueueService.terminate', () => {
 
     const logger = { log: jest.fn(), error: jest.fn() } as unknown as Logger;
 
-    const service = new WorkflowExecutionQueueService(executionQueue, terminationRegistry, logger, entityManager);
+    const cancelTimers = jest.fn().mockResolvedValue(undefined);
+    const approvalTimeoutService = { cancelTimers } as unknown as WorkflowApprovalTimeoutService;
 
-    return { service, entityManager, update, findOne, executionQueue, getJob, terminationRegistry };
+    const service = new WorkflowExecutionQueueService(
+      executionQueue,
+      terminationRegistry,
+      logger,
+      entityManager,
+      approvalTimeoutService
+    );
+
+    return { service, entityManager, update, find, findOne, executionQueue, getJob, terminationRegistry, cancelTimers };
   };
 
   // Every assertion below checks that `finishedAt` is passed as a function (a raw SQL fragment,
@@ -105,5 +117,31 @@ describe('WorkflowExecutionQueueService.terminate', () => {
     expect(payload.executed).toBe(true);
     expect(typeof payload.finishedAt).toBe('function');
     expect(payload.finishedAt()).toMatch(/COALESCE\(finished_at, ?NOW\(\)\)/i);
+  });
+
+  it('cancels the pending approval request and its timers when terminating a waiting execution', async () => {
+    const { service, findOne, find, update, cancelTimers } = makeService();
+    findOne.mockResolvedValue({ id: executionId, status: 'waiting' } as WorkflowExecution);
+    find.mockResolvedValue([{ id: 'request-1' }]);
+
+    await service.terminate(executionId);
+
+    expect(update).toHaveBeenCalledWith(
+      WorkflowApprovalRequest,
+      { workflowExecutionId: executionId, status: 'pending' },
+      expect.objectContaining({ status: 'cancelled', resolvedAt: expect.any(Date) })
+    );
+    expect(cancelTimers).toHaveBeenCalledWith('request-1');
+  });
+
+  it('flags a waiting execution for termination so a resume already in flight stops at its next node', async () => {
+    // A resumed run keeps status 'waiting' until it finishes, and its job id is
+    // `${executionId}-resume-${requestId}`, so only the termination flag reaches it.
+    const { service, findOne, terminationRegistry } = makeService();
+    findOne.mockResolvedValue({ id: executionId, status: 'waiting' } as WorkflowExecution);
+
+    await service.terminate(executionId);
+
+    expect(terminationRegistry.requestTermination).toHaveBeenCalledWith(executionId);
   });
 });

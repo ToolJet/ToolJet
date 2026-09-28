@@ -57,12 +57,16 @@ describe('WorkflowApprovalsService.resolve', () => {
     await closeTestApp(app);
   }, 60000);
 
-  async function seedPending(overrides: Partial<WorkflowApprovalRequest> = {}, overrideAppVersionId?: string) {
+  async function seedPending(
+    overrides: Partial<WorkflowApprovalRequest> = {},
+    overrideAppVersionId?: string,
+    executionStatus = 'waiting'
+  ) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId: overrideAppVersionId ?? appVersionId,
       startNodeId: null,
       executed: false,
-      status: 'waiting',
+      status: executionStatus,
       executingUserId: userId,
       logs: [],
     });
@@ -127,6 +131,32 @@ describe('WorkflowApprovalsService.resolve', () => {
   it('rejects a past-deadline request (409)', async () => {
     const { req } = await seedPending({ expiresAt: new Date(Date.now() - 1000) });
     await expect(service.resolve(req.token, { outcome: 'approved', input: {} })).rejects.toMatchObject({ status: 409 });
+  });
+
+  it('refuses to resume a terminated run whose request is still pending (409)', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const { req } = await seedPending({}, undefined, 'terminated');
+    await expect(service.resolve(req.token, { outcome: 'approved', input: {} })).rejects.toMatchObject({ status: 409 });
+    expect(await findEntityOrFail(WorkflowApprovalRequest, { id: req.id })).toMatchObject({ status: 'pending' });
+    expect(enqueueSpy).not.toHaveBeenCalled();
+    enqueueSpy.mockRestore();
+  });
+
+  it('terminating a waiting run cancels its pending request, so a later resolve cannot resume it', async () => {
+    const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+    const { req, executionId } = await seedPending();
+
+    await expect(queue.terminate(executionId)).resolves.toMatchObject({ success: true, previousState: 'waiting' });
+    await queue.clearTerminationFlag(executionId);
+
+    expect(await findEntityOrFail(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
+      status: 'cancelled',
+      resolvedAt: expect.any(Date),
+    });
+    await expect(service.resolve(req.token, { outcome: 'approved', input: {} })).rejects.toMatchObject({ status: 409 });
+    expect(await findEntityOrFail(WorkflowExecution, { id: executionId })).toMatchObject({ status: 'terminated' });
+    expect(enqueueSpy).not.toHaveBeenCalled();
+    enqueueSpy.mockRestore();
   });
 
   it('rejects an unknown token (404)', async () => {

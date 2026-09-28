@@ -180,6 +180,11 @@ input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spe
   Resuming at Human or Wait does not revisit Start or revalidate its input contract.
 - **HITL suspends the whole run.** Parallel branches off Start that have not executed are NOT
   run before suspension — only nodes upstream of the Human node execute, then the run pauses.
+- **Terminate ends a waiting run for good.** Terminating a `waiting`/`waiting_for_delay` run sets
+  the termination flag (a resume already in flight keeps the waiting status until it finishes, so
+  only the flag reaches it), cancels the run's pending approval requests and their timers, and
+  removes delayed resume jobs. Resolve answers 409 and expiry only cancels the request when the
+  execution is `terminated`, so no path resumes a stopped run.
 - **Schedule overlap guard.** A scheduled workflow will not stack a new run while a prior run of
   the same schedule is non-terminal — and `waiting` counts as non-terminal.
 - Frontend `save()` serializes `nodes`/`edges` **raw** (no key whitelist), so any `node.data.*`

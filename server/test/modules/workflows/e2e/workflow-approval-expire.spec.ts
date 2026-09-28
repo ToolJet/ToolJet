@@ -40,12 +40,12 @@ describe('WorkflowApprovalsService.expire', () => {
     await closeTestApp(app);
   }, 60000);
 
-  async function seed(onExpire: 'fail' | 'branch') {
+  async function seed(onExpire: 'fail' | 'branch', executionStatus = 'waiting') {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId,
       startNodeId: null,
       executed: false,
-      status: 'waiting',
+      status: executionStatus,
       executingUserId: userId,
       logs: [],
     });
@@ -98,4 +98,19 @@ describe('WorkflowApprovalsService.expire', () => {
     await service.expire(req.id); // no-op, no throw
     expect((await findEntityOrFail(WorkflowApprovalRequest, { id: req.id })).status).toBe('expired');
   });
+
+  it.each(['branch', 'fail'] as const)(
+    'cancels the request of a terminated run instead of resuming or failing it (onExpire: %s)',
+    async (onExpire) => {
+      const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
+      const { req, executionId } = await seed(onExpire, 'terminated');
+
+      await service.expire(req.id);
+
+      expect(await findEntityOrFail(WorkflowApprovalRequest, { id: req.id })).toMatchObject({ status: 'cancelled' });
+      expect(await findEntityOrFail(WorkflowExecution, { id: executionId })).toMatchObject({ status: 'terminated' });
+      expect(enqueueSpy).not.toHaveBeenCalled();
+      enqueueSpy.mockRestore();
+    }
+  );
 });
