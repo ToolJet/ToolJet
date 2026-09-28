@@ -75,7 +75,7 @@ export const tableConfig = {
       type: 'code',
       displayName: 'Number of rows per page',
       validation: {
-        schema: { type: 'number' },
+        schema: { type: 'number', size: { min: 1 }, defaultValue: 10 },
         defaultValue: 10,
       },
     },
