@@ -944,11 +944,13 @@ class BaseManageGroupPermissionResources extends React.Component {
 
     const { featureAccess } = this.props;
 
-    const { licenseStatus: { isExpired, isLicenseValid } = {}, plan } = featureAccess || {};
-    // Treat both basic and starter plans as restricted plans
+    const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
+    // Treat basic, starter and basicplus plans as restricted plans
     const isCE = fetchEdition() === 'ce';
-    const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
-    const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
+    const isBasicPlan =
+      featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter' || plan === 'basicplus';
+    const isPaidPlan =
+      featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs

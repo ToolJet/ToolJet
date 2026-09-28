@@ -15,6 +15,7 @@ import {
   AppCreateDto,
   AppListDto,
   AppUpdateDto,
+  RestrictedAccessInfoDto,
   ValidateAppAccessDto,
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
@@ -342,6 +343,25 @@ export class AppsService implements IAppsService {
       isPublic: app.isPublic,
       organizationId: app.organizationId,
     };
+  }
+
+  async getRestrictedAccessInfo(slug: string, user: User): Promise<RestrictedAccessInfoDto> {
+    // Scoped to the requesting user's organization so this never leaks app names across workspaces.
+    // null lets the repository resolve the workspace's default branch itself.
+    const app = await this.appRepository.findBySlug(slug, user.organizationId, null);
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    const folderApp = await dbTransactionWrap((manager: EntityManager) =>
+      manager.findOne(FolderApp, { where: { appId: app.id }, relations: ['folder'] })
+    );
+
+    return plainToClass(RestrictedAccessInfoDto, {
+      appName: app.name,
+      folderName: folderApp?.folder?.name ?? null,
+    });
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
