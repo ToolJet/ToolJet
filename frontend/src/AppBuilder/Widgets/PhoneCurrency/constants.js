@@ -57,7 +57,11 @@ const limitDecimalPlaces = (value, digits) => {
  */
 export const toCanonicalAmount = (rawValue, numberFormat, decimalPlaces) => {
   if (rawValue === '' || rawValue === null || rawValue === undefined) return '';
-  return String(Number(limitDecimalPlaces(parseValueToNumber(rawValue, numberFormat), decimalPlaces)));
+  const amount = Number(limitDecimalPlaces(parseValueToNumber(rawValue, numberFormat), decimalPlaces));
+  // Total by construction. `Infinity` and `NaN` reach here as genuine numbers — the registered
+  // schema accepts them — and the field would render them as the literal text. They become 0,
+  // which is what an unusable amount has always fallen back to.
+  return String(Number.isFinite(amount) ? amount : 0);
 };
 
 export const CurrencyMap = {

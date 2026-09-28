@@ -378,7 +378,9 @@ describe('label, placeholder and property changes', () => {
     const [log] = useStore.getState().debugger.logs.filter((entry) => entry.componentId === 'ci1');
     expect(log).toBeDefined();
     expect(log.logLevel).toBe('error');
-    expect(log.error.effectiveProperty).toEqual({ value: 0 });
+    // The widened schema carries its own `defaultValue: '0'`, so a rejected value lands on the
+    // string '0' — the same amount the field rendered before, reported the same way.
+    expect(log.error.effectiveProperty).toEqual({ value: '0' });
   });
 
   // Break this catches: hardcoding a decimal limit instead of reading Decimal places.
@@ -466,6 +468,136 @@ describe('label, placeholder and property changes', () => {
     await drain();
     expect(harness.exposed().value).toBe(1234);
     expect(input().value).toBe('1,234');
+  });
+
+  // Break this catches: narrowing the Default value's registered schema back to a bare
+  // `{ type: 'number' }`, or widening it to a bare string/number union.
+  //
+  // A `number` schema cannot hold an empty string, so clearing the Default value resolved to
+  // `0` and the field was NEVER empty — the documented Placeholder could not show and a
+  // mandatory field could not report "Field cannot be empty", because 0 counts as filled
+  // (D-08). The same coercion ran `parseFloat` over a formatted amount, so a Default value of
+  // '1,256.7' reached the widget as 1.
+  //
+  // The schema is a union whose string arm is PATTERN-GUARDED to digits and separators, with
+  // its own `defaultValue: '0'`. That keeps every unwanted value landing exactly where it
+  // landed before — on 0, with the debugger error still raised — while letting an empty string
+  // and a formatted amount through untouched. `validation.defaultValue` is not the lever here:
+  // validateProperties reads `validation.schema`, so the default has to live inside the schema.
+  test('[CurrencyInput-PROP-007] a cleared Default value stays empty, and a formatted one survives', async () => {
+    const seed = async (value) => {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding(value) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+      return { field: input().value, value: harness.exposed().value };
+    };
+
+    // Previously '0' — the field could never be empty.
+    expect(await seed('')).toEqual({ field: '', value: 0 });
+
+    // Previously '1' — parseFloat stopped at the group separator.
+    expect(await seed('1,256.7')).toEqual({ field: '1,256.7', value: 1256.7 });
+
+    // Ordinary values are untouched.
+    expect(await seed('1234.56')).toEqual({ field: '1,234.56', value: 1234.56 });
+    expect(await seed('0')).toEqual({ field: '0', value: 0 });
+  });
+
+  // Break this catches: dropping the pattern guard from the schema's string arm, which would
+  // let any string through and silently strip the author's error feedback.
+  test('[CurrencyInput-PROP-007] every unwanted Default value still lands on zero and is reported', async () => {
+    for (const binding_ of ['abc', '12abc', '{{ ({ id: 1 }) }}', '{{ true }}', '{{ [1,2] }}', '{{ null }}']) {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding(binding_) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+
+      expect(input().value).toBe('0');
+      expect(harness.exposed().value).toBe(0);
+      const [log] = useStore.getState().debugger.logs.filter((entry) => entry.componentId === 'ci1');
+      expect(log?.logLevel).toBe('error');
+    }
+  });
+
+  // Break this catches: any route into the currency value that skips `normalizeCurrencyValue`.
+  //
+  // The schema rejects unusable DEFAULT values, but the `setValue` action has no schema in front
+  // of it at all — an app can hand it anything. The normaliser is therefore total: it parses to a
+  // finite number or falls back to 0, so `NaN`, `undefined` and `null` can never reach the field
+  // or the exposed value whichever way the value arrived.
+  test('[CurrencyInput-PROP-007] no value from any route can render NaN or undefined', async () => {
+    const JUNK = [
+      '',
+      ' ',
+      'abc',
+      '12abc',
+      '1,256.7',
+      '12.56,4',
+      '1.234.567,89',
+      "1'234.5",
+      0,
+      -0,
+      12,
+      -50.25,
+      1e21,
+      -1e21,
+      0.1 + 0.2,
+      NaN,
+      Infinity,
+      -Infinity,
+      null,
+      undefined,
+      true,
+      false,
+      {},
+      [],
+      [1, 2],
+      { id: 1 },
+      () => 1,
+      Symbol.iterator ? '\u0000' : '',
+    ];
+    // One mount, then every value written in turn. A mount per value would be 28 render cycles
+    // in a single test, which is enough to slow a jest worker and tip neighbouring suites over
+    // their timeouts. Writing successively is also the stronger check: the widget has to survive
+    // junk arriving after a good value, not just as a fresh seed.
+    harness.render({ properties: { value: binding('0') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    for (const v of JUNK) {
+      await harness.act('setValue', v);
+      await drain();
+
+      // Collected into one object so a failure names the offending input rather than just a
+      // bare assertion — the label is kept out of the matched strings on purpose.
+      const observed = {
+        input: typeof v === 'symbol' ? 'symbol' : String(v),
+        field: input().value,
+        formatted: String(harness.exposed().formattedValue),
+        exposedIsFinite: Number.isFinite(harness.exposed().value),
+      };
+      expect(observed).toEqual({
+        input: observed.input,
+        field: expect.not.stringContaining('NaN'),
+        formatted: expect.not.stringContaining('NaN'),
+        exposedIsFinite: true,
+      });
+      expect(observed.field).not.toContain('undefined');
+      expect(observed.formatted).not.toContain('undefined');
+    }
+  });
+
+  // Break this catches: letting a mandatory field count an empty Default value as filled.
+  // With the field able to be empty, the documented mandatory rule finally applies (D-08).
+  test('[CurrencyInput-PROP-007] a mandatory field with a cleared Default value is invalid', async () => {
+    harness.render({ properties: { value: binding('') }, validation: { mandatory: binding('{{true}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    expect(input().value).toBe('');
+    expect(harness.exposed().isValid).toBe(false);
   });
 });
 
