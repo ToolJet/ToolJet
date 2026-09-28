@@ -238,17 +238,18 @@ export const ButtonGroupV2 = (props) => {
   }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
 
   const handleButtonClick = (value) => {
-    const isSelected = exposedVariablesTemporaryState.selected.includes(value);
-    if (multiSelection) {
-      updateExposedVariablesState(
-        'selected',
-        isSelected
-          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
-          : [...exposedVariablesTemporaryState.selected, value]
-      );
-    } else {
-      updateExposedVariablesState('selected', isSelected ? [] : [value]);
-    }
+    const selected = exposedVariablesTemporaryState.selected;
+    const isSelected = selected.includes(value);
+    const next = multiSelection
+      ? isSelected
+        ? selected.filter((v) => v !== value)
+        : [...selected, value]
+      : isSelected
+      ? []
+      : [value];
+    updateExposedVariablesState('selected', next);
+    setExposedVariable('selected', next);
+    setExposedVariable('isValid', validate(next.length ? next : null)?.isValid);
     fireEvent('onClick');
     setUserInteracted(true);
   };
@@ -393,8 +394,16 @@ export const ButtonGroupV2 = (props) => {
                     fontWeight: computedFontWeight,
                   }}
                   key={index}
-                  disabled={option.isDisabled}
-                  className={'button-group-button'}
+                  // widget-level Disable/Loading must disable every button, not just
+                  // the per-option flag (native disabled also drops it from tab order)
+                  disabled={
+                    exposedVariablesTemporaryState.isDisabled ||
+                    exposedVariablesTemporaryState.isLoading ||
+                    option.isDisabled
+                  }
+                  className={
+                    'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+                  }
                   onClick={(event) => {
                     event.stopPropagation();
                     handleButtonClick(option.value);

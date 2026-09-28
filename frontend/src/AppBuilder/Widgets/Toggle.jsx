@@ -10,12 +10,13 @@ class Switch extends React.Component {
             backgroundColor: on ? `${color}` : 'var(--cc-surface1-surface)',
             marginTop: '0px',
           }}
-          className="form-check-input"
+          className="form-check-input focus:!tw-shadow-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1"
           type="checkbox"
           id={`component-${id}`}
           checked={on}
           onChange={onChange}
           onClick={onClick}
+          // native disabled: removes from tab order + blocks Space/click activation
           disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}

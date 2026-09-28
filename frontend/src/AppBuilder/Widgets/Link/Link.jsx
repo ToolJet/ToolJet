@@ -147,6 +147,7 @@ export const Link = ({
       ref={wrapperRef}
     >
       <a
+        className="focus-visible:tw-outline-none focus-visible:tw-underline focus-visible:tw-decoration-2 focus-visible:tw-underline-offset-2 focus-visible:!tw-decoration-interactive-focus-outline"
         {...(linkTargetState != '' ? { href: linkTargetState } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
@@ -158,11 +159,15 @@ export const Link = ({
           fireEvent('onClick');
         }}
         onMouseOver={() => {
+          if (isDisabled) return;
           fireEvent('onHover');
         }}
         style={{ width: '100%', textDecorationColor: textColor }}
         ref={clickRef}
-        disabled={isDisabled}
+        // `disabled` is invalid on <a> (no-op). Use aria-disabled + tabIndex=-1 to
+        // drop it from the tab order; the onClick guard blocks activation.
+        aria-disabled={isDisabled}
+        tabIndex={isDisabled ? -1 : undefined}
       >
         <span
           className="d-flex"
