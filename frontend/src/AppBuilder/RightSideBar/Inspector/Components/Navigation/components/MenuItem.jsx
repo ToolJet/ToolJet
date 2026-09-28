@@ -6,8 +6,17 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
+import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 
-export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChange, getResolvedValue }) => {
+export const MenuItem = ({
+  componentId,
+  darkMode,
+  item,
+  onDeleteItem,
+  onItemChange,
+  validateItemId,
+  getResolvedValue,
+}) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);
   const [showEditPopover, setShowEditPopover] = useState(false);
   const optionBtnRef = useRef(null);
@@ -22,7 +31,7 @@ export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChan
 
   const handleDelete = () => {
     setShowActionsPopover(false);
-    onDeleteItem?.(item.id, item.parentId);
+    onDeleteItem?.(item._key, item.parentId);
   };
 
   return (
@@ -105,7 +114,12 @@ export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChan
               show={showEditPopover}
               placement="left-start"
               rootClose
-              onHide={() => setShowEditPopover(false)}
+              rootCloseEvent="mousedown"
+              onHide={(e) => {
+                if (isClickInsidePortaledOverlay(e?.target)) return;
+                // Defer so a field's blur-commit (e.g. Id) runs before this mousedown-triggered close.
+                setTimeout(() => setShowEditPopover(false), 0);
+              }}
             >
               <NavItemPopover
                 componentId={componentId}
@@ -113,6 +127,7 @@ export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChan
                 darkMode={darkMode}
                 onItemChange={onItemChange}
                 onDeleteItem={onDeleteItem}
+                validateItemId={validateItemId}
                 getResolvedValue={getResolvedValue}
                 parentId={item.parentId}
               />

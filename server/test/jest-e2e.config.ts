@@ -18,7 +18,10 @@ const config: Config.InitialOptions = {
   verbose: true,
   slowTestThreshold: 0,
   transformIgnorePatterns: [
-    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)',
+    // thrift's nested uuid dependency ships an ESM-only build; both names must be
+    // whitelisted since node_modules/ appears twice in that nested path and each
+    // occurrence is checked independently.
+    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser|thrift|uuid)/)',
   ],
   transform: {
     '^.+\\.(t|j)s$': [

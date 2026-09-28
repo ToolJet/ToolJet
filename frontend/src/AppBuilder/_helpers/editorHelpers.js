@@ -7,7 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
-import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
@@ -94,6 +94,7 @@ const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect
 const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
+const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -153,6 +154,7 @@ export const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  LibraryComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

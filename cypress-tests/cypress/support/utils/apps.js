@@ -109,19 +109,38 @@ export const setupAppWithSlug = (
   cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
-export const verifyRestrictedAccess = () => {
+export const verifyRestrictedAccess = (appName) => {
   cy.get('[data-cy="modal-header"]').should("have.text", "Restricted access");
-  cy.get('[data-cy="modal-description"]')
-    .invoke("text")
-    .then((text) => {
-      const normalizedText = text.replace(/’/g, "'");
+  cy.get('[data-cy="back-to-home-button"]').verifyVisibleElement(
+    "have.text",
+    "Back to home page"
+  );
+
+  if (!appName) {
+    cy.get('[data-cy="modal-description"]').should(($el) => {
+      const normalizedText = $el.text().replace(/’/g, "'");
       expect(normalizedText).to.equal(
         "You don't have access to this app. Kindly contact admin to know more."
       );
     });
-  cy.get('[data-cy="back-to-home-button"]').verifyVisibleElement(
-    "have.text",
-    "Back to home page"
+    return;
+  }
+
+  // Description switches once the app-details fetch resolves; .should(cb) retries until it does.
+  cy.get('[data-cy="modal-description"]').should(($el) => {
+    const normalizedText = $el.text().replace(/’/g, "'");
+    expect(normalizedText).to.equal(
+      "You don't have access to this app. Copy the app details below and share them with your admin."
+    );
+  });
+  cy.get('[data-cy="restricted-access-details"]').should(
+    "contain.text",
+    `App: ${appName}`
+  );
+  cy.get('[data-cy="copy-app-details-button"]').click();
+  cy.get('[data-cy="copy-app-details-button"]').should(
+    "contain.text",
+    "Copied!"
   );
 };
 
