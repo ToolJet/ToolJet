@@ -326,6 +326,23 @@
         },
         {
           "type": "category",
+          "label": "Custom Component Libraries",
+          "link": {
+            "type": "doc",
+            "id": "app-builder/custom-component-library/overview"
+          },
+          "items": [
+            "app-builder/custom-component-library/overview",
+            "app-builder/custom-component-library/setup",
+            "app-builder/custom-component-library/build-components",
+            "app-builder/custom-component-library/preview-and-publish",
+            "app-builder/custom-component-library/use-in-app-builder",
+            "app-builder/custom-component-library/manage-libraries",
+            "app-builder/custom-component-library/cli-reference"
+          ]
+        },
+        {
+          "type": "category",
           "label": "Embed Application",
           "link": {
             "type": "doc",
