@@ -5,6 +5,7 @@ import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
 import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
+import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -164,6 +165,18 @@ export const PAT_APP_VIEWER_MODULES: MODULES[] = [
  * escapes both.
  */
 export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  // Every read except APP_FEATURE.GET, the workspace-wide list: it carries no app id, so the pin
+  // cannot fire on it and a pinned session could reach the dashboard and enumerate other apps.
+  [MODULES.APP]: new Set<string>([
+    APP_FEATURE.GET_ONE,
+    APP_FEATURE.GET_BY_SLUG,
+    APP_FEATURE.VALIDATE_PRIVATE_APP_ACCESS,
+    APP_FEATURE.VALIDATE_RELEASED_APP_ACCESS,
+    APP_FEATURE.GET_ASSOCIATED_TABLES,
+    APP_FEATURE.GET_APP_AUTHENTICATION_CONFIG,
+    APP_FEATURE.GET_RESTRICTED_ACCESS_INFO,
+  ]),
+
   [MODULES.AUTH]: new Set<string>([AUTH_FEATURE.AUTHORIZE]),
   [MODULES.ORGANIZATION_CONSTANT]: new Set<string>([
     ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP,
