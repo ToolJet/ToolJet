@@ -19,6 +19,7 @@ import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
 import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
+import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -342,9 +343,17 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     }
   });
 
+  it('cannot enumerate the workspace through the app list', () => {
+    // GET carries no app id, so the pin cannot fire on it — the session would reach the dashboard
+    // and every other app's name. The by-id and by-slug reads the boot uses stay open.
+    expect(() => run(MODULES.APP, APP_FEATURE.GET)).toThrow(ForbiddenException);
+    expect(run(MODULES.APP, APP_FEATURE.GET_ONE)).toBe('HANDLED');
+    expect(run(MODULES.APP, APP_FEATURE.GET_BY_SLUG)).toBe('HANDLED');
+  });
+
   it('reaches what the editor actually needs to paint', () => {
+    expect(run(MODULES.APP, APP_FEATURE.GET_ONE)).toBe('HANDLED');
     for (const module of [
-      MODULES.APP,
       MODULES.APP_ENVIRONMENTS,
       MODULES.DATA_QUERY,
       MODULES.GLOBAL_DATA_SOURCE,
@@ -371,17 +380,18 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('is pinned to its own app', () => {
-    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(
+    const GET_ONE = APP_FEATURE.GET_ONE;
+    expect(() => run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(
       ForbiddenException
     );
-    expect(run(MODULES.APP, undefined, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
+    expect(run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
   });
 
   it('is pinned on routes that carry no app uuid, via the app the guard resolved', () => {
     // Slug lookups and query runs never put the uuid in the path; without tj_app they slipped the pin.
     expect(() =>
-      run(MODULES.APP, undefined, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
+      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
     ).toThrow(ForbiddenException);
     expect(() =>
       run(MODULES.DATA_QUERY, undefined, {
@@ -390,21 +400,21 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
         tj_app: { id: OTHER_APP_ID },
       })
     ).toThrow(ForbiddenException);
-    expect(run(MODULES.APP, undefined, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: APP_ID } })).toBe(
-      'HANDLED'
-    );
+    expect(
+      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: APP_ID } })
+    ).toBe('HANDLED');
   });
 
   it('names the app it refused, so the mismatch is debuggable', () => {
-    expect(() => run(MODULES.APP, undefined, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
       new RegExp(`scoped to a single app and cannot access ${OTHER_APP_ID}`)
     );
   });
 
   it("is read-only, except for running the app's queries", () => {
-    expect(() => run(MODULES.APP, undefined, { method: 'POST' })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, undefined, { method: 'DELETE' })).toThrow(ForbiddenException);
-    expect(() => run(MODULES.APP, undefined, { method: 'PUT' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'POST' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'DELETE' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'PUT' })).toThrow(ForbiddenException);
     expect(run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe(
       'HANDLED'
     );
