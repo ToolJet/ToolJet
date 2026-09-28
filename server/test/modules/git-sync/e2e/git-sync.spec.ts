@@ -7999,13 +7999,38 @@ describe('GitSyncController', () => {
               is_user_switched_version: false,
               globalSettings: { appMode: 'dark' },
             });
+        // A genuine NON-secret content edit (renames the data source AND changes the git-tracked
+        // `url` option). GitSyncDataSourceEditGuard blocks this on a synced default branch. Note: a
+        // secrets-only edit there (unchanged name + only encrypted credentials differing) is
+        // deliberately ALLOWED — encrypted values never survive git sync's round trip — so the
+        // payload must change a non-secret field to exercise the block.
         const editDataSource = (dsIdToEdit: string, environmentId: string, branchId?: string) =>
           auth(agent().put(`/api/data-sources/${dsIdToEdit}`))
             .query({
               environment_id: environmentId,
               ...(branchId ? { branch_id: branchId } : {}),
             })
-            .send({ name: 'edit-rules-ds', options: restapiDsOptions });
+            .send({
+              name: 'edit-rules-ds-renamed',
+              options: restapiDsOptions.map((o) =>
+                o.key === 'url' ? { ...o, value: 'http://changed.example.com' } : o
+              ),
+            });
+
+        // A SECRETS-ONLY edit: name unchanged, every non-encrypted option identical to what's
+        // stored, and only an encrypted credential (client_secret) added/rotated. This is the one
+        // data-source edit GitSyncDataSourceEditGuard permits on a synced default branch —
+        // encrypted values never survive git sync's export/restore, so editing them can't drift
+        // anything git-tracked.
+        const editDataSourceSecretsOnly = (dsIdToEdit: string, environmentId: string, branchId?: string) =>
+          auth(agent().put(`/api/data-sources/${dsIdToEdit}`))
+            .query({
+              environment_id: environmentId,
+              ...(branchId ? { branch_id: branchId } : {}),
+            })
+            .send({
+              options: [...restapiDsOptions, { key: 'client_secret', value: 'rotated-secret', encrypted: true }],
+            });
 
         // Folder membership (folder_apps) is branch-scoped, so add-to-folder / remove-from-folder follow
         // the SAME branch-lock as content edits: blocked on the synced default branch under multi-branch,
@@ -8301,6 +8326,10 @@ describe('GitSyncController', () => {
           [dsId, mainBranchId]
         );
         await editDataSource(dsId, devEnv.id, mainBranchId).expect(403);
+        // ...but editing ONLY a secret credential (encrypted, name + git-tracked options unchanged)
+        // IS allowed on the synced default branch — the sole data-source edit permitted on a
+        // protected branch.
+        await editDataSourceSecretsOnly(dsId, devEnv.id, mainBranchId).expect(200);
 
         // Folder membership on the synced default branch (multi-branch) is blocked too — both
         // add-to-folder and remove-from-folder (403). Changes must be made on a feature branch.

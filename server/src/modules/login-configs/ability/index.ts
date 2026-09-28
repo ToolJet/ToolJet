@@ -25,13 +25,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE_ORGANIZATION_SSO,
           FEATURE_KEY.UPDATE_ORGANIZATION_GENERAL_CONFIGS,
           FEATURE_KEY.INSTANCE_SSO_INHERIT,
+          FEATURE_KEY.SAVE_ENV_CONFIGS,
         ],
         Organization
       );
     }
 
     if (UserAllPermissions.superAdmin) {
-      can([FEATURE_KEY.UPDATE_INSTANCE_SSO, FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS], Organization);
+      can(
+        [
+          FEATURE_KEY.UPDATE_INSTANCE_SSO,
+          FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS,
+          FEATURE_KEY.SAVE_INSTANCE_ENV_CONFIGS,
+        ],
+        Organization
+      );
     }
   }
 }

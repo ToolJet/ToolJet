@@ -36,6 +36,33 @@
     }
 }
 
+// Scrollbar hidden by default, thin styled scrollbar appears on hover — matches editor canvas pattern
+// (see AppBuilder/AppCanvas/appCanvas.scss .real-canvas and Widgets/Navigation/navigation.scss .navigation-vertical)
+@mixin hover-reveal-scrollbar($width: 4px) {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: $width;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  &:hover {
+    scrollbar-width: thin;
+    scrollbar-color: var(--interactive-hover) transparent;
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--interactive-hover);
+    }
+  }
+}
+
 @mixin scrollable($max-height: 50vh) {
   display: block;
   max-height: $max-height;

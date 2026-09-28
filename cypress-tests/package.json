@@ -11,6 +11,7 @@
     "@faker-js/faker": "^10.5.0",
     "chrome-remote-interface": "^0.34.0",
     "cypress": "^15.18.0",
+    "cypress-live-reporter": "^0.1.0",
     "cypress-mailhog": "^2.5.0",
     "cypress-real-dnd": "^0.1.4"
   },
@@ -20,5 +21,8 @@
     "node-xlsx": "^0.4.0",
     "pdf-parse": "^1.1.1",
     "pg": "^8.8.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
