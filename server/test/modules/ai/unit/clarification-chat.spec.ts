@@ -8,9 +8,11 @@ describe('AI clarification presentation', () => {
   let conversation: any;
   let response: any;
   let events: any[];
+  let agentError: any;
 
   beforeEach(() => {
     events = [];
+    agentError = null;
     conversation = {
       id: 'equipment-conversation',
       metadata: {},
@@ -36,7 +38,7 @@ describe('AI clarification presentation', () => {
         endActiveRun: jest.fn(),
         callAgent: jest.fn(async (_route, _payload, _user, _organization, callbacks) => {
           for (const event of events) await callbacks.handleAiMessagePush(event);
-          return [null, { intent: 'none' }];
+          return [agentError, agentError ? null : { intent: 'none' }];
         }),
       },
       aiConversationRepository: {
@@ -104,12 +106,43 @@ describe('AI clarification presentation', () => {
       expect.arrayContaining([expect.objectContaining({ type: 'datasource-connect', content: connector })])
     );
     expect(message.metadata.sections.some((section) => section.type === 'output-widget-interactive')).toBe(false);
+    expect(message.metadata.sections[0]).toMatchObject({
+      type: 'markdown',
+      content: 'Connect Google Sheets to read the equipment register.',
+    });
+    expect(service.sendSSE).toHaveBeenCalledWith(
+      response,
+      'agent_result',
+      expect.objectContaining({ awaitingInput: true, failed: false })
+    );
+  });
+
+  it('keeps a datasource connection card actionable when the agent returns build_incomplete', async () => {
+    const connector = { label: 'Google Sheets', kind: 'googlesheets', install: false };
+    agentError = { category: 'build_incomplete', message: 'Missing equipment data connection' };
+    events.push(
+      { contentType: 'markdown', content: 'Connect Google Sheets before building the equipment register.' },
+      { contentType: 'datasource-connect', title: '', content: connector }
+    );
+    const message = await send();
+    expect(message.metadata.sections).toEqual([
+      expect.objectContaining({ type: 'markdown', content: events[0].content }),
+      expect.objectContaining({ type: 'datasource-connect', content: connector }),
+    ]);
+    expect(service.sendSSE).toHaveBeenCalledWith(
+      response,
+      'agent_result',
+      expect.objectContaining({ awaitingInput: true, failed: false })
+    );
   });
 
   it('continues forwarding a typed answer to the same saved interrupt', async () => {
     conversation.app.aiGenerationMetadata = { interrupt: true, interruptId: 'calculation-question' };
     const answer = 'Leave the additional total out and keep the equipment fields unchanged.';
     await send(answer);
+    expect(service.aiConversationMessageRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ messageType: 'user', content: answer })
+    );
     expect(service.aiUtilService.callAgent).toHaveBeenCalledWith(
       'deep-agent-resume',
       expect.objectContaining({ interrupt_id: 'calculation-question', interruptConfig: answer }),
