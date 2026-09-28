@@ -32,6 +32,38 @@ export const parseValueToNumber = (val, numberFormat) => {
   return parseFloat(normalized) || 0;
 };
 
+/**
+ * Keep at most `digits` decimal places, by truncation rather than rounding — the behaviour the
+ * `setValue` action has always had. Moved here from useInput.js so the rule below is the only
+ * place a currency amount is normalized.
+ */
+const limitDecimalPlaces = (value, digits) => {
+  const num = value?.toString();
+  if (num?.includes('.')) {
+    const [int, dec] = num.split('.');
+    return Number(int + '.' + dec.slice(0, digits));
+  }
+  return num;
+};
+
+/**
+ * The ONE rule for turning an authored currency amount into the plain numeric string the field
+ * stores: a Default value, a `setValue` argument, or anything else a builder can supply.
+ *
+ * Authored text may carry the format's group separators ("1,234.56", EU "1.234,56"); the library
+ * that renders the field expects a plain number and will otherwise re-parse the text its own way
+ * and correct itself, which is how a grouped Default value used to collapse to its first digit.
+ * Returns '' for an empty input, the one value that is not an amount.
+ */
+export const toCanonicalAmount = (rawValue, numberFormat, decimalPlaces) => {
+  if (rawValue === '' || rawValue === null || rawValue === undefined) return '';
+  const amount = Number(limitDecimalPlaces(parseValueToNumber(rawValue, numberFormat), decimalPlaces));
+  // Total by construction. `Infinity` and `NaN` reach here as genuine numbers — the registered
+  // schema accepts them — and the field would render them as the literal text. They become 0,
+  // which is what an unusable amount has always fallen back to.
+  return String(Number.isFinite(amount) ? amount : 0);
+};
+
 export const CurrencyMap = {
   AE: {
     currency: 'AED',
