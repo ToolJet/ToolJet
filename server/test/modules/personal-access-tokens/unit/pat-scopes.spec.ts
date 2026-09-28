@@ -20,6 +20,7 @@ import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organizat
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
+import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -343,6 +344,20 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     }
   });
 
+  it('reads query folders, but cannot reorganise them', () => {
+    // The editor's query list returns null until the folder fetch resolves, so denying the read
+    // leaves the panel empty even though the queries themselves loaded.
+    expect(run(MODULES.DATA_QUERY_FOLDERS, DATA_QUERY_FOLDER_FEATURE.GET)).toBe('HANDLED');
+    for (const feature of [
+      DATA_QUERY_FOLDER_FEATURE.CREATE,
+      DATA_QUERY_FOLDER_FEATURE.UPDATE,
+      DATA_QUERY_FOLDER_FEATURE.DELETE,
+      DATA_QUERY_FOLDER_FEATURE.REORDER,
+    ]) {
+      expect(() => run(MODULES.DATA_QUERY_FOLDERS, feature)).toThrow(ForbiddenException);
+    }
+  });
+
   it('cannot enumerate the workspace through the app list', () => {
     // GET carries no app id, so the pin cannot fire on it — the session would reach the dashboard
     // and every other app's name. The by-id and by-slug reads the boot uses stay open.
@@ -364,7 +379,7 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
   });
 
   it('does not reach what the editor asked for but the render does not need', () => {
-    for (const module of [MODULES.AI, MODULES.APP_GIT, MODULES.DATA_QUERY_FOLDERS]) {
+    for (const module of [MODULES.AI, MODULES.APP_GIT]) {
       expect(() => run(module)).toThrow(ForbiddenException);
     }
   });
