@@ -108,7 +108,7 @@ describe('WorkflowApprovalsService.resolve', () => {
       expect.objectContaining({
         startNodeId: node.id,
         requestId: req.id,
-        injectedState: { __humanDecision: { outcome: 'approved', input: {}, resolvedBy: null } },
+        injectedState: { __humanDecision: { nodeId: node.id, outcome: 'approved', input: {}, resolvedBy: null } },
       })
     );
     enqueueSpy.mockRestore();
@@ -137,7 +137,7 @@ describe('WorkflowApprovalsService.resolve', () => {
 
   it('threads the acting user into resolvedByUserId and the resume payload (token-bypass, user present)', async () => {
     const enqueueSpy = jest.spyOn(queue, 'enqueue').mockResolvedValue(undefined);
-    const { req } = await seedPending();
+    const { req, node } = await seedPending();
     const out = await service.resolve(req.token, { outcome: 'approved', input: {} }, { id: userId });
     expect(out).toMatchObject({ status: 'resolved' });
     const updated = await findEntityOrFail(WorkflowApprovalRequest, { id: req.id });
@@ -149,7 +149,7 @@ describe('WorkflowApprovalsService.resolve', () => {
       expect.anything(),
       undefined, // timeout (see above): undefined on the resume path
       expect.objectContaining({
-        injectedState: { __humanDecision: { outcome: 'approved', input: {}, resolvedBy: userId } },
+        injectedState: { __humanDecision: { nodeId: node.id, outcome: 'approved', input: {}, resolvedBy: userId } },
       })
     );
     enqueueSpy.mockRestore();

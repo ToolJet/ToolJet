@@ -150,7 +150,7 @@ describe('human node — flat suspend/resume', () => {
     const reloaded = await findEntityOrFail(WorkflowExecution, { id: executionId });
     await service.execute(reloaded, {
       startNodeId: humanId,
-      injectedState: { __humanDecision: { outcome: 'approved', input: {} } },
+      injectedState: { __humanDecision: { nodeId: humanId, outcome: 'approved', input: {} } },
       throwOnError: false,
     });
 
@@ -177,7 +177,7 @@ describe('human node — flat suspend/resume', () => {
     const reloaded = await findEntityOrFail(WorkflowExecution, { id: executionId });
     await service.execute(reloaded, {
       startNodeId: humanId,
-      injectedState: { __humanDecision: { outcome: 'approved', input: {} } },
+      injectedState: { __humanDecision: { nodeId: humanId, outcome: 'approved', input: {} } },
       throwOnError: false,
     });
 
@@ -189,6 +189,77 @@ describe('human node — flat suspend/resume', () => {
           message: expect.stringContaining('Human input received: "approved" at "approval1"'),
         }),
       ])
+    );
+  });
+
+  it('suspends again at a second Human node instead of reusing the first decision', async () => {
+    const execution = await saveEntity(WorkflowExecution, {
+      appVersionId,
+      startNodeId: null,
+      executed: false,
+      status: 'triggered',
+      executingUserId: userId,
+      logs: [],
+    });
+    const mk = (type: string, idOnDef: string, definition: Record<string, unknown>) =>
+      saveEntity(WorkflowExecutionNode, {
+        type,
+        executed: false,
+        result: '',
+        state: {},
+        idOnWorkflowDefinition: idOnDef,
+        workflowExecutionId: execution.id,
+        definition,
+      });
+    const humanDefinition = (nodeName: string) => ({
+      nodeType: 'human',
+      nodeName,
+      approvers: { users: [userId], groups: [], dynamic: '', tokenBypass: true },
+      outcomes: [{ key: 'approved', label: 'Approve' }],
+      inputSchema: [],
+      timeout: { enabled: false },
+    });
+    const start = await mk('input', 'start', { nodeType: 'start' });
+    const manager = await mk('human', 'manager', humanDefinition('managerApproval'));
+    const finance = await mk('human', 'finance', humanDefinition('financeApproval'));
+    const done = await mk('output', 'done', { nodeType: 'response', nodeName: 'done' });
+    await saveEntity(WorkflowExecution, { id: execution.id, startNodeId: start.id });
+    const edge = (src: string, tgt: string, handle: string, idOnDef: string) =>
+      saveEntity(WorkflowExecutionEdge, {
+        idOnWorkflowDefinition: idOnDef,
+        workflowExecutionId: execution.id,
+        sourceWorkflowExecutionNodeId: src,
+        targetWorkflowExecutionNodeId: tgt,
+        sourceHandle: handle,
+        skipped: false,
+      });
+    await edge(start.id, manager.id, 'output', 'e1');
+    await edge(manager.id, finance.id, 'approved', 'e2');
+    await edge(finance.id, done.id, 'approved', 'e3');
+
+    await expect(
+      service.execute(await findEntityOrFail(WorkflowExecution, { id: execution.id }), { throwOnError: false })
+    ).rejects.toBeInstanceOf(WorkflowSuspendedSignal);
+
+    await expect(
+      service.execute(await findEntityOrFail(WorkflowExecution, { id: execution.id }), {
+        startNodeId: manager.id,
+        injectedState: { __humanDecision: { nodeId: manager.id, outcome: 'approved', input: {} } },
+        throwOnError: false,
+      })
+    ).rejects.toBeInstanceOf(WorkflowSuspendedSignal);
+
+    expect(await findEntityOrFail(WorkflowExecution, { id: execution.id })).toMatchObject({
+      status: 'waiting',
+      executed: false,
+    });
+    expect(
+      await findEntityOrFail(WorkflowApprovalRequest, { executionNodeId: finance.id, status: 'pending' })
+    ).toMatchObject({ workflowExecutionId: execution.id });
+    expect(await findEntityOrFail(WorkflowExecutionNode, { id: finance.id })).toMatchObject({ executed: false });
+    expect(await findEntityOrFail(WorkflowExecutionNode, { id: done.id })).toMatchObject({ executed: false });
+    expect((await findEntityOrFail(WorkflowExecutionNode, { id: manager.id })).state).not.toHaveProperty(
+      '__humanDecision'
     );
   });
 });

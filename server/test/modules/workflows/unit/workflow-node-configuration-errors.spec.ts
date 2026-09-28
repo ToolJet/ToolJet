@@ -225,9 +225,26 @@ describe('WorkflowExecutionsService | reached node configuration errors', () => 
     const { service, execution } = buildExecution(human);
     const processor = jest.spyOn(service, 'processHumanNode').mockResolvedValue({ status: 'ok', data: {} });
 
-    await service.execute(execution, { startNodeId: human.id, injectedState: { __humanDecision: { outcome: 'yes' } } });
+    await service.execute(execution, {
+      startNodeId: human.id,
+      injectedState: { __humanDecision: { nodeId: human.id, outcome: 'yes' } },
+    });
 
     expect(processor).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails a Human node when a decision marker belongs to another node', async () => {
+    const human = node('human', { nodeName: 'approval1', outcomes: [] });
+    const { service, execution } = buildExecution(human);
+    const processor = jest.spyOn(service, 'processHumanNode').mockResolvedValue({ status: 'ok', data: {} });
+
+    const result = await service.execute(execution, {
+      startNodeId: human.id,
+      injectedState: { __humanDecision: { nodeId: 'other-node', outcome: 'yes' } },
+    });
+
+    expect(result).toMatchObject({ status: 'failed' });
+    expect(processor).not.toHaveBeenCalled();
   });
 
   it('lets a matching Wait resume pass even if its duration was removed', async () => {

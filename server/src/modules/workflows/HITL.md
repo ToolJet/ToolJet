@@ -46,11 +46,13 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    is sent in addition to that email.
 4. **Resolve**: `POST workflow-approvals/:token/resolve` (`controllers/workflow-approvals.controller.ts`
    → `WorkflowApprovalsService.resolve`). Body `{ outcome, input }` (`dto/resolve-approval.dto.ts`).
-   Re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision }, requestId })`
+   Re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision: { nodeId, outcome, input, resolvedBy } }, requestId })`
    under a **distinct** resume jobId `${executionId}-resume-${requestId}` (the original completed
    job is retained by `removeOnComplete`).
 5. **Resume**: the Human node re-runs with the decision, marks every non-chosen outcome edge
-   `skipped` (same mechanism as if-condition), and the run continues. Logs accumulate across the
+   `skipped` (same mechanism as if-condition), and the run continues. The decision applies only
+   to the node whose id it carries: injected state reaches every node of the resumed segment, so
+   a second Human node later in the run suspends with its own approval request. Logs accumulate across the
    pause; resolve emits an `auditLogEntry`.
 
 ## Semantics
@@ -169,7 +171,7 @@ input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spe
 ## Behavioral invariants
 
 - **Validate on first entry.** Required configuration is checked only when an unexecuted node
-  is reached. A Human resume carrying `__humanDecision` skips first-entry configuration validation;
+  is reached. A Human resume carrying `__humanDecision` for that node skips first-entry configuration validation;
   timed Wait validation likewise runs only before initial suspension (its resume marker must
   match the current execution node). Fatal configuration failures never use Human outcomes or
   other business/failure branches. An evaluated dynamic approver expression and the person's
