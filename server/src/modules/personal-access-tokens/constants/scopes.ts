@@ -6,6 +6,7 @@ import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organizat
 import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
+import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -154,6 +155,10 @@ export const PAT_APP_VIEWER_MODULES: MODULES[] = [
   // would 403 mid-render.
   MODULES.ORGANIZATION_THEMES,
   MODULES.FILE,
+
+  // The editor's query list renders nothing until the folder fetch resolves — a denial leaves the
+  // panel empty even though the queries loaded. Read only; see PAT_APP_VIEWER_FEATURES.
+  MODULES.DATA_QUERY_FOLDERS,
 ];
 
 /**
@@ -183,6 +188,8 @@ export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string
     ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT,
   ]),
   [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.GET_ONE]),
+
+  [MODULES.DATA_QUERY_FOLDERS]: new Set<string>([DATA_QUERY_FOLDER_FEATURE.GET]),
 };
 
 export const PAT_APP_VIEWER_NEVER_GRANTABLE: MODULES[] = [MODULES.PERSONAL_ACCESS_TOKENS];
