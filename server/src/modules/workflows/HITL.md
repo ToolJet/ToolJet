@@ -47,7 +47,7 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
 4. **Resolve**: `POST workflow-approvals/:token/resolve` (`controllers/workflow-approvals.controller.ts`
    → `WorkflowApprovalsService.resolve`). Body `{ outcome, input }` (`dto/resolve-approval.dto.ts`).
    Re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision }, requestId })`
-   under a **distinct** resume jobId `${executionId}:resume:${requestId}` (the original completed
+   under a **distinct** resume jobId `${executionId}-resume-${requestId}` (the original completed
    job is retained by `removeOnComplete`).
 5. **Resume**: the Human node re-runs with the decision, marks every non-chosen outcome edge
    `skipped` (same mechanism as if-condition), and the run continues. Logs accumulate across the
@@ -76,8 +76,11 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
 ## Scheduling (BullMQ / Redis)
 
 - Dedicated queue **`workflow-approval-timeout`** (name in `constants/index.ts`) holds one-shot
-  **delayed** jobs — durable across restarts. Deterministic jobIds: `deadline:${id}`,
-  `reminder:${id}:${i}`; handlers are idempotent.
+  **delayed** jobs — durable across restarts. Deterministic jobIds: `deadline-${id}`,
+  `reminder-${id}-${i}`; handlers are idempotent.
+- **BullMQ custom job ids must not contain `:`** — `add` throws "Custom Id cannot contain :".
+  Every HITL job id (timers and the resume job) is hyphen-delimited. The scheduler test runs
+  against a real queue so a colon id cannot pass behind a mocked `add`.
 - Producer: `WorkflowApprovalTimeoutService.scheduleTimers` (EE
   `services/workflow-approval-timeout.service.ts`). Consumer:
   `WorkflowApprovalTimeoutProcessor` (`processors/workflow-approval-timeout.processor.ts`,
