@@ -53,6 +53,15 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    autogenerateColumns: {
+      type: 'toggle',
+      displayName: 'Lock column schema',
+      isFxNotRequired: true,
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     columnData: {
       type: 'code',
       displayName: 'Column data',

@@ -3,7 +3,7 @@ import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { bigqueryUIConfig, bigqueryFormConfig } from "Constants/constants/marketplace/datasources/bigquery";
-import { bigqueryText } from "Constants/texts/bigquery";
+import { bigqueryText } from "Constants/texts/marketplace/bigquery";
 
 const data = {};
 

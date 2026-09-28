@@ -1,7 +1,8 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CustomDomain } from '@entities/custom_domain.entity';
 import { CustomDomainCacheService } from './cache.service';
+import { TransactionLogger } from '@modules/logging/service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, In, LessThan } from 'typeorm';
 
@@ -31,9 +32,10 @@ const SSL_STATUS_MAP: Record<string, string> = {
 
 @Injectable()
 export class CustomDomainStatusScheduler {
-  private readonly logger = new Logger(CustomDomainStatusScheduler.name);
-
-  constructor(@Optional() private readonly customDomainCacheService?: CustomDomainCacheService) {}
+  constructor(
+    private readonly logger: TransactionLogger,
+    @Optional() private readonly customDomainCacheService?: CustomDomainCacheService
+  ) {}
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleCron() {

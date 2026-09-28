@@ -4,9 +4,9 @@ import { commonSelectors } from "Selectors/common";
 import {
   importSelectors,
   exportAppModalSelectors,
-} from "Selectors/exportImport";
+} from "Selectors/platform/exportImport";
 import { commonText } from "Texts/common";
-import { exportAppModalText } from "Texts/exportImport";
+import { exportAppModalText } from "Texts/platform/exportImport";
 
 import {
   clickOnExportButtonAndVerify,

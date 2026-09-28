@@ -11,6 +11,7 @@ Three editions: `ce` (community), `ee` (enterprise), `cloud`. Controlled by `TOO
 - CE code lives in `server/src/modules/` and `frontend/src/`
 - EE/Cloud code lives in git submodules: `server/ee/` and `frontend/ee/`
 - Cloud is a deployment config of EE, not a third code tree: `TOOLJET_EDITION=cloud` runs the same EE submodule code, with cloud-only behavior gated by runtime checks
+- AI is an enterprise feature; its agent context lives in the EE submodule at `server/ee/ai/AGENTS.md`. One-command local AI stack: ToolJet/tooljet-agent, `ai-stack/SETUP.md`
 
 ### Backend (NestJS + TypeORM + PostgreSQL)
 
@@ -129,6 +130,9 @@ Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load th
 | Merge a branch across root + submodules | `merge` |
 | Commit across root + submodules | `commit` |
 | Push and open PRs across root + submodules | `create-pr` |
+| Add, move, or repair a skill | `manage-skills` |
+
+Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` submodule and appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
 
 ## Context file layout
 
@@ -143,6 +147,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/AGENTS.md` | Backend + testing conventions |
 | `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
 | `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
+| `server/ee/ai/AGENTS.md` | AI app-builder backend context (in EE submodule) |
 | `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
 | `server/docs/testing.md` | Backend testing — what to test, then how to write it |
 

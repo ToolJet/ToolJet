@@ -14,6 +14,7 @@ const initialState = {
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
   restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
   isEditorReadOnly: false, // module opened in Build-with (view-only) mode
+  hotReloadTimestamp: null, // Timestamp to re-fetch the app in place (canvas-only loader, stays on current page)
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -108,6 +109,25 @@ export const createAppVersionSlice = (set, get) => ({
       },
       false,
       'setRestoredAppHistoryId'
+    );
+  },
+
+  /**
+   * Re-fetches the current app version and rebuilds the canvas in place. Runs the same refresh
+   * pipeline as a version switch (see useAppData), except the editor chrome — header, sidebars,
+   * and the AI chat with its conversation and streaming response — stays mounted, and the user
+   * stays on the page they were on.
+   *
+   * Use it when something outside the editor changed the app wholesale (e.g. the AI builder
+   * editing pages/queries/global settings) and an incremental store update won't cover it.
+   */
+  triggerHotReload: () => {
+    set(
+      (state) => {
+        state.hotReloadTimestamp = Date.now();
+      },
+      false,
+      'triggerHotReload'
     );
   },
 });

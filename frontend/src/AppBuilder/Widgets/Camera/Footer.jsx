@@ -5,6 +5,7 @@ import {
   IconArrowsMaximize,
   IconCamera,
   IconArrowsMinimize,
+  IconCameraRotate,
   IconCheck,
   IconX,
 } from '@tabler/icons-react';
@@ -18,6 +19,9 @@ export const Footer = ({
   selectedMicrophoneId,
   onCameraSelect,
   onMicrophoneSelect,
+  onFlipCamera,
+  canFlipCamera,
+  showFlipCamera,
   onCaptureToggle,
   recordingStatus,
   captureDisabled,
@@ -43,14 +47,29 @@ export const Footer = ({
   return (
     <div className="camera-footer">
       <div className="camera-microphone-select">
-        <DeviceSelect
-          icon="video"
-          devices={cameraDevices}
-          selectedDeviceId={selectedCameraId}
-          onSelect={onCameraSelect}
-          disabled={deviceSelectDisabled}
-          accentColor={accentColor}
-        />
+        {showFlipCamera ? (
+          // Mobile: one flip button instead of a deviceId list, which on iOS is a
+          // confusing set of rear lenses the user would have to cycle through.
+          <ButtonSolid
+            variant="tertiary"
+            className="camera-flip-button camera-transparent-button"
+            onClick={onFlipCamera}
+            disabled={!canFlipCamera}
+            aria-label="Switch between front and back camera"
+            title="Switch camera"
+          >
+            <IconCameraRotate width={16} height={16} color="var(--icon-default)" />
+          </ButtonSolid>
+        ) : (
+          <DeviceSelect
+            icon="video"
+            devices={cameraDevices}
+            selectedDeviceId={selectedCameraId}
+            onSelect={onCameraSelect}
+            disabled={deviceSelectDisabled}
+            accentColor={accentColor}
+          />
+        )}
         {contentType === 'video' && (
           <DeviceSelect
             icon="microphone"

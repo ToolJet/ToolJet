@@ -1,5 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { versionModalSelector } from "Selectors/eeCommon";
+import { versionModalSelector } from "Selectors/platform/eeCommon";
 import { moduleSelectors } from "Selectors/platform/modules";
 import { apiCreateGroup } from "Support/utils/manageGroups";
 import {
@@ -116,7 +116,7 @@ describe("Modules — Granular Permissions", () => {
         cy.wait(2000);
 
         dragModuleIntoCanvas(moduleName);
-        cy.get(commonWidgetSelector.draggableWidget("moduleviewer1")).should("exist");
+        cy.get(commonWidgetSelector.draggableWidget(`${moduleName.replace(/[\s-]+/g, "").toLowerCase()}1`)).should("exist");
 
         // Editing: attempting the one action that would unlock editing (creating
         // a draft version) is blocked.

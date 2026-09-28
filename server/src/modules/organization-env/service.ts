@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IOrganizationEnvRegistryService } from '@modules/organization-env/interfaces/IService';
+import { ResolveOutcome } from '@modules/organization-env/types';
 
 @Injectable()
 export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryService {
@@ -17,7 +18,9 @@ export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryS
     return undefined;
   }
 
-  async ensureResolved(_organizationId: string): Promise<void> {}
+  async ensureResolved(_organizationId: string): Promise<ResolveOutcome> {
+    return 'unknown';
+  }
 
   getResolvedOrganizationIds(): string[] {
     return [];

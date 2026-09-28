@@ -2,6 +2,7 @@
   width: 100%;
   height: 100%;
   position: relative;
+  box-sizing: border-box;
   
   // &.kv-padding-default {
   //   padding: 4px;
@@ -89,7 +90,12 @@
     gap: 12px;
     height: 100%;
     overflow-y: auto;
+    scrollbar-color: var(--interactive-selected) transparent;
   }
+}
+
+.real-canvas.flex-container-canvas .key-value-pair-content {
+  scrollbar-color: inherit;
 }
 
 // Key-Value Row Styles

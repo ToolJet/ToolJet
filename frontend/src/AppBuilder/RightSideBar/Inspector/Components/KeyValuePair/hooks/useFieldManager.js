@@ -34,22 +34,19 @@ export const useFieldManager = ({ component, paramUpdated, currentState }) => {
     return modifiedField;
   }, []);
 
-  // Handle field removal - update deletion history
-  const handleRemove = useCallback(
-    async (removedFields) => {
-      // Get existing deletion history
+  // Deletion history is saved with the field list - a separate save can be lost, letting the field regenerate
+  const handleRemoveUpdates = useCallback(
+    (removedFields) => {
       const existingFieldDeletionHistory = component.component.definition.properties.fieldDeletionHistory?.value ?? [];
 
-      // Add removed field keys to deletion history
-      const newFieldDeletionHistory = [
-        ...existingFieldDeletionHistory,
-        ...removedFields.map((field) => field.key || field.name),
+      return [
+        {
+          name: 'fieldDeletionHistory',
+          value: [...existingFieldDeletionHistory, ...removedFields.map((field) => field.key || field.name)],
+        },
       ];
-
-      // Persist the updated deletion history
-      await paramUpdated({ name: 'fieldDeletionHistory' }, 'value', newFieldDeletionHistory, 'properties', true);
     },
-    [component, paramUpdated]
+    [component]
   );
 
   const listManager = useListItemManager({
@@ -65,7 +62,7 @@ export const useFieldManager = ({ component, paramUpdated, currentState }) => {
         includeKey: true, // Fields have a 'key' property
       },
       onPropertyChange: handlePropertyChange,
-      onRemove: handleRemove,
+      onRemoveUpdates: handleRemoveUpdates,
     },
   });
 

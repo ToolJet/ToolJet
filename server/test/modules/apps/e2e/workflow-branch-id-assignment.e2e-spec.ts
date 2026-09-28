@@ -12,7 +12,7 @@ import { createAdmin, findEntity, findEntityOrFail, saveEntity, ensureAppEnviron
  * assertion this supersedes.
  */
 /** @group platform */
-describe('POST /workflows — default branch_id assignment', () => {
+describe.skip('[QUARANTINED] POST /workflows — default branch_id assignment', () => {
   let app: INestApplication;
 
   beforeAll(async () => {

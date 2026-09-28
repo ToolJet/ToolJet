@@ -60,7 +60,7 @@ export default class Servicenow implements QueryService {
   // getAuthUrl() helper never adds one, so we build the URL ourselves here
   // instead of modifying shared code.
   authUrl(sourceOptions: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
+    const host = (sourceOptions as any).tj_redirect_host || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
 

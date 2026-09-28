@@ -16,7 +16,8 @@
         "Users": "@spec/microsoft_graph/users",
         "Teams": "@spec/microsoft_graph/teams",
         "OneDrive": "@spec/microsoft_graph/onedrive",
-        "SharePoint": "@spec/microsoft_graph/sharepoint"
+        "SharePoint": "@spec/microsoft_graph/sharepoint",
+        "OneNote": "@spec/microsoft_graph/onenote"
       }
     }
   }

@@ -1,8 +1,8 @@
 import { commonSelectors } from "Selectors/common";
-import { importSelectors } from "Selectors/exportImport";
+import { importSelectors } from "Selectors/platform/exportImport";
 import { importAndVerifyApp } from "Support/utils/exportImport";
 import { openModulesList } from "Support/utils/platform/modules";
-import { importText } from "Texts/exportImport";
+import { importText } from "Texts/platform/exportImport";
 
 
 

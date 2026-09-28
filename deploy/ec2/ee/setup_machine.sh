@@ -187,6 +187,9 @@ git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd 
 git submodule update --init --recursive
 git submodule foreach 'git checkout lts-3.16 || true'
 
+# Token only needed for the clone above; drop it now so it never ends up baked into the build artifacts
+git config --global --unset url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf
+
 npm install -g npm@10.9.2
 
 # Building ToolJet app in temporary directory

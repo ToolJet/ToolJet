@@ -1,5 +1,7 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { DataSource as TypeOrmDataSource, QueryRunner } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -7,6 +9,7 @@ import { AppModule } from '@modules/app/module';
 import { AuditLogsModule } from '@ee/audit-logs/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
+import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
@@ -360,7 +363,7 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   app: {
     pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
     permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
+    features: { promote: true, release: true, history: true, customComponentLibraries: true },
   },
   modules: { enabled: true },
   permissions: { customGroups: true },
@@ -505,6 +508,11 @@ export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): 
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  // Mirrors main.ts's interceptor setup — without it, RequestContext.setLocals(...) never
+  // becomes an emitted 'auditLogEntry' event, so audit-log e2e assertions can't pass.
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(moduleRef.get(Reflector), moduleRef.get(Logger), moduleRef.get(EventEmitter2))
+  );
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -530,11 +538,8 @@ export interface InitTestAppOptions {
    */
   freshApp?: boolean;
   /**
-   * When true, registers WorkflowsModule in the test app so workflow controllers and
-   * services are mounted/resolvable. AppModule omits WorkflowsModule under IS_GET_CONTEXT
-   * (the mode initTestApp uses), so workflow HTTP routes and `app.get(<workflow service>)`
-   * are unavailable by default. Opt-in — apps built with it get their own cache slot, so
-   * this never changes the app any other test receives. Default: false.
+   * @deprecated No-op. WorkflowsModule is now always mounted in the test app; kept so
+   * existing workflow specs that pass it keep compiling.
    */
   withWorkflows?: boolean;
 }
@@ -545,12 +550,11 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const { edition = 'ee', plan = 'enterprise', freshApp = false, withWorkflows = false } = options ?? {};
+  const { edition = 'ee', plan = 'enterprise', freshApp = false } = options ?? {};
 
-  // Cache key: edition + whether WorkflowsModule is registered (a different app shape).
-  // Plan reconfigures the mock, not the app, so it stays out of the key.
+  // Cache key: only edition matters. Plan reconfigures the mock, not the app.
   const isCacheable = !freshApp;
-  const cacheKey = isCacheable ? (withWorkflows ? `${edition}:wf` : edition) : undefined;
+  const cacheKey = isCacheable ? edition : undefined;
 
   if (cacheKey && _cache[cacheKey]) {
     const slot = _cache[cacheKey];
@@ -579,9 +583,8 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
     imports: [
       await AppModule.register({ IS_GET_CONTEXT: true }),
       await AuditLogsModule.register({ IS_GET_CONTEXT: true }),
-      // Opt-in: AppModule omits WorkflowsModule under IS_GET_CONTEXT, so register it
-      // explicitly here (isMainImport=true) when a workflow spec asks for it.
-      ...(withWorkflows ? [await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true)] : []),
+      // AppModule skips WorkflowsModule when IS_GET_CONTEXT is set, so mount its controllers here.
+      await WorkflowsModule.register({ IS_GET_CONTEXT: true }, true),
     ],
   });
 

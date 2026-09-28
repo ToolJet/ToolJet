@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { ConfigService } from '@nestjs/config';
 import { LoginConfigsUtilService } from './util.service';
@@ -6,7 +6,7 @@ import { ILoginConfigsService } from './interfaces/IService';
 import { SSOConfigsRepository } from './repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { ConfigScope, SSOType } from '@entities/sso_config.entity';
+import { ConfigScope, SSOConfigs, SSOType } from '@entities/sso_config.entity';
 import { cleanObject } from '@helpers/utils.helper';
 import { OrganizationConfigsUpdateDto } from './dto';
 import { User } from '@entities/user.entity';
@@ -45,11 +45,19 @@ export class LoginConfigsService implements ILoginConfigsService {
         true,
         true
       );
+      if (!result) {
+        throw new NotFoundException('Organization not found');
+      }
       return this.loginConfigsUtilService.removeDisabledSsoConfigs(result);
     } catch (error) {
+      // Preserve any deliberate HTTP error (e.g. archived-workspace 400) thrown further down the stack.
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      // Any other failure (org not found, invalid slug/uuid, etc.) means the workspace doesn't exist.
       this.logger.error('Error fetching organization details', error);
+      throw new NotFoundException('Organization not found');
     }
-    return;
   }
 
   async getProcessedOrganizationConfigs(organizationId: string) {
@@ -108,7 +116,7 @@ export class LoginConfigsService implements ILoginConfigsService {
           const newConfig = this.ssoConfigsRepository.create({
             organizationId,
             sso: type,
-            configs, // Use name from frontend
+            configs: configs ?? ({} as SSOConfigs['configs']), // Use name from frontend
             enabled,
             configScope: ConfigScope.ORGANIZATION,
           });
@@ -119,7 +127,7 @@ export class LoginConfigsService implements ILoginConfigsService {
         const newConfig = this.ssoConfigsRepository.create({
           organizationId,
           sso: type,
-          configs, // Use name from frontend
+          configs: configs ?? ({} as SSOConfigs['configs']), // Use name from frontend
           enabled,
           configScope: ConfigScope.ORGANIZATION,
         });
@@ -129,7 +137,7 @@ export class LoginConfigsService implements ILoginConfigsService {
       // Other SSO types (single config per organization)
       ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
         sso: type,
-        configs,
+        ...(configs !== undefined && { configs }),
         enabled,
         organizationId,
         configScope: ConfigScope.ORGANIZATION,
@@ -143,7 +151,7 @@ export class LoginConfigsService implements ILoginConfigsService {
     return ssoConfig;
   }
 
-  async updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto) {
+  async updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto): Promise<void> {
     const organizationId = user.organizationId;
     const { domain, passwordAllowedDomains, passwordRestrictedDomains, enableSignUp, inheritSSO, automaticSsoLogin } =
       params;

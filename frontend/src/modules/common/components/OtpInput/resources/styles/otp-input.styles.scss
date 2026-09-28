@@ -1,0 +1,49 @@
+.otp-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .otp-input-boxes {
+        display: flex;
+        gap: 8px;
+
+        .otp-input-box {
+            width: 32px;
+            height: 36px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: 1px solid var(--border-default, #ccd1d5);
+            background: var(--base, white);
+            color: var(--text-default, #1b1f24);
+
+            &:focus {
+                outline: none;
+                border-color: var(--border-accent-strong, #4368e3);
+                box-shadow: 0 0 0 2px rgba(67, 104, 227, 0.15);
+            }
+        }
+
+        &.otp-input-boxes-error .otp-input-box {
+            border-color: var(--text-danger, #d72d39);
+        }
+    }
+
+    .otp-input-error {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--text-danger, #d72d39);
+    }
+
+    &.otp-input-wrapper-centered {
+        align-items: center;
+
+        .otp-input-boxes {
+            justify-content: center;
+        }
+    }
+}

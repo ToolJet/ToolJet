@@ -6,7 +6,7 @@ import {
   fetchAndVisitInviteLinkViaMH,
 } from "Support/utils/manageUsers";
 import { setSignupStatus } from "Support/utils/manageSSO";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
 import { setupAppWithSlug, verifyRestrictedAccess } from "Support/utils/apps";
@@ -232,7 +232,7 @@ describe("Private and Public apps", () => {
 
     inviteUserToWorkspace(data.firstName, data.email);
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-    verifyRestrictedAccess();
+    verifyRestrictedAccess(data.appName);
     cy.get(commonSelectors.backToHomeButton).click();
     cy.get(commonSelectors.homePageLogo).should("be.visible");
 

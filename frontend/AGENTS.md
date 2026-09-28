@@ -2,6 +2,15 @@
 
 React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition()`) is covered in the root `AGENTS.md` — this file covers conventions and App Builder architecture.
 
+## Testing context
+
+Before adding or changing tests for `src/AppBuilder/**`, read
+`src/test/app-builder/README.md` for public seams and
+`ee/.agents/skills/app-builder-widget-tdd/SKILL.md` for research, approvals, and execution phases.
+Registered widget status and canonical contract paths live in `widget-testing-manifest.json`.
+Widget-specific facts stay in the manifest-linked EE `TESTING.md`; transfer sibling findings only
+when the public behavior, runtime, or infrastructure applies.
+
 ## Component patterns
 
 - Check `frontend/src/_ui/` (55+ components) before creating a new UI component

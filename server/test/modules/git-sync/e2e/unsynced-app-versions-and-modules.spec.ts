@@ -21,6 +21,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
+import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
 
 /**
  * Behaviour of an UNSYNCED app on a git-sync-enabled workspace — an app that existed
@@ -41,9 +42,11 @@ import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_gi
 /** @group gitsync */
 describe('Unsynced app on a git-sync-enabled workspace', () => {
   let nestApp: INestApplication;
+  let importExportService: AppImportExportService;
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    importExportService = nestApp.get<AppImportExportService>(AppImportExportService);
   });
 
   afterAll(async () => {
@@ -208,6 +211,56 @@ describe('Unsynced app on a git-sync-enabled workspace', () => {
     expect(toV1.body.editing_version.id).toBe(modV1.id);
     const toV2 = await resolve(modV2.moduleReferenceId).expect(200);
     expect(toV2.body.editing_version.id).toBe(modV2.id);
+  });
+
+  // Regression: an app imported from a file may carry a ModuleViewer pointing at a module
+  // (by co_relation_id) whose module row was never imported into the workspace. During git
+  // export the reference resolved to a non-existent id, so this.export() hit a null
+  // findById() and threw "Cannot read properties of null (reading 'id')" — failing the whole
+  // git push with a 400. The unresolvable reference must be skipped, letting the push succeed.
+  it('exports an app with a dangling module reference instead of crashing the git push', async () => {
+    const admin = await createUser(nestApp, {
+      email: `uav-dangling-${Date.now()}@tooljet.io`,
+      groups: ['all_users', 'admin'],
+    });
+    const org = admin.organization;
+    await enableGitSync(org.id);
+    const branchId = (await resolveOrSeedDefaultBranch(org.id)).id;
+
+    const consumerApp = await createApplication(nestApp, { name: 'dangling-consumer', user: admin.user });
+    const consumerVersion = await seedEditableVersion(consumerApp, branchId, /* isSynced */ false);
+    const homePage = await saveEntity(Page, {
+      name: 'home',
+      handle: 'home',
+      appVersionId: consumerVersion.id,
+      index: 1,
+    } as any);
+    // moduleAppId points at a co_relation_id with no matching module in this workspace.
+    const missingModuleCoRel = uuidv4();
+    await saveEntity(Component, {
+      name: 'moduleviewer1',
+      type: 'ModuleViewer',
+      pageId: homePage.id,
+      properties: {
+        moduleAppId: { value: missingModuleCoRel },
+        moduleVersionId: { value: uuidv4() },
+      },
+      general: {},
+      styles: {},
+      generalStyles: {},
+      validation: {},
+    } as any);
+
+    const { appV2 } = await importExportService.export(
+      admin.user,
+      consumerApp.id,
+      { version_id: consumerVersion.id },
+      branchId
+    );
+
+    expect(appV2.id).toBe(consumerApp.id);
+    // The unresolvable module is skipped, not exported.
+    expect(appV2['modules'] ?? []).toEqual([]);
   });
 
   it('creates versions on an unsynced app that connects to both synced and unsynced data sources', async () => {

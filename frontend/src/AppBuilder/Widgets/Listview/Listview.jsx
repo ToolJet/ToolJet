@@ -200,7 +200,7 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+      className={cx(`flex-column w-100 position-relative dynamic-${id} listview-scroll-container`, {
         'jet-container-loading': loadingState,
       })}
       id={id}

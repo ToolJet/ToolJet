@@ -1,5 +1,5 @@
 import { commonWidgetSelector, inspectorSelectors } from 'Selectors/common';
-import { navigateAndVerifyInspector } from 'Support/utils/inspector';
+import { navigateAndVerifyInspector } from 'Support/utils/appBuilder/inspector';
 import { defineModuleContract, dropModuleComponent } from 'Support/utils/platform/modules';
 
 describe('Modules — Inspector', () => {

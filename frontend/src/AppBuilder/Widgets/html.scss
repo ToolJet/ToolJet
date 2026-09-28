@@ -1,0 +1,27 @@
+// Scroll + scrollbar behaviour for the HTML widget.
+.html-widget-container {
+  overflow-y: auto;
+  scrollbar-color: var(--interactive-selected) transparent;
+
+  // Dynamic height grows the widget to fit its content, so it never scrolls.
+  &.dynamic-height {
+    overflow-y: visible;
+    scrollbar-color: auto;
+  }
+}
+
+// Flex container canvases hide their scrollbars until the canvas is hovered, and do it
+// by handing `scrollbar-color` down to their children (appCanvas.scss). Defer to that
+// inherited value so a widget inside a flex container keeps behaving as it does today.
+.real-canvas.flex-container-canvas .html-widget-container {
+  scrollbar-color: inherit;
+}
+
+
+.viewer .html-widget-container {
+  scrollbar-width: none;
+
+  &:hover {
+    scrollbar-width: auto;
+  }
+}

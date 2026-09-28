@@ -10,7 +10,7 @@ import { ERROR_TYPES } from '@/_helpers/constants';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SSOAuthModule } from '@/modules/common/components';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
-import { LoginForm } from '../LoginPage/components';
+import { LoginForm, MfaVerifyForm } from '../LoginPage/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
@@ -22,6 +22,8 @@ const AppLoginPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [ssoTriggered, setSsoTriggered] = useState(false);
+  const [mfaChallenge, setMfaChallenge] = useState(null);
+  const [pendingEmail, setPendingEmail] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
 
   // Read redirectTo from URL params (set by authorizeWorkspace CASE-4 for preview URLs)
@@ -116,18 +118,33 @@ const AppLoginPage = () => {
     setCookie('redirectPath', appRedirectPath, iframe);
   };
 
+  const completeLogin = (user, email) => {
+    updateCurrentSession({ isUserLoggingIn: true });
+    posthogHelper.initPosthog(user);
+    posthogHelper.captureEvent('signin_email', {
+      email,
+      workspace_id: appConfig?.organizationId,
+      app_slug: slug,
+    });
+    window.location.href = appRedirectPath;
+  };
+
   const handleLogin = (email, password, onError) => {
     const organizationId = appConfig?.organizationId;
     authenticationService.login(email, password, organizationId).then(
       (user) => {
-        updateCurrentSession({ isUserLoggingIn: true });
-        posthogHelper.initPosthog(user);
-        posthogHelper.captureEvent('signin_email', {
-          email,
-          workspace_id: organizationId,
-          app_slug: slug,
-        });
-        window.location.href = appRedirectPath;
+        if (user?.mfa_required) {
+          setPendingEmail(email);
+          setMfaChallenge({
+            mfaToken: user.mfa_token,
+            setupRequired: user.setup_required,
+            otpauthUrl: user.otpauth_url,
+            secret: user.secret,
+          });
+          onError();
+          return;
+        }
+        completeLogin(user, email);
       },
       (err) => {
         onError();
@@ -180,6 +197,21 @@ const AppLoginPage = () => {
         buttonText="Sign in with"
         ssoTriggered={ssoTriggered}
         redirectTo={appRedirectPath}
+      />
+    );
+  }
+
+  if (mfaChallenge) {
+    return (
+      <OnboardingBackgroundWrapper
+        LeftSideComponent={() => (
+          <MfaVerifyForm
+            mfaChallenge={mfaChallenge}
+            onVerified={(session) => completeLogin(session, pendingEmail)}
+            onError={() => {}}
+          />
+        )}
+        RightSideComponent={LoginPageRightPanel}
       />
     );
   }

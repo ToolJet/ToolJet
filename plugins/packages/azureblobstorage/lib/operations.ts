@@ -70,10 +70,16 @@ export async function uploadBlob(client, options: QueryOptions): Promise<string>
       blobContentEncoding: options.encoding || 'utf8',
     },
   };
-  const file = Buffer.from(options.data);
+  // File Picker widgets hand over base64-encoded file data; decode it to bytes before
+  // upload, otherwise the literal base64 text gets written as the blob's content.
+  const file = isBase64(options.data) ? Buffer.from(options.data, 'base64') : Buffer.from(options.data);
   const uploadBlobResponse = await blockBlobClient.uploadData(file, blobOptions);
 
   return `Blob was uploaded successfully. requestId: ${uploadBlobResponse.requestId}`;
+}
+
+function isBase64(str: string): boolean {
+  return str.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(str);
 }
 
 async function streamToBuffer(readableStream) {
@@ -89,13 +95,20 @@ async function streamToBuffer(readableStream) {
   });
 }
 
+function isValidUtf8(buffer: Buffer): boolean {
+  return Buffer.compare(Buffer.from(buffer.toString('utf8'), 'utf8'), buffer) === 0;
+}
+
 export async function readBlob(client, options) {
   const containerClient = getContainerClient(client, options.containerName);
   const blobClient = await containerClient.getBlobClient(options.blobName);
 
   const downloadResponse = await blobClient.download();
-  const downloaded = (await streamToBuffer(downloadResponse.readableStreamBody)).toString();
-  return downloaded;
+  const buffer = (await streamToBuffer(downloadResponse.readableStreamBody)) as Buffer;
+
+  // Binary blobs (PDFs, images, etc.) are corrupted if decoded as UTF-8 text, since not
+  // every byte sequence is valid UTF-8. Only return plain text when it round-trips losslessly.
+  return isValidUtf8(buffer) ? buffer.toString('utf8') : buffer.toString('base64');
 }
 
 export async function deleteBlob(client, options) {

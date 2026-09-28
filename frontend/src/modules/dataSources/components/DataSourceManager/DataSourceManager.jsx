@@ -310,6 +310,7 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -1107,6 +1108,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
@@ -1181,6 +1183,9 @@ class DataSourceManagerComponent extends React.Component {
                             )}
                           </div>
                           {(() => {
+                            // Dummy/unresolved data sources show their own "missing, pull from git" warning below;
+                            // the global-setting branching warning isn't relevant when the data source is missing.
+                            if (selectedDataSource.is_dummy) return null;
                             const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
                             if (!isInitialized || !orgGitConfig) return null;
                             const isBranchingEnabled =

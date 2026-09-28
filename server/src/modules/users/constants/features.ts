@@ -23,5 +23,9 @@ export const FEATURES: FeaturesConfig = {
       isSuperAdminFeature: true,
       auditLogsKey: 'USER_PASSWORD_RESET',
     },
+    [FEATURE_KEY.TOGGLE_USER_MFA]: {
+      isSuperAdminFeature: true,
+      auditLogsKey: 'USER_MFA_TOGGLE',
+    },
   },
 };

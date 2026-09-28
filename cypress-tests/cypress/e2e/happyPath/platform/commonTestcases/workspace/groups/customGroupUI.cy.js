@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { groupsSelector } from "Selectors/manageGroups";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import {
   apiAddUserToGroup,
   apiCreateGroup,

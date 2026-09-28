@@ -1,9 +1,9 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/manageGroups';
+import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { navigateToManageGroups } from 'Support/utils/common';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
-import { groupsText } from 'Texts/manageGroups';
+import { groupsText } from 'Texts/platform/manageGroups';
 
 describe('Modules — Folder Permissions: Custom Group Create Override', () => {
   const testId = Date.now();

@@ -7,9 +7,26 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const ReorderableList = (props) => {
-  const { properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, darkMode } = props;
+  const {
+    properties,
+    styles,
+    fireEvent,
+    id,
+    dataCy,
+    setExposedVariable,
+    setExposedVariables,
+    darkMode,
+    height,
+    width,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
+  } = props;
 
   const { textColor } = styles;
 
@@ -34,6 +51,25 @@ export const ReorderableList = (props) => {
 
   // Ref for portal container
   const portalRef = useRef(null);
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // Item labels can be Markdown/HTML, so a rendered item's height isn't a pure function of the
+  // options string (rich markup, wrapping, async content). Observe the rendered container like
+  // a Text widget. NOTE: observe this new ref, NOT the Droppable's innerRef (react-beautiful-dnd owns that one).
+  const contentRef = useRef(null);
+  const heightChangeValue = useHeightObserver(contentRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
+  });
 
   // Create portal container on mount
   useEffect(() => {
@@ -153,9 +189,10 @@ export const ReorderableList = (props) => {
   // Compute container styles
   const containerStyle = {
     display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none',
-    height: '100%',
+    height: isDynamicHeightEnabled ? 'auto' : '100%',
+    ...(isDynamicHeightEnabled && { minHeight: height }),
     width: '100%',
-    overflow: 'auto',
+    overflow: isDynamicHeightEnabled ? 'visible' : 'auto',
   };
 
   const hasNoOptions = !currentOptions || currentOptions.length === 0;
@@ -209,6 +246,7 @@ export const ReorderableList = (props) => {
 
   return (
     <div
+      ref={contentRef}
       className={cx('reorderable-list-container', { 'dark-theme': darkMode, 'is-disabled': disabledState })}
       style={containerStyle}
       data-cy={dataCy}

@@ -10,6 +10,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  updateEnvConfig,
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
@@ -112,6 +113,16 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/login-configs/organization-sso`, requestOptions).then(handleResponse);
+}
+
+function updateEnvConfig(provider, useEnvConfig, configId) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ useEnvConfig, ...(configId && { configId }) }),
+  };
+  return fetch(`${config.apiUrl}/login-configs/${provider}/env-configs`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {

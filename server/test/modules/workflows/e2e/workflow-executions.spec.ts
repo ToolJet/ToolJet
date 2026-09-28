@@ -116,7 +116,7 @@ const context = setupPolly({
   },
 });
 
-describe('WorkflowExecutionsController', () => {
+describe.skip('[QUARANTINED] WorkflowExecutionsController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
 

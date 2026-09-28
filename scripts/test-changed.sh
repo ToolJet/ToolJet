@@ -22,7 +22,8 @@ if ! MERGE_BASE=$(git merge-base HEAD "origin/${BASE_BRANCH}" 2>/dev/null); then
   SERVER_FILES=""
 else
   ALL_CHANGED=$(git diff --name-only "$MERGE_BASE" HEAD)
-  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" || true)
+  # docs-only edits (*.md) don't need tests — mirrors detect-changes in ci.yml
+  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" | grep -v '\.md$' || true)
 fi
 
 RUN_ALL="${RUN_ALL:-false}"

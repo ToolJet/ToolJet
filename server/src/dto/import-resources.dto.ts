@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested, IsBoolean } from 'class-validator';
+import { IsUUID, IsOptional, IsString, IsDefined, ValidateNested, IsBoolean, Matches } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ValidateTooljetDatabaseSchema } from './validators/tooljet-database.validator';
 import { TjdbSchemaToLatestVersion } from './transformers/resource-transformer';
@@ -43,6 +43,10 @@ export class ImportAppDto {
   definition: any;
 
   @IsString()
+  // '/' and '\' are path separators when the app (or module) is serialized to
+  // git; keep imported names free of them too. Empty string is allowed here
+  // because appName can fall back to the definition's name during import.
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   appName: string;
 }
 

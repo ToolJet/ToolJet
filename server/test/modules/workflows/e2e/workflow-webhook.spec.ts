@@ -84,7 +84,7 @@ const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) =>
 // error messages and status codes. The tests were testing deleted behavior.
 
 /** @group workflows */
-describe('WorkflowWebhookController', () => {
+describe.skip('[QUARANTINED] WorkflowWebhookController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
 

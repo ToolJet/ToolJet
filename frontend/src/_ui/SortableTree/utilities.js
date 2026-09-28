@@ -125,31 +125,45 @@ function getMinDepth({ nextItem }) {
   return 0;
 }
 
-function flatten(items, parentIdValue = null, depth = 0, seenIds = new Set(), propertyNames = DEFAULT_PROPERTY_NAMES) {
+function flatten(
+  items,
+  parentIdValue = null,
+  depth = 0,
+  seenKeys = new Set(),
+  propertyNames = DEFAULT_PROPERTY_NAMES,
+  getItemKey = (item) => item.id
+) {
   const { parentId: parentIdKey } = propertyNames;
 
   return items.reduce((acc, item) => {
-    if (seenIds.has(item.id)) {
+    // Dedup guard, keyed like the React row key (getItemKey), not `id` — two
+    // distinct items can transiently share an `id` while one is mid-edit.
+    const itemKey = getItemKey(item);
+    if (seenKeys.has(itemKey)) {
       return acc;
     }
-    seenIds.add(item.id);
+    seenKeys.add(itemKey);
 
     const flatItem = { ...item, [parentIdKey]: parentIdValue, depth };
-    const children = item.children ? flatten(item.children, item.id, depth + 1, seenIds, propertyNames) : [];
+    const children = item.children
+      ? flatten(item.children, item.id, depth + 1, seenKeys, propertyNames, getItemKey)
+      : [];
     return [...acc, flatItem, ...children];
   }, []);
 }
 
-export function flattenTree(items, propertyNames = DEFAULT_PROPERTY_NAMES) {
-  return flatten(items, null, 0, new Set(), propertyNames);
+export function flattenTree(items, propertyNames = DEFAULT_PROPERTY_NAMES, getItemKey = (item) => item.id) {
+  return flatten(items, null, 0, new Set(), propertyNames, getItemKey);
 }
 
-export function buildTree(flattenedItems, propertyNames = DEFAULT_PROPERTY_NAMES) {
+export function buildTree(flattenedItems, propertyNames = DEFAULT_PROPERTY_NAMES, getItemKey = (item) => item.id) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
 
   const root = { id: 'root', children: [] };
   const nodes = { [root.id]: root };
-  const addedIds = new Set();
+  // Dedup guard, keyed like flatten's (see there), not `id`. `nodes` still keys by
+  // `id` — parent links (`parentId`) always point at the parent's actual id.
+  const addedKeys = new Set();
 
   const items = flattenedItems.map((item) => ({
     ...item,
@@ -158,11 +172,12 @@ export function buildTree(flattenedItems, propertyNames = DEFAULT_PROPERTY_NAMES
 
   for (const item of items) {
     const { id } = item;
+    const itemKey = getItemKey(item);
 
-    if (addedIds.has(id)) {
+    if (addedKeys.has(itemKey)) {
       continue;
     }
-    addedIds.add(id);
+    addedKeys.add(itemKey);
 
     const itemParentId = item[parentIdKey] ?? root.id;
     const parent = nodes[itemParentId] ?? findItem(items, itemParentId);

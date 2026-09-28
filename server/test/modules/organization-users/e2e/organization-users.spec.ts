@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -350,6 +351,80 @@ describe('OrganizationUsersController', () => {
         await viewerUserData.orgUser.reload();
         expect(viewerUserData.orgUser.status).toBe('archived');
       });
+
+      it('should not allow a workspace admin to archive a user in a different organization via body.organizationId override', async () => {
+        const attackerData = await createUser(app, {
+          email: 'attacker@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const attackerSession = await buildTestSession(attackerData.user, attackerData.organization.id);
+        attackerData['tokenCookie'] = attackerSession.tokenCookie;
+
+        // separate organization the attacker has no membership in
+        const victimOrgAdminData = await createUser(app, {
+          email: 'victim-org-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const victimOrganization = victimOrgAdminData.organization;
+
+        const victimData = await createUser(app, {
+          email: 'victim@tooljet.io',
+          groups: ['end-user'],
+          status: 'active',
+          organization: victimOrganization,
+        });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/organization-users/${victimData.orgUser.id}/archive`)
+          .set('tj-workspace-id', attackerData.user.defaultOrganizationId)
+          .set('Cookie', attackerData['tokenCookie'])
+          .send({ organizationId: victimOrganization.id });
+
+        // The service looks up the target row scoped to the caller's own organizationId
+        // (never the attacker-supplied one), so it is simply not found in the attacker's org.
+        expect(response.statusCode).toBe(500);
+        expect(response.body.message).toContain('Could not find any entity of type "OrganizationUser"');
+
+        await victimData.orgUser.reload();
+        expect(victimData.orgUser.status).toBe('active');
+      });
+
+      it('should allow a super admin to archive a user in a different organization via body.organizationId override', async () => {
+        const superAdminUserData = await createUser(app, {
+          email: 'superadmin-crossorg@tooljet.io',
+          groups: ['admin', 'end-user'],
+          userType: 'instance',
+        });
+        const superAdminSession = await buildTestSession(superAdminUserData.user, superAdminUserData.organization.id);
+        superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
+
+        // separate organization the super admin has no membership in
+        const victimOrgAdminData = await createUser(app, {
+          email: 'victim-org-admin2@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const victimOrganization = victimOrgAdminData.organization;
+
+        const victimData = await createUser(app, {
+          email: 'victim2@tooljet.io',
+          groups: ['end-user'],
+          status: 'active',
+          organization: victimOrganization,
+        });
+
+        await request(app.getHttpServer())
+          .post(`/api/organization-users/${victimData.orgUser.id}/archive`)
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', superAdminUserData['tokenCookie'])
+          .send({ organizationId: victimOrganization.id })
+          .expect(201);
+
+        await victimData.orgUser.reload();
+        expect(victimData.orgUser.status).toBe('archived');
+      });
     });
 
     describe('POST /api/organization-users/:id/unarchive | Unarchive user', () => {
@@ -515,6 +590,80 @@ describe('OrganizationUsersController', () => {
         await developerUserData.orgUser.reload();
         expect(developerUserData.orgUser.status).toBe('invited');
       });
+
+      it('should not allow a workspace admin to unarchive a user in a different organization via body.organizationId override', async () => {
+        const attackerData = await createUser(app, {
+          email: 'attacker-unarchive@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const attackerSession = await buildTestSession(attackerData.user, attackerData.organization.id);
+        attackerData['tokenCookie'] = attackerSession.tokenCookie;
+
+        // separate organization the attacker has no membership in
+        const victimOrgAdminData = await createUser(app, {
+          email: 'victim-org-admin3@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const victimOrganization = victimOrgAdminData.organization;
+
+        const victimData = await createUser(app, {
+          email: 'victim3@tooljet.io',
+          groups: ['end-user'],
+          status: 'archived',
+          organization: victimOrganization,
+        });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/organization-users/${victimData.orgUser.id}/unarchive`)
+          .set('tj-workspace-id', attackerData.user.defaultOrganizationId)
+          .set('Cookie', attackerData['tokenCookie'])
+          .send({ organizationId: victimOrganization.id });
+
+        // The service looks up the target row scoped to the caller's own organizationId
+        // (never the attacker-supplied one), so it is simply not found in the attacker's org.
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('User not exist');
+
+        await victimData.orgUser.reload();
+        expect(victimData.orgUser.status).toBe('archived');
+      });
+
+      it('should allow a super admin to unarchive a user in a different organization via body.organizationId override', async () => {
+        const superAdminUserData = await createUser(app, {
+          email: 'superadmin-crossorg-unarchive@tooljet.io',
+          groups: ['admin', 'end-user'],
+          userType: 'instance',
+        });
+        const superAdminSession = await buildTestSession(superAdminUserData.user, superAdminUserData.organization.id);
+        superAdminUserData['tokenCookie'] = superAdminSession.tokenCookie;
+
+        // separate organization the super admin has no membership in
+        const victimOrgAdminData = await createUser(app, {
+          email: 'victim-org-admin4@tooljet.io',
+          groups: ['admin', 'end-user'],
+          status: 'active',
+        });
+        const victimOrganization = victimOrgAdminData.organization;
+
+        const victimData = await createUser(app, {
+          email: 'victim4@tooljet.io',
+          groups: ['end-user'],
+          status: 'archived',
+          organization: victimOrganization,
+        });
+
+        await request(app.getHttpServer())
+          .post(`/api/organization-users/${victimData.orgUser.id}/unarchive`)
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', superAdminUserData['tokenCookie'])
+          .send({ organizationId: victimOrganization.id })
+          .expect(201);
+
+        await victimData.orgUser.reload();
+        expect(victimData.orgUser.status).toBe('invited');
+      });
     });
 
     describe('POST /api/organization-users/:userId/archive-all | Archive from all workspaces', () => {
@@ -548,6 +697,196 @@ describe('OrganizationUsersController', () => {
           .send();
 
         expect(developerRequestResponse.statusCode).toBe(403);
+      });
+    });
+
+    describe('PUT /api/organization-users/:id | Update user', () => {
+      it('should allow an admin to update a user and emit an audit log entry', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceId: targetUserData.user.id,
+          resourceName: targetUserData.user.email,
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              metadata: { department: 'finance' },
+            },
+          },
+        });
+      });
+
+      it('should record the new role in the audit log entry when only role is changed', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin-role@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target-role@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ role: 'builder' })
+          .expect(200);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          resourceData: {
+            updated_user: {
+              id: targetUserData.user.id,
+              email: targetUserData.user.email,
+              role: 'builder',
+            },
+          },
+        });
+        // Metadata wasn't part of this request — shouldn't be fabricated in the audit entry.
+        expect(payload.resourceData.updated_user).not.toHaveProperty('metadata');
+      });
+
+      it('should return 403 for non-admin users', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'update-admin2@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+
+        const developerUserData = await createUser(app, {
+          email: 'update-developer@tooljet.io',
+          groups: ['developer', 'end-user'],
+          organization,
+        });
+        const developerSession = await buildTestSession(developerUserData.user, organization.id);
+        developerUserData['tokenCookie'] = developerSession.tokenCookie;
+
+        const targetUserData = await createUser(app, {
+          email: 'update-target2@tooljet.io',
+          groups: ['viewer', 'end-user'],
+          organization,
+        });
+
+        await request(app.getHttpServer())
+          .put(`/api/organization-users/${targetUserData.orgUser.id}`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ userMetadata: { department: 'finance' } })
+          .expect(403);
+      });
+    });
+
+    describe('POST /api/organization-users/upload-csv | Bulk upload users', () => {
+      it('should emit an audit log entry for a bulk-uploaded user', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent = 'first name,last name,email,user role,group\nBulk,User,bulk-csv-user@tooljet.io,End User,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry');
+        expect(auditEmits).toHaveLength(1);
+
+        const [, payload] = auditEmits[0];
+        expect(payload).toMatchObject({
+          userId: adminUserData.user.id,
+          resourceName: 'bulk-csv-user@tooljet.io',
+        });
+      });
+
+      it('should emit one audit log entry per user when uploading multiple rows', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'bulk-admin-multi@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+
+        const adminSession = await buildTestSession(adminUserData.user, adminUserData.organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const csvContent =
+          'first name,last name,email,user role,group\n' +
+          'Amara,Chen,amara-bulk@tooljet.io,End User,\n' +
+          'Diego,Silva,diego-bulk@tooljet.io,Builder,\n';
+
+        const emitter = app.get(EventEmitter2);
+        const spy = jest.spyOn(emitter, 'emit');
+
+        await request(app.getHttpServer())
+          .post('/api/organization-users/upload-csv')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .attach('file', Buffer.from(csvContent), 'users.csv')
+          .expect(201);
+
+        const auditEmits = spy.mock.calls.filter(([event]) => event === 'auditLogEntry').map(([, payload]) => payload);
+        expect(auditEmits).toHaveLength(2);
+
+        const resourceNames = auditEmits.map((entry) => entry.resourceName).sort();
+        expect(resourceNames).toEqual(['amara-bulk@tooljet.io', 'diego-bulk@tooljet.io']);
+
+        for (const entry of auditEmits) {
+          expect(entry).toMatchObject({
+            userId: adminUserData.user.id,
+            actionType: 'USER_INVITE',
+            resourceType: 'OrganizationUser',
+          });
+        }
       });
     });
   });

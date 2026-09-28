@@ -34,6 +34,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    mfa?: boolean;
     customDomains?: boolean;
     google?: boolean;
     github?: boolean;
@@ -69,6 +70,8 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
     };
     components?: {
       navigation: boolean;

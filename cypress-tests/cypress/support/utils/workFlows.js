@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowsText } from "Texts/platform/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 
 export const enterJsonInputInStartNode = (jsonValue) => {
   cy.get(workflowSelector.startNode).click({ force: true });

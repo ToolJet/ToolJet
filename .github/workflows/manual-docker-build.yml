@@ -19,6 +19,9 @@ on:
         description: "Docker tag suffix (e.g., pre-release-14)"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest

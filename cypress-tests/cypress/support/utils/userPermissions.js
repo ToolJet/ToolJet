@@ -1,11 +1,11 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
-import { groupsSelector } from "Constants/selectors/manageGroups";
+import { groupsSelector } from "Constants/selectors/platform/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
-import { versionSwitcherSelectors } from "Constants/selectors/version";
-import { multiEnvSelector } from "Constants/selectors/eeCommon";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { versionSwitcherSelectors } from "Constants/selectors/platform/version";
+import { multiEnvSelector } from "Constants/selectors/platform/eeCommon";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { commonText } from "Texts/common";
 
 export const constantsOperations = {
