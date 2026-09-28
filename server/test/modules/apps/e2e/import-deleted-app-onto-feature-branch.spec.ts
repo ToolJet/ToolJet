@@ -160,7 +160,7 @@ describe('App import — exported-then-deleted app onto a new feature branch', (
     expect(resolved).toMatchObject({ id: hydrated.id });
   });
 
-  it('rejects with a name-taken error when the deleted app is still stubbed on the branch from git', async () => {
+  it('rejects with an app-name-exists error when the deleted app is still stubbed on the branch from git', async () => {
     const { org, user, branch, deletedApp } = await setupDeletedAppAndBranch();
     const gitApp = await saveEntity(App, {
       type: APP_TYPES.FRONT_END,
@@ -171,6 +171,8 @@ describe('App import — exported-then-deleted app onto a new feature branch', (
     } as any);
     await saveBranchStub(gitApp.id, branch.id, APP_NAME, false);
 
-    await expect(importApp(user, branch.id)).rejects.toThrow('This app name is already taken.');
+    await expect(importApp(user, branch.id)).rejects.toThrow(
+      `An app named "${APP_NAME}" already exists on this branch.`
+    );
   });
 });

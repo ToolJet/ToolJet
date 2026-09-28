@@ -3927,7 +3927,7 @@ export class AppImportExportService {
         [
           {
             dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
-            message: 'This app name is already taken.',
+            message: `${importedApp.type === APP_TYPES.FRONT_END ? 'An app' : `A ${importedApp.type}`} named "${version.appName}" already exists on this branch.`,
           },
         ]
       );
