@@ -11,6 +11,7 @@ import {
   saveEntity,
   findEntityOrFail,
   setupOrganizationAndUser,
+  createUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
   NONEXISTENT_UUID,
@@ -34,7 +35,7 @@ describe('WorkflowApprovalsService.resolve', () => {
     service = app.get(WorkflowApprovalsService, { strict: false });
     queue = app.get(WorkflowExecutionQueueService, { strict: false });
     eventEmitter = app.get(EventEmitter2);
-    const { user } = await setupOrganizationAndUser(app, {
+    const { user, organization } = await setupOrganizationAndUser(app, {
       email: 'hitl-resolve@tooljet.io',
       password: 'password',
       firstName: 'Hitl',
@@ -52,6 +53,9 @@ describe('WorkflowApprovalsService.resolve', () => {
       lastName: 'Approver',
     });
     approverUserId = approverUser.id;
+    // Listed approvers are picked from the workflow's workspace, so the approver is also a member
+    // there (an end user, so the admin override cannot be what authorizes them).
+    await createUser(app, { email: approverUser.email, groups: ['end-user'], organization }, approverUser);
   });
   afterAll(async () => {
     await closeTestApp(app);
