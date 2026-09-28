@@ -1,5 +1,5 @@
 /**
- * Timeline: the 14 approved Engineering scenarios in
+ * Timeline: the 13 approved Engineering scenarios in
  * frontend/ee/test/app-builder/widgets/Timeline/TESTING.md. Characterization
  * branch — `production_changes: forbidden` — every test here protects
  * Timeline.jsx's current behavior, none of it changes.
@@ -19,7 +19,6 @@ import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/int
 
 const ID = 'tl1';
 const NAME = 'timeline1';
-const OFFSET_HEIGHT = 96;
 
 // Baseline is timeline.js's own `definition.properties`, copied verbatim for
 // the title/subTitle/date values — not invented defaults. `iconBackgroundColor`
@@ -33,7 +32,6 @@ const widget = createWidgetHarness({
   componentType: 'Timeline',
   handle: NAME,
   id: ID,
-  offsetHeight: OFFSET_HEIGHT,
   defaultProperties: {
     data: binding(
       "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}"
@@ -330,67 +328,28 @@ describe('Timeline: security', () => {
   });
 });
 
+// Only the Viewer-only gate is tested here. Reflow and measurement need real
+// layout, which jsdom lacks, so they belong to QA's Timeline-BRW-001 (contract D-05).
 describe('Timeline: dynamic height', () => {
-  let offsetParentDescriptor;
-
-  beforeEach(() => {
-    // useDynamicHeight treats `element.offsetParent === null` as "mounted under a hidden
-    // ancestor" and takes the ResizeObserver-recovery branch instead of scheduling a reflow.
-    // jsdom's default offsetParent is null for every element, so without this override these
-    // tests would silently exercise the wrong branch of Timeline.jsx's dynamic-height wiring.
-    offsetParentDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetParent');
-    Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
-      configurable: true,
-      get() {
-        return this.parentElement;
-      },
-    });
-    widget.setup();
-  });
-  afterEach(() => {
-    Object.defineProperty(HTMLElement.prototype, 'offsetParent', offsetParentDescriptor);
-    widget.teardown();
-  });
-
-  const tempLayout = () => widget.session.store.read((state) => state.temporaryLayouts[ID]);
-
-  test('[Timeline-DYN-001] dynamicHeight wiring re-triggers on data/hideDate change', async () => {
-    // Break this catches: narrowing useDynamicHeight's effect dependency away from
-    // JSON.stringify({data, hideDate}) stops the reflow from re-running when only the list
-    // content changes, leaving stale temporary layout height behind.
-    const { container } = widget.render({
-      properties: { dynamicHeight: binding('{{true}}') },
-      currentMode: 'view',
-    });
-    const layoutElement = container.querySelector('[data-cy="draggable-widget-timeline1"]');
-    layoutElement.classList.add(`ele-${ID}`);
-    layoutElement.dataset.layoutContext = 'root';
-    // getDynamicElementSelector also scopes by module; the top-level app is 'canvas'.
-    layoutElement.dataset.moduleId = 'canvas';
-
-    await widget.session.store.act((state) => state.clearTemporaryLayouts());
-    await setProperty(
-      'data',
-      "{{ [{title:'Reflowed', subTitle:'R', date:'2021-01-01', iconBackgroundColor:'#000'}] }}"
-    );
-    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
-
-    await widget.session.store.act((state) => state.clearTemporaryLayouts());
-    await setProperty('hideDate', true);
-    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
-  });
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
 
   test('[Timeline-DYN-002] dynamicHeight only applies in Viewer, not in the Editor canvas', async () => {
-    // Break this catches: dropping the `currentMode === 'view'` half of the gate would apply
-    // `height: 'auto'` in the Editor too, destabilizing canvas geometry while authoring.
-    const { container } = widget.render({
-      properties: { dynamicHeight: binding('{{true}}') },
-      currentMode: 'edit',
-    });
-    const card = () => container.querySelector('.card');
+    // Break this catches: either half of `dynamicHeight && currentMode === 'view'` going wrong.
+    // Dropping the mode check applies `height: auto` in the Editor, destabilizing canvas geometry
+    // while authoring; breaking the Viewer branch silently stops Timeline growing with its items.
+    const card = () => document.querySelector('.card');
 
-    await waitFor(() => expect(items(container)).toHaveLength(3));
-    expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' });
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+    await waitFor(() => expect(document.querySelectorAll('.list-timeline > li')).toHaveLength(3));
+    expect(card()).toHaveStyle({ height: 'auto', minHeight: '36px', overflow: 'visible' });
+
+    widget.render({ properties: { dynamicHeight: binding('{{false}}') }, currentMode: 'view' });
+    await waitFor(() => expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' }));
+    expect(card().style.minHeight).toBe('');
+
+    widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'edit' });
+    await waitFor(() => expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' }));
     expect(card().style.minHeight).toBe('');
   });
 });
