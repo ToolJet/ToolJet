@@ -201,6 +201,18 @@ describe('Agent-backed attachment metadata', () => {
     expect(records.has(first.id)).toBe(true);
   });
 
+  it('removes remote originals after conversation deletion and retains metadata when deletion fails', async () => {
+    query.mockResolvedValueOnce([{ id: ids[0], user_id: owner.id }]).mockResolvedValueOnce([]);
+    await service.cleanupDeletedConversations(owner.organizationId);
+    expect(agent.attachmentRequest).toHaveBeenCalledWith(owner, 'DELETE', ids[0]);
+    expect(repository.delete).toHaveBeenCalledWith(ids[0]);
+    repository.delete.mockClear();
+    query.mockResolvedValueOnce([{ id: ids[1], user_id: owner.id }]);
+    agent.attachmentRequest.mockRejectedValueOnce(new Error('temporary provider failure'));
+    await expect(service.cleanupDeletedConversations(owner.organizationId)).rejects.toThrow();
+    expect(repository.delete).not.toHaveBeenCalled();
+  });
+
   it('checks the owner again when retaining files', async () => {
     const uploaded = await service.upload(owner, file());
     await expect(service.retain({ ...owner, id: 'other-user' }, [uploaded.id], manager, 'synthetic-thread')).rejects.toBeInstanceOf(

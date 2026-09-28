@@ -21,6 +21,7 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { EncryptionModule } from '@modules/encryption/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AiAttachmentService } from './services/ai-attachment.service';
+import { AiAttachmentCleanupListener } from './services/ai-attachment-cleanup.listener';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -75,7 +76,7 @@ export class AiModule extends SubModule {
         PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService] : []),
+        ...(isMainImport ? [AiService, AiCacheService, AiAttachmentCleanupListener] : []),
       ],
       exports: [AiUtilService],
     };

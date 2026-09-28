@@ -36,6 +36,23 @@ export class AiAttachmentService {
     return this.dataSource.getRepository(AiAttachment);
   }
 
+  async cleanupDeletedConversations(organizationId: string) {
+    // SET NULL preserves the deletion receipt until the remote original is removed. Process small
+    // batches after the app transaction commits; failures are retried by the next upload sweep.
+    for (;;) {
+      const rows = await this.dataSource.query(
+        `SELECT id, user_id FROM ai_attachments WHERE organization_id = $1
+          AND state = 'attached' AND conversation_id IS NULL AND user_id IS NOT NULL LIMIT 100`,
+        [organizationId]
+      );
+      if (!rows.length) return;
+      for (const row of rows) {
+        await this.agent.attachmentRequest({ id: row.user_id, organizationId }, 'DELETE', row.id);
+        await this.repository.delete(row.id);
+      }
+    }
+  }
+
   private assertOwner(user: AttachmentOwner) {
     if (!user?.id || !user.organizationId) throw new BadRequestException('A user and workspace are required.');
   }
@@ -80,7 +97,7 @@ export class AiAttachmentService {
         await this.lockWorkspace(manager, user);
         // Bounded cleanup; keep metadata if remote deletion fails so the next sweep can retry.
         const stale = await manager.query(
-          `SELECT id, user_id FROM ai_attachments WHERE organization_id = $1 AND (
+          `SELECT id, user_id FROM ai_attachments WHERE organization_id = $1 AND user_id IS NOT NULL AND (
             (state = 'draft' AND created_at < NOW() - INTERVAL '24 hours') OR
             (state = 'attached' AND conversation_id IS NULL)) ORDER BY created_at LIMIT 100`, [user.organizationId]
         );
