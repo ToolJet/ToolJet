@@ -93,7 +93,20 @@ const widget = createWidgetHarness({
 });
 
 const exposed = (key) => widget.exposed()?.[key];
+const debuggerLogs = () => store().debugger.logs;
 const table = () => document.querySelector('table');
+// bodyRowCount() briefly overshoots to the full unpaginated count during the
+// virtualizer's first reflow before pagination state settles; draining
+// repeatedly rides past that transient frame to the value that actually sticks.
+const settledBodyRowCount = async () => {
+  let count;
+  for (let i = 0; i < 10; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await drain();
+    count = bodyRowCount();
+  }
+  return count;
+};
 const headerCell = (name) => document.querySelector(`[data-cy="${name}-column-header"]`);
 // The synthetic `selection` column always renders a <th> (even with
 // showBulkSelector off, its header render-fn just returns null), whose
@@ -296,6 +309,28 @@ describe('Table: pagination', () => {
     widget.render({ properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{2}}') } });
 
     await waitFor(() => expect(bodyRowCount()).toBe(2));
+  });
+
+  test('[Table-PAG-005] rowsPerPage of 0 or negative falls back to the default page size and is flagged invalid', async () => {
+    widget.render({ properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{0}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    // Falls back to the default of 10, so every one of the 5 rows renders on a
+    // single page instead of a blank table with a degenerate pageSize of 0.
+    expect(await settledBodyRowCount()).toBe(MANY_ROWS.length);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('Number of rows per page'))).toBe(
+      true
+    );
+
+    widget.render({
+      properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{-5}}') },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    expect(await settledBodyRowCount()).toBe(MANY_ROWS.length);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('Number of rows per page'))).toBe(
+      true
+    );
   });
 
   test('[Table-PAG-003] enablePagination off renders every row on one page, in both pagination modes', async () => {
