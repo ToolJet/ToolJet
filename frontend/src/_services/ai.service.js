@@ -3,7 +3,6 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
-  uploadAttachment,
   downloadAttachment,
   removeAttachment,
   sendMessage,
@@ -26,18 +25,6 @@ export const aiService = {
   getOpenRouterModels,
   getProviderModels,
 };
-
-function uploadAttachment(file, signal) {
-  const body = new FormData();
-  body.append('file', file);
-  return fetch(`${config.apiUrl}/ai/attachments`, {
-    method: 'POST',
-    headers: authHeader(true),
-    credentials: 'include',
-    body,
-    signal,
-  }).then(handleAITextResponse);
-}
 
 async function downloadAttachment(id, signal) {
   const response = await fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content`, {
@@ -99,24 +86,42 @@ const AI_STREAM_STALL_TIMEOUT_MS = 30000;
 async function sendMessage(body, onMessage, isDocs = false) {
   const fullResponse = [];
   const url = isDocs ? `${config.apiUrl}/ai/conversation/docs-message` : `${config.apiUrl}/ai/conversation/message`;
+  const { attachments = [], ...payload } = body;
+  const files = attachments.filter((file) => file instanceof File);
+  const retained = attachments.filter((file) => !(file instanceof File));
+  if (retained.length) payload.attachmentIds = retained.map((file) => file.id);
+  let requestBody = JSON.stringify(payload);
+  const headers = { ...authHeader() };
+  if (files.length) {
+    if (isDocs) throw new Error('Attachments are supported in builder chats.');
+    const form = new FormData();
+    form.append('payload', requestBody);
+    files.forEach((file) => form.append('files', file));
+    requestBody = form;
+    // The browser supplies the multipart boundary.
+    delete headers['Content-Type'];
+    delete headers['content-type'];
+  } else {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const controller = new AbortController();
   let stalled = false;
   let stallTimer = null;
-  const armStallTimer = () => {
+  const armStallTimer = (timeout = AI_STREAM_STALL_TIMEOUT_MS) => {
     if (stallTimer) clearTimeout(stallTimer);
     stallTimer = setTimeout(() => {
       stalled = true;
       controller.abort();
-    }, AI_STREAM_STALL_TIMEOUT_MS);
+    }, timeout);
   };
 
   try {
-    armStallTimer();
+    armStallTimer(files.length ? 120000 : AI_STREAM_STALL_TIMEOUT_MS);
     await fetchEventSource(url, {
       method: 'POST',
-      headers: { ...authHeader(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers,
+      body: requestBody,
       credentials: 'include',
       signal: controller.signal,
       retryStrategy: {

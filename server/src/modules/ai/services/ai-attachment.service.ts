@@ -238,6 +238,22 @@ export class AiAttachmentService {
     return { deleted: true };
   }
 
+  // Only newly created IDs held by the failed server-side submission may be passed here.
+  async discardFailedSubmission(user: AttachmentOwner, ids: string[], conversationId: string) {
+    await this.dataSource.transaction(async (manager) => {
+      await this.lockWorkspace(manager, user);
+      const repository = manager.getRepository(AiAttachment);
+      const files = await repository.find({
+        where: { id: In(ids), organizationId: user.organizationId, userId: user.id },
+      });
+      for (const file of files) {
+        if (file.state === 'attached' && file.conversationId !== conversationId) continue;
+        await this.agent.attachmentRequest(user, 'DELETE', file.id);
+        await repository.delete({ id: file.id });
+      }
+    });
+  }
+
   async download(user: AttachmentOwner, id: string) {
     const file = await this.findOwned(user, id);
     const body = await this.agent.attachmentRequest(user, 'GET', id);

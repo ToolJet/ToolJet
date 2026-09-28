@@ -221,6 +221,23 @@ describe('Agent-backed attachment metadata', () => {
     expect(records.get(uploaded.id).attachedAt).toBeUndefined();
   });
 
+  it('removes new originals and metadata after a failed submission, including already-retained files', async () => {
+    const uploaded = await service.upload(owner, file());
+    await service.retain(owner, [uploaded.id], manager, 'failed-chat');
+    await service.discardFailedSubmission(owner, [uploaded.id], 'failed-chat');
+    expect(originals.has(uploaded.id)).toBe(false);
+    expect(records.has(uploaded.id)).toBe(false);
+  });
+
+  it('failed-submission cleanup cannot delete another user or conversation originals', async () => {
+    const uploaded = await service.upload(owner, file());
+    await service.retain(owner, [uploaded.id], manager, 'different-chat');
+    await service.discardFailedSubmission(owner, [uploaded.id], 'failed-chat');
+    await service.discardFailedSubmission({ ...owner, id: 'other-user' }, [uploaded.id], 'different-chat');
+    expect(originals.has(uploaded.id)).toBe(true);
+    expect(records.has(uploaded.id)).toBe(true);
+  });
+
   it('rejects corrupted stored byte counts', async () => {
     const uploaded = await service.upload(owner, file());
     originals.set(uploaded.id, Buffer.alloc(1));
