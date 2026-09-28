@@ -290,15 +290,17 @@ export const useInput = ({
   // - a country switch passes the new one since the `country` state closure isn't updated yet in the same tick.
   const setPhoneInputValue = (value, selectedCountry = country) => {
     const countryCode = getCountryCallingCodeSafe(selectedCountry);
+    const domesticNumber = value?.replace(`+${countryCode}`, '') ?? '';
     writeValue({
       state: value,
       exposed: value,
       extras: {
         country: selectedCountry,
         countryCode: `+${countryCode}`,
+        domesticNumber,
         formattedValue: formatPhoneNumberIntl(value), // Library util formats the E.164 value to a readable format.
       },
-      forValidation: value?.replace(`+${countryCode}`, ''),
+      forValidation: domesticNumber,
     });
   };
 

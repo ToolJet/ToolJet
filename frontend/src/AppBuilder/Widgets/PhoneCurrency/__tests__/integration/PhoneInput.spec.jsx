@@ -440,6 +440,58 @@ describe('country, continued', () => {
     expect(countrySelect()).toBeTruthy(); // the flag and dial code still show
   });
 
+  // Break this catches: publishing the national number with its dial code still attached, or
+  // failing to republish it from one of the writers that can change the value.
+  //
+  // `value` is E.164, so an app that wants the number a user actually typed has to strip the dial
+  // code itself — and the correct prefix to strip changes with the selected country.
+  // `domesticNumber` is that number, digits only, and it is deliberately the SAME string the
+  // widget already hands its own validation rules, so a Regex or length rule and this variable
+  // can never disagree about what they are judging.
+  test('[PhoneInput-CSA-012] domesticNumber exposes the national number without the dial code', async () => {
+    harness.render({ properties: { value: binding('9876543210') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // The field displays '987 654 3210'; the variable carries the digits behind it.
+    expect(harness.exposed().value).toBe('+19876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
+
+  test('[PhoneInput-CSA-012] the dial code stripped is the selected country’s, not a fixed one', async () => {
+    harness.render({
+      properties: { value: binding('9876543210'), defaultCountry: binding('IN') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // Same digits under a different country: `value` gains +91, domesticNumber does not move.
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
+
+  test('[PhoneInput-CSA-012] an untouched empty field exposes an empty domesticNumber', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // An empty field reports itself empty through every variable that describes the number.
+    expect(harness.exposed().domesticNumber).toBe('');
+  });
+
+  test('[PhoneInput-CSA-012] typing and the setValue action both keep domesticNumber current', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.type(input(), '9876543210');
+    await drain();
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+
+    await harness.act('setValue', '5551234567');
+    await drain();
+    expect(harness.exposed().domesticNumber).toBe('5551234567');
+  });
+
   // Break this catches: dropping the [defaultCountry] effect, so a bound Default
   // Country would only ever apply at mount.
   test('[PhoneInput-CTY-008] a rebound default country changes the country after mount', async () => {
@@ -626,7 +678,7 @@ describe('remaining actions', () => {
   // Break this catches: widening useInput's setText registration to phone inputs, or
   // registering the deprecated disable/visibility handles. Documentation, registration
   // and runtime all agree on exactly eight actions and ten variables.
-  test('[PhoneInput-CSA-009] PhoneInput publishes exactly eight actions and ten variables, and no setText', async () => {
+  test('[PhoneInput-CSA-009] PhoneInput publishes exactly eight actions and eleven variables, and no setText', async () => {
     harness.render();
     await waitFor(() => expect(input()).toBeTruthy());
 
@@ -650,6 +702,7 @@ describe('remaining actions', () => {
       [
         'country',
         'countryCode',
+        'domesticNumber',
         'formattedValue',
         'isDisabled',
         'isLoading',
