@@ -532,13 +532,13 @@ describe('PopoverMenu', () => {
       expect(exposed().isVisible).toBe(false);
     });
 
-    test('[PopoverMenu-STA-008] trigger interaction while disabled/loading (baseline characterization, D-01)', async () => {
-      // Break this catches: adding a guard that blocks click/hover from opening the popover while
-      // disabled or loading — a legitimate fix, but per D-01 out of scope on this baseline; this
-      // test would need to change alongside that decision.
+    test('[PopoverMenu-STA-008] trigger does not open the popover while disabled or loading', async () => {
+      // Break this catches: removing the native `disabled` from the trigger button, which would
+      // let click/hover open the popover while the widget is disabled or loading (D-01).
       widget.render({ properties: { trigger: binding('click'), disabledState: binding('{{true}}') } });
+      expect(trigger()).toBeDisabled();
       await widget.session.user.click(trigger());
-      await waitFor(() => expect(popup()).toBeInTheDocument());
+      expect(popup()).not.toBeInTheDocument();
 
       widget.render({
         properties: {
@@ -547,8 +547,9 @@ describe('PopoverMenu', () => {
           loadingState: binding('{{true}}'),
         },
       });
+      expect(trigger()).toBeDisabled();
       await widget.session.user.hover(trigger());
-      await waitFor(() => expect(popup()).toBeInTheDocument());
+      expect(popup()).not.toBeInTheDocument();
     });
   });
 
