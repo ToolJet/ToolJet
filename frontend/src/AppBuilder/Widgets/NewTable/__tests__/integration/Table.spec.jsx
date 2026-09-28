@@ -1079,6 +1079,20 @@ describe('Table: row selection', () => {
     await waitFor(() => expect(exposed('selectedRow')).toEqual({}));
   });
 
+  test('[Table-BUG-017] selectRow with a key/value matching no row leaves the current selection untouched and logs a debugger error', async () => {
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(cell('email', 1));
+    await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
+
+    await widget.act('selectRow', 'id', 999);
+    await drain();
+    expect(exposed('selectedRow')).toEqual(ROWS[1]);
+    expect(exposed('selectedRowId')).toBe(1);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('selectRow'))).toBe(true);
+  });
+
   test('[Table-SEL-003] highlightSelectedRow hides the selection checkbox column even when showBulkSelector is also on', async () => {
     widget.render({ properties: { showBulkSelector: binding('{{true}}'), highlightSelectedRow: binding('{{true}}') } });
     await waitFor(() => expect(table()).toBeInTheDocument());
