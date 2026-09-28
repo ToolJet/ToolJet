@@ -465,14 +465,14 @@ describe('Table: sorting', () => {
     widget.render();
     await waitFor(() => expect(table()).toBeInTheDocument());
 
-    // TanStack's default toggle order is desc first, then asc.
-    rtlFireEvent.click(headerCell('age'));
-    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['40', '35', '30']));
-    expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'desc' }]);
-
+    // Table-SORT-007 pins asc-first as consistent across all column types.
     rtlFireEvent.click(headerCell('age'));
     await waitFor(() => expect(bodyRowOrder('age')).toEqual(['30', '35', '40']));
     expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'asc' }]);
+
+    rtlFireEvent.click(headerCell('age'));
+    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['40', '35', '30']));
+    expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'desc' }]);
   });
 
   test('[Table-SORT-COMPARATOR-001] a number column sorts numerically, not lexically', async () => {
@@ -482,7 +482,8 @@ describe('Table: sorting', () => {
     await waitFor(() => expect(table()).toBeInTheDocument());
 
     rtlFireEvent.click(headerCell('age'));
-    // desc-first click, numerically: 10, 2, 1 — a lexical sort would give 2, 10, 1.
+    rtlFireEvent.click(headerCell('age'));
+    // asc-first click, then desc, numerically: 10, 2, 1 — a lexical sort would give 1, 10, 2.
     await waitFor(() => expect(bodyRowOrder('age')).toEqual(['10', '2', '1']));
   });
 
@@ -527,7 +528,7 @@ describe('Table: sorting', () => {
     rtlFireEvent.click(headerCell('age'));
 
     await waitFor(() =>
-      expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'desc' }])
+      expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'asc' }])
     );
     // The rows the widget was handed are unchanged — a server-sorted app is expected to re-fetch, not have the widget reorder them.
     expect(bodyRowOrder('age')).toEqual(['30', '40', '35']);
@@ -567,6 +568,7 @@ describe('Table: sorting', () => {
     await waitFor(() => expect(table()).toBeInTheDocument());
 
     rtlFireEvent.click(headerCell('age'));
+    rtlFireEvent.click(headerCell('age'));
     await waitFor(() => expect(bodyRowOrder('age')).toEqual(['40', '35', '30']));
     expect(document.querySelector('[data-cy="age-sort-icon-descending"]')).toBeInTheDocument();
 
@@ -574,6 +576,47 @@ describe('Table: sorting', () => {
 
     await waitFor(() => expect(bodyRowOrder('age')).toEqual(['30', '40', '35']));
     expect(document.querySelector('[data-cy="age-sort-icon-descending"]')).not.toBeInTheDocument();
+  });
+
+  test('[Table-SORT-007] the first header click sorts every column type ascending, matching text columns', async () => {
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([
+            { name: 'Ada', age: 30, active: true },
+            { name: 'Grace', age: 40, active: false },
+            { name: 'Rosalind', age: 35, active: true },
+          ])}}}`
+        ),
+        columns: {
+          value: [
+            ...COLUMNS,
+            {
+              name: 'active',
+              key: 'active',
+              id: 'col-active',
+              columnType: 'boolean',
+              columnSize: 100,
+              isEditable: false,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    // Number column: first click must sort ascending, same as a text column's first click already does.
+    rtlFireEvent.click(headerCell('age'));
+    await waitFor(() => expect(bodyRowOrder('age')).toEqual(['30', '35', '40']));
+    expect(exposed('sortApplied')).toEqual([{ column: 'age', columnKey: 'age', direction: 'asc' }]);
+    expect(document.querySelector('[data-cy="age-sort-icon-ascending"]')).toBeInTheDocument();
+
+    // Boolean column: its own, independent first click must also be ascending.
+    rtlFireEvent.click(headerCell('active'));
+    await waitFor(() =>
+      expect(exposed('sortApplied')).toEqual([{ column: 'active', columnKey: 'active', direction: 'asc' }])
+    );
+    expect(document.querySelector('[data-cy="active-sort-icon-ascending"]')).toBeInTheDocument();
   });
 });
 
