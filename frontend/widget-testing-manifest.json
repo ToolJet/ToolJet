@@ -105,7 +105,7 @@
     },
     {
       "componentType": "CurrencyInput",
-      "status": "verified",
+      "status": "grilling",
       "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {

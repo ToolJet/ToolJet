@@ -11,15 +11,27 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { CurrencyMap, getNumberFormatConfig, parseValueToNumber } from './constants';
+import { CurrencyMap, getNumberFormatConfig, parseValueToNumber, toCanonicalAmount } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
+
+  // A Currency Input's value is a plain number, always
+  // Applying it here, before the hook sees the authored value, means the very first render already
+  // holds a canonical amount instead of text the currency library would re-parse its own way.
   const transformedProps = {
     ...props,
     inputType: 'currency',
+    properties: {
+      ...props.properties,
+      value: toCanonicalAmount(
+        props.properties?.value,
+        props.properties?.numberFormat,
+        props.properties?.decimalPlaces || 0
+      ),
+    },
   };
   const inputLogic = useInput(transformedProps);
 
@@ -129,26 +141,26 @@ export const CurrencyInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
     paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
@@ -217,11 +229,14 @@ export const CurrencyInput = (props) => {
       setExposedVariables({
         country: country,
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: parseValueToNumber(value, numberFormat),
         setCountryCode: (code) => {
           setCountry(code);
         },
       });
+      // Publish the number through the one writer rather than re-deriving it here. This has to
+      // run: the hook's own mount effect republishes the raw seed afterwards, so without a final
+      // write `value` would be left as a string instead of the number apps expect.
+      setCurrencyInputValue(value);
       isInitialRender.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

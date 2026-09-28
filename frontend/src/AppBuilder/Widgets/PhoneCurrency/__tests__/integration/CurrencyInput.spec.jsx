@@ -448,6 +448,25 @@ describe('label, placeholder and property changes', () => {
       await waitFor(() => expect(input().value).toBe('12.34'));
     }
   });
+
+  // Break this catches: normalizing an amount set by the `setValue` action while letting the
+  // Default value through untouched. The setting would then govern typing and actions but not the
+  // value the field loads with, so a field configured for whole rupees could open showing
+  // fractions of one — and the same amount would read back differently depending on how it
+  // arrived. Both paths now share one rule, `toCanonicalAmount`.
+  test('[CurrencyInput-PROP-006] the Default value obeys decimalPlaces, exactly as setValue does', async () => {
+    harness.render({ properties: { value: binding('{{1234.567}}'), decimalPlaces: binding('0') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    expect(harness.exposed().value).toBe(1234);
+    expect(input().value).toBe('1,234');
+
+    // The identical amount arriving through the action lands on the identical number.
+    await harness.act('setValue', 1234.567);
+    await drain();
+    expect(harness.exposed().value).toBe(1234);
+    expect(input().value).toBe('1,234');
+  });
 });
 
 describe('currency', () => {

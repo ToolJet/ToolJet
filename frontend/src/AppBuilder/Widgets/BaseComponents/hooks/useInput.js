@@ -3,7 +3,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
-import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { parseValueToNumber, toCanonicalAmount } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 import { getCountryCallingCodeSafe, toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
@@ -88,15 +88,6 @@ export const useInput = ({
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
   const decimalPlaces = properties?.decimalPlaces || 0;
-
-  const formatNumber = (value, digits) => {
-    const num = value?.toString();
-    if (num?.includes('.')) {
-      const [int, dec] = num.split('.');
-      return Number(int + '.' + dec.slice(0, digits));
-    }
-    return num;
-  };
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -192,13 +183,10 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      // Normalise ONCE, then feed the display string and the number from that same result.
-      // The previous shape gated formatting on `!isNaN(Number(value))`, which any separator fails,
-      // so a value like '12.56,4' or a grouped '2,500.75' copied back out of the field
-      // skipped formatting and reached the `setCurrencyInputValue` as raw text.
-      const isEmpty = value === '' || value === null || value === undefined;
-      const normalized = isEmpty ? null : Number(formatNumber(parseValueToNumber(value, numberFormat), decimalPlaces));
-      setCurrencyInputValue(isEmpty ? '' : String(normalized), isEmpty ? undefined : normalized);
+      // The same rule the Default value is normalized by, so an amount set by an action and the
+      // identical amount authored in the inspector cannot end up as different numbers.
+      const normalized = toCanonicalAmount(value, numberFormat, decimalPlaces);
+      setCurrencyInputValue(normalized, normalized === '' ? undefined : Number(normalized));
       setCountry(countryCode);
       fireEvent('onChange');
     });
