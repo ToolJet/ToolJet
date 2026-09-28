@@ -440,6 +440,58 @@ describe('country, continued', () => {
     expect(countrySelect()).toBeTruthy(); // the flag and dial code still show
   });
 
+  // Break this catches: publishing the national number with its dial code still attached, or
+  // failing to republish it from one of the writers that can change the value.
+  //
+  // `value` is E.164, so an app that wants the number a user actually typed has to strip the dial
+  // code itself — and the correct prefix to strip changes with the selected country.
+  // `domesticNumber` is that number, digits only, and it is deliberately the SAME string the
+  // widget already hands its own validation rules, so a Regex or length rule and this variable
+  // can never disagree about what they are judging.
+  test('[PhoneInput-CSA-012] domesticNumber exposes the national number without the dial code', async () => {
+    harness.render({ properties: { value: binding('9876543210') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // The field displays '987 654 3210'; the variable carries the digits behind it.
+    expect(harness.exposed().value).toBe('+19876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
+
+  test('[PhoneInput-CSA-012] the dial code stripped is the selected country’s, not a fixed one', async () => {
+    harness.render({
+      properties: { value: binding('9876543210'), defaultCountry: binding('IN') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // Same digits under a different country: `value` gains +91, domesticNumber does not move.
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
+
+  test('[PhoneInput-CSA-012] an untouched empty field exposes an empty domesticNumber', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // An empty field reports itself empty through every variable that describes the number.
+    expect(harness.exposed().domesticNumber).toBe('');
+  });
+
+  test('[PhoneInput-CSA-012] typing and the setValue action both keep domesticNumber current', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.type(input(), '9876543210');
+    await drain();
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+
+    await harness.act('setValue', '5551234567');
+    await drain();
+    expect(harness.exposed().domesticNumber).toBe('5551234567');
+  });
+
   // Break this catches: dropping the [defaultCountry] effect, so a bound Default
   // Country would only ever apply at mount.
   test('[PhoneInput-CTY-008] a rebound default country changes the country after mount', async () => {
@@ -466,15 +518,28 @@ describe('country, continued', () => {
     expect(harness.exposed().formattedValue).toBe('+1 987 654 3210');
   });
 
-  // Second mount for the same scenario. Characterization under D-04: an untouched empty
-  // field publishes the dial code and a trailing space, NOT '' — which is what `value`
-  // correctly reports. Pinned so any fix is deliberate.
-  test('[PhoneInput-CTY-009] an untouched empty field publishes a dial code and a trailing space', async () => {
+  // Second mount for the same scenario. An empty field reports itself empty through BOTH
+  // variables. This REPLACES the D-04 characterization, which pinned a dial code and a trailing
+  // space — an artifact of the mount publish building the string by hand out of the dial code and
+  // the field's DOM text. Break this catches: reintroducing a second formatting formula at mount.
+  test('[PhoneInput-CTY-009] an untouched empty field reports empty through both variables', async () => {
     harness.render({ properties: { value: binding('') } });
     await waitFor(() => expect(input()).toBeTruthy());
 
     expect(harness.exposed().value).toBe('');
-    expect(harness.exposed().formattedValue).toBe('+1 ');
+    expect(harness.exposed().formattedValue).toBe('');
+  });
+
+  // Third mount for the same scenario. A Default value carrying no digits IS an empty field, so
+  // it must publish exactly what the empty case above publishes. Break this catches: normalizing
+  // the seed only for text the library happens to accept, which would leave a digit-less Default
+  // value reporting itself empty through `value` but not through `formattedValue`.
+  test('[PhoneInput-CTY-009] a default value carrying no digits publishes as an empty field', async () => {
+    harness.render({ properties: { value: binding('abc') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    expect(harness.exposed().value).toBe('');
+    expect(harness.exposed().formattedValue).toBe('');
   });
 });
 
@@ -498,9 +563,9 @@ describe('remaining actions', () => {
     expect(harness.exposed().value).toBe('+915551234567');
   });
 
-  // Break this catches: adding setShowValidationError(true) to clearValue, which would
-  // make Form clearForm paint an untouched form red.
-  test('[PhoneInput-CSA-003] clear empties the field and fires onChange without changing message visibility', async () => {
+  // Break this catches: dropping the clear CSA's own reveal, or routing it back through the
+  // shared clear path so a Form clearForm reveals too.
+  test('[PhoneInput-CSA-003] clear empties the field, fires onChange, and reports the empty field', async () => {
     harness.render({
       properties: { value: binding('9876543210') },
       validation: { mandatory: binding('{{true}}') },
@@ -514,7 +579,32 @@ describe('remaining actions', () => {
     expect(harness.exposed().value).toBe('');
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
+    // This row previously pinned the opposite — the message stayed hidden — which was
+    // characterisation of the defect CSA-011 now covers, not a decision.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
+  });
+
+  // Break this catches: putting the reveal inside the SHARED `clearValue`, which `useFormClear`
+  // also calls — a Form clearForm would then paint every untouched mandatory field red.
+  //
+  // `clear()` is an app author asserting a value, the same family as `setText`, which already
+  // reveals. A Form reset is not: it puts the form back to its starting state and must not accuse
+  // the fields it just emptied. The two paths therefore have to diverge, which is why the reveal
+  // sits on the CSA rather than on the function both share.
+  test('[PhoneInput-CSA-011] the clear CSA reveals the error, while a Form reset stays silent', async () => {
+    // A field loaded with a value and never touched: nothing to say yet.
+    harness.render({
+      properties: { value: binding('9876543210') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
     expect(errorText()).toBeNull();
+
+    await harness.act('clear');
+    await drain();
+
+    expect(harness.exposed().isValid).toBe(false);
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: pointing setFocus at the wrong ref.
@@ -588,7 +678,7 @@ describe('remaining actions', () => {
   // Break this catches: widening useInput's setText registration to phone inputs, or
   // registering the deprecated disable/visibility handles. Documentation, registration
   // and runtime all agree on exactly eight actions and ten variables.
-  test('[PhoneInput-CSA-009] PhoneInput publishes exactly eight actions and ten variables, and no setText', async () => {
+  test('[PhoneInput-CSA-009] PhoneInput publishes exactly eight actions and eleven variables, and no setText', async () => {
     harness.render();
     await waitFor(() => expect(input()).toBeTruthy());
 
@@ -612,6 +702,7 @@ describe('remaining actions', () => {
       [
         'country',
         'countryCode',
+        'domesticNumber',
         'formattedValue',
         'isDisabled',
         'isLoading',
@@ -790,6 +881,48 @@ describe('remaining validation', () => {
     // of one control never disagree about validity.
     expect(selectControlCss()).toContain('border-color: var(--status-error-strong)');
   });
+
+  // Break this catches: judging the very first verdict on the raw Default value while every
+  // later write judges the national number. The field would then load reporting one verdict
+  // and flip to the opposite one the moment the user retyped the same number, so an app
+  // gating submit on `isValid` would act on an answer that was never about the phone number.
+  test('[PhoneInput-VAL-008] the first verdict is judged the same way as every later one', async () => {
+    // The raw Default value is fourteen characters and would clear a twelve-character
+    // minimum; the national number it denotes is ten digits and must not.
+    harness.render({ properties: { value: binding('(999) 999-9999') }, validation: { minLength: binding('12') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(harness.exposed().value).toBe('+19999999999');
+    expect(harness.exposed().isValid).toBe(false);
+
+    // Retyping the very same number must not move the verdict.
+    await userEvent.clear(input());
+    await userEvent.type(input(), '9999999999');
+
+    await waitFor(() => expect(harness.exposed().value).toBe('+19999999999'));
+    expect(harness.exposed().isValid).toBe(false);
+  });
+
+  // Break this catches: re-validating the raw state while every write judges the stripped number.
+  // Deleting the last digit leaves the phone library's own empty — `undefined`, not `''` — in
+  // state, and the two are NOT the same to a rule that permits an empty field. Editing any rule
+  // re-runs validation, so the field would silently turn invalid without the value changing.
+  test('[PhoneInput-VAL-009] re-validating an emptied field judges the same emptiness a write does', async () => {
+    harness.render({ properties: { value: binding('9876543210') }, validation: { regex: binding('^[0-9]*$') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await drain();
+    expect(harness.exposed().isValid).toBe(true);
+
+    // Adding a second rule changes `validate`, which is the only trigger for the re-validation.
+    harness.render({
+      properties: { value: binding('9876543210') },
+      validation: { regex: binding('^[0-9]*$'), maxLength: binding('20') },
+    });
+    await drain();
+
+    expect(harness.exposed().isValid).toBe(true);
+  });
 });
 
 describe('clear button', () => {
@@ -836,6 +969,109 @@ describe('clear button', () => {
     await waitFor(() => expect(harness.exposed().value).toBe(''));
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
+  });
+
+  // Break this catches: dropping the reveal from the clear button's onClick, which leaves it
+  // to `handleBlur` alone.
+  //
+  // A field that loads with a default value and is never touched has `showValidationError`
+  // false, and the clear button suppresses the blur that would flip it — its `onMouseDown`
+  // calls `preventDefault()` so the field never loses focus. So emptying a mandatory field
+  // with the button left it silently invalid: no message, no red border, and `isValid`
+  // already false underneath. The reveal sits on the button rather than in
+  // `onInputValueChange`, which is also the typing handler and must not accuse mid-edit.
+
+  // Break this catches: reverting the clear button's vertical offset, or the field height, to the
+  // constants this widget carried before. Both are the defect EmailInput-CLR-004 fixed in the
+  // shared BaseInput; PhoneInput and CurrencyInput render their own clear button and their own
+  // field box, so they kept the original bug.
+  //
+  // The button is positioned against the WHOLE widget, so a top-aligned label takes a share of it
+  // that grows with the font, and a fixed `calc(50% + 10px)` — correct only at the 12px default —
+  // left the button riding up over the label.
+  //
+  // The reported "component pops out of the wrapper" half is NOT fixed here, deliberately: measured
+  // in Chrome across 24 wrapper-height x label-size combinations, subtracting the label height from
+  // the field box changes nothing, because the flex column and the field's own min-content height
+  // already decide the layout. The overflow is real at small widget heights but it IS the
+  // contained-until-forced behaviour BaseInput shows too.
+
+  // Break this catches: putting `h-100` back on the field box, or dropping either branch of the
+  // height. `h-100` is `height: 100% !important` (tabler.scss:6829), so an inline height cannot
+  // override it — the class has to go, which then makes BOTH branches this element's job.
+  //
+  // Top-aligned the field sits below the label in a flex column, so a full wrapper height is added
+  // to the label's and the content spills out of its own widget box as the label grows. Measured in
+  // Chrome before the fix: 16.5px of overflow at a 40px widget with a 12px label, 24.5px at 20px,
+  // 32.5px at a 60px widget with a 48px label — all 0 after. The side branch restores exactly what
+  // the class used to supply; without it a side-aligned field collapsed from the widget height to
+  // its content, measured 100px -> 36.5px.
+  //
+  // jsdom computes no layout, so the geometry above is browser evidence and what is asserted here
+  // is the inline style each branch emits.
+  test('[PhoneInput-STYLE-011] the field box height follows a top label and fills the box otherwise', async () => {
+    const boxHeightAt = async (alignment, labelFontSize) => {
+      harness.render({
+        properties: { value: binding('9876543210'), label: binding('Lbl') },
+        styles: { alignment: binding(alignment), labelFontSize },
+      });
+      await waitFor(() => expect(fieldBox()).toBeTruthy());
+      return fieldBox().style.height;
+    };
+
+    // Top-aligned: the label's own height comes off the box, plus the canvas box padding.
+    expect(await boxHeightAt('top', binding('{{12}}'))).toBe('calc(100% - 20px - 4px)');
+    expect(await boxHeightAt('top', binding('{{20}}'))).toBe('calc(100% - 28px - 4px)');
+    expect(await boxHeightAt('top', binding('{{32}}'))).toBe('calc(100% - 40px - 4px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await boxHeightAt('top', binding('abc'))).toBe('calc(100% - 20px - 4px)');
+
+    // Side-aligned: the label takes no vertical space, so the field fills the widget box as it
+    // always did. This is the half the `h-100` removal would otherwise have silently dropped.
+    expect(await boxHeightAt('side', binding('{{32}}'))).toBe('100%');
+    expect(await boxHeightAt('side', binding('{{12}}'))).toBe('100%');
+  });
+
+  test('[PhoneInput-CLR-006] the clear button stays centred on the field as a top label grows', async () => {
+    const atLabelSize = async (labelFontSize) => {
+      harness.render({
+        properties: { value: binding('9876543210'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+        styles: { alignment: binding('top'), labelFontSize },
+      });
+      await waitFor(() => expect(clearButton()).toBeTruthy());
+      return clearButton().style.top;
+    };
+
+    // Half the label's own height, so the button lands on the middle of the field.
+    expect(await atLabelSize(binding('{{12}}'))).toBe('calc(50% + 10px)');
+    expect(await atLabelSize(binding('{{20}}'))).toBe('calc(50% + 14px)');
+    expect(await atLabelSize(binding('{{32}}'))).toBe('calc(50% + 20px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await atLabelSize(binding('abc'))).toBe('calc(50% + 10px)');
+
+    // A side-aligned label takes no vertical space, so there is nothing to offset or subtract.
+    harness.render({
+      properties: { value: binding('9876543210'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+      styles: { alignment: binding('side'), labelFontSize: binding('{{32}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(clearButton().style.top).toBe('50%');
+  });
+
+  test('[PhoneInput-CLR-005] clearing a mandatory field reveals the error with no prior blur', async () => {
+    harness.render({
+      properties: { value: binding('9876543210'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await userEvent.click(clearButton());
+
+    await waitFor(() => expect(input().value).toBe(''));
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: reading only showClearBtn and the value, so a disabled or
@@ -885,6 +1121,25 @@ describe('inside a Form', () => {
 
   // Break this catches: dropping useFormClear(clearValue) — the Form's clearForm
   // action could no longer empty its fields.
+  // Break this catches: putting the clear CSA's reveal inside the SHARED `clearValue`, which
+  // `useFormClear` also calls — a Form clearForm would then paint every untouched mandatory field
+  // red. A Form reset puts the form back to its starting state and must not accuse the fields it
+  // just emptied, unlike `clear()`, which is an app author asserting a value.
+  test('[PhoneInput-CSA-011] a Form clearForm empties the field without accusing it', async () => {
+    harness.renderInsideForm({
+      properties: { value: binding('9876543210') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(input()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await formAct('clearForm');
+
+    await waitFor(() => expect(input().value).toBe(''));
+    expect(harness.exposed().isValid).toBe(false); // invalid underneath...
+    expect(errorText()).toBeNull(); // ...but the form is not painted red
+  });
+
   test('[PhoneInput-FORM-002] the Form clearForm action empties the child field', async () => {
     harness.renderInsideForm({ properties: { value: binding('9876543210') } });
     await waitFor(() => expect(input()).toBeTruthy());

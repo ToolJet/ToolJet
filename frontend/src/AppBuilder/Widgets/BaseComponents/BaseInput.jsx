@@ -96,15 +96,15 @@ export const BaseInput = ({
   const computedIconColor = shouldUsePlaceholderTextColorForIcon
     ? placeholderTextColor
     : iconColor !== '#CFD3D859'
-    ? iconColor
-    : 'var(--icons-weak-disabled)';
+      ? iconColor
+      : 'var(--icons-weak-disabled)';
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
     ...(shouldOverridePlaceholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
@@ -134,11 +134,11 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-      ? // Half the label's own height: the button is positioned against the whole widget,
-        // so it must be pushed down by half of whatever the top-aligned label consumes to
-        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
-        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
-      : '50%';
+        ? // Half the label's own height: the button is positioned against the whole widget,
+          // so it must be pushed down by half of whatever the top-aligned label consumes to
+          // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+          `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
+        : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (
     <button
@@ -212,6 +212,10 @@ export const BaseInput = ({
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className={cn(
             'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
+            // The error border is an inline style, which the container's hover rule overrides
+            // with `!important`. This flag opts the field out of that rule so a revealed error
+            // survives the pointer passing over it.
+            { 'tj-input-has-error': !isValid && showValidationError },
             classes?.inputContainer
           )}
           style={{
@@ -220,23 +224,23 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                ? accentColor != '4368E3'
-                  ? accentColor
-                  : 'var(--primary-accent-strong)'
-                : borderColor != '#CCD1D5'
-                ? borderColor
-                : disable || loading
-                ? '1px solid var(--borders-disabled-on-white)'
-                : 'var(--borders-default)',
+                  ? accentColor != '4368E3'
+                    ? accentColor
+                    : 'var(--primary-accent-strong)'
+                  : borderColor != '#CCD1D5'
+                    ? borderColor
+                    : disable || loading
+                      ? '1px solid var(--borders-disabled-on-white)'
+                      : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                ? darkMode
-                  ? 'var(--surfaces-app-bg-default)'
-                  : 'var(--surfaces-surface-03)'
-                : 'var(--surfaces-surface-01)',
+                  ? darkMode
+                    ? 'var(--surfaces-app-bg-default)'
+                    : 'var(--surfaces-surface-03)'
+                  : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&

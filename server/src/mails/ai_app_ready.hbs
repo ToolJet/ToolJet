@@ -1,0 +1,46 @@
+<table align="center" class="content-body">
+  <tr>
+    <td class="content-body_wrap padding-x-40">
+      <table>
+        <tr>
+          <td>
+            <p>Hey {{name}},</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-20">
+            <p>
+              {{whiteLabelText}} just finished building your
+              <span class="text-bold">{{appName}}</span>, see what it built!
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-20">
+            <a href={{appUrl}} target="_blank" class="padding-r-40">
+              <button class="primary-btn">
+                View app
+              </button>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-10">
+            <p style="font-size: 14px; color: #555;">
+              If the button isn't accessible, copy and paste this link into your browser:
+              <br />
+              <span style="color: #555; word-break: break-all;">{{appUrl}}</span>
+            </p>
+          </td>
+        </tr>
+        {{#if (eq whiteLabelText "ToolJet")}}
+        <tr>
+          <td class="padding-y-10 footer-note">
+            <span>– The ToolJet Team</span>
+          </td>
+        </tr>
+        {{/if}}
+      </table>
+    </td>
+  </tr>
+</table>
