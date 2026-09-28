@@ -6,7 +6,11 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
 } from '@tanstack/react-table';
-import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
+import {
+  applyFilters,
+  getComparableValues,
+  matchesAnyValue,
+} from '../_components/Header/_components/Filter/filterUtils';
 
 export function useTable({
   id,
@@ -102,6 +106,7 @@ export function useTable({
         return applyFilters(row, columnId, filters);
       },
     },
+    // Overrides the raw cell value with its edited (changeset) value, if any, before matching.
     globalFilterFn: (row, columnId, filterValue) => {
       const accessorKey = row.getAllCells().find((cellItem) => cellItem.column.id === columnId)?.column
         .columnDef.accessorKey;
@@ -109,9 +114,8 @@ export function useTable({
       const cellValue =
         editedFields && Object.prototype.hasOwnProperty.call(editedFields, accessorKey)
           ? editedFields[accessorKey]
-          : row.getValue(columnId);
-      const value = String(cellValue || '').toLowerCase();
-      return value.includes(String(filterValue).toLowerCase());
+          : undefined;
+      return matchesAnyValue(getComparableValues(row, columnId, cellValue), filterValue);
     },
     getColumnCanGlobalFilter: (column) => column.getIsVisible(),
     manualPagination: serverSidePagination,

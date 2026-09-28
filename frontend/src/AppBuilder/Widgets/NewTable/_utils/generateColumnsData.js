@@ -675,6 +675,52 @@ export default function generateColumnsData({
         };
       }
 
+      // Lets filter/search match the cell's displayed text too, not just its raw stored value.
+      if (['select', 'newMultiSelect', 'tagsV2'].includes(columnType)) {
+        columnDef.meta.getFilterDisplayValues = (rawValue) => {
+          if (rawValue === null || rawValue === undefined || rawValue === '') return [rawValue];
+          const options = column?.options ?? [];
+          const rawValues = Array.isArray(rawValue) ? rawValue : [rawValue];
+          return rawValues.flatMap((item) => {
+            const value = item !== null && typeof item === 'object' ? item.value : item;
+            const match = options.find((option) => option.value === value);
+            return match ? [value, match.label] : [value];
+          });
+        };
+      } else if (columnType === 'datepicker') {
+        columnDef.meta.getFilterDisplayValues = (rawValue) => {
+          if (rawValue === null || rawValue === undefined || rawValue === '') return [rawValue];
+
+          const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
+          const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
+          const isTwentyFourHrFormatEnabled = getResolvedValue(column?.isTwentyFourHrFormatEnabled) ?? false;
+
+          const parsedDate = parseDate({
+            value: rawValue,
+            parseDateFormat: getDateTimeFormat(
+              column?.parseDateFormat,
+              isTimeChecked,
+              isTwentyFourHrFormatEnabled,
+              isDateSelectionEnabled
+            ),
+            timeZoneValue: column?.timeZoneValue,
+            timeZoneDisplay: column?.timeZoneDisplay,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
+            parseInUnixTimestamp,
+            isTimeChecked,
+          });
+          if (!parsedDate) return [rawValue];
+
+          const displayFormat = getDateTimeFormat(
+            column?.dateFormat,
+            isTimeChecked,
+            isTwentyFourHrFormatEnabled,
+            isDateSelectionEnabled
+          );
+          return [rawValue, moment(parsedDate).format(displayFormat)];
+        };
+      }
+
       // Keep the element *type* constant across rebuilds; see TableCell.
       columnDef.cell = TableCell;
 
