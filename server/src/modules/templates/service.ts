@@ -6,6 +6,7 @@ import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
 import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import { TooljetDbBulkUploadService } from '@modules/tooljet-db/services/tooljet-db-bulk-upload.service';
 import { User } from '@entities/user.entity';
 import { AppsRepository } from '@modules/apps/repository';
@@ -47,13 +48,13 @@ export class TemplatesService {
     const existNameList = allSampleApps.map((app) => app.name);
     const maxNumber = getMaxCopyNumber(existNameList, ' ');
     const nameWithCount = `${name} ${maxNumber}`;
-    const sampleAppDef = JSON.parse(readFileSync(`templates/sample_app_def.json`, 'utf-8'));
+    const sampleAppDef = this.readTemplateJson('templates/sample_app_def.json');
     return this.importTemplate(currentUser, sampleAppDef, nameWithCount);
   }
 
   async createSampleOnboardApp(currentUser: User) {
     const name = 'Product inventory';
-    const sampleAppDef = JSON.parse(readFileSync(`templates/onboard_sample_app.json`, 'utf-8'));
+    const sampleAppDef = this.readTemplateJson('templates/onboard_sample_app.json');
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
 
@@ -111,12 +112,22 @@ export class TemplatesService {
 
   findTemplateDefinition(identifier: string) {
     try {
-      return JSON.parse(readFileSync(`templates/${identifier}/definition.json`, 'utf-8'));
+      return this.readTemplateJson(`templates/${identifier}/definition.json`);
     } catch (err) {
       this.logger.error(err);
       throw new BadRequestException('App definition not found');
     }
   }
+
+  // Templates may be stored Brotli-compressed as `<file>.br`; fall back to the plain JSON file.
+  protected readTemplateJson(filePath: string) {
+    const compressedPath = `${filePath}.br`;
+    const contents = fs.existsSync(compressedPath)
+      ? zlib.brotliDecompressSync(readFileSync(compressedPath))
+      : readFileSync(filePath);
+    return JSON.parse(contents.toString('utf-8'));
+  }
+
   async processCsvFile(identifier: string, tableName: string, tableId: string, organizationId: string) {
     try {
       const csvFilePath = path.join('templates', `${identifier}/data/${tableName}/data.csv`);
