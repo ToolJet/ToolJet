@@ -49,7 +49,7 @@ export const BaseDateComponent = ({
     labelColor,
     alignment,
     direction,
-    iconDirection,
+    iconDirection: iconDirectionRaw,
     fieldBorderColor,
     fieldBackgroundColor,
     labelWidth,
@@ -62,6 +62,9 @@ export const BaseDateComponent = ({
     widthType,
     labelFontSize,
   } = styles;
+
+  // Icon position supports only 'left' | 'right'; any other value (e.g. set via fx) falls back to 'left'
+  const iconDirection = iconDirectionRaw === 'right' ? 'right' : 'left';
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
