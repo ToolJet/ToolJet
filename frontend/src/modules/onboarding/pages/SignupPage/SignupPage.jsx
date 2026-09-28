@@ -11,13 +11,11 @@ import {
 } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SignupForm, SignupSuccessInfo } from './components';
-import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
+import { FeatureGraphicRightPanel } from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import * as envConfigs from 'config';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 import { LinkExpiredCard } from '@/modules/common/components';
-import './resources/styles/signup-page.styles.scss';
-import SignupFeatureImage from '@/modules/common/components/SignupFeatureImage';
 
 const SignupPage = ({ configs, organizationId }) => {
   const edition = fetchEdition();
@@ -179,7 +177,7 @@ const SignupPage = ({ configs, organizationId }) => {
 
   return (
     <OnboardingBackgroundWrapper
-      className="signup-page-layout"
+      className="feature-graphic-layout"
       LeftSideComponent={() => (
         <SignupForm
           configs={configs}
@@ -193,11 +191,9 @@ const SignupPage = ({ configs, organizationId }) => {
           initialData={signingUserInfo}
         />
       )}
-      RightSideComponent={SignupPageRightPanel}
+      RightSideComponent={FeatureGraphicRightPanel}
     />
   );
 };
-
-const SignupPageRightPanel = () => <LoginPageRightPanel DefaultImage={SignupFeatureImage} />;
 
 export default SignupPage;

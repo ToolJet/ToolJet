@@ -68,3 +68,30 @@ $max-frame-ratio: 1.25;
 .dark-theme .signup-feature-image__frame {
     background: var(--page-page-default, #181B1F);
 }
+
+// Page layout for OnboardingBackgroundWrapper's `feature-graphic-layout` className:
+// the form is centred in whatever space the graphic leaves
+@media (min-width: 768px) {
+    .onboarding-background-wrapper.feature-graphic-layout {
+        .row {
+            flex-wrap: nowrap;
+        }
+
+        .leftside-wrapper {
+            flex: 1 1 auto;
+            width: auto;
+            padding-left: 0;
+            justify-content: center !important;
+        }
+
+        .rightside-wrapper:has(.signup-feature-image) {
+            flex: 0 0 auto;
+            width: auto;
+        }
+
+        // Graphic hidden for a white-labelled logo: the form centres on the whole page
+        .rightside-wrapper:empty {
+            display: none !important;
+        }
+    }
+}
