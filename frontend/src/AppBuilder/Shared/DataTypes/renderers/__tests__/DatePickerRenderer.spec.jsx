@@ -118,3 +118,49 @@ describe('[Table-BUG-012] disabledDates clearing', () => {
     expect(day).toHaveAttribute('aria-disabled', 'false');
   });
 });
+
+describe('"Invalid date" after edit when Date format and Parse format differ', () => {
+  test('[Table-BUG-016] rerendering with the just-committed value (now in Date format, not Parse format) keeps the correct date instead of showing "Invalid date"', async () => {
+    // Mirrors the changeSet round-trip: generateColumnsData.js feeds back the
+    // edited row's changeSet value as the next `value` prop, once a cell has
+    // been edited. That value is expressed in dateDisplayFormat (what
+    // handleDateChange/computeDateString emit), not parseDateFormat (what
+    // raw, unedited source data is in) — the two formats are configured
+    // independently and are not expected to match.
+    const rawValue = '2026-05-15'; // raw source data, in Parse format
+    const handleChange = jest.fn();
+
+    const { rerender } = render(
+      <DatePickerRenderer
+        {...baseProps}
+        dateDisplayFormat="DD MMM YYYY"
+        parseDateFormat="YYYY-MM-DD"
+        value={rawValue}
+        onChange={handleChange}
+      />
+    );
+
+    const input = document.querySelector('.table-column-datepicker-input');
+    expect(input).toHaveValue('15 May 2026');
+
+    await pickDay('20');
+
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    const committedValue = handleChange.mock.calls[0][0];
+    expect(committedValue).toBe('20 May 2026');
+
+    // Parent re-renders the cell with the changeSet's now-committed value.
+    rerender(
+      <DatePickerRenderer
+        {...baseProps}
+        dateDisplayFormat="DD MMM YYYY"
+        parseDateFormat="YYYY-MM-DD"
+        value={committedValue}
+        onChange={handleChange}
+      />
+    );
+
+    expect(input).toHaveValue('20 May 2026');
+    expect(input).not.toHaveValue('Invalid date');
+  });
+});
