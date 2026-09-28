@@ -15,7 +15,7 @@ export const DEFAULT_BUTTON = {
   buttonLoaderColor: 'var(--cc-surface1-surface)',
   buttonIconName: 'IconHome2',
   buttonIconVisibility: false,
-  buttonIconColor: 'var(--cc-default-icon)',
+  buttonIconColor: '#FFFFFF',
   buttonIconAlignment: 'left',
 };
 
