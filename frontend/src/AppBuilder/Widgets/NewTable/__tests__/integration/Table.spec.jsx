@@ -462,16 +462,32 @@ describe('Table: pagination', () => {
     expect(paginationButton('pagination-button-to-last')).not.toBeInTheDocument();
   });
 
-  test.failing(
-    '[Table-BUG-002] setPage(0) clamps to a valid page instead of writing an unclamped/negative index',
-    async () => {
-      widget.render();
-      await waitFor(() => expect(table()).toBeInTheDocument());
+  test('[Table-BUG-002] setPage rejects zero, out-of-range, and non-numeric targets with a debugger error instead of corrupting pagination', async () => {
+    // 2/page over 5 rows is 3 pages, so both a zero and an out-of-range target are exercisable.
+    widget.render({ properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{2}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+    await waitFor(() => expect(exposed('pageIndex')).toBe(1));
 
-      await widget.act('setPage', 0);
-      expect(exposed('pageIndex')).toBeGreaterThanOrEqual(1);
-    }
-  );
+    await widget.act('setPage', 0);
+    expect(exposed('pageIndex')).toBe(1);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('setPage'))).toBe(true);
+
+    store().debugger.clear();
+    await widget.act('setPage', 999);
+    expect(exposed('pageIndex')).toBe(1);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('setPage'))).toBe(true);
+
+    store().debugger.clear();
+    await widget.act('setPage', 'abc');
+    expect(exposed('pageIndex')).toBe(1);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('setPage'))).toBe(true);
+
+    // A valid target still applies normally, with no debugger log.
+    store().debugger.clear();
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('setPage'))).toBe(false);
+  });
 });
 
 const bodyRowOrder = (columnHeader, count = 3) => Array.from({ length: count }, (_, i) => cellText(columnHeader, i));
