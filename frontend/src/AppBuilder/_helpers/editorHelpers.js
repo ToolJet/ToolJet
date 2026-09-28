@@ -32,10 +32,10 @@ import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput'
 import { IFrame } from '@/AppBuilder/Widgets/IFrame';
 import { Timer } from '@/AppBuilder/Widgets/Timer';
 import { Statistics } from '@/AppBuilder/Widgets/Statistics';
-import { Pagination } from '@/AppBuilder/Widgets/Pagination';
+import { Pagination } from '@/AppBuilder/Widgets/Pagination/Pagination';
 import { Tags } from '@/AppBuilder/Widgets/Tags/Tags';
 import { Spinner } from '@/AppBuilder/Widgets/Spinner';
-import { CircularProgressBar } from '@/AppBuilder/Widgets/CirularProgressbar';
+import { CircularProgressBar } from '@/AppBuilder/Widgets/CircularProgressBar/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
 import { RangeSliderV2 } from '@/AppBuilder/Widgets/RangeSliderV2';
 import { Timeline } from '@/AppBuilder/Widgets/Timeline';
