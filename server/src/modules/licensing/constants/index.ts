@@ -95,6 +95,7 @@ export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',
   TABLE_COUNT = 'tableCount',
+  TJDB_ROW_COUNT = 'tjdbRowCount',
   TOTAL_USERS = 'usersCount',
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
@@ -166,6 +167,9 @@ export enum LICENSE_LIMITS_LABEL {
 
   //Tables
   TABLES = 'Tables',
+
+  //Rows
+  ROWS = 'Rows',
 }
 
 export enum LICENSE_TYPE {
