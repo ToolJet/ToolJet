@@ -488,8 +488,11 @@ export class OpenApiSpecProcessor extends WorkerHost {
     patch: Record<string, any>
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Locks the row for the rest of this transaction - see the matching comment on
+      // DataSourcesUtilService.writeOpenApiSpecOptions, which shares this exact race.
       const existing = await manager.findOne(DataSourceVersionOptions, {
         where: { dataSourceVersionId, environmentId },
+        lock: { mode: 'pessimistic_write' },
       });
       const options = { ...(existing?.options || {}) };
       for (const key of Object.keys(patch)) {

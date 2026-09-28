@@ -12,6 +12,7 @@ import {
 import * as protobuf from 'protobufjs';
 import got from 'got';
 import Ajv2020 from 'ajv/dist/2020';
+import { v4 as uuid } from 'uuid';
 import { InjectQueue } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
@@ -2090,6 +2091,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     const jobs = await Promise.all(
       batches.map(async (environmentIds) => {
+        const jobId = uuid();
+
         for (const environmentId of environmentIds) {
           await this.writeOpenApiSpecOptions(
             dataSourceId,
@@ -2099,7 +2102,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               [OPENAPI_SPEC_OPTION_KEYS.SOURCE_TYPE]: dto.sourceType,
               [OPENAPI_SPEC_OPTION_KEYS.URL]: dto.url || null,
               [OPENAPI_SPEC_OPTION_KEYS.RAW_SPEC]: rawSpec,
-              [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.PENDING,
+              [OPENAPI_SPEC_OPTION_KEYS.JOB_ID]: jobId,
+              [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.PROCESSING,
               [OPENAPI_SPEC_OPTION_KEYS.ERROR]: null,
             },
             branchId
@@ -2124,20 +2128,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           url: dto.url,
           definition: dto.definition,
         };
-        const job = await this.openApiSpecQueue.add(PROCESS_OPENAPI_SPEC_JOB, jobData);
-
-        for (const environmentId of environmentIds) {
-          await this.writeOpenApiSpecOptions(
-            dataSourceId,
-            organizationId,
-            environmentId,
-            {
-              [OPENAPI_SPEC_OPTION_KEYS.JOB_ID]: job.id,
-              [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.PROCESSING,
-            },
-            branchId
-          );
-        }
+        const job = await this.openApiSpecQueue.add(PROCESS_OPENAPI_SPEC_JOB, jobData, { jobId });
 
         return { jobId: job.id, environmentIds };
       })
@@ -2369,8 +2360,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
       if (!dsv) return;
 
+      // Locks the row for the rest of this transaction: this is a read-modify-write over the
+      // whole options JSON, so a concurrent writer (the processor's own updateSpecOptions, or
+      // another save on this datasource) reading the same pre-update snapshot could otherwise
+      // have its change silently clobbered by whichever transaction commits last.
       const existing = await manager.findOne(DataSourceVersionOptions, {
         where: { dataSourceVersionId: dsv.id, environmentId },
+        lock: { mode: 'pessimistic_write' },
       });
       const options = { ...(existing?.options || {}) };
       for (const key of Object.keys(patch)) {
