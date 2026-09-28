@@ -179,6 +179,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <ReactDatePicker
@@ -201,6 +202,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <Timepicker
