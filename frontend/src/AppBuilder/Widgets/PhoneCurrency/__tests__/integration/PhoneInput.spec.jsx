@@ -901,6 +901,28 @@ describe('remaining validation', () => {
     await waitFor(() => expect(harness.exposed().value).toBe('+19999999999'));
     expect(harness.exposed().isValid).toBe(false);
   });
+
+  // Break this catches: re-validating the raw state while every write judges the stripped number.
+  // Deleting the last digit leaves the phone library's own empty — `undefined`, not `''` — in
+  // state, and the two are NOT the same to a rule that permits an empty field. Editing any rule
+  // re-runs validation, so the field would silently turn invalid without the value changing.
+  test('[PhoneInput-VAL-009] re-validating an emptied field judges the same emptiness a write does', async () => {
+    harness.render({ properties: { value: binding('9876543210') }, validation: { regex: binding('^[0-9]*$') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await drain();
+    expect(harness.exposed().isValid).toBe(true);
+
+    // Adding a second rule changes `validate`, which is the only trigger for the re-validation.
+    harness.render({
+      properties: { value: binding('9876543210') },
+      validation: { regex: binding('^[0-9]*$'), maxLength: binding('20') },
+    });
+    await drain();
+
+    expect(harness.exposed().isValid).toBe(true);
+  });
 });
 
 describe('clear button', () => {

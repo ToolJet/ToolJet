@@ -45,6 +45,8 @@ export const useInput = ({
   width,
   beforeSetInputValue,
 }) => {
+  /* ── PROPERTIES AND REFS ───────────────────────────────────────────────────────────────────────────── */
+
   const isInitialRender = useRef(true);
   const inputRef = useRef();
   const labelRef = useRef();
@@ -57,37 +59,55 @@ export const useInput = ({
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
   const isResizing = useGridStore((state) => state.resizingComponentId === id);
 
+  /* ── STATE ─────────────────────────────────────────────────────────────────────────────────────────── */
+
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);
   const [loading, setLoading] = useState(loadingState);
   const [disable, setDisable] = useState(disabledState);
 
   const numberFormat = properties?.numberFormat;
-  // Value handed to validation for the currency input: a canonical numeric STRING (e.g. "1234.56").
-  // Validations use format-agnostic numeric value for the currency input.
-  const getCurrencyValidationValue = (val) =>
-    val === undefined || val === null || val === '' ? '' : String(parseValueToNumber(val, numberFormat));
+  const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
-  // The seed is judged by the SAME derivation every later write uses. Without this the very
-  // first verdict came from a different rule than every subsequent one, so whether a length rule
-  // counted the dial code depended on how the author happened to type the Default value.
-  const [validationStatus, setValidationStatus] = useState(() => {
-    if (inputType === 'currency') return validate(getCurrencyValidationValue(value));
-    if (inputType === 'phone') {
-      const code = getCountryCallingCodeSafe(properties.defaultCountry || 'US');
-      return validate(value?.replace(`+${code}`, '') ?? '');
+  /* ── VALIDATION ────────────────────────────────────────────────────────────────────────────────────── */
+
+  /**
+   * The string a widget's rules are judged against, derived from the value the field holds.
+   *
+   * Declared once, and read by all three places a verdict is reached — the seed below, the
+   * re-validation effect, and every write.
+   *
+   * Two callers need to override what they would otherwise read from state:
+   *   - `forCountry`, so a country switch judges against the country being switched TO, whose
+   *     state has not landed yet in the same tick;
+   *   - `amount`, the currency library's own parsed number, used when a write already holds it
+   *     rather than re-parsing the display string it just produced.
+   */
+  const toValidationValue = (val, { forCountry = country, amount } = {}) => {
+    // Phone rules judge the national number: the dial code is not something a user typed.
+    if (inputType === 'phone') return val?.replace(`+${getCountryCallingCodeSafe(forCountry)}`, '') ?? '';
+
+    // Currency rules judge a canonical numeric STRING (e.g. "1234.56"), so a rule is written
+    // against the amount rather than against whichever separators the format happens to use.
+    if (inputType === 'currency') {
+      const isEmpty = val === undefined || val === null || val === '';
+      return isEmpty ? '' : String(amount ?? parseValueToNumber(val, numberFormat));
     }
-    return validate(value);
-  });
+
+    return val;
+  };
+
+  const [validationStatus, setValidationStatus] = useState(() => validate(toValidationValue(value)));
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
-  const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
   const decimalPlaces = properties?.decimalPlaces || 0;
+
+  /* ── LABEL WIDTH CALCULATION ───────────────────────────────────────────────────────────────────────── */
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -108,6 +128,11 @@ export const useInput = ({
     width,
     labelRef?.current?.getBoundingClientRect()?.width,
   ]);
+
+  /* ── EXPOSED VARIABLES ─────────────────────────────────────────────────────────────────────────────── */
+
+  // One effect per property, each guarded against the mount pass because the batch at the end of
+  // this section publishes the initial values in a single write.
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -139,15 +164,7 @@ export const useInput = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    let validationStatus;
-    if (inputType === 'phone') {
-      const countryCode = getCountryCallingCodeSafe(country);
-      validationStatus = validate(value?.replace(`+${countryCode}`, ''));
-    } else if (inputType === 'currency') {
-      validationStatus = validate(getCurrencyValidationValue(value));
-    } else {
-      validationStatus = validate(value);
-    }
+    const validationStatus = validate(toValidationValue(value));
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   }, [validate]);
@@ -163,6 +180,8 @@ export const useInput = ({
       setInputValue(properties.value ?? '');
     }
   }, [properties.value]);
+
+  /* ── EXPOSED CSAs ──────────────────────────────────────────────────────────────────────────────────── */
 
   useEffect(() => {
     if (inputType !== 'phone') return;
@@ -247,6 +266,8 @@ export const useInput = ({
     isInitialRender.current = false;
   }, []);
 
+  /* ── VALUE UPDATION —───────────────────────────────────────────────────────────────────────────────── */
+
   // Every value write lands here, whatever the widget.
   //  - A value has exactly three faces and they are named on the way in:
   //     what the field STORES, what apps SEE, and what the validator JUDGES.
@@ -278,7 +299,7 @@ export const useInput = ({
   // - a country switch passes the new one since the `country` state closure isn't updated yet in the same tick.
   const setPhoneInputValue = (value, selectedCountry = country) => {
     const countryCode = getCountryCallingCodeSafe(selectedCountry);
-    const domesticNumber = value?.replace(`+${countryCode}`, '') ?? '';
+    const domesticNumber = toValidationValue(value, { forCountry: selectedCountry });
     writeValue({
       state: value,
       exposed: value,
@@ -304,8 +325,7 @@ export const useInput = ({
     writeValue({
       state: nextDisplay,
       exposed: nextNumber,
-      // Validate a canonical numeric string; empty stays empty so mandatory catches a cleared field.
-      forValidation: nextDisplay === '' ? '' : String(nextNumber),
+      forValidation: toValidationValue(nextDisplay, { amount: nextNumber }),
     });
   };
 
@@ -321,6 +341,8 @@ export const useInput = ({
     if (revealValidation) setShowValidationError(true);
     fireEvent('onChange');
   };
+
+  /* ── DOM HANDLERS ──────────────────────────────────────────────────────────────────────────────────── */
 
   const handleChange = (e) => {
     setInputValue(e.target.value);
@@ -350,6 +372,8 @@ export const useInput = ({
   };
 
   useFormClear(clearValue);
+
+  /* ── EXPORT ────────────────────────────────────────────────────────────────────────────────────────── */
 
   return {
     inputRef,
