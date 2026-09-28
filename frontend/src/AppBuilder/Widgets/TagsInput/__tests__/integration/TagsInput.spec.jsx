@@ -520,6 +520,39 @@ describe('TagsInput: search', () => {
     await waitFor(() => expect(menuOptions()).toEqual([]));
   });
 
+  test('[TagsInput-BUG-007] the placeholder is not laid out alongside the text input', async () => {
+    // Break this catches: the placeholder back in the chip flex row, pushing the caret past its text.
+    await mount();
+
+    const placeholder = [...document.querySelectorAll(`#component-${ID} div`)].find(
+      (node) => node.textContent === 'Add or select a tag' && node.children.length === 0
+    );
+
+    expect(placeholder).toBeDefined();
+    expect(placeholder.closest('.tags-input-values-wrapper')).toBeNull();
+  });
+
+  test('[TagsInput-BUG-006] no create option is offered for a label that already exists', async () => {
+    // Break this catches: offering `add "New York"` while that tag already exists.
+    await mount();
+    await openMenu();
+
+    await typeText('New York');
+
+    await waitFor(() => expect(menuOptions()).toContain('New York'));
+    expect(createFooter()).toBeNull();
+  });
+
+  test('[TagsInput-BUG-005] client-side search matches regardless of case', async () => {
+    // Break this catches: a case-sensitive match, so lowercase "new" misses "New York".
+    await mount();
+    await openMenu();
+
+    await typeText('new');
+
+    await waitFor(() => expect(menuOptions()).toContain('New York'));
+  });
+
   test('[TagsInput-SRCH-002] Server side search stops client filtering and leaves the bound list intact', async () => {
     // Break this catches: keeping the client-side text filter on in server-side
     // mode, which hides rows the query deliberately returned.
@@ -707,10 +740,8 @@ describe('TagsInput: component-specific actions', () => {
     expect(menuOptions()).toContain('brand new');
   });
 
-  test('[TagsInput-ACT-007] `selectTags` and `deselectTags` report input that is not an array', async () => {
-    // Break this catches: the `Array.isArray` guard returning silently, so a
-    // Control component event whose Tags field was typed as `['New York']`
-    // rather than `{{['New York']}}` selects nothing and reports nothing.
+  test('[TagsInput-BUG-004] `selectTags` and `deselectTags` report input that is not an array', async () => {
+    // Break this catches: the `Array.isArray` guard returning silently on a mistyped event param.
     const toast = require('react-hot-toast').default;
     const errors = jest.spyOn(toast, 'error').mockImplementation(() => {});
 
