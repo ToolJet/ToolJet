@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { App } from '@entities/app.entity';
+import { AppsRepository } from '@modules/apps/repository';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
@@ -39,7 +40,10 @@ export const STATUS_FILTER_TO_PREDICATE: Record<string, string> = {
 
 @Injectable()
 export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly appsRepository: AppsRepository
+  ) {
     super(WorkflowExecution, dataSource.createEntityManager());
   }
 
@@ -94,9 +98,18 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
     // `WHERE id IN (...)` does not preserve order, and the id query above is the single place page
     // order is established. Re-sort into it.
     const byId = new Map(decorated.map((row) => [row.id, row]));
-    const rows = ids.map((id) => byId.get(id)).filter((row): row is WorkflowExecution => row !== undefined);
+    const rows = ids
+      .map((id) => byId.get(id))
+      .filter((row): row is WorkflowExecution => row !== undefined) as ExecutionListRow[];
 
-    return { rows: rows as ExecutionListRow[], total };
+    // The join above carries raw `apps.name`, which is NULL for workflows created since the name
+    // moved onto app_versions. Resolve the canonical name the Workflows page shows.
+    await this.appsRepository.overlayWorkflowNames(
+      organizationId,
+      rows.map((row) => row.app).filter((app): app is App => !!app)
+    );
+
+    return { rows, total };
   }
 
   private applyListFilters(query: SelectQueryBuilder<WorkflowExecution>, filters: ExecutionListFilters): void {

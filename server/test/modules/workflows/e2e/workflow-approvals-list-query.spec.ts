@@ -3,6 +3,7 @@ import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.ent
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
+import { App } from '@entities/app.entity';
 import { WorkflowApprovalRequestRepository } from '@modules/workflows/repositories/workflow-approval-request.repository';
 import {
   initTestApp,
@@ -233,6 +234,32 @@ describe('approval requests list query', () => {
     expect(rows.length).toBeGreaterThan(0);
     expect(rows[0].app?.name).toBe('List wf A');
     expect(rows[0].node?.definition?.nodeName).toContain('node-');
+  });
+
+  it('maps the workflow name from its version row when apps.name is empty, as production creates it', async () => {
+    // AppsUtilService.create saves every app — workflows included — with apps.name = NULL; the
+    // name lives on the canonical app_versions row. createWorkflowForUser writes apps.name, so
+    // blank it here to match what a real create leaves behind.
+    const { user } = await setupOrganizationAndUser(app, {
+      email: 'approvals-list-versioned-name@tooljet.io',
+      password: 'password',
+      firstName: 'List',
+      lastName: 'Versioned',
+    });
+    const wf = await createWorkflowForUser(app, user, 'Versioned wf');
+    const versionId = (await createWorkflowApplicationVersion(app, wf)).id;
+    await getDefaultDataSource().getRepository(App).update(wf.id, { name: null });
+    await seed({
+      versionId,
+      organizationId: user.organizationId,
+      appId: wf.id,
+      token: 'versioned-1',
+      status: 'pending',
+    });
+
+    const { rows } = await repository.listForOrganization(user.organizationId, {}, 1, 10);
+
+    expect(rows.map((row) => row.app?.name)).toEqual(['Versioned wf']);
   });
 
   it('reports the total count of every matching row, not just the page size', async () => {
