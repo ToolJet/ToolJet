@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { randomUUID } from 'crypto';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
@@ -144,6 +145,15 @@ describe('WorkflowExecutionsController workspace routes', () => {
         expect(response.body.upcoming).toHaveLength(1);
       });
 
+      it.each([['app_id'], ['folder_id'], ['environment_id']])(
+        'should return 400 for a %s that is not a UUID',
+        async (param) => {
+          await asOwner(
+            request(app.getHttpServer()).get(`/api/workflow_executions/workspace/upcoming?${param}=not-a-uuid`)
+          ).expect(400);
+        }
+      );
+
       it('should return 403 for an end user without the workspace executions grant', async () => {
         const { user: endUser } = await createUser(app, {
           email: 'executions-upcoming-end-user@tooljet.io',
@@ -168,6 +178,16 @@ describe('WorkflowExecutionsController workspace routes', () => {
 
         // A seeded run has no BullMQ job, and runs without a job are left out of the map.
         expect(response.body).toEqual({});
+      });
+
+      it.each([
+        ['the body is missing', undefined],
+        ['executionIds is not an array', { executionIds: 'not-an-array' }],
+        ['an id is not a UUID', { executionIds: ['not-a-uuid'] }],
+        ['more than 100 ids are sent', { executionIds: Array.from({ length: 101 }, () => randomUUID()) }],
+      ])('should return 400 when %s', async (_case, body) => {
+        const req = asOwner(request(app.getHttpServer()).post('/api/workflow_executions/workspace/states'));
+        await (body === undefined ? req : req.send(body)).expect(400);
       });
 
       it('should return 403 when an id belongs to another workspace', async () => {
