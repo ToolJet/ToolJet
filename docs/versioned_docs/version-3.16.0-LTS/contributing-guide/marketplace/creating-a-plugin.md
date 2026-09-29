@@ -11,7 +11,7 @@ This guide walks you through building a plugin with the `tooljet` CLI, using two
 - **[Example 2: Twelve Data](#example-2-build-a-twelve-data-plugin)** is a stock market data plugin. It calls a REST API directly, validates an API key and returns readable errors. It's closer to what you'd build for a production API.
 
 :::info
-GitHub and Twelve Data are only examples. You don't need an account with either service to build plugins, and the same steps work for any API or database you want to connect. Pick the example closer to the service you plan to connect, or follow both.
+GitHub and Twelve Data are only examples. Your plugin can connect to any API or database, and the steps are the same. To run an example yourself, you need its credentials: a GitHub personal access token for Example 1, which requires a GitHub account, or Twelve Data's public `demo` key for Example 2, which doesn't require an account. Pick the example closer to the service you plan to connect, or follow both.
 :::
 
 ## Prerequisites
@@ -71,7 +71,7 @@ This plugin authenticates with a GitHub personal access token and supports four 
 
 To run your finished plugin, you need a GitHub personal access token. Querying public repositories only needs a token with no extra permissions.
 
-### Step 1: Create the Plugin
+#### Step 1: Create the Plugin
 
 ToolJet already ships a GitHub plugin with the ID `github`, and the CLI rejects IDs that already exist, so use a different ID such as `mygithub`. Use lowercase letters and numbers only, because the CLI uses the ID in the package name and the class name.
 
@@ -84,7 +84,7 @@ When prompted:
 - **Enter plugin display name**: `My GitHub`
 - **Select a type**: `api`
 
-### Step 2: Define the Connection Form
+#### Step 2: Define the Connection Form
 
 Replace the contents of **`marketplace/plugins/mygithub/lib/manifest.json`** with:
 
@@ -148,7 +148,7 @@ Replace the contents of **`marketplace/plugins/mygithub/lib/manifest.json`** wit
 - **`credentials`** is a `dropdown-component-flip` with the key `auth_type`. The value of each choice (`personal_access_token`) matches the property holding that choice's fields. Adding another auth method later means adding a choice to `list` and a matching property.
 - **`defaults`** preselects the only auth method, so users only see the token field.
 
-### Step 3: Define the Query Panel
+#### Step 3: Define the Query Panel
 
 Replace the contents of **`marketplace/plugins/mygithub/lib/operations.json`** with:
 
@@ -317,7 +317,7 @@ Replace the contents of **`marketplace/plugins/mygithub/lib/operations.json`** w
 
 The `operation` dropdown works like the auth dropdown in Step 2: each operation's `value` matches the property holding its inputs. Operations can share input keys, such as `owner` and `repo`.
 
-### Step 4: Define the Types
+#### Step 4: Define the Types
 
 The CLI creates `types.ts` with only an `operation` field. Replace the contents of **`marketplace/plugins/mygithub/lib/types.ts`** with types that match the keys from Steps 2 and 3:
 
@@ -343,7 +343,7 @@ export enum Operation {
 }
 ```
 
-### Step 5: Install the GitHub SDK
+#### Step 5: Install the GitHub SDK
 
 Plugins can use any npm package. Install packages from the **`marketplace/`** directory with the `--workspace` flag, using the plugin's package name from its `package.json`:
 
@@ -354,7 +354,7 @@ npm i octokit --workspace=@tooljet-marketplace/mygithub
 
 Check that `octokit` now appears under `dependencies` in **`marketplace/plugins/mygithub/package.json`**. If a package is missing from that list, the build can still pass on your machine, because the marketplace shares one `node_modules` directory across plugins, but it fails on other machines.
 
-### Step 6: Write the Query Functions
+#### Step 6: Write the Query Functions
 
 Create **`marketplace/plugins/mygithub/lib/query_operations.ts`** with one function per operation:
 
@@ -396,7 +396,7 @@ export async function getRepoPullRequests(octokit: Octokit, options: QueryOption
 }
 ```
 
-### Step 7: Implement the Query Service
+#### Step 7: Implement the Query Service
 
 Replace the contents of **`marketplace/plugins/mygithub/lib/index.ts`** with:
 
@@ -459,7 +459,7 @@ export default class Mygithub implements QueryService {
 If your API has no way to test a connection, add `"customTesting": true` to `source` in `manifest.json`. The connection form then shows no **Test connection** button.
 :::
 
-### Step 8: Build, Install and Test
+#### Step 8: Build, Install and Test
 
 1. Build the plugin from the **`marketplace/`** directory:
 
@@ -473,7 +473,7 @@ If your API has no way to test a connection, add `"customTesting": true` to `sou
    If the plugin doesn't appear, hard-refresh the page (**Cmd+Shift+R** on macOS, **Ctrl+Shift+R** on Windows and Linux). Browsers cache the marketplace list, so a normal refresh can show an old copy.
    :::
 
-3. Add a **My GitHub** datasource, paste your token and click **Test connection**.
+3. Add a **mygithub** datasource, paste your token and click **Test connection**.
 4. Create a query with the datasource, select **Get repository**, set **Owner** to `ToolJet` and **Repository** to `ToolJet`, and click **Run**. The query returns the repository's details.
 
 ## Example 2: Build a Twelve Data Plugin
@@ -486,7 +486,7 @@ This plugin connects to [Twelve Data](https://twelvedata.com), a stock and curre
 
 To run your finished plugin, use Twelve Data's public `demo` API key. It returns data for the `AAPL` stock symbol and the `EUR/USD` currency pair only. For other symbols, get a free API key from [Twelve Data](https://twelvedata.com).
 
-### Step 1: Create the Plugin
+#### Step 1: Create the Plugin
 
 ```bash
 tooljet plugin create twelvedata
@@ -497,7 +497,7 @@ When prompted:
 - **Enter plugin display name**: `Twelve Data`
 - **Select a type**: `api`
 
-### Step 2: Define the Connection Form
+#### Step 2: Define the Connection Form
 
 This API has one auth method, so the form needs a single `password` field and no auth dropdown. Replace the contents of **`marketplace/plugins/twelvedata/lib/manifest.json`** with:
 
@@ -536,7 +536,11 @@ This API has one auth method, so the form needs a single `password` field and no
 }
 ```
 
-### Step 3: Define the Query Panel
+ToolJet renders this as a connection form with a masked **API key** field, its help text and an **Encrypted** badge:
+
+<img className="screenshot-full" src="/img/contributing-guide/create-plugin/twelvedata-connection-form.png" alt="Twelve Data connection form with an encrypted API key field" />
+
+#### Step 3: Define the Query Panel
 
 Replace the contents of **`marketplace/plugins/twelvedata/lib/operations.json`** with:
 
@@ -636,7 +640,11 @@ Replace the contents of **`marketplace/plugins/twelvedata/lib/operations.json`**
 }
 ```
 
-### Step 4: Define the Types
+In the query panel, the **Operation** dropdown shows the inputs for the selected operation. For **Get time series**, that's **Symbol**, **Interval** and **Number of data points**:
+
+<img className="screenshot-full" src="/img/contributing-guide/create-plugin/twelvedata-query-panel.png" alt="Twelve Data query panel with Get time series selected" />
+
+#### Step 4: Define the Types
 
 Replace the contents of **`marketplace/plugins/twelvedata/lib/types.ts`** with:
 
@@ -660,7 +668,7 @@ export enum Operation {
 }
 ```
 
-### Step 5: Install an HTTP Client
+#### Step 5: Install an HTTP Client
 
 This plugin uses [got](https://www.npmjs.com/package/got) to make HTTP requests. From the **`marketplace/`** directory, run:
 
@@ -673,7 +681,7 @@ npm i got@14 --workspace=@tooljet-marketplace/twelvedata
 Install `got@14`, not the latest version. Newer major versions use JavaScript syntax that the marketplace's build tool (`ncc`) can't parse, and the build fails with `Module parse failed: Invalid regular expression flag`.
 :::
 
-### Step 6: Write the Query Functions
+#### Step 6: Write the Query Functions
 
 Create **`marketplace/plugins/twelvedata/lib/query_operations.ts`**. All three operations call the same API with different paths and parameters, so a shared `callTwelveData` helper sends the request and attaches the API key:
 
@@ -719,7 +727,7 @@ export function getExchangeRate(sourceOptions: SourceOptions, options: QueryOpti
 
 `getTimeSeries` falls back to daily data points and 30 results when the user leaves those inputs empty.
 
-### Step 7: Implement the Query Service
+#### Step 7: Implement the Query Service
 
 Replace the contents of **`marketplace/plugins/twelvedata/lib/index.ts`** with:
 
@@ -784,7 +792,7 @@ function parseError(error: any): { message: string; details: Record<string, unkn
 - **`testConnection`** calls Twelve Data's `/api_usage` endpoint, which fails with an HTTP 401 for an invalid key. The API's error message is shown to the user, so they know what to fix.
 - **`parseError`** reads the error message from the API's response body. Without it, users would only see a generic HTTP error such as `Response code 401 (Unauthorized)`.
 
-#### How Errors Appear in ToolJet
+##### How Errors Appear in ToolJet
 
 When `run` throws a `QueryError`, ToolJet shows its three arguments in the query's error preview:
 
@@ -810,7 +818,7 @@ For example, requesting a quote for `MSFT` with the `demo` key returns:
 
 Put details that help users fix the problem in `description` and `data`, such as the API's own error message and codes. Don't include credentials or request headers.
 
-### Step 8: Build, Install and Test
+#### Step 8: Build, Install and Test
 
 1. Build the plugin from the **`marketplace/`** directory:
 
@@ -819,7 +827,7 @@ Put details that help users fix the problem in `description` and `data`, such as
    ```
 
 2. In ToolJet, go to **Integrations > Marketplace** and click **Install** on the **twelvedata** card. If it doesn't appear, hard-refresh the page.
-3. Add a **Twelve Data** datasource, enter `demo` as the API key and click **Test connection**. The test succeeds. Try an invalid key to see the failure message.
+3. Add a **twelvedata** datasource, enter `demo` as the API key and click **Test connection**. The test succeeds. Try an invalid key to see the failure message.
 4. Create a query with the datasource and run each operation:
    - **Get quote** with symbol `AAPL` returns the latest price, change and volume.
    - **Get time series** with symbol `AAPL` and interval **1 day** returns the last 30 daily prices.
