@@ -25,3 +25,7 @@ export const GIT_SYNC_JOBS = {
   DELETE_BRANCH: 'git-delete-branch',
   PUSH_APP_DELETION: 'git-push-app-deletion',
 } as const;
+
+// Per-org git lease: one git operation per organization at a time across web + worker pods.
+export const ORG_LEASE_TTL_MS = 10 * 60 * 1000;
+export const orgLeaseKey = (organizationId: string) => `tj:git-sync:lease:${organizationId}`;
