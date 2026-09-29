@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Modal from 'react-bootstrap/Modal';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -11,6 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import Dropdown from '@/components/ui/Dropdown/Index.jsx';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 import './WorkspaceGitSyncModal.scss';
 
 const UPDATE_STATUS = {
@@ -39,6 +40,8 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
   const [multiDraftResources, setMultiDraftResources] = useState([]);
+  // New key per modal mount (this component is mounted only while the modal is open)
+  const idempotencyKeyRef = useRef(uuidv4());
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
     (state) => ({
@@ -161,8 +164,22 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       if (existingBranch) {
         branchId = existingBranch.id;
       } else {
-        const newBranch = await actions.createBranch(selectedBranch);
-        branchId = newBranch.id;
+        const ack = await actions.createBranch(
+          selectedBranch,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          idempotencyKeyRef.current
+        );
+        idempotencyKeyRef.current = uuidv4();
+        if (ack?.enqueued) {
+          toast.success('Creating branch. It will show up in the list once ready.');
+          onClose();
+          return; // nothing to switch to yet
+        }
+        branchId = ack.branch.id;
       }
 
       // Switch to the target branch — pass appId for co_relation_id resolution

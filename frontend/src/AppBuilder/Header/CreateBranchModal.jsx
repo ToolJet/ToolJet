@@ -10,6 +10,8 @@ import { Alert } from '@/_ui/Alert';
 import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
+import { setActiveBranch, appendBranchName } from '@/_helpers/active-branch';
+import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/create-branch-modal.scss';
 
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
@@ -26,6 +28,8 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const dropdownRef = useRef(null);
+  // New key per modal mount (this component is mounted only while the modal is open)
+  const idempotencyKeyRef = useRef(uuidv4());
 
   const { allBranches, isDraftVersionActive, developmentVersions, fetchDevelopmentVersions, releasedVersionId } =
     useStore((state) => ({
@@ -157,13 +161,42 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
-      await workspaceActions.createBranch(
+      const ack = await workspaceActions.createBranch(
         branchName.trim(),
         sourceBranchId,
         selectedOption.commitSha || undefined,
         selectedOption.isLocalVersion ? appId : undefined,
-        selectedOption.isLocalVersion ? selectedOption.versionId : undefined
+        selectedOption.isLocalVersion ? selectedOption.versionId : undefined,
+        undefined,
+        idempotencyKeyRef.current
       );
+      idempotencyKeyRef.current = uuidv4();
+
+      if (!ack?.enqueued && ack?.branch) {
+        // Small workspaces are created inline — switch onto the new branch and reload the
+        // editor onto it, same routine SwitchBranchModal uses for branch switching.
+        const targetWsBranch =
+          useWorkspaceBranchesStore.getState().branches.find((b) => b.id === ack.branch.id) || ack.branch;
+        const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
+        setActiveBranch(targetWsBranch);
+        useWorkspaceBranchesStore.setState({ activeBranchId: targetWsBranch.id, currentBranch: targetWsBranch });
+
+        const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+        const resolvedSlug = result?.slug;
+        const pathParts = window.location.pathname.split('/');
+        if (resolvedAppId) {
+          toast.success(`Switched to ${ack.branch.name}`, { style: { maxWidth: '640px' } });
+          window.location.replace(
+            appendBranchName(`/${pathParts[1]}/apps/${resolvedSlug || resolvedAppId}`, ack.branch.name)
+          );
+        } else {
+          // Branch was just created from this app's source — should always resolve. Fall back
+          // to the dashboard if it somehow doesn't.
+          sessionStorage.setItem('git_sync_toast', 'This app does not exist on this branch');
+          window.location.replace(`/${pathParts[1]}`);
+        }
+        return;
+      }
 
       toast.success('Creating branch. It will show up in the list once ready.', { style: { maxWidth: '640px' } });
       onClose();

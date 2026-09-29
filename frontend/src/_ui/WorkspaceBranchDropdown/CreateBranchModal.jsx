@@ -6,6 +6,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
 import { Alert } from '@/_ui/Alert';
 import cx from 'classnames';
+import { v4 as uuidv4 } from 'uuid';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { ImportBranchModal } from '@/_ui/WorkspaceBranchDropdown/ImportBranchModal';
 import '@/_styles/create-branch-modal.scss';
@@ -22,6 +23,9 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [conflictGroups, setConflictGroups] = useState(null);
   const [pendingImportName, setPendingImportName] = useState(null);
   const dropdownRef = useRef(null);
+  // New key per modal mount; the import-confirmation resubmit reuses it deliberately —
+  // the first attempt's 409 already freed the key server-side.
+  const idempotencyKeyRef = useRef(uuidv4());
 
   const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
@@ -78,21 +82,28 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const performCreate = async (name, confirmImport = false) => {
     setIsCreating(true);
     try {
-      // Branch creation runs as a background job — no branch object to switch to yet
+      // Small workspaces are created inline and switched to; large ones run as a background job
       const ack = await actions.createBranch(
         name,
         selectedSourceBranchId,
         undefined,
         undefined,
         undefined,
-        confirmImport
+        confirmImport,
+        idempotencyKeyRef.current
       );
-      toast.success(
-        ack?.isImport
-          ? 'Importing branch. It will show up in the list once ready.'
-          : 'Creating branch. It will show up in the list once ready.',
-        { style: { maxWidth: '640px' } }
-      );
+      idempotencyKeyRef.current = uuidv4();
+      if (!ack?.enqueued && ack?.branch) {
+        await actions.switchBranch(ack.branch.id);
+        toast.success(`Switched to ${ack.branch.name}`, { style: { maxWidth: '640px' } });
+      } else {
+        toast.success(
+          ack?.isImport
+            ? 'Importing branch. It will show up in the list once ready.'
+            : 'Creating branch. It will show up in the list once ready.',
+          { style: { maxWidth: '640px' } }
+        );
+      }
       setPendingImportName(null);
       onSuccess?.();
       onClose();
