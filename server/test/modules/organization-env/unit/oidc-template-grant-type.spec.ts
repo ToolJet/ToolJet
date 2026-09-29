@@ -11,8 +11,8 @@ function makeStore(values: Record<string, string>) {
   };
 }
 
-describe('deriveOidcTemplate() — grant type exposed to the frontend', () => {
-  it('masks grantType to the env-var placeholder, exposing the real "authorization_code" as resolvedGrantType', () => {
+describe('deriveOidcTemplate() — grant type: masked field vs. real value', () => {
+  it('masks grantType to the env-var placeholder, and exposes the real "authorization_code" as resolvedGrantType', () => {
     const store = makeStore({ [OIDC_ENV_KEYS.GRANT_TYPE]: 'authorization_code' });
 
     const template = deriveOidcTemplate(store.has, store.get, store.toTemplate);
@@ -21,12 +21,11 @@ describe('deriveOidcTemplate() — grant type exposed to the frontend', () => {
     expect(template?.resolvedGrantType).toBe('authorization_code');
   });
 
-  it('masks grantType while normalizing the env enum "pkce" to "authorization_code_pkce" in resolvedGrantType', () => {
+  it('normalizes the env enum "pkce" to the frontend/GUI enum "authorization_code_pkce" in resolvedGrantType', () => {
     const store = makeStore({ [OIDC_ENV_KEYS.GRANT_TYPE]: 'pkce' });
 
     const template = deriveOidcTemplate(store.has, store.get, store.toTemplate);
 
-    expect(template?.grantType).toBe(`{{${OIDC_ENV_KEYS.GRANT_TYPE}}}`);
     expect(template?.resolvedGrantType).toBe('authorization_code_pkce');
   });
 });

@@ -65,7 +65,7 @@ export const GlobalDataSourcesPage = (props) => {
     if (!activeBranchId || !environments?.length) return;
     if (!prevBranchIdRef.current) {
       prevBranchIdRef.current = activeBranchId;
-      selectedDataSource ? fetchDataSources(false, selectedDataSource) : fetchDataSources(true);
+      selectedIdFromUrl ? fetchDataSources(false, selectedDataSource) : fetchDataSources(true);
       return;
     }
     if (prevBranchIdRef.current !== activeBranchId) {

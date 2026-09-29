@@ -53,3 +53,4 @@ contexts/
 server/test/AUDIT_LEDGER.md
 memory/
 server/scripts/tjdb-*
+frontend/assets/custom-components/vendor/
