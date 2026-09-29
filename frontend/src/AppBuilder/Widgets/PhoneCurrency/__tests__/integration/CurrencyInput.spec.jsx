@@ -647,6 +647,49 @@ describe('label, placeholder and property changes', () => {
     await drain();
     expect(harness.exposed().value).toBeNull();
   });
+
+  // Break this catches: trimming the decimals by slicing `toString()` without answering the two
+  // ranges where it turns exponential. At 1e21 and above the text is `2.89e+23`, and the dot in
+  // that mantissa is NOT a decimal separator — slicing it read the exponent as the decimals and
+  // kept two characters, so a 24-digit amount became `2.89`. A plausible-looking small number is
+  // the worst possible failure here, because nothing downstream can tell it is wrong.
+  //
+  // Also catches trimming with `Math.trunc(amount * 10 ** places)`, which avoids the exponent but
+  // loses ordinary amounts to float error: `1234567.89 * 100` is `123456788.99999999`, so that
+  // form publishes `1234567.88`.
+  test('[CurrencyInput-PROP-009] an amount past double precision keeps its magnitude', async () => {
+    harness.render({ properties: { value: binding('289128338293323232332323') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // The double cannot hold all 24 digits, so the stored magnitude is what a double can express —
+    // but it is that magnitude, not a small number wearing its first digits.
+    expect(harness.exposed().value).toBe(2.8912833829332324e23);
+    expect(input().value).toBe('289,128,338,293,323,240,000,000');
+
+    // The action normalises by the same rule, so it lands on the same amount.
+    await harness.act('setValue', '289128338293323232332323');
+    await drain();
+    expect(harness.exposed().value).toBe(2.8912833829332324e23);
+  });
+
+  // Second mount for the same scenario: the other end of the range, and the ordinary amount that a
+  // float-multiplication fix would break.
+  test('[CurrencyInput-PROP-009] a sub-cent amount truncates to zero and an exact one is untouched', async () => {
+    harness.render({ properties: { value: binding('0.00000015') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // Smaller than two decimal places can express, so truncating to the setting gives zero.
+    expect(harness.exposed().value).toBe(0);
+    expect(input().value).toBe('0');
+
+    harness.render({ properties: { value: binding('1234567.89') } });
+    await waitFor(() => expect(input().value).toBe('1,234,567.89'));
+    await drain();
+
+    expect(harness.exposed().value).toBe(1234567.89);
+  });
 });
 
 describe('currency', () => {
