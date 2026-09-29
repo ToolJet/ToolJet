@@ -315,6 +315,27 @@ describe('approvals list service :: canResolve', () => {
     ]);
   });
 
+  it("labels a user from another workspace by id, never by that person's name or email", async () => {
+    const { user: outsider } = await setupOrganizationAndUser(app, {
+      email: 'approver-outside-workspace@tooljet.io',
+      password: 'password',
+      firstName: 'Outside',
+      lastName: 'Person',
+    });
+    const seeded = await seedRequest('outside-approver', {
+      users: [outsider.id],
+      groups: [],
+      emails: [],
+      tokenBypass: true,
+    });
+
+    const { requests } = await service.list(adminUser, { appId }, 1, 50);
+
+    expect(requests.find((r) => r.id === seeded.id).approversSnapshot.users).toEqual([
+      { id: outsider.id, kind: 'user', label: outsider.id },
+    ]);
+  });
+
   it('labels resolvedBy with the resolver display name', async () => {
     const seeded = await seedRequest(
       'resolved-by-label',
