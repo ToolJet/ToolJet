@@ -168,6 +168,8 @@ export class WorkflowsModule extends SubModule {
         }),
         BullModule.registerQueue({
           name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
+          // Fired timers are not kept; boot-time re-arm skips reminders that are already due.
+          defaultJobOptions: { removeOnComplete: true, removeOnFail: 100 },
         }),
         // Register queues with Bull Board for dashboard visibility
         BullBoardModule.forFeature({

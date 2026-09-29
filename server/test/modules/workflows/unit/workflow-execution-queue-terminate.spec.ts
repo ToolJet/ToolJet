@@ -122,7 +122,8 @@ describe('WorkflowExecutionQueueService.terminate', () => {
   it('cancels the pending approval request and its timers when terminating a waiting execution', async () => {
     const { service, findOne, find, update, cancelTimers } = makeService();
     findOne.mockResolvedValue({ id: executionId, status: 'waiting' } as WorkflowExecution);
-    find.mockResolvedValue([{ id: 'request-1' }]);
+    const definition = { reminders: [{ afterSeconds: 60 }] };
+    find.mockResolvedValue([{ id: 'request-1', executionNode: { definition } }]);
 
     await service.terminate(executionId);
 
@@ -131,7 +132,7 @@ describe('WorkflowExecutionQueueService.terminate', () => {
       { workflowExecutionId: executionId, status: 'pending' },
       expect.objectContaining({ status: 'cancelled', resolvedAt: expect.any(Date) })
     );
-    expect(cancelTimers).toHaveBeenCalledWith('request-1');
+    expect(cancelTimers).toHaveBeenCalledWith('request-1', definition);
   });
 
   it('flags a waiting execution for termination so a resume already in flight stops at its next node', async () => {
