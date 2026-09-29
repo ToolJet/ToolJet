@@ -16,9 +16,10 @@ import { FEATURE_KEY } from '@modules/workflows/constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/app/guard';
 import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
 import { ResolveApprovalDto } from '@modules/workflows/dto/resolve-approval.dto';
 import { ListApprovalsDto } from '@modules/workflows/dto/list-approvals.dto';
-import { ApprovalListItem } from '@modules/workflows/types/approval-list';
+import { ApprovalListItem, ApprovalTokenView } from '@modules/workflows/types/approval-list';
 
 @Controller('workflow-approvals')
 @InitModule(MODULES.WORKFLOWS)
@@ -31,14 +32,14 @@ export class WorkflowApprovalsController {
   // Explicit return type to match the EE override (see the note on resolve below).
   async list(
     @Query() query: ListApprovalsDto,
-    @User() user?: any
+    @User() user?: UserEntity
   ): Promise<{ requests: ApprovalListItem[]; meta: { page: number; perPage: number; total: number } }> {
     throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Get(':token')
-  async get(@Param('token') token: string) {
+  async get(@Param('token') token: string): Promise<ApprovalTokenView> {
     throw new NotImplementedException();
   }
 
@@ -49,7 +50,7 @@ export class WorkflowApprovalsController {
   async resolveById(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ResolveApprovalDto,
-    @User() user: any
+    @User() user: UserEntity
   ): Promise<{ status: 'resolved' }> {
     throw new NotImplementedException();
   }
@@ -66,7 +67,7 @@ export class WorkflowApprovalsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/cancel')
   // Explicit return type to match the EE override (see the note on resolve above).
-  async cancel(@Param('id', ParseUUIDPipe) id: string, @User() user): Promise<{ status: 'cancelled' }> {
+  async cancel(@Param('id', ParseUUIDPipe) id: string, @User() user: UserEntity): Promise<{ status: 'cancelled' }> {
     throw new NotImplementedException();
   }
 }
