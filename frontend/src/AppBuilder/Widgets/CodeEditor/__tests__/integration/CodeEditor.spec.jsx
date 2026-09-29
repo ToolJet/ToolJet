@@ -60,8 +60,14 @@ const mounted = async (container) => {
   return container;
 };
 
-/** Lets the widget's 500ms debounce elapse so the store write lands. */
-const settle = () => new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS + 200));
+/**
+ * Waits past the widget's 500ms debounce to prove a write did NOT happen.
+ *
+ * Reserved for negative assertions. An absence has no transition to wait for, and the write being
+ * ruled out is debounced, so a `waitFor` or a queue drain would pass before the timer that would
+ * have fired. Anything asserting a write DID land uses `waitFor` instead.
+ */
+const settleDebounce = () => new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS + 200));
 
 const setProperty = (property, value, paramType = 'properties') =>
   codeEditor.session.store.act(() => codeEditor.setComponentProperty(ID, property, value, paramType));
@@ -169,7 +175,7 @@ describe('CodeEditor widget', () => {
 
       await userEvent.click(surface());
       await userEvent.type(surface(), 'should not appear');
-      await settle();
+      await settleDebounce();
 
       expect(documentText(container)).toBe('');
       expect(codeEditor.exposed()?.value).toBe('');
@@ -209,7 +215,7 @@ describe('CodeEditor widget', () => {
       await codeEditor.act('setValue', 42);
       await codeEditor.act('setValue', { code: 'x' });
       await codeEditor.act('setValue', null);
-      await settle();
+      await settleDebounce();
 
       expect(documentText(container)).toBe('');
       expect(codeEditor.exposed()?.value).toBe('');
@@ -387,8 +393,10 @@ describe('CodeEditor widget', () => {
       await codeEditor.session.store.act(async () => {
         await codeEditor.exposed('form1').resetForm();
       });
-      await settle();
-      expect(documentText(container)).toBe('');
+      await waitFor(() => expect(documentText(container)).toBe(''));
+      // The stale value is an absence of change, so it needs the debounce window to elapse before it
+      // can be claimed — otherwise this would pass simply by being checked too early.
+      await settleDebounce();
       expect(codeEditor.exposed()?.value).toBe('payload'); // the defect
 
       await codeEditor.act('setValue', 'payload again');
@@ -397,8 +405,7 @@ describe('CodeEditor widget', () => {
       await codeEditor.session.store.act(async () => {
         await codeEditor.exposed('form1').clearForm();
       });
-      await settle();
-      expect(documentText(container)).toBe('');
+      await waitFor(() => expect(documentText(container)).toBe(''));
       await expectValue(''); // clearForm is correct
     });
   });
@@ -416,9 +423,8 @@ describe('CodeEditor widget', () => {
       expect(codeEditor.exposed()?.value).toBe(''); // still inside the debounce window
 
       unmount();
-      await settle();
 
-      expect(codeEditor.exposed()?.value).toBe('scheduled'); // the defect
+      await waitFor(() => expect(codeEditor.exposed()?.value).toBe('scheduled')); // the defect
     });
 
     test('[CodeEditor-ISO-001] two editors on one page keep separate documents', async () => {
