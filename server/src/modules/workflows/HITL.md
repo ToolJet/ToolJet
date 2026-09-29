@@ -62,7 +62,8 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    pause; resolve emits an `auditLogEntry` (`actionType: 'WORKFLOW_APPROVAL_RESOLVED'`,
    `resourceType: MODULES.WORKFLOWS`, so the Workflows audit filter includes it; the action is
    registered as `HUMAN_IN_THE_LOOP`'s `auditLogsKey` with `skipAuditLogs` so the interceptor does
-   not log the approval routes a second time).
+   not log the approval routes a second time). An admin cancel emits `WORKFLOW_APPROVAL_CANCELLED`
+   under the same resource; it is not yet an action-filter option, since each feature carries one key.
 
 ## Semantics
 
