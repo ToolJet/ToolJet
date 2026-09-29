@@ -82,8 +82,8 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
     ? normalizedTriggerButtonFontWeight
     : normalizedTriggerButtonFontWeight === '0'
-    ? 0
-    : 'normal';
+      ? 0
+      : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -150,9 +150,9 @@ export const ModalV2 = function Modal({
     }
 
     if (showModal) {
-      onShowSideEffects();
+      onShowSideEffects(id);
     } else {
-      onHideSideEffects();
+      onHideSideEffects(id);
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
@@ -167,9 +167,10 @@ export const ModalV2 = function Modal({
   useEffect(() => {
     return () => {
       if (showModalRef.current) {
-        onHideSideEffects();
+        onHideSideEffects(id);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
