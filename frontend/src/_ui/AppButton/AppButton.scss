@@ -109,6 +109,15 @@
         background: var(--button-primary-disabled) !important;
         color: var(--text-disabled-on-solid) !important;
         border: none !important;
+
+        svg {
+            opacity: 0.5;
+
+            path {
+                fill: var(--icon-on-solid) !important;
+                stroke: var(--icon-on-solid) !important;
+            }
+        }
     }
 }
 
