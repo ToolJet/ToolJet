@@ -31,6 +31,12 @@ export interface IVersionService {
 
   createVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any>;
 
+  createOrEnqueueVersion(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<{ enqueued: boolean } & Record<string, unknown>>;
+
   deleteVersion(app: App, user: User): Promise<void>;
 
   getViewerLicenseTerms(organizationId: string): Promise<unknown>;

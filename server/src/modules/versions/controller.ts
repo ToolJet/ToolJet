@@ -1,6 +1,17 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { VersionService } from './service';
-import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
@@ -11,8 +22,9 @@ import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { App as AppEntity } from '@entities/app.entity';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
-import { DraftVersionDto, VersionCreateDto } from './dto';
+import { CreateVersionResponseDto, DraftVersionDto, VersionCreateDto } from './dto';
 import { IVersionController } from './interfaces/IController';
+import { IdempotencyInterceptor } from '@modules/idempotency/interceptor';
 @InitModule(MODULES.VERSION)
 @Controller('apps')
 export class VersionController implements IVersionController {
@@ -31,10 +43,16 @@ export class VersionController implements IVersionController {
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(IdempotencyInterceptor, ClassSerializerInterceptor)
   @Post(':id/versions')
-  createVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionCreateDto: VersionCreateDto) {
+  async createVersion(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body() versionCreateDto: VersionCreateDto
+  ): Promise<CreateVersionResponseDto> {
     versionCreateDto.branchId = user.branchId;
-    return this.versionService.createVersion(app, user, versionCreateDto);
+    const result = await this.versionService.createOrEnqueueVersion(app, user, versionCreateDto);
+    return plainToInstance(CreateVersionResponseDto, result);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_DELETE)
