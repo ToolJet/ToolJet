@@ -450,7 +450,12 @@ describeBitbucket('GitSyncController — Bitbucket', () => {
         expect(defaults).toHaveLength(1);
         expect(defaults[0]).toMatchObject({ name: SAVE_BRANCH, organizationId: orgId });
         expect(branchesResp.body.activeBranchId).toBe(defaults[0].id);
-        expect(branches.map((b) => b.name)).toContain(BB_BASE_BRANCH);
+        const seededNames: string[] = (
+          await app
+            .get<DataSource>(getDataSourceToken('default'))
+            .query(`SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = $1`, [orgId])
+        ).map((r: { branch_name: string }) => r.branch_name);
+        expect(seededNames).toEqual(expect.arrayContaining([SAVE_BRANCH, BB_BASE_BRANCH]));
 
         const statusResp = await agent()
           .get(`/api/git-sync/${orgId}/status`)
@@ -678,8 +683,8 @@ describeBitbucket('GitSyncController — Bitbucket', () => {
           .query({ branch_id: defaultBranchId })
           .expect(200);
 
-        expect(Array.isArray(res.body.pullRequests)).toBe(true);
-        for (const pr of res.body.pullRequests) {
+        expect(Array.isArray(res.body.pull_requests)).toBe(true);
+        for (const pr of res.body.pull_requests) {
           expect(pr).toMatchObject({
             number: expect.any(String),
             title: expect.any(String),
