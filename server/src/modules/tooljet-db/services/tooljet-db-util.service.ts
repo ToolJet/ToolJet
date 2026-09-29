@@ -614,7 +614,9 @@ export class TooljetDbUtilService {
         if (!isEmpty(primaryKey) && isEmpty(primaryKey.column_default) && isEmpty(row[columnInCsv]))
           throw `Primary key required for column ${columnDetails.column_name}`;
 
-        result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+        result[columnInCsv] = this.isEmptyCellForRequiredText(row[columnInCsv], columnDetails)
+          ? ''
+          : this.convertToDataType(row[columnInCsv], columnDetails.data_type);
         return result;
       }, {});
 
@@ -622,6 +624,18 @@ export class TooljetDbUtilService {
     } catch (error) {
       csvStream.emit('error', `Error at row[${rowsProcessed + 1}]: ${error}`);
     }
+  }
+
+  // CSV has no way to tell an empty string from a missing value, and exports write '' as an
+  // empty cell. For a NOT NULL text column with no default, NULL can only fail the insert, so
+  // read the empty cell back as ''.
+  isEmptyCellForRequiredText(columnValue: string, columnDetails: TooljetDatabaseColumn) {
+    return (
+      columnValue === '' &&
+      columnDetails.data_type === TJDB.character_varying &&
+      columnDetails.constraints_type?.is_not_null &&
+      isEmpty(columnDetails.column_default)
+    );
   }
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
