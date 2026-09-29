@@ -4,12 +4,15 @@ import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.ent
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { User } from '@entities/user.entity';
+import { App } from '@entities/app.entity';
+import { WorkflowApprovalRequestRepository } from '@modules/workflows/repositories/workflow-approval-request.repository';
 import {
   initTestApp,
   closeTestApp,
   saveEntity,
   findEntity,
   buildTestSession,
+  updateEntity,
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
@@ -23,6 +26,7 @@ describe('workflow-approvals controller', () => {
   let userId: string;
   let organizationId: string;
   let signedInUser: User;
+  let workflowAppId: string;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
@@ -37,6 +41,7 @@ describe('workflow-approvals controller', () => {
     organizationId = user.organizationId;
     signedInUser = user;
     const workflowApp = await createWorkflowForUser(app, user, 'HITL ctrl wf');
+    workflowAppId = workflowApp.id;
     appVersionId = (await createWorkflowApplicationVersion(app, workflowApp)).id;
   });
   afterAll(async () => {
@@ -163,6 +168,27 @@ describe('workflow-approvals controller', () => {
         status: 'resolved',
         input: { amount: 12 },
       });
+    });
+  });
+
+  it('leaves an already-cancelled request as it was when a second resolve races the disabled-workflow cancel', async () => {
+    const req = await seedPending();
+    const cancelledAt = new Date('2026-01-01T00:00:00.000Z');
+    await updateEntity(App, workflowAppId, { isMaintenanceOn: false });
+    // The first resolve already cancelled it; this one read the row before that committed.
+    await updateEntity(WorkflowApprovalRequest, req.id, { status: 'cancelled', resolvedAt: cancelledAt });
+    jest
+      .spyOn(app.get(WorkflowApprovalRequestRepository, { strict: false }), 'findByToken')
+      .mockResolvedValueOnce({ ...req, status: 'pending' } as WorkflowApprovalRequest);
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/${req.token}/resolve`)
+      .send({ outcome: 'approved', input: {} })
+      .expect(409);
+
+    expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
+      status: 'cancelled',
+      resolvedAt: cancelledAt,
     });
   });
 
