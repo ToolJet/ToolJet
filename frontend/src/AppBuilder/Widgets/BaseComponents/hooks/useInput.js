@@ -172,8 +172,10 @@ export const useInput = ({
   useEffect(() => {
     if (inputType === 'phone') {
       const code = getCountryCallingCodeSafe(country);
-      // The value belongs to the current country, so that is the only dial code we strip.
-      setPhoneInputValue(toE164(properties.value, code, code));
+      // The widget normalises the authored value against its DEFAULT country before this hook sees it,
+      // so that is the code the value carries — not the current one
+      const seedCode = getCountryCallingCodeSafe(properties.defaultCountry || 'US');
+      setPhoneInputValue(toE164(properties.value, code, seedCode));
     } else if (inputType === 'currency') {
       setCurrencyInputValue(`${properties.value ?? ''}`);
     } else {

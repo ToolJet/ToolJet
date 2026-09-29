@@ -541,6 +541,46 @@ describe('country, continued', () => {
     expect(harness.exposed().value).toBe('');
     expect(harness.exposed().formattedValue).toBe('');
   });
+
+  // Break this catches: re-basing an authored Default value against the CURRENT country while the
+  // widget normalised it against the DEFAULT one. The two agree until the country is changed; after
+  // that the value carries the default country's dial code, which `toE164` will not strip unless it
+  // is told to, so the current code lands on top of it. A builder who set India, switched the
+  // dropdown to the US and then typed a number saw `+1917042883839` — both dial codes, in the
+  // field, in `value` and in `domesticNumber`.
+  test('[PhoneInput-CTY-010] a Default value entered after a country switch uses the country in effect', async () => {
+    harness.render({ properties: { value: binding(''), defaultCountry: binding('IN') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setCountryCode', 'US');
+    await drain();
+    expect(harness.exposed().country).toBe('US');
+
+    // The builder now types a national number into the Default value field.
+    harness.setComponentProperty('ph1', 'value', '7042883839', 'properties');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+17042883839');
+    expect(harness.exposed().domesticNumber).toBe('7042883839');
+  });
+
+  // Second mount for the same scenario, switching the other way, so the fix cannot be a special
+  // case that happens to strip one particular dial code.
+  test('[PhoneInput-CTY-010] the same holds switching from the default country to India', async () => {
+    harness.render({ properties: { value: binding(''), defaultCountry: binding('US') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setCountryCode', 'IN');
+    await drain();
+
+    harness.setComponentProperty('ph1', 'value', '9876543210', 'properties');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
 });
 
 describe('remaining actions', () => {
