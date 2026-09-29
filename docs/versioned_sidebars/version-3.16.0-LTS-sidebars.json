@@ -1262,6 +1262,13 @@
             "security/compliance/compliance",
             "security/compliance/cjis"
           ]
+        },
+        {
+          "type": "category",
+          "label": "Security Scanning",
+          "items": [
+            "security/security-scanning/scan-applications"
+          ]
         }
       ]
     },
