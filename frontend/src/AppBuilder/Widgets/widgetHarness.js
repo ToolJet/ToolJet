@@ -219,7 +219,19 @@ export function createWidgetHarness({
     );
   }
 
-  const exposed = (componentId = id) => store().getExposedValueOfComponent(componentId, MODULE_ID);
+  // `rowIndex` is the accessor's `subContainerIndex`: for a component inside a Listview row,
+  // `getExposedValueOfComponent` resolves INTO the per-row array and hands back that one row
+  // (defaulting to row 0), so a caller that wants a specific row must name it. Use
+  // `exposedRows` when the guarantee is about the per-row fan-out itself rather than one row.
+  const exposed = (componentId = id, rowIndex = null) =>
+    store().getExposedValueOfComponent(componentId, MODULE_ID, rowIndex);
+
+  // The raw per-row exposed-value array for a component under a Listview ancestor, stored
+  // one entry per row (resolvedSlice.js:576-578). Read straight from the store because the
+  // public accessor deliberately collapses that array to a single row and so cannot show
+  // the fan-out.
+  const exposedRows = (componentId = id) =>
+    store().resolvedStore.modules[MODULE_ID].exposedValues.components?.[componentId];
 
   return {
     scenario,
@@ -310,6 +322,7 @@ export function createWidgetHarness({
       useStore.setState((state) => ({ license: { ...state.license, featureAccess } })),
     variables: () => store().resolvedStore.modules[MODULE_ID].exposedValues.variables,
     exposed,
+    exposedRows,
   };
 }
 
