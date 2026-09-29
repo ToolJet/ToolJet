@@ -1,9 +1,10 @@
 import { WorkspaceBranchListResponse, CheckUpdatesResponse } from './IService';
+import { CreateBranchResponseDto } from '../dto';
 
 export interface IWorkspaceBranchController {
   list(user: any): Promise<WorkspaceBranchListResponse>;
-  // Create runs as a background job — the response is an enqueue ack
-  create(user: any, dto: any): Promise<{ enqueued: boolean }>;
+  // Small workspaces run inline (enqueued: false, branch returned); large ones enqueue a background job
+  create(user: any, dto: any): Promise<CreateBranchResponseDto>;
   switchBranch(user: any, branchId: string): Promise<{ success: boolean }>;
   deleteBranch(user: any, branchId: string): Promise<{ enqueued: boolean }>;
   pushWorkspace(user: any, dto: any): Promise<{ success: boolean }>;
