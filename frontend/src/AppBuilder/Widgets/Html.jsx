@@ -25,8 +25,7 @@ export const Html = function ({
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
   const { boxShadow, backgroundColor } = styles || {};
   const baseStyle = {
-    backgroundColor:
-      backgroundColor && backgroundColor !== 'transparent' ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: backgroundColor ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
     width: '100%',
   };
