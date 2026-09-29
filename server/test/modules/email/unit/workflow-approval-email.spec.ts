@@ -113,7 +113,7 @@ describe('EmailService.sendWorkflowApprovalEmail', () => {
     );
   });
 
-  it('serializes workspace branding initialization across concurrent approval emails', async () => {
+  it("keeps each workspace's branding when two approval emails send concurrently", async () => {
     const { service, emailUtilService } = makeService();
     const releaseFirstSettings: { resolve?: () => void } = {};
     jest.spyOn(service as any, 'getOrganization').mockImplementation(async (organizationId: string) => ({

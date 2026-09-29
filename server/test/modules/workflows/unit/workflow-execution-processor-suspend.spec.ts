@@ -1,21 +1,14 @@
 import { WorkflowExecutionProcessor } from '@ee/workflows/processors/workflow-execution.processor';
 import { WorkflowSuspendedSignal } from '@modules/workflows/types';
 import { WORKFLOW_EXECUTION_STATUS } from '@modules/workflows/constants';
+import { EntityManager } from 'typeorm';
 
 /** @group workflows */
 describe('WorkflowExecutionProcessor — suspend handling', () => {
   it('returns a WAITING result (does not throw) when execute throws WorkflowSuspendedSignal', async () => {
     const execute = jest.fn().mockRejectedValue(new WorkflowSuspendedSignal('exec-1', 'req-1'));
     const service: any = { execute };
-    const manager: any = {
-      createQueryBuilder: () => ({
-        select: () => ({
-          innerJoinAndSelect: () => ({
-            where: () => ({ getOne: async () => ({ definition: { defaultParams: '{}' } }) }),
-          }),
-        }),
-      }),
-    };
+    const manager = {} as EntityManager;
     const logger: any = { log: jest.fn(), debug: jest.fn(), error: jest.fn() };
     // terminationRegistry mock: the processor's finally block always calls clear(executionId).
     const terminationRegistry: any = { clear: jest.fn() };
@@ -24,7 +17,6 @@ describe('WorkflowExecutionProcessor — suspend handling', () => {
     const job: any = {
       data: {
         workflowExecution: { id: 'exec-1' },
-        createWorkflowExecutionDto: { appId: 'app-1' },
         params: {},
         environmentId: '',
         userId: null,

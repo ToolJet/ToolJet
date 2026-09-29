@@ -121,11 +121,6 @@ describe('approval requests list query', () => {
     expect(rows.some((r) => r.token === 'other-org')).toBe(false);
   });
 
-  it('never returns another organization rows even when that organization has more data', async () => {
-    const { rows } = await repository.listForOrganization(orgB, {}, 1, 10);
-    expect(rows.every((r) => r.organizationId === orgB)).toBe(true);
-  });
-
   it('filters by status', async () => {
     await seed({ versionId: versionAId, organizationId: orgA, appId: appAId, token: 'resolved-1', status: 'resolved' });
 

@@ -1,4 +1,5 @@
 /** @group workflows */
+import { ForbiddenException } from '@nestjs/common';
 import { WorkflowExecutionsService } from '@ee/workflows/services/workflow-executions.service';
 
 describe('WorkflowExecutionsService.validateExecutionsOwnedByOrganization', () => {
@@ -39,17 +40,17 @@ describe('WorkflowExecutionsService.validateExecutionsOwnedByOrganization', () =
       { id: 'exec-2', organizationId: 'org-b' },
     ]);
 
-    await expect(service.validateExecutionsOwnedByOrganization(['exec-1', 'exec-2'], organizationId)).rejects.toThrow(
-      /exec-2/
-    );
+    const result = service.validateExecutionsOwnedByOrganization(['exec-1', 'exec-2'], organizationId);
+    await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(result).rejects.toThrow(/exec-2/);
   });
 
   it('throws when a requested id does not exist at all (missing from the repository result)', async () => {
     const { service } = makeService([{ id: 'exec-1', organizationId }]);
 
-    await expect(
-      service.validateExecutionsOwnedByOrganization(['exec-1', 'exec-missing'], organizationId)
-    ).rejects.toThrow(/exec-missing/);
+    const result = service.validateExecutionsOwnedByOrganization(['exec-1', 'exec-missing'], organizationId);
+    await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(result).rejects.toThrow(/exec-missing/);
   });
 
   it('returns early without querying the repository for an empty id list', async () => {

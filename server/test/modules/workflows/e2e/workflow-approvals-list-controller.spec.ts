@@ -139,8 +139,7 @@ describe('GET /workflow-approvals', () => {
       .set('tj-workspace-id', organizationId)
       .expect(200);
 
-    const tokens = response.body.requests.map((r: any) => r.executionId);
-    expect(tokens).not.toContain(undefined);
+    expect(response.body.requests.every((r: { token?: string }) => r.token === undefined)).toBe(true);
     expect(response.body.requests.every((r: any) => r.workflow.id !== otherWf.id)).toBe(true);
 
     const otherSession = await buildTestSession(otherUser, otherOrg.id);
