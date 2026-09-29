@@ -143,7 +143,7 @@ ToolJet MCP works with any MCP-compatible client. The following are supported di
 
 </div>
 
-Clients outside this list connect by registering the bundled stdio server manually. See [Setup](/docs/build-with-ai/mcp/setup) for the configuration entry.
+Clients outside this list connect by registering the bundled stdio server manually. See [Other MCP Clients](/docs/build-with-ai/mcp/setup/other-clients) for the configuration entry.
 
 ## Requirements
 
