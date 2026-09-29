@@ -36,7 +36,11 @@ export const currencyinputConfig = {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: { type: 'number' },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string', pattern: "^-?[0-9.,'\\s]*$" }, { type: 'number' }],
+          defaultValue: '0',
+        },
         defaultValue: 0,
       },
     },
@@ -307,6 +311,11 @@ export const currencyinputConfig = {
         { handle: 'value', displayName: 'value', defaultValue: '' },
         { handle: 'country', displayName: 'country', defaultValue: '' },
       ],
+    },
+    {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
     },
     {
       handle: 'clear',

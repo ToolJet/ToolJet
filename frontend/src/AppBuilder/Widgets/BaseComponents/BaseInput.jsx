@@ -134,7 +134,10 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-      ? 'calc(50% + 10px)'
+      ? // Half the label's own height: the button is positioned against the whole widget,
+        // so it must be pushed down by half of whatever the top-aligned label consumes to
+        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
       : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (
@@ -209,6 +212,10 @@ export const BaseInput = ({
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className={cn(
             'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
+            // The error border is an inline style, which the container's hover rule overrides
+            // with `!important`. This flag opts the field out of that rule so a revealed error
+            // survives the pointer passing over it.
+            { 'tj-input-has-error': !isValid && showValidationError },
             classes?.inputContainer
           )}
           style={{
