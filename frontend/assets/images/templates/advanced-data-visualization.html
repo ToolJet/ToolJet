@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Advanced Data Visualization</title>
+<style>
+  :root {
+    --page-bg: #f1f1f4;
+    --card-bg: #ffffff;
+    --border: #dcdfe6;
+    --text: #1b1f2a;
+    --axis: #444a55;
+    --grid: #e7e9ee;
+    --link: #3e63dd;
+    --map-bg: #3b3f44;
+    --map-road: #5d6268;
+    --map-major: #75797e;
+    --map-water: #2a2e33;
+    --map-label: #c9ccd0;
+    --line-1: #1f77b4;
+    --line-2: #ff7f0e;
+  }
+  :root[data-theme='dark'] {
+    --page-bg: #121518;
+    --card-bg: #1f2429;
+    --border: #353c45;
+    --text: #e8eaed;
+    --axis: #b3b9c2;
+    --grid: #2f363e;
+    --link: #6e8ff5;
+    --map-bg: #26292d;
+    --map-road: #43474c;
+    --map-major: #585c61;
+    --map-water: #1a1d20;
+    --map-label: #9ea3a9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--page-bg); }
+  body { width: 1178px; background: var(--page-bg); color: var(--text); font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  .header { height: 68px; background: var(--card-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 40px 0 42px; margin: 3px 3px 0; }
+  .brand { font-size: 21px; font-weight: 700; letter-spacing: 5px; }
+  .app-title { font-size: 19px; font-weight: 600; }
+
+  .content { padding: 30px 29px 0 30px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+  .loc-title { display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 600; height: 34px; margin-bottom: 10px; }
+  .loc-title svg { width: 22px; height: 22px; stroke: var(--link); }
+
+  .map { position: relative; height: 266px; background: var(--map-bg); overflow: hidden; }
+  .map svg.roads { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map .btn { position: absolute; width: 40px; height: 40px; background: #fff; border-radius: 2px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  .map .btn.full { top: 13px; right: 10px; }
+  .map .btn.pan { bottom: 22px; right: 10px; border-radius: 50%; }
+  .map .btn svg { width: 20px; height: 20px; stroke: #555; fill: none; stroke-width: 2; }
+
+  h3 { font-size: 19px; font-weight: 600; margin: 40px 0 12px; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 2px; }
+  .chart { height: 275px; }
+  .chart + .chart { margin-top: 5px; }
+  .chart svg, .line-card svg { display: block; width: 100%; height: 100%; }
+  .chart text, .line-card text { fill: var(--axis); font-size: 13px; font-family: inherit; }
+
+  .line-card { height: 396px; margin-top: 10px; }
+
+  /* Interactive bits */
+  .tip { position: fixed; pointer-events: none; z-index: 50; background: rgba(20, 24, 30, .92); color: #fff; font-size: 12px; line-height: 17px; padding: 6px 9px; border-radius: 4px; white-space: nowrap; opacity: 0; transition: opacity .1s; font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .tip.show { opacity: 1; }
+  .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .chart svg, .line-card svg { cursor: crosshair; }
+  .heat-cell { transition: opacity .15s; }
+  .colorbar { cursor: ns-resize; }
+  .legend { cursor: pointer; user-select: none; }
+  .legend.off { opacity: .35; }
+  .loc-title { cursor: pointer; }
+  .loc-title:hover { color: var(--link); }
+  .card.flash { animation: flash 1s ease; }
+  @keyframes flash { 0%, 60% { box-shadow: 0 0 0 3px var(--link); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .map { cursor: grab; user-select: none; }
+  .map.dragging { cursor: grabbing; }
+  .map .btn { cursor: pointer; z-index: 2; }
+  .map .btn:hover { background: #eef1f6; }
+  .map .btn.zin { bottom: 110px; right: 10px; width: 32px; height: 32px; right: 14px; }
+  .map .btn.zout { bottom: 72px; right: 14px; width: 32px; height: 32px; }
+  .map .pin { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #e5484d; border: 2px solid #fff; pointer-events: none; z-index: 1; }
+  .map .pin::after { content: ''; position: absolute; inset: -9px; border-radius: 50%; border: 2px solid #e5484d; animation: pulse 1.6s ease-out infinite; }
+  @keyframes pulse { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+  .map.expanded { position: fixed; inset: 24px; height: auto; z-index: 40; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+  .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 39; display: none; }
+  .backdrop.show { display: block; }
+
+  .footer { position: relative; text-align: center; font-size: 14px; padding: 14px 0 20px; }
+  .footer a { color: var(--link); text-decoration: none; }
+  .built { position: absolute; left: 50%; top: -24px; transform: translateX(-50%); background: var(--card-bg); border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.12); padding: 10px 12px; display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap; }
+  .built b { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 2px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">BRAND</div>
+  <div class="app-title">Advanced data visualization</div>
+</div>
+
+<div class="content">
+  <div class="grid-2">
+    <div>
+      <div class="loc-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M11 13 20 4"/><path d="M15 4h5v5"/></svg>Location 1</div>
+      <div class="map" data-seed="3"></div>
+    </div>
+    <div>
+      <div class="loc-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M11 13 20 4"/><path d="M15 4h5v5"/></svg>Location 2</div>
+      <div class="map" data-seed="11"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <h3>7-day GMT forecast for Location 1</h3>
+      <div class="card chart" id="heat-1"></div>
+      <div class="card chart" id="contour-1"></div>
+    </div>
+    <div>
+      <h3>7-day GMT forecast for Location 2</h3>
+      <div class="card chart" id="heat-2"></div>
+      <div class="card chart" id="contour-2"></div>
+    </div>
+  </div>
+
+  <h3>7-day GMT forecast comparison between Location 1 &amp; Location 2</h3>
+  <div class="card line-card" id="line"></div>
+
+  <div class="footer">
+    <div class="built">Built with <b><svg width="22" height="14" viewBox="0 0 22 14"><path d="M1 1l6 6-6 6M10 1l6 6-6 6" stroke="#3e63dd" stroke-width="3" fill="none"/></svg>ToolJet</b></div>
+    This app uses weather data from <a href="#">Open-Meteo</a> and is intended for non-commercial purposes only. For commercial use, please visit their <a href="#">pricing</a> page.
+  </div>
+</div>
+
+<div class="backdrop"></div>
+<script>
+  var backdrop = document.querySelector('.backdrop');
+  if (new URLSearchParams(location.search).get('theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function rng(seed) {
+    return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  }
+
+  // Tooltip lives on <html>, outside the zoomed body, so it can be placed with raw client coords
+  var tip = document.createElement('div'); tip.className = 'tip';
+  document.documentElement.appendChild(tip);
+  function showTip(e, html) {
+    tip.innerHTML = html; tip.classList.add('show');
+    var x = e.clientX + 14, y = e.clientY + 14;
+    if (x + tip.offsetWidth > window.innerWidth - 4) x = e.clientX - tip.offsetWidth - 14;
+    if (y + tip.offsetHeight > window.innerHeight - 4) y = e.clientY - tip.offsetHeight - 14;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  function hideTip() { tip.classList.remove('show'); }
+  // Mouse position in the svg's viewBox units (independent of page zoom)
+  function local(svg, e, W, H) {
+    var r = svg.getBoundingClientRect();
+    return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)];
+  }
+  function hh(h) { return (h < 10 ? '0' : '') + h + ':00'; }
+  function deg(v) { return v.toFixed(1) + ' °C'; }
+
+  // ---- Synthetic hourly temperatures: 7 days (29 Sep .. 05 Oct) x 24 hours ----
+  var DAYS = ['29 Sep', '30 Sep', '01 Oct', '02 Oct', '03 Oct', '04 Oct', '05 Oct'];
+  function series(base, amp, seed) {
+    var r = rng(seed), out = [];
+    for (var d = 0; d < 7; d++) {
+      var row = [];
+      for (var h = 0; h < 24; h++) {
+        var t = base[d] + amp[d] * Math.cos((2 * Math.PI * (h - 14)) / 24);
+        row.push(t + (r() - 0.5) * 0.8);
+      }
+      out.push(row);
+    }
+    return out;
+  }
+  var loc1 = series([19.5, 21, 17, 17.3, 17, 16.5, 17], [3.5, 2.5, 3.2, 3.8, 3.6, 3.5, 3.4], 7);
+  var loc2 = series([19, 21.5, 16.5, 16, 16, 15.5, 16], [5.5, 4.5, 4.2, 5, 5.2, 5.4, 5.2], 19);
+
+  // coolwarm-like scale
+  var STOPS = [[0, [10, 10, 160]], [0.25, [70, 100, 230]], [0.5, [200, 200, 200]], [0.75, [235, 150, 105]], [1, [180, 4, 38]]];
+  function color(t) {
+    t = Math.max(0, Math.min(1, t));
+    for (var i = 1; i < STOPS.length; i++) {
+      if (t <= STOPS[i][0]) {
+        var a = STOPS[i - 1], b = STOPS[i], f = (t - a[0]) / (b[0] - a[0]);
+        return [0, 1, 2].map(function (j) { return Math.round(a[1][j] + (b[1][j] - a[1][j]) * f); });
+      }
+    }
+  }
+  function rgb(c) { return 'rgb(' + c.join(',') + ')'; }
+  function range(data) {
+    var all = [].concat.apply([], data);
+    return [Math.min.apply(null, all), Math.max.apply(null, all)];
+  }
+
+  // Shared axes for heatmap/contour cards
+  function frame(id, data, contour) {
+    var box = document.getElementById(id), W = box.clientWidth, H = box.clientHeight;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H }, box);
+    var L = 62, T = contour ? 18 : 10, R = W - 84, B = contour ? H - 62 : H - 60;
+    var pw = R - L, ph = B - T, mm = range(data), cells = null;
+
+    if (contour) {
+      // Smoothly interpolated grid, quantised into bands with dark edges between bands
+      var cw = Math.round(pw), ch = Math.round(ph);
+      var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+      var ctx = c.getContext('2d'), img = ctx.createImageData(cw, ch), steps = 11;
+      var val = function (x, y) {
+        var gx = (x / (cw - 1)) * 23, gy = (1 - y / (ch - 1)) * 6;
+        var x0 = Math.floor(gx), y0 = Math.floor(gy), x1 = Math.min(23, x0 + 1), y1 = Math.min(6, y0 + 1);
+        var fx = gx - x0, fy = gy - y0;
+        fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+        var top = data[y0][x0] * (1 - fx) + data[y0][x1] * fx, bot = data[y1][x0] * (1 - fx) + data[y1][x1] * fx;
+        return top * (1 - fy) + bot * fy;
+      };
+      var band = [];
+      for (var y = 0; y < ch; y++) for (var x = 0; x < cw; x++) {
+        band[y * cw + x] = Math.min(steps - 1, Math.floor(((val(x, y) - mm[0]) / (mm[1] - mm[0])) * steps));
+      }
+      for (var y = 0; y < ch; y++) for (var x = 0; x < cw; x++) {
+        var i = y * cw + x, b = band[i];
+        var edge = (x > 0 && band[i - 1] !== b) || (y > 0 && band[i - cw] !== b);
+        var col = edge ? [40, 40, 40] : color((b + 0.5) / steps);
+        img.data.set([col[0], col[1], col[2], 255], i * 4);
+      }
+      ctx.putImageData(img, 0, 0);
+      el('image', { href: c.toDataURL(), x: L, y: T, width: pw, height: ph, preserveAspectRatio: 'none' }, svg);
+      var dot = el('circle', { r: 5, fill: '#fff', stroke: '#111', 'stroke-width': 2, visibility: 'hidden' }, svg);
+      svg.addEventListener('mousemove', function (e) {
+        var p = local(svg, e, W, H), x = p[0] - L, y = p[1] - T;
+        if (x < 0 || y < 0 || x > pw || y > ph) { dot.setAttribute('visibility', 'hidden'); return hideTip(); }
+        var v = val((x / pw) * (cw - 1), (y / ph) * (ch - 1)), gx = (x / pw) * 23, gy = (1 - y / ph) * 6;
+        dot.setAttribute('cx', p[0]); dot.setAttribute('cy', p[1]); dot.setAttribute('visibility', 'visible');
+        showTip(e, '<b>' + DAYS[Math.round(gy)] + '</b> · ~' + hh(Math.round(gx)) + '<br>' + deg(v));
+      });
+      svg.addEventListener('mouseleave', function () { dot.setAttribute('visibility', 'hidden'); hideTip(); });
+    } else {
+      var cwid = pw / 24, chgt = ph / 7, cells = [];
+      data.forEach(function (row, d) {
+        row.forEach(function (v, h) {
+          var cell = el('rect', { class: 'heat-cell', x: L + h * cwid, y: T + (6 - d) * chgt, width: cwid + 0.5, height: chgt + 0.5, fill: rgb(color((v - mm[0]) / (mm[1] - mm[0]))) }, svg);
+          cell.dataset.v = v;
+          cells.push(cell);
+          cell.addEventListener('mousemove', function (e) {
+            showTip(e, '<b>' + DAYS[d] + '</b> · ' + hh(h) + '<br>' + deg(v));
+          });
+          cell.addEventListener('mouseenter', function (e) {
+            showTip(e, '<b>' + DAYS[d] + '</b> · ' + hh(h) + '<br>' + deg(v));
+            hl.setAttribute('x', cell.getAttribute('x')); hl.setAttribute('y', cell.getAttribute('y'));
+            hl.setAttribute('visibility', 'visible');
+          });
+        });
+      });
+      var hl = el('rect', { width: cwid, height: chgt, fill: 'none', stroke: '#111', 'stroke-width': 2, visibility: 'hidden', 'pointer-events': 'none' }, svg);
+      svg.addEventListener('mouseleave', function () { hl.setAttribute('visibility', 'hidden'); hideTip(); });
+    }
+
+    // y labels
+    DAYS.forEach(function (d, i) {
+      var y = contour ? B - (i / 6) * ph : T + (6.5 - i) * (ph / 7);
+      el('line', { x1: L - 4, x2: L, y1: y, y2: y, stroke: 'currentColor', class: 'tick' }, svg).style.stroke = 'var(--axis)';
+      var t = el('text', { x: L - 7, y: y + 4, 'text-anchor': 'end' }, svg); t.textContent = d;
+    });
+    // x labels (rotated)
+    for (var h = 0; h < 24; h++) {
+      var x = contour ? L + (h / 23) * pw : L + (h + 0.5) * (pw / 24);
+      var t = el('text', { transform: 'translate(' + (x + 4) + ',' + (B + 6) + ') rotate(90)' }, svg);
+      t.textContent = (h < 10 ? '0' : '') + h + ':00';
+    }
+
+    // colour bar
+    var bx = R + 18, bw = 30;
+    var grad = el('linearGradient', { id: id + '-g', x1: 0, y1: 1, x2: 0, y2: 0 }, el('defs', {}, svg));
+    STOPS.forEach(function (s) { el('stop', { offset: s[0], 'stop-color': rgb(s[1]) }, grad); });
+    var bar = el('rect', { class: 'colorbar', x: bx, y: T + 10, width: bw, height: ph - 12, fill: 'url(#' + id + '-g)' }, svg);
+    var marker = el('path', { d: 'M0,0 l-7,-5 v10 z', fill: 'var(--text)', visibility: 'hidden', 'pointer-events': 'none' }, svg);
+    marker.style.fill = 'var(--text)';
+    // Hovering the colour bar picks a temperature and highlights cells within ±1 °C
+    bar.addEventListener('mousemove', function (e) {
+      var y = local(svg, e, W, H)[1], v = mm[1] - ((y - T - 10) / (ph - 12)) * (mm[1] - mm[0]);
+      marker.setAttribute('transform', 'translate(' + (bx - 1) + ',' + y + ')'); marker.setAttribute('visibility', 'visible');
+      if (cells) cells.forEach(function (c) { c.style.opacity = Math.abs(c.dataset.v - v) <= 1 ? 1 : 0.12; });
+      showTip(e, deg(v) + (cells ? ' ± 1' : ''));
+    });
+    function clearFilter() {
+      marker.setAttribute('visibility', 'hidden');
+      if (cells) cells.forEach(function (c) { c.style.opacity = 1; });
+    }
+    bar.addEventListener('mouseleave', function () { clearFilter(); hideTip(); });
+    svg.addEventListener('mouseleave', clearFilter);
+    var tick = contour ? 5 : 2;
+    for (var v = Math.ceil(mm[0] / tick) * tick; v <= mm[1]; v += tick) {
+      var y = T + 10 + (ph - 12) * (1 - (v - mm[0]) / (mm[1] - mm[0]));
+      var t = el('text', { x: bx + bw + 3, y: y + 4 }, svg); t.textContent = v;
+    }
+  }
+  frame('heat-1', loc1, false);
+  frame('heat-2', loc2, false);
+  frame('contour-1', loc1, true);
+  frame('contour-2', loc2, true);
+
+  // ---- Line chart comparison ----
+  (function () {
+    var box = document.getElementById('line'), W = box.clientWidth, H = box.clientHeight;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H }, box);
+    var L = 34, T = 20, R = W - 30, B = H - 60, ymin = 8.5, ymax = 29;
+    var sx = function (i) { return L + (i / 167) * (R - L); };
+    var sy = function (v) { return B - ((v - ymin) / (ymax - ymin)) * (B - T); };
+    for (var d = 0; d < 8; d++) {
+      var x = L + ((d * 24) / 167) * (R - L);
+      el('line', { x1: x, x2: x, y1: T, y2: B }, svg).style.stroke = 'var(--grid)';
+      if (d < 7) {
+        var t = el('text', { x: x, y: B + 20, 'text-anchor': d ? 'middle' : 'start' }, svg);
+        t.textContent = ['Sep 29', 'Sep 30', 'Oct 1', 'Oct 2', 'Oct 3', 'Oct 4', 'Oct 5'][d];
+      }
+    }
+    var yr = el('text', { x: L, y: B + 36 }, svg); yr.textContent = '2026';
+    [10, 15, 20, 25].forEach(function (v) {
+      el('line', { x1: L, x2: R, y1: sy(v), y2: sy(v) }, svg).style.stroke = 'var(--grid)';
+      var t = el('text', { x: L - 8, y: sy(v) + 4, 'text-anchor': 'end' }, svg); t.textContent = v;
+    });
+    var guide = el('line', { y1: T, y2: B, 'stroke-dasharray': '4 3', visibility: 'hidden' }, svg);
+    guide.style.stroke = 'var(--axis)';
+    var series = [[loc1, 'var(--line-1)', '#1f77b4', 'Location 1'], [loc2, 'var(--line-2)', '#ff7f0e', 'Location 2']].map(function (s, k) {
+      var flat = [].concat.apply([], s[0]);
+      var sm = flat.map(function (v, i) { return (flat[Math.max(0, i - 1)] + v * 2 + flat[Math.min(167, i + 1)]) / 4; });
+      var d = sm.map(function (v, i) { return (i ? 'L' : 'M') + sx(i).toFixed(1) + ',' + sy(v).toFixed(1); }).join('');
+      var path = el('path', { d: d, fill: 'none', 'stroke-width': 2 }, svg);
+      path.style.stroke = s[1];
+      var dot = el('circle', { r: 4.5, stroke: '#fff', 'stroke-width': 1.5, visibility: 'hidden' }, svg);
+      dot.style.fill = s[1];
+      // Legend entry toggles the series
+      var g = el('g', { class: 'legend', transform: 'translate(' + (R - 200 + k * 100) + ',' + (T + 4) + ')' }, svg);
+      el('line', { x1: 0, x2: 18, y1: 0, y2: 0, 'stroke-width': 3 }, g).style.stroke = s[1];
+      var t = el('text', { x: 24, y: 4 }, g); t.textContent = s[3];
+      var item = { values: sm, path: path, dot: dot, color: s[2], name: s[3], on: true };
+      g.addEventListener('click', function () {
+        item.on = !item.on; g.classList.toggle('off', !item.on);
+        path.style.display = item.on ? '' : 'none';
+        if (!item.on) dot.setAttribute('visibility', 'hidden');
+      });
+      return item;
+    });
+    svg.addEventListener('mousemove', function (e) {
+      var p = local(svg, e, W, H);
+      if (p[0] < L || p[0] > R || p[1] < T || p[1] > B) return leave();
+      var i = Math.round(((p[0] - L) / (R - L)) * 167), x = sx(i);
+      guide.setAttribute('x1', x); guide.setAttribute('x2', x); guide.setAttribute('visibility', 'visible');
+      var rows = ['<b>' + ['Sep 29', 'Sep 30', 'Oct 1', 'Oct 2', 'Oct 3', 'Oct 4', 'Oct 5'][Math.floor(i / 24)] + ', ' + hh(i % 24) + '</b>'];
+      series.forEach(function (s) {
+        if (!s.on) return;
+        s.dot.setAttribute('cx', x); s.dot.setAttribute('cy', sy(s.values[i])); s.dot.setAttribute('visibility', 'visible');
+        rows.push('<i style="background:' + s.color + '"></i>' + s.name + ': ' + deg(s.values[i]));
+      });
+      if (series[0].on && series[1].on) rows.push('Δ ' + deg(Math.abs(series[0].values[i] - series[1].values[i])));
+      showTip(e, rows.join('<br>'));
+    });
+    function leave() {
+      guide.setAttribute('visibility', 'hidden'); hideTip();
+      series.forEach(function (s) { s.dot.setAttribute('visibility', 'hidden'); });
+    }
+    svg.addEventListener('mouseleave', leave);
+  })();
+
+  // ---- Map placeholders ----
+  document.querySelectorAll('.map').forEach(function (map) {
+    var r = rng(+map.dataset.seed), W = map.clientWidth, H = map.clientHeight;
+    var root = el('svg', { class: 'roads', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid slice' }, map);
+    var svg = el('g', {}, root);
+    var water = 'M0,' + (H * 0.55) + ' C' + W * 0.25 + ',' + H * (0.3 + r() * 0.3) + ' ' + W * 0.55 + ',' + H * (0.7 + r() * 0.2) + ' ' + W + ',' + H * (0.35 + r() * 0.2);
+    for (var i = 0; i < 70; i++) {
+      var x1 = r() * W, y1 = r() * H, a = r() * Math.PI, len = 40 + r() * 160;
+      el('line', { x1: x1, y1: y1, x2: x1 + Math.cos(a) * len, y2: y1 + Math.sin(a) * len, 'stroke-width': 1 }, svg).style.stroke = 'var(--map-road)';
+    }
+    for (var i = 0; i < 6; i++) {
+      var y = r() * H;
+      el('path', { d: 'M0,' + y + ' Q' + W / 2 + ',' + (r() * H) + ' ' + W + ',' + r() * H, fill: 'none', 'stroke-width': 3 }, svg).style.stroke = 'var(--map-major)';
+    }
+    el('path', { d: water, fill: 'none', 'stroke-width': 12 }, svg).style.stroke = 'var(--map-water)';
+    var names = map.dataset.seed === '3'
+      ? ['NOTTING HILL', 'KENSINGTON', 'WESTMINSTER', 'LAMBETH', 'CHELSEA', 'SOUTHWARK']
+      : ['Louvre', 'Rodin', 'Panthéon', 'CHARONNE', 'Jardin du Luxembourg', 'Place de la Bastille'];
+    names.forEach(function (n) {
+      var t = el('text', { x: 10 + r() * (W - 150), y: 30 + r() * (H - 50), 'font-size': 12, 'font-weight': 600, 'letter-spacing': 1 }, svg);
+      t.style.fill = 'var(--map-label)'; t.textContent = n;
+    });
+    map.insertAdjacentHTML('beforeend',
+      '<div class="btn full"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>' +
+      '<div class="btn pan" title="Recenter"><svg viewBox="0 0 24 24"><path d="M12 3l-3 3h6zM12 21l-3-3h6zM3 12l3-3v6zM21 12l-3-3v6z"/></svg></div>' +
+      '<div class="btn zin" title="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></div>' +
+      '<div class="btn zout" title="Zoom out"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></div>' +
+      '<div class="pin"></div>');
+    map.querySelector('.btn.full').title = 'Expand';
+
+    var view = { x: 0, y: 0, k: 1 }, drag = null;
+    function apply(anim) {
+      svg.style.transition = anim ? 'transform .3s ease' : 'none';
+      svg.setAttribute('transform', 'translate(' + (W / 2 + view.x) + ',' + (H / 2 + view.y) + ') scale(' + view.k + ') translate(' + (-W / 2) + ',' + (-H / 2) + ')');
+    }
+    function zoom(f) { view.k = Math.max(0.6, Math.min(4, view.k * f)); view.x *= f; view.y *= f; apply(true); }
+    map.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.btn')) return;
+      var r = root.getBoundingClientRect();
+      drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, s: Math.max(W / r.width, H / r.height) };
+      map.classList.add('dragging');
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!drag) return;
+      view.x = drag.vx + (e.clientX - drag.x) * drag.s; view.y = drag.vy + (e.clientY - drag.y) * drag.s; apply(false);
+    });
+    window.addEventListener('mouseup', function () { drag = null; map.classList.remove('dragging'); });
+    map.addEventListener('wheel', function (e) { e.preventDefault(); zoom(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
+    map.querySelector('.zin').addEventListener('click', function () { zoom(1.4); });
+    map.querySelector('.zout').addEventListener('click', function () { zoom(1 / 1.4); });
+    map.querySelector('.pan').addEventListener('click', function () { view = { x: 0, y: 0, k: 1 }; apply(true); });
+    map.querySelector('.full').addEventListener('click', function () {
+      var on = !map.classList.contains('expanded');
+      map.classList.toggle('expanded', on); backdrop.classList.toggle('show', on);
+      backdrop.onclick = on ? function () { map.querySelector('.full').click(); } : null;
+    });
+  });
+
+  // Clicking a location title jumps to (and flashes) its forecast charts
+  document.querySelectorAll('.loc-title').forEach(function (t, i) {
+    t.addEventListener('click', function () {
+      var cards = [document.getElementById('heat-' + (i + 1)), document.getElementById('contour-' + (i + 1))];
+      cards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      cards.forEach(function (c) { c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); });
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    var open = document.querySelector('.map.expanded');
+    if (e.key === 'Escape' && open) open.querySelector('.full').click();
+  });
+
+  // Scale the fixed 1178px design to the frame width; the page scrolls vertically.
+  function fit() { document.body.style.zoom = window.innerWidth / 1178; }
+  window.addEventListener('resize', fit);
+  fit();
+</script>
+</body>
+</html>

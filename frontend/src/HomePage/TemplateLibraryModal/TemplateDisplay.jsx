@@ -1,6 +1,5 @@
 import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
-import { ImageWithSpinner } from '@/_components';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
@@ -54,11 +53,12 @@ export default function TemplateDisplay(props) {
           style={{ height: '88%', position: 'relative' }}
           data-cy="template-image"
         >
-          <ImageWithSpinner
-            src={`assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+          {/* TEMP: rendering the same HTML preview for every template while testing */}
+          <iframe
+            key={id}
+            src={`assets/images/templates/advanced-data-visualization.html${props.darkMode ? '?theme=dark' : ''}`}
             className="template-image"
-            spinnerClassName="template-spinner"
-            useSmallSpinner={true}
+            title={`${name} preview`}
           />
         </Row>
       </Container>
