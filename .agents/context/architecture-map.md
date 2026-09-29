@@ -45,7 +45,7 @@ graph LR
 
 ## Boot and request processing
 
-`server/src/main.ts::bootstrap` creates `AppModule.register`, validates the selected edition, configures Pino logging, global validation/interceptors/exception handling, cookies/compression/body limits, CSRF-origin checks, security headers, URI versioning, static assets, and `WsAdapter`, then listens on `PORT` (default 3000). `GuardValidator.validateJwtGuard` fails startup validation for unguarded feature routes.
+`server/src/main.ts::bootstrap` creates `AppModule.register`, validates the selected edition, configures Pino logging, global validation/interceptors/exception handling, cookies/compression/body limits, CSRF-origin checks, security headers, URI versioning, static assets, and `WsAdapter`, then listens on `PORT` (default 3000). `GuardValidator.validateJwtGuard` fails startup validation for unguarded feature routes. Selected mutating endpoints (e.g. branch/version create) additionally opt into a per-route, Redis-backed `Idempotency-Key` interceptor (`server/src/modules/idempotency/`) so a retried request replays the original response instead of re-running the handler.
 
 `server/src/modules/app/loader.ts::AppModuleLoader.loadModules` initializes configuration, the event emitter, schedules, BullMQ, the main and ToolJet DB TypeORM connections, Redis, request context, logging, optional static frontend serving, Sentry, and optional OpenTelemetry.
 
@@ -102,6 +102,8 @@ sequenceDiagram
 ### 5. Queue and execute background work
 
 Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
+
+On EE/Cloud, large app-version creates and large branch creates also run through BullMQ rather than inline: the `app-version` queue (`server/src/modules/versions/constants/index.ts`; the worker processor ships with the enterprise edition) and the existing `git-sync-queue` (`server/src/modules/workspace-branches/constants/index.ts`). Both are gated by a size threshold checked before the request commits to a path — small branch/version creates run inline on the web pod instead of enqueuing.
 
 ## Authentication and authorization
 
