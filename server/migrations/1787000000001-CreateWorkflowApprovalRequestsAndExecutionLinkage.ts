@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableIndex } from 'typeorm';
 
-export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000000 implements MigrationInterface {
+export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({

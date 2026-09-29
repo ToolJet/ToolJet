@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableIndex } from 'typeorm';
 
-// Indexes the referencing side of the foreign keys 1787000000000 added. Postgres does not create
+// Indexes the referencing side of the foreign keys 1787000000001 added. Postgres does not create
 // these on its own, so each cascaded delete of a run or a run node (deleting a workflow, an app
 // version, or pruning history) sequential-scanned these tables once per deleted row, and the
 // schedule overlap guard's `schedule_id` lookup scanned run history on every fire. The existing

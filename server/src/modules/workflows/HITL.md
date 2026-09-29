@@ -12,7 +12,7 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
 - **`WorkflowApprovalRequest`** — `@entities/workflow_approval_request.entity.ts`, table
   `workflow_approval_requests`. One `pending` row per (execution, node), enforced by a
   **partial unique index** on `status='pending'`. Migration:
-  `migrations/1787000000000-CreateWorkflowApprovalRequestsAndExecutionLinkage.ts`.
+  `migrations/1787000000001-CreateWorkflowApprovalRequestsAndExecutionLinkage.ts`.
   Key columns: `token` (bearer secret for the public resolve endpoint), `status`
   (`pending`/`resolved`/`expired`/…), `resolvedOutcome`, `input` (jsonb), `resolvedByUserId`,
   `approversSnapshot` (jsonb), `expiresAt`,
