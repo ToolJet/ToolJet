@@ -138,6 +138,7 @@ describe('workflow-approvals controller', () => {
     const inputSchema = [
       { name: 'amount', type: 'number', required: true },
       { name: 'note', type: 'text' },
+      { name: 'tier', type: 'select', options: ['gold', 'silver'] },
     ];
 
     it.each([
@@ -145,6 +146,7 @@ describe('workflow-approvals controller', () => {
       ['a required field is an empty string', { amount: '' }],
       ['a number field gets a string', { amount: '12' }],
       ['a text field gets a number', { amount: 12, note: 5 }],
+      ['a select field gets a value outside its options', { amount: 12, tier: 'bronze' }],
     ])('returns 400 and leaves the request pending when %s', async (_case, input) => {
       const req = await seedPending({ tokenBypass: true }, inputSchema);
 
@@ -154,6 +156,18 @@ describe('workflow-approvals controller', () => {
         .expect(400);
 
       expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({ status: 'pending' });
+    });
+
+    it('persists only the fields the schema defines', async () => {
+      const req = await seedPending({ tokenBypass: true }, inputSchema);
+
+      await request(app.getHttpServer())
+        .post(`/api/workflow-approvals/${req.token}/resolve`)
+        .send({ outcome: 'approved', input: { amount: 12, tier: 'gold', injected: 'x' } })
+        .expect(201);
+
+      const saved = await findEntity(WorkflowApprovalRequest, { id: req.id });
+      expect(saved.input).toEqual({ amount: 12, tier: 'gold' });
     });
 
     it('resolves and persists input that matches the schema', async () => {
