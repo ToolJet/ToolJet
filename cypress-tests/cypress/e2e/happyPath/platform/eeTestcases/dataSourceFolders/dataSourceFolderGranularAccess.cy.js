@@ -1,6 +1,13 @@
+import { commonSelectors } from 'Selectors/common';
+import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import {
+  dragDataSourceToFolder,
+  dragDataSourceToStrayList,
   openDataSourcesList,
+  uiEnsureFolderExpanded,
+  uiOpenFolderMenu,
+  uiRenameDataSourceFolder,
   uiVerifyDataSourceFolderExists,
   uiVerifyFolderMenuAbsent,
 } from 'Support/utils/platform/dataSourceFolders';
@@ -166,67 +173,82 @@ describe('Data Source Folders — Folder Granular Access', () => {
     });
   });
 
-  /**
-   * KNOWN GAP — this test asserts the CURRENT behaviour, which is not the
-   * intended behaviour.
-   *
-   * Observable invariant, reproducible entirely through the public API: a group
-   * whose ONLY data source folder permission is a granular `Edit folder` grant
-   * scoped to one folder (isAll false) gets 403 on
-   * POST/PUT /api/folder-data-sources for BOTH the granted and the ungranted
-   * folder. Turn the coarse `dataSourceFolderCreate` flag on and both succeed.
-   * So membership access is decided purely by the coarse flag; the per-folder
-   * grant contributes nothing in either direction.
-   *
-   * Intended: the grant permits `Granted`, refuses `Ungranted`.
-   * Actual:   with no coarse flag, BOTH are refused.
-   *
-   * Step 7 below is the discriminator that separates "scoped guard" from
-   * "coarse fallback". When per-folder scoping works, step 1 flips to 201 and
-   * this test must be updated — the failure is the signal, not a flake.
-   */
-  it('per-folder scoping does not reach the membership routes (known gap — guard falls back to the coarse flag)', () => {
+  // Expected flow per the tier's own helper text: "Rename the folder, move and edit
+  // data sources in the folder". Scoped to the granted folder only. (BUG-01)
+  it('an Edit folder grant lets the user rename the granted folder and move data sources in and out of it — and nothing else', () => {
     setupFolderAccess('Scoped', {
       canEditFolder: true,
       canEditApps: false,
       canViewApps: false,
-    }).then(({ folderId, dataSourceId, userEmail, groupName }) => {
-      const ungrantedFolderName = `Ungranted Folder ${Date.now()}`;
+    }).then(({ folderId, folderName, dataSourceName, userEmail }) => {
+      const attemptId = Date.now();
+      const ungrantedFolderName = `Ungranted Folder ${attemptId}`;
+      const strayName = `ds-stray-${attemptId}`;
+      const renamed = `${folderName} Renamed`;
 
-      // setupFolderAccess leaves the session as the onboarded (restricted) user, who
-      // has no create rights — log back in as admin before seeding more fixtures.
       cy.apiLogin();
-      cy.apiCreateDataSourceFolder(ungrantedFolderName).then((ungrantedFolder) => {
-        // Coarse flags for both the custom group and the default builder group are
-        // already off (setupFolderAccess + beforeEach), set before any member existed.
-
+      cy.apiCreateGlobalDataSource(strayName);
+      cy.apiCreateDataSourceFolder(ungrantedFolderName).then((ungranted) => {
         cy.apiLogin(userEmail, 'password');
+        openDataSourcesList();
 
-        // Granted folder — intended 201, actual 403.
-        cy.apiAddDataSourceToFolder(dataSourceId, ungrantedFolder.id).then((response) => {
-          expect(response.status, 'membership into an UNGRANTED folder is refused').to.equal(403);
-        });
+        // Granted folder: Rename is offered and works; Delete stays a coarse right.
+        uiOpenFolderMenu(folderId);
+        cy.get(dsFolder.folderRenameOption(folderId)).should('exist');
+        cy.get(dsFolder.folderDeleteOption(folderId)).should('not.exist');
+        cy.get('body').type('{esc}');
+        uiRenameDataSourceFolder(folderId, renamed);
+        uiVerifyDataSourceFolderExists(renamed);
 
-        cy.apiRemoveDataSourceFromFolder(dataSourceId, folderId).then((response) => {
-          expect(
-            response.status,
-            'membership on the GRANTED folder is also refused — the grant is invisible to this guard'
-          ).to.equal(403);
-        });
+        // Move a data source into the granted folder, and one out of it.
+        dragDataSourceToFolder(strayName, renamed);
+        cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(2));
+        uiEnsureFolderExpanded(renamed, dataSourceName);
+        dragDataSourceToStrayList(dataSourceName);
+        cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(1));
 
-        // Discriminator: turn the coarse flag on and the UNGRANTED folder becomes
-        // writable too, proving the fallback rather than any per-folder scoping.
-        cy.apiLogin();
-        cy.apiUpdateGroupPermission(groupName, { dataSourceFolderCreate: true });
-
-        cy.apiLogin(userEmail, 'password');
-        cy.apiAddDataSourceToFolder(dataSourceId, ungrantedFolder.id).then((response) => {
-          expect(
-            response.status,
-            'coarse flag alone authorizes an unscoped folder — confirms the fallback'
-          ).to.be.oneOf([200, 201]);
-        });
+        // Ungranted folder: no management menu, and a drop into it is refused.
+        uiVerifyFolderMenuAbsent(ungranted.id);
+        dragDataSourceToFolder(dataSourceName, ungrantedFolderName);
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'You do not have permission to access this resource');
+        cy.apiGetDataSourceIdsInFolder(ungranted.id).then((ids) => expect(ids).to.have.length(0));
       });
+    });
+  });
+
+  it('a data-source-level grant shows the data source inside its folder but gives no folder management', () => {
+    const attemptId = Date.now();
+    const folderName = `DS Grant Folder ${attemptId}`;
+    const dataSourceName = `ds-direct-${attemptId}`;
+    const groupName = `QA DS Direct ${attemptId}`;
+    const userEmail = `ds-direct-${attemptId}@example.com`;
+
+    cy.apiCreateDataSourceFolder(folderName).then((folder) => {
+      cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) =>
+        cy.apiAddDataSourceToFolder(dataSourceId, folder.id)
+      );
+      // The default builder role reaches every data source by itself; remove that so
+      // the direct grant is the only way in.
+      cy.apiDeleteGranularPermission('builder', ['data_source']);
+      apiCreateGroup(groupName);
+      cy.apiCreateGranularPermission(
+        groupName,
+        `${groupName} ds`,
+        'datasource',
+        { canUse: true, canConfigure: false },
+        [dataSourceName],
+        false
+      );
+      cy.apiFullUserOnboarding('QA Direct', userEmail, 'builder', 'password', wsName, {}, [groupName]);
+
+      cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
+
+      // The folder holding the granted data source is listed with it inside...
+      uiEnsureFolderExpanded(folderName, dataSourceName);
+      cy.get(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
+      // ...but the grant carries no folder rights: no ⋮ menu at all.
+      uiVerifyFolderMenuAbsent(folder.id);
     });
   });
 });

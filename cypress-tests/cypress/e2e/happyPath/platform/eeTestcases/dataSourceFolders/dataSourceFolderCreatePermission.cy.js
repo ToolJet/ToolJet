@@ -6,8 +6,11 @@ import {
 } from 'Selectors/platform/dataSourceFolders';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import {
+  dragDataSourceToFolder,
+  dragDataSourceToStrayList,
   openDataSourcesList,
   uiCreateDataSourceFolder,
+  uiEnsureFolderExpanded,
   uiDeleteDataSourceFolder,
   uiOpenFolderMenu,
   uiVerifyDataSourceFolderExists,
@@ -39,7 +42,7 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  it('a custom group grants folder create and delete independently, each taking effect as it is enabled', () => {
+  it('a custom group grants folder create (with membership) and delete independently, each taking effect as it is enabled', () => {
     const groupName = `QA DS Folder ${testId}`;
     const userEmail = `ds-folder-create-${testId}@example.com`;
 
@@ -47,10 +50,15 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.apiLogout();
 
     cy.apiLogin();
+    // A data source the user can see, so membership can be exercised. It is a
+    // data source grant only — no folder rights come with it.
+    const dataSourceName = `ds-create-flag-${testId}`;
+    cy.apiCreateGlobalDataSource(dataSourceName);
     apiCreateGroup(groupName).then((groupId) => {
       groupId1 = groupId;
       apiAddUserToGroup(groupId1, userEmail);
     });
+    cy.apiCreateGranularPermission(groupName, `${groupName} ds`, 'datasource', { canUse: true, canConfigure: false }, [], true);
     cy.apiLogout();
 
     // Create control is hidden while the coarse flag is off.
@@ -81,6 +89,13 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     uiVerifyDataSourceFolderExists(folderName);
 
     cy.apiGetDataSourceFolderId(folderName).then((folderId) => {
+      // The Create flag also covers membership: move a data source in, then out.
+      dragDataSourceToFolder(dataSourceName, folderName);
+      cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(1));
+      uiEnsureFolderExpanded(folderName, dataSourceName);
+      dragDataSourceToStrayList(dataSourceName);
+      cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(0));
+
       // Create alone does NOT imply delete. The ⋮ menu still renders, because the
       // frontend gates Rename on the create flag, but Delete must be absent.
       uiOpenFolderMenu(folderId);

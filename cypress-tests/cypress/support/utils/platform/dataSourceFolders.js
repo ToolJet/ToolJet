@@ -1,5 +1,9 @@
 import { commonSelectors } from "Selectors/common";
-import { dataSourceFolderSelectors as dsFolder } from "Selectors/platform/dataSourceFolders";
+import {
+  dataSourceFolderPermissionSelectors as dsFolderPerm,
+  dataSourceFolderSelectors as dsFolder,
+} from "Selectors/platform/dataSourceFolders";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 
 /**
  * Opens the global data sources page, where data source folders live.
@@ -109,7 +113,11 @@ export const dragDataSourceToFolder = (dataSourceName, folderName) => {
     .closest(".datasource-folder")
     .should("have.class", "is-drop-over");
 
+  // Wait for the membership call itself: a read straight after the drop can
+  // otherwise race the write. Resolves on any status, so refused drops work too.
+  cy.intercept("POST", "/api/folder-data-sources*").as("dropIntoFolder");
   cy.get(dsFolder.folderRow(folderName)).realMouseUp({ position: "center" });
+  cy.wait("@dropIntoFolder");
 };
 
 /**
@@ -128,7 +136,9 @@ export const dragDataSourceToStrayList = (dataSourceName) => {
   // straight onto the zone element here.
   cy.get(dsFolder.strayDropZone).should("have.class", "is-drop-over");
 
+  cy.intercept("PUT", "/api/folder-data-sources/*").as("dropOutOfFolder");
   cy.get(dsFolder.strayDropZone).realMouseUp({ position: "center" });
+  cy.wait("@dropOutOfFolder");
 };
 
 /**
@@ -181,3 +191,145 @@ export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
 /** Raw toggle. Prefer uiEnsureFolderExpanded when you need it open. */
 export const uiExpandDataSourceFolder = (folderName) =>
   cy.get(dsFolder.folderRow(folderName)).click();
+
+/**
+ * Starts a drag on a row, asserts the DragOverlay label, then cancels with Escape
+ * so no membership request is sent. Same real-pointer requirement as
+ * dragDataSourceToFolder.
+ */
+export const uiVerifyDragPreview = (dataSourceName, expectedLabel) => {
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(30, -60);
+  cy.get(dsFolder.dragOverlay).should("be.visible").and("have.text", expectedLabel);
+  cy.realPress("Escape");
+  cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseUp({ position: "center" });
+  cy.get(dsFolder.dragOverlay).should("not.exist");
+};
+
+// ---------------------------------------------------------------------------
+// Query run restriction
+// ---------------------------------------------------------------------------
+
+export const QUERY_RUN_BLOCKED_MESSAGE =
+  "You do not have permission to run queries on this data source";
+
+/**
+ * A blocked run is NOT an HTTP error: the run endpoint answers 201 and carries the
+ * refusal in the body (status "failed" + nested 403). Assert on the body.
+ */
+export const verifyQueryRunBlocked = (body) => {
+  expect(body.status, "query run status").to.equal("failed");
+  expect(body.data?.responseObject?.responseBody).to.equal(QUERY_RUN_BLOCKED_MESSAGE);
+};
+
+// Only the permission gate is under test — the dummy URL's own reachability is
+// not, so "allowed" means "not refused by the restriction".
+export const verifyQueryRunAllowed = (body) => {
+  const refusal = body.data?.responseObject?.responseBody;
+  expect(refusal, "query run is not refused by the restriction").to.not.equal(
+    QUERY_RUN_BLOCKED_MESSAGE
+  );
+};
+
+const restApiQueryOptions = (runOnPageLoad = false) => ({
+  method: "get",
+  url: "",
+  url_params: [],
+  headers: [],
+  cookies: [],
+  body: [],
+  json_body: null,
+  body_toggle: false,
+  runOnPageLoad,
+});
+
+/**
+ * App with one REST API query on the given data source, left in the editor.
+ * Yields { appId, versionId }.
+ */
+export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPageLoad = false) => {
+  let appId, versionId;
+  return cy
+    .apiCreateApp(appName)
+    .then(() => {
+      appId = Cypress.env("appId");
+      return cy.apiGetAppData(appId);
+    })
+    .then((app) => {
+      versionId = app.editing_version.id;
+      Cypress.env("editingVersionId", versionId);
+      Cypress.env("environmentId", app.editorEnvironment.id);
+      return cy.apiCreateQuery(dataSourceId, versionId, queryName, "restapi", restApiQueryOptions(runOnPageLoad));
+    })
+    .then(() => ({ appId, versionId }));
+};
+
+/**
+ * Same app, saved → promoted to production → released under `slug`, with the
+ * query set to run on page load so opening the released app fires it.
+ * Release requires a saved (non-draft) version promoted to production.
+ */
+export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, queryName) =>
+  apiCreateAppWithQuery(appName, dataSourceId, queryName, true).then(({ appId, versionId }) => {
+    cy.apiSaveAppVersion(appId, versionId, "v1");
+    cy.apiPromoteAppVersion(Cypress.env("environmentId"), appId);
+    cy.then(() => cy.apiPromoteAppVersion(Cypress.env("stagingEnvId"), appId));
+    cy.apiReleaseApp(appName);
+    cy.apiAddAppSlug(appName, slug);
+    return cy.wrap({ appId, versionId });
+  });
+
+/** Runs a query from the builder's query panel and yields the run response body. */
+export const uiRunQueryInBuilder = (queryName) => {
+  cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as("builderQueryRun");
+  cy.get(dsFolder.listQuery(queryName)).click();
+  cy.get(dsFolder.queryRunButton).click();
+  return cy.wait("@builderQueryRun").its("response.body");
+};
+
+/** Opens a released app and yields the body of its page-load query run. */
+export const visitReleasedAppAndCaptureQueryRun = (slug) => {
+  cy.intercept("POST", "/api/data-queries/*/run").as("releasedQueryRun");
+  cy.visit(`/applications/${slug}`);
+  return cy.wait("@releasedQueryRun").its("response.body");
+};
+
+// ---------------------------------------------------------------------------
+// Groups → Granular access → Data source folders
+// ---------------------------------------------------------------------------
+
+export const openGroupGranularAccess = (groupName) => {
+  cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
+  cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.get(groupsSelector.granularLink).click();
+};
+
+export const uiOpenAddDataSourceFolderGrant = () => {
+  cy.get(groupsSelector.addPermissionButton).click();
+  cy.get(dsFolderPerm.addDataSourceFolderButton).click();
+};
+
+export const uiOpenEditDataSourceFolderGrant = () => {
+  cy.get(dsFolderPerm.granularAccessRow).realHover();
+  cy.get(dsFolderPerm.editGranularAccess).click({ force: true });
+};
+
+/** Custom scope, then tick each folder in the resources picker. */
+export const uiSelectGrantFolders = (folderNames = []) => {
+  cy.get(dsFolderPerm.sharedModalCustomRadio).check();
+  cy.get(dsFolderPerm.sharedModalResourcesContainer).find('[class*="-control"]').click();
+  folderNames.forEach((name) => cy.contains(dsFolderPerm.sharedModalResourceOption, name).click());
+  cy.get(dsFolderPerm.sharedModalPermissionNameInput).click();
+};
+
+/**
+ * Adds a user to a group from its Users tab. The option row's text is not
+ * clickable — MultiSelectUser only reacts to the (visually hidden) checkbox.
+ */
+export const uiAddUserToGroup = (email) => {
+  cy.get(groupsSelector.usersLink).click();
+  cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
+  cy.contains(".select-search__row", email).find('[type="checkbox"]').check({ force: true });
+  cy.contains("button", "Add users").should("be.enabled").click();
+};

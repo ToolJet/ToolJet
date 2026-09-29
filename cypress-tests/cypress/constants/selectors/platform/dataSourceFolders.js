@@ -25,15 +25,26 @@ export const dataSourceFolderSelectors = {
   folderNameInput: '[data-cy="datasource-folder-name-input"]',
   createFolderButton: '[data-cy="create-datasource-folder-button"]',
   renameFolderButton: '[data-cy="rename-datasource-folder-button"]',
+  // The inline validation label under the name input has no data-cy.
+  folderNameError: '.modal-content .tj-input-error',
 
   // ---- move ("Update folder") modal ----
   moveToFolderButton: '[data-cy="move-datasource-to-folder-button"]',
   moveModalDataSourceSelect: '.react-select__control:has(+ * [id*="react-select"])',
   moveModalFolderSelectPlaceholder: 'Select folder',
   moveModalDataSourceSelectPlaceholder: 'Select data sources..',
+  // Both react-selects share classNamePrefix="move-ds-select" and carry no data-cy;
+  // scope a control by its field label (.move-ds-field) before using these.
+  moveModalControl: '.move-ds-select__control',
+  moveModalOption: '.move-ds-select__option',
+  moveModalSelectedDataSource: '.move-ds-select__multi-value__label',
+  moveModalRemoveDataSource: '.move-ds-select__multi-value__remove',
+  moveModalSelectedFolder: '.move-ds-select__single-value',
 
 
   strayDropZone: '.datasource-stray-zone',
+  // dnd-kit DragOverlay: shows the dragged row's name, or "N data sources".
+  dragOverlay: '.datasource-drag-overlay',
 
   // ---- data source row ----
 
@@ -58,6 +69,13 @@ export const dataSourceFolderSelectors = {
     `[data-cy="${cyParamName(dataSourceName)}-add-query-card"]`,
   selectDataSourceOption: (dataSourceName) =>
     `[data-cy="ds-${cyParamName(dataSourceName)}"]`,
+  // "+" add-query popover (DataSourceSelect) vs the empty query panel picker
+  // (DataSourcePicker) — two pickers, two search inputs.
+  addQueryPopoverButton: dataSourceSelector.editorDSPopover,
+  addQueryPopoverSearch: 'input[placeholder="Search for data source"]',
+  emptyPickerSearch: '[data-cy="gds-querymanager-search-bar"]',
+  listQuery: dataSourceSelector.listQuery,
+  queryRunButton: dataSourceSelector.queryCreateAndRunButton,
 
   cancelButton: commonSelectors.cancelButton,
   confirmDialogYesButton: commonSelectors.yesButton,
@@ -112,4 +130,12 @@ export const dataSourceFolderPermissionSelectors = {
   sharedModalEnvironmentSelect: '[data-cy="environment-select"]',
   sharedModalComingSoonChip: '[data-cy="coming-soon-chip"]',
   sharedModalPermissionNameInput: '[data-cy="permission-name-input"]',
+  sharedModalConfirmButton: '[data-cy="confirm-button"]',
+  sharedModalAllResourcesRadio: '[data-cy="all-apps-radio"]',
+  sharedModalCustomRadio: '[data-cy="custom-radio"]',
+  sharedModalResourcesContainer: '[data-cy="resources-container"]',
+  // AppsSelect options render a checkbox + .select-option label; chips render
+  // .selected-value. No data-cy on either.
+  sharedModalResourceOption: '.select-option',
+  sharedModalSelectedResource: '.selected-value',
 };

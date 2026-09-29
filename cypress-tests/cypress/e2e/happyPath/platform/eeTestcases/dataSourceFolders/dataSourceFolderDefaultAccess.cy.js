@@ -112,4 +112,37 @@ describe('Data Source Folders — Default Role Access', () => {
       });
     });
   });
+
+  it('folders are listed alphabetically, an empty folder shows its empty state, and a deleted name can be reused', () => {
+    const names = [`beta ${testId}`, `Alpha ${testId}`, `charlie ${testId}`];
+    names.forEach((name) => cy.apiCreateDataSourceFolder(name));
+
+    openDataSourcesList();
+
+    // Case-insensitive alphabetical order, regardless of creation order.
+    cy.get('[data-cy^="datasource-folder-"]')
+      .filter((_, el) => /^datasource-folder-(alpha|beta|charlie)-/.test(el.dataset.cy))
+      .then(($rows) => {
+        const shown = [...$rows].map((el) => el.innerText.split('\n')[0].trim());
+        expect(shown).to.deep.equal([`Alpha ${testId}`, `beta ${testId}`, `charlie ${testId}`]);
+      });
+
+    cy.apiGetDataSourceFolderId(`beta ${testId}`).then((firstId) => {
+      // Expanding an empty folder shows the empty state.
+      cy.get(dsFolder.folderRow(`beta ${testId}`)).click();
+      cy.get(dsFolder.folderEmptyText(firstId)).should('have.text', 'This folder is empty');
+
+      // Delete it, then create a folder with the same name straight away.
+      uiDeleteDataSourceFolder(firstId);
+      uiVerifyDataSourceFolderExists(`beta ${testId}`, false);
+      uiCreateDataSourceFolder(`beta ${testId}`);
+
+      cy.apiGetDataSourceFolderId(`beta ${testId}`).then((secondId) => {
+        expect(secondId, 're-created folder is a new folder').to.not.equal(firstId);
+        cy.get(dsFolder.folderRow(`beta ${testId}`)).click();
+        cy.get(dsFolder.folderEmptyText(secondId)).should('be.visible');
+      });
+    });
+  });
 });
+

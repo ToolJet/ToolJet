@@ -1,6 +1,6 @@
 import { dataSourceSelector } from 'Selectors/marketplace/dataSource';
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
-import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import {
   openDataSourcesList,
   uiEnsureFolderExpanded,
@@ -29,7 +29,7 @@ describe('Data Source Folders — Permission Tiers', () => {
    * a builder in that group. The builder role is emptied first so the group's
    * grant is the only privilege in play.
    */
-  const setupTier = (label, permissions) => {
+  const setupTier = (label, permissions, isAll = false) => {
     const attemptId = Date.now();
     const folderName = `${label} Tier Folder ${attemptId}`;
     const insideName = `ds-inside-${label.toLowerCase()}-${attemptId}`;
@@ -55,8 +55,8 @@ describe('Data Source Folders — Permission Tiers', () => {
           `${groupName} perm`,
           'data_source_folder',
           permissions,
-          [folderId],
-          false
+          isAll ? [] : [folderId],
+          isAll
         )
       )
       // Emptying the builder role removed its app privileges too, so the group
@@ -77,7 +77,23 @@ describe('Data Source Folders — Permission Tiers', () => {
         )
       )
       .then(() => cy.apiFullUserOnboarding(label, userEmail, 'builder', 'password', wsName, {}, [groupName]))
-      .then(() => ({ folderName, insideName, outsideName, userEmail, folderId }));
+      .then(() => ({ folderName, insideName, outsideName, userEmail, folderId, groupName }));
+  };
+
+  /**
+   * Runs admin-side changes while the test user stays logged in: the user's own
+   * session cookie is put back afterwards, so "takes effect on the next request"
+   * is checked without a re-login.
+   */
+  const asAdminKeepingUserSession = (changes) => {
+    cy.getCookie('tj_auth_token').then((userCookie) => {
+      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
+      changes();
+      cy.then(() => {
+        cy.setCookie('tj_auth_token', userCookie.value);
+        Cypress.env('workspaceId', workspaceId);
+      });
+    });
   };
 
   afterEach(() => {
@@ -175,4 +191,81 @@ describe('Data Source Folders — Permission Tiers', () => {
       cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
     });
   });
+
+  it('the Configure cascade follows membership — moving a data source in or out changes access on the next request', () => {
+    setupTier('Cascade', {
+      canEditFolder: false,
+      canEditApps: true,
+      canViewApps: false,
+    }).then(({ folderName, outsideName, userEmail, folderId }) => {
+      cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
+      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
+
+      // Admin moves the outside data source into the granted folder.
+      asAdminKeepingUserSession(() => {
+        cy.apiGetDatasourceIds([outsideName]).then(([outsideId]) => cy.apiAddDataSourceToFolder(outsideId, folderId));
+      });
+      openDataSourcesList();
+      uiEnsureFolderExpanded(folderName, outsideName);
+      cy.get(dsFolder.dataSourceRow(outsideName)).click();
+      cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
+
+      // And out again: access goes with it.
+      asAdminKeepingUserSession(() => {
+        cy.apiGetDatasourceIds([outsideName]).then(([outsideId]) => cy.apiRemoveDataSourceFromFolder(outsideId, folderId));
+      });
+      openDataSourcesList();
+      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
+    });
+  });
+
+  it('removing the user from the group, or deleting the grant, removes access on the next request', () => {
+    setupTier('Revoke', {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
+    }).then(({ folderName, insideName, userEmail, groupName }) => {
+      cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
+      uiEnsureFolderExpanded(folderName, insideName);
+      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
+
+      // Out of the group → gone.
+      asAdminKeepingUserSession(() => {
+        cy.apiGetGroupId(groupName).then((groupId) => cy.apiRemoveUserFromGroup(groupId, userEmail));
+      });
+      openDataSourcesList();
+      cy.get(dsFolder.dataSourceRow(insideName)).should('not.exist');
+
+      // Back in → visible again; then delete the grant → gone.
+      asAdminKeepingUserSession(() => {
+        cy.apiGetGroupId(groupName).then((groupId) => apiAddUserToGroup(groupId, userEmail));
+      });
+      openDataSourcesList();
+      uiEnsureFolderExpanded(folderName, insideName);
+      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
+
+      asAdminKeepingUserSession(() => {
+        cy.apiDeleteGranularPermission(groupName, ['data_source_folder']);
+      });
+      openDataSourcesList();
+      cy.get(dsFolder.dataSourceRow(insideName)).should('not.exist');
+    });
+  });
+
+  it('an All data source folders grant reaches every data source in a folder, but not one outside every folder', () => {
+    setupTier(
+      'AllFolders',
+      { canEditFolder: false, canEditApps: false, canViewApps: true },
+      true
+    ).then(({ folderName, insideName, outsideName, userEmail }) => {
+      cy.apiLogin(userEmail, 'password');
+      openDataSourcesList();
+      uiEnsureFolderExpanded(folderName, insideName);
+      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
+      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
+    });
+  });
 });
+

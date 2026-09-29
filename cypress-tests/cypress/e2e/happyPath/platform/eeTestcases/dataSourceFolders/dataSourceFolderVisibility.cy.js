@@ -1,3 +1,4 @@
+import { commonSelectors } from 'Selectors/common';
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import {
@@ -28,24 +29,7 @@ describe('Data Source Folders — Folder & Data Source Visibility', () => {
     cy.apiDeleteGranularPermission('builder', ['data_source', 'data_source_folder']);
   });
 
-  /**
- * KNOWN GAP — asserts CURRENT behaviour, which is not the intended behaviour.
- *
- * Observable invariant, reproducible through the public API: GET
- * /api/folder-data-sources returns EVERY data source folder in the workspace to
- * a non-admin whose granular grant covers only one of them. Folder CONTENTS are
- * still filtered by data source visibility, so what leaks is folder names, not
- * the data sources inside them. `FolderDataSourcesService.filterFoldersByPermissions`
- * returns all folders whenever no data source folder permission set resolves for
- * the caller.
- *
- * Intended: only the authorized folder is listed.
- * Actual:   both are listed.
- *
- * When the bucket is built, the `unauthorized ... should exist` assertion below
- * flips and this test must be updated — the failure is the signal.
- */
-it('every data source folder is listed regardless of grant (known gap), and an empty authorized folder shows its empty state', () => {
+  it('a user sees only the folders their grant reaches, including an empty authorized folder', () => {
     const attemptId = Date.now();
     const authorizedFolderName = `Authorized DS Folder ${attemptId}`;
     const unauthorizedFolderName = `Unauthorized DS Folder ${attemptId}`;
@@ -72,8 +56,7 @@ it('every data source folder is listed regardless of grant (known gap), and an e
         openDataSourcesList();
 
         uiVerifyDataSourceFolderExists(authorizedFolderName);
-        // Intended: not.exist. Actual: visible — see the block comment above.
-        uiVerifyDataSourceFolderExists(unauthorizedFolderName);
+        uiVerifyDataSourceFolderExists(unauthorizedFolderName, false);
 
         // The authorized folder is empty and still listed, showing its empty state.
         uiExpandDataSourceFolder(authorizedFolderName);
@@ -113,4 +96,31 @@ it('every data source folder is listed regardless of grant (known gap), and an e
       });
     });
   });
+
+  it('a failed folder listing is reported as an error, not shown as data sources with no folder', () => {
+    const attemptId = Date.now();
+    const folderName = `Listed Folder ${attemptId}`;
+    const folderedDataSource = `ds-listed-${attemptId}`;
+
+    cy.apiCreateGlobalDataSource(folderedDataSource).then((dataSourceId) => {
+      cy.apiCreateDataSourceFolder(folderName).then((folder) =>
+        cy.apiAddDataSourceToFolder(dataSourceId, folder.id)
+      );
+    });
+
+    cy.intercept('GET', '/api/folder-data-sources*', {
+      statusCode: 500,
+      body: { statusCode: 500, message: 'Internal server error' },
+    }).as('failedFolderList');
+
+    cy.visit(`/${wsSlug}`);
+    cy.get(commonSelectors.globalDataSourceIcon, { timeout: 50000 }).click();
+    cy.wait('@failedFolderList');
+
+    // The failure is surfaced to the user...
+    cy.get(commonSelectors.toastMessage).should('be.visible');
+    // ...and the foldered data source is not presented as an un-foldered row.
+    cy.get(dsFolder.dataSourceRow(folderedDataSource)).should('not.exist');
+  });
 });
+
