@@ -1,7 +1,7 @@
 import { ServiceUnavailableException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type Stripe from 'stripe';
-import { buildPlanPrices, isPlanPrices, toPlanPrice } from '@ee/organization-payments/plan-prices';
+import { buildPlanPrices, isPlanPrices, toPlanPrice } from '@ee/organization-payments/helpers/plan-prices';
 // jest.mock calls below are hoisted above these imports, so the service picks up the mocks.
 import { OrganizationPaymentService } from '@ee/organization-payments/service';
 

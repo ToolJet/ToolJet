@@ -9,7 +9,7 @@ table. CE ships stubs only; everything real lives in `server/ee/organization-pay
 
 - **Plan** — code ids `starter` (legacy), `basicplus` (Basic), `pro`, `team`; Enterprise is sold by sales, not Stripe.
 - **Price** — a Stripe price id per plan and billing period, from env `STRIPE_PRICE_ID_{PLAN}_{MONTHLY|YEARLY}_EDITOR` (`NEW_PLANS_MAPPING` in the EE service). "Editor" is the legacy name for a Builder seat.
-- **Plan prices** — what the pricing table and checkout show: per-Builder amounts read from those Stripe prices (`ee/organization-payments/plan-prices.ts`).
+- **Plan prices** — what the pricing table and checkout show: per-Builder amounts read from those Stripe prices (`ee/organization-payments/helpers/plan-prices.ts`).
 
 ## Key files
 
@@ -23,7 +23,7 @@ table. CE ships stubs only; everything real lives in `server/ee/organization-pay
 | `organizationAiFeature.repository.ts` | AI credit wallet balances (recurring / top-up) |
 | `controller.ts`, `service.ts` | CE stubs (`Method not implemented`) |
 | `ee/organization-payments/service.ts` | Stripe calls, webhook handlers, license writes, `getPlanPrices()` |
-| `ee/organization-payments/plan-prices.ts` | Pure conversion of Stripe prices into plan prices, plus the relay shape check |
+| `ee/organization-payments/helpers/plan-prices.ts` | Pure conversion of Stripe prices into plan prices, plus the relay shape check |
 
 ## Edition split
 
