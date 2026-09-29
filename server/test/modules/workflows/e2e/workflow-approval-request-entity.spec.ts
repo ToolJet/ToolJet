@@ -8,6 +8,7 @@ import {
   closeTestApp,
   saveEntity,
   findEntityOrFail,
+  getDefaultDataSource,
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
@@ -68,6 +69,25 @@ describe('WorkflowApprovalRequest entity', () => {
     });
     const found = await findEntityOrFail(WorkflowApprovalRequest, { id: saved.id });
     expect(found).toMatchObject({ token: 'tok-entity-1', status: 'pending', workflowExecutionId: executionId });
+  });
+
+  it('reads back created_at as the insert instant when the database zone differs from the server zone', async () => {
+    // +14:00 differs from any zone a server runs in, so a zone-less column would shift by the offset.
+    await getDefaultDataSource().query(`SET LOCAL TimeZone = 'Pacific/Kiritimati'`);
+    const before = Date.now();
+    const saved = await saveEntity(WorkflowApprovalRequest, {
+      workflowExecutionId: executionId,
+      executionNodeId: nodeId,
+      token: 'tok-entity-tz',
+      status: 'pending',
+      approversSnapshot: { users: [], groups: [], emails: [] },
+      expiresAt: null,
+    });
+
+    const found = await findEntityOrFail(WorkflowApprovalRequest, { id: saved.id });
+
+    expect(Math.abs(found.createdAt.getTime() - before)).toBeLessThan(60_000);
+    expect(Math.abs(found.updatedAt.getTime() - before)).toBeLessThan(60_000);
   });
 
   it('rejects a second pending request for the same (execution, node) via the partial unique index', async () => {
