@@ -1,5 +1,4 @@
 import { WorkflowApprovalTimeoutProcessor } from '@ee/workflows/processors/workflow-approval-timeout.processor';
-import { App } from '@entities/app.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { APPROVAL_DEADLINE_JOB, APPROVAL_REMINDER_JOB } from '@modules/workflows/constants';
 
@@ -10,7 +9,8 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
     const repo: any = { findOne: jest.fn() };
     const executions: any = { dispatchApprovalNotification: jest.fn() };
     const logger: any = { log: jest.fn(), error: jest.fn() };
-    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger);
+    const appsRepository: any = { findAllOrganizationWorkflows: jest.fn().mockResolvedValue([]) };
+    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger, appsRepository);
     await processor.process({ name: APPROVAL_DEADLINE_JOB, data: { requestId: 'req-1' } } as any);
     expect(approvals.expire).toHaveBeenCalledWith('req-1');
   });
@@ -20,7 +20,8 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
     const repo: any = { findOne: jest.fn().mockResolvedValue({ id: 'req-1', status: 'resolved' }) };
     const executions: any = { dispatchApprovalNotification: jest.fn() };
     const logger: any = { log: jest.fn(), error: jest.fn() };
-    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger);
+    const appsRepository: any = { findAllOrganizationWorkflows: jest.fn().mockResolvedValue([]) };
+    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger, appsRepository);
     await processor.process({ name: APPROVAL_REMINDER_JOB, data: { requestId: 'req-1' } } as any);
     expect(executions.dispatchApprovalNotification).not.toHaveBeenCalled();
   });
@@ -35,24 +36,25 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
       appId: 'app-1',
     };
     const node = { definition: { nodeName: 'Manager approval' } };
-    const app = { id: 'app-1', name: 'Production deployment' };
+    const workflow = { id: 'app-1', name: 'Production deployment' };
     const approvals: any = { expire: jest.fn() };
     const repo: any = {
       findOne: jest.fn().mockResolvedValue(request),
       manager: {
         findOne: jest.fn().mockImplementation((entity) => {
           if (entity === WorkflowExecutionNode) return Promise.resolve(node);
-          if (entity === App) return Promise.resolve(app);
           return Promise.resolve(null);
         }),
       },
     };
     const executions: any = { dispatchApprovalNotification: jest.fn() };
     const logger: any = { log: jest.fn(), error: jest.fn() };
-    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger);
+    const appsRepository: any = { findAllOrganizationWorkflows: jest.fn().mockResolvedValue([workflow]) };
+    const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger, appsRepository);
 
     await processor.process({ name: APPROVAL_REMINDER_JOB, data: { requestId: 'req-1' } } as any);
 
+    expect(appsRepository.findAllOrganizationWorkflows).toHaveBeenCalledWith('org-1', ['app-1']);
     expect(executions.dispatchApprovalNotification).toHaveBeenCalledWith(
       node.definition,
       request,
