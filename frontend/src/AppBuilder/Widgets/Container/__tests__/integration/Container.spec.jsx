@@ -754,12 +754,12 @@ describe('Container: nested in a Listview row', () => {
       expect(rendered).toEqual(['one', 'two']);
 
       // A Listview ancestor switches the Container's exposed values to row-indexed storage
-      // (resolvedSlice.js:569-577), so this is an array of two, not one object.
-      const exposed = listview.session.store.read((s) => s.getExposedValueOfComponent(ID, 'canvas'));
-      expect(Array.isArray(exposed)).toBe(true);
-      expect(exposed).toHaveLength(2);
-      expect(exposed[0].isVisible).toBe(true);
-      expect(exposed[1].isVisible).toBe(true);
+      // (resolvedSlice.js:576-578): one entry per row, not one shared object. The public
+      // accessor resolves INTO that array and returns a single row, so the fan-out itself
+      // has to be read from the store and each row addressed by index.
+      expect(listview.exposedRows(ID)).toHaveLength(2);
+      expect(listview.exposed(ID, 0).isVisible).toBe(true);
+      expect(listview.exposed(ID, 1).isVisible).toBe(true);
     } finally {
       listview.teardown();
     }

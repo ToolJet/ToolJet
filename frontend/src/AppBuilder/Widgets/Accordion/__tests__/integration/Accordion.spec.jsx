@@ -938,10 +938,12 @@ describe('Accordion: nested in other containers', () => {
       const rendered = [...document.querySelectorAll('[data-cy="draggable-widget-rowtext"]')].map((n) => n.textContent);
       expect(rendered).toEqual(['one', 'two']);
 
-      const exposed = listview.session.store.read((st) => st.getExposedValueOfComponent(ID, 'canvas'));
-      expect(Array.isArray(exposed)).toBe(true);
-      expect(exposed).toHaveLength(2);
-      expect(exposed[0].isExpanded).toBe(true);
+      // Row-indexed exposed storage (resolvedSlice.js:576-578): one entry per row. The public
+      // accessor collapses that array to a single row, so the fan-out is read from the store
+      // and each row addressed by index.
+      expect(listview.exposedRows(ID)).toHaveLength(2);
+      expect(listview.exposed(ID, 0).isExpanded).toBe(true);
+      expect(listview.exposed(ID, 1).isExpanded).toBe(true);
     } finally {
       listview.teardown();
     }
