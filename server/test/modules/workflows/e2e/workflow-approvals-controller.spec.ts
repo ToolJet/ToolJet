@@ -3,10 +3,13 @@ import * as request from 'supertest';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { User } from '@entities/user.entity';
 import {
   initTestApp,
   closeTestApp,
   saveEntity,
+  findEntity,
+  buildTestSession,
   setupOrganizationAndUser,
   createWorkflowForUser,
   createWorkflowApplicationVersion,
@@ -18,6 +21,8 @@ describe('workflow-approvals controller', () => {
   let app: INestApplication;
   let appVersionId: string;
   let userId: string;
+  let organizationId: string;
+  let signedInUser: User;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', withWorkflows: true }));
@@ -29,6 +34,8 @@ describe('workflow-approvals controller', () => {
       lastName: 'Ctrl',
     });
     userId = user.id;
+    organizationId = user.organizationId;
+    signedInUser = user;
     const workflowApp = await createWorkflowForUser(app, user, 'HITL ctrl wf');
     appVersionId = (await createWorkflowApplicationVersion(app, workflowApp)).id;
   });
@@ -36,7 +43,7 @@ describe('workflow-approvals controller', () => {
     await closeTestApp(app);
   }, 60000);
 
-  async function seedPending() {
+  async function seedPending(approversSnapshot: Record<string, unknown> = { tokenBypass: true }) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId,
       startNodeId: null,
@@ -64,7 +71,7 @@ describe('workflow-approvals controller', () => {
       executionNodeId: node.id,
       token: `tok-ctrl-${Date.now()}`,
       status: 'pending',
-      approversSnapshot: { tokenBypass: true },
+      approversSnapshot,
       expiresAt: null,
     });
   }
@@ -75,6 +82,48 @@ describe('workflow-approvals controller', () => {
       .post(`/api/workflow-approvals/${req.token}/resolve`)
       .send({ outcome: 'approved', input: {} })
       .expect(201);
+  });
+
+  it('resolves via POST /:token/resolve as the signed-in approver when token bypass is off', async () => {
+    const req = await seedPending({ users: [userId], groups: [], emails: [], tokenBypass: false });
+    const { tokenCookie } = await buildTestSession(signedInUser, organizationId);
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/${req.token}/resolve`)
+      .set('Cookie', tokenCookie)
+      .set('tj-workspace-id', organizationId)
+      .send({ outcome: 'approved', input: {} })
+      .expect(201);
+
+    expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
+      status: 'resolved',
+      resolvedByUserId: userId,
+    });
+  });
+
+  it('returns 403 from POST /:token/resolve without a session when token bypass is off', async () => {
+    const req = await seedPending({ users: [userId], groups: [], emails: [], tokenBypass: false });
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/${req.token}/resolve`)
+      .send({ outcome: 'approved', input: {} })
+      .expect(403);
+  });
+
+  it('treats an invalid session cookie as anonymous on POST /:token/resolve instead of returning 401', async () => {
+    const req = await seedPending();
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/${req.token}/resolve`)
+      .set('Cookie', ['tj_auth_token=not-a-valid-jwt'])
+      .set('tj-workspace-id', organizationId)
+      .send({ outcome: 'approved', input: {} })
+      .expect(201);
+
+    expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
+      status: 'resolved',
+      resolvedByUserId: null,
+    });
   });
 
   it('returns 404 for an unknown token', async () => {
