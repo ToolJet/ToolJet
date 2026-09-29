@@ -12,6 +12,7 @@ import { GITConnectionType } from '@entities/organization_git_sync.entity';
 
 const H = GIT_ENV_KEYS.HTTPS;
 const GL = GIT_ENV_KEYS.GITLAB;
+const BB = GIT_ENV_KEYS.BITBUCKET;
 const ORG = 'org1';
 
 describe('GitSyncEnvUtilService', () => {
@@ -129,7 +130,69 @@ describe('GitSyncEnvUtilService', () => {
     });
   });
 
+  describe('getBitbucketConfig', () => {
+    it('delegates presence checks to orgEnvService.hasAll with workspace, repo slug and branch', () => {
+      orgEnv.hasAll.mockReturnValue(true);
+      expect(svc.hasBitbucketConfig(ORG)).toBe(true);
+      expect(orgEnv.hasAll).toHaveBeenCalledWith(ORG, [BB.WORKSPACE, BB.REPO_SLUG, BB.BRANCH]);
+    });
+
+    it('builds the config from env values and marks the provider finalized', async () => {
+      seedResolved();
+      withEnv({ [BB.WORKSPACE]: 'acme', [BB.REPO_SLUG]: 'web-app', [BB.BRANCH]: 'main', [BB.ACCESS_TOKEN]: 'bb-tok' });
+      await expect(svc.getBitbucketConfig(ORG)).resolves.toEqual({
+        bitbucketWorkspace: 'acme',
+        bitbucketRepoSlug: 'web-app',
+        bitbucketBranch: 'main',
+        bitbucketAccessToken: 'bb-tok',
+      });
+      expect(svc.getProviderState(ORG, GITConnectionType.BITBUCKET).isFinalized).toBe(true);
+    });
+
+    it('omits the optional access token when unset', async () => {
+      seedResolved();
+      withEnv({ [BB.WORKSPACE]: 'acme', [BB.REPO_SLUG]: 'web-app', [BB.BRANCH]: 'main' });
+      await expect(svc.getBitbucketConfig(ORG)).resolves.not.toHaveProperty('bitbucketAccessToken');
+    });
+
+    it('returns null when required Bitbucket keys are missing', async () => {
+      seedResolved();
+      withEnv({ [BB.WORKSPACE]: 'acme', [BB.ACCESS_TOKEN]: 'bb-tok' }); // no repo slug / branch
+      await expect(svc.getBitbucketConfig(ORG)).resolves.toBeNull();
+    });
+
+    it('returns null when a required value decrypts to empty', async () => {
+      seedResolved();
+      withEnv({ [BB.WORKSPACE]: 'acme', [BB.REPO_SLUG]: '', [BB.BRANCH]: 'main' });
+      await expect(svc.getBitbucketConfig(ORG)).resolves.toBeNull();
+    });
+
+    it('returns null when the workspace lacks the env-mapping license', async () => {
+      seedResolved();
+      license.getLicenseTerms.mockResolvedValue(false);
+      withEnv({ [BB.WORKSPACE]: 'acme', [BB.REPO_SLUG]: 'web-app', [BB.BRANCH]: 'main' });
+      await expect(svc.getBitbucketConfig(ORG)).resolves.toBeNull();
+    });
+  });
+
   describe('template configs', () => {
+    it('render {{ENV_KEY}} placeholders for the Bitbucket keys that are present', async () => {
+      seedResolved();
+      orgEnv.has.mockImplementation((_o: string, key: string) =>
+        ([BB.WORKSPACE, BB.ACCESS_TOKEN] as string[]).includes(key)
+      );
+      await expect(svc.getBitbucketTemplateConfig(ORG)).resolves.toEqual({
+        bitbucketWorkspace: `{{${BB.WORKSPACE}}}`,
+        bitbucketAccessToken: `{{${BB.ACCESS_TOKEN}}}`,
+      });
+    });
+
+    it('return null for Bitbucket when no keys are present', async () => {
+      seedResolved();
+      orgEnv.has.mockReturnValue(false);
+      await expect(svc.getBitbucketTemplateConfig(ORG)).resolves.toBeNull();
+    });
+
     it('render {{ENV_KEY}} placeholders for the keys that are present', async () => {
       seedResolved();
       orgEnv.has.mockImplementation((_o: string, key: string) => [H.URL, H.BRANCH].includes(key));
@@ -162,6 +225,16 @@ describe('GitSyncEnvUtilService', () => {
       expect(svc.getActiveProvider(ORG)).toBe(GITConnectionType.GITLAB);
       svc.setProviderState(ORG, GITConnectionType.GITHUB_HTTPS, { isEnabled: true, isFinalized: false });
       expect(svc.getActiveProvider(ORG)).toBe(GITConnectionType.GITHUB_HTTPS); // HTTPS wins on priority
+    });
+
+    it('getActiveProvider picks Bitbucket when it is the only enabled provider', () => {
+      svc.setProviderState(ORG, GITConnectionType.BITBUCKET, { isEnabled: true, isFinalized: true });
+      expect(svc.getActiveProvider(ORG)).toBe(GITConnectionType.BITBUCKET);
+    });
+
+    it('getProviderState reports Bitbucket enabled from env-key presence when no state is stored', () => {
+      orgEnv.has.mockImplementation((_o: string, key: string) => key === BB.WORKSPACE);
+      expect(svc.getProviderState(ORG, GITConnectionType.BITBUCKET)).toEqual({ isEnabled: true, isFinalized: false });
     });
 
     it('getActiveProvider falls back to a stored-but-disabled provider (Tier 2)', () => {

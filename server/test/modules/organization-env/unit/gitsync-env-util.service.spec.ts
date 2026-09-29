@@ -130,6 +130,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
 
       expect(gitSyncEnvUtilService.hasGitHttpsConfig(orgId)).toBe(true);
       expect(gitSyncEnvUtilService.hasGitLabConfig(orgId)).toBe(false);
+      expect(gitSyncEnvUtilService.hasBitbucketConfig(orgId)).toBe(false);
       expect(gitSyncEnvUtilService.getActiveProvider(orgId)).toBe(GITConnectionType.GITHUB_HTTPS);
       expect(gitSyncEnvUtilService.getProviderState(orgId, GITConnectionType.GITHUB_HTTPS)).toEqual({
         isEnabled: true,
