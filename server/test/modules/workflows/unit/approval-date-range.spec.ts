@@ -1,4 +1,7 @@
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { parseApprovalRangeStart, parseApprovalRangeEnd } from '@modules/workflows/helpers/approval-date-range';
+import { ListApprovalsDto } from '@modules/workflows/dto/list-approvals.dto';
 
 // Repository tests pass Dates; the day-vs-instant decision is only testable here.
 /** @group workflows */
@@ -43,4 +46,21 @@ describe('approvals list date range', () => {
       expect(parseApprovalRangeEnd('not-a-date')).toBeUndefined();
     });
   });
+});
+
+/** @group workflows */
+describe('ListApprovalsDto date bounds', () => {
+  const invalidProperties = async (input: Record<string, unknown>) =>
+    (await validate(plainToInstance(ListApprovalsDto, input))).map((error) => error.property);
+
+  it.each([['from'], ['to']])('rejects a partial %s date that would be read as the first of the month', async (key) => {
+    await expect(invalidProperties({ [key]: '2026-09' })).resolves.toContain(key);
+  });
+
+  it.each([['2026-09-24'], ['2026-09-24T18:29:59.999Z'], ['2026-09-24T23:59:59.999+05:30']])(
+    'accepts %s',
+    async (value) => {
+      await expect(invalidProperties({ from: value, to: value })).resolves.toEqual([]);
+    }
+  );
 });

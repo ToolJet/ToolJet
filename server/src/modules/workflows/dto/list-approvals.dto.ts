@@ -1,5 +1,8 @@
-import { IsOptional, IsString, IsUUID, IsDateString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString, IsInt, Matches, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+
+// A full calendar date, optionally with a time: `2026-09` would parse as 1 September.
+const FULL_DATE = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
 
 export class ListApprovalsDto {
   @IsOptional()
@@ -24,10 +27,12 @@ export class ListApprovalsDto {
 
   @IsOptional()
   @IsDateString()
+  @Matches(FULL_DATE)
   from?: string;
 
   @IsOptional()
   @IsDateString()
+  @Matches(FULL_DATE)
   to?: string;
 
   @IsOptional()
