@@ -135,7 +135,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 |------|-----------|-----------------|
 | **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
 | **Workflow Trigger** | What starts a workflow: `manual`, `schedule`, `webhook`, `app` (run triggered from inside an application), `workflow` (run invoked by a parent workflow), or `unknown` (history predating the `trigger_type` column — never back-fill by guessing) | Event — reserved for component-level interactions, but the executions dashboard also labels the `app` trigger "Event" per Figma; see Flagged Ambiguities |
-| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated, waiting | — |
+| **Workflow Execution** | A single run of a workflow. DB `status`: `success` (also the insert default, so an in-flight run carries it), `failure`, `terminated`, and the non-terminal `waiting` / `waiting_for_delay`; `executed` separates a finished run from an in-flight one. The executions dashboard shows a derived display state (DB status plus BullMQ job state plus the termination flag) as Queued, Running, Stopping, Waiting, Success, Failed, Stopped or Unknown (no live job past the stale threshold) | Run; "Stopped" is the UI label for `terminated` |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
 | **Wait Node** | A workflow node that pauses an execution for a configured duration, then continues through its single output | — |
 | **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs. Registered as a BullMQ job scheduler keyed by schedule id; the Postgres row and that registration are independent, so an *active* schedule may hold no registration and never fire | — |
@@ -145,7 +145,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
 | **Workflow input** | A typed, version-level value that can be supplied by a manual run, schedule, webhook, or parent workflow; trigger values override its optional default | `definition.workflowInputs` |
 | **Human Node** | A workflow node that pauses a run to await a person's decision (custom outcomes) and optional structured input; the run suspends until resolved via the approval API (`type: 'human'`, EE feature) | HITL node |
-| **Approval Request** | A pending decision for a suspended workflow run — one per (execution, node), resolved by `token` via the approval API (`WorkflowApprovalRequest`, `workflow_approval_requests`) | — |
+| **Approval Request** | A decision a suspended workflow run waits on — at most one pending per (execution, node); statuses `pending`, `resolved`, `expired`, `cancelled`. Resolved through the approval API either by its `token` (link route, session optional) or by id from the approvals dashboard (`WorkflowApprovalRequest`, `workflow_approval_requests`) | Approval |
 | **Waiting** (execution status) | Non-terminal status of a workflow execution suspended at a **Human Node**, awaiting input (`status='waiting'`, `executed=false`) | — |
 
 ## AI Features
@@ -200,7 +200,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - A **Global Data Source** is shared across all **Apps** in a **Workspace**; an **App-Level Data Source** belongs to one **App**
 - An **Environment** (dev/staging/prod) holds per-environment **Data Source** configurations and **Workspace Constant** values
 - A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook/app/workflow/unknown) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
-- A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request** resolved by token via the approval API
+- A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request**, resolved by token or by id via the approval API
 - A **Plan** determines the **License Terms**, which gate **Features** via **Feature Flags**
 - A **Plugin** backs a **Data Source** type; **Marketplace Plugins** extend the built-in set
 

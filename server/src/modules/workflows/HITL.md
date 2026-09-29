@@ -50,8 +50,10 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    dispatch sends a product email through ToolJet's SMTP/whitelabel email system to the deduplicated
    approver-email snapshot, with a CTA to `/:workspaceSlug/workflows/approvals`. A configured webhook
    is sent in addition to that email.
-4. **Resolve**: `POST workflow-approvals/:token/resolve` (`controllers/workflow-approvals.controller.ts`
-   → `WorkflowApprovalsService.resolve`). Body `{ outcome, input }` (`dto/resolve-approval.dto.ts`).
+4. **Resolve**: `POST workflow-approvals/:token/resolve` (email/webhook link; authorized by the
+   token, session optional via `OptionalJwtAuthGuard`) or `POST workflow-approvals/by-id/:id/resolve`
+   (approvals dashboard; JWT required) (`controllers/workflow-approvals.controller.ts`
+   → `WorkflowApprovalsService`). Body `{ outcome, input }` (`dto/resolve-approval.dto.ts`).
    Re-enqueues via `enqueue(..., resumeOptions{ startNodeId, injectedState: { __humanDecision: { nodeId, outcome, input, resolvedBy } }, requestId })`
    under a **distinct** resume jobId `${executionId}-resume-${requestId}` (the original completed
    job is retained by `removeOnComplete`).
@@ -77,7 +79,7 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
   processor calls `expire()` (atomic conditional update on `status='pending'`). `branch`
   auto-resolves with `timeoutOutcome` as a **system** decision (`resolvedBy = null`) when it is a
   valid outcome key; otherwise it falls back to `fail` (marks expired + fails the run).
-- **Reminders** are **independent of the timeout** (decoupled — see history below). Each reminder
+- **Reminders** are **independent of the timeout** (decoupled). Each reminder
   `{ afterSeconds }` fires `afterSeconds` **after the request was created** (not after the
   deadline) and re-dispatches the notification. They schedule whether or not a timeout is enabled.
   - **Storage:** current location is **top-level `node.data.reminders`**. The scheduler still
@@ -200,8 +202,9 @@ input form) and `frontend/src/_services/__tests__/workflow_approvals.service.spe
   only the flag reaches it), cancels the run's pending approval requests and their timers, and
   removes delayed resume jobs. Resolve answers 409 and expiry only cancels the request when the
   execution is `terminated`, so no path resumes a stopped run.
-- **Schedule overlap guard.** A scheduled workflow will not stack a new run while a prior run of
-  the same schedule is non-terminal — and `waiting` counts as non-terminal.
+- **Schedule overlap guard.** A scheduled workflow skips a fire while a prior run of the same
+  schedule is `waiting` or `waiting_for_delay`. An in-flight row still carries the `'success'`
+  status default, so a queued or running run does not block the next fire.
 - Frontend `save()` serializes `nodes`/`edges` **raw** (no key whitelist), so any `node.data.*`
   key (e.g. `reminders`) persists without server-side schema changes.
 
