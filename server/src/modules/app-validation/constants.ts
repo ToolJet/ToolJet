@@ -1,12 +1,22 @@
+import type { ValidationMode, WriteSource } from './types';
+
 export const APP_VALIDATION_FAILED = 'APP_VALIDATION_FAILED';
 
-// "report", or per source with a fallback: "pat=enforce,*=report".
-export const APP_VALIDATION_MODE_ENV = 'APP_VALIDATION_MODE';
-
 export const VALIDATION_MODES = ['off', 'report', 'enforce'] as const;
-export const DEFAULT_VALIDATION_MODE = 'report';
 
 export const WRITE_SOURCES = ['ui', 'pat', 'ext_api', 'import', 'git', 'ai', 'copy', 'restore'] as const;
+
+// Change a source to 'enforce' here to start rejecting invalid data from it.
+export const VALIDATION_MODE_BY_SOURCE: Record<WriteSource, ValidationMode> = {
+  ui: 'report',
+  pat: 'report',
+  ext_api: 'report',
+  import: 'report',
+  git: 'report',
+  ai: 'report',
+  copy: 'report',
+  restore: 'report',
+};
 
 // Matches /api/ext routes with or without SUB_PATH.
 export const EXT_API_ROUTE_PATTERN = /\/api\/ext(\/|\?|$)/;

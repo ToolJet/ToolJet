@@ -1,34 +1,25 @@
-import { getMode, parseModeConfig, resolveSource } from '@modules/app-validation/mode';
+import { getMode, resolveSource } from '@modules/app-validation/mode';
+import { VALIDATION_MODE_BY_SOURCE } from '@modules/app-validation/constants';
 
 describe('app-validation mode', () => {
-  describe('parseModeConfig / getMode', () => {
-    it('defaults every source to report', () => {
-      expect(getMode('pat', undefined)).toBe('report');
-      expect(getMode('ui', '')).toBe('report');
+  describe('getMode', () => {
+    it('reads the mode for each source from VALIDATION_MODE_BY_SOURCE', () => {
+      for (const source of Object.keys(VALIDATION_MODE_BY_SOURCE) as (keyof typeof VALIDATION_MODE_BY_SOURCE)[]) {
+        expect(getMode(source)).toBe(VALIDATION_MODE_BY_SOURCE[source]);
+      }
     });
 
-    it('applies a single mode to every source', () => {
-      expect(getMode('ui', 'enforce')).toBe('enforce');
-      expect(getMode('import', 'off')).toBe('off');
+    it('applies a per-source mode', () => {
+      const modes = { ...VALIDATION_MODE_BY_SOURCE, pat: 'enforce' as const, ui: 'off' as const };
+      expect(getMode('pat', modes)).toBe('enforce');
+      expect(getMode('ui', modes)).toBe('off');
+      expect(getMode('import', modes)).toBe('report');
     });
 
-    it('supports per-source modes with a fallback', () => {
-      const raw = 'pat=enforce, ext_api=report, *=off';
-      expect(getMode('pat', raw)).toBe('enforce');
-      expect(getMode('ext_api', raw)).toBe('report');
-      expect(getMode('ui', raw)).toBe('off');
-    });
-
-    it('never lets version copy or history restore block, even when set to enforce', () => {
-      expect(getMode('copy', 'enforce')).toBe('report');
-      expect(getMode('restore', 'restore=enforce')).toBe('report');
-      expect(getMode('restore', 'off')).toBe('off');
-      expect(getMode('import', 'enforce')).toBe('enforce');
-    });
-
-    it('ignores unknown sources and modes', () => {
-      expect(parseModeConfig('pat=block,robots=enforce,ui=enforce')).toEqual({ ui: 'enforce' });
-      expect(getMode('pat', 'pat=block')).toBe('report');
+    it('never lets version copy or history restore block', () => {
+      const modes = { ...VALIDATION_MODE_BY_SOURCE, copy: 'enforce' as const, restore: 'off' as const };
+      expect(getMode('copy', modes)).toBe('report');
+      expect(getMode('restore', modes)).toBe('off');
     });
   });
 
