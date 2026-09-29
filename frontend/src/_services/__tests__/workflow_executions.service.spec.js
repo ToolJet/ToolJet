@@ -59,3 +59,13 @@ describe('workflowExecutionsService.getWorkspaceExecutions — date range', () =
     expect(sentParam('to')).toBeNull();
   });
 });
+
+describe('workflowExecutionsService.getWorkspaceExecutionStates', () => {
+  it('passes the caller abort signal to fetch', async () => {
+    const controller = new AbortController();
+
+    await workflowExecutionsService.getWorkspaceExecutionStates(['exec-1'], controller.signal);
+
+    expect(fetch.mock.calls[0][1].signal).toBe(controller.signal);
+  });
+});

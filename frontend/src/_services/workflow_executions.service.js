@@ -193,12 +193,13 @@ function getWorkspaceExecutions(filters = {}, page = 1, perPage = 15, signal) {
   );
 }
 
-function getWorkspaceExecutionStates(executionIds) {
+function getWorkspaceExecutionStates(executionIds, signal) {
   const requestOptions = {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ executionIds }),
     credentials: 'include',
+    signal,
   };
   return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
 }
