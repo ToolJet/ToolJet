@@ -3,9 +3,9 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
+import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
@@ -13,6 +13,7 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
+import { LibraryComponentProperties } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -502,7 +503,12 @@ export const Inspector = ({
   const renderDocumentationLink = () => {
     return (
       <span className="widget-documentation-link">
-        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
+        <a
+          href={getDocsLink(componentMeta?.component)}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="widget-documentation-link"
+        >
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
@@ -511,8 +517,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -745,28 +751,6 @@ export const Inspector = ({
   );
 };
 
-const getDocsLink = (componentMeta) => {
-  const component = componentMeta?.component ?? '';
-  switch (component) {
-    case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
-    case 'DropdownV2':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'DropDown':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'MultiselectV2':
-      return 'https://docs.tooljet.com/docs/widgets/multiselect';
-    case 'DaterangePicker':
-      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
-    case 'RangeSliderV2':
-      return 'https://docs.tooljet.com/docs/widgets/range-slider';
-    case 'ModuleViewer':
-    case 'ModuleContainer':
-      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
-    default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
-  }
-};
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
@@ -975,6 +959,9 @@ const GetAccordion = React.memo(
 
       case 'CustomComponent':
         return <CustomComponent {...restProps} />;
+
+      case 'LibraryComponent':
+        return <LibraryComponentProperties {...restProps} />;
 
       case 'Icon':
         return <Icon {...restProps} />;

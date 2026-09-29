@@ -289,6 +289,49 @@ describe('the other validators that actually exist', () => {
     ).toEqual({ isValid: false, validationError: 'Field cannot be empty' });
   });
 
+  // Break this catches: loosening either side of the `@` back to a single character class.
+  //
+  // The old pattern was `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` with a `(?!.*\.\.)`
+  // lookahead bolted on for consecutive dots. Because `.` and `-` sat inside the classes with
+  // no position rule, a dot or hyphen was legal at the very start or end of a part, so six
+  // malformed addresses were accepted. Dots and hyphens are now separators BETWEEN parts
+  // rather than characters allowed anywhere in them, which also makes the `..` lookahead
+  // redundant — no part can be empty, so two dots can never touch.
+  test('[EmailInput-VAL-008] a dot or hyphen at the edge of the local part or a domain label is rejected', () => {
+    const isValid = (widgetValue) => validate({ componentType: 'EmailInput', widgetValue }).isValid;
+
+    // The three reported addresses.
+    expect(isValid('user@.example.com')).toBe(false); // domain label starts with a dot
+    expect(isValid('user.@example.com')).toBe(false); // local part ends with a dot
+    expect(isValid('.user@example.com')).toBe(false); // local part starts with a dot
+
+    // Found alongside them, same root cause.
+    expect(isValid('user@-example.com')).toBe(false); // domain label starts with a hyphen
+    expect(isValid('user@example-.com')).toBe(false); // domain label ends with a hyphen
+    expect(isValid('.@example.com')).toBe(false); // local part is a bare dot
+
+    // Still rejected, as before.
+    expect(isValid('user..name@example.com')).toBe(false);
+    expect(isValid('user@example..com')).toBe(false);
+    expect(isValid('user@example.com.')).toBe(false);
+    expect(isValid('@example.com')).toBe(false);
+    expect(isValid('user@')).toBe(false);
+    expect(isValid('user@com')).toBe(false);
+    expect(isValid('user@example.c')).toBe(false); // TLD must be two or more
+    expect(isValid('user@exam ple.com')).toBe(false);
+    expect(isValid('plainaddress')).toBe(false);
+
+    // And nothing legitimate is lost. Dots and hyphens stay legal between parts.
+    expect(isValid('ada@tooljet.com')).toBe(true);
+    expect(isValid('a@b.co')).toBe(true);
+    expect(isValid('first.last@sub.domain.co.uk')).toBe(true);
+    expect(isValid('user+tag@example.com')).toBe(true);
+    expect(isValid('user_name@example.com')).toBe(true);
+    expect(isValid('user%x@example.io')).toBe(true);
+    expect(isValid('x-y@my-domain.com')).toBe(true);
+    expect(isValid('UPPER@EXAMPLE.COM')).toBe(true);
+  });
+
   // Break this catches: moving the EmailInput branch below the regex/length branches,
   // or making it fall through instead of returning. D-01 pinned this order: the
   // built-in check short-circuits, so a builder's own rules are unreachable for a

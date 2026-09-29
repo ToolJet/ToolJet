@@ -203,6 +203,62 @@ describe('component-specific actions', () => {
     await waitFor(() => expect(input().value).toBe('2,500.75'));
     await waitFor(() => expect(callCount()).toBe(1));
   });
+
+  // Break this catches: deriving the display string and the number from separate paths in the
+  // currency `setValue` handle — the `!isNaN(Number(value))` gate that used to skip formatting.
+  //
+  // Any separator makes `Number(value)` NaN, so a string carrying one fell to the raw branch
+  // and the UNFORMATTED text became the display string, while `setCurrencyInputValue` was
+  // called with no second argument and re-derived the number through `parseValueToNumber`,
+  // which does understand separators. The two disagreed: the field rendered `NaN.56` and
+  // `formattedValue` read `$ NaN.56`, while `value` held 12.564 and `isValid` stayed true.
+  // Normalising once and feeding both from the same number is what keeps them in step.
+  test('[CurrencyInput-CSA-011] setValue normalises a separator-carrying string instead of rendering NaN', async () => {
+    const setTo = async (v) => {
+      harness.render({ properties: { value: binding('') } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await harness.act('setValue', v);
+      await drain();
+      return {
+        field: input().value,
+        value: harness.exposed().value,
+        formatted: harness.exposed().formattedValue,
+        isValid: harness.exposed().isValid,
+      };
+    };
+
+    // US format: ',' groups and '.' is the decimal, so '12.56,4' reads as 12.564 and rounds
+    // to the configured 2 places. Previously: field 'NaN.56', value 12.564.
+    expect(await setTo('12.56,4')).toEqual({ field: '12.56', value: 12.56, formatted: '$ 12.56', isValid: true });
+
+    // Same string with the separators swapped groups to 1256.4. Previously: field 'NaN.4'.
+    expect(await setTo('12,56.4')).toEqual({ field: '1,256.4', value: 1256.4, formatted: '$ 1,256.4', isValid: true });
+
+    // A grouped string the author copied back out of the field survives a round trip.
+    expect(await setTo('2,500.75')).toEqual({
+      field: '2,500.75',
+      value: 2500.75,
+      formatted: '$ 2,500.75',
+      isValid: true,
+    });
+
+    // An empty write still EMPTIES the field. Without its own guard the normalisation would
+    // turn it into the number 0 and render '0', so clearing through setValue would silently
+    // become setting a zero amount.
+    expect((await setTo('')).field).toBe('');
+    expect((await setTo(null)).field).toBe('');
+    expect((await setTo(undefined)).field).toBe('');
+    // A real zero is still a real zero, and is not confused with emptiness.
+    expect((await setTo(0)).field).toBe('0');
+
+    // Whatever the input, the field and the exposed number never disagree.
+    for (const v of ['12.564', '1256.4', 1256.4, '0', 0]) {
+      const r = await setTo(v);
+      expect(r.field).not.toContain('NaN');
+      expect(Number.isFinite(r.value)).toBe(true);
+      expect(r.formatted).not.toContain('NaN');
+    }
+  });
 });
 
 describe('disabled, loading and visibility', () => {
@@ -322,7 +378,9 @@ describe('label, placeholder and property changes', () => {
     const [log] = useStore.getState().debugger.logs.filter((entry) => entry.componentId === 'ci1');
     expect(log).toBeDefined();
     expect(log.logLevel).toBe('error');
-    expect(log.error.effectiveProperty).toEqual({ value: 0 });
+    // The widened schema carries its own `defaultValue: '0'`, so a rejected value lands on the
+    // string '0' — the same amount the field rendered before, reported the same way.
+    expect(log.error.effectiveProperty).toEqual({ value: '0' });
   });
 
   // Break this catches: hardcoding a decimal limit instead of reading Decimal places.
@@ -345,8 +403,44 @@ describe('label, placeholder and property changes', () => {
   // Break this catches: a fix that changes any of these three without updating the
   // contract. D-09 records that `allowDecimals` is the lever such a fix would need —
   // `decimalsLimit` alone cannot express zero decimals.
-  test('[CurrencyInput-PROP-006] zero, non-numeric and empty decimalPlaces all fall back to two decimals', async () => {
-    for (const setting of ['{{0}}', 'abc', '']) {
+  // Break this catches: expressing "zero decimals" through `decimalsLimit` alone. `0` is falsy
+  // inside the library, which resolves `decimalsLimit || fixedDecimalLength || 2` and so reads an
+  // explicit 0 as UNSET and applies its own default of two (react-currency-input-field
+  // index.js:406). `decimalsLimit` cannot say "no decimals" at all — `allowDecimals` is the only
+  // lever — so a whole-number currency such as JPY or KRW could not be configured.
+  //
+  // Reverses the answer recorded in D-09, which characterised this as shipped.
+  test('[CurrencyInput-PROP-006] a decimalPlaces of zero refuses the decimal separator outright', async () => {
+    harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding('{{0}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await userEvent.type(input(), '12.3456');
+
+    // Previously '12.34': the 0 was read as unset and the library's own two-decimal default won.
+    // The separator is REFUSED rather than treated as a terminator, so the digits run together
+    // into a whole number — the same result D-09 measured in a real browser.
+    await waitFor(() => expect(input().value).toBe('123,456'));
+    expect(harness.exposed().value).toBe(123456);
+
+    // One or more decimals is untouched by the fix.
+    for (const [setting, expected] of [
+      ['{{1}}', '12.3'],
+      ['{{3}}', '12.345'],
+    ]) {
+      harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding(setting) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await userEvent.clear(input());
+      await userEvent.type(input(), '12.3456');
+      await waitFor(() => expect(input().value).toBe(expected));
+    }
+  });
+
+  // Break this catches: collapsing an UNUSABLE setting to zero decimals along with an explicit 0.
+  // `Number('abc')` is NaN and `Number('')` is 0, so a naive `Number(decimalPlaces) > 0` would turn
+  // a cleared or fx-broken setting into a whole-number field instead of the documented default.
+  test('[CurrencyInput-PROP-006] a non-numeric or empty decimalPlaces still falls back to two decimals', async () => {
+    for (const setting of ['abc', '']) {
       harness.render({ properties: { value: binding('{{0}}'), decimalPlaces: binding(setting) } });
       await waitFor(() => expect(input()).toBeTruthy());
 
@@ -355,6 +449,155 @@ describe('label, placeholder and property changes', () => {
 
       await waitFor(() => expect(input().value).toBe('12.34'));
     }
+  });
+
+  // Break this catches: normalizing an amount set by the `setValue` action while letting the
+  // Default value through untouched. The setting would then govern typing and actions but not the
+  // value the field loads with, so a field configured for whole rupees could open showing
+  // fractions of one — and the same amount would read back differently depending on how it
+  // arrived. Both paths now share one rule, `toCanonicalAmount`.
+  test('[CurrencyInput-PROP-006] the Default value obeys decimalPlaces, exactly as setValue does', async () => {
+    harness.render({ properties: { value: binding('{{1234.567}}'), decimalPlaces: binding('0') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    expect(harness.exposed().value).toBe(1234);
+    expect(input().value).toBe('1,234');
+
+    // The identical amount arriving through the action lands on the identical number.
+    await harness.act('setValue', 1234.567);
+    await drain();
+    expect(harness.exposed().value).toBe(1234);
+    expect(input().value).toBe('1,234');
+  });
+
+  // Break this catches: narrowing the Default value's registered schema back to a bare
+  // `{ type: 'number' }`, or widening it to a bare string/number union.
+  //
+  // A `number` schema cannot hold an empty string, so clearing the Default value resolved to
+  // `0` and the field was NEVER empty — the documented Placeholder could not show and a
+  // mandatory field could not report "Field cannot be empty", because 0 counts as filled
+  // (D-08). The same coercion ran `parseFloat` over a formatted amount, so a Default value of
+  // '1,256.7' reached the widget as 1.
+  //
+  // The schema is a union whose string arm is PATTERN-GUARDED to digits and separators, with
+  // its own `defaultValue: '0'`. That keeps every unwanted value landing exactly where it
+  // landed before — on 0, with the debugger error still raised — while letting an empty string
+  // and a formatted amount through untouched. `validation.defaultValue` is not the lever here:
+  // validateProperties reads `validation.schema`, so the default has to live inside the schema.
+  test('[CurrencyInput-PROP-007] a cleared Default value stays empty, and a formatted one survives', async () => {
+    const seed = async (value) => {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding(value) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+      return { field: input().value, value: harness.exposed().value };
+    };
+
+    // Previously '0' — the field could never be empty.
+    expect(await seed('')).toEqual({ field: '', value: 0 });
+
+    // Previously '1' — parseFloat stopped at the group separator.
+    expect(await seed('1,256.7')).toEqual({ field: '1,256.7', value: 1256.7 });
+
+    // Ordinary values are untouched.
+    expect(await seed('1234.56')).toEqual({ field: '1,234.56', value: 1234.56 });
+    expect(await seed('0')).toEqual({ field: '0', value: 0 });
+  });
+
+  // Break this catches: dropping the pattern guard from the schema's string arm, which would
+  // let any string through and silently strip the author's error feedback.
+  test('[CurrencyInput-PROP-007] every unwanted Default value still lands on zero and is reported', async () => {
+    for (const binding_ of ['abc', '12abc', '{{ ({ id: 1 }) }}', '{{ true }}', '{{ [1,2] }}', '{{ null }}']) {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding(binding_) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+
+      expect(input().value).toBe('0');
+      expect(harness.exposed().value).toBe(0);
+      const [log] = useStore.getState().debugger.logs.filter((entry) => entry.componentId === 'ci1');
+      expect(log?.logLevel).toBe('error');
+    }
+  });
+
+  // Break this catches: any route into the currency value that skips `normalizeCurrencyValue`.
+  //
+  // The schema rejects unusable DEFAULT values, but the `setValue` action has no schema in front
+  // of it at all — an app can hand it anything. The normaliser is therefore total: it parses to a
+  // finite number or falls back to 0, so `NaN`, `undefined` and `null` can never reach the field
+  // or the exposed value whichever way the value arrived.
+  test('[CurrencyInput-PROP-007] no value from any route can render NaN or undefined', async () => {
+    const JUNK = [
+      '',
+      ' ',
+      'abc',
+      '12abc',
+      '1,256.7',
+      '12.56,4',
+      '1.234.567,89',
+      "1'234.5",
+      0,
+      -0,
+      12,
+      -50.25,
+      1e21,
+      -1e21,
+      0.1 + 0.2,
+      NaN,
+      Infinity,
+      -Infinity,
+      null,
+      undefined,
+      true,
+      false,
+      {},
+      [],
+      [1, 2],
+      { id: 1 },
+      () => 1,
+      Symbol.iterator ? '\u0000' : '',
+    ];
+    // One mount, then every value written in turn. A mount per value would be 28 render cycles
+    // in a single test, which is enough to slow a jest worker and tip neighbouring suites over
+    // their timeouts. Writing successively is also the stronger check: the widget has to survive
+    // junk arriving after a good value, not just as a fresh seed.
+    harness.render({ properties: { value: binding('0') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    for (const v of JUNK) {
+      await harness.act('setValue', v);
+      await drain();
+
+      // Collected into one object so a failure names the offending input rather than just a
+      // bare assertion — the label is kept out of the matched strings on purpose.
+      const observed = {
+        input: typeof v === 'symbol' ? 'symbol' : String(v),
+        field: input().value,
+        formatted: String(harness.exposed().formattedValue),
+        exposedIsFinite: Number.isFinite(harness.exposed().value),
+      };
+      expect(observed).toEqual({
+        input: observed.input,
+        field: expect.not.stringContaining('NaN'),
+        formatted: expect.not.stringContaining('NaN'),
+        exposedIsFinite: true,
+      });
+      expect(observed.field).not.toContain('undefined');
+      expect(observed.formatted).not.toContain('undefined');
+    }
+  });
+
+  // Break this catches: letting a mandatory field count an empty Default value as filled.
+  // With the field able to be empty, the documented mandatory rule finally applies (D-08).
+  test('[CurrencyInput-PROP-007] a mandatory field with a cleared Default value is invalid', async () => {
+    harness.render({ properties: { value: binding('') }, validation: { mandatory: binding('{{true}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    expect(input().value).toBe('');
+    expect(harness.exposed().isValid).toBe(false);
   });
 });
 
@@ -557,7 +800,7 @@ describe('remaining actions', () => {
 
   // Break this catches: adding setShowValidationError(true) to clearValue, which would
   // make Form clearForm paint an untouched form red.
-  test('[CurrencyInput-CSA-003] clear empties the field and fires onChange without changing message visibility', async () => {
+  test('[CurrencyInput-CSA-003] clear empties the field, fires onChange, and reports the empty field', async () => {
     harness.render({
       properties: { value: binding('{{1234.56}}'), decimalPlaces: binding('{{2}}') },
       validation: { mandatory: binding('{{true}}') },
@@ -570,7 +813,10 @@ describe('remaining actions', () => {
 
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
-    expect(errorText()).toBeNull(); // emptied, but not yet accused
+    // This row previously pinned the opposite — the message stayed hidden — which was
+    // characterisation of the defect PhoneInput-CSA-011 covers, not a decision. The reveal sits on
+    // the CSA, not on the shared clear path, so a Form clearForm still stays silent.
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: pointing setFocus at the wrong ref.
@@ -882,6 +1128,109 @@ describe('clear button', () => {
 
     await waitFor(() => expect(input().value).toBe(''));
     await waitFor(() => expect(callCount()).toBe(1));
+  });
+
+  // Break this catches: dropping the reveal from the clear button's onClick, which leaves it
+  // to `handleBlur` alone.
+  //
+  // A field that loads with a default value and is never touched has `showValidationError`
+  // false, and the clear button suppresses the blur that would flip it — its `onMouseDown`
+  // calls `preventDefault()` so the field never loses focus. So emptying a mandatory field
+  // with the button left it silently invalid: no message, no red border, and `isValid`
+  // already false underneath. The reveal sits on the button rather than in
+  // `onInputValueChange`, which is also the typing handler and must not accuse mid-edit.
+
+  // Break this catches: reverting the clear button's vertical offset, or the field height, to the
+  // constants this widget carried before. Both are the defect EmailInput-CLR-004 fixed in the
+  // shared BaseInput; PhoneInput and CurrencyInput render their own clear button and their own
+  // field box, so they kept the original bug.
+  //
+  // The button is positioned against the WHOLE widget, so a top-aligned label takes a share of it
+  // that grows with the font, and a fixed `calc(50% + 10px)` — correct only at the 12px default —
+  // left the button riding up over the label.
+  //
+  // The reported "component pops out of the wrapper" half is NOT fixed here, deliberately: measured
+  // in Chrome across 24 wrapper-height x label-size combinations, subtracting the label height from
+  // the field box changes nothing, because the flex column and the field's own min-content height
+  // already decide the layout. The overflow is real at small widget heights but it IS the
+  // contained-until-forced behaviour BaseInput shows too.
+
+  // Break this catches: putting `h-100` back on the field box, or dropping either branch of the
+  // height. `h-100` is `height: 100% !important` (tabler.scss:6829), so an inline height cannot
+  // override it — the class has to go, which then makes BOTH branches this element's job.
+  //
+  // Top-aligned the field sits below the label in a flex column, so a full wrapper height is added
+  // to the label's and the content spills out of its own widget box as the label grows. Measured in
+  // Chrome before the fix: 16.5px of overflow at a 40px widget with a 12px label, 24.5px at 20px,
+  // 32.5px at a 60px widget with a 48px label — all 0 after. The side branch restores exactly what
+  // the class used to supply; without it a side-aligned field collapsed from the widget height to
+  // its content, measured 100px -> 36.5px.
+  //
+  // jsdom computes no layout, so the geometry above is browser evidence and what is asserted here
+  // is the inline style each branch emits.
+  test('[CurrencyInput-STYLE-011] the field box height follows a top label and fills the box otherwise', async () => {
+    const boxHeightAt = async (alignment, labelFontSize) => {
+      harness.render({
+        properties: { value: binding('{{100}}'), label: binding('Lbl') },
+        styles: { alignment: binding(alignment), labelFontSize },
+      });
+      await waitFor(() => expect(fieldBox()).toBeTruthy());
+      return fieldBox().style.height;
+    };
+
+    // Top-aligned: the label's own height comes off the box, plus the canvas box padding.
+    expect(await boxHeightAt('top', binding('{{12}}'))).toBe('calc(100% - 20px - 4px)');
+    expect(await boxHeightAt('top', binding('{{20}}'))).toBe('calc(100% - 28px - 4px)');
+    expect(await boxHeightAt('top', binding('{{32}}'))).toBe('calc(100% - 40px - 4px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await boxHeightAt('top', binding('abc'))).toBe('calc(100% - 20px - 4px)');
+
+    // Side-aligned: the label takes no vertical space, so the field fills the widget box as it
+    // always did. This is the half the `h-100` removal would otherwise have silently dropped.
+    expect(await boxHeightAt('side', binding('{{32}}'))).toBe('100%');
+    expect(await boxHeightAt('side', binding('{{12}}'))).toBe('100%');
+  });
+
+  test('[CurrencyInput-CLR-006] the clear button stays centred on the field as a top label grows', async () => {
+    const atLabelSize = async (labelFontSize) => {
+      harness.render({
+        properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+        styles: { alignment: binding('top'), labelFontSize },
+      });
+      await waitFor(() => expect(clearButton()).toBeTruthy());
+      return clearButton().style.top;
+    };
+
+    // Half the label's own height, so the button lands on the middle of the field.
+    expect(await atLabelSize(binding('{{12}}'))).toBe('calc(50% + 10px)');
+    expect(await atLabelSize(binding('{{20}}'))).toBe('calc(50% + 14px)');
+    expect(await atLabelSize(binding('{{32}}'))).toBe('calc(50% + 20px)');
+
+    // A non-numeric size falls back to the 12px default rather than producing NaN.
+    expect(await atLabelSize(binding('abc'))).toBe('calc(50% + 10px)');
+
+    // A side-aligned label takes no vertical space, so there is nothing to offset or subtract.
+    harness.render({
+      properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}'), label: binding('Lbl') },
+      styles: { alignment: binding('side'), labelFontSize: binding('{{32}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(clearButton().style.top).toBe('50%');
+  });
+
+  test('[CurrencyInput-CLR-005] clearing a mandatory field reveals the error with no prior blur', async () => {
+    harness.render({
+      properties: { value: binding('{{100}}'), showClearBtn: binding('{{true}}') },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(clearButton()).toBeTruthy());
+    expect(errorText()).toBeNull();
+
+    await userEvent.click(clearButton());
+
+    await waitFor(() => expect(input().value).toBe(''));
+    await waitFor(() => expect(errorText()).toHaveTextContent('Field cannot be empty'));
   });
 
   // Break this catches: reading only showClearBtn and the value, so a disabled or loading
