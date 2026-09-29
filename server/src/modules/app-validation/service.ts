@@ -8,7 +8,7 @@ import { AppValidationException } from './exception';
 import { getMode, resolveSource } from './mode';
 import { rulesFor } from './rules';
 import { runRules } from './runner';
-import { Issue, Rule, RuleContext, ValidationArea, ValidationResult, WriteSource } from './types';
+import { Issue, Rule, RuleContext, ValidationArea, ValidationMode, ValidationResult, WriteSource } from './types';
 import { VersionIndex } from './version-index';
 
 export interface CheckOptions {
@@ -32,7 +32,7 @@ export class AppValidationService {
   // Throws AppValidationException only when the source is in enforce mode.
   async check<T>(area: ValidationArea, inputs: T | T[], options: CheckOptions): Promise<ValidationResult> {
     const source = options.source ?? resolveSource();
-    const mode = getMode(source);
+    const mode = this.modeFor(source);
     const list = Array.isArray(inputs) ? inputs : [inputs];
     const rules = options.rules ?? this.rulesFor(area);
     if (mode === 'off' || !list.length || !rules.length) return { errors: [], warnings: [] };
@@ -64,6 +64,10 @@ export class AppValidationService {
 
     this.recordWarnings(mode === 'report' ? [...result.errors, ...result.warnings] : result.warnings);
     return result;
+  }
+
+  protected modeFor(source: WriteSource): ValidationMode {
+    return getMode(source);
   }
 
   // EE overrides this to add EE-only rules.

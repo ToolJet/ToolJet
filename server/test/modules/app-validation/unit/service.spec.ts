@@ -3,7 +3,7 @@ import { AppValidationService } from '@modules/app-validation/service';
 import { AppValidationException } from '@modules/app-validation/exception';
 import { VALIDATION_WARNINGS_LOCALS_KEY } from '@modules/app-validation/constants';
 import { isBlocking, runRules } from '@modules/app-validation/runner';
-import { Issue, Rule } from '@modules/app-validation/types';
+import { Issue, Rule, ValidationMode, WriteSource } from '@modules/app-validation/types';
 import { VersionIndex } from '@modules/app-validation/version-index';
 
 const issue = (overrides: Partial<Issue> = {}): Issue => ({
@@ -53,7 +53,6 @@ describe('app-validation runner', () => {
 });
 
 describe('AppValidationService', () => {
-  const originalMode = process.env.APP_VALIDATION_MODE;
   let logger: { warn: jest.Mock; error: jest.Mock };
   let service: AppValidationService;
 
@@ -62,15 +61,14 @@ describe('AppValidationService', () => {
     service = new AppValidationService(logger as any);
   });
 
-  afterEach(() => {
-    process.env.APP_VALIDATION_MODE = originalMode;
-  });
+  const setMode = (mode: ValidationMode | ((source: WriteSource) => ValidationMode)) =>
+    jest.spyOn(service as any, 'modeFor').mockImplementation(typeof mode === 'function' ? mode : () => mode);
 
   const check = (rules: Rule<unknown>[], source?: any) =>
     service.check('components', [{}], { appVersionId: 'v1', source, rules, index: VersionIndex.fromData({}) });
 
   it('report mode: never throws, logs what would block, and returns it to the client as a warning', async () => {
-    process.env.APP_VALIDATION_MODE = 'report';
+    setMode('report');
     await inRequest({}, async (res) => {
       await expect(check([ruleReturning(issue())], 'pat')).resolves.toMatchObject({ errors: [issue()] });
       expect(logger.warn).toHaveBeenCalledTimes(1);
@@ -79,7 +77,7 @@ describe('AppValidationService', () => {
   });
 
   it('enforce mode: throws with every blocking problem and the warnings', async () => {
-    process.env.APP_VALIDATION_MODE = 'enforce';
+    setMode('enforce');
     const warning = issue({ code: 'TEST_WARNING', severity: 'medium' });
     const error = await check([ruleReturning(issue(), warning)], 'pat').catch((e) => e);
     expect(error).toBeInstanceOf(AppValidationException);
@@ -92,7 +90,7 @@ describe('AppValidationService', () => {
   });
 
   it('enforce mode: non-blocking problems are recorded as warnings, not thrown', async () => {
-    process.env.APP_VALIDATION_MODE = 'enforce';
+    setMode('enforce');
     const heuristic = issue({ confidence: 'heuristic' });
     await inRequest({}, async (res) => {
       await expect(check([ruleReturning(heuristic)], 'pat')).resolves.toBeDefined();
@@ -101,27 +99,27 @@ describe('AppValidationService', () => {
   });
 
   it('a crashing rule never blocks the write, even in enforce mode', async () => {
-    process.env.APP_VALIDATION_MODE = 'enforce';
+    setMode('enforce');
     await expect(check([crashingRule], 'pat')).resolves.toEqual({ errors: [], warnings: [] });
     expect(logger.error).toHaveBeenCalledTimes(1);
   });
 
   it('off mode: rules are not run at all', async () => {
-    process.env.APP_VALIDATION_MODE = 'off';
+    setMode('off');
     const rule = { ...ruleReturning(issue()), check: jest.fn(() => [issue()]) };
     await check([rule], 'pat');
     expect(rule.check).not.toHaveBeenCalled();
   });
 
   it('returns a fresh result each time, so callers cannot affect later checks', async () => {
-    process.env.APP_VALIDATION_MODE = 'off';
+    setMode('off');
     const first = await check([ruleReturning(issue())], 'pat');
     first.errors.push(issue());
     await expect(check([ruleReturning(issue())], 'pat')).resolves.toEqual({ errors: [], warnings: [] });
   });
 
   it('uses the request to pick the mode when no source is passed', async () => {
-    process.env.APP_VALIDATION_MODE = 'pat=enforce,*=report';
+    setMode((source) => (source === 'pat' ? 'enforce' : 'report'));
     await inRequest({ user: { tjApiSource: 'personal_access_token' }, originalUrl: '/api/v2/apps/1' }, async () => {
       await expect(check([ruleReturning(issue())])).rejects.toBeInstanceOf(AppValidationException);
     });
@@ -131,7 +129,7 @@ describe('AppValidationService', () => {
   });
 
   it('gives rules the provided lookup without touching the database', async () => {
-    process.env.APP_VALIDATION_MODE = 'report';
+    setMode('report');
     const index = VersionIndex.fromData({
       components: [{ id: 'c1', name: 'b1', type: 'Button', parent: null, pageId: 'p1' }],
     });
