@@ -36,7 +36,7 @@
     --map-label: #9ea3a9;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { background: var(--page-bg); }
+  html { background: var(--page-bg); overflow-x: hidden; }
   body { width: 1178px; background: var(--page-bg); color: var(--text); font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 
   .header { height: 68px; background: var(--card-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 40px 0 42px; margin: 3px 3px 0; }
@@ -449,7 +449,8 @@
   });
 
   // Scale the fixed 1178px design to the frame width; the page scrolls vertically.
-  function fit() { document.body.style.zoom = window.innerWidth / 1178; }
+  // clientWidth excludes the vertical scrollbar, so the zoomed page never overflows horizontally
+  function fit() { document.body.style.zoom = document.documentElement.clientWidth / 1178; }
   window.addEventListener('resize', fit);
   fit();
 </script>
