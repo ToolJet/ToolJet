@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { randomUUID } from 'crypto';
 import { User } from '@entities/user.entity';
+import { App } from '@entities/app.entity';
 import { Organization } from '@entities/organization.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
@@ -16,6 +17,7 @@ import {
   createWorkflowApplicationVersion,
   buildTestSession,
   findEntity,
+  updateEntity,
 } from 'test-helper';
 
 type SeededWorkspace = {
@@ -143,6 +145,31 @@ describe('WorkflowExecutionsController workspace routes', () => {
           ],
         });
         expect(response.body.upcoming).toHaveLength(1);
+      });
+
+      it('should leave out schedules of a disabled workflow', async () => {
+        const disabled = await createWorkflowForUser(app, own.user, 'Disabled wf');
+        const version = await createWorkflowApplicationVersion(app, disabled);
+        await updateEntity(App, disabled.id, { isMaintenanceOn: false });
+        const environment = await findEntity(AppEnvironment, {
+          organizationId: own.user.organizationId,
+          name: 'development',
+        });
+        await saveEntity(WorkflowSchedule, {
+          workflowId: version.id,
+          appId: disabled.id,
+          environmentId: environment.id,
+          active: true,
+          type: 'interval',
+          timezone: 'UTC',
+          details: { frequency: 'minute' },
+        });
+
+        const response = await asOwner(
+          request(app.getHttpServer()).get('/api/workflow_executions/workspace/upcoming')
+        ).expect(200);
+
+        expect(response.body.upcoming.map((run: { scheduleId: string }) => run.scheduleId)).toEqual([own.scheduleId]);
       });
 
       it.each([['app_id'], ['folder_id'], ['environment_id']])(
