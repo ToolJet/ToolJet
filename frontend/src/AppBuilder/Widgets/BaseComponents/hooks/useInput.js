@@ -191,16 +191,17 @@ export const useInput = ({
 
   useEffect(() => {
     if (inputType !== 'phone') return;
-    // `setValue` CSA for phone input
-    // - `value` is Phone number without country code.
-    // - `nextCountry` (default: current) is the country to apply.
+    // `value`: bare national digits, or international with a dial code.
     setExposedVariable('setValue', async function (value, nextCountry = country) {
+      const nextCode = getCountryCallingCodeSafe(nextCountry);
+      const currentCode = getCountryCallingCodeSafe(country);
       // Ignore an invalid country, and build the E.164 value from the TARGET country's calling code.
-      const targetCountry = getCountryCallingCodeSafe(nextCountry) ? nextCountry : country;
-      const code = getCountryCallingCodeSafe(targetCountry);
+      const targetCountry = nextCode ? nextCountry : country;
+      const targetCode = nextCode ? nextCode : currentCode;
       setCountry(targetCountry);
-      // The caller states the target country, so that is the code we strip if present.
-      setPhoneInputValue(toE164(value, code, code), targetCountry);
+      // The caller names the target country, but the value may still be written in the one the widget currently holds,
+      // That is the code to strip; a value already in the target's own shape is already handled by `toE164`.
+      setPhoneInputValue(toE164(value, targetCode, currentCode), targetCountry);
       fireEvent('onChange');
     });
   }, [inputType, country]);

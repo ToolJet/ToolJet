@@ -185,6 +185,41 @@ describe('component-specific actions', () => {
     expect(input().value).toBe('999 888 7777');
     await waitFor(() => expect(callCount()).toBe(1));
   });
+
+  // Break this catches: reverting the call site to strip the TARGET country's code. `setValue` is
+  // the one path where the caller's country and the value's own can differ — an app handing
+  // `phoneinput1.value` back while switching passes a value still written in the CURRENT country.
+  // Stripping the target's code found nothing, so the whole number was treated as national and the
+  // target's code went on top: `+919876543210` with a US target became `+1919876543210`.
+  test('[PhoneInput-CSA-013] setValue strips the dial code the value is actually written in', async () => {
+    harness.render({ properties: { value: binding('9876543210'), defaultCountry: binding('IN') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+    expect(harness.exposed().value).toBe('+919876543210');
+
+    await harness.act('setValue', harness.exposed().value, 'US');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+19876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+    expect(harness.exposed().country).toBe('US');
+  });
+
+  // Second mount for the same scenario, guarding the OTHER half of the fix. Here the value is
+  // already written in the target's own code, which `toE164` recognises as canonical and returns
+  // untouched. Lose that and the current country's code is searched for, found missing, and the
+  // target's prefixed a second time — the same doubling from the opposite direction.
+  test('[PhoneInput-CSA-013] a value already in the target country format is not re-prefixed', async () => {
+    harness.render({ properties: { value: binding('9998887777'), defaultCountry: binding('US') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setValue', '+919876543210', 'IN');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
 });
 
 describe('disabled, loading and visibility', () => {
