@@ -224,6 +224,16 @@ describe('POST /workflow-approvals/:id/cancel', () => {
     expect(after.status).toBe('pending');
   });
 
+  it('rejects a non-UUID id with 400 instead of a raw query error', async () => {
+    const { tokenCookie } = await buildTestSession(adminUser, organizationId);
+
+    await request(app.getHttpServer())
+      .post('/api/workflow-approvals/not-a-uuid/cancel')
+      .set('Cookie', tokenCookie)
+      .set('tj-workspace-id', organizationId)
+      .expect(400);
+  });
+
   it('requires authentication', async () => {
     const { approval } = await seedRequest('cancel-unauth', { users: [], groups: [], emails: [], tokenBypass: true });
 

@@ -56,7 +56,7 @@ export class WorkflowApprovalsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/cancel')
   // Explicit return type to match the EE override (see the note on resolve above).
-  async cancel(@Param('id') id: string, @User() user): Promise<{ status: 'cancelled' }> {
+  async cancel(@Param('id', ParseUUIDPipe) id: string, @User() user): Promise<{ status: 'cancelled' }> {
     throw new Error('Method not implemented.');
   }
 }
