@@ -29,7 +29,6 @@ export class WorkflowApprovalsController {
   @InitFeature(FEATURE_KEY.LIST_APPROVAL_REQUESTS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  // Explicit return type to match the EE override (see the note on resolve below).
   async list(
     @Query() query: ListApprovalsDto,
     @User() user?: UserEntity
@@ -46,7 +45,6 @@ export class WorkflowApprovalsController {
   @InitFeature(FEATURE_KEY.LIST_APPROVAL_REQUESTS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('by-id/:id/resolve')
-  // Explicit return type to match the EE override (see the note on resolve below).
   async resolveById(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ResolveApprovalDto,
@@ -57,8 +55,6 @@ export class WorkflowApprovalsController {
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Post(':token/resolve')
-  // Return type must match the EE override (which returns the resolve result), or the EE
-  // subclass trips TS2416 (its concrete return isn't assignable to an inferred Promise<void>).
   async resolve(@Param('token') token: string, @Body() dto: ResolveApprovalDto): Promise<{ status: 'resolved' }> {
     throw new NotImplementedException();
   }
@@ -66,7 +62,6 @@ export class WorkflowApprovalsController {
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post(':id/cancel')
-  // Explicit return type to match the EE override (see the note on resolve above).
   async cancel(@Param('id', ParseUUIDPipe) id: string, @User() user: UserEntity): Promise<{ status: 'cancelled' }> {
     throw new NotImplementedException();
   }

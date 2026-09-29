@@ -8,8 +8,6 @@ export const workflowApprovalsService = {
   cancel,
 };
 
-// `signal` lets a caller abort a superseded request (e.g. the approvals page re-querying
-// before a previous filter/page request resolved) — see ApprovalsPage's `load()`.
 function getAll(filters = {}, page = 1, perPage = 25, signal) {
   const params = new URLSearchParams();
   params.set('page', page);

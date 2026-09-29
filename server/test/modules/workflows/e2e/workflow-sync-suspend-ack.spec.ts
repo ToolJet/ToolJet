@@ -48,11 +48,6 @@ describe('WorkflowExecutionsController', () => {
               data: { nodeType: 'start', label: 'Start trigger' },
             },
             {
-              // `type: 'human'` and `data.nodeType: 'human'` mirror the shape processed by
-              // WorkflowExecutionsService.processHumanNode (ee/workflows/services/
-              // workflow-executions.service.ts) -- see workflow-human-node.spec.ts for the
-              // equivalent WorkflowExecutionNode-level seed this test builds via the
-              // AppVersion definition (i.e. through the real HTTP trigger path) instead.
               id: 'human-1',
               type: 'human',
               data: {

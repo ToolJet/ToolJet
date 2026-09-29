@@ -50,11 +50,7 @@ export interface ApprovalListApprovers {
   groups: ApprovalParty[];
 }
 
-/**
- * One approval request as the approvals page renders it. Deliberately does NOT carry `token`:
- * the token is the bearer credential for the public approval link, and the page authorizes by
- * identity instead — see `authorizeResolverForUser` in the EE approvals service.
- */
+/** No token: the page authorizes by identity, not the link secret. */
 export interface ApprovalListItem {
   id: string;
   status: string;
