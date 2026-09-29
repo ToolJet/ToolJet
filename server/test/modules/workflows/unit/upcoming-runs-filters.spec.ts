@@ -2,15 +2,6 @@
 
 import { WorkflowSchedulerService } from '@ee/workflows/services/workflow-scheduler.service';
 
-/**
- * A QueryBuilder test double recording andWhere calls, so filter translation can be asserted
- * without a database — the same approach `workflow-execution.repository.spec.ts` takes for the
- * executions list.
- *
- * The SQL these clauses produce is verified separately against real data; what is pinned here is
- * the wiring, which is where the equivalent executions bug actually lived: a filter whose value
- * never reaches a predicate silently widens the result to the whole workspace rather than failing.
- */
 const makeQueryBuilder = () => {
   const calls: Array<{ clause: string; params: Record<string, unknown> }> = [];
   const qb: any = {

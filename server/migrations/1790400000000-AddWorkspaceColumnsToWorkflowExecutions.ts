@@ -77,23 +77,6 @@ export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements Mig
 
     console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill finished. Updated: ${totalUpdated}/${total}`);
 
-    // The inner joins through app_versions -> apps mean any row whose chain doesn't resolve
-    // (orphaned app_version_id, deleted app, etc.) is never selected by the batch above and keeps
-    // organization_id NULL forever — it will never appear in any workspace-scoped query. That's a
-    // pre-existing data-integrity gap, not something this migration can repair, so we don't throw;
-    // we make it visible instead of leaving it silent.
-    const [{ count: remainingCount }] = await queryRunner.query(
-      `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
-    );
-    const remaining = parseInt(remainingCount, 10);
-    if (remaining > 0) {
-      console.warn(
-        `${MIGRATION_NAME}: [WARNING] ${remaining} workflow_executions row(s) could not be backfilled ` +
-          `(no resolvable app_version_id -> app_id -> organization_id chain) and remain organization_id ` +
-          `IS NULL. These rows will not appear in any workspace-scoped query.`
-      );
-    }
-
     // Supports: WHERE organization_id = $1 ORDER BY created_at DESC LIMIT n
     await queryRunner.query(`
       CREATE INDEX idx_workflow_executions_org_created

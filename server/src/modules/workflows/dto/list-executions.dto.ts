@@ -2,11 +2,7 @@ import { IsOptional, IsUUID, IsDateString, IsInt, IsIn, Min, Max } from 'class-v
 import { Transform, Type } from 'class-transformer';
 import { WORKFLOW_TRIGGER_TYPE } from '@modules/workflows/types';
 
-// The five DB-expressible status filters. Deliberately excludes `unknown`: a dead run is
-// in-flight in Postgres exactly like a `running` run is (`executed = false AND status IS NULL`
-// for both) — what tells them apart is age plus the absence of a live BullMQ job, and job state
-// lives in Redis, not Postgres. `unknown` is therefore not expressible as a SQL predicate; it
-// stays a client-side display refinement over the `running` rows. Do not add it back here.
+// No 'unknown': it needs BullMQ job state, so it is display-only, never a SQL filter.
 export const EXECUTION_STATUS_FILTERS = ['running', 'waiting', 'success', 'failed', 'terminated'] as const;
 
 // Kept in lockstep with WORKFLOW_TRIGGER_TYPE rather than retyped, so the two cannot drift apart.
