@@ -43,7 +43,10 @@ describe('workflow-approvals controller', () => {
     await closeTestApp(app);
   }, 60000);
 
-  async function seedPending(approversSnapshot: Record<string, unknown> = { tokenBypass: true }) {
+  async function seedPending(
+    approversSnapshot: Record<string, unknown> = { tokenBypass: true },
+    inputSchema: Array<Record<string, unknown>> = []
+  ) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId,
       startNodeId: null,
@@ -63,7 +66,7 @@ describe('workflow-approvals controller', () => {
         nodeType: 'human',
         nodeName: 'approval1',
         outcomes: [{ key: 'approved' }],
-        inputSchema: [],
+        inputSchema,
       },
     });
     return saveEntity(WorkflowApprovalRequest, {
@@ -123,6 +126,43 @@ describe('workflow-approvals controller', () => {
     expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
       status: 'resolved',
       resolvedByUserId: null,
+    });
+  });
+
+  describe('input validated against the node inputSchema', () => {
+    const inputSchema = [
+      { name: 'amount', type: 'number', required: true },
+      { name: 'note', type: 'text' },
+    ];
+
+    it.each([
+      ['a required field is missing', {}],
+      ['a required field is an empty string', { amount: '' }],
+      ['a number field gets a string', { amount: '12' }],
+      ['a text field gets a number', { amount: 12, note: 5 }],
+    ])('returns 400 and leaves the request pending when %s', async (_case, input) => {
+      const req = await seedPending({ tokenBypass: true }, inputSchema);
+
+      await request(app.getHttpServer())
+        .post(`/api/workflow-approvals/${req.token}/resolve`)
+        .send({ outcome: 'approved', input })
+        .expect(400);
+
+      expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({ status: 'pending' });
+    });
+
+    it('resolves and persists input that matches the schema', async () => {
+      const req = await seedPending({ tokenBypass: true }, inputSchema);
+
+      await request(app.getHttpServer())
+        .post(`/api/workflow-approvals/${req.token}/resolve`)
+        .send({ outcome: 'approved', input: { amount: 12 } })
+        .expect(201);
+
+      expect(await findEntity(WorkflowApprovalRequest, { id: req.id })).toMatchObject({
+        status: 'resolved',
+        input: { amount: 12 },
+      });
     });
   });
 
