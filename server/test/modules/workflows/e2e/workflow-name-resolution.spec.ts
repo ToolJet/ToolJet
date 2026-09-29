@@ -190,7 +190,10 @@ describe('workflow name resolution when apps.name is empty', () => {
   });
 
   it('approval reminder names the workflow', async () => {
-    const executions = { dispatchApprovalNotification: jest.fn() };
+    const executions = {
+      dispatchApprovalNotification: jest.fn(),
+      getStateAndPreviousNodesExecutionCompletionStatus: jest.fn().mockResolvedValue({ state: {} }),
+    };
     const processor = new WorkflowApprovalTimeoutProcessor(
       app.get(WorkflowApprovalsService, { strict: false }),
       app.get(WorkflowApprovalRequestRepository, { strict: false }),
