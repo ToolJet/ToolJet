@@ -7,6 +7,7 @@ import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService } from '@modules/ai/services/ai-attachment.service';
 import { CreateAiAttachments1789689600000 } from '../../../../migrations/1789689600000-CreateAiAttachments';
 import { HardenAiAttachmentLifecycle1790683200000 } from '../../../../migrations/1790683200000-HardenAiAttachmentLifecycle';
+import { IndexAiAttachmentReconciliation1790683260000 } from '../../../../migrations/1790683260000-IndexAiAttachmentReconciliation';
 
 const integration = process.env.ATTACHMENT_TEST_DATABASE_URL ? describe : describe.skip;
 integration('attachment lifecycle with PostgreSQL', () => {
@@ -96,6 +97,29 @@ integration('attachment lifecycle with PostgreSQL', () => {
     expect(row.storage_organization_id).toBe(owner.organizationId);
   });
 
+  it('adds the reconciliation index to an already migrated database and tolerates earlier copies', async () => {
+    const runner = db.createQueryRunner();
+    const migration = new IndexAiAttachmentReconciliation1790683260000();
+    const indexes = () => db.query(
+      'SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2',
+      [schema, 'idx_ai_attachments_reconcile']
+    );
+    try {
+      expect(await indexes()).toHaveLength(0);
+      await migration.up(runner);
+      await migration.up(runner); // A prior feature-branch lifecycle copy already created this index.
+      const rows = await indexes();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].indexdef).toContain('next_cleanup_at, id');
+      await migration.down(runner);
+      await migration.down(runner);
+      expect(await indexes()).toHaveLength(0);
+      await migration.up(runner);
+    } finally {
+      await runner.release();
+    }
+  });
+
   it('does not hold the workspace lock or a transaction while remote upload waits', async () => {
     let release: () => void;
     let started: () => void;
@@ -142,10 +166,12 @@ integration('attachment lifecycle with PostgreSQL', () => {
     expect(before.conversation_id).toBeNull();
     const runner = db.createQueryRunner();
     try {
+      await new IndexAiAttachmentReconciliation1790683260000().down(runner);
       await new HardenAiAttachmentLifecycle1790683200000().down(runner);
       const [after] = await db.query('SELECT conversation_id FROM ai_attachments WHERE id=$1', [inherited]);
       expect(after.conversation_id).toBe(destination);
       await new HardenAiAttachmentLifecycle1790683200000().up(runner);
+      await new IndexAiAttachmentReconciliation1790683260000().up(runner);
     } finally {
       await runner.release();
     }
