@@ -14,6 +14,18 @@ export class AiAttachment {
   @Column({ name: 'conversation_id', type: 'uuid', nullable: true })
   conversationId: string;
 
+  @Column({ name: 'storage_organization_id', type: 'uuid', nullable: true })
+  storageOrganizationId: string;
+
+  @Column({ name: 'storage_user_id', type: 'uuid', nullable: true })
+  storageUserId: string;
+
+  @Column({ name: 'next_cleanup_at', type: 'timestamptz' })
+  nextCleanupAt: Date;
+
+  @Column({ name: 'cleanup_attempts', type: 'integer', default: 0 })
+  cleanupAttempts: number;
+
   @Column({ length: 255 })
   name: string;
 
@@ -27,7 +39,7 @@ export class AiAttachment {
   sha256: string;
 
   @Column({ length: 16, default: 'draft' })
-  state: 'draft' | 'attached';
+  state: 'uploading' | 'draft' | 'attached' | 'deleting';
 
   @Column({ name: 'attached_at', type: 'timestamptz', nullable: true })
   attachedAt: Date;

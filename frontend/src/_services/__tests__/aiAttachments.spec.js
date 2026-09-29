@@ -1,4 +1,4 @@
-import { aiService } from '../ai.service';
+import { aiService, attachmentStreamFetch } from '../ai.service';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 jest.mock('config', () => ({ apiUrl: 'https://app.example.test/api' }), { virtual: true });
@@ -67,4 +67,90 @@ test('does not send originals to the docs-only endpoint', async () => {
     )
   ).rejects.toThrow('builder chats');
   expect(fetchEventSource).not.toHaveBeenCalled();
+});
+
+test('a progress-making upload can exceed two minutes, and silence aborts it', async () => {
+  jest.useFakeTimers();
+  const originalXHR = global.XMLHttpRequest;
+  let xhr;
+  global.XMLHttpRequest = class {
+    constructor() {
+      xhr = this;
+      this.upload = {};
+    }
+    open() {}
+    setRequestHeader() {}
+    send() {}
+    abort() {
+      this.onabort();
+    }
+  };
+  fetchEventSource.mockImplementation((_url, options) => {
+    // Match the library's behavior: external abort resolves the SSE promise.
+    options.fetch(_url, options).catch(() => {});
+    return new Promise((resolve) => options.signal.addEventListener('abort', resolve));
+  });
+  try {
+    const pending = aiService.sendMessage(
+      {
+        content: 'Review the seed list.',
+        attachments: [new File(['seed'], 'seeds.txt')],
+      },
+      jest.fn()
+    );
+    const rejection = expect(pending).rejects.toMatchObject({ stalled: true });
+    for (let i = 0; i < 4; i++) {
+      await jest.advanceTimersByTimeAsync(60000);
+      xhr.upload.onprogress({ loaded: i + 1 });
+    }
+    expect(fetchEventSource.mock.calls[0][1].signal.aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(120000);
+    await rejection;
+  } finally {
+    global.XMLHttpRequest = originalXHR;
+    jest.useRealTimers();
+  }
+});
+
+test('multipart response streams preserve split unicode and status headers', async () => {
+  const originalXHR = global.XMLHttpRequest;
+  let xhr;
+  global.XMLHttpRequest = class {
+    constructor() {
+      xhr = this;
+      this.upload = {};
+    }
+    open() {}
+    setRequestHeader() {}
+    send() {}
+    abort() {
+      this.onabort();
+    }
+    getAllResponseHeaders() {
+      return 'content-type: text/event-stream';
+    }
+  };
+  try {
+    const response = attachmentStreamFetch(
+      '/synthetic',
+      { method: 'POST', headers: {}, signal: new AbortController().signal },
+      jest.fn()
+    );
+    Object.assign(xhr, {
+      readyState: 2,
+      status: 200,
+      statusText: 'OK',
+      responseText: 'data: "\ud83c',
+    });
+    xhr.onreadystatechange();
+    const result = await response;
+    const text = result.text();
+    xhr.onprogress();
+    xhr.responseText += '\udf31"\n\n';
+    xhr.onload();
+    expect(await text).toBe('data: "🌱"\n\n');
+    expect(result.headers.get('content-type')).toBe('text/event-stream');
+  } finally {
+    global.XMLHttpRequest = originalXHR;
+  }
 });

@@ -1,5 +1,8 @@
 /** @group working */
 import { BadRequestException } from '@nestjs/common';
+jest.mock('@helpers/database.helper', () => ({
+  dbTransactionWrap: (operation) => operation({ update: jest.fn() }),
+}));
 import { AiService } from '@ee/ai/service';
 
 describe('conversation attachment preparation', () => {
@@ -46,6 +49,7 @@ describe('conversation attachment preparation', () => {
         handoffThread: jest.fn().mockResolvedValue({ summary: 'A synthetic workshop inventory.' }),
       },
       attachmentService: {
+        retain: jest.fn(),
         prepare: jest.fn().mockResolvedValue({
           attachments: [{ id: current }],
           manifest: [{ id: earlier }, { id: current }],
@@ -59,11 +63,15 @@ describe('conversation attachment preparation', () => {
       attachments: [],
       manifest: [],
       routing: undefined,
+      notices: [],
+      attachmentPrivacy: false,
     });
     expect(await service.prepareAttachments(user, 'chat', [])).toEqual({
       attachments: [],
       manifest: [],
       routing: undefined,
+      notices: [],
+      attachmentPrivacy: false,
     });
     expect(service.aiUtilService.resolveAgentRouting).not.toHaveBeenCalled();
     expect(service.attachmentService.prepare).not.toHaveBeenCalled();

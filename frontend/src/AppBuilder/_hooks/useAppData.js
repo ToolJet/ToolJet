@@ -427,24 +427,27 @@ const useAppData = (
           const taggedResources = state?.taggedResources;
           const hasTaggedResources =
             taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
+          const clearKickoffDraft = () => {
+            const {
+              prompt: _prompt,
+              taggedResources: _taggedResources,
+              attachments: _attachments,
+              ...restUsrState
+            } = window.history.state?.usr || {};
+            window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
+          };
           sendMessage(
             state.prompt,
             {},
             {
               ...(hasTaggedResources ? { taggedResources } : {}),
               attachments: state.attachments,
+              restoreDraftOnFailure: true,
+              onAccepted: clearKickoffDraft,
             },
             moduleId
           );
           setIsQueryPaneExpanded(false);
-          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
-          const {
-            prompt: _prompt,
-            taggedResources: _taggedResources,
-            attachments: _attachments,
-            ...restUsrState
-          } = window.history.state?.usr || {};
-          window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
         if (initialLoadRef.current) {

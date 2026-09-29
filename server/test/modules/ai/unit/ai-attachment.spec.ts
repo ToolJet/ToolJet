@@ -3,6 +3,7 @@ import {
   BadGatewayException,
   BadRequestException,
   ConflictException,
+  GoneException,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -40,20 +41,26 @@ describe('Agent-backed attachment metadata', () => {
     jest.clearAllMocks();
     records = new Map();
     originals = new Map();
-    agent = { attachmentRequest: jest.fn(async (_owner, method, id, uploaded) => {
-      if (method === 'POST') {
-        const id = randomUUID();
-        originals.set(id, uploaded.buffer);
-        return { id, size: uploaded.size, sha256: digest(uploaded.buffer), expiresAt: Date.now()/1000 + 86400 };
-      }
-      if (method === 'GET') return originals.get(id);
-      originals.delete(id);
-    }) };
+    agent = {
+      attachmentRequest: jest.fn(async (_owner, method, id, uploaded) => {
+        if (method === 'POST') {
+          const id = uploaded.id;
+          originals.set(id, uploaded.buffer);
+          return { id, size: uploaded.size, sha256: digest(uploaded.buffer), expiresAt: Date.now() / 1000 + 86400 };
+        }
+        if (method === 'GET') return originals.get(id);
+        originals.delete(id);
+      }),
+    };
 
     env = {};
     const matches = (record, where) =>
       Object.entries(where).every(([key, value]: [string, any]) =>
-        value?._type === 'in' ? value._value.includes(record[key]) : record[key] === value
+        value?._type === 'in'
+          ? value._value.includes(record[key])
+          : value?._type === 'isNull'
+          ? record[key] == null
+          : record[key] === value
       );
     repository = {
       create: jest.fn((record) => record),
@@ -86,7 +93,9 @@ describe('Agent-backed attachment metadata', () => {
         return metadata;
       }),
     };
-    query = jest.fn().mockImplementation(async (sql) => sql.includes('SUM(size)') ? [{ bytes: '0', count: '0' }] : []);
+    query = jest
+      .fn()
+      .mockImplementation(async (sql) => (sql.includes('SUM(size)') ? [{ bytes: '0', count: '0' }] : []));
     manager = { getRepository: () => repository, query };
     service = new AiAttachmentService(
       {
@@ -104,9 +113,9 @@ describe('Agent-backed attachment metadata', () => {
     expect(repository.save).toHaveBeenCalledTimes(1);
     expect(repository.save.mock.calls[0][0]).not.toHaveProperty('data');
     expect(repository.save.mock.calls[0][0].sha256).toBe(digest(upload.buffer));
-    expect(query.mock.calls[0][0]).toContain('pg_advisory_xact_lock');
-    expect(query.mock.calls[1][0]).toMatch(/state = 'draft'[\s\S]*LIMIT 100/);
-    expect(Object.keys(result).sort()).toEqual(['createdAt', 'id', 'name', 'size', 'type']);
+    expect(query.mock.calls.some(([sql]) => sql.includes('pg_advisory_xact_lock'))).toBe(true);
+    expect(query.mock.calls.some(([sql]) => sql.includes('DELETE'))).toBe(false);
+    expect(Object.keys(result).sort()).toEqual(['createdAt', 'expiresAt', 'id', 'name', 'size', 'type']);
     expect(digest((await service.download(owner, result.id)).body)).toBe(digest(upload.buffer));
   });
 
@@ -164,9 +173,9 @@ describe('Agent-backed attachment metadata', () => {
   });
 
   it('enforces both quota limits and rejects invalid configuration', async () => {
-    query.mockImplementation(async (sql) => sql.includes('SUM(size)') ? [{ bytes: '1073741824', count: '1' }] : []);
+    query.mockImplementation(async (sql) => (sql.includes('SUM(size)') ? [{ bytes: '1073741824', count: '1' }] : []));
     await expect(service.upload(owner, file())).rejects.toBeInstanceOf(BadRequestException);
-    query.mockImplementation(async (sql) => sql.includes('SUM(size)') ? [{ bytes: '0', count: '10000' }] : []);
+    query.mockImplementation(async (sql) => (sql.includes('SUM(size)') ? [{ bytes: '0', count: '10000' }] : []));
     await expect(service.upload(owner, file())).rejects.toBeInstanceOf(BadRequestException);
     env.AI_ATTACHMENTS_MAX_WORKSPACE_BYTES = 'invalid';
     await expect(service.upload(owner, file())).rejects.toBeInstanceOf(ServiceUnavailableException);
@@ -194,39 +203,33 @@ describe('Agent-backed attachment metadata', () => {
     await service.retain(owner, [first.id], manager, 'synthetic-thread');
     expect(records.get(first.id).attachedAt).toBeInstanceOf(Date);
     await expect(service.removeDraft(owner, first.id)).rejects.toBeInstanceOf(ConflictException);
-    await expect(service.retain(owner, [second.id], manager, 'synthetic-thread')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.retain(owner, [second.id], manager, 'synthetic-thread')).rejects.toBeInstanceOf(GoneException);
     expect(await service.removeDraft(owner, second.id)).toEqual({
       deleted: true,
     });
     expect(records.has(first.id)).toBe(true);
   });
 
-  it('removes remote originals after conversation deletion and retains metadata when deletion fails', async () => {
-    query.mockResolvedValueOnce([{ id: ids[0], user_id: owner.id }]).mockResolvedValueOnce([]);
+  it('app deletion only schedules cleanup, without a remote call', async () => {
     await service.cleanupDeletedConversations(owner.organizationId);
-    expect(agent.attachmentRequest).toHaveBeenCalledWith(owner, 'DELETE', ids[0]);
-    expect(repository.delete).toHaveBeenCalledWith(ids[0]);
-    repository.delete.mockClear();
-    query.mockResolvedValueOnce([{ id: ids[1], user_id: owner.id }]);
-    agent.attachmentRequest.mockRejectedValueOnce(new Error('temporary provider failure'));
-    await expect(service.cleanupDeletedConversations(owner.organizationId)).rejects.toThrow();
-    expect(repository.delete).not.toHaveBeenCalled();
+    expect(agent.attachmentRequest).not.toHaveBeenCalled();
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('next_cleanup_at'), [owner.organizationId]);
   });
 
   it('checks the owner again when retaining files', async () => {
     const uploaded = await service.upload(owner, file());
-    await expect(service.retain({ ...owner, id: 'other-user' }, [uploaded.id], manager, 'synthetic-thread')).rejects.toBeInstanceOf(
-      NotFoundException
-    );
+    await expect(
+      service.retain({ ...owner, id: 'other-user' }, [uploaded.id], manager, 'synthetic-thread')
+    ).rejects.toBeInstanceOf(GoneException);
     expect(records.get(uploaded.id).attachedAt).toBeUndefined();
   });
 
-  it('removes new originals and metadata after a failed submission, including already-retained files', async () => {
+  it('preserves already-retained originals after a failed dispatch', async () => {
     const uploaded = await service.upload(owner, file());
     await service.retain(owner, [uploaded.id], manager, 'failed-chat');
     await service.discardFailedSubmission(owner, [uploaded.id], 'failed-chat');
-    expect(originals.has(uploaded.id)).toBe(false);
-    expect(records.has(uploaded.id)).toBe(false);
+    expect(originals.has(uploaded.id)).toBe(true);
+    expect(records.get(uploaded.id).state).toBe('attached');
   });
 
   it('failed-submission cleanup cannot delete another user or conversation originals', async () => {
