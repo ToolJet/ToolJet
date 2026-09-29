@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="template-display">
@@ -50,16 +52,29 @@ export default function TemplateDisplay(props) {
         </Row>
         <Row
           className="align-items-center justify-content-center"
-          style={{ flex: 1, minHeight: 0, position: 'relative' }}
+          style={{ flex: 1, minHeight: 0 }}
           data-cy="template-image"
         >
-          {/* TEMP: rendering the same HTML preview for every template while testing */}
-          <iframe
-            key={id}
-            src={`assets/custom-components/templates/status-blue.html${props.darkMode ? '?theme=dark' : ''}`}
-            className="template-image"
-            title={`${name} preview`}
-          />
+          {/* Same wrapper in both states so the iframe keeps its page when toggling */}
+          <div className={`template-preview-frame ${expanded ? 'expanded' : ''}`}>
+            {/* TEMP: rendering the same HTML preview for every template while testing */}
+            <iframe
+              key={id}
+              src={`assets/custom-components/templates/status-blue.html${props.darkMode ? '?theme=dark' : ''}`}
+              className="template-image"
+              title={`${name} preview`}
+            />
+            <button
+              type="button"
+              className="template-preview-toggle"
+              onClick={() => setExpanded((value) => !value)}
+              title={expanded ? 'Minimize preview' : 'Maximize preview'}
+              aria-label={expanded ? 'Minimize preview' : 'Maximize preview'}
+              data-cy="template-preview-toggle"
+            >
+              {expanded ? <IconArrowsMinimize size={16} /> : <IconArrowsMaximize size={16} />}
+            </button>
+          </div>
         </Row>
       </Container>
     </div>

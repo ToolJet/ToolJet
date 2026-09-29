@@ -1329,12 +1329,57 @@ button {
     }
 
     // Tighter gaps than the image preview (85% x 75%) to use the modal space
-    iframe.template-image {
+    .template-preview-frame {
+      position: relative;
       height: 96.25%;
       width: 97.5%;
       padding: 0;
+
+      // Covers the whole modal body (positioned ancestor), leaving the bottom
+      // 10% control row with Cancel / Create visible
+      &.expanded {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: calc(10% + 10px);
+        width: auto;
+        height: auto;
+        z-index: 2;
+        background-color: var(--surfaces-surface-01);
+      }
+    }
+
+    iframe.template-image {
+      display: block;
+      height: 100%;
+      width: 100%;
+      padding: 0;
       border: 1px solid var(--slate5);
       border-radius: 6px;
+    }
+
+    .template-preview-toggle {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate11);
+      background-color: var(--slate1);
+      border: 1px solid var(--slate7);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--slate12);
+        background-color: var(--slate4);
+      }
     }
 
     .template-spinner {
