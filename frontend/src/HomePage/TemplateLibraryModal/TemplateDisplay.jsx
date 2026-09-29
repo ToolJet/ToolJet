@@ -1,9 +1,10 @@
 import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
+import { ImageWithSpinner } from '@/_components';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
-  const { id, name, description, sources } = props?.app ?? {};
+  const { id, name, description, sources, htmlPreview } = props?.app ?? {};
 
   return (
     <div className="template-display">
@@ -53,13 +54,22 @@ export default function TemplateDisplay(props) {
           style={{ flex: 1, minHeight: 0, position: 'relative' }}
           data-cy="template-image"
         >
-          {/* TEMP: rendering the same HTML preview for every template while testing */}
-          <iframe
-            key={id}
-            src={`assets/custom-components/templates/status-blue.html${props.darkMode ? '?theme=dark' : ''}`}
-            className="template-image"
-            title={`${name} preview`}
-          />
+          {/* Templates opt into an HTML preview via `htmlPreview` in manifest.json; others use the PNG screenshots */}
+          {htmlPreview ? (
+            <iframe
+              key={id}
+              src={`assets/custom-components/templates/${id}.html${props.darkMode ? '?theme=dark' : ''}`}
+              className="template-image"
+              title={`${name} preview`}
+            />
+          ) : (
+            <ImageWithSpinner
+              src={`assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+              className="template-image"
+              spinnerClassName="template-spinner"
+              useSmallSpinner={true}
+            />
+          )}
         </Row>
       </Container>
     </div>
