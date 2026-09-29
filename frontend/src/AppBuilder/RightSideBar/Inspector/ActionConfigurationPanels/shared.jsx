@@ -64,7 +64,7 @@ export const OptionCombobox = ({ options, value, onChange, placeholder, invalid 
         placeholder={placeholder ?? t('globals.select', 'Select') + '...'}
         className={invalid ? '!tw-border-border-danger-strong' : undefined}
       />
-      <ComboboxContent align="end" className="!tw-w-min !tw-max-w-[268px]">
+      <ComboboxContent align="end" collisionPadding={60} className="!tw-w-min !tw-max-w-[268px]">
         <ComboboxList>
           {(item) => (
             <ComboboxItem key={item.value} value={item}>
