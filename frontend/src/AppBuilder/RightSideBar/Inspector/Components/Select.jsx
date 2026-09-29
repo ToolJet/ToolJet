@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
@@ -93,6 +94,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     }
   }
 
+  // Saved duplicates still exist, and keying on value alone made two rows render as one.
+  const rowId = (item, index) => `${item?.value}-${index}`;
+
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
@@ -119,7 +123,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     while (!found) {
       label = `option${currentNumber}`;
       value = currentNumber.toString();
-      if (options.find((option) => option.label === label) === undefined) {
+      // The value has to be free too, not just the label, or the new row collides on reorder.
+      if (!options.some((option) => option.label === label || option.value === value)) {
         found = true;
       }
       currentNumber += 1;
@@ -161,6 +166,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleValueChange = (value, index) => {
+    // Existing duplicates are left alone; only new collisions are refused.
+    if (options.some((option, i) => i !== index && option?.value === value)) {
+      toast.error('Another option already uses this value');
+      return;
+    }
+
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
@@ -432,7 +443,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
+                    <Draggable key={rowId(item, index)} draggableId={rowId(item, index)} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -458,7 +469,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                               }
                             }}
                           >
-                            <div key={item?.value}>
+                            <div key={rowId(item, index)}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
