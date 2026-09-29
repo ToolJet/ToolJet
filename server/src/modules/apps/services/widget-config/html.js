@@ -59,7 +59,7 @@ export const htmlConfig = {
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'transparent',
+        defaultValue: '',
       },
       accordian: 'container',
     },
@@ -116,7 +116,7 @@ export const htmlConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: 'transparent' },
+      backgroundColor: { value: '' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

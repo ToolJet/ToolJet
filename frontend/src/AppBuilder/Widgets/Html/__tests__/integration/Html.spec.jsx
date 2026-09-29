@@ -157,14 +157,19 @@ describe('Html widget', () => {
   });
 
   test('[Html-STY-002] configured background color overrides the default light/dark backdrop and survives state transitions', async () => {
-    // Break this catches: dropping the backgroundColor style, ignoring the transparent sentinel, or losing the value across state transitions.
-    const { container } = html.render({ darkMode: false });
+    // Break this catches: dropping the backgroundColor style, ignoring the empty-string sentinel, or losing the value across state transitions.
+    const { container } = html.render({ darkMode: false, styles: { backgroundColor: binding('') } });
     expect(content(container)).toHaveStyle({ backgroundColor: '#ffffff' });
 
     html.teardown();
     html.setup();
-    const dark = html.render({ darkMode: true });
+    const dark = html.render({ darkMode: true, styles: { backgroundColor: binding('') } });
     expect(content(dark.container)).toHaveStyle({ backgroundColor: '#47505D' });
+
+    html.teardown();
+    html.setup();
+    const transparentContainer = html.render({ styles: { backgroundColor: binding('transparent') } }).container;
+    expect(content(transparentContainer)).toHaveStyle({ backgroundColor: 'transparent' });
 
     html.teardown();
     html.setup();
