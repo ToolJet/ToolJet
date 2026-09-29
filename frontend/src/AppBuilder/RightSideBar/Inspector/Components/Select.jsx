@@ -18,6 +18,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { isValueTaken, nextFreeOption, optionRowId } from './selectOptionUtils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -94,9 +95,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     }
   }
 
-  // Saved duplicates still exist, and keying on value alone made two rows render as one.
-  const rowId = (item, index) => `${item?.value}-${index}`;
-
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
@@ -116,19 +114,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const generateNewOptions = () => {
-    let found = false;
-    let label = '';
-    let currentNumber = options.length + 1;
-    let value = currentNumber;
-    while (!found) {
-      label = `option${currentNumber}`;
-      value = currentNumber.toString();
-      // The value has to be free too, not just the label, or the new row collides on reorder.
-      if (!options.some((option) => option.label === label || option.value === value)) {
-        found = true;
-      }
-      currentNumber += 1;
-    }
+    const { label, value } = nextFreeOption(options);
     return {
       value,
       label,
@@ -167,7 +153,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleValueChange = (value, index) => {
     // Existing duplicates are left alone; only new collisions are refused.
-    if (options.some((option, i) => i !== index && option?.value === value)) {
+    if (isValueTaken(options, value, index)) {
       toast.error('Another option already uses this value');
       return;
     }
@@ -443,7 +429,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={rowId(item, index)} draggableId={rowId(item, index)} index={index}>
+                    <Draggable key={optionRowId(item, index)} draggableId={optionRowId(item, index)} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -469,7 +455,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                               }
                             }}
                           >
-                            <div key={rowId(item, index)}>
+                            <div key={optionRowId(item, index)}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
