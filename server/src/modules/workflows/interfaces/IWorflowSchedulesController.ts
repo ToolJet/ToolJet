@@ -1,4 +1,5 @@
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { ListSchedulesDto } from '@modules/workflows/dto/list-schedules.dto';
 
 export interface IWorkflowSchedulesController {
   create(
@@ -21,12 +22,7 @@ export interface IWorkflowSchedulesController {
 
   findAll(
     user: any,
-    appId: string,
-    page?: string,
-    limit?: string,
-    search?: string,
-    environmentId?: string,
-    workflowId?: string
+    query: ListSchedulesDto
   ): Promise<WorkflowSchedule[] | { data: WorkflowSchedule[]; total: number; page: number; limit: number }>;
 
   findOne(user: any, id: string): Promise<WorkflowSchedule>;
