@@ -154,3 +154,44 @@ test('multipart response streams preserve split unicode and status headers', asy
     global.XMLHttpRequest = originalXHR;
   }
 });
+
+test('ends a long attachment stream so the existing generation watcher can take over', async () => {
+  const originalXHR = global.XMLHttpRequest;
+  let xhr;
+  global.XMLHttpRequest = class {
+    constructor() {
+      xhr = this;
+      this.upload = {};
+    }
+    open() {}
+    setRequestHeader() {}
+    send() {}
+    abort() {
+      this.aborted = true;
+      this.onabort();
+    }
+    getAllResponseHeaders() {
+      return 'content-type: text/event-stream';
+    }
+  };
+  try {
+    const pending = attachmentStreamFetch(
+      '/synthetic',
+      {
+        method: 'POST',
+        headers: {},
+        signal: new AbortController().signal,
+      },
+      jest.fn()
+    );
+    Object.assign(xhr, { readyState: 2, status: 200, statusText: 'OK', responseText: 'x'.repeat(9 * 1024 * 1024) });
+    xhr.onreadystatechange();
+    const response = await pending;
+    const rejected = expect(response.text()).rejects.toThrow('response buffer limit');
+    xhr.onprogress();
+    await rejected;
+    expect(xhr.aborted).toBe(true);
+  } finally {
+    global.XMLHttpRequest = originalXHR;
+  }
+});

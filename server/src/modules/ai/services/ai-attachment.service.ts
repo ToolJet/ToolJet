@@ -345,12 +345,18 @@ export class AiAttachmentService {
       const eligible = `state <> 'deleting' AND (expires_at <= now() OR organization_id IS NULL OR user_id IS NULL OR
         (state = 'draft' AND created_at < now() - INTERVAL '24 hours') OR
         (state = 'attached' AND NOT EXISTS (SELECT 1 FROM ai_attachment_references r WHERE r.attachment_id = a.id)))`;
-      const candidates = await manager.query(`SELECT a.id FROM ai_attachments a WHERE ${eligible}
-        ORDER BY id LIMIT 100 FOR UPDATE SKIP LOCKED`);
+      // Reconcile a bounded indexed batch, rather than scan every live attachment each minute.
+      // Deletion events bring shared rows forward; the periodic pass also catches direct FK changes.
+      const candidates = await manager.query(`SELECT a.id FROM ai_attachments a
+        WHERE state <> 'deleting' AND next_cleanup_at <= now()
+        ORDER BY next_cleanup_at, id LIMIT 100 FOR UPDATE SKIP LOCKED`);
       if (candidates.length)
         await manager.query(
-          `UPDATE ai_attachments a SET state = 'deleting'
-        WHERE id = ANY($1::uuid[]) AND ${eligible}`,
+          `UPDATE ai_attachments a SET
+            state = CASE WHEN ${eligible} THEN 'deleting' ELSE state END,
+            next_cleanup_at = CASE WHEN ${eligible} THEN next_cleanup_at
+              ELSE LEAST(expires_at, now() + INTERVAL '1 hour') END
+          WHERE id = ANY($1::uuid[])`,
           [candidates.map((row) => row.id)]
         );
     });
@@ -359,7 +365,7 @@ export class AiAttachmentService {
       cleanup_attempts = cleanup_attempts + 1 WHERE id IN (
         SELECT id FROM ai_attachments WHERE state = 'deleting' AND next_cleanup_at <= now()
         ORDER BY next_cleanup_at LIMIT 20 FOR UPDATE SKIP LOCKED)
-      RETURNING id, storage_user_id, storage_organization_id, expires_at) SELECT * FROM claimed`);
+      RETURNING id, storage_user_id, storage_organization_id, expires_at, cleanup_attempts) SELECT * FROM claimed`);
     for (let start = 0; start < rows.length; start += 4) {
       await Promise.all(
         rows.slice(start, start + 4).map(async (row) => {
@@ -380,6 +386,12 @@ export class AiAttachmentService {
             await this.repository.delete(row.id);
           } catch (error) {
             this.diagnostic('deletion', error);
+            if (row.cleanup_attempts === 3 || row.cleanup_attempts % 12 === 0) {
+              Logger.error(
+                `Attachment cleanup backlog: ${row.id} failed ${row.cleanup_attempts} attempts. Check storage permissions and availability.`,
+                'AiAttachmentService'
+              );
+            }
           }
         })
       );

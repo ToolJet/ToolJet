@@ -116,6 +116,14 @@ describe('conversation attachment preparation', () => {
     }
   );
 
+  it('does not create a handoff chat when attachment preparation fails', async () => {
+    service.aiConversationRepository.findOne.mockResolvedValue({ id: 'previous-chat', userId: user.id, metadata: {} });
+    service.attachmentService.prepare.mockRejectedValueOnce(new Error('Synthetic unavailable attachment'));
+    await expect(service.createConversation(user.id, 'fixture-app', 'generate', user.organizationId,
+      'previous-chat', true, user)).rejects.toThrow('Synthetic unavailable attachment');
+    expect(service.aiUtilService.createNewConversation).not.toHaveBeenCalled();
+  });
+
   it('carries unique file IDs through successive owned continuation chats', async () => {
     service.aiConversationRepository.findOne.mockResolvedValue({
       id: 'previous-chat',
@@ -142,6 +150,9 @@ describe('conversation attachment preparation', () => {
       },
       relations: ['app'],
     });
+    const creationManager = service.aiUtilService.createNewConversation.mock.calls[0][5];
+    expect(creationManager).toBeTruthy();
+    expect(service.attachmentService.retain.mock.calls[0][2]).toBe(creationManager);
     expect(result.metadata).toEqual({
       attachmentIds: [earlier, current],
       phasePlan: 'fixture',

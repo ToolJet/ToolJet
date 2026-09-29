@@ -82,6 +82,7 @@ async function voteMessage(messageId, voteType) {
 // freezing the chat in a perpetual loading state. Aborting after this much total
 // silence lets the caller settle and re-sync from the persisted conversation.
 const AI_STREAM_STALL_TIMEOUT_MS = 30000;
+const MAX_ATTACHMENT_STREAM_CHARS = 8 * 1024 * 1024;
 
 // XHR exposes upload progress while preserving the streaming Response contract used by SSE.
 // The upload deadline measures inactivity, so a slow connection can keep making progress.
@@ -105,6 +106,13 @@ export function attachmentStreamFetch(url, options, onProgress) {
     const flush = (final = false) => {
       if (!opened || finished) return;
       const text = xhr.responseText;
+      // XHR retains its response buffer. Hand long builds to the existing status watcher
+      // instead of retaining an unbounded second copy of all SSE updates in the browser.
+      if (text.length > MAX_ATTACHMENT_STREAM_CHARS) {
+        finish(new Error('Attachment response buffer limit reached; reconnecting to the build.'));
+        xhr.abort();
+        return;
+      }
       let end = text.length;
       // Do not split a UTF-16 surrogate pair between browser progress events.
       if (!final && end > offset && /[\uD800-\uDBFF]/.test(text[end - 1])) end--;

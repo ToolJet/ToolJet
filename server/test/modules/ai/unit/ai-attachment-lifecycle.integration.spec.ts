@@ -137,6 +137,20 @@ integration('attachment lifecycle with PostgreSQL', () => {
     expect(originals.has(uploaded.id)).toBe(true);
   });
 
+  it('restores the sole surviving handoff owner before migration rollback', async () => {
+    const [before] = await db.query('SELECT conversation_id FROM ai_attachments WHERE id=$1', [inherited]);
+    expect(before.conversation_id).toBeNull();
+    const runner = db.createQueryRunner();
+    try {
+      await new HardenAiAttachmentLifecycle1790683200000().down(runner);
+      const [after] = await db.query('SELECT conversation_id FROM ai_attachments WHERE id=$1', [inherited]);
+      expect(after.conversation_id).toBe(destination);
+      await new HardenAiAttachmentLifecycle1790683200000().up(runner);
+    } finally {
+      await runner.release();
+    }
+  });
+
   it('drops expired or missing history with a notice but rejects unavailable new selections', async () => {
     const uploaded = await service.upload(owner, file());
     await db.query("UPDATE ai_attachments SET expires_at=now()-interval '1 second' WHERE id=$1", [uploaded.id]);
@@ -175,5 +189,28 @@ integration('attachment lifecycle with PostgreSQL', () => {
     await service.sweep();
     expect(agent.attachmentRequest).toHaveBeenCalledWith(owner, 'DELETE', uploaded.id);
     expect(originals.has(uploaded.id)).toBe(false);
+  });
+  it('reconciles due metadata through an index without visiting unrelated future rows', async () => {
+    await db.query(`INSERT INTO ai_attachments (id,name,mime_type,size,sha256,state,expires_at,next_cleanup_at)
+      SELECT md5(('future-'||n)::text)::uuid,'future.csv','text/csv',1,repeat('0',64),'attached',
+      now()+interval '1 day',now()+interval '1 hour' FROM generate_series(1,50000) n`);
+    const due = randomUUID();
+    await db.query(
+      `INSERT INTO ai_attachments (id,name,mime_type,size,sha256,state,expires_at,next_cleanup_at)
+      VALUES ($1,'due.csv','text/csv',1,repeat('0',64),'attached',now()+interval '1 day',now())`,
+      [due]
+    );
+    await db.query('ANALYZE ai_attachments');
+    const plan = await db.query(`EXPLAIN (FORMAT JSON) SELECT a.id FROM ai_attachments a
+      WHERE state <> 'deleting' AND next_cleanup_at <= now() ORDER BY next_cleanup_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`);
+    expect(JSON.stringify(plan)).toMatch(/idx_ai_attachments_(reconcile|cleanup)/);
+    expect(JSON.stringify(plan)).not.toContain('Seq Scan');
+    await service.sweep();
+    const [changed] = await db.query('SELECT state FROM ai_attachments WHERE id=$1', [due]);
+    expect(changed.state).toBe('deleting');
+    const [untouched] = await db.query(
+      "SELECT count(*) FROM ai_attachments WHERE name='future.csv' AND state='attached'"
+    );
+    expect(Number(untouched.count)).toBe(50000);
   });
 });

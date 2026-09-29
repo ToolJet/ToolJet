@@ -14,6 +14,7 @@ export class HardenAiAttachmentLifecycle1790683200000 implements MigrationInterf
       ALTER TABLE ai_attachments ADD CONSTRAINT ai_attachments_state_check
         CHECK (state IN ('uploading', 'draft', 'attached', 'deleting'));
       CREATE INDEX idx_ai_attachments_cleanup ON ai_attachments (next_cleanup_at);
+      CREATE INDEX idx_ai_attachments_reconcile ON ai_attachments(next_cleanup_at, id) WHERE state <> 'deleting';
       CREATE TABLE ai_attachment_references (
         attachment_id uuid NOT NULL REFERENCES ai_attachments(id) ON DELETE CASCADE,
         conversation_id uuid NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
@@ -54,9 +55,12 @@ export class HardenAiAttachmentLifecycle1790683200000 implements MigrationInterf
     ) AS present`);
     if (pending.present) throw new Error('Drain attachment uploads/cleanup and shared references before rollback.');
     await queryRunner.query(`
+      UPDATE ai_attachments a SET conversation_id = r.conversation_id
+        FROM ai_attachment_references r WHERE r.attachment_id = a.id;
       DROP TABLE ai_attachment_admissions;
       DROP TABLE ai_attachment_references;
       DROP INDEX idx_ai_attachments_cleanup;
+      DROP INDEX idx_ai_attachments_reconcile;
       ALTER TABLE ai_attachments DROP CONSTRAINT ai_attachments_state_check;
       ALTER TABLE ai_attachments ADD CONSTRAINT ai_attachments_state_check CHECK (state IN ('draft', 'attached'));
       ALTER TABLE ai_attachments DROP COLUMN storage_organization_id, DROP COLUMN storage_user_id,

@@ -432,21 +432,37 @@ const useAppData = (
               prompt: _prompt,
               taggedResources: _taggedResources,
               attachments: _attachments,
+              kickoffAttempted: _kickoffAttempted,
               ...restUsrState
             } = window.history.state?.usr || {};
             window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
           };
-          sendMessage(
-            state.prompt,
-            {},
-            {
-              ...(hasTaggedResources ? { taggedResources } : {}),
-              attachments: state.attachments,
-              restoreDraftOnFailure: true,
-              onAccepted: clearKickoffDraft,
-            },
-            moduleId
-          );
+          if (state.kickoffAttempted) {
+            // A reload restores an unaccepted draft for explicit retry, never silently resubmits it.
+            useStore.setState((draft) => {
+              draft.ai.failedSubmission = {
+                conversationId: conversation.id,
+                content: state.prompt,
+                attachments: state.attachments || [],
+              };
+            });
+          } else {
+            window.history.replaceState(
+              { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
+              '', window.location.href
+            );
+            sendMessage(
+              state.prompt,
+              {},
+              {
+                ...(hasTaggedResources ? { taggedResources } : {}),
+                attachments: state.attachments,
+                restoreDraftOnFailure: true,
+                onAccepted: clearKickoffDraft,
+              },
+              moduleId
+            );
+          }
           setIsQueryPaneExpanded(false);
         }
 

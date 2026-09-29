@@ -200,6 +200,7 @@ describe('AI eligibility precedes attachment storage', () => {
       expect(service.attachmentService.retain).not.toHaveBeenCalled();
       expect(service.aiUtilService.callAgent).not.toHaveBeenCalled();
       expect(service.aiUtilService.endActiveRun).toHaveBeenCalledWith('synthetic-run');
+      expect(service.sendSSE).toHaveBeenCalledWith(response, 'agent_result', { cancelled: true, reload: false });
     } finally {
       jest.useRealTimers();
     }
