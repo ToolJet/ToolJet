@@ -3,6 +3,7 @@ import * as request from 'supertest';
 import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
+import { WorkflowApprovalRequestRepository } from '@modules/workflows/repositories/workflow-approval-request.repository';
 import { WorkflowExecutionQueueService } from '@ee/workflows/services/workflow-execution-queue.service';
 import {
   initTestApp,
@@ -15,6 +16,7 @@ import {
   createWorkflowForUser,
   createWorkflowApplicationVersion,
   buildTestSession,
+  updateEntity,
 } from 'test-helper';
 
 /**
@@ -222,6 +224,36 @@ describe('POST /workflow-approvals/:id/cancel', () => {
 
     const after = await findEntityOrFail(WorkflowApprovalRequest, { id: approval.id });
     expect(after.status).toBe('pending');
+  });
+
+  it('returns 409 and leaves the resolved request and its run alone when a resolve lands between read and write', async () => {
+    const { approval, execution } = await seedRequest('cancel-race', {
+      users: [],
+      groups: [],
+      emails: [],
+      tokenBypass: true,
+    });
+    // A resolve commits after cancel read the row as pending.
+    await updateEntity(WorkflowApprovalRequest, approval.id, { status: 'resolved', resolvedOutcome: 'approved' });
+    jest
+      .spyOn(app.get(WorkflowApprovalRequestRepository, { strict: false }), 'findOne')
+      .mockResolvedValueOnce({ ...approval, status: 'pending' } as WorkflowApprovalRequest);
+    const { tokenCookie } = await buildTestSession(adminUser, organizationId);
+
+    await request(app.getHttpServer())
+      .post(`/api/workflow-approvals/${approval.id}/cancel`)
+      .set('Cookie', tokenCookie)
+      .set('tj-workspace-id', organizationId)
+      .expect(409);
+
+    expect(await findEntityOrFail(WorkflowApprovalRequest, { id: approval.id })).toMatchObject({
+      status: 'resolved',
+      resolvedOutcome: 'approved',
+    });
+    expect(await findEntityOrFail(WorkflowExecution, { id: execution.id })).toMatchObject({
+      status: 'waiting',
+      executed: false,
+    });
   });
 
   it('rejects a non-UUID id with 400 instead of a raw query error', async () => {
