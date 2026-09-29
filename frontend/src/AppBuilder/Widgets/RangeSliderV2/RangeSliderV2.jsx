@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -24,6 +24,10 @@ export const RangeSliderV2 = ({
   id,
 }) => {
   const isInitialRender = useRef(true);
+  // Per mounted instance, not per component id: ListView gives every row the same component
+  // id, so an id derived from it alone collides across rows and names every handle after the first.
+  const reactId = useId();
+  const labelElementId = `${reactId}-label`;
   const labelRef = useRef(null);
   const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
 
@@ -282,7 +286,7 @@ export const RangeSliderV2 = ({
             direction={direction}
             widthType={widthType}
             inputId={`component-${id}`}
-            id={`${id}-label`}
+            id={labelElementId}
             fontSize={labelFontSizeValue}
           />
 
@@ -299,7 +303,7 @@ export const RangeSliderV2 = ({
                 value={defaultRangeValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
@@ -338,7 +342,7 @@ export const RangeSliderV2 = ({
                 value={defaultSliderValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 onChange={onSliderChange}
                 onChangeComplete={() => fireEvent('onChange')}

@@ -66,13 +66,20 @@ export const Rating = ({
   );
 
   // Generate unique ID for ARIA labelling
+  const reactId = React.useId();
   const [announceValue, setAnnounceValue] = React.useState('');
-  // Whole icons only: a fractional count cannot size the animation trail and throws out of render.
-  const _maxRating = !maxRating || maxRating < 0 ? 0 : Math.floor(maxRating);
+
+  // Whole, finite icons only: a fractional or infinite count cannot size the animation trail
+  // and throws out of render. `{{1/0}}` arrives as Infinity, which is truthy and not < 0.
+  // Coerced first, because the registered definition ships maxRating as the string '5'.
+  const _numericMaxRating = Number(maxRating);
+  const _maxRating = !Number.isFinite(_numericMaxRating) || _numericMaxRating < 0 ? 0 : Math.floor(_numericMaxRating);
 
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
   // The radiogroup is named by whichever label arm renders one; without this it ships anonymous.
-  const labelElementId = `${id}-label`;
+  // Per mounted instance, not per component id: ListView gives every row the same component id,
+  // so `${id}-label` would collide across rows and name them all after the first.
+  const labelElementId = `${reactId}-label`;
   const hasRenderedLabel = !!label && (labelStyle === 'legacy' || auto || labelWidth > 0);
   const animatedStars = useTrail(_maxRating, {
     config: {
