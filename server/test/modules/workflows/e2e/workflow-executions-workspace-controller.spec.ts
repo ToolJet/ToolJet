@@ -34,16 +34,6 @@ const seedWorkspace = async (app: INestApplication, email: string, workflowName:
   });
   const workflow = await createWorkflowForUser(app, user, workflowName);
   const version = await createWorkflowApplicationVersion(app, workflow);
-  const execution = await saveEntity(WorkflowExecution, {
-    appVersionId: version.id,
-    startNodeId: null,
-    executed: true,
-    status: 'success',
-    executingUserId: user.id,
-    logs: [],
-    organizationId: user.organizationId,
-    appId: workflow.id,
-  });
   const environment = await findEntity(AppEnvironment, { organizationId: user.organizationId, name: 'development' });
   const schedule = await saveEntity(WorkflowSchedule, {
     workflowId: version.id,
@@ -53,6 +43,17 @@ const seedWorkspace = async (app: INestApplication, email: string, workflowName:
     type: 'interval',
     timezone: 'UTC',
     details: { frequency: 'minute' },
+  });
+  const execution = await saveEntity(WorkflowExecution, {
+    appVersionId: version.id,
+    startNodeId: null,
+    executed: true,
+    status: 'success',
+    executingUserId: user.id,
+    logs: [],
+    organizationId: user.organizationId,
+    appId: workflow.id,
+    scheduleId: schedule.id,
   });
   return { user, organization, appId: workflow.id, executionId: execution.id, scheduleId: schedule.id };
 };
@@ -98,6 +99,8 @@ describe('WorkflowExecutionsController workspace routes', () => {
               workflow: { id: own.appId, name: 'Own workspace wf' },
               status: 'success',
               executed: true,
+              // Unnamed, as every schedule created before names existed is.
+              schedule: { id: own.scheduleId, name: 'Every minute' },
             },
           ],
           meta: { page: 1, perPage: 15, total: 1 },

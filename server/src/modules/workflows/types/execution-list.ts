@@ -33,7 +33,7 @@ export type ExecutionListRow = Omit<WorkflowExecution, 'appVersion'> & {
   app?: { id: string; name: string };
   appVersion?: { id: string; name: string };
   environment?: { id: string; name: string };
-  schedule?: { id: string; name: string | null; details: unknown };
+  schedule?: { id: string; name: string | null; type: string; details: Record<string, unknown> | null };
 };
 
 export const TRIGGER_TYPE_LABELS: Record<WorkflowTriggerType, string> = {

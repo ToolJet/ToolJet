@@ -1,18 +1,13 @@
 import { ExecutionListItem, ExecutionListRow } from '../types/execution-list';
 import { WORKFLOW_TRIGGER_TYPE } from '../types';
+import { describeCadence } from './schedule-cron';
 
-type ScheduleLike = { name?: string | null; details?: any } | null | undefined;
+type ScheduleLike = { name?: string | null; type: string; details?: Record<string, unknown> | null } | null | undefined;
 
-/**
- * A human label for the schedule that fired a run. Named schedules win; otherwise fall back to the
- * raw cron so the column says something true rather than nothing. Humanizing the cron into prose is
- * deliberately not done here — that is a presentation concern and belongs in the browser.
- */
+/** The schedule's name, or its cadence as the upcoming-runs panel words it. */
 export const describeSchedule = (schedule: ScheduleLike): string | null => {
   if (!schedule) return null;
-  if (schedule.name) return schedule.name;
-  const cron = schedule.details?.cron;
-  return typeof cron === 'string' && cron.length > 0 ? cron : null;
+  return schedule.name || describeCadence({ type: schedule.type, details: schedule.details ?? {} });
 };
 
 const iso = (value: Date | string | null | undefined): string | null => {
