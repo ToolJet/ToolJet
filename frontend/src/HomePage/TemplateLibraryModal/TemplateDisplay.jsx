@@ -56,7 +56,7 @@ export default function TemplateDisplay(props) {
           {/* TEMP: rendering the same HTML preview for every template while testing */}
           <iframe
             key={id}
-            src={`assets/custom-components/templates/advanced-data-visualization.html${props.darkMode ? '?theme=dark' : ''}`}
+            src={`assets/custom-components/templates/status-blue.html${props.darkMode ? '?theme=dark' : ''}`}
             className="template-image"
             title={`${name} preview`}
           />
