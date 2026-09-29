@@ -11,8 +11,7 @@ jest.mock('stripe', () => ({
   default: jest.fn().mockImplementation(() => ({ prices: { retrieve: mockRetrieve } })),
 }));
 
-const mockGotJson = jest.fn();
-const mockGot = jest.fn<{ json: jest.Mock }, unknown[]>(() => ({ json: mockGotJson }));
+const mockGot = jest.fn();
 jest.mock('got', () => ({ __esModule: true, default: (...args: unknown[]) => mockGot(...args) }));
 
 const mockEdition = jest.fn();
@@ -66,6 +65,13 @@ const BY_ID = Object.fromEntries(
 type ServiceDependencies = ConstructorParameters<typeof OrganizationPaymentService>;
 
 // Only ConfigService is used by the price lookup; the other dependencies are never touched.
+/** What got resolves with for a cloud response; the relay reads the status, headers and raw body. */
+const cloudResponse = (body: unknown, statusCode = 200, headers: Record<string, string> = {}) => ({
+  statusCode,
+  headers,
+  body: typeof body === 'string' ? body : JSON.stringify(body),
+});
+
 const makeService = (env: Record<string, string> = PRICE_ENV) => {
   const configService = { get: (key: string) => env[key] } as unknown as ConfigService;
   const unused = {} as never;
@@ -159,18 +165,18 @@ describe('getPlanPrices', () => {
 
     it('relays cloud prices without touching Stripe', async () => {
       const cloudPrices = buildPlanPrices(STAGING);
-      mockGotJson.mockResolvedValue(cloudPrices);
+      mockGot.mockResolvedValue(cloudResponse(cloudPrices));
 
       await expect(makeService().getPlanPrices()).resolves.toEqual(cloudPrices);
       expect(mockGot).toHaveBeenCalledWith(
-        'https://app.tooljet.com/api/organization/payment/plan-prices',
-        expect.any(Object)
+        'https://app.tooljet.ai/api/organization/payment/plan-prices',
+        expect.objectContaining({ followRedirect: false })
       );
       expect(mockRetrieve).not.toHaveBeenCalled();
     });
 
     it('uses TOOLJET_CLOUD_API_URL when set', async () => {
-      mockGotJson.mockResolvedValue(buildPlanPrices(STAGING));
+      mockGot.mockResolvedValue(cloudResponse(buildPlanPrices(STAGING)));
       await makeService({ TOOLJET_CLOUD_API_URL: 'http://localhost:3000/api/' }).getPlanPrices();
       expect(mockGot).toHaveBeenCalledWith(
         'http://localhost:3000/api/organization/payment/plan-prices',
@@ -179,8 +185,13 @@ describe('getPlanPrices', () => {
     });
 
     it.each([
-      ['cloud is unreachable', () => mockGotJson.mockRejectedValue(new Error('ENOTFOUND'))],
-      ['cloud answers with something else', () => mockGotJson.mockResolvedValue({ message: 'Not found' })],
+      ['cloud is unreachable', () => mockGot.mockRejectedValue(new Error('ENOTFOUND'))],
+      ['cloud answers with something else', () => mockGot.mockResolvedValue(cloudResponse({ message: 'Not found' }))],
+      ['cloud answers with a page', () => mockGot.mockResolvedValue(cloudResponse('<!doctype html>'))],
+      [
+        'the cloud host has moved',
+        () => mockGot.mockResolvedValue(cloudResponse('', 308, { location: 'https://app.tooljet.ai/' })),
+      ],
     ])('reports unavailable when %s', async (_label, arrange) => {
       arrange();
       await expect(makeService().getPlanPrices()).rejects.toBeInstanceOf(ServiceUnavailableException);

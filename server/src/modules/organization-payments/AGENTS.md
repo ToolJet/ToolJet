@@ -29,7 +29,7 @@ table. CE ships stubs only; everything real lives in `server/ee/organization-pay
 
 - CE: stubs only; the pricing surfaces are EE/Cloud frontend components.
 - EE (self-hosted) and Cloud both load `ee/organization-payments/`. Only Cloud holds a Stripe key.
-- `GET /api/organization/payment/plan-prices`: Cloud reads Stripe; self-hosted relays Cloud's copy from `TOOLJET_CLOUD_API_URL` (default `https://app.tooljet.com/api`). Self-hosted is sold at Cloud's prices, so one source serves both.
+- `GET /api/organization/payment/plan-prices`: Cloud reads Stripe; self-hosted relays Cloud's copy from `TOOLJET_CLOUD_API_URL` (default `https://app.tooljet.ai/api`; redirects are refused, so a moved host fails loudly). Self-hosted is sold at Cloud's prices, so one source serves both.
 
 ## Invariants & gotchas
 
