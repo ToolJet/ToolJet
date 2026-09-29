@@ -26,7 +26,7 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
     expect(executions.dispatchApprovalNotification).not.toHaveBeenCalled();
   });
 
-  it('re-dispatches a pending request as a reminder with its workspace context', async () => {
+  it("re-dispatches a pending request as a reminder with its workspace context and upstream nodes' state", async () => {
     const request = {
       id: 'req-1',
       status: 'pending',
@@ -47,7 +47,13 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
         }),
       },
     };
-    const executions: any = { dispatchApprovalNotification: jest.fn() };
+    const upstreamState = { fetchTicket: { data: { id: 42 } } };
+    const executions: any = {
+      dispatchApprovalNotification: jest.fn(),
+      getStateAndPreviousNodesExecutionCompletionStatus: jest
+        .fn()
+        .mockResolvedValue({ state: upstreamState, previousNodesExecutionCompletionStatus: true }),
+    };
     const logger: any = { log: jest.fn(), error: jest.fn() };
     const appsRepository: any = { findAllOrganizationWorkflows: jest.fn().mockResolvedValue([workflow]) };
     const processor = new WorkflowApprovalTimeoutProcessor(approvals, repo, executions, logger, appsRepository);
@@ -58,7 +64,7 @@ describe('WorkflowApprovalTimeoutProcessor', () => {
     expect(executions.dispatchApprovalNotification).toHaveBeenCalledWith(
       node.definition,
       request,
-      {},
+      upstreamState,
       'org-1',
       'env-1',
       { reminder: true, workflowName: 'Production deployment' }
