@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Res, Sse } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -33,7 +33,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Query() query: ListExecutionsDto,
     @User() user?: any
   ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   // Upcoming runs are derived from schedules, not from workflow_executions rows — a run that has
@@ -47,7 +47,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Query() query: ListUpcomingRunsDto,
     @User() user?: any
   ): Promise<{ upcoming: UpcomingRun[] }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
@@ -58,7 +58,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Body() body: WorkspaceExecutionStatesDto,
     @User() user?: any
   ): Promise<Record<string, { terminationRequested: boolean; jobState: string }>> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)

@@ -213,4 +213,36 @@ describe('WorkflowExecutionsController workspace routes', () => {
       });
     });
   });
+
+  describe('CE', () => {
+    let ceApp: INestApplication;
+    let ceUser: User;
+    let ceCookie: string[];
+
+    beforeAll(async () => {
+      ({ app: ceApp } = await initTestApp({ edition: 'ce', withWorkflows: true }));
+      ({ user: ceUser } = await setupOrganizationAndUser(ceApp, {
+        email: 'executions-workspace-ce@tooljet.io',
+        password: 'password',
+        firstName: 'Workspace',
+        lastName: 'CE',
+      }));
+      ({ tokenCookie: ceCookie } = await buildTestSession(ceUser, ceUser.organizationId));
+    });
+
+    afterAll(async () => {
+      await closeTestApp(ceApp);
+    }, 60000);
+
+    it.each([
+      ['GET', '/api/workflow_executions/workspace'],
+      ['GET', '/api/workflow_executions/workspace/upcoming'],
+      ['POST', '/api/workflow_executions/workspace/states'],
+    ])('should return 501 for %s %s', async (method, path) => {
+      const server = request(ceApp.getHttpServer());
+      const req = method === 'GET' ? server.get(path) : server.post(path).send({ executionIds: [] });
+      const response = await req.set('Cookie', ceCookie).set('tj-workspace-id', ceUser.organizationId);
+      expect(response.statusCode).toBe(501);
+    });
+  });
 });

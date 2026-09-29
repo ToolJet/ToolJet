@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotImplementedException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
@@ -23,13 +33,13 @@ export class WorkflowApprovalsController {
     @Query() query: ListApprovalsDto,
     @User() user?: any
   ): Promise<{ requests: ApprovalListItem[]; meta: { page: number; perPage: number; total: number } }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
   @Get(':token')
   async get(@Param('token') token: string) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.LIST_APPROVAL_REQUESTS)
@@ -41,7 +51,7 @@ export class WorkflowApprovalsController {
     @Body() dto: ResolveApprovalDto,
     @User() user: any
   ): Promise<{ status: 'resolved' }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
@@ -49,7 +59,7 @@ export class WorkflowApprovalsController {
   // Return type must match the EE override (which returns the resolve result), or the EE
   // subclass trips TS2416 (its concrete return isn't assignable to an inferred Promise<void>).
   async resolve(@Param('token') token: string, @Body() dto: ResolveApprovalDto): Promise<{ status: 'resolved' }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)
@@ -57,6 +67,6 @@ export class WorkflowApprovalsController {
   @Post(':id/cancel')
   // Explicit return type to match the EE override (see the note on resolve above).
   async cancel(@Param('id', ParseUUIDPipe) id: string, @User() user): Promise<{ status: 'cancelled' }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 }

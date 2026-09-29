@@ -171,16 +171,6 @@ describe('workflow-approvals controller', () => {
   });
 });
 
-// GATING NOTE: `POST /:token/resolve` (ee/workflows/controllers/workflow-approvals.controller.ts) carries
-// only `@InitFeature(FEATURE_KEY.HUMAN_IN_THE_LOOP)` -- unlike `:id/cancel`, it does NOT apply
-// `FeatureAbilityGuard`. `@InitFeature`'s `tjFeatureId` metadata is only read inside
-// `AbilityGuard.canActivate` (src/modules/app/guards/ability.guard.ts), so without that guard on the
-// route the license/feature check never runs for `resolve`. In CE, module registration
-// (WorkflowsModule.register -> getImportPath()) swaps in the CE stub controller
-// (src/modules/workflows/controllers/workflow-approvals.controller.ts), whose `resolve()` body is an
-// unconditional `throw new Error('Method not implemented.')`. `AllExceptionsFilter` maps a bare `Error`
-// to a generic 500, not a 403 feature gate. This block asserts the behavior actually observed rather
-// than an assumed 403, per the test brief's contingency for this case.
 describe('workflow-approvals controller — CE edition', () => {
   let ceApp: INestApplication;
 
@@ -191,11 +181,12 @@ describe('workflow-approvals controller — CE edition', () => {
     await closeTestApp(ceApp);
   }, 60000);
 
-  it('returns 500 "Method not implemented." for POST /:token/resolve (no FeatureAbilityGuard gates this route in CE)', async () => {
-    const response = await request(ceApp.getHttpServer())
-      .post('/api/workflow-approvals/any-token/resolve')
-      .send({ outcome: 'approved', input: {} });
-    expect(response.statusCode).toBe(500);
-    expect(response.body).toMatchObject({ statusCode: 500, message: 'Method not implemented.' });
+  it.each([
+    ['GET', '/api/workflow-approvals/any-token'],
+    ['POST', '/api/workflow-approvals/any-token/resolve'],
+  ])('returns 501 for the EE-only token route %s %s', async (method, path) => {
+    const server = request(ceApp.getHttpServer());
+    const response = await (method === 'GET' ? server.get(path) : server.post(path).send({ outcome: 'approved' }));
+    expect(response.statusCode).toBe(501);
   });
 });

@@ -38,7 +38,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 
 ## Edition split
 
-- CE owns controllers, DTOs, repositories, shared helpers/services, and base contracts. EE-only methods use stubs whose implementations resolve from `ee/workflows` via `SubModule.getProviders`. Never import `@ee` from CE.
+- CE owns controllers, DTOs, repositories, shared helpers/services, and base contracts. EE-only methods use stubs (new ones throw `NotImplementedException`, a 501 in CE) whose implementations resolve from `ee/workflows` via `SubModule.getProviders`. Never import `@ee` from CE.
 - Per-endpoint gating: `@InitFeature(FEATURE_KEY.*)` + `FeatureAbilityFactory`. License limits: `LICENSE_FIELD.WORKFLOWS` (`@modules/licensing/constants`) — execution/count limits, plus multi-env checks (schedules/webhooks force development env when multi-env unlicensed).
 - EE implementation details and node dispatch: `server/ee/workflows/AGENTS.md`; frontend editor rules: `frontend/ee/modules/Workflows/AGENTS.md`.
 
