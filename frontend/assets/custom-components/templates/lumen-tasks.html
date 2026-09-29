@@ -43,7 +43,8 @@
         const k = T.light.findIndex(p => p.handle === handle); if (k >= 0) { e.preventDefault(); show(k, true); return; } }
       let want = null;
       for (const [n, m] of Object.entries(D.themeButtons || {})) if (comp(n)) want = m === 'toggle' ? (theme === 'dark' ? 'light' : 'dark') : m;
-      if (T.dark && e.target.closest('.page-dark-mode-btn-wrapper')) want = theme === 'dark' ? 'light' : 'dark';   // ToolJet's own toggle
+      const themeBtn = e.target.closest('.page-dark-mode-btn-wrapper button');   // ToolJet's own theme button, not the collapse button beside it
+      if (T.dark && themeBtn && themeBtn.querySelector('.lucide-moon, .lucide-sun')) want = theme === 'dark' ? 'light' : 'dark';
       if (want && T.dark) {
         e.preventDefault(); theme = want;
         const u = new URL(location.href); theme === 'dark' ? u.searchParams.set('theme', 'dark') : u.searchParams.delete('theme');

@@ -1,5 +1,5 @@
 {
-  "name": "Forme House",
+  "name": "Boutique hotel operations",
   "description": "Run the front desk of a boutique hotel. Track room readiness, expected arrivals and guest requests.",
   "widgets": [
     "Table"
@@ -14,6 +14,6 @@
       "id": "runjs"
     }
   ],
-  "id": "forme-house",
+  "id": "boutique-hotel-operations",
   "category": "hospitality-and-events"
 }

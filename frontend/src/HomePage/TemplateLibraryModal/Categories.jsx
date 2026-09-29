@@ -2,7 +2,7 @@ import React from 'react';
 import FolderList from '@/_ui/FolderList/FolderList';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
-const categoryTitles = {
+export const categoryTitles = {
   all: 'All categories',
   'it-operations': 'IT operations',
   'it-assets-and-access': 'IT assets & access',

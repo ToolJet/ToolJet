@@ -481,7 +481,7 @@
                 "appV2": {
                     "id": "bf7110af-b0e7-4d48-831a-c6aa93b57730",
                     "type": "front-end",
-                    "name": "Manufacturing",
+                    "name": "RFP review desk",
                     "slug": "bf7110af-b0e7-4d48-831a-c6aa93b57730",
                     "isPublic": false,
                     "isMaintenanceOn": false,

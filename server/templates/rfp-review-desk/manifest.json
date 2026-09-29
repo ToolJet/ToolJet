@@ -1,5 +1,5 @@
 {
-  "name": "Manufacturing",
+  "name": "RFP review desk",
   "description": "Compare supplier proposals for each RFP, score them and record the sourcing decision.",
   "widgets": [
     "Table",
@@ -11,6 +11,6 @@
       "id": "tooljetdb"
     }
   ],
-  "id": "manufacturing",
+  "id": "rfp-review-desk",
   "category": "procurement-and-suppliers"
 }

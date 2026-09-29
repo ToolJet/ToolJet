@@ -73,11 +73,10 @@ describe('LibraryAppsController', () => {
         // Templates expect built-in static data sources to exist in the organization
         await createDefaultDataSources(adminUserData.organization.id);
 
-        // Use json-formatter template (no ToolJet DB tables) to avoid QueryRunner
-        // issues in the test environment
+        // Use lumen-tasks: the smallest template (one ToolJet DB table, no foreign keys, no jsonb)
         let response = await request(app.getHttpServer())
           .post('/api/library_apps')
-          .send({ identifier: 'json-formatter', appName: 'JSON Formatter App', dependentPlugins: [] })
+          .send({ identifier: 'lumen-tasks', appName: 'Lumen Tasks App', dependentPlugins: [] })
           .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
           .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -85,12 +84,12 @@ describe('LibraryAppsController', () => {
 
         response = await request(app.getHttpServer())
           .post('/api/library_apps')
-          .send({ identifier: 'json-formatter', appName: 'JSON Formatter App', dependentPlugins: [] })
+          .send({ identifier: 'lumen-tasks', appName: 'Lumen Tasks App', dependentPlugins: [] })
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', adminUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(201);
-        expect(response.body.app[0].name).toContain('JSON Formatter App');
+        expect(response.body.app[0].name).toContain('Lumen Tasks App');
       });
 
       it('should return error if template identifier is not found', async () => {

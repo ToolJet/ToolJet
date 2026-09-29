@@ -1,5 +1,5 @@
 {
-  "name": "Updated skill test",
+  "name": "Access operations",
   "description": "Oversee access approvals, provisioning and the active access register against per-application policies.",
   "widgets": [
     "Table",
@@ -17,6 +17,6 @@
       "id": "runjs"
     }
   ],
-  "id": "updated-skill-test",
+  "id": "access-operations",
   "category": "it-assets-and-access"
 }

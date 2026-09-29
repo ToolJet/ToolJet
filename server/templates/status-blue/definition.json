@@ -241,7 +241,7 @@
                     {
                         "column_name": "created_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 18:44:25.412863+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
@@ -292,7 +292,7 @@
                     {
                         "column_name": "created_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 18:44:25.389683+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
@@ -371,7 +371,7 @@
                     {
                         "column_name": "created_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 18:44:26.96114+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {

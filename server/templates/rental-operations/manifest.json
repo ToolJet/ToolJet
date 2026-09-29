@@ -1,5 +1,5 @@
 {
-  "name": "Skill Design Test",
+  "name": "Rental operations",
   "description": "A rental desk for equipment returns, upcoming handovers and available assets.",
   "widgets": [
     "Table",
@@ -16,6 +16,6 @@
       "id": "runjs"
     }
   ],
-  "id": "skill-design-test",
+  "id": "rental-operations",
   "category": "rentals"
 }

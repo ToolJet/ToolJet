@@ -92,7 +92,7 @@
                     {
                         "column_name": "created_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 04:45:09.385284+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {

@@ -269,7 +269,7 @@
                     {
                         "column_name": "created_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 05:02:59.613368+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
@@ -283,7 +283,7 @@
                     {
                         "column_name": "updated_at",
                         "data_type": "timestamp with time zone",
-                        "column_default": "2026-09-14 05:02:59.613368+00",
+                        "column_default": "now()",
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
