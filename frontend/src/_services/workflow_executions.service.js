@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { toLocalDayBoundary } from '@/_helpers/dateRange';
 import { authenticationService } from '@/_services';
 
 export const workflowExecutionsService = {
@@ -172,29 +173,6 @@ function getExecutionStates(appVersionId, executionIds) {
   return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
     handleResponse
   );
-}
-
-/**
- * `<input type="date">` yields a bare `YYYY-MM-DD`: a calendar day in the *user's* timezone, with
- * nothing on it to say so. Sent as-is, the repository's `created_at <= :to` casts it to midnight,
- * which as an upper bound excludes the whole day the user picked — From = To = today returns
- * nothing.
- *
- * So convert the picked day into the instant it actually spans locally and send that, offset
- * included. `new Date(y, m, d, …)` constructs in local time; `toISOString()` renders the instant.
- * Only the browser knows the viewer's timezone, so the page is what resolves it. Same approach as
- * `workflow_approvals.service.js`'s `toLocalDayBoundary`, which this mirrors — a value that
- * already carries a time is passed straight through.
- */
-function toLocalDayBoundary(value, edge) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return value;
-  const year = Number(match[1]);
-  const monthIndex = Number(match[2]) - 1;
-  const day = Number(match[3]);
-  const date =
-    edge === 'start' ? new Date(year, monthIndex, day, 0, 0, 0, 0) : new Date(year, monthIndex, day, 23, 59, 59, 999);
-  return Number.isNaN(date.getTime()) ? value : date.toISOString();
 }
 
 // `signal` lets a caller abort a superseded request (the executions page re-querying before a
