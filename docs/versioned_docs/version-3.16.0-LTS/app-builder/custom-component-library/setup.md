@@ -14,6 +14,10 @@ sidebar_label: Set Up and Create a Library
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 The ToolJet CLI signs in with a personal access token, not your password. This guide covers creating a token, signing in to the CLI, and creating your first library.
 
 ## Create a Personal Access Token
@@ -71,7 +75,7 @@ The argument is the **directory name**. It must start with a letter and can cont
 
 The command then asks for a **display name**. App builders see this name in the **Custom** tab. The display name must start with a letter, can contain letters, numbers, spaces, hyphens and underscores, and can be up to 100 characters long.
 
-`init` registers the library in your workspace and creates the project on your machine. If either step fails, the CLI removes the directory so no half-created project is left behind.
+`init` registers the library in your workspace and creates the project in a new local directory. If either step fails, the CLI removes the directory so no half-created project is left behind.
 
 The generated project looks like this:
 

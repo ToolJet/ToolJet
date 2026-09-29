@@ -14,6 +14,10 @@ sidebar_label: Build Components
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 A custom component is a regular React component. The only ToolJet-specific part is the `ToolJet` object from `@tooljet/custom-component-sdk`. Each of its hooks declares one thing that appears in the App Builder, such as a property, an event or an action.
 
 There is no separate config file. **The hook calls are the component's schema.**
@@ -43,7 +47,7 @@ Remember to export the component from `src/index.ts`. Only components exported t
 
 | <div style={{ width:"200px"}}> Hook </div> | <div style={{ width:"250px"}}> What It Creates in ToolJet </div> | <div style={{ width:"150px"}}> Returns </div> |
 |:---------- | :---------- | :------------ |
-| `useStateString` | A text property in the inspector and an exposed variable. | `[value, setValue]` |
+| `useStateString` | A text property in the component properties panel and an exposed variable. | `[value, setValue]` |
 | `useStateNumber` | A number property. | `[value, setValue]` |
 | `useStateBoolean` | A toggle property. | `[value, setValue]` |
 | `useStateObject` | An object property, edited in a code editor. | `[value, setValue]` |
@@ -55,7 +59,7 @@ Remember to export the component from `src/index.ts`. Only components exported t
 
 ## Properties
 
-Each `useState*` hook creates a property in the inspector and an exposed variable with the same name.
+Each `useState*` hook creates a property in the component properties panel and an exposed variable with the same name.
 
 ### Options
 
@@ -65,11 +69,11 @@ All `useState*` hooks accept these options:
 |:---------- | :---------- |
 | `name` | Required. The property key and the name of the exposed variable, for example `{{components.myWidget.firstName}}`. |
 | `initialValue` | The value the property starts with. |
-| `label` | The field label shown in the inspector. Defaults to `name`. |
-| `inspector` | Which editor the inspector shows for the property. See [Inspector Editors](#inspector-editors). |
-| `section` | Groups the property under a named accordion section in the inspector. |
+| `label` | The field label shown in the properties panel. Defaults to `name`. |
+| `inspector` | The type of input shown for the property in the properties panel, such as a code editor, color picker or toggle. See [Property Input Types](#property-input-types). |
+| `section` | Groups the property under a named, collapsible section in the properties panel. |
 
-### Inspector Editors
+### Property Input Types
 
 The values allowed for `inspector` depend on the hook:
 
@@ -82,14 +86,14 @@ The values allowed for `inspector` depend on the hook:
 | `useStateArray` | `code`, `hidden` |
 | `useStateEnumeration` | `select`, `switch`, `hidden` |
 
-Set `inspector` to `hidden` to keep the property out of the inspector. It is still available as an exposed variable.
+Set `inspector` to `hidden` to hide the property from the properties panel. App builders can't edit it, but it is still available as an exposed variable.
 
 ### Enumerations
 
 `useStateEnumeration` takes two extra options:
 
 - `enumDefinition`: Required. The array of allowed values.
-- `enumLabels`: Optional. A map from each value to the label shown in the inspector.
+- `enumLabels`: Optional. A map from each value to the label app builders see in the properties panel.
 
 ## Events
 
@@ -97,7 +101,7 @@ Set `inspector` to `hidden` to keep the property out of the inspector. It is sti
 const onEnterPressed = ToolJet.useEventCallback({ name: 'onEnterPressed' });
 ```
 
-Call `onEnterPressed()` in your component to fire the event. In the App Builder, the event appears under **Events** in the inspector. App builders attach handlers to it the same way they do for a built-in **Button** component's **On click** event.
+Call `onEnterPressed()` in your component to fire the event. In the App Builder, the event appears under **Events** in the component properties panel. App builders attach handlers to it the same way they do for a built-in **Button** component's **On click** event.
 
 ## Actions
 

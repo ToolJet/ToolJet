@@ -14,7 +14,11 @@ sidebar_label: Overview
  <span>Paid feature</span>
 </div>
 
-**Custom Component Libraries** let you write React components on your machine, publish them to a ToolJet workspace with the [ToolJet CLI](https://www.npmjs.com/package/@tooljet/cli), and use them in the App Builder like any built-in component. Every app builder in the workspace can drag them onto the canvas. Each app pins a version of the library, and builders configure the components from the inspector.
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
+**Custom Component Libraries** let you write your own React components, publish them to a ToolJet workspace with the [ToolJet CLI](https://www.npmjs.com/package/@tooljet/cli), and use them in the App Builder like any built-in component. Every app builder in the workspace can drag them onto the canvas. Each app pins a version of the library, and builders configure the components from the component properties panel.
 
 A **library** is what you publish and version. The **components** inside it are what app builders drag onto the canvas. One publish ships every component in the library as a single version.
 
@@ -24,24 +28,24 @@ Four parts of ToolJet are involved, and you use them in this order:
 
 | <div style={{ width:"200px"}}> Part </div> | <div style={{ width:"250px"}}> What It Is </div> | <div style={{ width:"150px"}}> Who Uses It </div> |
 |:---------- | :---------- | :------------ |
-| `@tooljet/cli` | An npm CLI that scaffolds, builds, previews and publishes a library. | Developer, on their machine |
+| `@tooljet/cli` | An npm CLI that scaffolds, builds, previews and publishes a library. | Developer |
 | `@tooljet/custom-component-sdk` | A TypeScript package with the `ToolJet` hooks a component uses to declare its properties, events and actions. | Developer, in component code |
 | **Workspace settings** → **Custom component libraries** | Lists every library published to the workspace and lets an admin delete one. | Workspace admin |
 | **App Builder** → **Custom** tab | Where you find published components, drop them on the canvas and configure them. | App builder |
 
-The end-to-end flow:
+The end-to-end flow is shown below. Steps with a `$` are CLI commands you run in a terminal. The other steps happen in ToolJet or in your code editor.
 
 ```mermaid
 flowchart TD
-  A[Create personal<br/>access token] --> B[tooljet login]
-  B --> C[tooljet library init]
-  C --> D[Write components<br/>with the SDK]
-  D --> E{Ready?}
-  E -->|No| F[tooljet library dev<br/>live dev preview]
+  A["Create a personal access token<br/>(Profile settings in ToolJet)"] --> B["Sign in to the CLI<br/>$ tooljet login"]
+  B --> C["Create a library<br/>$ tooljet library init my-components"]
+  C --> D["Write React components<br/>using the SDK hooks"]
+  D --> E{"Ready to<br/>release?"}
+  E -->|No| F["Preview live in the App Builder<br/>$ tooljet library dev"]
   F --> D
-  E -->|Yes| G[tooljet library publish<br/>immutable version]
-  G --> H[Custom tab<br/>in App Builder]
-  H --> I[Drag onto canvas,<br/>configure, pin a version]
+  E -->|Yes| G["Publish a version<br/>$ tooljet library publish --version 1.0.0"]
+  G --> H["Open the Custom tab<br/>in the App Builder"]
+  H --> I["Drag a component onto the canvas,<br/>configure it and pin a version"]
 ```
 
 ## Before You Start

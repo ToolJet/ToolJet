@@ -14,6 +14,10 @@ sidebar_label: Preview and Publish
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 While you build, use dev mode to see your components in the App Builder as you save. When they're ready, publish a version that app builders can pin in their apps.
 
 ## Preview Changes with Dev Mode

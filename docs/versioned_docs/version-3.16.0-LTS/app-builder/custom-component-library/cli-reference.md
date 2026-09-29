@@ -14,6 +14,10 @@ sidebar_label: CLI Reference
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 This page lists the ToolJet CLI commands, flags, limits and naming rules for Custom Component Libraries.
 
 ## Commands

@@ -14,6 +14,10 @@ sidebar_label: Use in the App Builder
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 Once a library is published to your workspace, its components are available to every app builder in that workspace.
 
 ## Find Custom Components
@@ -26,7 +30,7 @@ Search in the component library matches both library names and component names.
 
 Drag a card onto the canvas. A custom component works like any built-in component. You can resize, move and rename it, and bind it to queries. The component is named after the component itself (for example, *currencyinput1*), and it is dropped at the default size the author set with `useComponentSettings`.
 
-The inspector has four groups:
+The component properties panel has four groups:
 
 | <div style={{ width:"150px"}}> Group </div> | <div style={{ width:"400px"}}> Contents </div> |
 |:---------- | :---------- |

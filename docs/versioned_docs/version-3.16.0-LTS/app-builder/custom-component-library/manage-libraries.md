@@ -14,6 +14,10 @@ sidebar_label: Manage Libraries
  <span>Paid feature</span>
 </div>
 
+:::caution BETA
+Custom Component Libraries are currently in beta and not recommended for production use.
+:::
+
 Workspace admins can see and delete every library published to the workspace from **Workspace settings** → **Custom component libraries**. Only admins can see this page.
 
 ## View Libraries
