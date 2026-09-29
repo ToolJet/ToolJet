@@ -28,11 +28,11 @@ const DataSourceIcon = ({ source, height = 25, styles }) => {
         <ListFilter size={height} color="var(--primary-accent-strong)" strokeWidth={2} style={{ marginTop: '-3px' }} />
       );
     case 'response':
-      return <Reply size={height} color="#1E823B" strokeWidth={2} style={{ marginTop: '-3px' }} />;
+      return <Reply size={height} color="var(--status-success-strong)" strokeWidth={2} style={{ marginTop: '-3px' }} />;
     case 'agent':
       return <AgentNodeIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
     case 'human':
-      return <UserRoundCheck size={height} color="#3E63DD" strokeWidth={2} style={{ marginTop: '-3px' }} />;
+      return <UserRoundCheck size={height} color="var(--indigo9)" strokeWidth={2} style={{ marginTop: '-3px' }} />;
     case 'wait':
       return (
         <Clock3 size={height} color="var(--status-warning-strong)" strokeWidth={2} style={{ marginTop: '-3px' }} />
