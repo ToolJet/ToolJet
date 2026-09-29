@@ -23,15 +23,15 @@ describe('getExecutionDisplayState — existing behaviour (regression pins)', ()
   });
 
   it('reports an active job as running', () => {
-    expect(getExecutionDisplayState({ executed: false, status: null, jobState: 'active' })).toBe('running');
+    expect(getExecutionDisplayState({ executed: false, status: 'success', jobState: 'active' })).toBe('running');
   });
 
   it('reports a queued job as pending', () => {
-    expect(getExecutionDisplayState({ executed: false, status: null, jobState: 'waiting' })).toBe('pending');
+    expect(getExecutionDisplayState({ executed: false, status: 'success', jobState: 'waiting' })).toBe('pending');
   });
 
   it('still reports a recent jobless run as completed, preserving the editor race behaviour', () => {
-    expect(getExecutionDisplayState({ executed: false, status: null, startedAt: new Date().toISOString() })).toBe(
+    expect(getExecutionDisplayState({ executed: false, status: 'success', startedAt: new Date().toISOString() })).toBe(
       'completed'
     );
   });
@@ -39,14 +39,14 @@ describe('getExecutionDisplayState — existing behaviour (regression pins)', ()
 
 describe('getExecutionDisplayState — unknown', () => {
   it('reports a long-dead jobless run as unknown rather than completed', () => {
-    expect(getExecutionDisplayState({ executed: false, status: null, startedAt: minutesAgo(60) })).toBe('unknown');
+    expect(getExecutionDisplayState({ executed: false, status: 'success', startedAt: minutesAgo(60) })).toBe('unknown');
   });
 
   it('does not mark a run unknown while it still has a live job', () => {
     expect(
       getExecutionDisplayState({
         executed: false,
-        status: null,
+        status: 'success',
         jobState: 'waiting',
         startedAt: minutesAgo(60),
       })
@@ -54,11 +54,11 @@ describe('getExecutionDisplayState — unknown', () => {
   });
 
   it('falls back to createdAt when startedAt was never written', () => {
-    expect(getExecutionDisplayState({ executed: false, status: null, createdAt: minutesAgo(60) })).toBe('unknown');
+    expect(getExecutionDisplayState({ executed: false, status: 'success', createdAt: minutesAgo(60) })).toBe('unknown');
   });
 
   it('labels the unknown state', () => {
-    expect(getExecutionStatusText({ executed: false, status: null, startedAt: minutesAgo(60) })).toBe('Unknown');
+    expect(getExecutionStatusText({ executed: false, status: 'success', startedAt: minutesAgo(60) })).toBe('Unknown');
   });
 
   it('uses a five minute floor so a backed-up queue is not called dead', () => {
@@ -66,7 +66,7 @@ describe('getExecutionDisplayState — unknown', () => {
   });
 
   it('treats unknown as finished, not in progress, so callers waiting on completion do not hang forever', () => {
-    const staleExecution = { executed: false, status: null, startedAt: minutesAgo(60) };
+    const staleExecution = { executed: false, status: 'success', startedAt: minutesAgo(60) };
     expect(isExecutionFinished(staleExecution)).toBe(true);
     expect(isExecutionInProgress(staleExecution)).toBe(false);
   });
@@ -74,7 +74,7 @@ describe('getExecutionDisplayState — unknown', () => {
 
 describe('getExecutionDisplayConfig — icon mapping', () => {
   it('assigns a distinct, neutral icon key to unknown — neither success nor error', () => {
-    const config = getExecutionDisplayConfig({ executed: false, status: null, startedAt: minutesAgo(60) });
+    const config = getExecutionDisplayConfig({ executed: false, status: 'success', startedAt: minutesAgo(60) });
     expect(config.icon).toBe('unknown');
     expect(config.icon).not.toBe('success');
     expect(config.icon).not.toBe('error');
@@ -87,8 +87,8 @@ describe('getExecutionDisplayConfig — icon mapping', () => {
     expect(iconFor({ executed: true, status: 'failure' })).toBe('error');
     expect(iconFor({ executed: true, status: 'terminated' })).toBe('terminated');
     expect(iconFor({ executed: false, status: 'waiting' })).toBe('waiting');
-    expect(iconFor({ executed: false, status: null, startedAt: minutesAgo(60) })).toBe('unknown');
+    expect(iconFor({ executed: false, status: 'success', startedAt: minutesAgo(60) })).toBe('unknown');
     // pending/running carry no icon — RunItems.jsx shows a spinner instead (showSpinner: true).
-    expect(iconFor({ executed: false, status: null, jobState: 'active' })).toBeNull();
+    expect(iconFor({ executed: false, status: 'success', jobState: 'active' })).toBeNull();
   });
 });
