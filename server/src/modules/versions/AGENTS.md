@@ -14,11 +14,11 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 
 | File | Role |
 |---|---|
-| `module.ts` | `VersionModule extends SubModule`; registers 5 controllers + services via `getProviders`; exports `VersionUtilService` |
-| `service.ts` | `VersionService`: getAllVersions, getVersion (editor payload), update/updateSettings, promoteVersion, createDraftVersion; CE no-op before/after hooks for app-history |
-| `util.service.ts` | `VersionUtilService`: createVersion, updateVersion (status flips + `handleDefaultBranchPublish`), deleteVersion/deleteVersionGit, checkDraftModulesInApp, checkModulesPromotableToEnvironment |
+| `module.ts` | `VersionModule extends SubModule`; registers 5 controllers + services via `getProviders`; exports `VersionUtilService`; on EE/Cloud also registers the `app-version` BullMQ queue (`VersionQueueService`, plus `VersionQueueProcessor` when `WORKER=true`) |
+| `service.ts` | `VersionService`: `createOrEnqueueVersion` (HTTP entry for `POST /apps/:id/versions`), getAllVersions, getVersion (editor payload), update/updateSettings, promoteVersion, createDraftVersion; CE `shouldRunInBackground`/`enqueueCreateVersion` are no-ops (always sync) |
+| `util.service.ts` | `VersionUtilService`: `validateVersionCreate` (pre-flight checks, shared by sync and background paths), `createVersion` (sync primitive — calls `validateVersionCreate` then builds), updateVersion (status flips + `handleDefaultBranchPublish`), deleteVersion/deleteVersionGit, checkDraftModulesInApp, checkModulesPromotableToEnvironment |
 | `services/create.service.ts` | `VersionsCreateService.setupNewVersion`: deep-clones settings, data sources+queries, pages/components/layouts, event handlers; remaps old→new ids and entity references; copies workflow bundles |
-| `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion |
+| `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion, `countVersionEntities` (components + data queries under a version, for the background-job threshold) |
 | `module-ref.util.ts` | Resolves module pins (`resolveModuleRef`, `resolveAllModuleViewersForVersion`, `listModuleVersions`); pin/unpinned/orphan fallback rules documented in header |
 | `helpers/version-copy-parent.helper.ts` | Parent-id remapping during clone (composite ids, ghost parents) |
 | `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/draft-versions` POST |
@@ -33,9 +33,13 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 - `server/ee/versions/util.service.ts`: deletes git tag on version delete; `setupVersionFromSource` — cross-app clone (no appId ownership check) for building BRANCH versions from git-imported temp apps.
 - `server/ee/versions/services/create.service.ts` overrides clone internals (incl. `handleModuleViewerComponent`).
 - CE behavior when license lacks MULTI_ENVIRONMENT: version pinned to development env, promote throws.
+- `server/ee/versions/service.ts` overrides `shouldRunInBackground`/`enqueueCreateVersion`: a version create is enqueued to the `app-version` queue when its source version's entity count (`countVersionEntities`) is at or over `BACKGROUND_JOB_THRESHOLDS.version.entities`; workflow apps and `replace` (git single-branch swap) always stay synchronous. CE `createOrEnqueueVersion` runs `validateVersionCreate` before calling the `enqueueCreateVersion` hook, so name/branch errors surface in the request, not later as a failed-job notification. `VersionQueueProcessor` calls the same `VersionUtilService.createVersion` as the inline path — one implementation either way.
 
 ## Invariants & gotchas
 
+- Name-exists check in `validateVersionCreate` is scoped to `(appId, name)`, matching the DB constraint `name_app_id_app_versions_unique` — the entity's `@Unique(['name', 'branchId'])` is metadata only and isn't what's actually enforced.
+- `POST /apps/:id/versions` and `POST /workspace-branches` accept an optional `Idempotency-Key` header, handled by the shared `idempotency` module interceptor (`server/src/modules/idempotency/AGENTS.md`) ahead of `ClassSerializerInterceptor`.
+- `createVersion` running inside the `app-version` worker (no HTTP request) logs `RequestContext is not set` once per job from the audit-context call in `buildVersionFromParent` — non-throwing, expected outside request scope.
 - Non-DRAFT versions are immutable in name/description (`service.ts` update: "Cannot edit name or description of a saved version"). Content edits are frozen via `should_freeze_editor` (env priority > 1, status PUBLISHED, or EE git freeze).
 - Promote: DRAFT cannot be promoted (save first); request's `currentEnvironmentId` must equal the version's, else 406; next env = lowest priority above current; `promotedFrom` is nulled on promote.
 - Delete: released version (matches `apps.current_version_id` or status RELEASED) and the only/branch-head version cannot be deleted; module versions in use by apps block deletion (`checkModuleVersionInUse`). `DataQueryFolder`/`DataQueryFolderMapping` need explicit cleanup (no CASCADE).

@@ -420,4 +420,16 @@ export class VersionRepository extends Repository<AppVersion> {
     const m = manager ?? this.manager;
     return m.find(AppVersion, { where: { appId }, relations: ['user'] });
   }
+
+  // Size of a version for the background-job threshold: components across all its pages + its data queries.
+  async countVersionEntities(versionId: string, manager?: EntityManager): Promise<number> {
+    const mgr = manager ?? this.manager;
+    const [row] = await mgr.query(
+      `SELECT
+         (SELECT COUNT(*) FROM components c JOIN pages p ON p.id = c.page_id WHERE p.app_version_id = $1)
+       + (SELECT COUNT(*) FROM data_queries q WHERE q.app_version_id = $1) AS total`,
+      [versionId]
+    );
+    return Number(row.total);
+  }
 }

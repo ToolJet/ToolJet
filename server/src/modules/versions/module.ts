@@ -16,6 +16,13 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { EncryptionModule } from '@modules/encryption/module';
+import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { NotificationsModule } from '@modules/notifications/module';
+import { APP_VERSION_QUEUE } from './constants';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -52,6 +59,24 @@ export class VersionModule extends SubModule {
       ['services/component.service', 'services/event.service', 'services/page.service', 'services/page.util.service']
     );
 
+    const edition = getTooljetEdition();
+    const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
+    const queueImports: any[] = [];
+    const queueProviders: any[] = [];
+    if (isEEOrCloud) {
+      const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+      const { VersionQueueService } = await import(`${importPath}/versions/queue/version-queue.service`);
+      queueImports.push(BullModule.registerQueue({ name: APP_VERSION_QUEUE }));
+      if (edition !== TOOLJET_EDITIONS.Cloud) {
+        queueImports.push(BullBoardModule.forFeature({ name: APP_VERSION_QUEUE, adapter: BullMQAdapter }));
+      }
+      queueProviders.push(VersionQueueService);
+      if (process.env.WORKER === 'true' && isMainImport && !configs?.IS_GET_CONTEXT) {
+        const { VersionQueueProcessor } = await import(`${importPath}/versions/queue/version-queue.processor`);
+        queueProviders.push(VersionQueueProcessor);
+      }
+    }
+
     return this.cacheModule(cacheKey, {
       module: VersionModule,
       imports: [
@@ -63,6 +88,8 @@ export class VersionModule extends SubModule {
         await AppHistoryModule.register(configs),
         await EncryptionModule.register(configs),
         await GitSyncConfigsModule.register(configs),
+        await NotificationsModule.register(configs),
+        ...queueImports,
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
@@ -86,6 +113,7 @@ export class VersionModule extends SubModule {
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
         GitSyncEditGuard,
+        ...queueProviders,
       ],
       // VersionService is exported so the app-git module can inject it to run the git-aware
       // save/delete flows (call update()/deleteVersion() for the DB work, then create/delete the
