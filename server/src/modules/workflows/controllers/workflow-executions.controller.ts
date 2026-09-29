@@ -5,6 +5,7 @@ import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { PreviewWorkflowNodeDto } from '@dto/preview-workflow-node.dto';
 import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -26,7 +27,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   @Get('workspace')
   async listForWorkspace(
     @Query() query: ListExecutionsDto,
-    @User() user?: any
+    @User() user?: UserEntity
   ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
     throw new NotImplementedException();
   }
@@ -35,7 +36,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   @Get('workspace/upcoming')
   async upcomingForWorkspace(
     @Query() query: ListUpcomingRunsDto,
-    @User() user?: any
+    @User() user?: UserEntity
   ): Promise<{ upcoming: UpcomingRun[] }> {
     throw new NotImplementedException();
   }
@@ -44,7 +45,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   @Post('workspace/states')
   async workspaceStates(
     @Body() body: WorkspaceExecutionStatesDto,
-    @User() user?: any
+    @User() user?: UserEntity
   ): Promise<Record<string, { terminationRequested: boolean; jobState: string }>> {
     throw new NotImplementedException();
   }

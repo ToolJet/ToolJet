@@ -19,7 +19,7 @@ export interface ExecutionListItem {
   schedule: { id: string; name: string } | null;
   startedAt: string | null;
   finishedAt: string | null;
-  createdAt: string;
+  createdAt: string | null;
   version: { id: string; name: string } | null;
   environment: { id: string; name: string } | null;
 }

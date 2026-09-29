@@ -2,6 +2,9 @@
 
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { SelectQueryBuilder } from 'typeorm';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { ExecutionListFilters } from '@modules/workflows/types/execution-list';
 import {
   WorkflowExecutionRepository,
   STATUS_FILTER_TO_PREDICATE,
@@ -10,11 +13,16 @@ import { ListExecutionsDto, EXECUTION_STATUS_FILTERS } from '@modules/workflows/
 
 // A QueryBuilder test double recording andWhere calls. The status predicates run against Postgres
 // in e2e/workflow-executions-list-query.spec.ts.
-const makeQueryBuilder = () => {
-  const calls: Array<{ clause: string; params: Record<string, unknown> }> = [];
-  const qb: any = {
+type RecordingQueryBuilder = {
+  calls: Array<{ clause: string; params: Record<string, unknown> }>;
+  andWhere: (clause: string, params?: Record<string, unknown>) => RecordingQueryBuilder;
+};
+
+const makeQueryBuilder = (): RecordingQueryBuilder => {
+  const calls: RecordingQueryBuilder['calls'] = [];
+  const qb: RecordingQueryBuilder = {
     calls,
-    andWhere: (clause: string, params: Record<string, unknown> = {}) => {
+    andWhere: (clause, params = {}) => {
       calls.push({ clause, params });
       return qb;
     },
@@ -22,9 +30,14 @@ const makeQueryBuilder = () => {
   return qb;
 };
 
-const applyFilters = (filters: any) => {
+type ApplyListFilters = (query: SelectQueryBuilder<WorkflowExecution>, filters: ExecutionListFilters) => void;
+
+const applyFilters = (filters: ExecutionListFilters) => {
   const qb = makeQueryBuilder();
-  (WorkflowExecutionRepository.prototype as any).applyListFilters.call({}, qb, filters);
+  const { applyListFilters } = WorkflowExecutionRepository.prototype as unknown as {
+    applyListFilters: ApplyListFilters;
+  };
+  applyListFilters.call({}, qb as unknown as SelectQueryBuilder<WorkflowExecution>, filters);
   return qb.calls;
 };
 

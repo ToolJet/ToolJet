@@ -1,7 +1,21 @@
 import * as moment from 'moment';
 import { parseExpression, CronExpression } from 'cron-parser';
 
-export type ScheduleShape = { type: string; details: Record<string, any> };
+export type ScheduleShape = { type: string; details: Record<string, unknown> };
+
+// The `workflow_schedules.details` keys each schedule type writes.
+type ScheduleDetails = {
+  frequency?: string;
+  minutes?: number | string;
+  hour?: string;
+  day?: string;
+  date?: number | string;
+  minute?: string;
+  hours?: string;
+  dayOfMonth?: string;
+  month?: string;
+  dayOfWeek?: string;
+};
 
 /** Non-:00 times give a fractional hour and invalid cron; do not round, it changes live fire times. */
 function hourOffset(timeString: string): number {
@@ -10,7 +24,7 @@ function hourOffset(timeString: string): number {
 }
 
 export function scheduleToCron(schedule: ScheduleShape): string | null {
-  const details = schedule?.details ?? {};
+  const details = (schedule?.details ?? {}) as ScheduleDetails;
 
   if (schedule?.type === 'cron') {
     const { minute, hours, dayOfMonth, month, dayOfWeek } = details;
@@ -38,7 +52,7 @@ export function scheduleToCron(schedule: ScheduleShape): string | null {
 
 /** The cadence in words, for a reader who should not have to parse cron. */
 export function describeCadence(schedule: ScheduleShape): string {
-  const details = schedule?.details ?? {};
+  const details = (schedule?.details ?? {}) as ScheduleDetails;
 
   if (schedule?.type === 'cron') {
     return scheduleToCron(schedule) ?? 'Unknown schedule';

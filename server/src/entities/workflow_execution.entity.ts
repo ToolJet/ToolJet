@@ -47,16 +47,16 @@ export class WorkflowExecution {
   scheduleId: string | null;
 
   @Column({ name: 'environment_id', type: 'uuid', nullable: true })
-  environmentId: string;
+  environmentId: string | null;
 
   @Column({ name: 'organization_id', type: 'uuid', nullable: true })
-  organizationId: string;
+  organizationId: string | null;
 
   @Column({ name: 'app_id', type: 'uuid', nullable: true })
-  appId: string;
+  appId: string | null;
 
   @Column({ name: 'trigger_type', type: 'varchar', nullable: true })
-  triggerType: string;
+  triggerType: string | null;
 
   @Column({ name: 'started_at', type: 'timestamptz', nullable: true })
   startedAt: Date | null;

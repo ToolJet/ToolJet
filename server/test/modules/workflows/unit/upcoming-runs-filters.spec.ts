@@ -1,12 +1,20 @@
 /** @group workflows */
 
+import { SelectQueryBuilder } from 'typeorm';
 import { WorkflowSchedulerService } from '@ee/workflows/services/workflow-scheduler.service';
+import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { UpcomingRunFilters } from '@modules/workflows/types/upcoming-runs';
 
-const makeQueryBuilder = () => {
-  const calls: Array<{ clause: string; params: Record<string, unknown> }> = [];
-  const qb: any = {
+type RecordingQueryBuilder = {
+  calls: Array<{ clause: string; params: Record<string, unknown> }>;
+  andWhere: (clause: string, params?: Record<string, unknown>) => RecordingQueryBuilder;
+};
+
+const makeQueryBuilder = (): RecordingQueryBuilder => {
+  const calls: RecordingQueryBuilder['calls'] = [];
+  const qb: RecordingQueryBuilder = {
     calls,
-    andWhere: (clause: string, params: Record<string, unknown> = {}) => {
+    andWhere: (clause, params = {}) => {
       calls.push({ clause, params });
       return qb;
     },
@@ -14,9 +22,14 @@ const makeQueryBuilder = () => {
   return qb;
 };
 
-const applyFilters = (filters: any) => {
+type ApplyUpcomingFilters = (query: SelectQueryBuilder<WorkflowSchedule>, filters: UpcomingRunFilters) => void;
+
+const applyFilters = (filters: UpcomingRunFilters) => {
   const qb = makeQueryBuilder();
-  (WorkflowSchedulerService.prototype as any).applyUpcomingFilters.call({}, qb, filters);
+  const { applyUpcomingFilters } = WorkflowSchedulerService.prototype as unknown as {
+    applyUpcomingFilters: ApplyUpcomingFilters;
+  };
+  applyUpcomingFilters.call({}, qb as unknown as SelectQueryBuilder<WorkflowSchedule>, filters);
   return qb.calls;
 };
 
