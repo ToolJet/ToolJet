@@ -58,10 +58,10 @@ function Header({
         return 'Settings';
       case 'audit-logs':
         return 'Audit logs';
-      // 'approvals' is a tab on the workflows dashboard, not a section of its own — the header
-      // names the section, so it stays "Workflows" on that sub-route.
+      // Approvals and Executions are tabs of the workflows dashboard, not sections of their own.
       case 'workflows':
       case 'approvals':
+      case 'executions':
         return 'Workflows';
       case 'workspace-constants':
         return 'Workspace constants';
