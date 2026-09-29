@@ -1248,11 +1248,6 @@ button {
     border-bottom: 1px solid var(--slate5);
   }
 
-  // The expanded preview draws its own full-width divider above the buttons
-  .modal-body:has(.template-preview-frame.expanded) .template-modal-control-column {
-    border-top-color: transparent !important;
-  }
-
   .modal-dialog {
     max-width: 90%;
     height: 80%;
@@ -1334,78 +1329,12 @@ button {
     }
 
     // Tighter gaps than the image preview (85% x 75%) to use the modal space
-    .template-preview-frame {
-      position: relative;
+    iframe.template-image {
       height: 96.25%;
       width: 97.5%;
       padding: 0;
-
-      // Covers the whole modal body (its positioned ancestor) so no layout lines
-      // show through. The Cancel / Create row (bottom 10%, z-index 1, later in the
-      // DOM) still paints on top; the preview sits above it with one divider.
-      &.expanded {
-        position: absolute;
-        inset: 0;
-        width: auto;
-        height: auto;
-        z-index: 1;
-        background-color: var(--surfaces-surface-01);
-
-        // Replaced elements don't stretch between offsets, so size explicitly
-        iframe.template-image {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          width: calc(100% - 20px);
-          height: calc(90% - 20px);
-        }
-
-        .template-preview-toggle {
-          right: 20px;
-          bottom: calc(10% + 20px);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 10%;
-          border-top: 1px solid #d2ddec;
-        }
-      }
-    }
-
-    iframe.template-image {
-      display: block;
-      height: 100%;
-      width: 100%;
-      padding: 0;
       border: 1px solid var(--slate5);
       border-radius: 6px;
-    }
-
-    .template-preview-toggle {
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--slate11);
-      background-color: var(--slate1);
-      border: 1px solid var(--slate7);
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
-      cursor: pointer;
-
-      &:hover {
-        color: var(--slate12);
-        background-color: var(--slate4);
-      }
     }
 
     .template-spinner {
