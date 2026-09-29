@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
+import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
@@ -16,6 +17,11 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const idempotencyKeyRef = useRef(uuidv4());
+  // Regenerate per open so a retry after a failed/aborted create doesn't replay the same key.
+  useEffect(() => {
+    if (showCreateAppVersion) idempotencyKeyRef.current = uuidv4();
+  }, [showCreateAppVersion]);
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
   const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
@@ -153,6 +159,13 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       selectedVersionForCreation.id,
       draftDescription,
       (newVersion) => {
+        idempotencyKeyRef.current = uuidv4();
+        if (newVersion?.enqueued) {
+          toast.success(`Creating version ${draftName}. We'll notify you when it's ready.`);
+          setIsCreatingVersion(false);
+          setShowCreateAppVersion(false);
+          return;
+        }
         toast.success(isReplaceFlow ? 'Draft replaced' : 'Version Created');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
@@ -181,7 +194,8 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
         setIsCreatingVersion(false);
       },
       'version',
-      isReplaceFlow
+      isReplaceFlow,
+      idempotencyKeyRef.current
     );
   };
 

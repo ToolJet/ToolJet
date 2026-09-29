@@ -257,7 +257,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     onSuccess,
     onFailure,
     versionType = 'version',
-    replace = false
+    replace = false,
+    idempotencyKey
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -268,8 +269,14 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedVersionId,
         editorEnvironment,
         versionType,
-        replace
+        replace,
+        idempotencyKey
       );
+      if (newVersion?.enqueued) {
+        // large app: created by a background job; useAppVersionJobNotifications refreshes + offers the switch
+        onSuccess(newVersion);
+        return;
+      }
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,

@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
+import useAppVersionJobNotifications from '@/AppBuilder/_hooks/useAppVersionJobNotifications';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -83,6 +84,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   }, [isEditorLoading, appId, currentVersionId]);
 
   useCustomComponentDevPreviewSync(appId);
+  useAppVersionJobNotifications(appId);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
