@@ -29,6 +29,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.TABLE_COUNT:
       return licenseInstance.tables;
 
+    case LICENSE_FIELD.TJDB_ROW_COUNT:
+      return licenseInstance.rows;
+
     case LICENSE_FIELD.TOTAL_USERS:
       return licenseInstance.users;
 
