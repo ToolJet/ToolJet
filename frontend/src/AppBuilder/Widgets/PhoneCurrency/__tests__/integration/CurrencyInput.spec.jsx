@@ -451,6 +451,26 @@ describe('label, placeholder and property changes', () => {
     }
   });
 
+  // Second mount for the same rule. Break this catches: reading the fallback as zero anywhere the
+  // VALUE is normalised while the FIELD keeps reading it as two. An unusable setting would then
+  // truncate a Default value and a `setValue` amount to whole numbers while typing still accepted
+  // decimals — the same amount landing on two different numbers depending on how it arrived.
+  test('[CurrencyInput-PROP-006] an unusable decimalPlaces falls back to two for the value too', async () => {
+    for (const setting of ['', 'abc']) {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding('1234.56'), decimalPlaces: binding(setting) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+
+      expect(harness.exposed().value).toBe(1234.56);
+
+      await harness.act('setValue', '1234.56');
+      await drain();
+      expect(harness.exposed().value).toBe(1234.56);
+    }
+  });
+
   // Break this catches: normalizing an amount set by the `setValue` action while letting the
   // Default value through untouched. The setting would then govern typing and actions but not the
   // value the field loads with, so a field configured for whole rupees could open showing

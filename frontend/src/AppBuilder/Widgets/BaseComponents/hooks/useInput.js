@@ -3,7 +3,11 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
-import { parseValueToNumber, toCanonicalAmount } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import {
+  parseValueToNumber,
+  resolveDecimalPlaces,
+  toCanonicalAmount,
+} from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 import { getCountryCallingCodeSafe, toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
@@ -105,7 +109,7 @@ export const useInput = ({
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
-  const decimalPlaces = properties?.decimalPlaces || 0;
+  const decimalPlaces = resolveDecimalPlaces(properties?.decimalPlaces).places;
 
   /* ── LABEL WIDTH CALCULATION ───────────────────────────────────────────────────────────────────────── */
 

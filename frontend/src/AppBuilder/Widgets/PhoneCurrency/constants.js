@@ -33,6 +33,28 @@ export const parseValueToNumber = (val, numberFormat) => {
 };
 
 /**
+ * How many decimal places the Decimal places setting actually asks for.
+ *
+ * `isSet` distinguishes an explicit `0` — a whole-number currency such as JPY — from a setting that
+ * is cleared, non-numeric or negative, which falls back to two. `Number('') === 0`, so keying off
+ * the number alone would read a cleared setting as "no decimals".
+ *
+ * Declared once because the FIELD and the VALUE both need it: the field passes it to the input
+ * library, and every normalization below trims to it. Read separately they disagreed, and a cleared
+ * setting truncated a Default value to whole numbers while typing still accepted decimals.
+ */
+export const resolveDecimalPlaces = (decimalPlaces) => {
+  const parsed = Number(decimalPlaces);
+  const isSet =
+    decimalPlaces !== '' &&
+    decimalPlaces !== null &&
+    decimalPlaces !== undefined &&
+    Number.isFinite(parsed) &&
+    parsed >= 0;
+  return { isSet, places: isSet ? parsed : 2 };
+};
+
+/**
  * Keep at most `digits` decimal places, by truncation rather than rounding — the behaviour the
  * `setValue` action has always had. Moved here from useInput.js so the rule below is the only
  * place a currency amount is normalized.

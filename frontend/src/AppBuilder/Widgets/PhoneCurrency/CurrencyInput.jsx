@@ -11,7 +11,13 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { CurrencyMap, getNumberFormatConfig, parseValueToNumber, toCanonicalAmount } from './constants';
+import {
+  CurrencyMap,
+  getNumberFormatConfig,
+  parseValueToNumber,
+  resolveDecimalPlaces,
+  toCanonicalAmount,
+} from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
@@ -29,7 +35,7 @@ export const CurrencyInput = (props) => {
       value: toCanonicalAmount(
         props.properties?.value,
         props.properties?.numberFormat,
-        props.properties?.decimalPlaces || 0
+        resolveDecimalPlaces(props.properties?.decimalPlaces).places
       ),
     },
   };
@@ -70,14 +76,8 @@ export const CurrencyInput = (props) => {
   // the library resolves `decimalsLimit || fixedDecimalLength || 2`, so a 0 is read as UNSET and replaced with 2
   // `allowDecimals` is the only lever that refuses the separator outright, which is what a whole-number currency such as JPY or KRW needs.
   const decimalPlacesSetting = useMemo(() => {
-    const parsed = Number(decimalPlaces);
-    const isSet =
-      decimalPlaces !== '' &&
-      decimalPlaces !== null &&
-      decimalPlaces !== undefined &&
-      Number.isFinite(parsed) &&
-      parsed >= 0;
-    return { allowDecimals: isSet ? parsed > 0 : true, decimalsLimit: isSet ? parsed : 2 };
+    const { isSet, places } = resolveDecimalPlaces(decimalPlaces);
+    return { allowDecimals: isSet ? places > 0 : true, decimalsLimit: places };
   }, [decimalPlaces]);
 
   // Separator characters (rendered as-is) and the locale that drives grouping positions.
