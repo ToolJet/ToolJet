@@ -372,8 +372,9 @@ describe('approval requests list query', () => {
     // a different order per query — the same row can land on page 1 and page 2, and another on
     // neither. The `id` tiebreaker makes paging stable.
     const tied = new Date('2022-06-01T12:00:00.000Z');
+    const tiedIds: string[] = [];
     for (const token of ['tie-a', 'tie-b', 'tie-c', 'tie-d']) {
-      await seed({
+      const request = await seed({
         versionId: versionAId,
         organizationId: orgA,
         appId: appAId,
@@ -381,6 +382,7 @@ describe('approval requests list query', () => {
         status: 'pending',
         createdAt: tied,
       });
+      tiedIds.push(request.id);
     }
 
     const filters = { from: tied, to: tied };
@@ -396,6 +398,8 @@ describe('approval requests list query', () => {
     // Disjoint pages covering every row: no repeats across the boundary, nothing lost.
     expect(new Set([...firstTokens, ...secondTokens]).size).toBe(4);
     expect([...firstTokens, ...secondTokens].sort()).toEqual(['tie-a', 'tie-b', 'tie-c', 'tie-d']);
+    // The order the tie-breaker defines, not just some stable order: id descending.
+    expect([...firstPage.rows, ...secondPage.rows].map((r) => r.id)).toEqual([...tiedIds].sort().reverse());
     // And the same query twice returns the same page, rather than a fresh arbitrary slice.
     const firstPageAgain = await repository.listForOrganization(orgA, filters, 1, 2);
     expect(firstPageAgain.rows.map((r) => r.token)).toEqual(firstTokens);
