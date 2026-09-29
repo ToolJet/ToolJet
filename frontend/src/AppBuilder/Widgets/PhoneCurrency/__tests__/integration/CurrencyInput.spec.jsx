@@ -494,8 +494,9 @@ describe('label, placeholder and property changes', () => {
       return { field: input().value, value: harness.exposed().value };
     };
 
-    // Previously '0' — the field could never be empty.
-    expect(await seed('')).toEqual({ field: '', value: 0 });
+    // Previously '0' — the field could never be empty. The exposed amount is `null` rather than
+    // 0 under PROP-008, so a cleared Default value reads as "no amount" everywhere, not as zero.
+    expect(await seed('')).toEqual({ field: '', value: null });
 
     // Previously '1' — parseFloat stopped at the group separator.
     expect(await seed('1,256.7')).toEqual({ field: '1,256.7', value: 1256.7 });
@@ -576,13 +577,17 @@ describe('label, placeholder and property changes', () => {
         input: typeof v === 'symbol' ? 'symbol' : String(v),
         field: input().value,
         formatted: String(harness.exposed().formattedValue),
-        exposedIsFinite: Number.isFinite(harness.exposed().value),
+        // `null` is the deliberate answer for a field holding no amount (PROP-008). Tying it to an
+        // empty field keeps this sweep's guarantee intact — nothing may expose NaN or undefined,
+        // and a null may only appear when there is genuinely nothing in the field.
+        exposedAmountIsUsable:
+          harness.exposed().value === null ? input().value === '' : Number.isFinite(harness.exposed().value),
       };
       expect(observed).toEqual({
         input: observed.input,
         field: expect.not.stringContaining('NaN'),
         formatted: expect.not.stringContaining('NaN'),
-        exposedIsFinite: true,
+        exposedAmountIsUsable: true,
       });
       expect(observed.field).not.toContain('undefined');
       expect(observed.formatted).not.toContain('undefined');
@@ -598,6 +603,49 @@ describe('label, placeholder and property changes', () => {
 
     expect(input().value).toBe('');
     expect(harness.exposed().isValid).toBe(false);
+  });
+
+  // Break this catches: publishing a parsed `0` for a field that holds no amount, which makes
+  // "cleared" and "zero" the same value to an app reading `value`. Every other surface of this
+  // widget already tells them apart — the field renders '' against '0', validation judges ''
+  // against '0' so a mandatory empty field fails, and formattedValue shows '$ ' against '$ 0'.
+  // `value` was the only one collapsing them, and it is the one an app actually reads.
+  test('[CurrencyInput-PROP-008] an empty field exposes no amount, and a zero still exposes zero', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    expect(harness.exposed().value).toBeNull();
+    expect(input().value).toBe('');
+
+    // A configured zero is a real amount and must survive as one.
+    harness.render({ properties: { value: binding('{{0}}') } });
+    await waitFor(() => expect(input().value).toBe('0'));
+    await drain();
+
+    expect(harness.exposed().value).toBe(0);
+  });
+
+  // Second mount for the same scenario: a field can be emptied four ways and they must agree.
+  test('[CurrencyInput-PROP-008] every way of emptying the field reports no amount', async () => {
+    harness.render({ properties: { value: binding('{{1234}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await drain();
+    expect(harness.exposed().value).toBeNull();
+
+    await harness.act('setValue', 1234);
+    await drain();
+    await harness.act('clear');
+    await drain();
+    expect(harness.exposed().value).toBeNull();
+
+    await harness.act('setValue', 1234);
+    await drain();
+    await harness.act('setValue', '');
+    await drain();
+    expect(harness.exposed().value).toBeNull();
   });
 });
 

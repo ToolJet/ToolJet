@@ -319,9 +319,11 @@ export const useInput = ({
   const setCurrencyInputValue = (displayValue, numericValue) => {
     const nextDisplay = displayValue ?? '';
     const nextNumber =
-      numericValue != null && !Number.isNaN(numericValue)
-        ? numericValue
-        : parseValueToNumber(nextDisplay, numberFormat);
+      nextDisplay === ''
+        ? null
+        : numericValue != null && !Number.isNaN(numericValue)
+          ? numericValue
+          : parseValueToNumber(nextDisplay, numberFormat);
     writeValue({
       state: nextDisplay,
       exposed: nextNumber,
