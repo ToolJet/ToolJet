@@ -17,8 +17,6 @@ import { parseExpression, CronExpression } from 'cron-parser';
 /** The stored shape: `workflow_schedules.type` plus its `details` jsonb. */
 export type ScheduleShape = { type: string; details: Record<string, any> };
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 /**
  * `hours + minutes / 60`, carried over verbatim from the scheduler.
  *
@@ -122,5 +120,3 @@ export function nextRuns(cron: string | null, timezone: string, count: number, f
   }
   return runs;
 }
-
-export { DAY_NAMES };
