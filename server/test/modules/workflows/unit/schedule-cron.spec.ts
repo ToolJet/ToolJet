@@ -2,10 +2,6 @@
 
 import { scheduleToCron, describeCadence, nextRuns } from '@modules/workflows/helpers/schedule-cron';
 
-// These pin the behaviour that was extracted verbatim out of WorkflowSchedulerService's private
-// #convertWorkflowScheduleSettingsToCronString. The scheduler and the dashboard now read the same
-// function, so a change here changes both together -- which is the whole point of extracting it.
-// A dashboard that computed cadence independently would drift from what actually fires, silently.
 describe('scheduleToCron', () => {
   it('maps the minute frequency to every minute', () => {
     expect(scheduleToCron({ type: 'interval', details: { frequency: 'minute' } })).toBe('* * * * *');
@@ -44,11 +40,6 @@ describe('scheduleToCron', () => {
     ).toBe('30 2 * * 1');
   });
 
-  // Pinned, not fixed: #convertToHourOffset returns `hours + minutes / 60`, so half past eight
-  // becomes the hour "8.5" and the resulting expression is not valid cron. The scheduler has
-  // always produced this and throws on it at registration time; reproducing it here keeps the
-  // dashboard honest about what the schedule really is rather than inventing a plausible time.
-  // Fixing it means changing when existing schedules fire, which is not this change's call to make.
   it('reproduces the half-hour offset quirk rather than papering over it', () => {
     expect(scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '8:30 AM' } })).toBe('0 8.5 * * *');
   });
@@ -69,8 +60,6 @@ describe('describeCadence', () => {
     expect(describeCadence({ type: 'interval', details })).toBe(expected);
   });
 
-  // A cron schedule has no natural-language form worth inventing, so it shows the expression
-  // itself -- which is what the author typed and will recognise.
   it('falls back to the raw expression for a cron schedule', () => {
     expect(
       describeCadence({
@@ -97,15 +86,11 @@ describe('nextRuns', () => {
     ]);
   });
 
-  // The schedule's own timezone decides when it fires, so 8am in Kolkata must not be reported as
-  // 8am UTC. Getting this wrong would put every row in the panel five and a half hours out.
   it('resolves occurrences in the schedule timezone, not the server one', () => {
     const [first] = nextRuns('0 8 * * *', 'Asia/Kolkata', 1, from);
     expect(first.toISOString()).toBe('2026-09-25T02:30:00.000Z');
   });
 
-  // The half-hour quirk above produces exactly this, and one malformed schedule must not take
-  // down the whole panel with a 500.
   it('returns nothing for an invalid expression instead of throwing', () => {
     expect(nextRuns('0 8.5 * * *', 'UTC', 3, from)).toEqual([]);
   });

@@ -5,14 +5,7 @@ import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity'
 export interface ApprovalListFilters {
   statuses?: string[];
   appId?: string;
-  /**
-   * Narrow to the workflows filed under one dashboard folder.
-   *
-   * Matched on folder membership alone, ignoring `folder_apps.branch_id`: that column is scoped
-   * per git branch, but workflows are not git-synced, so a workflow sits in the same folder
-   * whichever branch is checked out — and the approvals list carries no branch context to match
-   * against in the first place.
-   */
+  /** Folder membership only; folder_apps.branch_id ignored (workflows are not git-synced). */
   folderId?: string;
   environmentId?: string;
   /** Free-text match against the approvers snapshot (user id, group id or email). */
@@ -27,7 +20,6 @@ export interface ApprovalListRow extends WorkflowApprovalRequest {
   environment?: { id: string; name: string };
 }
 
-/** One party an approval can be addressed to, resolved to something a human can read. */
 export interface ApprovalParty {
   /** The stored identifier: a user id, a group id, or — for an email approver — the email itself. */
   id: string;
@@ -36,14 +28,7 @@ export interface ApprovalParty {
   kind: 'user' | 'email' | 'group';
 }
 
-/**
- * The identity half of an approvals snapshot, as projected onto the wire.
- *
- * Closed on purpose: the stored snapshot also carries `tokenBypass`, which defaults to `true` and
- * is only meaningful to the public-link route. A consumer that could read it would be one
- * `canResolve || approversSnapshot.tokenBypass` away from re-opening the hole the authorizer
- * split closes, so it is not part of this type and must not be added to it.
- */
+/** No tokenBypass: public-link-only flag, never sent to page consumers. */
 export interface ApprovalListApprovers {
   users: ApprovalParty[];
   emails: ApprovalParty[];
@@ -66,17 +51,9 @@ export interface ApprovalListItem {
   inputSchema: Array<Record<string, unknown>>;
   approversSnapshot: ApprovalListApprovers;
   resolvedOutcome: string | null;
-  /**
-   * Who resolved it, already labelled — or `null` when the timeout branch auto-resolved it, which
-   * the page renders as a system decision rather than as an unnamed person.
-   */
+  /** null = timeout auto-resolve (system decision). */
   resolvedBy: ApprovalParty | null;
-  /**
-   * Whether THIS caller can resolve THIS row *right now* — authorized by the user-only authorizer
-   * AND still `pending`. It is actionability, not bare authorization, so that every consumer
-   * (page, resolve-by-id) reads one field instead of re-deriving the same conjunction and one of
-   * them forgetting the state half. `status` is still on the row for rendering closed states.
-   */
+  /** Authorized AND pending; consumers must not re-derive. */
   canResolve: boolean;
 }
 

@@ -41,10 +41,7 @@ describe('toExecutionListItem', () => {
     expect(toExecutionListItem({ ...baseRow, finishedAt: null }).finishedAt).toBeNull();
   });
 
-  // The repository's `listForOrganization` resolves app/appVersion/environment/schedule via
-  // `leftJoinAndMapOne`. TypeORM's RawSqlResultsToEntityTransformer sets an unmatched mapped
-  // one-to-one join to `null`, never `undefined` — so `null` is the case that must be pinned here.
-  // `undefined` is kept too, cheaply, in case a hand-built row or a future change produces one.
+  // leftJoinAndMapOne yields null, not undefined, for an unmatched join.
   describe.each([
     ['app', 'workflow'],
     ['appVersion', 'version'],

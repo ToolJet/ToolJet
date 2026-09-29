@@ -10,19 +10,7 @@ import {
   login,
 } from 'test-helper';
 
-/**
- * Task 2.4 (§5.4): a synchronous trigger that suspends at a human node must return a
- * `waiting` acknowledgment instead of letting WorkflowSuspendedSignal escape as a 500.
- *
- * Implementer note: the sync try/catch this test exercises lives in the `trigger()` handler
- * (`POST /api/workflow_executions/:id/trigger`), not the plain `POST /api/workflow_executions`
- * `create()` handler -- `create()` has no syncExecution branching at all. The task brief's
- * illustrative snippet posts to the plain collection route; this test targets `/trigger`
- * instead, since that is where the sync branch (and the try/catch this task modifies)
- * actually exists. See `workflow-executions.controller.ts` `trigger()`.
- *
- * @group workflows
- */
+/** @group workflows */
 describe('WorkflowExecutionsController', () => {
   describe('EE (plan: enterprise) | POST /api/workflow_executions/:id/trigger | sync suspend ack', () => {
     let app: INestApplication;

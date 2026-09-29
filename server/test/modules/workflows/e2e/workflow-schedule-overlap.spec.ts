@@ -21,8 +21,6 @@ describe('schedule overlap guard', () => {
   let appVersionId: string;
   let userId: string;
   let environmentId: string;
-  // schedule_id on workflow_executions is a FK to workflow_schedules(id); each test
-  // seeds a real schedule row and uses its generated id so the insert satisfies the FK.
   let waitingScheduleId: string;
   let completedScheduleId: string;
 

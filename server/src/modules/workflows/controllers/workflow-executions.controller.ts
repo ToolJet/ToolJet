@@ -21,10 +21,7 @@ import { UpcomingRun } from '@modules/workflows/types/upcoming-runs';
 export class WorkflowExecutionsController implements IWorkflowExecutionController {
   constructor() {}
 
-  // Declared before @Get(':id') on purpose — see the note in the plan/spec. Moving this below the
-  // parameterised route silently breaks it: NestJS matches routes in declaration order, so a
-  // single-segment 'workspace' path declared after ':id' would be shadowed and
-  // /workflow_executions/workspace would resolve as "fetch the execution with id 'workspace'".
+  // Keep above @Get(':id'): Nest matches routes in declaration order.
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
   @Get('workspace')
   async listForWorkspace(
@@ -34,9 +31,6 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     throw new NotImplementedException();
   }
 
-  // Upcoming runs are derived from schedules, not from workflow_executions rows — a run that has
-  // not started has no row — but they answer the same page's question and are gated by the same
-  // grant, so they live beside the other workspace routes rather than on the schedules controller.
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
   @Get('workspace/upcoming')
   async upcomingForWorkspace(

@@ -1754,9 +1754,6 @@ class HomePageComponent extends React.Component {
   };
 
   render() {
-    // When set, this replaces the app list in the right-hand panel. Everything else the dashboard
-    // provides — folder sidebar, create button, header, tabs — stays put, so a sibling view can
-    // live inside this shell instead of rebuilding it.
     const { contentOverride } = this.props;
     const {
       apps,
@@ -2591,11 +2588,7 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {/* A sibling view of this dashboard (e.g. the approvals tab) renders its own content
-                    in place of the app list, keeping the folder sidebar, header and tabs around it. */}
                 {contentOverride ? (
-                  // The folder sidebar is shared, so the override is told which folder is
-                  // selected and narrows itself the same way the app list would.
                   React.cloneElement(contentOverride, { currentFolder })
                 ) : (
                   <>

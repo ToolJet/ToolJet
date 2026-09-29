@@ -175,8 +175,6 @@ function getExecutionStates(appVersionId, executionIds) {
   );
 }
 
-// `signal` lets a caller abort a superseded request (the executions page re-querying before a
-// previous filter/page request resolved).
 function getWorkspaceExecutions(filters = {}, page = 1, perPage = 15, signal) {
   const params = new URLSearchParams();
   params.set('page', page);
@@ -205,14 +203,7 @@ function getWorkspaceExecutionStates(executionIds) {
   return fetch(`${config.apiUrl}/workflow_executions/workspace/states`, requestOptions).then(handleResponse);
 }
 
-/**
- * Scheduled runs that have not happened yet.
- *
- * Deliberately not part of `getWorkspaceExecutions`: an upcoming run has no `workflow_executions`
- * row at all, so it cannot appear in a list built from that table. It takes only the list's scope
- * selectors — environment, workflow, folder — so both halves of the page describe the same slice;
- * status, trigger and date range are history concepts that mean nothing for a future run.
- */
+// Scope selectors only: status/trigger/date do not apply to future runs.
 function getUpcomingRuns(filters = {}, signal) {
   const params = new URLSearchParams();
   if (filters.environmentId) params.set('environment_id', filters.environmentId);

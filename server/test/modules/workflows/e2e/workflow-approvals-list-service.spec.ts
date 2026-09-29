@@ -56,11 +56,7 @@ describe('approvals list service :: canResolve', () => {
     appId = wf.id;
     versionId = (await createWorkflowApplicationVersion(app, wf)).id;
 
-    // A builder in the SAME organization. setupOrganizationAndUser always creates a fresh org
-    // and puts its user in the default `admin` group, so it cannot produce a non-admin member —
-    // use createUser against the existing organization instead. createUserWorkflowPermissions
-    // attaches a CUSTOM_GROUP, which satisfies the LIST_APPROVAL_REQUESTS ability grant without
-    // making the user a workspace admin (isWorkspaceAdmin checks the DEFAULT admin group).
+    // setupOrganizationAndUser always makes an admin; createUser gives a non-admin member.
     const { user: builder } = await createUser(app, {
       email: 'approvals-canresolve-builder@tooljet.io',
       firstName: 'Can',
@@ -78,8 +74,6 @@ describe('approvals list service :: canResolve', () => {
     await closeTestApp(app);
   }, 60000);
 
-  // Each `it()` runs inside its own rolled-back SAVEPOINT, so rows seeded by one case are gone
-  // by the next — every case seeds the request it asserts on.
   async function seedRequest(
     token: string,
     approversSnapshot: Record<string, unknown>,
@@ -165,9 +159,6 @@ describe('approvals list service :: canResolve', () => {
   });
 
   it('does not mark another user request resolvable for a builder', async () => {
-    // The product rule is "admin resolves anything, builder resolves their own". This builder is
-    // not an approver on this request and is not a workspace admin, so every authorization path
-    // must deny — including when the listed approver is someone else entirely.
     const seeded = await seedRequest('other-users-request', {
       users: [adminUser.id],
       groups: [],
@@ -351,8 +342,7 @@ describe('approvals list service :: canResolve', () => {
   });
 
   it('leaves resolvedBy null for a system resolution', async () => {
-    // The timeout branch auto-resolves with resolvedBy = null. That must stay null rather than
-    // becoming a party with an empty label, so the page can say "by the system".
+    // Timeout auto-resolve keeps resolvedBy null, not a party with an empty label.
     const seeded = await seedRequest(
       'system-resolved',
       { users: [], groups: [], emails: [], tokenBypass: true },
@@ -364,8 +354,7 @@ describe('approvals list service :: canResolve', () => {
   });
 
   it('resolves approver identities once per page, not once per row', async () => {
-    // Same hazard the caller-identity hoist addressed: a per-row lookup would be an N+1 against
-    // the users table. Three rows naming the same approver must cost one lookup.
+    // Three rows naming one approver must cost one lookup, not an N+1.
     await seedRequest('label-cost-1', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
     await seedRequest('label-cost-2', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
     await seedRequest('label-cost-3', { users: [adminUser.id], groups: [], emails: [], tokenBypass: true });
@@ -380,9 +369,7 @@ describe('approvals list service :: canResolve', () => {
   });
 
   it('resolves the caller identity once per page, not once per row', async () => {
-    // isWorkspaceAdmin runs through dbTransactionWrap with no manager, i.e. a fresh pooled
-    // connection and a full transaction per call. Seed three rows on which this caller is not a
-    // listed approver, so both lookups are reached, and pin that each fires exactly once.
+    // Caller is not listed on any row, so both lookups run; each must fire once per page.
     await seedRequest('cost-1', { users: [], groups: [NONEXISTENT_UUID], emails: [], tokenBypass: true });
     await seedRequest('cost-2', { users: [], groups: [NONEXISTENT_UUID], emails: [], tokenBypass: true });
     await seedRequest('cost-3', { users: [], groups: [NONEXISTENT_UUID], emails: [], tokenBypass: true });

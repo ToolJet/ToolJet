@@ -24,10 +24,7 @@ export interface ExecutionListItem {
   environment: { id: string; name: string } | null;
 }
 
-// The decorated row the repository returns: a WorkflowExecution with the joined entities mapped on.
-// Exclude appVersion (a required ManyToOne relation in the entity) before intersecting our narrowed
-// optional shape; without this Omit, TypeScript resolves the property to still be required, even though
-// the repository's leftJoinAndMapOne may populate only { id, name } or nothing at all.
+// Omit appVersion: required on the entity, but the decorated row may carry { id, name } or nothing.
 export type ExecutionListRow = Omit<WorkflowExecution, 'appVersion'> & {
   app?: { id: string; name: string };
   appVersion?: { id: string; name: string };

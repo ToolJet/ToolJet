@@ -72,11 +72,6 @@ describe('getExecutionDisplayState — unknown', () => {
   });
 });
 
-// I6: getExecutionDisplayConfig's icon mapping was never pinned when 'unknown' was added, so the
-// workflow editor's LogsPanel (RunItems.jsx) — the only production consumer of this icon field —
-// dispatched every unrecognised icon key to its Failure icon, turning a dead/jobless run into a
-// false "this failed" report. Pin the full icon map here, keyed by display state, so 'unknown'
-// staying distinct from both 'success' and 'error' cannot silently regress.
 describe('getExecutionDisplayConfig — icon mapping', () => {
   it('assigns a distinct, neutral icon key to unknown — neither success nor error', () => {
     const config = getExecutionDisplayConfig({ executed: false, status: null, startedAt: minutesAgo(60) });

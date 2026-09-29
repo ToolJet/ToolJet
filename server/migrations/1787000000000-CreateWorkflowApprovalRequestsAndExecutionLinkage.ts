@@ -32,7 +32,6 @@ export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000000 impl
 
     await queryRunner.createIndex('workflow_approval_requests', new TableIndex({ name: 'IDX_workflow_approval_requests_token', columnNames: ['token'], isUnique: true }));
 
-    // Partial unique index: at most one pending request per (execution, node)
     await queryRunner.createIndex('workflow_approval_requests', new TableIndex({
       name: 'UQ_workflow_approval_requests_pending',
       columnNames: ['workflow_execution_id', 'execution_node_id'],
@@ -40,7 +39,6 @@ export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000000 impl
       where: `status = 'pending'`,
     }));
 
-    // Execution linkage columns (nullable)
     await queryRunner.addColumns('workflow_executions', [
       new TableColumn({ name: 'parent_execution_id', type: 'uuid', isNullable: true }),
       new TableColumn({ name: 'parent_node_id', type: 'uuid', isNullable: true }),

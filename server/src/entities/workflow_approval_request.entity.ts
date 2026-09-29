@@ -48,17 +48,12 @@ export class WorkflowApprovalRequest {
   @Column({ name: 'resolved_at', type: 'timestamptz', nullable: true })
   resolvedAt: Date | null;
 
-  // Denormalized from workflow_execution → app_version → app. Lets the approvals list filter
-  // and paginate on an index instead of through three joins. Written at request creation;
-  // apps never change organization (no transfer path exists), so these cannot go stale.
   @Column({ name: 'organization_id', type: 'uuid', nullable: true })
   organizationId: string | null;
 
   @Column({ name: 'app_id', type: 'uuid', nullable: true })
   appId: string | null;
 
-  // Denormalized from workflow_execution, same rationale as organizationId/appId above. No FK:
-  // the source column (workflow_execution.environmentId) carries none either.
   @Column({ name: 'environment_id', type: 'uuid', nullable: true })
   environmentId: string | null;
 

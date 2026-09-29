@@ -1,11 +1,6 @@
 /** @group workflows */
 import { WorkflowExecutionsService } from '@ee/workflows/services/workflow-executions.service';
 
-// validateExecutionsOwnedByOrganization is the authorization boundary behind the workspace
-// executions dashboard's bulk state endpoint (workspace/states): it mixes workflows from many
-// app versions, so the older validateExecutionsOwnedByAppVersion check cannot scope it. Getting
-// this wrong leaks execution state across workspaces, so it is tested in isolation here rather
-// than only indirectly through the controller.
 describe('WorkflowExecutionsService.validateExecutionsOwnedByOrganization', () => {
   const organizationId = 'org-a';
 

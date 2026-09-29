@@ -15,14 +15,7 @@ const iso = (value: Date | string | null | undefined): string | null => {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 };
 
-/**
- * Maps a decorated repository row onto the wire shape.
- *
- * Note this returns the raw DB `status` plus `executed`, NOT a display state. The browser derives
- * the display state with `getExecutionDisplayState`, which also needs live BullMQ job state — so
- * resolving it here would produce a second, subtly different status vocabulary that drifts from the
- * editor's logs panel.
- */
+/** Raw DB status plus executed; display state needs live job state, so the browser derives it. */
 export const toExecutionListItem = (row: ExecutionListRow): ExecutionListItem => ({
   id: row.id,
   workflow: row.app ? { id: row.app.id, name: row.app.name } : null,

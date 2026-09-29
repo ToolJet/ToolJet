@@ -3,10 +3,6 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
-// How an execution started. `app` is a workflow query fired from an application (the dashboard
-// calls this "Event"); `workflow` is a run invoked by a parent workflow; `unknown` is history
-// written before trigger_type existed — triggeredBy lived only in BullMQ job data, which is
-// evicted, so it cannot be reconstructed and must not be guessed at.
 export const WORKFLOW_TRIGGER_TYPE = {
   MANUAL: 'manual',
   SCHEDULE: 'schedule',

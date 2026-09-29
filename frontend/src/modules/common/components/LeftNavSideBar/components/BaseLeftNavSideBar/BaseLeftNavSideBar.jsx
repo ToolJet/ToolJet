@@ -20,8 +20,7 @@ const BaseLeftNavSideBar = ({
   canCreateVariableOrConstant,
   featureAccess,
 }) => {
-  // Prefix, not equality: the workflows dashboard has tabs of its own (Workflows / Approvals), and
-  // the icon stays current for every one of them rather than going dark on the sub-route.
+  // Prefix match: dashboard tabs keep the icon active.
   const workflowsRoute = getPrivateRoute('workflows');
   const isWorkflowsRoute = router.pathname === workflowsRoute || router.pathname.startsWith(`${workflowsRoute}/`);
 

@@ -25,10 +25,6 @@ function sentParam(name) {
   return url.searchParams.get(name);
 }
 
-// I5: the date inputs emit a bare `YYYY-MM-DD`. Sent as-is, the repository's `created_at <= :to`
-// casts it to midnight, so "From = To = today" excluded the entire day the user selected. The
-// service must widen the bare date to the viewer's own local-day boundary before sending it — the
-// same fix already shipped for workflow_approvals.service.js's getAll.
 describe('workflowExecutionsService.getWorkspaceExecutions — date range', () => {
   it('sends `to` as the last instant of the selected local day, not its midnight', async () => {
     await workflowExecutionsService.getWorkspaceExecutions({ to: '2026-09-24' });

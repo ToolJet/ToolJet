@@ -1,3 +1,7 @@
+// Jobless past this age = evicted job or dead worker, not success.
+const WORKFLOW_TIMEOUT_MS = 60 * 1000;
+export const STALE_EXECUTION_THRESHOLD_MS = Math.max(WORKFLOW_TIMEOUT_MS * 2, 5 * 60 * 1000);
+
 /**
  * Derives the display state from raw execution data
  * FIXME: We need to simplify states across the board (DB, BullMQ, frontend)
@@ -10,19 +14,8 @@
  * @param {boolean} [execution.terminationRequested] - Redis termination flag
  * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated' | 'unknown'
  */
-// A run with no live BullMQ job is normally a transient race — the DB just hasn't caught up.
-// Past this age it isn't: the job was evicted (removeOnComplete: 100) or its worker died, and the
-// row will never reach a terminal status on its own. Reporting that as success is a lie, so it
-// gets its own state. The default workflow timeout is 60s, so 2x alone is 120s — too tight for a
-// backed-up queue, hence the five minute floor.
-const WORKFLOW_TIMEOUT_MS = 60 * 1000;
-export const STALE_EXECUTION_THRESHOLD_MS = Math.max(WORKFLOW_TIMEOUT_MS * 2, 5 * 60 * 1000);
-
 export function getExecutionDisplayState(execution) {
-  // A suspended run is authoritative in the database. Human-in-the-loop uses `waiting`;
-  // a timed Wait node uses `waiting_for_delay` so it can keep polling until its timer resumes.
-  // The original BullMQ job has completed with a waiting sentinel, so its job state must not
-  // cause the suspended execution to render as completed.
+  // DB status authoritative for suspended runs; their BullMQ job already completed.
   if (execution.status === 'waiting' || execution.status === 'waiting_for_delay') return 'waiting';
 
   // Already finished in database - this is the final state
@@ -40,12 +33,10 @@ export function getExecutionDisplayState(execution) {
   // Job doesn't exist in queue anymore
   // This can happen if job completed but DB not updated yet
   if (!jobState) {
-    // No job AND old enough that the DB will never catch up: the run is dead, not pending.
     const startedAt = execution.startedAt || execution.createdAt;
     if (startedAt && Date.now() - new Date(startedAt).getTime() > STALE_EXECUTION_THRESHOLD_MS) {
       return 'unknown';
     }
-    // Recent: the poll will fetch fresh data shortly. Unchanged behaviour for the editor.
     return 'completed';
   }
 
@@ -99,8 +90,7 @@ export function isExecutionInProgress(execution) {
  */
 export function isExecutionFinished(execution) {
   const state = getExecutionDisplayState(execution);
-  // 'unknown' has no live job and no path left to a terminal status — it will never progress,
-  // so callers waiting on completion must treat it as finished, not as still pending.
+  // unknown never progresses: count as finished.
   return ['completed', 'failed', 'terminated', 'unknown'].includes(state);
 }
 

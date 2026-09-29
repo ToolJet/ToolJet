@@ -97,8 +97,7 @@ describe('approval requests list query', () => {
         inputSchema: [],
       },
     });
-    // `created_at` is a @CreateDateColumn, but TypeORM honours an explicit value on insert —
-    // set it here rather than trying to UPDATE it afterwards.
+    // TypeORM honours an explicit createdAt on insert.
     return saveEntity(WorkflowApprovalRequest, {
       workflowExecutionId: execution.id,
       executionNodeId: node.id,
@@ -167,8 +166,6 @@ describe('approval requests list query', () => {
       appId: appAId,
       token: 'env-none',
       status: 'pending',
-      // No environmentId: a request raised before this column existed, or under an unlicensed
-      // multi-environment workspace. Must still surface with no filter applied.
     });
 
     const { rows } = await repository.listForOrganization(orgA, {}, 1, 50);
@@ -192,10 +189,6 @@ describe('approval requests list query', () => {
   });
 
   it('orders newest first and paginates', async () => {
-    // Each `it()` runs in its own rolled-back SAVEPOINT (server/AGENTS.md: "Seed data in
-    // beforeAll (persists across tests in the suite)") — rows seeded by earlier tests (e.g.
-    // 'mine-1', 'resolved-1') are gone by the time this test runs. Seed two rows of our own so
-    // there is something to paginate across.
     const older = await seed({
       versionId: versionAId,
       organizationId: orgA,
@@ -225,8 +218,6 @@ describe('approval requests list query', () => {
   });
 
   it('maps the workflow name and node definition onto each row', async () => {
-    // Self-contained for the same reason as above — this test seeds nothing in beforeAll, so it
-    // must create its own row rather than relying on another test's (rolled-back) data.
     await seed({ versionId: versionAId, organizationId: orgA, appId: appAId, token: 'mapped-1', status: 'pending' });
 
     const { rows } = await repository.listForOrganization(orgA, { appId: appAId }, 1, 10);
@@ -325,10 +316,7 @@ describe('approval requests list query', () => {
 
     const { rows } = await repository.listForOrganization(orgA, { from: boundary }, 1, 10);
 
-    // No `.sort()`: the returned order is the assertion. The rows come back through an
-    // `IN (:...ids)` decorate query, which does NOT preserve order, and are re-sorted into the
-    // id query's page order afterwards — sorting here would hide a regression in exactly that
-    // remap. created_at DESC puts March before February.
+    // No sort(): the returned order is the assertion.
     expect(rows.map((r) => r.token)).toEqual(['from-after', 'from-on-boundary']);
   });
 
@@ -361,16 +349,10 @@ describe('approval requests list query', () => {
 
     const { rows } = await repository.listForOrganization(orgA, { to: boundary }, 1, 10);
 
-    // created_at DESC — February before January. Note this is the opposite of alphabetical, so
-    // it only passes if the IN()-remap really does restore the id query's order.
     expect(rows.map((r) => r.token)).toEqual(['to-on-boundary', 'to-before']);
   });
 
   it('paginates deterministically when rows share a created_at, instead of repeating or dropping one', async () => {
-    // Parallel human nodes in one run write their requests in the same millisecond. With
-    // `ORDER BY created_at DESC` alone that is not a total order, so Postgres may return ties in
-    // a different order per query — the same row can land on page 1 and page 2, and another on
-    // neither. The `id` tiebreaker makes paging stable.
     const tied = new Date('2022-06-01T12:00:00.000Z');
     const tiedIds: string[] = [];
     for (const token of ['tie-a', 'tie-b', 'tie-c', 'tie-d']) {

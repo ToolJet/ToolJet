@@ -1,17 +1,10 @@
 import { parseApprovalRangeStart, parseApprovalRangeEnd } from '@modules/workflows/helpers/approval-date-range';
 
-/**
- * The repository's boundary tests pass `Date` objects straight in, so they can never catch this
- * class of bug — by the time a `Date` exists the day-vs-instant decision has already been made.
- * This is the layer where that decision happens.
- */
+// Repository tests pass Dates; the day-vs-instant decision is only testable here.
 /** @group workflows */
 describe('approvals list date range', () => {
   describe('a bare YYYY-MM-DD names a whole day', () => {
     it('widens `to` to the last instant of that day, so the selected day is included', () => {
-      // The reported bug: `to=2026-09-24` used to become 2026-09-24T00:00:00Z, and
-      // `created_at <= :to` then excluded everything created on the 24th — i.e. "to today"
-      // returned nothing created today.
       expect(parseApprovalRangeEnd('2026-09-24')?.toISOString()).toBe('2026-09-24T23:59:59.999Z');
     });
 
@@ -35,8 +28,7 @@ describe('approvals list date range', () => {
     });
 
     it('honors an explicit offset rather than re-anchoring it to UTC — this is how a caller sends its own timezone', () => {
-      // End of 2026-09-24 in UTC+05:30 is 2026-09-24T18:29:59.999Z. The approvals page sends
-      // exactly this shape so "to today" means the user's today, not UTC's.
+      // End of 24 Sep in UTC+05:30.
       expect(parseApprovalRangeEnd('2026-09-24T23:59:59.999+05:30')?.toISOString()).toBe('2026-09-24T18:29:59.999Z');
     });
   });

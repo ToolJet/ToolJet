@@ -22,7 +22,6 @@ export class AddOrganizationAndAppToApprovalRequests1787800000000 implements Mig
       }),
     ]);
 
-    // Backfill existing rows through the join chain the columns replace.
     await queryRunner.query(`
       UPDATE workflow_approval_requests r
       SET organization_id = a.organization_id, app_id = a.id

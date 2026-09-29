@@ -170,9 +170,6 @@ describe('GET /workflow-approvals', () => {
   });
 
   it("includes rows created today when `to` is today's date — a bare date names the whole day, not its midnight", async () => {
-    // `<input type="date">` emits `YYYY-MM-DD`. Read as an instant that is midnight, so
-    // `created_at <= :to` used to exclude everything created on the very day the user selected:
-    // "to today" returned an empty list. The seeded row's created_at defaults to now().
     const { tokenCookie } = await buildTestSession(adminUser, organizationId);
     const today = new Date().toISOString().slice(0, 10);
 
@@ -187,9 +184,7 @@ describe('GET /workflow-approvals', () => {
   });
 
   it('still honors a full ISO timestamp verbatim, so a caller can send its own timezone offset', async () => {
-    // The page sends local-end-of-day with an offset rather than a bare date. An upper bound
-    // that has already passed must exclude today's rows — proof the widening above is scoped to
-    // date-only values and does not blanket-extend every `to`.
+    // A past upper bound must exclude today: widening applies to bare dates only.
     const { tokenCookie } = await buildTestSession(adminUser, organizationId);
 
     const response = await request(app.getHttpServer())

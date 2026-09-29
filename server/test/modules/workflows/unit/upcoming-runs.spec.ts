@@ -42,15 +42,11 @@ describe('toUpcomingRun', () => {
     expect(toUpcomingRun(row(), false, now, 3).registered).toBe(false);
   });
 
-  // A schedule predating multi-environment support carries no environment at all. It still runs,
-  // so it still belongs in the panel — it just has nothing to show in that column.
   it('tolerates a schedule with no environment', () => {
     const result = toUpcomingRun(row({ environmentId: null, environmentName: null }), true, now, 3);
     expect(result.environment).toBeNull();
   });
 
-  // The half-hour quirk in schedule-cron produces an unparseable expression. The row must still
-  // render -- with no times and, because it is unresolvable, visibly not fine.
   it('returns a row with no times when the schedule cannot be resolved', () => {
     const result = toUpcomingRun(row({ details: { frequency: 'day', hour: '8:30 AM' } }), true, now, 3);
     expect(result.nextRuns).toEqual([]);
@@ -83,8 +79,6 @@ describe('sortByNextRun', () => {
     ]);
   });
 
-  // An unresolvable schedule has no time to sort by. It sinks rather than being dropped: it is
-  // precisely the row someone needs to see, and sorting it to the top would bury the real answer.
   it('sinks schedules with no resolvable next run to the bottom', () => {
     const sorted = sortByNextRun([at(null), at('2026-09-25T08:00:00.000Z')]);
     expect(sorted.map((entry) => entry.nextRuns[0])).toEqual(['2026-09-25T08:00:00.000Z', undefined]);

@@ -42,7 +42,6 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
     appId = wf.id;
     versionId = (await createWorkflowApplicationVersion(app, wf)).id;
 
-    // Non-admin member of the SAME organization (see the note in the list-service spec).
     const { user: builder } = await createUser(app, {
       email: 'resolve-by-id-builder@tooljet.io',
       firstName: 'R',
@@ -191,12 +190,7 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
   });
 
   it("rejects a caller from another workspace, even if listed by id in this workspace's snapshot", async () => {
-    // The other-org user is created FIRST so their id can go into the snapshot. Seeding an empty
-    // `users` list here would make the case pass on the allowlist miss alone and never exercise
-    // its own title: `approversSnapshot` is free text written by whoever configured the node, so
-    // a stranger's id (or email) landing in a workspace's snapshot is trivially arrangeable, and
-    // `authorizeResolverForUser` would happily authorize them against the REQUEST's org. The org
-    // that must gate this is the CALLER's session org.
+    // Stranger's id is in the snapshot so the case fails on workspace scope, not the allowlist.
     const { user: otherUser } = await setupOrganizationAndUser(app, {
       email: 'resolve-by-id-other-org@tooljet.io',
       password: 'password',
@@ -266,10 +260,6 @@ describe('POST /workflow-approvals/by-id/:id/resolve', () => {
       .send({ outcome: 'approved' })
       .expect(201);
 
-    // A caller from a different workspace hits the same id. If the pending/expired check ran
-    // before the org scope + authorization checks, this would 409 ("not pending") -- disclosing
-    // that the id exists and is already resolved to a caller never authorized to act on it. The
-    // org scope check runs first, so this stays 404 regardless of the request's status.
     const { user: otherUser } = await setupOrganizationAndUser(app, {
       email: 'resolve-by-id-order-check@tooljet.io',
       password: 'password',

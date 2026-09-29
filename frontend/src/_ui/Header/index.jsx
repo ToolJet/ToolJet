@@ -58,7 +58,6 @@ function Header({
         return 'Settings';
       case 'audit-logs':
         return 'Audit logs';
-      // Approvals and Executions are tabs of the workflows dashboard, not sections of their own.
       case 'workflows':
       case 'approvals':
       case 'executions':

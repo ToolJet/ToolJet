@@ -20,16 +20,7 @@ import {
   updateEntity,
 } from 'test-helper';
 
-/**
- * `POST /workflow-approvals/:id/cancel` is **admin-only** (spec §7: "Admins additionally see
- * Cancel"; decision #3). It is destructive — it cancels the request's timers and fails the whole
- * WorkflowExecution — and until this suite existed it performed no authorization at all: any
- * caller the FeatureAbilityGuard let through (i.e. any builder with one editable workflow, in ANY
- * workspace, since the guard's resource check is workspace-level and app-less) could cancel any
- * request id. The approvals list hands out those ids, so the exploit needed nothing else.
- *
- * Being a *listed approver* is deliberately not enough: an approver resolves, an admin cancels.
- */
+/** Admin-only: a listed approver resolves, an admin cancels. */
 /** @group workflows */
 describe('POST /workflow-approvals/:id/cancel', () => {
   let app: INestApplication;
@@ -55,11 +46,7 @@ describe('POST /workflow-approvals/:id/cancel', () => {
     appId = wf.id;
     versionId = (await createWorkflowApplicationVersion(app, wf)).id;
 
-    // A non-admin member of the SAME workspace. setupOrganizationAndUser always mints a fresh org
-    // and puts its user in the default `admin` group, so it cannot produce a non-admin member —
-    // createUser against the existing organization can. createUserWorkflowPermissions attaches a
-    // CUSTOM_GROUP, which satisfies the HUMAN_IN_THE_LOOP ability grant (so the request reaches
-    // the service, which is the whole point) without making the user a workspace admin.
+    // setupOrganizationAndUser always makes an admin; createUser gives a non-admin member.
     const { user: builder } = await createUser(app, {
       email: 'approvals-cancel-builder@tooljet.io',
       firstName: 'Cancel',
@@ -75,7 +62,6 @@ describe('POST /workflow-approvals/:id/cancel', () => {
     await closeTestApp(app);
   }, 60000);
 
-  // Each `it()` runs inside its own rolled-back SAVEPOINT, so every case seeds its own row.
   async function seedRequest(token: string, approversSnapshot: Record<string, unknown>) {
     const execution = await saveEntity(WorkflowExecution, {
       appVersionId: versionId,
@@ -209,11 +195,7 @@ describe('POST /workflow-approvals/:id/cancel', () => {
   });
 
   it('cancels for an admin who is ALSO a listed approver', async () => {
-    // Regression pin. `authorizeResolverForUser` checks the configured-approver paths before the
-    // admin overrides, so this caller is credited `via: 'allowlist'`, not `'workspace-admin'`.
-    // An admin gate written as `ADMIN_OVERRIDE_CHANNELS.has(auth.via)` would read that as
-    // "not an admin" and 403 exactly the admins who were assigned the approval. `via` is an
-    // audit label for how someone was authorized, not a role test — see `isApprovalAdmin`.
+    // Admin who is also listed is credited 'allowlist'; cancel must still pass.
     const { approval } = await seedRequest('cancel-admin-also-approver', {
       users: [adminUser.id],
       groups: [],

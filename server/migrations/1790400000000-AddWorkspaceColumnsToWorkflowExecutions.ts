@@ -2,14 +2,7 @@ import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 't
 
 const MIGRATION_NAME = 'AddWorkspaceColumnsToWorkflowExecutions1790400000000';
 
-// Rows per backfill batch. workflow_executions is the highest-volume table in this module and its
-// rows are fat (the `logs` json column). ormconfig sets migrationsTransactionMode: 'all', so the
-// whole migration — every batch below included — runs inside one Postgres transaction: batching
-// does NOT shorten lock duration or let other transactions interleave. Every row lock taken by
-// every batch is held until the final COMMIT, exactly as a single unbatched UPDATE would hold it.
-// What batching actually buys is bounded peak memory/work_mem and sort cost per statement, plus
-// (with the progress logging below) visible incremental progress instead of one opaque, silent,
-// multi-minute UPDATE on the module's highest-volume table.
+// One transaction (migrationsTransactionMode 'all'): batches bound per-statement work, not lock time.
 const BATCH_SIZE = 5000;
 
 export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements MigrationInterface {
@@ -37,9 +30,7 @@ export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements Mig
       }),
     ]);
 
-    // Backfill in batches. `updated_at` is deliberately NOT in the SET list and must never be:
-    // it is an @UpdateDateColumn, and historical durations are derived from it for rows that
-    // predate started_at/finished_at. Touching it here would corrupt them retroactively.
+    // Never SET updated_at: historical durations derive from it.
     const [{ count: eligibleCount }] = await queryRunner.query(
       `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
     );

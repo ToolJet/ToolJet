@@ -14,8 +14,6 @@ const makeQueryBuilder = () => {
   return qb;
 };
 
-// Called with an empty `this`: the method deliberately touches no instance state, which is what
-// makes it testable without constructing the service and its queue/EntityManager dependencies.
 const applyFilters = (filters: any) => {
   const qb = makeQueryBuilder();
   (WorkflowSchedulerService.prototype as any).applyUpcomingFilters.call({}, qb, filters);
@@ -41,8 +39,6 @@ describe('WorkflowSchedulerService.applyUpcomingFilters', () => {
     expect(calls[0].params).toEqual({ appId: 'app-1' });
   });
 
-  // A join to folder_apps would change the row count if an app were ever in a folder twice,
-  // silently duplicating schedules in the panel. Same rule the executions list follows.
   it('narrows by folder with a subquery, never a join', () => {
     const calls = applyFilters({ folderId: 'folder-1' });
     expect(calls).toHaveLength(1);
@@ -60,10 +56,6 @@ describe('WorkflowSchedulerService.applyUpcomingFilters', () => {
     expect(clauses).toContain('folder_apps.folder_id = :folderId');
   });
 
-  // The executions status filter shipped broken in exactly this way: a value that reached no
-  // predicate returned the entire workspace instead of erroring. An empty string is the shape a
-  // querystring produces for an omitted parameter, so it must narrow nothing rather than match
-  // rows whose column equals ''.
   it.each([
     ['environmentId', { environmentId: '' }],
     ['appId', { appId: '' }],
@@ -72,8 +64,6 @@ describe('WorkflowSchedulerService.applyUpcomingFilters', () => {
     expect(applyFilters(filters)).toHaveLength(0);
   });
 
-  // Values are always parameterised, never concatenated — server/AGENTS.md's security rule, and
-  // these three arrive straight from the querystring.
   it('parameterises every value rather than inlining it', () => {
     const hostile = "'; DROP TABLE workflow_schedules; --";
     const calls = applyFilters({ environmentId: hostile, appId: hostile, folderId: hostile });
