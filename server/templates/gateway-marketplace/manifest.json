@@ -1,0 +1,16 @@
+{
+  "name": "Gateway Marketplace",
+  "description": "A private neighborhood marketplace for posting, browsing and managing shared items.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "gateway-marketplace",
+  "category": "productivity-and-community"
+}

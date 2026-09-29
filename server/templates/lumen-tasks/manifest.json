@@ -1,0 +1,16 @@
+{
+  "name": "Lumen Tasks",
+  "description": "A calm personal task list with priorities and due dates, built to keep you focused on the next step.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "lumen-tasks",
+  "category": "productivity-and-community"
+}

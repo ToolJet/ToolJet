@@ -1,0 +1,16 @@
+{
+  "name": "Tailoring shop management",
+  "description": "Manage alteration orders, from fitting notes to agreed work and collection.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "tailoring-shop-management",
+  "category": "local-services"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Skill Design Test",
+  "description": "A rental desk for equipment returns, upcoming handovers and available assets.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "skill-design-test",
+  "category": "rentals"
+}

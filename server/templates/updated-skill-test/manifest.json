@@ -1,0 +1,22 @@
+{
+  "name": "Updated skill test",
+  "description": "Oversee access approvals, provisioning and the active access register against per-application policies.",
+  "widgets": [
+    "Table",
+    "Chart",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "updated-skill-test",
+  "category": "it-assets-and-access"
+}

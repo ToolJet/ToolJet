@@ -150,8 +150,8 @@ describe('LibraryAppsController', () => {
 
         let templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-        expect(new Set(templateAppIds)).toContain('release-notes');
-        expect(new Set(templateAppIds)).toContain('bug-tracker');
+        expect(new Set(templateAppIds)).toContain('major-incident-management');
+        expect(new Set(templateAppIds)).toContain('status-blue');
 
         response = await request(app.getHttpServer())
           .get('/api/library_apps')
@@ -162,8 +162,8 @@ describe('LibraryAppsController', () => {
 
         templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-        expect(new Set(templateAppIds)).toContain('release-notes');
-        expect(new Set(templateAppIds)).toContain('bug-tracker');
+        expect(new Set(templateAppIds)).toContain('major-incident-management');
+        expect(new Set(templateAppIds)).toContain('status-blue');
       });
     });
   });
