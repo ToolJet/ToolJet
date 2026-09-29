@@ -7,8 +7,8 @@ export default function TemplateDisplay(props) {
 
   return (
     <div className="template-display">
-      <Container fluid className="pt-2">
-        <Row style={{ height: '10%' }}>
+      <Container fluid className="pt-2 d-flex flex-column">
+        <Row style={{ height: 'auto' }}>
           <h3 className="title" data-cy={`${String(name).toLowerCase().replace(/\s+/g, '-')}`}>
             {name}
           </h3>
@@ -50,7 +50,7 @@ export default function TemplateDisplay(props) {
         </Row>
         <Row
           className="align-items-center justify-content-center"
-          style={{ height: '88%', position: 'relative' }}
+          style={{ flex: 1, minHeight: 0, position: 'relative' }}
           data-cy="template-image"
         >
           {/* TEMP: rendering the same HTML preview for every template while testing */}

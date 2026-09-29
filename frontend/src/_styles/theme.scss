@@ -1320,13 +1320,21 @@ button {
       color: #8092ab;
     }
 
-    img.template-image,
-    iframe.template-image {
+    img.template-image {
       height: 75%;
       width: 85%;
       border: 0;
       padding: 0;
       object-fit: contain;
+    }
+
+    // Tighter gaps than the image preview (85% x 75%) to use the modal space
+    iframe.template-image {
+      height: 97.5%;
+      width: 97.5%;
+      padding: 0;
+      border: 1px solid var(--slate5);
+      border-radius: 6px;
     }
 
     .template-spinner {
