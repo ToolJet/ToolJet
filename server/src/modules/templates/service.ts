@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
@@ -13,6 +13,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { Like } from 'typeorm';
 import { ImportExportResourcesService } from '@modules/import-export-resources/service';
 import { PluginsService } from '@modules/plugins/service';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class TemplatesService {
@@ -67,35 +68,41 @@ export class TemplatesService {
 
     if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;
+
+      // Check the name first so the tables are not created and seeded only to be dropped
+      const { organizationId } = currentUser;
+      const type = APP_TYPES.FRONT_END;
+      if (appName && (await this.appsRepository.findOne({ where: { organizationId, name: appName, type } })))
+        throw new ConflictException('This app name is already taken.');
+
+      // Seed before the app is created, so a failure leaves no app behind and the import drops the tables
       const importedResources = await this.importExportResourcesService.import(
         currentUser,
         importDto,
         false,
         false,
-        true
-      );
+        true,
+        async (tableNameMapping) => {
+          const entries = Object.entries(tableNameMapping);
 
-      const tableNameMapping: {
-        [key: string]: { id: string; table_name: string };
-      } = importedResources.tableNameMapping;
-      const entries = Object.entries(tableNameMapping);
+          for (let i = 0; i < entries.length; i++) {
+            const [key, { id: tableId }] = entries[i];
+            const tableIdFromDefinition = key;
+            const newTableid = tableId;
 
-      for (let i = 0; i < entries.length; i++) {
-        const [key, { id: tableId }] = entries[i];
-        const tableIdFromDefinition = key;
-        const newTableid = tableId;
+            const tableDetails = templateDefinition.tooljet_database.find(
+              (table: Record<string, any>) => table.id === tableIdFromDefinition
+            );
 
-        const tableDetails = templateDefinition.tooljet_database.find(
-          (table: Record<string, any>) => table.id === tableIdFromDefinition
-        );
-
-        if (tableDetails) {
-          const tableNameAsPerDefinition = tableDetails.table_name;
-          // Seed one table at a time, in definition order: foreign keys already exist at this point,
-          // so a referencing table must wait until the table it points to has its rows.
-          await this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, currentUser.organizationId);
+            if (tableDetails) {
+              const tableNameAsPerDefinition = tableDetails.table_name;
+              // Seed one table at a time, in definition order: foreign keys already exist at this point,
+              // so a referencing table must wait until the table it points to has its rows.
+              await this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, organizationId);
+            }
+          }
         }
-      }
+      );
 
       return importedResources;
     } else {
