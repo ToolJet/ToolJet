@@ -1,5 +1,4 @@
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
-import { WORKFLOW_TRIGGER_TYPE, WorkflowTriggerType } from './index';
 
 export interface ExecutionListFilters {
   statuses?: string[];
@@ -33,14 +32,5 @@ export type ExecutionListRow = Omit<WorkflowExecution, 'appVersion'> & {
   app?: { id: string; name: string };
   appVersion?: { id: string; name: string };
   environment?: { id: string; name: string };
-  schedule?: { id: string; name: string | null; details: unknown };
-};
-
-export const TRIGGER_TYPE_LABELS: Record<WorkflowTriggerType, string> = {
-  [WORKFLOW_TRIGGER_TYPE.MANUAL]: 'Manual',
-  [WORKFLOW_TRIGGER_TYPE.SCHEDULE]: 'Scheduled (Cron)',
-  [WORKFLOW_TRIGGER_TYPE.WEBHOOK]: 'API Webhook',
-  [WORKFLOW_TRIGGER_TYPE.APP]: 'Event',
-  [WORKFLOW_TRIGGER_TYPE.WORKFLOW]: 'Sub-workflow',
-  [WORKFLOW_TRIGGER_TYPE.UNKNOWN]: 'Unknown',
+  schedule?: { id: string; name: string | null; type: string; details: Record<string, unknown> | null };
 };

@@ -97,7 +97,12 @@ describe('WorkflowExecutionsService.processFilterNode', () => {
 
     expect(result).toMatchObject({ status: 'failed' });
     expect(isTerminated).toHaveBeenCalledTimes(2);
-    expect(completed).not.toHaveBeenCalled();
+    expect(completed).toHaveBeenCalledWith(
+      filterNode,
+      expect.stringContaining('Workflow execution terminated'),
+      expect.objectContaining({ filter1: expect.objectContaining({ status: 'failed' }) }),
+      expect.anything()
+    );
     expect(addLog).toHaveBeenCalledWith(
       expect.stringContaining('Workflow execution terminated'),
       'filter1',

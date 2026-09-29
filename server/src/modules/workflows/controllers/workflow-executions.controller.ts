@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Res, Sse } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -11,6 +11,8 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
 import { Observable } from 'rxjs';
 import { ListExecutionsDto } from '@modules/workflows/dto/list-executions.dto';
+import { ListUpcomingRunsDto } from '@modules/workflows/dto/list-upcoming-runs.dto';
+import { WorkspaceExecutionStatesDto } from '@modules/workflows/dto/workspace-execution-states.dto';
 import { ExecutionListItem } from '@modules/workflows/types/execution-list';
 import { UpcomingRun } from '@modules/workflows/types/upcoming-runs';
 
@@ -31,7 +33,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     @Query() query: ListExecutionsDto,
     @User() user?: any
   ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   // Upcoming runs are derived from schedules, not from workflow_executions rows — a run that has
@@ -42,12 +44,10 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   // Explicit return type to match the EE override, or the EE subclass trips TS2416 (its concrete
   // return isn't assignable to an inferred Promise<void>).
   async upcomingForWorkspace(
-    @Query('environment_id') environmentId?: string,
-    @Query('app_id') appId?: string,
-    @Query('folder_id') folderId?: string,
+    @Query() query: ListUpcomingRunsDto,
     @User() user?: any
   ): Promise<{ upcoming: UpcomingRun[] }> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS)
@@ -55,10 +55,10 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   // Explicit return type to match the EE override, or the EE subclass trips TS2416 (its concrete
   // return isn't assignable to an inferred Promise<void>).
   async workspaceStates(
-    @Body() body: { executionIds: string[] },
+    @Body() body: WorkspaceExecutionStatesDto,
     @User() user?: any
   ): Promise<Record<string, { terminationRequested: boolean; jobState: string }>> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException();
   }
 
   @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)

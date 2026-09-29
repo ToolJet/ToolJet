@@ -15,7 +15,7 @@ describe('WorkflowApprovalTimeoutService.scheduleTimers', () => {
   it('schedules reminders even when the timeout is disabled (no deadline job)', async () => {
     const { service, add } = makeService();
     await service.scheduleTimers(
-      { id: 'req-1', expiresAt: null },
+      { id: 'req-1', expiresAt: null, createdAt: new Date() },
       { timeout: { enabled: false }, reminders: [{ afterSeconds: 3600 }] }
     );
     const names = jobNames(add);
@@ -26,7 +26,7 @@ describe('WorkflowApprovalTimeoutService.scheduleTimers', () => {
   it('schedules both the deadline and the reminders when the timeout is enabled', async () => {
     const { service, add } = makeService();
     await service.scheduleTimers(
-      { id: 'req-2', expiresAt: new Date(Date.now() + 60_000) },
+      { id: 'req-2', expiresAt: new Date(Date.now() + 60_000), createdAt: new Date() },
       { timeout: { enabled: true }, reminders: [{ afterSeconds: 30 }, { afterSeconds: 45 }] }
     );
     const names = jobNames(add);
@@ -36,19 +36,25 @@ describe('WorkflowApprovalTimeoutService.scheduleTimers', () => {
 
   it('reads reminders from the legacy timeout.reminders location when top-level is absent', async () => {
     const { service, add } = makeService();
+    const now = Date.now();
+    jest.spyOn(Date, 'now').mockReturnValue(now);
     await service.scheduleTimers(
-      { id: 'req-3', expiresAt: null },
+      { id: 'req-3', expiresAt: null, createdAt: new Date(now) },
       { timeout: { enabled: false, reminders: [{ afterSeconds: 120 }] } }
     );
     const reminderJobs = add.mock.calls.filter((c) => c[0] === APPROVAL_REMINDER_JOB);
     expect(reminderJobs).toHaveLength(1);
     // afterSeconds is anchored to creation time, so the delay is afterSeconds * 1000.
     expect(reminderJobs[0][2]).toMatchObject({ jobId: 'reminder-req-3-0', delay: 120_000 });
+    jest.restoreAllMocks();
   });
 
   it('schedules nothing when the timeout is disabled and there are no reminders', async () => {
     const { service, add } = makeService();
-    await service.scheduleTimers({ id: 'req-4', expiresAt: null }, { timeout: { enabled: false } });
+    await service.scheduleTimers(
+      { id: 'req-4', expiresAt: null, createdAt: new Date() },
+      { timeout: { enabled: false } }
+    );
     expect(add).not.toHaveBeenCalled();
   });
 });
@@ -78,9 +84,10 @@ describe('WorkflowApprovalTimeoutService.scheduleTimers | real BullMQ queue', ()
 
   it('should schedule the deadline and reminders with a timeout enabled, then cancel them', async () => {
     const service = new WorkflowApprovalTimeoutService(queue);
+    const definition = { timeout: { enabled: true }, reminders: [{ afterSeconds: 30 }] };
     await service.scheduleTimers(
-      { id: 'req-real', expiresAt: new Date(Date.now() + 60_000) },
-      { timeout: { enabled: true }, reminders: [{ afterSeconds: 30 }] }
+      { id: 'req-real', expiresAt: new Date(Date.now() + 60_000), createdAt: new Date() },
+      definition
     );
 
     const scheduled = await queue.getJobs(['delayed']);
@@ -91,7 +98,7 @@ describe('WorkflowApprovalTimeoutService.scheduleTimers | real BullMQ queue', ()
       ])
     );
 
-    await service.cancelTimers('req-real');
+    await service.cancelTimers('req-real', definition);
     expect(await queue.getJobs(['delayed', 'waiting'])).toHaveLength(0);
   });
 });

@@ -41,7 +41,6 @@ export function validateReachedNodeConfiguration({
     }
 
     case 'filter':
-      // Keep these messages aligned with the EE Filter connection validator without importing EE into CE.
       if (incomingEdgeCount !== 1) {
         throw new WorkflowNodeConfigurationError(
           incomingEdgeCount === 0

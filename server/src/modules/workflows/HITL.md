@@ -62,7 +62,8 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
    pause; resolve emits an `auditLogEntry` (`actionType: 'WORKFLOW_APPROVAL_RESOLVED'`,
    `resourceType: MODULES.WORKFLOWS`, so the Workflows audit filter includes it; the action is
    registered as `HUMAN_IN_THE_LOOP`'s `auditLogsKey` with `skipAuditLogs` so the interceptor does
-   not log the approval routes a second time).
+   not log the approval routes a second time). An admin cancel emits `WORKFLOW_APPROVAL_CANCELLED`
+   under the same resource; it is not yet an action-filter option, since each feature carries one key.
 
 ## Semantics
 
@@ -96,9 +97,13 @@ gated by `FEATURE_KEY.HUMAN_IN_THE_LOOP` (`constants/feature.ts`). CE services a
   `services/workflow-approval-timeout.service.ts`). Consumer:
   `WorkflowApprovalTimeoutProcessor` (`processors/workflow-approval-timeout.processor.ts`,
   `@Processor` + `WorkerHost`).
-- `cancelTimers(requestId)` removes delayed/waiting jobs for a request on resolve/cancel.
+- `cancelTimers(requestId, definition)` removes a request's timers by their deterministic ids
+  (the reminder count comes from the node definition) on resolve/cancel/expire/terminate; it
+  never lists the instance-wide queue.
 - `ApprovalTimeoutBootstrapService` (`services/approval-timeout-bootstrap.service.ts`) re-arms
-  timers for all `pending` requests on worker boot (per-item isolation).
+  timers for all `pending` requests on worker boot (per-item isolation), expiring past-due ones.
+  Re-arm skips reminders already due, since the queue drops fired jobs
+  (`removeOnComplete: true`, `removeOnFail: 100`) and re-adding one would send it again.
 - Processors + bootstrap register only on a worker instance (`process.env.WORKER === 'true'` +
   `isMainImport`); an HTTP-only instance enqueues but never fires timers.
 

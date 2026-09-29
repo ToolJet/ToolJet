@@ -17,6 +17,7 @@ import { WorkflowExecutionsService } from '@ee/workflows/services/workflow-execu
 describe('schedule overlap guard', () => {
   let app: INestApplication;
   let service: WorkflowExecutionsService;
+  let appId: string;
   let appVersionId: string;
   let userId: string;
   let environmentId: string;
@@ -28,6 +29,7 @@ describe('schedule overlap guard', () => {
   const seedSchedule = async (): Promise<string> => {
     const schedule = await saveEntity(WorkflowSchedule, {
       workflowId: appVersionId,
+      appId,
       environmentId,
       active: true,
       type: 'interval',
@@ -48,6 +50,7 @@ describe('schedule overlap guard', () => {
     });
     userId = user.id;
     const workflowApp = await createWorkflowForUser(app, user, 'HITL overlap wf');
+    appId = workflowApp.id;
     appVersionId = (await createWorkflowApplicationVersion(app, workflowApp)).id;
     const devEnv = await getDefaultDataSource()
       .getRepository(AppEnvironment)
@@ -71,6 +74,34 @@ describe('schedule overlap guard', () => {
       scheduleId: waitingScheduleId,
     });
     expect(await service.hasNonTerminalRunForSchedule(waitingScheduleId)).toBe(true);
+  });
+
+  it('reports a non-terminal run for a schedule whose run is paused on a Wait node', async () => {
+    const scheduleId = await seedSchedule();
+    await saveEntity(WorkflowExecution, {
+      appVersionId,
+      startNodeId: null,
+      executed: false,
+      status: 'waiting_for_delay',
+      executingUserId: userId,
+      logs: [],
+      scheduleId,
+    });
+    expect(await service.hasNonTerminalRunForSchedule(scheduleId)).toBe(true);
+  });
+
+  // An in-flight row still carries the column default status = 'success'.
+  it('reports no non-terminal run when the only run for the schedule is still in flight', async () => {
+    const scheduleId = await seedSchedule();
+    await saveEntity(WorkflowExecution, {
+      appVersionId,
+      startNodeId: null,
+      executed: false,
+      executingUserId: userId,
+      logs: [],
+      scheduleId,
+    });
+    expect(await service.hasNonTerminalRunForSchedule(scheduleId)).toBe(false);
   });
 
   it('reports no non-terminal run when the only run for the schedule is completed', async () => {

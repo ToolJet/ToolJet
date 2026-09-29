@@ -74,9 +74,9 @@ export class WorkflowApprovalRequest {
   @JoinColumn({ name: 'resolved_by_user_id' })
   resolvedByUser: User | null;
 
-  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 }

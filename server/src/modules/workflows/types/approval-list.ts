@@ -1,4 +1,4 @@
-import { WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
+import { ApprovalRequestStatus, WorkflowApprovalRequest } from '@entities/workflow_approval_request.entity';
 import { App } from '@entities/app.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 
@@ -82,4 +82,14 @@ export interface ApprovalListItem {
    * them forgetting the state half. `status` is still on the row for rendering closed states.
    */
   canResolve: boolean;
+}
+
+/** What the token link shows an approver: the decision to make, never who else can make it. */
+export interface ApprovalTokenView {
+  nodeName: string | undefined;
+  description: string;
+  outcomes: Array<{ key: string; label?: string }>;
+  inputSchema: Array<Record<string, unknown>>;
+  status: ApprovalRequestStatus;
+  expiresAt: Date | null;
 }

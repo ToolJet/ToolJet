@@ -1,20 +1,21 @@
-import { ApprovalListFilters, ApprovalListItem } from '../types/approval-list';
+import { User } from '@entities/user.entity';
+import { ApprovalListFilters, ApprovalListItem, ApprovalTokenView } from '../types/approval-list';
 
 export interface IWorkflowApprovalsService {
-  getByToken(token: string): Promise<any>;
+  getByToken(token: string): Promise<ApprovalTokenView>;
   resolve(
     token: string,
     dto: { outcome: string; input?: Record<string, unknown> },
-    user?: any
+    user?: User
   ): Promise<{ status: 'resolved' }>;
   resolveById(
     id: string,
     dto: { outcome: string; input?: Record<string, unknown> },
-    user: any
+    user: User
   ): Promise<{ status: 'resolved' }>;
-  cancel(id: string, user: any): Promise<{ status: 'cancelled' }>;
+  cancel(id: string, user: User): Promise<{ status: 'cancelled' }>;
   list(
-    user: any,
+    user: User,
     filters: ApprovalListFilters,
     page: number,
     perPage: number

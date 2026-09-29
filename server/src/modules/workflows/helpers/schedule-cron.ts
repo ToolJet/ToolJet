@@ -17,8 +17,6 @@ import { parseExpression, CronExpression } from 'cron-parser';
 /** The stored shape: `workflow_schedules.type` plus its `details` jsonb. */
 export type ScheduleShape = { type: string; details: Record<string, any> };
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 /**
  * `hours + minutes / 60`, carried over verbatim from the scheduler.
  *
@@ -93,29 +91,11 @@ export function describeCadence(schedule: ScheduleShape): string {
 }
 
 /**
- * A usable IANA zone, or 'UTC'.
- *
- * `parseExpression` does not reject an unknown `tz` — it quietly resolves against the server's own
- * local zone instead. That would make the same schedule display different times on a developer's
- * machine and in production, which is worse than being plainly wrong in one fixed way. `Intl` does
- * throw on a bad zone, so it is what decides here.
- */
-function resolveTimezone(timezone: string): string {
-  if (!timezone) return 'UTC';
-  try {
-    Intl.DateTimeFormat(undefined, { timeZone: timezone });
-    return timezone;
-  } catch {
-    return 'UTC';
-  }
-}
-
-/**
  * The next `count` fire times, resolved in the schedule's own timezone.
  *
- * Returns an empty array for anything unusable — an invalid expression (see `hourOffset`) or a
- * missing one. An unusable timezone degrades to UTC rather than failing the row. The caller is
- * rendering a panel, not running a job: one bad row should cost that row, not the request.
+ * Returns an empty array for anything unusable — an invalid expression (see `hourOffset`), a
+ * missing one, or a timezone cron-parser rejects (BullMQ rejects it too, so the schedule never
+ * fires). The caller is rendering a panel: one bad row should cost that row, not the request.
  */
 export function nextRuns(cron: string | null, timezone: string, count: number, from: Date = new Date()): Date[] {
   if (!cron) return [];
@@ -125,7 +105,7 @@ export function nextRuns(cron: string | null, timezone: string, count: number, f
   // `false` default, which widens `next()` to a union that does not have `toDate`.
   let iterator: CronExpression;
   try {
-    iterator = parseExpression(cron, { currentDate: from, tz: resolveTimezone(timezone) });
+    iterator = parseExpression(cron, { currentDate: from, tz: timezone || 'UTC' });
   } catch {
     return [];
   }
@@ -140,5 +120,3 @@ export function nextRuns(cron: string | null, timezone: string, count: number, f
   }
   return runs;
 }
-
-export { DAY_NAMES };

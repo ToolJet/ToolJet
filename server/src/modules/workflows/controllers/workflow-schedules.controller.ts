@@ -6,6 +6,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
+import { ListSchedulesDto } from '@modules/workflows/dto/list-schedules.dto';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow-schedules')
@@ -39,12 +40,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
   @Get()
   async findAll(
     @User() user,
-    @Query('app_id') appId: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('environment_id') environmentId?: string,
-    @Query('workflow_id') workflowId?: string
+    @Query() query: ListSchedulesDto
   ): Promise<WorkflowSchedule[] | { data: WorkflowSchedule[]; total: number; page: number; limit: number }> {
     throw new Error('Method not implemented.');
   }

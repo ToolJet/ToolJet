@@ -114,8 +114,13 @@ describe('nextRuns', () => {
     expect(nextRuns(null, 'UTC', 3, from)).toEqual([]);
   });
 
-  it('falls back to UTC when the timezone is unusable', () => {
-    const runs = nextRuns('0 8 * * *', 'Not/AZone', 1, from);
+  // cron-parser, and so BullMQ registration, rejects an unknown zone: such a schedule never fires.
+  it('returns nothing when the timezone is unusable', () => {
+    expect(nextRuns('0 8 * * *', 'Not/AZone', 3, from)).toEqual([]);
+  });
+
+  it('resolves in UTC when no timezone is stored', () => {
+    const runs = nextRuns('0 8 * * *', '', 1, from);
     expect(runs.map((run) => run.toISOString())).toEqual(['2026-09-25T08:00:00.000Z']);
   });
 });

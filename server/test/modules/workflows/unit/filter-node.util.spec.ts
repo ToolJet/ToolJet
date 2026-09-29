@@ -1,18 +1,8 @@
 /** @group workflows */
 
-import {
-  FILTER_CHECKPOINT_INTERVAL,
-  filterNodeValues,
-  validateFilterInputConnection,
-} from '@ee/workflows/services/filter-node.util';
+import { FILTER_CHECKPOINT_INTERVAL, filterNodeValues } from '@ee/workflows/services/filter-node.util';
 
 describe('filterNodeValues', () => {
-  it('should require exactly one upstream input connection', () => {
-    expect(() => validateFilterInputConnection(0)).toThrow('Filter requires one upstream input connection');
-    expect(() => validateFilterInputConnection(2)).toThrow('Filter accepts exactly one upstream input connection');
-    expect(() => validateFilterInputConnection(1)).not.toThrow();
-  });
-
   it('should retain values whose predicate expression is truthy', async () => {
     const evaluate = jest
       .fn()

@@ -13,7 +13,7 @@ const baseRow: any = {
   app: { id: 'app-1', name: 'Daily Data Sync' },
   appVersion: { id: 'ver-1', name: 'v2.3' },
   environment: { id: 'env-1', name: 'production' },
-  schedule: { id: 'sch-1', name: 'Every Monday', details: {} },
+  schedule: { id: 'sch-1', name: 'Every Monday', type: 'interval', details: {} },
 };
 
 describe('toExecutionListItem', () => {
@@ -63,11 +63,25 @@ describe('toExecutionListItem', () => {
 
 describe('describeSchedule', () => {
   it('prefers the schedule name when one was given', () => {
-    expect(describeSchedule({ name: 'Every Monday', details: { cron: '0 9 * * 1' } })).toBe('Every Monday');
+    expect(describeSchedule({ name: 'Every Monday', type: 'interval', details: { frequency: 'minute' } })).toBe(
+      'Every Monday'
+    );
   });
 
-  it('falls back to the raw cron expression for an unnamed schedule', () => {
-    expect(describeSchedule({ name: null, details: { cron: '0 9 * * 1' } })).toBe('0 9 * * 1');
+  it('describes the cadence of an unnamed interval schedule', () => {
+    expect(describeSchedule({ name: null, type: 'interval', details: { frequency: 'day', hour: '9:00 AM' } })).toBe(
+      'Daily at 9:00 AM'
+    );
+  });
+
+  it('shows the expression of an unnamed cron schedule', () => {
+    expect(
+      describeSchedule({
+        name: null,
+        type: 'cron',
+        details: { minute: '0', hours: '9', dayOfMonth: '*', month: '*', dayOfWeek: '1' },
+      })
+    ).toBe('0 9 * * 1');
   });
 
   it('returns null when there is no schedule at all', () => {
