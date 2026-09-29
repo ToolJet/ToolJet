@@ -1,6 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { randomUUID } from 'crypto';
+import { Queue } from 'bullmq';
+import { getQueueToken } from '@nestjs/bullmq';
+import { WORKFLOW_SCHEDULE_QUEUE } from '@modules/workflows/constants';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { Organization } from '@entities/organization.entity';
@@ -24,6 +27,8 @@ type SeededWorkspace = {
   user: User;
   organization: Organization;
   appId: string;
+  versionId: string;
+  environmentId: string;
   executionId: string;
   scheduleId: string;
 };
@@ -58,7 +63,15 @@ const seedWorkspace = async (app: INestApplication, email: string, workflowName:
     appId: workflow.id,
     scheduleId: schedule.id,
   });
-  return { user, organization, appId: workflow.id, executionId: execution.id, scheduleId: schedule.id };
+  return {
+    user,
+    organization,
+    appId: workflow.id,
+    versionId: version.id,
+    environmentId: environment.id,
+    executionId: execution.id,
+    scheduleId: schedule.id,
+  };
 };
 
 /** @group workflows */
@@ -145,6 +158,35 @@ describe('WorkflowExecutionsController workspace routes', () => {
           ],
         });
         expect(response.body.upcoming).toHaveLength(1);
+      });
+
+      it('should report whether BullMQ holds a job scheduler for each schedule', async () => {
+        const queue = app.get<Queue>(getQueueToken(WORKFLOW_SCHEDULE_QUEUE));
+        const unregistered = await saveEntity(WorkflowSchedule, {
+          workflowId: own.versionId,
+          appId: own.appId,
+          environmentId: own.environmentId,
+          active: true,
+          type: 'interval',
+          timezone: 'UTC',
+          details: { frequency: 'minute' },
+        });
+        await queue.upsertJobScheduler(own.scheduleId, { pattern: '* * * * *' }, { name: 'registered-check' });
+        try {
+          const response = await asOwner(
+            request(app.getHttpServer()).get('/api/workflow_executions/workspace/upcoming')
+          ).expect(200);
+
+          const registeredById = Object.fromEntries(
+            response.body.upcoming.map((run: { scheduleId: string; registered: boolean }) => [
+              run.scheduleId,
+              run.registered,
+            ])
+          );
+          expect(registeredById).toEqual({ [own.scheduleId]: true, [unregistered.id]: false });
+        } finally {
+          await queue.removeJobScheduler(own.scheduleId);
+        }
       });
 
       it('should leave out schedules of a disabled workflow', async () => {
