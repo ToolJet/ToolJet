@@ -16,15 +16,15 @@ its absence tells the generators to build a `dropdown-component-flip` operations
 
 ## 2. Auth type
 
-| Source says | `auth.type` |
-|---|---|
-| API key in a header or query string | `api_key` |
-| Bearer token, personal access token, JWT | `bearer` |
-| Username and password | `basic` |
-| OAuth 2.0 authorization-code flow | `oauth2` |
-| Host/port/user/password or a connection string | `connection_fields` |
-| Signed requests, several headers, anything else | `custom` |
-| Public API | `none` |
+| Source says                                     | `auth.type`         |
+| ----------------------------------------------- | ------------------- |
+| API key in a header or query string             | `api_key`           |
+| Bearer token, personal access token, JWT        | `bearer`            |
+| Username and password                           | `basic`             |
+| OAuth 2.0 authorization-code flow               | `oauth2`            |
+| Host/port/user/password or a connection string  | `connection_fields` |
+| Signed requests, several headers, anything else | `custom`            |
+| Public API                                      | `none`              |
 
 ## 3. Operations
 

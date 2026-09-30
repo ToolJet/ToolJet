@@ -22,13 +22,13 @@ npx postman-to-openapi <collection>.postman_collection.json -f <name>-openapi.ya
 
 Fix its known defects:
 
-| Defect | Fix |
-|---|---|
+| Defect                                         | Fix                                                                                                                                                                               |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OAuth2 written as `type: http, scheme: oauth2` | `type: oauth2` with `flows.authorizationCode` (`authorizationUrl`, `tokenUrl`, `scopes`). Postman often keeps these in environment variables; look them up in the provider's docs |
-| `securitySchemes` missing | Add from collection-level `auth` |
-| Disabled query params dropped | Leave them out, list them as "not converted" |
-| Non-standard MIME types (`application/text`) | Standard types (`text/plain`) |
-| Duplicate `operationId`s | Add a numeric suffix |
+| `securitySchemes` missing                      | Add from collection-level `auth`                                                                                                                                                  |
+| Disabled query params dropped                  | Leave them out, list them as "not converted"                                                                                                                                      |
+| Non-standard MIME types (`application/text`)   | Standard types (`text/plain`)                                                                                                                                                     |
+| Duplicate `operationId`s                       | Add a numeric suffix                                                                                                                                                              |
 
 If the converter fails, write the spec by hand with the same rules: `info` (collection name,
 `version: "1.0.0"`), `servers`, one path entry per normalized path + method with `operationId`,
@@ -52,15 +52,15 @@ Walk the whole `item` tree, recursing through nested folders.
 - `operationId`: tag + request name in camelCase (`Account` + `Account-Create` = `accountCreate`),
   unique across the spec.
 
-| Postman `body.mode` | Content type |
-|---|---|
-| `raw` + JSON content-type or JSON-looking body | `application/json` |
-| `raw` + `text/plain` or `application/text` | `text/plain` |
-| `raw` + `application/xml` | `application/xml` |
-| `formdata` | `multipart/form-data` |
-| `urlencoded` | `application/x-www-form-urlencoded` |
-| `binary` | `application/octet-stream` |
-| `graphql` | `application/json` |
+| Postman `body.mode`                            | Content type                        |
+| ---------------------------------------------- | ----------------------------------- |
+| `raw` + JSON content-type or JSON-looking body | `application/json`                  |
+| `raw` + `text/plain` or `application/text`     | `text/plain`                        |
+| `raw` + `application/xml`                      | `application/xml`                   |
+| `formdata`                                     | `multipart/form-data`               |
+| `urlencoded`                                   | `application/x-www-form-urlencoded` |
+| `binary`                                       | `application/octet-stream`          |
+| `graphql`                                      | `application/json`                  |
 
 Example values infer types: integer, boolean, `format: date` / `date-time` for ISO dates,
 otherwise `string` (numeric strings stay strings).
@@ -70,14 +70,14 @@ otherwise `string` (numeric strings stay strings).
 Check collection-level `auth` and per-request overrides. Uniform auth goes in top-level
 `security`; overrides go on the operation.
 
-| Postman | OpenAPI `securitySchemes` entry |
-|---|---|
-| `bearer` | `type: http`, `scheme: bearer` |
-| `basic` | `type: http`, `scheme: basic` |
-| `apikey` | `type: apiKey`, `in: header\|query\|cookie`, `name: <key>` |
-| `oauth2` | `type: oauth2` with `flows` (see above) |
+| Postman  | OpenAPI `securitySchemes` entry                                             |
+| -------- | --------------------------------------------------------------------------- |
+| `bearer` | `type: http`, `scheme: bearer`                                              |
+| `basic`  | `type: http`, `scheme: basic`                                               |
+| `apikey` | `type: apiKey`, `in: header\|query\|cookie`, `name: <key>`                  |
+| `oauth2` | `type: oauth2` with `flows` (see above)                                     |
 | `oauth1` | `type: http`, `scheme: OAuth`, plus a `description` of the signature method |
-| `noauth` | no `security` on those operations |
+| `noauth` | no `security` on those operations                                           |
 
 `type: http` takes any IANA-registered HTTP auth scheme (`basic`, `bearer`, `digest`, `OAuth`
 for 1.0a, …). `oauth2` is not one of them; OAuth 2.0 always uses `type: oauth2`.

@@ -8,14 +8,14 @@ schema-checked). Templates live in
 
 ## V1 or V2 manifest
 
-| | V1 (default) | V2 |
-|---|---|---|
-| Identity | `source: { name, kind, options, exposedVariables, customTesting }` | `tj:source: { name, kind, type }`, `tj:version` |
-| Fields | `properties.<key>.type` (widget) | JSON Schema `properties` + `tj:ui:properties.<key>.widget` |
-| Encryption | `source.options.<key>.encrypted: true` | `tj:encrypted: [keys]` |
-| Initial values | `defaults.<key>.value` | JSON Schema `default` |
-| Conditional required | — | `allOf` with `if`/`then` |
-| Marketplace users | almost all plugins | `anthropic`, `gemini`, `openai` |
+|                      | V1 (default)                                                       | V2                                                         |
+| -------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Identity             | `source: { name, kind, options, exposedVariables, customTesting }` | `tj:source: { name, kind, type }`, `tj:version`            |
+| Fields               | `properties.<key>.type` (widget)                                   | JSON Schema `properties` + `tj:ui:properties.<key>.widget` |
+| Encryption           | `source.options.<key>.encrypted: true`                             | `tj:encrypted: [keys]`                                     |
+| Initial values       | `defaults.<key>.value`                                             | JSON Schema `default`                                      |
+| Conditional required | —                                                                  | `allOf` with `if`/`then`                                   |
+| Marketplace users    | almost all plugins                                                 | `anthropic`, `gemini`, `openai`                            |
 
 Use V2 only when the form needs `toggle-flip`, the `*-v3` inputs, or `allOf` validation.
 The frontend treats any manifest with `tj:version` as V2.
@@ -24,41 +24,41 @@ The frontend treats any manifest with `tj:version` as V2.
 
 manifest.json (V1 `type`):
 
-| Widget | Use |
-|---|---|
-| `text` | URLs, usernames, ids |
-| `password` | Secrets; also mark the option `encrypted` |
-| `textarea` | Certificates, long text |
-| `dropdown` | Fixed choices (`list: [{ name, value }]`) |
-| `dropdown-component-flip` | Choice that swaps child field groups (auth method) |
-| `toggle` | Boolean |
+| Widget                    | Use                                                         |
+| ------------------------- | ----------------------------------------------------------- |
+| `text`                    | URLs, usernames, ids                                        |
+| `password`                | Secrets; also mark the option `encrypted`                   |
+| `textarea`                | Certificates, long text                                     |
+| `dropdown`                | Fixed choices (`list: [{ name, value }]`)                   |
+| `dropdown-component-flip` | Choice that swaps child field groups (auth method)          |
+| `toggle`                  | Boolean                                                     |
 | `react-component-headers` | Key/value pairs, e.g. custom headers (default `[["", ""]]`) |
-| `react-component-oauth` | OAuth 2.0 connect flow; see `oauth-manifest.json` |
+| `react-component-oauth`   | OAuth 2.0 connect flow; see `oauth-manifest.json`           |
 
 V2 `widget` names: `text-v3`, `password-v3`, `password-v3-textarea`, `toggle-v2`, `toggle-flip`,
 `dropdown`, `dropdown-component-flip`, `react-component-headers`, `react-component-oauth`.
 
 operations.json (`type`):
 
-| Widget | Use |
-|---|---|
-| `dropdown-component-flip` | The operation picker for hand-written operations |
+| Widget                         | Use                                                 |
+| ------------------------------ | --------------------------------------------------- |
+| `dropdown-component-flip`      | The operation picker for hand-written operations    |
 | `react-component-api-endpoint` | The operation picker for OpenAPI specs (`spec_url`) |
-| `codehinter` | Nearly every parameter; accepts `{{ }}` expressions |
-| `dropdown` | Closed enum parameter |
-| `toggle` | Boolean parameter |
+| `codehinter`                   | Nearly every parameter; accepts `{{ }}` expressions |
+| `dropdown`                     | Closed enum parameter                               |
+| `toggle`                       | Boolean parameter                                   |
 
 ## Auth patterns (V1 templates)
 
-| `auth.type` | Template | Shape |
-|---|---|---|
-| `api_key` | `v1/api-key-manifest.json` | Flat `api_key` password field |
-| `bearer` | `v1/bearer-manifest.json` | `dropdown-component-flip` auth picker, nested token group |
-| `basic` | `v1/basic-manifest.json` | Flat URL, username, password |
-| `oauth2` | `v1/oauth-manifest.json` | One `react-component-oauth` property with `oauth_configs`; OAuth URLs and grant in `defaults` |
-| `none` | `v1/none-manifest.json` | No credentials; optional base URL |
-| `custom` | `v1/custom-manifest.json` | Base URL + custom headers; add fields as needed |
-| `connection_fields` | `v2/database-manifest.json`, or V1 flat fields | Host, port, database, username, password, SSL |
+| `auth.type`         | Template                                       | Shape                                                                                         |
+| ------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `api_key`           | `v1/api-key-manifest.json`                     | Flat `api_key` password field                                                                 |
+| `bearer`            | `v1/bearer-manifest.json`                      | `dropdown-component-flip` auth picker, nested token group                                     |
+| `basic`             | `v1/basic-manifest.json`                       | Flat URL, username, password                                                                  |
+| `oauth2`            | `v1/oauth-manifest.json`                       | One `react-component-oauth` property with `oauth_configs`; OAuth URLs and grant in `defaults` |
+| `none`              | `v1/none-manifest.json`                        | No credentials; optional base URL                                                             |
+| `custom`            | `v1/custom-manifest.json`                      | Base URL + custom headers; add fields as needed                                               |
+| `connection_fields` | `v2/database-manifest.json`, or V1 flat fields | Host, port, database, username, password, SSL                                                 |
 
 Several methods at once: V1 uses a `dropdown-component-flip` whose `list` values name sibling
 groups (see `bearer-manifest.json`, add more entries and groups); V2 uses
@@ -98,6 +98,7 @@ holding its parameters. Only the selected group renders. Template: `v1/api-opera
   ```
 
   Single-line values: `height: "36px"`. JSON bodies: `"150px"`. SQL: `"250px"`.
+
 - Pagination: `page` and `page_size` codehinters with the default in the `placeholder`.
 
 ## operations.json, OpenAPI (`react-component-api-endpoint`)

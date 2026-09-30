@@ -23,15 +23,15 @@ To validate an existing plugin only, skip to step 5.
 Ask one question at a time. Skip any the user already answered. If the user says to use defaults,
 state them: type `api`, no PRD, no icon, no design reference, current branch, version `1.0.0`, V1.
 
-| # | Question | Notes |
-|---|---|---|
-| 1 | Display name and plugin id? | id: lowercase, `[a-z][a-z0-9_-]*`, e.g. "Stripe" / `stripe` |
-| 2 | Plugin type? | `api`, `database`, or `cloud-storage` (the scaffold's `--type`) |
-| 3 | PRD or requirements? | Issue URL, inline text, file path, or none |
-| 4 | API source? | OpenAPI file or URL, Postman collection, npm package, docs URL, or a description |
-| 5 | Icon? | SVG URL or path, or none (keep the scaffolded placeholder) |
-| 6 | Design reference? | Figma link, screenshot, or none |
-| 7 | Where to work? | Current branch or a new branch/worktree. Default: current branch |
+| #   | Question                    | Notes                                                                            |
+| --- | --------------------------- | -------------------------------------------------------------------------------- |
+| 1   | Display name and plugin id? | id: lowercase, `[a-z][a-z0-9_-]*`, e.g. "Stripe" / `stripe`                      |
+| 2   | Plugin type?                | `api`, `database`, or `cloud-storage` (the scaffold's `--type`)                  |
+| 3   | PRD or requirements?        | Issue URL, inline text, file path, or none                                       |
+| 4   | API source?                 | OpenAPI file or URL, Postman collection, npm package, docs URL, or a description |
+| 5   | Icon?                       | SVG URL or path, or none (keep the scaffolded placeholder)                       |
+| 6   | Design reference?           | Figma link, screenshot, or none                                                  |
+| 7   | Where to work?              | Current branch or a new branch/worktree. Default: current branch                 |
 
 Right after question 1, check the id is free:
 
@@ -47,11 +47,11 @@ on duplicates (the CLI would abort with "Plugin id already exists").
 
 Produce `plugin-spec.json`, the contract both generators work from. Route by source:
 
-| Source | Reference |
-|---|---|
-| OpenAPI spec (`.json`, `.yaml`, URL) | `references/intake-openapi.md` |
-| Postman collection | `references/intake-postman.md`, then `references/intake-openapi.md` |
-| npm package, DB driver, docs URL, description | `references/intake-docs.md` |
+| Source                                        | Reference                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| OpenAPI spec (`.json`, `.yaml`, URL)          | `references/intake-openapi.md`                                      |
+| Postman collection                            | `references/intake-postman.md`, then `references/intake-openapi.md` |
+| npm package, DB driver, docs URL, description | `references/intake-docs.md`                                         |
 
 Validate it against `assets/plugin-spec.schema.json` (draft-07; ajv is installed in
 `marketplace/`):
@@ -138,9 +138,9 @@ Commit and open PRs with the repo's `commit` and `create-pr` skills. Commit `plu
 
 ## Common mistakes
 
-| Mistake | Fix |
-|---|---|
+| Mistake                                             | Fix                                                                   |
+| --------------------------------------------------- | --------------------------------------------------------------------- |
 | `@spec/` reference with no file in `openapi-specs/` | File name without extension must equal the `@spec/<id>/<name>` suffix |
-| Hand-written operations for an OpenAPI source | Use `react-component-api-endpoint` with `@spec/` |
-| Retrying a Postman share URL that returns HTML | Ask the user to export the collection file |
-| Adding jest tests as a gate | Plugin tests are not wired up; verify with build + validator |
+| Hand-written operations for an OpenAPI source       | Use `react-component-api-endpoint` with `@spec/`                      |
+| Retrying a Postman share URL that returns HTML      | Ask the user to export the collection file                            |
+| Adding jest tests as a gate                         | Plugin tests are not wired up; verify with build + validator          |
