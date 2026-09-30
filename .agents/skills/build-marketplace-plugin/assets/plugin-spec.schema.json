@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ToolJet marketplace plugin spec",
+  "description": "Intermediate contract between intake and the backend/frontend generators. Not committed.",
+  "type": "object",
+  "required": ["metadata", "auth", "schemaVersion", "operations"],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "kind", "description"],
+      "properties": {
+        "name": { "type": "string", "description": "Display name, e.g. 'Stripe'" },
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Plugin id: plugins.json id, manifest source.kind, directory name"
+        },
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "default": "1.0.0" },
+        "type": { "type": "string", "enum": ["api", "database", "cloud-storage"], "default": "api" },
+        "baseUrl": { "type": "string" }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "api_key", "bearer", "basic", "oauth2", "connection_fields", "custom"]
+        },
+        "config": {
+          "type": "object",
+          "description": "api_key: {headerName, in, prefix}. oauth2: {authUrl, tokenUrl, scopes, credentialsIn: 'basic_header'|'body'}."
+        }
+      }
+    },
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["v1", "v2"],
+      "description": "v1 = source/properties manifest; v2 = tj:source/tj:ui:properties manifest"
+    },
+    "operationsMode": {
+      "type": "string",
+      "enum": ["api-endpoint"],
+      "description": "Set only for OpenAPI sources: operations.json uses react-component-api-endpoint. Absent = dropdown-component-flip."
+    },
+    "specUrl": {
+      "description": "Required when operationsMode is api-endpoint. '@spec/<kind>/<name>' or {EntityLabel: '@spec/<kind>/<name>'}. Written to operations.json as spec_url.",
+      "oneOf": [
+        { "type": "string", "pattern": "^@spec/[a-z][a-z0-9_-]*/[A-Za-z0-9_.-]+$" },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string", "pattern": "^@spec/[a-z][a-z0-9_-]*/[A-Za-z0-9_.-]+$" }
+        }
+      ]
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "parameters"],
+        "properties": {
+          "name": { "type": "string", "description": "Operation value, e.g. 'list_customers'" },
+          "displayName": { "type": "string" },
+          "description": { "type": "string" },
+          "method": { "type": "string" },
+          "path": { "type": "string" },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string", "enum": ["string", "number", "boolean", "json", "array"] },
+                "required": { "type": "boolean", "default": false },
+                "widget": { "type": "string", "enum": ["codehinter", "dropdown", "toggle"] },
+                "placeholder": { "type": "string" },
+                "description": { "type": "string" },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "name": { "type": "string" }, "value": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "uiExpectations": {
+      "type": "object",
+      "properties": {
+        "reference": { "type": "string", "description": "figma:<url> | screenshot:<path> | none" },
+        "datasourceFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": { "type": "string" },
+              "label": { "type": "string" },
+              "widget": { "type": "string" },
+              "order": { "type": "integer" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "if": { "required": ["operationsMode"] },
+  "then": { "required": ["specUrl"] }
+}

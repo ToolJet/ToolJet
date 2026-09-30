@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "api"
+  },
+  "tj:encrypted": ["api_key"],
+  "properties": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Enter your API key"
+    }
+  },
+  "required": ["api_key"],
+  "tj:ui:properties": {
+    "api_key": {
+      "order": 1,
+      "$ref": "#/properties/api_key",
+      "key": "api_key",
+      "label": "API Key",
+      "description": "Enter your API key",
+      "widget": "password-v3",
+      "required": true
+    }
+  }
+}
