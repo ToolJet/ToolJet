@@ -1,5 +1,5 @@
 ---
-name: build-marketplace-plugin
+name: create-plugin
 description: >-
   Create or validate a ToolJet marketplace data-source plugin from an OpenAPI spec,
   Postman collection, npm package, database driver, or API docs. Use when asked to
@@ -57,7 +57,7 @@ Validate it against `assets/plugin-spec.schema.json` (draft-07; ajv is installed
 `marketplace/`):
 
 ```bash
-cd marketplace && node -e "const A=require('ajv'),fs=require('fs');const v=new A({allErrors:true}).compile(JSON.parse(fs.readFileSync(process.argv[1])));if(!v(JSON.parse(fs.readFileSync(process.argv[2]))))throw new Error(JSON.stringify(v.errors,null,1));console.log('spec ok')" ../.agents/skills/build-marketplace-plugin/assets/plugin-spec.schema.json <path-to>/plugin-spec.json
+cd marketplace && node -e "const A=require('ajv'),fs=require('fs');const v=new A({allErrors:true}).compile(JSON.parse(fs.readFileSync(process.argv[1])));if(!v(JSON.parse(fs.readFileSync(process.argv[2]))))throw new Error(JSON.stringify(v.errors,null,1));console.log('spec ok')" ../.agents/skills/create-plugin/assets/plugin-spec.schema.json <path-to>/plugin-spec.json
 ```
 
 Write `plugin-spec.json` outside the repo (or delete it before committing). It is an
