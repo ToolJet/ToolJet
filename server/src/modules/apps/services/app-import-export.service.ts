@@ -52,6 +52,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
+import { OrganizationThemes } from '@entities/organization_themes.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -2054,6 +2055,17 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // Themes belong to a workspace: link the app to a theme here, created from the exported definition if missing
+  async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    const theme = globalSettings?.theme;
+    if (!theme?.name || !theme.definition || theme.organizationId === organizationId) return globalSettings;
+
+    const { id } =
+      (await manager.findOne(OrganizationThemes, { where: { organizationId, name: theme.name } })) ??
+      (await manager.save(OrganizationThemes, { organizationId, name: theme.name, definition: theme.definition }));
+    return { ...globalSettings, theme: { ...theme, id, organizationId } };
+  }
+
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
@@ -2280,7 +2292,7 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        version.globalSettings = await this.importTheme(manager, organization.id, appVersion.globalSettings);
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
