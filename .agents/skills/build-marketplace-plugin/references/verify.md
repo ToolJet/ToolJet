@@ -12,7 +12,7 @@ test -d plugins/common/dist || npm run build --workspace=@tooljet-marketplace/co
 npm run build --workspace=@tooljet-marketplace/<id>
 ```
 
-`ncc` compiles `lib/index.ts`, so this is also the type check. A missing module means the
+`ncc` compiles `lib/index.ts`, so this is also the type check. Exit code 0 is a pass; do not pipe the build through `tail`. A missing module means the
 dependency was not added to the plugin's `package.json` (`npm i <pkg> --workspace=@tooljet-marketplace/<id>`).
 
 ## 2. Validator

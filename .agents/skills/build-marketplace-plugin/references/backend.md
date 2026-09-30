@@ -37,7 +37,7 @@ export default class Example implements QueryService {
 ## Dependencies
 
 - Plain HTTP: `got`, as most HTTP plugins do. Pin the major an existing plugin uses, e.g.
-  `npm i got@11 --workspace=@tooljet-marketplace/<id>` (see `marketplace/plugins/quickbooks/package.json`).
+  `npm i got@11 --workspace=@tooljet-marketplace/<id>` (see `marketplace/plugins/quickbooks/package.json`). Install what the code imports before verifying.
 - A maintained vendor SDK is fine when it saves real work (auth signing, pagination); many
   plugins use one. Do not add axios or node-fetch next to `got`.
 - If the user supplies the base URL, call `validateUrlForSSRF(url)` before requesting it (see
@@ -82,13 +82,14 @@ One generic handler, no switch:
 3. Send `params.request` as the JSON body unless the method is GET or DELETE.
 4. Add auth headers from `sourceOptions`, then return `{ status: 'ok', data: body }`.
 
-Reference: `run()` in `marketplace/plugins/quickbooks/lib/index.ts`.
+Reference for behavior only (it uses `any`, which you must not): `run()` in
+`marketplace/plugins/quickbooks/lib/index.ts`.
 
 ## Auth
 
 | `auth.type` | Request |
 |---|---|
-| `api_key` | Header or query param named in `auth.config` |
+| `api_key` | Header or query param named in `auth.config` (`headerName`, `in`), e.g. `headers[headerName] = sourceOptions.api_key` |
 | `bearer` | `Authorization: Bearer <token>` |
 | `basic` | `Authorization: Basic base64(user:pass)` |
 | `oauth2` | Access token from `sourceOptions` (see below) |

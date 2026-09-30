@@ -20,7 +20,8 @@ To validate an existing plugin only, skip to step 5.
 
 ## 1. Intake
 
-Ask one question at a time. Skip any the user already answered.
+Ask one question at a time. Skip any the user already answered. If the user says to use defaults,
+state them: type `api`, no PRD, no icon, no design reference, current branch, version `1.0.0`, V1.
 
 | # | Question | Notes |
 |---|---|---|
@@ -56,7 +57,7 @@ Validate it against `assets/plugin-spec.schema.json` (draft-07; ajv is installed
 `marketplace/`):
 
 ```bash
-cd marketplace && node -e "const A=require('ajv'),fs=require('fs');const v=new A({allErrors:true}).compile(JSON.parse(fs.readFileSync(process.argv[1])));if(!v(JSON.parse(fs.readFileSync(process.argv[2]))))throw new Error(JSON.stringify(v.errors,null,1))" ../.agents/skills/build-marketplace-plugin/assets/plugin-spec.schema.json <path-to>/plugin-spec.json
+cd marketplace && node -e "const A=require('ajv'),fs=require('fs');const v=new A({allErrors:true}).compile(JSON.parse(fs.readFileSync(process.argv[1])));if(!v(JSON.parse(fs.readFileSync(process.argv[2]))))throw new Error(JSON.stringify(v.errors,null,1));console.log('spec ok')" ../.agents/skills/build-marketplace-plugin/assets/plugin-spec.schema.json <path-to>/plugin-spec.json
 ```
 
 Write `plugin-spec.json` outside the repo (or delete it before committing). It is an
@@ -80,7 +81,8 @@ It writes `plugins/<id>/` (`lib/{index.ts,types.ts,manifest.json,operations.json
 else. Then:
 
 1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json`,
-   formatted like its neighbours:
+   formatted like its neighbours (the file has no trailing newline; keep it that way). `tags` is
+   free-form; reuse an existing tag when one fits:
 
    ```json
    {
@@ -95,7 +97,8 @@ else. Then:
    }
    ```
 
-2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`).
+2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`). Backend
+   dependencies are installed in step 4.
 3. If the id contains `-`, rename the generated class in `lib/index.ts` to a valid identifier.
 4. Icon: save the provided SVG as `lib/icon.svg`, otherwise keep the placeholder.
 
@@ -111,7 +114,7 @@ directory:
 - Frontend, `lib/manifest.json`, `lib/operations.json`, `openapi-specs/`: `references/frontend.md`.
 
 If your harness supports subagents, run them in parallel, one each, and pass the reference path
-in the prompt. Otherwise do backend then frontend in this session. Both need
+in the prompt. Otherwise do backend then frontend in this session. Install the backend's dependencies before step 5. Both need
 `references/manifest-and-operations.md` for widget and auth patterns.
 
 ## 5. Verify
@@ -137,8 +140,6 @@ Commit and open PRs with the repo's `commit` and `create-pr` skills. Commit `plu
 
 | Mistake | Fix |
 |---|---|
-| `react-component-oauth-authentication` in a new manifest | Use `react-component-oauth` (`marketplace/AGENTS.md`) |
-| `customTesting: true` while relying on the test-connection button | `true` hides the button. See `marketplace/AGENTS.md` |
 | `@spec/` reference with no file in `openapi-specs/` | File name without extension must equal the `@spec/<id>/<name>` suffix |
 | Hand-written operations for an OpenAPI source | Use `react-component-api-endpoint` with `@spec/` |
 | Retrying a Postman share URL that returns HTML | Ask the user to export the collection file |

@@ -5,6 +5,8 @@ file(s) the plugin will ship in `openapi-specs/`.
 
 ## 1. Validate
 
+Download a URL spec to a temp file outside the repo first, then validate that path.
+
 ```bash
 npx @apidevtools/swagger-cli validate <spec-path>
 ```
@@ -16,19 +18,27 @@ example `npx swagger2openapi <in> -o <out>.yaml`) and validate the result.
 
 - **Operations**: one per `paths[path][method]`: `operationId`, `summary`, method, path, and
   parameters. Record them in `operations[]` (`name` = `operationId` or `<method>_<path>` slug,
-  `method`, `path`). They drive the user gate and the backend, not the query form.
+  `method`, `path`, `parameters: []`). The schema wants `{name, type}` objects in `parameters`
+  only for hand-written mode; the api-endpoint widget reads them from the shipped spec. The list
+  drives the user gate and the backend, not the query form.
 - **Auth**: from `components.securitySchemes` and top-level `security`:
 
   | securityScheme | plugin-spec `auth.type` |
   |---|---|
   | `http` + `scheme: bearer` | `bearer` |
   | `http` + `scheme: basic` | `basic` |
-  | `apiKey` | `api_key` (keep `in` and `name` in `auth.config`) |
+  | `apiKey` | `api_key`; `auth.config` = `{ "headerName": <name>, "in": "header" or "query" }` |
   | `oauth2` (authorizationCode) | `oauth2` (keep `authorizationUrl`, `tokenUrl`, scopes in `auth.config`) |
   | none declared | `none`, but confirm with the user: many specs omit auth that the API requires |
   | anything else | `custom` |
 
-- **Base URL**: `servers[0].url` into `metadata.baseUrl`. Note any server variables.
+  Several schemes: model the one the user picks (ask if unsure), say which were dropped, and warn
+  that operations needing a dropped scheme will fail with 401. An optional credential: see
+  `manifest-and-operations.md`, Rules.
+
+- **Base URL**: `servers[0].url` into `metadata.baseUrl`. Note any server variables. If it is
+  relative (`/api/v3`) or absent, add a `base_url` text field to the manifest (default = the
+  full URL) and read it in `run()`.
 
 ## 3. Split large specs
 
@@ -48,7 +58,8 @@ After scaffolding, write each file to `marketplace/plugins/<id>/openapi-specs/<n
 (`.yaml` preferred; `.json` works). Naming:
 
 - The file name without extension is the `@spec/<id>/<name>` suffix, exactly.
-- Name the API group (`accounting.yaml`), not the plugin (`<id>-accounting.yaml`).
+- Name the API group (`accounting.yaml`), not the plugin (`<id>-accounting.yaml`). A single-group
+  API may use the plugin id (`petstore.json`, `@spec/petstore/petstore`).
 - Strip servers, examples, or vendor extensions only if they break the widget; otherwise ship the
   spec as validated.
 

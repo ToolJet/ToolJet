@@ -71,7 +71,8 @@ Rules:
   test-connection button shows, so implement `testConnection`). `oauth-manifest.json` sets `true`
   (no button; connecting validates), as most OAuth plugins do. Change either deliberately.
 - Keep `exposedVariables` as in the templates.
-- `required` lists keys that must be filled before saving.
+- `required` lists keys that must be filled before saving. Optional credential: empty `required`
+  and have the backend skip the auth header when the value is undefined.
 - OAuth: copy `oauth_configs` from the template; edit `auth_url`, `access_token_url`, `scopes`,
   and `allowed_field_groups`. Leave `redirect_url` empty. Working references:
   `marketplace/plugins/hubspot/lib/manifest.json`, `quickbooks`, `xero`.
