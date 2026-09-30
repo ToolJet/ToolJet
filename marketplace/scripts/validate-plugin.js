@@ -103,6 +103,12 @@ function selfTest() {
   };
   expect('valid plugin passes', exec(['cohere']), 0);
   expect('valid directory passes (skip registry)', exec([copy, '--skip-registry']), 0);
+  const opsFile = join(copy, 'lib/operations.json');
+  const ops = readJson(opsFile);
+  ops.properties.operation.type = 'codeeditor';
+  writeFileSync(opsFile, JSON.stringify(ops));
+  expect('invented widget type fails', exec([copy, '--skip-registry']), 1);
+  writeFileSync(opsFile, readFileSync(join(root, 'plugins/cohere/lib/operations.json')));
   const manifest = join(copy, 'lib/manifest.json');
   const m = readJson(manifest);
   delete m.source.name;

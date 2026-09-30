@@ -20,12 +20,24 @@
     "type": {
       "anyOf": [
         {
-          "type": "string"
+          "enum": [
+            "ai",
+            "api",
+            "cloud-storage",
+            "database",
+            "object"
+          ]
         },
         {
           "type": "array",
           "items": {
-            "type": "string"
+            "enum": [
+              "ai",
+              "api",
+              "cloud-storage",
+              "database",
+              "object"
+            ]
           }
         }
       ]
@@ -62,6 +74,12 @@
           "type": "string"
         }
       }
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/node"
+      }
     }
   },
   "anyOf": [
@@ -75,5 +93,64 @@
         "tj:source"
       ]
     }
-  ]
+  ],
+  "definitions": {
+    "node": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "array",
+                    "boolean",
+                    "dropdown",
+                    "dropdown-component-flip",
+                    "dynamic-selector",
+                    "number",
+                    "password",
+                    "react-component-google-sheets",
+                    "react-component-headers",
+                    "react-component-oauth",
+                    "react-component-oauth-authentication",
+                    "react-component-openapi-validator",
+                    "react-component-sharepoint",
+                    "react-component-slack",
+                    "react-component-zendesk",
+                    "react-form-component",
+                    "string",
+                    "text",
+                    "textarea",
+                    "toggle"
+                  ]
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      ]
+    }
+  }
 }
