@@ -1,10 +1,9 @@
-import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/platform/workflows";
+import { commonSelectors } from "Selectors/common";
 import { workflowSelector } from "Selectors/platform/workflows";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { viewAppCardOptions } from "Support/utils/common";
+import { navigateBackToWorkflowsDashboard } from "Support/utils/workflows/workFlows";
 import { commonText } from "Texts/common";
-import { selectAppCardOption, viewAppCardOptions } from "Support/utils/common";
-import { navigateBackToWorkflowsDashboard } from "Support/utils/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
 
 Cypress.Commands.add("createWorkflowApp", (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
@@ -30,9 +29,6 @@ Cypress.Commands.add("connectDataSourceNode", (nodeType) => {
 });
 
 Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
-  // The Run button stays disabled until the editor finishes loading the
-  // current version into its store — most visible right after an import,
-  // which navigates client-side and can otherwise race the trigger request.
   cy.get(workflowSelector.workflowRunButton).should("not.be.disabled");
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
@@ -151,19 +147,11 @@ Cypress.Commands.add(
   "exportWorkflowApp",
   (workflowName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
     navigateBackToWorkflowsDashboard();
-
-    // Open the card menu with a real hover, the same way the dashboard specs do.
-    // The previous synthetic trigger('mouseover') + force-click could leave two
-    // export options in the DOM when more than one workflow card was on screen,
-    // and click() refuses a subject with more than one element.
     viewAppCardOptions(workflowName);
 
     cy.get(commonSelectors.appCardOptions(workflowsText.exportWFOption))
       .click();
 
-    // Export now opens a "Select a version to export" modal instead of
-    // downloading immediately; the current version is pre-selected, so
-    // confirming exports it.
     cy.get('[data-cy="modal-component"]').should("be.visible");
     cy.get('[data-cy="export-selected-version-button"]').click();
 
@@ -183,10 +171,6 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   cy.get(workflowSelector.showDSPopoverButton).click();
-  // The data-source popover is a plain list, not a react-select, so there is no
-  // search-then-pick step: "Run Workflow" is a top-level option with its own
-  // data-cy. The previous version typed into a generated `.css-4e90k9` class
-  // and clicked a react-select option, neither of which exists any more.
   cy.get(workflowSelector.workflowDataSourceOption).click();
   cy.get(workflowSelector.queryRenameInput).clear().type(workflowName);
   cy.get(workflowSelector.workflowDropdown).parent()

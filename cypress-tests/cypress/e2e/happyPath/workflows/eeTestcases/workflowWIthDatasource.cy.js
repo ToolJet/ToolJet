@@ -1,9 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
-import { postgreSqlText } from "Texts/marketplace/postgreSql";
-import { harperDbText } from "Texts/marketplace/harperDb";
-import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
 import {
   fillDataSourceTextField,
@@ -11,21 +8,19 @@ import {
 } from "Support/utils/marketplace/datasources/postgreSql";
 import {
   buildLinearWorkflow,
+  cleanupDataSources,
+  cleanupWorkflows,
   createPostgresDataSource,
   createRestApiDataSource,
   enterJsonInputInStartNode,
   testDataSourceConnection,
   verifyTextInResponseOutputLimited,
-  cleanupWorkflows,
-  cleanupDataSources,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { harperDbText } from "Texts/marketplace/harperDb";
+import { postgreSqlText } from "Texts/marketplace/postgreSql";
+import { workflowsText } from "Texts/platform/workflows";
 
-// A query node executes against its data source and its result reaches the
-// response node. One case per supported data source — the wiring is identical,
-// only the connector differs, so buildLinearWorkflow carries the shared shape.
-//
-// These cases need provisioned external data sources. A failure here is as
-// likely to be environment as product; check the connection step first.
+
 const data = {};
 
 describe("Workflows - query node execution per data source", () => {
@@ -38,9 +33,7 @@ describe("Workflows - query node execution per data source", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  // Teardown runs here so a test that fails part-way still cleans up — a leaked
-  // workflow or data source breaks later specs on the same instance. Workflows
-  // go first: a data source still used by a workflow query can't be deleted.
+
   afterEach(() => {
     cleanupWorkflows([data.workflowName]);
     cleanupDataSources(
@@ -108,8 +101,6 @@ describe("Workflows - query node execution per data source", () => {
   it("A HarperDB query node executes and its rows reach the response node", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-harperdb`;
 
-    // HarperDB is a marketplace plugin, so it has to be installed and
-    // configured through the UI rather than created over the API.
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.installMarketplacePlugin("HarperDB");
     selectAndAddDataSource(
@@ -152,8 +143,6 @@ describe("Workflows - query node execution per data source", () => {
     cy.apiCreateWorkflow(data.workflowName);
     cy.openWorkflow();
 
-    // HarperDB nodes need an operation picked before the query field appears,
-    // which is why this one cannot use buildLinearWorkflow wholesale.
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(dataSourceName);
     cy.get(workflowSelector.nodeName(workflowsText.harperdbNodeName)).click({

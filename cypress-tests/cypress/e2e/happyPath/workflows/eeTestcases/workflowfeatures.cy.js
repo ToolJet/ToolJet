@@ -1,15 +1,14 @@
 import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
 import {
   buildLinearWorkflow,
   enterJsonInputInStartNode,
   verifyPreviewOutputText,
   verifyTextInResponseOutputLimited,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
 
-// Payload handling and node preview: what survives a full run, and what the
-// preview panel shows before one.
+
 const data = {};
 
 describe("Workflows - payloads and node preview", () => {
@@ -55,8 +54,6 @@ describe("Workflows - payloads and node preview", () => {
       .click({ force: true })
       .realType(workflowsText.runjsNodeCode, { delay: 50 });
 
-    // Preview is asserted BEFORE the node is wired to a response node and
-    // before any run — that is the whole point of this case.
     verifyPreviewOutputText(workflowsText.jsonValuePlaceholder);
 
     cy.get("body").click(50, 50);
@@ -81,8 +78,6 @@ describe("Workflows - payloads and node preview", () => {
       inputField: workflowsText.runjsInputField,
       query: workflowsText.runjsNodeQueryForLargedataSet,
       responseReturn: workflowsText.responseNodeQuery,
-      // A 30k-element payload: typed with no delay, and special-character
-      // sequences left uninterpreted so the code lands verbatim.
       typeOptions: { parseSpecialCharSequences: false, delay: 0 },
     });
 
@@ -94,10 +89,7 @@ describe("Workflows - payloads and node preview", () => {
     cy.apiDeleteWorkflow(data.workflowName);
   });
 
-  // KNOWN GAP: this case builds the nested-workflow graph but does not assert
-  // the child's value comes back — the upstream spec had that assertion
-  // commented out pending a fix, and this rewrite deliberately did not change
-  // what it asserts.
+
   it("A workflow can embed another workflow as a node and the graph builds", () => {
     cy.apiCreateWorkflow(data.childWorkflowName);
     cy.openWorkflow();
@@ -120,8 +112,6 @@ describe("Workflows - payloads and node preview", () => {
       force: true,
     });
 
-    // The child-workflow picker is a react-select with no data-cy hook, so it
-    // is addressed positionally. Adding another select to this modal breaks it.
     cy.get(workflowSelector.workflowSelectInput)
       .eq(1)
       .type(data.childWorkflowName, { force: true });

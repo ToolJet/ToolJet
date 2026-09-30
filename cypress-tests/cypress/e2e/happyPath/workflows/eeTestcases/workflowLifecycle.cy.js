@@ -1,27 +1,20 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
 import { viewAppCardOptions } from "Support/utils/common";
 import {
-  openWorkflowsDashboard,
+  cleanupApps,
+  cleanupWorkflows,
   createWorkflowFromDashboard,
   navigateBackToWorkflowsDashboard,
+  openWorkflowsDashboard,
   renameWorkflowFromCard,
-  cleanupWorkflows,
-  cleanupApps,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { commonText } from "Texts/common";
+import { workflowsText } from "Texts/platform/workflows";
 
 // Dashboard CRUD for workflows.
-//
-// The workflows dashboard renders the same surface as the apps dashboard, so
-// these cases mirror dashboard.cy.js "Should verify the app CRUD operation" and
-// reuse its helpers and data-cy hooks.
-//
-// Two things do NOT transfer from the app specs:
-//   - the card menu copy differs ("Delete workflow", not "Delete app")
-//   - no Clone control is offered on a workflow card
+
 const data = {};
 
 describe("Workflows - dashboard CRUD", () => {
@@ -33,8 +26,7 @@ describe("Workflows - dashboard CRUD", () => {
     data.appName = `${data.workflowName}app`;
   });
 
-  // Teardown lives here, not at the end of each test, so a test that fails
-  // part-way still cleans up. Covers both names because several tests rename.
+
   afterEach(() => {
     cleanupWorkflows([data.workflowName, data.renamedWorkflow]);
     cleanupApps([data.appName]);
@@ -49,8 +41,6 @@ describe("Workflows - dashboard CRUD", () => {
       .should("be.visible")
       .and("have.length", 1);
 
-    // The reload proves the card comes from the server, not from client state
-    // left behind by the create flow.
     navigateBackToWorkflowsDashboard();
     cy.get(commonSelectors.appCard(data.workflowName)).should(
       "contain.text",
@@ -85,9 +75,6 @@ describe("Workflows - dashboard CRUD", () => {
   });
 
   it("The workflow card menu does not offer Clone", () => {
-    // No clone control is offered on a workflow card. Asserting both possible
-    // spellings absent pins the current guarantee and would catch an accidental
-    // future exposure.
     cy.apiCreateWorkflow(data.workflowName);
     openWorkflowsDashboard();
 
@@ -163,8 +150,6 @@ describe("Workflows - dashboard CRUD", () => {
   });
 
   it("Workflows and apps do not leak into each other's dashboards", () => {
-    // Workflows and apps share one listing surface discriminated by type, so a
-    // scoping regression would surface each in the other's list.
     cy.apiCreateWorkflow(data.workflowName);
     cy.apiCreateApp(data.appName);
 
