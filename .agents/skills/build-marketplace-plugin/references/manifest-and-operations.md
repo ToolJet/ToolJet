@@ -1,8 +1,9 @@
 # manifest.json and operations.json
 
 `manifest.json` defines the connection form, `operations.json` the query form. Both are
-validated against `plugins/schemas/manifest.schema.json` and `operations.schema.json`; the widget
-`type` enums there are the complete list of accepted names. Templates live in
+validated against `plugins/schemas/manifest.schema.json` and `operations.schema.json`; the V1 widget
+`type` enums there are the complete list of accepted names (V2 `tj:ui:properties.*.widget` is not
+schema-checked). Templates live in
 `../assets/templates/`; replace every `{{PLACEHOLDER}}` with real values.
 
 ## V1 or V2 manifest

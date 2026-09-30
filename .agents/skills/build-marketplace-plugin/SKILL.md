@@ -114,8 +114,8 @@ directory:
 - Frontend, `lib/manifest.json`, `lib/operations.json`, `openapi-specs/`: `references/frontend.md`.
 
 If your harness supports subagents, run them in parallel, one each, and pass the reference path
-in the prompt. Otherwise do backend then frontend in this session. Install the backend's dependencies before step 5. Both need
-`references/manifest-and-operations.md` for widget and auth patterns.
+in the prompt. Otherwise do backend then frontend in this session. Install the backend's dependencies before
+step 5. Both need `references/manifest-and-operations.md` for widget and auth patterns.
 
 ## 5. Verify
 

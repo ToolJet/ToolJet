@@ -38,5 +38,5 @@ Keep the `$schema` URLs from the templates; editors use them for hints.
 
 ## 4. icon.svg
 
-Leave it if the orchestrator placed one. Otherwise keep the scaffolded placeholder and tell the
+Leave it if SKILL.md step 3 placed one. Otherwise keep the scaffolded placeholder and tell the
 user to supply the real logo.

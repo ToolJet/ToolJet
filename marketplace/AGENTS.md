@@ -15,7 +15,7 @@ marketplace/plugins/<id>/
   lib/manifest.json     # connection form + source.kind
   lib/operations.json   # query editor form
   lib/icon.svg
-  __tests__/index.js    # jest
+  __tests__/index.js    # it.todo stub, not run
   openapi-specs/        # only for OpenAPI-mode plugins
 ```
 
@@ -49,8 +49,8 @@ ESLINT_USE_FLAT_CONFIG=false npm run lint   # as CI does
 
 ## Invariants & gotchas
 
-- **OAuth widget:** new plugins use `"type": "react-component-oauth"` in `manifest.json` properties. 10 marketplace plugins use it; none use `react-component-oauth-authentication`. That older name is used only by built-in connectors in `plugins/packages/` (restapi, graphql, grpc, grpcv2) and is not handled by `frontend/src/_components/DynamicFormV2.jsx`, which handles only `react-component-oauth`.
-- **`customTesting`:** in `DataSourceManager.jsx`, `false`/absent renders the default footer with the test-connection button; `true` renders a footer without it. Existing OAuth plugins are mixed (7 `true`, 2 `false`, 1 unset), so set it deliberately and implement `testConnection` in `lib/index.ts` when it is `false`.
+- **OAuth widget:** new plugins use `"type": "react-component-oauth"` in `manifest.json` properties. marketplace plugins use it; none use `react-component-oauth-authentication`. That older name is used only by built-in connectors in `plugins/packages/` (restapi, graphql, grpc, grpcv2) and is not handled by `frontend/src/_components/DynamicFormV2.jsx`, which handles only `react-component-oauth`.
+- **`customTesting`:** in `DataSourceManager.jsx`, `false`/absent renders the default footer with the test-connection button; `true` renders a footer without it. Existing OAuth plugins are mixed (`true`, `false`, and unset all occur), so set it deliberately and implement `testConnection` in `lib/index.ts` when it is `false`.
 - Do not edit `dist/`; it is a build artifact.
 - `source.kind` is the plugin's identity across `plugins.json`, spec lookup, and stored data sources. Never rename it after release.
 

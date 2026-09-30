@@ -57,7 +57,7 @@ function validate(arg, skipRegistry) {
         .map((f) => readFileSync(join(dir, 'lib', f), 'utf8'))
         .join('\n');
       list
-        .filter((o) => !new RegExp(`['"\`]${o.value}['"\`]`).test(src))
+        .filter((o) => !['"', "'", '`'].some((q) => src.includes(q + o.value + q)))
         .forEach((o) => errors.push(`operation "${o.value}" not handled in lib/*.ts`));
     }
   }
@@ -118,6 +118,17 @@ function selfTest() {
   const reg = readJson(registryPath());
   writeFileSync(dup, JSON.stringify([...reg, reg.find((p) => p.id === 'cohere')]));
   expect('duplicate registry id fails', exec(['cohere'], { PLUGINS_JSON: dup }), 1);
+  const probe = join(copy, 'lib/probe.ts');
+  writeFileSync(probe, "case 'a(b':\n");
+  const probeOps = readJson(opsFile);
+  const list = probeOps.properties.operation.list;
+  list.push({ value: 'a(b', name: 'p' }, { value: 'a.c', name: 'q' });
+  writeFileSync(opsFile, JSON.stringify(probeOps));
+  const out = exec([copy, '--skip-registry']);
+  const failing = out.stdout;
+  if (out.status !== 1 || failing.includes('"a(b"') || !failing.includes('"a.c"'))
+    throw new Error(`operation value matching: unexpected result\n${failing}${out.stderr}`);
+  console.log('ok operation values with regex characters match literally');
   return 0;
 }
 
