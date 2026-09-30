@@ -7,6 +7,9 @@ Third-party data source connectors ("marketplace plugins") that are built separa
 ```
 marketplace/plugins/<id>/
   package.json          # @tooljet-marketplace/<id>, build via ncc
+  tsconfig.json
+  README.md
+  .gitignore
   lib/index.ts          # QueryService implementation
   lib/types.ts          # SourceOptions / QueryOptions
   lib/manifest.json     # connection form + source.kind
@@ -21,13 +24,13 @@ marketplace/plugins/<id>/
 
 ## Scaffold and register
 
-- `npx tooljet plugin create <name> --type=database|api|cloud-storage`, run from the repo root (`cli/src/commands/plugin/create.ts`). It renders hygen templates from `marketplace/_templates/plugin/new/` and appends an entry to `server/src/assets/marketplace/plugins.json`.
-- The `id` in `plugins.json` must match the directory name and be unique. `create` aborts if the id already exists.
-- Manual scaffolding must add the same `plugins.json` entry.
+- Human path, from the repo root: `npx tooljet plugin create <name> --type=database|api|cloud-storage --marketplace`. It prompts for a display name (and a repo URL), renders the hygen templates in `marketplace/_templates/plugin/new/`, runs `npm i` in `marketplace/`, and appends an entry to `server/src/assets/marketplace/plugins.json`. `npx tooljet` is the published `@tooljet/cli` pinned in the root `package.json`, not `cli/src`: without `--marketplace` it asks "is it a marketplace integration?" and a "no" scaffolds into `plugins/packages/`.
+- Non-interactive path (agents): `cd marketplace && npx --yes hygen@6 plugin new --name <id> --type <type> --display_name "<Name>" --plugins_path .`, then add the `plugins.json` entry by hand and run `npm i`. Details: `.agents/skills/build-marketplace-plugin/SKILL.md`.
+- `plugins.json` `id` must be unique and equal the manifest `source.kind`: `@spec/` files are looked up by it (`findByKind` matches `pluginId`, `server/src/modules/plugins/service.ts`). Directory name == id is the convention `create` follows, not enforced. `create` aborts if the id already exists.
 
 ## OpenAPI mode
 
-`operations.json` can reference specs as `@spec/<kind>/<name>` (see `marketplace/plugins/aftership/lib/operations.json`). The spec files live in the plugin's `openapi-specs/`. The frontend rewrites `@spec/...` to `${apiUrl}/plugins/specs/<kind>/<name>` (`frontend/src/_services/openapi.service.js::resolveSpecUrl`), served by `GET /plugins/specs/:pluginKind/:specName` (`server/src/modules/plugins/controller.ts::getSpec`), which is looked up by `source.kind`.
+`operations.json` can reference specs as `@spec/<kind>/<name>` (see `marketplace/plugins/aftership/lib/operations.json`). The spec files live in the plugin's `openapi-specs/`. The frontend rewrites `@spec/...` to `${apiUrl}/plugins/specs/<kind>/<name>` (`frontend/src/_services/openapi.service.js::resolveSpecUrl`), served by `GET /plugins/specs/:pluginKind/:specName` (`server/src/modules/plugins/controller.ts::getSpec`), which is looked up by the `plugins.json` id (equal to `source.kind`).
 
 ## Build and test
 
@@ -35,12 +38,13 @@ marketplace/plugins/<id>/
 cd marketplace
 npm install
 npm run build --workspaces        # build @tooljet-marketplace/common first, as CI does
-npm run lint
+npm run validate:plugin -- <id>   # or --all; schemas, registry, @spec files, operation handlers
+ESLINT_USE_FLAT_CONFIG=false npm run lint   # as CI does
 ```
 
 - There is no `build:packages` script. Build is `npm run build` (workspaces); each plugin runs `ncc build lib/index.ts -o dist`.
 - `npm run build --workspaces` runs alphabetically, but plugins import `common`'s `dist`, so build it first: `npm run build --workspace=@tooljet-marketplace/common` (`.github/workflows/ci.yml`, marketplace job).
-- Tests: `plugins/<id>/__tests__/index.js` is a scaffolded `it.todo` stub in every plugin. No jest/TypeScript config exists under `marketplace/` and CI does not run marketplace tests, so `npx jest` fails to parse `lib/index.ts`. Verify with `npm run build` and lint; add a jest config only if a plugin needs real unit tests.
+- Tests: `plugins/<id>/__tests__/index.js` is a scaffolded `it.todo` stub in every plugin. No jest/TypeScript config exists under `marketplace/` and CI does not run marketplace tests, so `npx jest` fails to parse `lib/index.ts`. Verify with `npm run build`, `validate:plugin`, and lint; add a jest config only if a plugin needs real unit tests.
 - Add npm deps to one plugin with `npm i <pkg> --workspace=<package-name>`.
 
 ## Invariants & gotchas

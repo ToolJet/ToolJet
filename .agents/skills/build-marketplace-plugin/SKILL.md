@@ -38,8 +38,8 @@ grep -n '"id": "<id>"' server/src/assets/marketplace/plugins.json; ls marketplac
 ```
 
 If either exists, stop and ask whether to update that plugin instead. Updating skips step 3 and
-edits the existing files. Never add a second registry entry for the same id: the scaffold aborts
-with "Plugin id already exists", and the validator fails on duplicates.
+edits the existing files. Never add a second registry entry for the same id: the validator fails
+on duplicates (the CLI would abort with "Plugin id already exists").
 
 ## 2. Spec
 
@@ -66,28 +66,40 @@ intermediate artifact and is never committed.
 
 ## 3. Scaffold
 
-From the repo root:
+Render the repo's plugin templates directly; no prompts. This is what `tooljet plugin create`
+runs internally (the human path is in `marketplace/AGENTS.md`):
 
 ```bash
-npx tooljet plugin create <id> --type=<type> --marketplace
+cd marketplace
+npx --yes hygen@6 plugin new --name <id> --type <type> --display_name "<Display Name>" --plugins_path .
 ```
 
-- It prompts for the display name, then a repository URL (leave blank). Without an interactive
-  terminal, feed the answers with a pause between them:
-  `(echo "<Display Name>"; sleep 2; echo) | npx tooljet plugin create <id> --type=<type> --marketplace`.
-- `npx tooljet` resolves the `@tooljet/cli` pinned in the root `package.json`. Without
-  `--marketplace` that version asks "is it a marketplace integration?" and a "no" scaffolds into
-  `plugins/packages/` instead. If your CLI rejects the flag, drop it; the repo's `cli/` source
-  always targets `marketplace/`.
-- It renders `marketplace/_templates/plugin/new/`, runs `npm i` in `marketplace/`, and appends a
-  `plugins.json` entry whose `name` is the id and whose `description` is generic. Fix both, and
-  add `tags` and `"repo": ""` like the neighbouring entries.
-- If the id contains `-`, rename the generated class in `lib/index.ts` to a valid identifier.
-- Icon: save the provided SVG as `lib/icon.svg`, otherwise keep the placeholder.
+It writes `plugins/<id>/` (`lib/{index.ts,types.ts,manifest.json,operations.json,icon.svg}`,
+`__tests__/index.js`, `package.json`, `tsconfig.json`, `README.md`, `.gitignore`) and nothing
+else. Then:
 
-Identity rule: the `plugins.json` `id` must equal the manifest `source.kind` (spec files are
-looked up by that id). Keeping the directory name equal to the id is the convention the scaffold
-follows, not something the code enforces. Never rename `kind` after release.
+1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json`,
+   formatted like its neighbours:
+
+   ```json
+   {
+     "name": "<Display Name>",
+     "description": "<one line>",
+     "version": "1.0.0",
+     "id": "<id>",
+     "author": "Tooljet",
+     "timestamp": "<new Date().toUTCString()>",
+     "repo": "",
+     "tags": ["<Category>"]
+   }
+   ```
+
+2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`).
+3. If the id contains `-`, rename the generated class in `lib/index.ts` to a valid identifier.
+4. Icon: save the provided SVG as `lib/icon.svg`, otherwise keep the placeholder.
+
+Identity rule: `marketplace/AGENTS.md` (plugins.json `id` = `source.kind`; directory = id by
+convention).
 
 ## 4. Generate
 
