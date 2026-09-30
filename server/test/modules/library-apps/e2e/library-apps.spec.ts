@@ -73,10 +73,10 @@ describe('LibraryAppsController', () => {
         // Templates expect built-in static data sources to exist in the organization
         await createDefaultDataSources(adminUserData.organization.id);
 
-        // Use lumen-tasks: the smallest template (one ToolJet DB table, no foreign keys, no jsonb)
+        // Use personal-task-list: the smallest template (one ToolJet DB table, no foreign keys, no jsonb)
         let response = await request(app.getHttpServer())
           .post('/api/library_apps')
-          .send({ identifier: 'lumen-tasks', appName: 'Lumen Tasks App', dependentPlugins: [] })
+          .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
           .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
           .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -84,12 +84,12 @@ describe('LibraryAppsController', () => {
 
         response = await request(app.getHttpServer())
           .post('/api/library_apps')
-          .send({ identifier: 'lumen-tasks', appName: 'Lumen Tasks App', dependentPlugins: [] })
+          .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', adminUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(201);
-        expect(response.body.app[0].name).toContain('Lumen Tasks App');
+        expect(response.body.app[0].name).toContain('Personal Task List App');
       });
 
       it('should return error if template identifier is not found', async () => {
@@ -150,7 +150,7 @@ describe('LibraryAppsController', () => {
         let templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
         expect(new Set(templateAppIds)).toContain('major-incident-management');
-        expect(new Set(templateAppIds)).toContain('status-blue');
+        expect(new Set(templateAppIds)).toContain('status-page');
 
         response = await request(app.getHttpServer())
           .get('/api/library_apps')
@@ -162,7 +162,7 @@ describe('LibraryAppsController', () => {
         templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
         expect(new Set(templateAppIds)).toContain('major-incident-management');
-        expect(new Set(templateAppIds)).toContain('status-blue');
+        expect(new Set(templateAppIds)).toContain('status-page');
       });
     });
   });

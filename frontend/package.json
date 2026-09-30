@@ -327,6 +327,7 @@
     "test:app-builder:cypress": "npm --prefix ../cypress-tests run cy:run -- --config-file cypress-appbuilder.config.js",
     "validate:app-builder-coverage-manifest": "node scripts/validate-app-builder-coverage-manifest.js",
     "validate:widget-testing-contracts": "node scripts/validate-widget-testing-contracts.js",
+    "validate:widget-testing-contracts:pr": "node scripts/validate-widget-testing-contracts.js --pr",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build"
   }

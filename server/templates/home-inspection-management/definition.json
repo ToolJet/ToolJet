@@ -411,7 +411,7 @@
                 "appV2": {
                     "id": "78571617-afbf-4f00-beea-23811b6b4989",
                     "type": "front-end",
-                    "name": "Home inspection management",
+                    "name": "Inspecta · Home inspection management",
                     "slug": "78571617-afbf-4f00-beea-23811b6b4989",
                     "isPublic": false,
                     "isMaintenanceOn": false,
@@ -24402,1006 +24402,6 @@
                             "updatedAt": "2026-09-14T15:10:23.269Z"
                         },
                         {
-                            "id": "e5514c2c-0c53-4dc4-8683-6fb00388d612",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "7f09adcb-ce4f-47eb-9d0c-12d1af6aee52",
-                                "actionId": "run-query",
-                                "queryName": "masterCount"
-                            },
-                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "f426d733-0cc1-4cca-8cea-5b624885063c",
-                            "name": "onDataQuerySuccess → close-modal",
-                            "index": 3,
-                            "event": {
-                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
-                                "eventId": "onDataQuerySuccess",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "b15f80a3-5f57-4980-987c-5f8ef0d2340c",
-                            "name": "onDataQuerySuccess → show-alert",
-                            "index": 4,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "message": "Saved.",
-                                "actionId": "show-alert",
-                                "alertType": "success"
-                            },
-                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "6607edb8-9c52-49fc-bf5f-ecea255e0238",
-                            "name": "onClick → close-modal",
-                            "index": 0,
-                            "event": {
-                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
-                                "eventId": "onClick",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "5c433e20-49fe-4251-a2e4-8ad830bbf73e",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "9dc94829-1b75-4d94-8f6b-6d9825a66371",
-                            "name": "onClose → control-component",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "3b967b17-e814-4c84-822e-b2dca783c261",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "e56ee426-5135-4a65-b644-e5c1fe18eba2",
-                            "name": "onClose → control-component",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "5691fb68-f8b3-4dec-a9ca-ca630ad5aad6",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "86d7d04c-27fb-4d0e-9852-23bdac6af951",
-                            "name": "onClick → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClick",
-                                "queryId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
-                                "actionId": "run-query",
-                                "queryName": "editMaster"
-                            },
-                            "sourceId": "977db6d5-55bb-4ec5-a22c-21cd8465bfa8",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "40949f18-143d-460e-b3a8-b7cdfeda934e",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "c1716196-e3e5-4fa3-8f5e-e172e8ca88e7",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "c073dd40-773d-41d0-959b-fa4413aa9c90",
-                                "actionId": "run-query",
-                                "queryName": "resources"
-                            },
-                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "dd467f04-adee-4bac-bca4-126af4af8b04",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "a07618f3-07a6-4348-87bb-646b4f5a8aa8",
-                                "actionId": "run-query",
-                                "queryName": "resourceCount"
-                            },
-                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "375c8029-4ab4-4428-8871-7de6ee32665d",
-                            "name": "onDataQuerySuccess → close-modal",
-                            "index": 3,
-                            "event": {
-                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                                "eventId": "onDataQuerySuccess",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "614ccd8d-c09d-4c55-969f-12dd807fd18a",
-                            "name": "onDataQuerySuccess → show-alert",
-                            "index": 4,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "message": "Saved.",
-                                "actionId": "show-alert",
-                                "alertType": "success"
-                            },
-                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "50434f40-b1ff-4a97-a31c-a6fe71ba453e",
-                            "name": "onClick → close-modal",
-                            "index": 0,
-                            "event": {
-                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                                "eventId": "onClick",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "f660b911-efae-439c-8746-af8b92389edc",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "3c3dc237-7ae5-4680-ab32-3b64104fd2eb",
-                            "name": "onClose → control-component",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "45b861ae-ec3a-46c9-9fa8-c51859cf567b",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "76f4ce1b-b8ea-404e-92a9-9799acd44189",
-                            "name": "onClose → control-component",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "bd737afa-2dc4-4b88-8d89-b19f9e0d5878",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "3a6df6a3-2978-4f23-9e65-ef72eb26250e",
-                            "name": "onClose → control-component",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "42764332-7a45-4af7-b422-43041b859d63",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "5c4798e3-a0a4-499c-8ef6-b324b70508e2",
-                            "name": "onClick → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClick",
-                                "queryId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
-                                "actionId": "run-query",
-                                "queryName": "editResource"
-                            },
-                            "sourceId": "c19e46ea-8baf-4665-b939-fe043a9326e0",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "b0b387b1-2f12-456f-8fe7-fd26fce9cf4c",
-                            "name": "onRefresh → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onRefresh",
-                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                                "actionId": "run-query",
-                                "queryName": "records"
-                            },
-                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "2d3db372-95dd-4279-924b-e56fc2b803c5",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "snapshot",
-                                "ref": "action::open",
-                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "889612b7-86ab-4377-b4f8-7962a436243e",
-                            "name": "onClick → set-custom-variable",
-                            "index": 1,
-                            "event": {
-                                "key": "entryId",
-                                "ref": "action::open",
-                                "value": "{{components.entryTable.selectedRow.id}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "870117ee-5623-4148-9cec-1ed0f9173905",
-                            "name": "onClick → show-modal",
-                            "index": 2,
-                            "event": {
-                                "ref": "action::open",
-                                "modal": "f2940c87-9aae-4ce5-b6a1-ea03b02bd4c9",
-                                "eventId": "onClick",
-                                "actionId": "show-modal"
-                            },
-                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "acd873ff-eb88-4678-9c26-b7051042c838",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "35f1ba6a-aa3f-4ac9-b159-ff692e329d2a",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                                "actionId": "run-query",
-                                "queryName": "records"
-                            },
-                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "c2685d1b-8f04-4b83-af99-4a1ba1599444",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
-                                "actionId": "run-query",
-                                "queryName": "recordCount"
-                            },
-                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "98932bfd-ea89-4ae9-980a-97e66875056a",
-                            "name": "onDataQuerySuccess → close-modal",
-                            "index": 3,
-                            "event": {
-                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                                "eventId": "onDataQuerySuccess",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "3db6c363-0eaa-40a2-b26c-978cb00dc411",
-                            "name": "onDataQuerySuccess → show-alert",
-                            "index": 4,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "message": "Saved.",
-                                "actionId": "show-alert",
-                                "alertType": "success"
-                            },
-                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "2ca7fb7a-2a6f-4eff-9c3d-cb4d5b904ba5",
-                            "name": "onClick → close-modal",
-                            "index": 0,
-                            "event": {
-                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                                "eventId": "onClick",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "f4bbc089-8087-49b2-84a0-4243b8d953d1",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "9fe5be5f-a15b-49fc-a99f-7e7e7f6859b6",
-                            "name": "onClose → control-component",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "301e774a-40c1-4e23-ae75-911561ddfb6b",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "c7b1ec8a-864b-4db9-99d2-535ff66b82b6",
-                            "name": "onClose → control-component",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "f96e2739-d453-4423-aa92-dac80eb1090b",
-                                "componentSpecificActionHandle": "clearValue",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "1a95f887-14b2-4b7a-9efc-dc0893d06f3c",
-                            "name": "onClose → control-component",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "b37d7d59-438a-4d6f-b642-1cfaeea01129",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "930953a4-eed3-427d-9b2d-57570792fe8b",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "snapshot",
-                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "cf81c86f-d48f-4f2c-b274-2a49d6dd70bc",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "da9ba074-3294-42f8-93c3-0607bdf3d8f0",
-                            "name": "onClick → show-modal",
-                            "index": 1,
-                            "event": {
-                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
-                                "eventId": "onClick",
-                                "actionId": "show-modal"
-                            },
-                            "sourceId": "cf81c86f-d48f-4f2c-b274-2a49d6dd70bc",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "886aca3e-2d14-4e63-94da-54b597bf97ef",
-                            "name": "onClick → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClick",
-                                "queryId": "b045ad60-4642-4825-b787-84e8d3c89382",
-                                "actionId": "run-query",
-                                "queryName": "followup"
-                            },
-                            "sourceId": "f761e7af-2af7-4b0a-b78c-ba81b3126047",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "d49fb3cf-c4d3-4202-b277-ffc50e2dd5a5",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Data could not load. Refresh to retry.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "7f09adcb-ce4f-47eb-9d0c-12d1af6aee52",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "0b92bcaf-56cc-4016-bdc3-08dda8782520",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Data could not load. Refresh to retry.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "b2a1c5f9-610b-4779-898b-cf7742790077",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "3411ad5b-f8dc-4515-8402-90f00b4ed9d1",
-                            "name": "onRefresh → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onRefresh",
-                                "queryId": "b2a1c5f9-610b-4779-898b-cf7742790077",
-                                "actionId": "run-query",
-                                "queryName": "masters"
-                            },
-                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "a0ea1937-e6c4-4c60-9361-5bf721842fd7",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "snapshot",
-                                "ref": "action::open",
-                                "value": "{{(queries.masters.data || []).find(r=>r.id===components.masterTable.selectedRow.id)}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "0708410b-77d4-4c83-95ea-d73d709b76a6",
-                            "name": "onClick → show-modal",
-                            "index": 1,
-                            "event": {
-                                "ref": "action::open",
-                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
-                                "eventId": "onClick",
-                                "actionId": "show-modal"
-                            },
-                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "288c7093-ef27-4ab6-9487-32fbf1a4c227",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "a6871519-240f-4f3f-bcda-7aaa577da863",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                                "actionId": "run-query",
-                                "queryName": "records"
-                            },
-                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "fd78e724-0131-4ce4-9456-d0435085c54b",
-                            "name": "onDataQuerySuccess → run-query",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "queryId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
-                                "actionId": "run-query",
-                                "queryName": "recordCount"
-                            },
-                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "6921a6fb-ddf4-433b-a69c-4bb4d2460ee8",
-                            "name": "onDataQuerySuccess → close-modal",
-                            "index": 3,
-                            "event": {
-                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                                "eventId": "onDataQuerySuccess",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "a7790c93-7688-420a-a61b-fdb6eab6545a",
-                            "name": "onDataQuerySuccess → show-alert",
-                            "index": 4,
-                            "event": {
-                                "eventId": "onDataQuerySuccess",
-                                "message": "Saved.",
-                                "actionId": "show-alert",
-                                "alertType": "success"
-                            },
-                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "575d1086-ab12-4b59-85bb-2a04a2193b6b",
-                            "name": "onClick → close-modal",
-                            "index": 0,
-                            "event": {
-                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                                "eventId": "onClick",
-                                "actionId": "close-modal"
-                            },
-                            "sourceId": "b4bf28a9-6176-4dc8-8c03-5582c26611b0",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "daf6a05c-0185-43ed-bee8-1c73d9984138",
-                            "name": "onClose → control-component",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "eaebd1dd-8a88-4516-bac2-f08a62cda425",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "c2dc27cc-3ab6-40b1-a27f-4b342aa5c017",
-                            "name": "onClose → control-component",
-                            "index": 1,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "890530ad-93cd-41a0-be5c-6c00406c1e07",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "2bacf99d-18b9-4b54-8318-41101efc49f9",
-                            "name": "onClose → control-component",
-                            "index": 2,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "47db53d2-2d24-4388-9675-231df1a515d8",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "d01d2cdd-6fef-4cdb-a2e1-a8cf84f335c0",
-                            "name": "onClose → control-component",
-                            "index": 3,
-                            "event": {
-                                "eventId": "onClose",
-                                "actionId": "control-component",
-                                "componentId": "c8c68d71-e929-47e7-b595-e43a21e2e20c",
-                                "componentSpecificActionHandle": "clear",
-                                "componentSpecificActionParams": []
-                            },
-                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "9d27d619-e5e8-4867-99f8-36481b852d6f",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "snapshot",
-                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "c0311091-709c-4f07-86c0-f26dc73d1c41",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "658014e3-08cf-4000-ade1-f4461c0f6d67",
-                            "name": "onClick → show-modal",
-                            "index": 1,
-                            "event": {
-                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
-                                "eventId": "onClick",
-                                "actionId": "show-modal"
-                            },
-                            "sourceId": "c0311091-709c-4f07-86c0-f26dc73d1c41",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "78e79ae6-1aa6-4297-8db1-cec3574fe51e",
-                            "name": "onClick → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onClick",
-                                "queryId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
-                                "actionId": "run-query",
-                                "queryName": "payment"
-                            },
-                            "sourceId": "a5c6aef9-9512-4f10-8b65-df9ed3e1a3be",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "a6cd0fbc-a76f-4b06-9709-04c8146b604d",
-                            "name": "onRefresh → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onRefresh",
-                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                                "actionId": "run-query",
-                                "queryName": "records"
-                            },
-                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "3069cfc8-e75e-48eb-81e8-0dc2cc7a2acc",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "recordId",
-                                "ref": "action::open",
-                                "value": "{{components.priorityQueue.selectedRow.id}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "fc52ca64-3f29-4c19-b157-8f021f24cf24",
-                            "name": "onClick → switch-page",
-                            "index": 1,
-                            "event": {
-                                "ref": "action::open",
-                                "pageId": "44ba7b1b-425e-4ff6-af62-6dab220152b5",
-                                "eventId": "onClick",
-                                "actionId": "switch-page"
-                            },
-                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "c101b679-ff5c-4654-96ed-6993a50c7f57",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Data could not load. Refresh to retry.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "0ea55923-2841-409c-9432-7f092d154c14",
-                            "name": "onDataQueryFailure → show-alert",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onDataQueryFailure",
-                                "message": "Data could not load. Refresh to retry.",
-                                "actionId": "show-alert",
-                                "alertType": "error"
-                            },
-                            "sourceId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                            "target": "data_query",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "13ec9c1c-4dc5-4214-aa11-039cb2f52808",
-                            "name": "onRefresh → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onRefresh",
-                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
-                                "actionId": "run-query",
-                                "queryName": "records"
-                            },
-                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "7ee6224e-d6b8-44c9-af00-0f17f96d8d01",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "recordId",
-                                "ref": "action::open",
-                                "value": "{{components.recordTable.selectedRow.id}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "4bc90577-8182-4d05-b2e6-96016d083fce",
-                            "name": "onClick → switch-page",
-                            "index": 1,
-                            "event": {
-                                "ref": "action::open",
-                                "pageId": "44ba7b1b-425e-4ff6-af62-6dab220152b5",
-                                "eventId": "onClick",
-                                "actionId": "switch-page"
-                            },
-                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "cee899b1-5ee3-440f-8634-db97bbedd4f4",
-                            "name": "onRefresh → run-query",
-                            "index": 0,
-                            "event": {
-                                "eventId": "onRefresh",
-                                "queryId": "c073dd40-773d-41d0-959b-fa4413aa9c90",
-                                "actionId": "run-query",
-                                "queryName": "resources"
-                            },
-                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
-                            "target": "component",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "a5c15498-2e25-47e9-8f0d-41e8c86f13ff",
-                            "name": "onClick → set-custom-variable",
-                            "index": 0,
-                            "event": {
-                                "key": "snapshot",
-                                "ref": "action::open",
-                                "value": "{{(queries.resources.data||[]).find(r=>r.id===components.resourceTable.selectedRow.id)}}",
-                                "eventId": "onClick",
-                                "actionId": "set-custom-variable"
-                            },
-                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
-                            "id": "1d25e080-3add-44d1-9468-81ff95bd607b",
-                            "name": "onClick → show-modal",
-                            "index": 1,
-                            "event": {
-                                "ref": "action::open",
-                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
-                                "eventId": "onClick",
-                                "actionId": "show-modal"
-                            },
-                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
-                            "target": "table_column",
-                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
-                            "createdAt": "2026-09-14T15:10:23.269Z",
-                            "updatedAt": "2026-09-14T15:10:23.269Z"
-                        },
-                        {
                             "id": "56fdb549-0c4b-4666-af27-9a4760a28766",
                             "name": "onDataQuerySuccess → run-query",
                             "index": 2,
@@ -26603,6 +25603,1006 @@
                             },
                             "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
                             "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "e5514c2c-0c53-4dc4-8683-6fb00388d612",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "7f09adcb-ce4f-47eb-9d0c-12d1af6aee52",
+                                "actionId": "run-query",
+                                "queryName": "masterCount"
+                            },
+                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "f426d733-0cc1-4cca-8cea-5b624885063c",
+                            "name": "onDataQuerySuccess → close-modal",
+                            "index": 3,
+                            "event": {
+                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "b15f80a3-5f57-4980-987c-5f8ef0d2340c",
+                            "name": "onDataQuerySuccess → show-alert",
+                            "index": 4,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Saved.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "6607edb8-9c52-49fc-bf5f-ecea255e0238",
+                            "name": "onClick → close-modal",
+                            "index": 0,
+                            "event": {
+                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
+                                "eventId": "onClick",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "5c433e20-49fe-4251-a2e4-8ad830bbf73e",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "9dc94829-1b75-4d94-8f6b-6d9825a66371",
+                            "name": "onClose → control-component",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "3b967b17-e814-4c84-822e-b2dca783c261",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "e56ee426-5135-4a65-b644-e5c1fe18eba2",
+                            "name": "onClose → control-component",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "5691fb68-f8b3-4dec-a9ca-ca630ad5aad6",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "86d7d04c-27fb-4d0e-9852-23bdac6af951",
+                            "name": "onClick → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClick",
+                                "queryId": "6f71a82e-181a-4852-93b2-f4d5cb0e588e",
+                                "actionId": "run-query",
+                                "queryName": "editMaster"
+                            },
+                            "sourceId": "977db6d5-55bb-4ec5-a22c-21cd8465bfa8",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "40949f18-143d-460e-b3a8-b7cdfeda934e",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "c1716196-e3e5-4fa3-8f5e-e172e8ca88e7",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "c073dd40-773d-41d0-959b-fa4413aa9c90",
+                                "actionId": "run-query",
+                                "queryName": "resources"
+                            },
+                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "dd467f04-adee-4bac-bca4-126af4af8b04",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "a07618f3-07a6-4348-87bb-646b4f5a8aa8",
+                                "actionId": "run-query",
+                                "queryName": "resourceCount"
+                            },
+                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "375c8029-4ab4-4428-8871-7de6ee32665d",
+                            "name": "onDataQuerySuccess → close-modal",
+                            "index": 3,
+                            "event": {
+                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "614ccd8d-c09d-4c55-969f-12dd807fd18a",
+                            "name": "onDataQuerySuccess → show-alert",
+                            "index": 4,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Saved.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "50434f40-b1ff-4a97-a31c-a6fe71ba453e",
+                            "name": "onClick → close-modal",
+                            "index": 0,
+                            "event": {
+                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                                "eventId": "onClick",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "f660b911-efae-439c-8746-af8b92389edc",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "3c3dc237-7ae5-4680-ab32-3b64104fd2eb",
+                            "name": "onClose → control-component",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "45b861ae-ec3a-46c9-9fa8-c51859cf567b",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "76f4ce1b-b8ea-404e-92a9-9799acd44189",
+                            "name": "onClose → control-component",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "bd737afa-2dc4-4b88-8d89-b19f9e0d5878",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "3a6df6a3-2978-4f23-9e65-ef72eb26250e",
+                            "name": "onClose → control-component",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "42764332-7a45-4af7-b422-43041b859d63",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "5c4798e3-a0a4-499c-8ef6-b324b70508e2",
+                            "name": "onClick → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClick",
+                                "queryId": "a85b232d-caba-4e4a-84eb-d9e4ec4a0c14",
+                                "actionId": "run-query",
+                                "queryName": "editResource"
+                            },
+                            "sourceId": "c19e46ea-8baf-4665-b939-fe043a9326e0",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "b0b387b1-2f12-456f-8fe7-fd26fce9cf4c",
+                            "name": "onRefresh → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onRefresh",
+                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                                "actionId": "run-query",
+                                "queryName": "records"
+                            },
+                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "2d3db372-95dd-4279-924b-e56fc2b803c5",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "snapshot",
+                                "ref": "action::open",
+                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "889612b7-86ab-4377-b4f8-7962a436243e",
+                            "name": "onClick → set-custom-variable",
+                            "index": 1,
+                            "event": {
+                                "key": "entryId",
+                                "ref": "action::open",
+                                "value": "{{components.entryTable.selectedRow.id}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "870117ee-5623-4148-9cec-1ed0f9173905",
+                            "name": "onClick → show-modal",
+                            "index": 2,
+                            "event": {
+                                "ref": "action::open",
+                                "modal": "f2940c87-9aae-4ce5-b6a1-ea03b02bd4c9",
+                                "eventId": "onClick",
+                                "actionId": "show-modal"
+                            },
+                            "sourceId": "e5c1f605-3716-45e0-912e-dcbcbf3d8290",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "acd873ff-eb88-4678-9c26-b7051042c838",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "35f1ba6a-aa3f-4ac9-b159-ff692e329d2a",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                                "actionId": "run-query",
+                                "queryName": "records"
+                            },
+                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "c2685d1b-8f04-4b83-af99-4a1ba1599444",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
+                                "actionId": "run-query",
+                                "queryName": "recordCount"
+                            },
+                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "98932bfd-ea89-4ae9-980a-97e66875056a",
+                            "name": "onDataQuerySuccess → close-modal",
+                            "index": 3,
+                            "event": {
+                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "3db6c363-0eaa-40a2-b26c-978cb00dc411",
+                            "name": "onDataQuerySuccess → show-alert",
+                            "index": 4,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Saved.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "2ca7fb7a-2a6f-4eff-9c3d-cb4d5b904ba5",
+                            "name": "onClick → close-modal",
+                            "index": 0,
+                            "event": {
+                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                                "eventId": "onClick",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "f4bbc089-8087-49b2-84a0-4243b8d953d1",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "9fe5be5f-a15b-49fc-a99f-7e7e7f6859b6",
+                            "name": "onClose → control-component",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "301e774a-40c1-4e23-ae75-911561ddfb6b",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "c7b1ec8a-864b-4db9-99d2-535ff66b82b6",
+                            "name": "onClose → control-component",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "f96e2739-d453-4423-aa92-dac80eb1090b",
+                                "componentSpecificActionHandle": "clearValue",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "1a95f887-14b2-4b7a-9efc-dc0893d06f3c",
+                            "name": "onClose → control-component",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "b37d7d59-438a-4d6f-b642-1cfaeea01129",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "930953a4-eed3-427d-9b2d-57570792fe8b",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "snapshot",
+                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "cf81c86f-d48f-4f2c-b274-2a49d6dd70bc",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "da9ba074-3294-42f8-93c3-0607bdf3d8f0",
+                            "name": "onClick → show-modal",
+                            "index": 1,
+                            "event": {
+                                "modal": "5166880c-0c77-47e2-aaeb-995f665c2e45",
+                                "eventId": "onClick",
+                                "actionId": "show-modal"
+                            },
+                            "sourceId": "cf81c86f-d48f-4f2c-b274-2a49d6dd70bc",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "886aca3e-2d14-4e63-94da-54b597bf97ef",
+                            "name": "onClick → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClick",
+                                "queryId": "b045ad60-4642-4825-b787-84e8d3c89382",
+                                "actionId": "run-query",
+                                "queryName": "followup"
+                            },
+                            "sourceId": "f761e7af-2af7-4b0a-b78c-ba81b3126047",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "d49fb3cf-c4d3-4202-b277-ffc50e2dd5a5",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Data could not load. Refresh to retry.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "7f09adcb-ce4f-47eb-9d0c-12d1af6aee52",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "0b92bcaf-56cc-4016-bdc3-08dda8782520",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Data could not load. Refresh to retry.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "b2a1c5f9-610b-4779-898b-cf7742790077",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "3411ad5b-f8dc-4515-8402-90f00b4ed9d1",
+                            "name": "onRefresh → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onRefresh",
+                                "queryId": "b2a1c5f9-610b-4779-898b-cf7742790077",
+                                "actionId": "run-query",
+                                "queryName": "masters"
+                            },
+                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "a0ea1937-e6c4-4c60-9361-5bf721842fd7",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "snapshot",
+                                "ref": "action::open",
+                                "value": "{{(queries.masters.data || []).find(r=>r.id===components.masterTable.selectedRow.id)}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "0708410b-77d4-4c83-95ea-d73d709b76a6",
+                            "name": "onClick → show-modal",
+                            "index": 1,
+                            "event": {
+                                "ref": "action::open",
+                                "modal": "aa4d6314-1960-48aa-abf2-011b7e6a67e6",
+                                "eventId": "onClick",
+                                "actionId": "show-modal"
+                            },
+                            "sourceId": "3d40e724-a8db-4c30-821e-290e3857ea34",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "288c7093-ef27-4ab6-9487-32fbf1a4c227",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Not saved. Your draft is preserved. Check required values, duplicate identity or refresh a changed record.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "a6871519-240f-4f3f-bcda-7aaa577da863",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                                "actionId": "run-query",
+                                "queryName": "records"
+                            },
+                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "fd78e724-0131-4ce4-9456-d0435085c54b",
+                            "name": "onDataQuerySuccess → run-query",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
+                                "actionId": "run-query",
+                                "queryName": "recordCount"
+                            },
+                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "6921a6fb-ddf4-433b-a69c-4bb4d2460ee8",
+                            "name": "onDataQuerySuccess → close-modal",
+                            "index": 3,
+                            "event": {
+                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "a7790c93-7688-420a-a61b-fdb6eab6545a",
+                            "name": "onDataQuerySuccess → show-alert",
+                            "index": 4,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Saved.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "575d1086-ab12-4b59-85bb-2a04a2193b6b",
+                            "name": "onClick → close-modal",
+                            "index": 0,
+                            "event": {
+                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                                "eventId": "onClick",
+                                "actionId": "close-modal"
+                            },
+                            "sourceId": "b4bf28a9-6176-4dc8-8c03-5582c26611b0",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "daf6a05c-0185-43ed-bee8-1c73d9984138",
+                            "name": "onClose → control-component",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "eaebd1dd-8a88-4516-bac2-f08a62cda425",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "c2dc27cc-3ab6-40b1-a27f-4b342aa5c017",
+                            "name": "onClose → control-component",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "890530ad-93cd-41a0-be5c-6c00406c1e07",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "2bacf99d-18b9-4b54-8318-41101efc49f9",
+                            "name": "onClose → control-component",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "47db53d2-2d24-4388-9675-231df1a515d8",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "d01d2cdd-6fef-4cdb-a2e1-a8cf84f335c0",
+                            "name": "onClose → control-component",
+                            "index": 3,
+                            "event": {
+                                "eventId": "onClose",
+                                "actionId": "control-component",
+                                "componentId": "c8c68d71-e929-47e7-b595-e43a21e2e20c",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "9d27d619-e5e8-4867-99f8-36481b852d6f",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "snapshot",
+                                "value": "{{(queries.records.data || []).find(r=>r.id===variables.recordId)}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "c0311091-709c-4f07-86c0-f26dc73d1c41",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "658014e3-08cf-4000-ade1-f4461c0f6d67",
+                            "name": "onClick → show-modal",
+                            "index": 1,
+                            "event": {
+                                "modal": "8b22e6c3-e360-4f27-b9d4-a8a28efad2ba",
+                                "eventId": "onClick",
+                                "actionId": "show-modal"
+                            },
+                            "sourceId": "c0311091-709c-4f07-86c0-f26dc73d1c41",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "78e79ae6-1aa6-4297-8db1-cec3574fe51e",
+                            "name": "onClick → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClick",
+                                "queryId": "980d0da3-8c7c-48da-9534-fe81e68a276f",
+                                "actionId": "run-query",
+                                "queryName": "payment"
+                            },
+                            "sourceId": "a5c6aef9-9512-4f10-8b65-df9ed3e1a3be",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "a6cd0fbc-a76f-4b06-9709-04c8146b604d",
+                            "name": "onRefresh → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onRefresh",
+                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                                "actionId": "run-query",
+                                "queryName": "records"
+                            },
+                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "3069cfc8-e75e-48eb-81e8-0dc2cc7a2acc",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "recordId",
+                                "ref": "action::open",
+                                "value": "{{components.priorityQueue.selectedRow.id}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "fc52ca64-3f29-4c19-b157-8f021f24cf24",
+                            "name": "onClick → switch-page",
+                            "index": 1,
+                            "event": {
+                                "ref": "action::open",
+                                "pageId": "44ba7b1b-425e-4ff6-af62-6dab220152b5",
+                                "eventId": "onClick",
+                                "actionId": "switch-page"
+                            },
+                            "sourceId": "d6108727-b044-428d-a704-2bd1e8e60431",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "c101b679-ff5c-4654-96ed-6993a50c7f57",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Data could not load. Refresh to retry.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "8ddf1c1f-3230-44cd-a764-c6b51640b128",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "0ea55923-2841-409c-9432-7f092d154c14",
+                            "name": "onDataQueryFailure → show-alert",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Data could not load. Refresh to retry.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                            "target": "data_query",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "13ec9c1c-4dc5-4214-aa11-039cb2f52808",
+                            "name": "onRefresh → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onRefresh",
+                                "queryId": "778bfcc2-5db5-47a0-9b0b-c57f6f2d82dd",
+                                "actionId": "run-query",
+                                "queryName": "records"
+                            },
+                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "7ee6224e-d6b8-44c9-af00-0f17f96d8d01",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "recordId",
+                                "ref": "action::open",
+                                "value": "{{components.recordTable.selectedRow.id}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "4bc90577-8182-4d05-b2e6-96016d083fce",
+                            "name": "onClick → switch-page",
+                            "index": 1,
+                            "event": {
+                                "ref": "action::open",
+                                "pageId": "44ba7b1b-425e-4ff6-af62-6dab220152b5",
+                                "eventId": "onClick",
+                                "actionId": "switch-page"
+                            },
+                            "sourceId": "1803b085-f16f-411e-b5a3-a09dff1172c9",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "cee899b1-5ee3-440f-8634-db97bbedd4f4",
+                            "name": "onRefresh → run-query",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onRefresh",
+                                "queryId": "c073dd40-773d-41d0-959b-fa4413aa9c90",
+                                "actionId": "run-query",
+                                "queryName": "resources"
+                            },
+                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
+                            "target": "component",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "a5c15498-2e25-47e9-8f0d-41e8c86f13ff",
+                            "name": "onClick → set-custom-variable",
+                            "index": 0,
+                            "event": {
+                                "key": "snapshot",
+                                "ref": "action::open",
+                                "value": "{{(queries.resources.data||[]).find(r=>r.id===components.resourceTable.selectedRow.id)}}",
+                                "eventId": "onClick",
+                                "actionId": "set-custom-variable"
+                            },
+                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
+                            "target": "table_column",
+                            "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
+                            "createdAt": "2026-09-14T15:10:23.269Z",
+                            "updatedAt": "2026-09-14T15:10:23.269Z"
+                        },
+                        {
+                            "id": "1d25e080-3add-44d1-9468-81ff95bd607b",
+                            "name": "onClick → show-modal",
+                            "index": 1,
+                            "event": {
+                                "ref": "action::open",
+                                "modal": "bcc5c921-58c5-45d6-80bf-2aab7169ffc5",
+                                "eventId": "onClick",
+                                "actionId": "show-modal"
+                            },
+                            "sourceId": "ca4fe931-3682-4a81-bf12-239f1302c4da",
+                            "target": "table_column",
                             "appVersionId": "e7ee3f39-1f3c-4ed6-bf79-ee17bc272b2f",
                             "createdAt": "2026-09-14T15:10:23.269Z",
                             "updatedAt": "2026-09-14T15:10:23.269Z"
@@ -28240,5 +28240,5 @@
             }
         }
     ],
-    "tooljet_version": "3.20.233-cloud-lts"
+    "tooljet_version": "3.20.235-cloud-lts"
 }
