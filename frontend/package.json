@@ -291,7 +291,8 @@
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
-    }
+    },
+    "maplibre-gl": "^6.4.1"
   },
   "scripts": {
     "build:vendor": "node scripts/build-vendor-bundle.js",
