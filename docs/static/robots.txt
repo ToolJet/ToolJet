@@ -1,12 +1,8 @@
+# Legacy LTS docs must remain crawlable so search engines can read their noindex tags.
+# Current docs, API references, images and scripts remain crawlable.
 User-agent: *
 Disallow: /1.x.x/
 Disallow: /docs/1.x.x/
-Disallow: /2.50.0-lts/
-Disallow: /docs/2.50.0-lts/
-Disallow: /3.0.0-lts/
-Disallow: /docs/3.0.0-lts/
-Disallow: /3.5.0-lts/
-Disallow: /docs/3.5.0-lts/
 Disallow: /search
 Disallow: /search/
 

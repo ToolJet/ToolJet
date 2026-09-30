@@ -324,15 +324,21 @@ module.exports = {
             //   badge: false,
             // },
             "2.50.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               label: '2.50.0-LTS (Legacy)',
               banner: 'none',
               badge: false
             },
             "3.0.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               banner: 'none',
               badge: false
             },
             "3.5.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               banner: 'none',
               badge: false
             },
@@ -349,7 +355,13 @@ module.exports = {
         sitemap: {
           changefreq: 'weekly',
           priority: 0.5,
-          ignorePatterns: ['/docs/1.x.x/**'],
+          ignorePatterns: [
+            '/docs/1.x.x/**',
+            '/docs/2.50.0-LTS/**',
+            '/docs/3.0.0-LTS/**',
+            '/docs/3.5.0-LTS/**',
+            '/search',
+          ],
           filename: 'sitemap.xml',
         },
 
