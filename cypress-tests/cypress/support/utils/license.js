@@ -655,6 +655,7 @@ export const openInviteUserModal = (name, email, role) => {
 };
 
 export const multiEnvAppSetup = (appName) => {
+  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
   cy.get(importSelectors.importOptionInput)
     .eq(0)
     .selectFile(
