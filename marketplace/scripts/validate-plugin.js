@@ -4,6 +4,7 @@
  *   - lib/manifest.json and lib/operations.json match plugins/schemas/*.schema.json
  *   - no unreplaced template placeholders ({{UPPER_CASE}}) remain in those two files
  *   - source.kind appears exactly once in plugins.json and equals the directory name
+ *   - source.kind is not the kind of a built-in connector in plugins/packages/
  *   - @spec/<kind>/<name> refs use the plugin id and have openapi-specs/<name>.(json|yaml)
  *   - without @spec refs, every operation value appears as a string literal in lib/*.ts
  *
@@ -23,6 +24,7 @@ const SELF = fileURLToPath(import.meta.url);
 const MARKETPLACE_DIR = resolve(SELF, '../..');
 const PLUGINS_DIR = join(MARKETPLACE_DIR, 'plugins');
 const SCHEMA_DIR = join(MARKETPLACE_DIR, '../plugins/schemas');
+const BUILTIN_DIR = join(MARKETPLACE_DIR, '../plugins/packages');
 const registryPath = () =>
   process.env.PLUGINS_JSON || join(MARKETPLACE_DIR, '../server/src/assets/marketplace/plugins.json');
 
@@ -32,10 +34,13 @@ const SPEC_EXTENSIONS = ['json', 'yaml'];
 const QUOTES = ['"', "'", '`'];
 // Upper-case only: lower-case {{tenant_id}} is a real runtime token in shipped manifests.
 const TEMPLATE_PLACEHOLDER = /\{\{[A-Z0-9_]+\}\}/g;
-// Pre-existing registry drift; suppressed so --all stays green, any other error still fails.
+// Pre-existing drift: exact errors suppressed per id so --all stays green; any other error still fails.
 const KNOWN_FAILURES = {
-  presto: 'id "Presto" appears 0 times in plugins.json (expected 1)',
-  s3: 'id "s3" appears 0 times in plugins.json (expected 1)',
+  presto: ['id "Presto" appears 0 times in plugins.json (expected 1)'],
+  s3: [
+    'id "s3" appears 0 times in plugins.json (expected 1)',
+    'source.kind "s3" collides with a built-in connector in plugins/packages/',
+  ],
 };
 const USAGE = 'usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test';
 
@@ -78,6 +83,10 @@ function checkRegistryEntry(id, registry) {
   return n === 1 ? [] : [`id "${id}" appears ${n} times in plugins.json (expected 1)`];
 }
 
+function checkNotBuiltinKind(id, builtinKinds) {
+  return builtinKinds.has(id) ? [`source.kind "${id}" collides with a built-in connector in plugins/packages/`] : [];
+}
+
 function checkDirectoryMatchesId(dirName, id) {
   return dirName === id ? [] : [`directory "${dirName}" must equal source.kind "${id}"`];
 }
@@ -100,14 +109,19 @@ function checkOperationHandlers(operations, sourceText) {
     .map((o) => `operation "${o.value}" not handled in lib/*.ts`);
 }
 
-/** @param {LoadedPlugin} plugin @param {Record<string, SchemaValidator>} validators */
-function checkPlugin(plugin, validators) {
+/**
+ * @param {LoadedPlugin} plugin
+ * @param {Record<string, SchemaValidator>} validators
+ * @param {Set<string>} builtinKinds  source.kind of every plugins/packages connector
+ */
+function checkPlugin(plugin, validators, builtinKinds) {
   const { manifest, operations } = plugin.docs;
   const id = sourceKind(manifest);
   const errors = [
     ...checkRequiredFiles(plugin.presentFiles),
     ...SCHEMA_CHECKED_FILES.flatMap((name) => checkAgainstSchema(name, plugin.docs[name], validators[name])),
     ...SCHEMA_CHECKED_FILES.flatMap((name) => checkNoPlaceholders(name, plugin.docs[name])),
+    ...checkNotBuiltinKind(id, builtinKinds),
   ];
   if (plugin.registry) {
     const registryErrors = checkRegistryEntry(id, plugin.registry);
@@ -137,6 +151,14 @@ function loadSchemaValidators() {
   );
 }
 
+const loadBuiltinKinds = () =>
+  new Set(
+    listDir(BUILTIN_DIR)
+      .map((d) => join(BUILTIN_DIR, d, 'lib/manifest.json'))
+      .filter(existsSync)
+      .map((f) => sourceKind(readJson(f)))
+  );
+
 /** @returns {LoadedPlugin} */
 function loadPlugin(dir, skipRegistry) {
   const lib = join(dir, 'lib');
@@ -155,10 +177,10 @@ function loadPlugin(dir, skipRegistry) {
   };
 }
 
-function validateTarget(target, skipRegistry, validators) {
+function validateTarget(target, skipRegistry, validators, builtinKinds) {
   const dir = existsSync(target) ? resolve(target) : join(PLUGINS_DIR, target);
   if (!existsSync(join(dir, 'lib'))) return [`plugin directory not found: ${dir}`];
-  return checkPlugin(loadPlugin(dir, skipRegistry), validators);
+  return checkPlugin(loadPlugin(dir, skipRegistry), validators, builtinKinds);
 }
 
 const allPluginIds = () =>
@@ -174,18 +196,19 @@ function run(args) {
     return 1;
   }
   const validators = loadSchemaValidators();
+  const builtinKinds = loadBuiltinKinds();
   let failed = 0;
   let known = 0;
   for (const target of targets) {
     const id = basename(resolve(target));
-    const all = validateTarget(target, skipRegistry, validators);
-    const errors = all.filter((e) => e !== KNOWN_FAILURES[id]);
+    const all = validateTarget(target, skipRegistry, validators, builtinKinds);
+    const errors = all.filter((e) => !(KNOWN_FAILURES[id] ?? []).includes(e));
     if (errors.length) {
       failed++;
       errors.forEach((e) => console.log(`FAIL ${id}: ${e}`));
     } else if (all.length) {
       known++;
-      console.log(`KNOWN ${id}: ${KNOWN_FAILURES[id]}`);
+      all.forEach((e) => console.log(`KNOWN ${id}: ${e}`));
     } else {
       console.log(`PASS ${id}`);
     }
@@ -223,6 +246,25 @@ const SELF_TEST_CASES = [
       copyPlugin('presto', join(tmp, 'presto'));
       rmSync(join(tmp, 'presto/lib/types.ts'));
       return { args: [join(tmp, 'presto')] };
+    },
+  },
+  { label: 'several known failures are suppressed', exit: 0, prepare: () => ({ args: ['s3'] }) },
+  {
+    label: 'other error on a multi-known-failure plugin fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('s3', join(tmp, 's3'));
+      rmSync(join(tmp, 's3/lib/types.ts'));
+      return { args: [join(tmp, 's3')] };
+    },
+  },
+  {
+    label: 'built-in connector kind fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('cohere', join(tmp, 'cohere'));
+      editJson(join(tmp, 'cohere/lib/manifest.json'), (m) => (m.source.kind = 'googlesheets'));
+      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
     },
   },
   {
