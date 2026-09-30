@@ -185,6 +185,41 @@ describe('component-specific actions', () => {
     expect(input().value).toBe('999 888 7777');
     await waitFor(() => expect(callCount()).toBe(1));
   });
+
+  // Break this catches: reverting the call site to strip the TARGET country's code. `setValue` is
+  // the one path where the caller's country and the value's own can differ — an app handing
+  // `phoneinput1.value` back while switching passes a value still written in the CURRENT country.
+  // Stripping the target's code found nothing, so the whole number was treated as national and the
+  // target's code went on top: `+919876543210` with a US target became `+1919876543210`.
+  test('[PhoneInput-CSA-013] setValue strips the dial code the value is actually written in', async () => {
+    harness.render({ properties: { value: binding('9876543210'), defaultCountry: binding('IN') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+    expect(harness.exposed().value).toBe('+919876543210');
+
+    await harness.act('setValue', harness.exposed().value, 'US');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+19876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+    expect(harness.exposed().country).toBe('US');
+  });
+
+  // Second mount for the same scenario, guarding the OTHER half of the fix. Here the value is
+  // already written in the target's own code, which `toE164` recognises as canonical and returns
+  // untouched. Lose that and the current country's code is searched for, found missing, and the
+  // target's prefixed a second time — the same doubling from the opposite direction.
+  test('[PhoneInput-CSA-013] a value already in the target country format is not re-prefixed', async () => {
+    harness.render({ properties: { value: binding('9998887777'), defaultCountry: binding('US') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setValue', '+919876543210', 'IN');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
+  });
 });
 
 describe('disabled, loading and visibility', () => {
@@ -540,6 +575,46 @@ describe('country, continued', () => {
 
     expect(harness.exposed().value).toBe('');
     expect(harness.exposed().formattedValue).toBe('');
+  });
+
+  // Break this catches: re-basing an authored Default value against the CURRENT country while the
+  // widget normalised it against the DEFAULT one. The two agree until the country is changed; after
+  // that the value carries the default country's dial code, which `toE164` will not strip unless it
+  // is told to, so the current code lands on top of it. A builder who set India, switched the
+  // dropdown to the US and then typed a number saw `+1917042883839` — both dial codes, in the
+  // field, in `value` and in `domesticNumber`.
+  test('[PhoneInput-CTY-010] a Default value entered after a country switch uses the country in effect', async () => {
+    harness.render({ properties: { value: binding(''), defaultCountry: binding('IN') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setCountryCode', 'US');
+    await drain();
+    expect(harness.exposed().country).toBe('US');
+
+    // The builder now types a national number into the Default value field.
+    harness.setComponentProperty('ph1', 'value', '7042883839', 'properties');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+17042883839');
+    expect(harness.exposed().domesticNumber).toBe('7042883839');
+  });
+
+  // Second mount for the same scenario, switching the other way, so the fix cannot be a special
+  // case that happens to strip one particular dial code.
+  test('[PhoneInput-CTY-010] the same holds switching from the default country to India', async () => {
+    harness.render({ properties: { value: binding(''), defaultCountry: binding('US') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    await harness.act('setCountryCode', 'IN');
+    await drain();
+
+    harness.setComponentProperty('ph1', 'value', '9876543210', 'properties');
+    await drain();
+
+    expect(harness.exposed().value).toBe('+919876543210');
+    expect(harness.exposed().domesticNumber).toBe('9876543210');
   });
 });
 
