@@ -2,9 +2,12 @@
  * Validates marketplace plugins. Per plugin it checks:
  *   - required files exist (lib/index.ts, lib/types.ts, lib/icon.svg, package.json)
  *   - lib/manifest.json and lib/operations.json match plugins/schemas/*.schema.json
+ *   - no unreplaced template placeholders ({{UPPER_CASE}}) remain in those two files
  *   - source.kind appears exactly once in plugins.json and equals the directory name
  *   - @spec/<kind>/<name> refs use the plugin id and have openapi-specs/<name>.(json|yaml)
  *   - without @spec refs, every operation value appears as a string literal in lib/*.ts
+ *
+ * Prints PASS/KNOWN/FAIL per plugin, then a summary line; exits 1 on any FAIL.
  *
  * usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test
  * PLUGINS_JSON overrides the registry path.
@@ -27,6 +30,8 @@ const REQUIRED_FILES = ['lib/index.ts', 'lib/types.ts', 'lib/icon.svg', 'package
 const SCHEMA_CHECKED_FILES = ['manifest', 'operations'];
 const SPEC_EXTENSIONS = ['json', 'yaml'];
 const QUOTES = ['"', "'", '`'];
+// Upper-case only: lower-case {{tenant_id}} is a real runtime token in shipped manifests.
+const TEMPLATE_PLACEHOLDER = /\{\{[A-Z0-9_]+\}\}/g;
 // Pre-existing registry drift; suppressed so --all stays green, any other error still fails.
 const KNOWN_FAILURES = {
   presto: 'id "Presto" appears 0 times in plugins.json (expected 1)',
@@ -60,6 +65,12 @@ function checkRequiredFiles(presentFiles) {
 function checkAgainstSchema(name, doc, validator) {
   if (!doc) return [`missing lib/${name}.json`];
   return validator(doc) ? [] : validator.errors.map((e) => `${name}.json${e.dataPath} ${e.message}`);
+}
+
+function checkNoPlaceholders(name, doc) {
+  // Serialized so placeholders used as object keys are caught too.
+  const found = [...new Set(JSON.stringify(doc ?? {}).match(TEMPLATE_PLACEHOLDER))];
+  return found.map((token) => `lib/${name}.json has unreplaced template placeholder ${token}`);
 }
 
 function checkRegistryEntry(id, registry) {
@@ -96,6 +107,7 @@ function checkPlugin(plugin, validators) {
   const errors = [
     ...checkRequiredFiles(plugin.presentFiles),
     ...SCHEMA_CHECKED_FILES.flatMap((name) => checkAgainstSchema(name, plugin.docs[name], validators[name])),
+    ...SCHEMA_CHECKED_FILES.flatMap((name) => checkNoPlaceholders(name, plugin.docs[name])),
   ];
   if (plugin.registry) {
     const registryErrors = checkRegistryEntry(id, plugin.registry);
@@ -174,6 +186,8 @@ function run(args) {
     } else if (all.length) {
       known++;
       console.log(`KNOWN ${id}: ${KNOWN_FAILURES[id]}`);
+    } else {
+      console.log(`PASS ${id}`);
     }
   }
   console.log(`${targets.length} checked, ${failed} failed, ${known} known failures`);
@@ -226,6 +240,18 @@ const SELF_TEST_CASES = [
     prepare: (tmp) => {
       copyPlugin('cohere', join(tmp, 'cohere'));
       editJson(join(tmp, 'cohere/lib/manifest.json'), (m) => delete m.source.name);
+      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
+    },
+  },
+  {
+    label: 'unreplaced template placeholder fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('cohere', join(tmp, 'cohere'));
+      editJson(
+        join(tmp, 'cohere/lib/operations.json'),
+        (ops) => (ops.properties.operation.list[0].name = '{{OPERATION_1_NAME}}')
+      );
       return { args: [join(tmp, 'cohere'), '--skip-registry'] };
     },
   },
