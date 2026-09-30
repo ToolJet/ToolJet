@@ -253,6 +253,22 @@ export const tableConfig = {
         defaultValue: true,
       },
     },
+    disableSaveChanges: {
+      type: 'toggle',
+      displayName: 'Disable save changes button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    disableAddNewRowSave: {
+      type: 'toggle',
+      displayName: 'Disable add new row save button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     allowSelection: {
       type: 'toggle',
       displayName: 'Allow selection',
@@ -570,6 +586,7 @@ export const tableConfig = {
     selectedRow: {},
     changeSet: {},
     dataUpdates: [],
+    isValid: true,
     pageIndex: 1,
     searchText: '',
     selectedRows: [],
@@ -858,6 +875,8 @@ export const tableConfig = {
         ],
       },
       showBulkUpdateActions: { value: '{{true}}' },
+      disableSaveChanges: { value: '{{false}}' },
+      disableAddNewRowSave: { value: '{{false}}' },
       showBulkSelector: { value: '{{false}}' },
       highlightSelectedRow: { value: '{{false}}' },
       columnSizes: { value: '{{({})}}' },

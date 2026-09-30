@@ -52,6 +52,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
+        state.components[id].properties.disableSaveChanges = properties?.disableSaveChanges ?? false;
+        state.components[id].properties.disableAddNewRowSave = properties?.disableAddNewRowSave ?? false;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
         state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
@@ -68,7 +70,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.defaultSortDirection = properties?.defaultSortDirection ?? 'auto';
         state.components[id].properties.columnSizes = properties?.columnSizes ?? {};
         state.components[id].properties.allowSelection =
-          properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow)
+          (properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow))
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };

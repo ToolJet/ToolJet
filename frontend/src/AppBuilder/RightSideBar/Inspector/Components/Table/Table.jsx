@@ -500,6 +500,8 @@ export const Table = (props) => {
     'hideColumnSelectorButton',
     'loadingState',
     'showBulkUpdateActions',
+    'disableSaveChanges',
+    'disableAddNewRowSave',
     'visibility',
     'collapseWhenHidden',
     'disabledState',
