@@ -6,6 +6,7 @@ import { useTrail } from 'react-spring';
 import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+import { MAX_RATING_COUNT } from '@/AppBuilder/Widgets/NewTable/_utils/helper';
 
 export const RatingColumn = ({
   isEditable,
@@ -21,7 +22,7 @@ export const RatingColumn = ({
   const cellTextColor = useTextColor(id, textColor);
 
   // Rating-specific properties with defaults
-  const maxRating = getResolvedValue(column.maxRating) || 5;
+  const maxRating = Math.min(getResolvedValue(column.maxRating) || 5, MAX_RATING_COUNT);
   const allowHalfStar = getResolvedValue(column.allowHalfStar) || false;
   const iconType = getResolvedValue(column.iconType) || 'stars';
   const tooltips = getResolvedValue(column.tooltips) || [];

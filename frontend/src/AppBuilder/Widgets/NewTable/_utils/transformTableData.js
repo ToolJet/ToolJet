@@ -16,11 +16,10 @@ export const transformTableData = (dataFromProps, transformations, getResolvedVa
             // Single-level nested property
             const [nestedKey, subKey] = nestedKeys;
             const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
-            const newValue =
-              getResolvedValue(transformation, {
-                cellValue: row?.[nestedKey]?.[subKey],
-                rowData: row,
-              }) ?? row[key];
+            const newValue = getResolvedValue(transformation, {
+              cellValue: row?.[nestedKey]?.[subKey],
+              rowData: row,
+            });
 
             // Apply transformation to subKey
             nestedObject[subKey] = newValue;
@@ -29,11 +28,10 @@ export const transformTableData = (dataFromProps, transformations, getResolvedVa
             transformedObject[nestedKey] = nestedObject;
           } else {
             // Non-nested property
-            transformedObject[key] =
-              getResolvedValue(transformation, {
-                cellValue: row[key],
-                rowData: row,
-              }) ?? row[key];
+            transformedObject[key] = getResolvedValue(transformation, {
+              cellValue: row[key],
+              rowData: row,
+            });
           }
         });
         return {

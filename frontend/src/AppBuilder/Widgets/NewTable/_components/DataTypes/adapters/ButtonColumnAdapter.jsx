@@ -34,17 +34,9 @@ export const ButtonColumn = ({
   const DEFAULT_LABEL_COLORS = ['#FFFFFF', '#ffffff', 'var(--cc-surface1-surface)'];
   const DEFAULT_BG_COLORS = ['#4368E3', '#4368e3', 'var(--cc-primary-brand)'];
   const DEFAULT_BORDER_COLORS = [...DEFAULT_BG_COLORS, 'var(--cc-weak-border)'];
-  const DEFAULT_ICON_COLORS = [
-    'var(--cc-default-icon)',
-    'var(--cc-default-icon)',
-    'var(--cc-surface1-surface)',
-    '#FFFFFF',
-    '#ffffff',
-  ];
   const DEFAULT_LOADER_COLORS = ['#FFFFFF', '#ffffff', 'var(--cc-surface1-surface)'];
 
   const isDefaultLabel = !labelColor || DEFAULT_LABEL_COLORS.includes(labelColor);
-  const isDefaultIcon = !iconColor || DEFAULT_ICON_COLORS.includes(iconColor);
   const isDefaultBg = !backgroundColor || DEFAULT_BG_COLORS.includes(backgroundColor);
   const isDefaultBorder = !borderColor || DEFAULT_BORDER_COLORS.includes(borderColor);
   const isDefaultLoader = !loaderColor || DEFAULT_LOADER_COLORS.includes(loaderColor);
@@ -63,7 +55,12 @@ export const ButtonColumn = ({
       : 'var(--text-on-solid)'
     : labelColor;
 
-  const computedIconColor = isDefaultIcon ? (isOutline ? 'var(--cc-default-icon)' : 'var(--icon-on-solid)') : iconColor;
+  // Unlike label/bg/border/loader, icon color doesn't adapt to solid/outline at render time:
+  // its solid<->outline default swap happens explicitly on the Styles tab's type toggle
+  // (ButtonStylesTab.jsx's handleTypeChange), so an explicit iconColor is always respected here.
+  // The fallback only covers a genuinely missing value (e.g. a pre-existing saved column from
+  // before this field existed).
+  const computedIconColor = iconColor || 'var(--cc-default-icon)';
 
   const computedLoaderColor = isDefaultLoader ? (isOutline ? 'var(--cc-primary-brand)' : '#FFFFFF') : loaderColor;
 

@@ -179,6 +179,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <ReactDatePicker
@@ -190,6 +191,8 @@ export const ValidationProperties = ({
               popperClassName={cx('tj-table-datepicker', {
                 'theme-dark dark-theme': darkMode,
               })}
+              popperPlacement="bottom-start"
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );
@@ -199,6 +202,7 @@ export const ValidationProperties = ({
             data-cy={validation.dataCy}
             className="field flex-fill inspector-validation-date-picker"
             key={validation.property}
+            onClick={(e) => e.stopPropagation()}
           >
             <label className="form-label">{t(`widget.Table.${validation.property}`, validation.label)}</label>
             <Timepicker
@@ -207,6 +211,8 @@ export const ValidationProperties = ({
               placeholderText={validation?.placeholder ?? ''}
               timeFormat={'HH:mm'}
               darkMode={darkMode}
+              popperPlacement="bottom-start"
+              portalId="table-column-datepicker-portal"
             />
           </div>
         );

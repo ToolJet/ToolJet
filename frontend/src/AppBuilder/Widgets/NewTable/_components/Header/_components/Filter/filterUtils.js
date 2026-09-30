@@ -1,48 +1,65 @@
 // eslint-disable-next-line import/no-unresolved
 import { diff as deepDiff } from 'deep-object-diff';
 
+// Values a cell may be matched against: its raw stored value, plus any display value(s) from the
+// column's `getFilterDisplayValues` resolver (set by generateColumnsData.js). `rawValueOverride`
+// lets a caller substitute the raw value (e.g. useTable.js's edited-cell overlay).
+export const getComparableValues = (row, columnId, rawValueOverride) => {
+  const rawValue = rawValueOverride !== undefined ? rawValueOverride : row.getValue(columnId);
+  const resolver = row.getAllCells().find((cell) => cell.column.id === columnId)?.column.columnDef
+    .meta?.getFilterDisplayValues;
+  return resolver ? resolver(rawValue) : [rawValue];
+};
+
+// Case-insensitive substring match against any of a cell's comparable values.
+export const matchesAnyValue = (values, target) => {
+  const needle = String(target || '').toLowerCase();
+  return values.some((value) =>
+    String(value || '')
+      .toLowerCase()
+      .includes(needle)
+  );
+};
+
 export const filterFunctions = {
-  contains: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '').toLowerCase();
-    return value.includes(String(filterValue.value || '').toLowerCase());
-  },
-  doesNotContains: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '').toLowerCase();
-    return !value.includes(String(filterValue.value || '').toLowerCase());
-  },
+  contains: (row, columnId, filterValue) => matchesAnyValue(getComparableValues(row, columnId), filterValue.value),
+  doesNotContains: (row, columnId, filterValue) =>
+    !matchesAnyValue(getComparableValues(row, columnId), filterValue.value),
   matches: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '');
     try {
       const regex = new RegExp(filterValue.value);
-      return regex.test(value);
+      return getComparableValues(row, columnId).some((value) => regex.test(String(value || '')));
     } catch (e) {
       return false;
     }
   },
   nl: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '');
     try {
       const regex = new RegExp(filterValue.value);
-      return !regex.test(value);
+      return !getComparableValues(row, columnId).some((value) => regex.test(String(value || '')));
     } catch (e) {
       return false;
     }
   },
   equals: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '');
-    return value === String(filterValue.value || '');
+    const target = String(filterValue.value || '');
+    return getComparableValues(row, columnId).some((value) => String(value || '') === target);
   },
   ne: (row, columnId, filterValue) => {
-    const value = String(row.getValue(columnId) || '');
-    return value !== String(filterValue.value || '');
+    const target = String(filterValue.value || '');
+    return !getComparableValues(row, columnId).some((value) => String(value || '') === target);
   },
   isEmpty: (row, columnId) => {
     const value = row.getValue(columnId);
-    return !value || value.length === 0;
+    if (value === null || value === undefined || value === '') return true;
+    if (Array.isArray(value) || typeof value === 'string') return value.length === 0;
+    return false;
   },
   isNotEmpty: (row, columnId) => {
     const value = row.getValue(columnId);
-    return value && value.length > 0;
+    if (value === null || value === undefined || value === '') return false;
+    if (Array.isArray(value) || typeof value === 'string') return value.length > 0;
+    return true;
   },
   gt: (row, columnId, filterValue) => {
     const value = row.getValue(columnId);

@@ -156,6 +156,11 @@ export const DatePickerRenderer = ({
   const textRef = useRef(null);
   // Ref to track if date change was already handled (prevents double-call from onChange + onCalendarClose)
   const dateChangeHandledRef = useRef(false);
+  // Tracks the value/date this component itself last emitted via onChange, so a later re-render
+  // carrying that same value back in (e.g. from the changeSet) doesn't get re-parsed with
+  // parseDateFormat — the emitted value is in dateDisplayFormat, not parseDateFormat, and the two
+  // are configured independently.
+  const lastEmittedRef = useRef({ value: undefined, date: undefined });
 
   const readOnly = !isEditable;
 
@@ -200,7 +205,7 @@ export const DatePickerRenderer = ({
     (newDate) => {
       let processedValue = newDate;
       if (parseInUnixTimestamp && unixTimestamp) {
-        processedValue = moment(newDate).unix();
+        processedValue = unixTimestamp === 'seconds' ? moment(newDate).unix() : moment(newDate).unix() * 1000;
       }
 
       const parsedDate = parseDate({
@@ -219,11 +224,14 @@ export const DatePickerRenderer = ({
       });
 
       setDate(parsedDate);
-      if (parseInUnixTimestamp && unixTimestamp) {
-        onChange?.(moment(parsedDate).unix());
-      } else {
-        onChange?.(computeDateString(parsedDate));
-      }
+      const emittedValue =
+        parseInUnixTimestamp && unixTimestamp
+          ? unixTimestamp === 'seconds'
+            ? moment(parsedDate).unix()
+            : moment(parsedDate).valueOf()
+          : computeDateString(parsedDate);
+      lastEmittedRef.current = { value: emittedValue, date: parsedDate };
+      onChange?.(emittedValue);
     },
     [
       parseInUnixTimestamp,
@@ -249,6 +257,10 @@ export const DatePickerRenderer = ({
 
   // Initialize date from value
   useEffect(() => {
+    if (lastEmittedRef.current.value !== undefined && value === lastEmittedRef.current.value) {
+      setDate(lastEmittedRef.current.date);
+      return;
+    }
     const parsedDate = parseDate({
       value,
       parseDateFormat: getDateTimeFormat(
@@ -278,12 +290,12 @@ export const DatePickerRenderer = ({
 
   // Handle disabled dates
   useEffect(() => {
-    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
-      const excludedDates = disabledDates
-        .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
-        .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate());
-      setExcludedDates(excludedDates);
-    }
+    const excludedDates = Array.isArray(disabledDates)
+      ? disabledDates
+          .filter((date) => moment(date, DISABLED_DATE_FORMAT).isValid())
+          .map((date) => moment(date, DISABLED_DATE_FORMAT).toDate())
+      : [];
+    setExcludedDates(excludedDates);
   }, [disabledDates]);
 
   useEffect(() => {

@@ -75,7 +75,7 @@ export const tableConfig = {
       type: 'code',
       displayName: 'Number of rows per page',
       validation: {
-        schema: { type: 'number' },
+        schema: { type: 'number', size: { min: 1 }, defaultValue: 10 },
         defaultValue: 10,
       },
     },
@@ -167,6 +167,31 @@ export const tableConfig = {
         { displayName: 'Server side', value: 'serverSide' },
       ],
     },
+    defaultSortColumn: {
+      type: 'select',
+      displayName: 'Default sort column',
+      options: [],
+      newLine: true,
+      fullWidth: true,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    defaultSortDirection: {
+      type: 'switch',
+      displayName: 'Sort order',
+      isIcon: true,
+      options: [
+        { displayName: 'Ascending', value: 'asc', lucideIconName: 'sort-asc' },
+        { displayName: 'Descending', value: 'desc', lucideIconName: 'sort-desc' },
+        { displayName: 'Auto', value: 'auto', lucideIconName: 'refresh-ccw' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'auto',
+      },
+    },
     serverSideFilter: {
       type: 'clientServerSwitch',
       displayName: 'Type',
@@ -226,6 +251,22 @@ export const tableConfig = {
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
+      },
+    },
+    disableSaveChanges: {
+      type: 'toggle',
+      displayName: 'Disable save changes button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    disableAddNewRowSave: {
+      type: 'toggle',
+      displayName: 'Disable add new row save button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
       },
     },
     allowSelection: {
@@ -497,6 +538,8 @@ export const tableConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
       },
       accordian: 'Data',
+      section: 'deprecated',
+      tip: 'Action buttons are deprecated and will be removed in a future update. Use the new Button column instead by adding a new column and selecting type as a button.',
     },
     containerBackgroundColor: {
       type: 'colorSwatches',
@@ -543,6 +586,7 @@ export const tableConfig = {
     selectedRow: {},
     changeSet: {},
     dataUpdates: [],
+    isValid: true,
     pageIndex: 1,
     searchText: '',
     selectedRows: [],
@@ -677,6 +721,10 @@ export const tableConfig = {
           type: 'select',
         },
       ],
+    },
+    {
+      handle: 'refreshTable',
+      displayName: 'Refresh table',
     },
   ],
   definition: {
@@ -827,11 +875,15 @@ export const tableConfig = {
         ],
       },
       showBulkUpdateActions: { value: '{{true}}' },
+      disableSaveChanges: { value: '{{false}}' },
+      disableAddNewRowSave: { value: '{{false}}' },
       showBulkSelector: { value: '{{false}}' },
       highlightSelectedRow: { value: '{{false}}' },
       columnSizes: { value: '{{({})}}' },
       actions: { value: [] },
       enabledSort: { value: '{{true}}' },
+      defaultSortColumn: { value: '' },
+      defaultSortDirection: { value: 'auto' },
       hideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },

@@ -79,6 +79,7 @@ const selectCustomStyles = (width) => {
 };
 
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
+  const resolvedWidth = meta?.fullWidth ? '100%' : width;
   return (
     <div
       className="row fx-container"
@@ -94,7 +95,7 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           onChange={onChange}
           width={224}
           height={32}
-          styles={selectCustomStyles(width)}
+          styles={selectCustomStyles(resolvedWidth)}
           useCustomStyles={true}
           customClassPrefix="inspector-select"
           components={{

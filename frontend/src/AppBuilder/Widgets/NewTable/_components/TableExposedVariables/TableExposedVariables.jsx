@@ -1,4 +1,5 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
+import moment from 'moment';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -8,6 +9,8 @@ import { isArray, debounce } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useTableRefresh } from '../../_hooks/useTableRefresh';
+import { isEditedFieldsMapValid } from '../../_utils/columnValidity';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -26,14 +29,18 @@ export const TableExposedVariables = ({
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
   const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
+  const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
+  const defaultSortColumn = useTableStore((state) => state.getTableProperties(id)?.defaultSortColumn, shallow);
+  const defaultSortDirection = useTableStore((state) => state.getTableProperties(id)?.defaultSortDirection, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const { handleRefresh } = useTableRefresh(id, fireEvent);
 
   const mounted = useMounted();
 
@@ -111,6 +118,21 @@ export const TableExposedVariables = ({
       updatedData: updatedData,
     });
   }, [data, editedRows, editedFields, setExposedVariables]);
+
+  // isValid is true only while every currently-edited cell - both the existing-row
+  // changeSet and any in-progress add-new-row draft - passes its column's own
+  // validation (the same check each column adapter already runs for its own
+  // .is-invalid styling, see columnValidity.js).
+  const isValid = useMemo(
+    () =>
+      isEditedFieldsMapValid(editedFields, columnProperties) &&
+      isEditedFieldsMapValid(addNewRowDetails, columnProperties),
+    [editedFields, addNewRowDetails, columnProperties]
+  );
+
+  useEffect(() => {
+    setExposedVariables({ isValid });
+  }, [isValid, setExposedVariables]);
 
   useEffect(() => {
     if (addNewRowDetails) {
@@ -224,11 +246,41 @@ export const TableExposedVariables = ({
   // CSA to set page index
   useEffect(() => {
     function setPage(targetPageIndex = 1) {
-      setExposedVariables({ pageIndex: targetPageIndex });
-      setPageIndex(targetPageIndex - 1);
+      const numericTarget = Number(targetPageIndex);
+      const isPositiveInteger = Number.isInteger(numericTarget) && numericTarget >= 1;
+      // Server-side pagination doesn't hand the widget enough rows to compute a real
+      // page count, so only reject an out-of-range target when it's actually knowable.
+      const pageCount = table.getPageCount();
+      const knowsUpperBound = !table.options.manualPagination && Number.isFinite(pageCount) && pageCount > 0;
+      const isInRange = !knowsUpperBound || numericTarget <= pageCount;
+
+      if (!isPositiveInteger || !isInRange) {
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          kind: 'component',
+          key: `Table "${componentName}" - setPage called with an invalid page`,
+          componentId: id,
+          strace: 'page_level',
+          message: knowsUpperBound
+            ? `setPage() was called with ${JSON.stringify(
+                targetPageIndex
+              )}, which is not a valid page number. Expected an integer between 1 and ${pageCount}.`
+            : `setPage() was called with ${JSON.stringify(
+                targetPageIndex
+              )}, which is not a valid page number. Expected a positive integer.`,
+          error: { componentId: id, value: targetPageIndex },
+          errorTarget: 'Component Property',
+          timestamp: moment().toISOString(),
+        });
+        return;
+      }
+
+      setExposedVariables({ pageIndex: numericTarget });
+      setPageIndex(numericTarget - 1);
     }
     setExposedVariables({ setPage });
-  }, [setPageIndex, setExposedVariables]);
+  }, [setPageIndex, setExposedVariables, table, componentName, id]);
 
   useEffect(() => {
     if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
@@ -299,14 +351,29 @@ export const TableExposedVariables = ({
   useEffect(() => {
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
-      const item = index !== -1 ? data[index] : null;
-      if (item) {
-        setRowSelection({ [index]: true });
+      if (index === -1) {
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          kind: 'component',
+          key: `Table "${componentName}" - selectRow called with no matching row`,
+          componentId: id,
+          strace: 'page_level',
+          message: `selectRow() was called with key ${JSON.stringify(key)} and value ${JSON.stringify(
+            value
+          )}, which matched no row. The current selection was left unchanged.`,
+          error: { componentId: id, key, value },
+          errorTarget: 'Component Property',
+          timestamp: moment().toISOString(),
+        });
+        return;
       }
+      const item = data[index];
+      setRowSelection({ [index]: true });
       lastClickedRowRef.current = {};
       setExposedVariables({
-        selectedRow: item === null ? {} : item,
-        selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
+        selectedRow: item,
+        selectedRowId: isNaN(index) ? String(index) : index,
       });
     }
 
@@ -378,8 +445,8 @@ export const TableExposedVariables = ({
   }, [setColumnFilters, setExposedVariables, columns]);
 
   // CSA to set sort programmatically
-  useEffect(() => {
-    function setSort(columnKey, direction) {
+  const setSort = useCallback(
+    (columnKey, direction) => {
       if (columnKey === undefined && direction === undefined) {
         table.setSorting([]);
         return;
@@ -403,9 +470,19 @@ export const TableExposedVariables = ({
         desc = direction === 'desc';
       }
       table.setSorting([{ id: tanstackId, desc }]);
-    }
+    },
+    [columns, table]
+  );
+
+  useEffect(() => {
     setExposedVariables({ setSort });
-  }, [setExposedVariables, columns, table]);
+  }, [setExposedVariables, setSort]);
+
+  useEffect(() => {
+    if (!defaultSortColumn || !defaultSortDirection || defaultSortDirection === 'auto') return;
+    setSort(defaultSortColumn, defaultSortDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSortColumn, defaultSortDirection]);
 
   // CSA to download table data
   useEffect(() => {
@@ -450,6 +527,11 @@ export const TableExposedVariables = ({
     }
     setExposedVariables({ discardChanges });
   }, [clearEditedRows, id, setExposedVariables]);
+
+  // CSA to refresh table data — reruns the query(ies) the table's data depends on
+  useEffect(() => {
+    setExposedVariables({ refreshTable: handleRefresh });
+  }, [handleRefresh, setExposedVariables]);
 
   return null;
 };

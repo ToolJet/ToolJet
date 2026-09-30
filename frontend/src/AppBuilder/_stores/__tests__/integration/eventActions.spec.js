@@ -257,7 +257,7 @@ describe('confirmed latent bugs', () => {
    * setTablePageIndex explicitly tolerates `undefined` (eventsSlice.js:241)
    * the widget is asked to go to page `undefined` with no error logged.
    */
-  test.failing('set-table-page can use a row-scoped expression for the page index', async () => {
+  test.failing('[Table-BUG-007] set-table-page can use a row-scoped expression for the page index', async () => {
     seedApp({ t1: componentDefinition('t1', 'table1', 'Table') });
     bootEditor();
     const setPage = jest.fn();
