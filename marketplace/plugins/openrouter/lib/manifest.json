@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "OpenRouter datasource",
+  "description": "A schema defining OpenRouter datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "OpenRouter",
+    "kind": "openrouter",
+    "type": "ai"
+  },
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Enter your OpenRouter API Key"
+    },
+    "baseUrl": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "OpenRouter by default; any OpenAI-compatible endpoint works"
+    },
+    "siteUrl": {
+      "type": "string",
+      "title": "Site URL",
+      "description": "Sent to OpenRouter for usage attribution"
+    },
+    "appName": {
+      "type": "string",
+      "title": "App name",
+      "description": "Shown on OpenRouter's dashboards"
+    }
+  },
+  "tj:encrypted": ["apiKey"],
+  "required": ["apiKey"],
+  "tj:ui:properties": {
+    "apiKey": {
+      "order": 10,
+      "$ref": "#/properties/apiKey",
+      "key": "apiKey",
+      "label": "API Key",
+      "widget": "password-v3",
+      "placeholder": "sk-or-v1-...",
+      "help_text": "For generating an API key, visit: <a href='https://openrouter.ai/keys' target='_blank' rel='noreferrer'>OpenRouter keys</a>"
+    },
+    "baseUrl": {
+      "order": 20,
+      "$ref": "#/properties/baseUrl",
+      "key": "baseUrl",
+      "label": "Base URL",
+      "widget": "text",
+      "placeholder": "https://openrouter.ai/api/v1",
+      "help_text": "Leave blank for OpenRouter. Point it at any OpenAI-compatible endpoint (Together, Groq, LiteLLM, vLLM or a self-hosted gateway) to use this connector with it."
+    },
+    "siteUrl": {
+      "order": 30,
+      "$ref": "#/properties/siteUrl",
+      "key": "siteUrl",
+      "label": "Site URL (optional)",
+      "widget": "text",
+      "placeholder": "https://yourcompany.com"
+    },
+    "appName": {
+      "order": 40,
+      "$ref": "#/properties/appName",
+      "key": "appName",
+      "label": "App name (optional)",
+      "widget": "text",
+      "placeholder": "Support desk"
+    }
+  }
+}

@@ -15,7 +15,7 @@
  */
 import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
-import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { createWidgetHarness, binding, store, drain } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'jsoneditor1';
@@ -43,8 +43,6 @@ const foldPlaceholders = (c) => c.querySelectorAll('.cm-foldPlaceholder').length
 const inlineLintMarks = (c) => c.querySelectorAll('.cm-lintPoint, .cm-lintRange').length;
 /** The error marker in the lint gutter. This one DOES render. */
 const gutterLintMarkers = (c) => c.querySelectorAll('.cm-lint-marker-error').length;
-/** CodeMirror's linter debounces ~750ms; assert past it or the check is vacuous. */
-const LINTER_DELAY_MS = 1000;
 /** The seeded default JSON this widget registers. */
 const SEEDED = {
   text: 'Hello World',
@@ -117,7 +115,10 @@ describe('JSONEditor widget', () => {
     const tabBefore = store().activeRightSideBarTab;
 
     await userEvent.click(surface());
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // The assertion is an ABSENCE, so there is no transition to wait for. Drain the dispatch queue
+    // through the harness seam instead of sleeping: the focus handler runs synchronously, so if the
+    // gate were missing the writes would already be visible here.
+    await drain();
 
     expect(store().selectedComponents).toEqual(selectedBefore);
     expect(store().activeRightSideBarTab).toBe(tabBefore);
@@ -161,11 +162,11 @@ describe('JSONEditor widget', () => {
     // `value` holds its last successful parse rather than going blank — contract D-06.
     expect(jsonEditor.exposed()?.value).toEqual({ a: 1 });
 
-    // Past CodeMirror's linter delay (~750ms): asserting immediately passes whether or not anything is
-    // suppressed, which measurement confirmed.
-    await new Promise((resolve) => setTimeout(resolve, LINTER_DELAY_MS));
-    // The gutter error marker DOES render — this is the on-screen validation signal a user gets.
-    expect(gutterLintMarkers(container)).toBe(1);
+    // CodeMirror's linter debounces, so the marker is not there synchronously — but waiting a FIXED
+    // duration made this flaky under a loaded parallel run and is forbidden by the App Builder test
+    // rules. Wait for the marker itself: it is also the assertion, so a regression that removes the
+    // gutter fails here by timing out rather than by racing.
+    await waitFor(() => expect(gutterLintMarkers(container)).toBe(1), { timeout: 5000 });
     // The inline underlines are suppressed by the widget's markerFilter, deliberately (contract D-03).
     expect(inlineLintMarks(container)).toBe(0);
   });

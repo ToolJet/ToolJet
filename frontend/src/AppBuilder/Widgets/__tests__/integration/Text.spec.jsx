@@ -464,18 +464,26 @@ describe('Text: styles', () => {
     widget.render({
       properties: { text: binding('x') },
       darkMode: true,
-      styles: { textColor: binding('#000000'), backgroundColor: binding('#edeff5') },
+      styles: {
+        textColor: binding('#000000'),
+        backgroundColor: binding('#edeff5'),
+        borderColor: binding('#f2f2f5'),
+      },
     });
     await waitFor(() => expect(root()).not.toBeNull());
-    expect(root()).toHaveStyle({ color: '#fff', backgroundColor: '#2f3c4c' });
+    expect(root()).toHaveStyle({ color: '#fff', backgroundColor: '#2f3c4c', borderColor: '#2f3c4c' });
 
     widget.render({
       properties: { text: binding('x') },
       darkMode: true,
-      styles: { textColor: binding('#ff0000'), backgroundColor: binding('#00ff00') },
+      styles: {
+        textColor: binding('#ff0000'),
+        backgroundColor: binding('#00ff00'),
+        borderColor: binding('#0000ff'),
+      },
     });
     await waitFor(() => expect(root()).not.toBeNull());
-    expect(root()).toHaveStyle({ color: '#ff0000', backgroundColor: '#00ff00' });
+    expect(root()).toHaveStyle({ color: '#ff0000', backgroundColor: '#00ff00', borderColor: '#0000ff' });
   });
 
   test('[Text-STY-004] a style cleared to an empty string falls back to its registered default', async () => {
@@ -633,78 +641,5 @@ describe('Text: instance isolation', () => {
     await widget.session.user.click(root('text2'));
     await drain();
     expect(store().getVariable('calls', MODULE_ID)).toBe(1);
-  });
-});
-
-describe('Text: the licensed CSS class', () => {
-  // Commissioned by D-10: `styles.cssClass` is universal (merged into every
-  // widget by componentTypes.js:14-16) and licence-gated in RenderWidget, and
-  // nothing on this branch covers it.
-  //
-  // D-10 approved extracting this into a shared
-  // AppCanvas/__tests__/integration/RenderWidgetCssClass.spec.jsx. That file is
-  // already written in PR #17964 (with a single `[Html-CSS-001]` test) and is
-  // pending merge into lts-3.16, so creating a second copy here would collide.
-  // Per D-10's own wording the scenario therefore stays LOCAL until that test
-  // exists, at which point this block moves out and the contract row becomes a
-  // `shared:` disposition. The BoundedBox contract already cites Html-CSS-001
-  // and needs no change.
-  //
-  // The behaviour under test is RenderWidget's, not Text's — Text is only the
-  // cheapest real widget to hang a class on. The licence is driven through its
-  // REAL path (`updateFeatureAccess()` → `licenseService.getFeatureAccess()`)
-  // with only the HTTP boundary controlled.
-  const LICENSE_URL = 'http://localhost:3000/api/license/access';
-  const withLicense = (customStyling) =>
-    createWidgetHarness({
-      componentType: 'Text',
-      handle: NAME,
-      id: ID,
-      capabilities: { network: [{ method: 'get', url: LICENSE_URL, json: { customStyling } }] },
-    });
-
-  const savedCssClass = () => store().getComponentDefinition(ID, MODULE_ID).component.definition.styles.cssClass;
-
-  async function fetchLicense(expected) {
-    store().updateFeatureAccess();
-    await waitFor(() => expect(store().isLicenseFetched).toBe(true));
-    expect(store().license.featureAccess.customStyling).toBe(expected);
-  }
-
-  test('[Text-CSS-001] an authored class reaches the widget node when customStyling is licensed', async () => {
-    // Break this catches: inverting or dropping the licence gate
-    // (RenderWidget.jsx:304), or dropping userCssClass from the className list.
-    // Every app whose custom CSS targets a widget class would lose its styling,
-    // with no error anywhere.
-    const widget2 = withLicense(true);
-    widget2.setup();
-    try {
-      await fetchLicense(true);
-      widget2.render({ properties: { text: binding('x') }, styles: { cssClass: binding('brand-callout') } });
-
-      await waitFor(() => expect(wrapper().className).toContain('brand-callout'));
-      // The platform's own classes must survive alongside the authored one.
-      expect(wrapper().className).toContain('canvas-component');
-    } finally {
-      widget2.teardown();
-    }
-  });
-
-  test('[Text-CSS-001] the class is withheld without the licence, and the saved value is never erased', async () => {
-    // Break this catches: "cleaning up" the withheld class by clearing it from
-    // the schema. Downgrading would then destroy every authored class, and
-    // re-licensing would silently restore nothing.
-    const widget2 = withLicense(false);
-    widget2.setup();
-    try {
-      await fetchLicense(false);
-      widget2.render({ properties: { text: binding('x') }, styles: { cssClass: binding('brand-callout') } });
-
-      await waitFor(() => expect(wrapper()).not.toBeNull());
-      expect(wrapper().className).not.toContain('brand-callout');
-      expect(savedCssClass()).toEqual(binding('brand-callout'));
-    } finally {
-      widget2.teardown();
-    }
   });
 });

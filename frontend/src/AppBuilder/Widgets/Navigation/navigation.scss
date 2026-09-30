@@ -121,20 +121,6 @@
     }
   }
 
-  .navigation-horizontal-menu .navigation-horizontal-list li .page-menu-popup {
-    &.nav-subalign-left .tj-list-item {
-      justify-content: flex-start !important;
-    }
-    &.nav-subalign-center .tj-list-item {
-      width: 100%;
-      justify-content: center !important;
-    }
-    &.nav-subalign-right .tj-list-item {
-      width: 100%;
-      justify-content: flex-end !important;
-    }
-  }
-
   .navigation-vertical-menu:not(.nav-equal-width) .accordion-content {
     align-items: flex-start;
 
@@ -161,172 +147,6 @@
   }
 
   // Nav item styles - matches .tj-list-item from page navigation
-  .tj-list-item {
-    min-height: 32px;
-    justify-content: start;
-    padding: 6px 10px;
-    gap: 6px;
-    margin: 0px !important;
-    color: var(--nav-item-label-color);
-    border-radius: var(--nav-item-pill-radius);
-    display: flex;
-    align-items: center;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    font-family: 'IBM Plex Sans', sans-serif;
-
-    .custom-icon {
-      line-height: 10px !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      svg {
-        color: var(--nav-item-icon-color);
-        transition: color 0.15s ease;
-      }
-    }
-
-    // Label + optional caption stacked vertically
-    .nav-item-text {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    .page-name {
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .nav-item-caption {
-      font-size: 11px;
-      line-height: 14px;
-      color: var(--cc-placeholder-text);
-    }
-
-    &:hover {
-      background-color: var(--hovered-nav-item-pill-bg);
-      border-radius: var(--nav-item-pill-radius);
-    }
-
-    &.tj-list-item-selected {
-      color: var(--selected-nav-item-label-color);
-      background-color: var(--selected-nav-item-pill-bg);
-
-      .custom-icon svg {
-        color: var(--selected-nav-item-icon-color);
-      }
-    }
-
-    &.tj-list-item-disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-
-      &:hover {
-        background-color: transparent;
-      }
-    }
-  }
-
-  // Page group wrapper - matches page navigation
-  .page-group-wrapper {
-    height: 32px;
-    width: 100%;
-    padding: 6px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 4px;
-    border: none;
-    background-color: transparent;
-    border-radius: var(--nav-item-pill-radius);
-    color: var(--nav-item-label-color);
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    font-family: 'IBM Plex Sans', sans-serif;
-
-    .nav-chevron {
-      color: var(--nav-item-icon-color);
-      transition: color 0.15s ease;
-    }
-
-    .group-info {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: start;
-      gap: 6px;
-
-      .page-name {
-        font-family: 'IBM Plex Sans', sans-serif;
-        font-weight: 500;
-        font-size: 14px;
-        line-height: 20px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .custom-icon {
-        line-height: 10px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        svg {
-          color: var(--nav-item-icon-color);
-          transition: color 0.15s ease;
-        }
-      }
-    }
-
-    &:hover {
-      background-color: var(--hovered-nav-item-pill-bg);
-
-      .nav-chevron {
-        color: var(--nav-item-label-color);
-      }
-    }
-
-    &.page-group-disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-
-      &:hover {
-        background-color: transparent;
-
-        .nav-chevron {
-          color: var(--nav-item-icon-color);
-        }
-      }
-    }
-
-    &.page-group-selected {
-      &[data-state='closed'] {
-        color: var(--selected-nav-item-label-color);
-        background-color: var(--selected-nav-item-pill-bg);
-
-        .custom-icon svg {
-          color: var(--selected-nav-item-icon-color);
-        }
-
-        .nav-chevron {
-          color: var(--selected-nav-item-icon-color);
-        }
-      }
-    }
-  }
-
   // More button - matches .more-pages-btn from page navigation
   .more-pages-btn {
     height: 32px;
@@ -367,99 +187,11 @@
         color: var(--nav-item-label-color);
       }
     }
-  }
 
-  // Page menu popup - matches page navigation dropdown
-  .page-menu-popup {
-    background: var(--nav-container-bg, var(--background-surface-layer-01, #ffffff));
-    border-radius: 8px !important;
-    border: 1px solid var(--cc-weak-border, #e4e7eb);
-    padding: 8px;
-    box-shadow: 0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1)),
-      0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05));
-
-    .tj-list-item {
-      padding: 8px 12px !important;
-      height: 36px !important;
-      gap: 10px;
-      width: 100%;
-
-      &:hover {
-        background-color: var(--hovered-nav-item-pill-bg);
-      }
-
-      &.tj-list-item-selected {
-        color: var(--selected-nav-item-label-color);
-        background-color: var(--selected-nav-item-pill-bg);
-
-        .custom-icon svg {
-          color: var(--selected-nav-item-icon-color);
-        }
-      }
-    }
-
-    .page-group-wrapper {
-      padding: 8px 12px !important;
-      height: 36px !important;
-
-      .group-info {
-        gap: 10px;
-      }
-
-      .nav-chevron {
-        color: var(--nav-item-icon-color);
-        transition: color 0.15s ease;
-      }
-
-      &:hover {
-        background-color: var(--hovered-nav-item-pill-bg);
-
-        .nav-chevron {
-          color: var(--nav-item-label-color);
-        }
-      }
-
-      &.page-group-selected[data-state='closed'] {
-        color: var(--selected-nav-item-label-color);
-        background-color: var(--selected-nav-item-pill-bg);
-
-        .custom-icon svg {
-          color: var(--selected-nav-item-icon-color);
-        }
-
-        .nav-chevron {
-          color: var(--selected-nav-item-icon-color);
-        }
-      }
-    }
-
-    .accordion-item {
-      width: 100%;
-      margin: 0 !important;
-      border: none;
-
-      .accordion-body {
-        padding: 0 0 0 20px !important;
-        margin-top: 4px;
-        display: none;
-        flex-direction: column;
-        gap: 2px;
-
-        &.expanded {
-          display: flex;
-        }
-
-        .accordion-content {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-      }
-    }
-
-    &.dark-theme {
-      background: var(--background-surface-layer-01);
-      border-color: var(--cc-weak-border);
+    &.more-pages-btn-icon-only {
+      width: 32px !important;
+      padding: 6px;
+      gap: 0;
     }
   }
 
@@ -558,14 +290,282 @@
   }
 }
 
-// Elevate the widget wrapper's z-index when a Navigation dropdown is open.
-// Each widget wrapper uses `transform` which creates a stacking context,
-// so the dropdown can't appear above sibling widgets without this.
-// Consistent with `.target.hovered { z-index: 2 }` in Grid.css.
-.target:has(.navigation-widget [data-state='open']),
-.nested-target:has(.navigation-widget [data-state='open']),
-[class*='ele-'].position-absolute:has(.navigation-widget [data-state='open']) {
-  z-index: 3;
+// Also used with different styling in the builder's page sidebar, so scope explicitly
+// rather than making this a bare global selector.
+.navigation-widget .tj-list-item,
+.page-menu-popup .tj-list-item {
+  min-height: 32px;
+  justify-content: start;
+  padding: 6px 10px;
+  gap: 6px;
+  margin: 0px !important;
+  color: var(--nav-item-label-color);
+  border-radius: var(--nav-item-pill-radius);
+  display: flex;
+  align-items: center;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  .custom-icon {
+    line-height: 10px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      color: var(--nav-item-icon-color);
+      transition: color 0.15s ease;
+    }
+  }
+
+  // Label + optional caption stacked vertically
+  .nav-item-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .page-name {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-item-caption {
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--cc-placeholder-text);
+  }
+
+  &:hover {
+    background-color: var(--hovered-nav-item-pill-bg);
+    border-radius: var(--nav-item-pill-radius);
+  }
+
+  &.tj-list-item-selected {
+    color: var(--selected-nav-item-label-color);
+    background-color: var(--selected-nav-item-pill-bg);
+
+    .custom-icon svg {
+      color: var(--selected-nav-item-icon-color);
+    }
+  }
+
+  &.tj-list-item-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+// Page group wrapper - matches page navigation.
+.navigation-widget .page-group-wrapper,
+.page-menu-popup .page-group-wrapper {
+  height: 32px;
+  width: 100%;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background-color: transparent;
+  border-radius: var(--nav-item-pill-radius);
+  color: var(--nav-item-label-color);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  .nav-chevron {
+    color: var(--nav-item-icon-color);
+    transition: color 0.15s ease;
+  }
+
+  .group-info {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 6px;
+
+    .page-name {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .custom-icon {
+      line-height: 10px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        color: var(--nav-item-icon-color);
+        transition: color 0.15s ease;
+      }
+    }
+  }
+
+  &:hover {
+    background-color: var(--hovered-nav-item-pill-bg);
+
+    .nav-chevron {
+      color: var(--nav-item-label-color);
+    }
+  }
+
+  &.page-group-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background-color: transparent;
+
+      .nav-chevron {
+        color: var(--nav-item-icon-color);
+      }
+    }
+  }
+
+  &.page-group-selected {
+    &[data-state='closed'] {
+      color: var(--selected-nav-item-label-color);
+      background-color: var(--selected-nav-item-pill-bg);
+
+      .custom-icon svg {
+        color: var(--selected-nav-item-icon-color);
+      }
+
+      .nav-chevron {
+        color: var(--selected-nav-item-icon-color);
+      }
+    }
+  }
+}
+
+// Page menu popup - matches page navigation dropdown. Rendered via a portal into document.body,
+// so this must be a standalone top-level selector, not nested under .navigation-widget.
+.page-menu-popup {
+  z-index: 1040;
+  background: var(--nav-container-bg, var(--background-surface-layer-01, #ffffff));
+  border-radius: 8px !important;
+  border: 1px solid var(--cc-weak-border, #e4e7eb);
+  padding: 8px;
+  box-shadow: 0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1)),
+    0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05));
+
+  &.nav-subalign-left .tj-list-item {
+    justify-content: flex-start !important;
+  }
+  &.nav-subalign-center .tj-list-item {
+    width: 100%;
+    justify-content: center !important;
+  }
+  &.nav-subalign-right .tj-list-item {
+    width: 100%;
+    justify-content: flex-end !important;
+  }
+
+  .tj-list-item {
+    padding: 8px 12px !important;
+    height: 36px !important;
+    gap: 10px;
+    width: 100%;
+
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+    }
+
+    &.tj-list-item-selected {
+      color: var(--selected-nav-item-label-color);
+      background-color: var(--selected-nav-item-pill-bg);
+
+      .custom-icon svg {
+        color: var(--selected-nav-item-icon-color);
+      }
+    }
+  }
+
+  .page-group-wrapper {
+    padding: 8px 12px !important;
+    height: 36px !important;
+
+    .group-info {
+      gap: 10px;
+    }
+
+    .nav-chevron {
+      color: var(--nav-item-icon-color);
+      transition: color 0.15s ease;
+    }
+
+    &:hover {
+      background-color: var(--hovered-nav-item-pill-bg);
+
+      .nav-chevron {
+        color: var(--nav-item-label-color);
+      }
+    }
+
+    &.page-group-selected[data-state='closed'] {
+      color: var(--selected-nav-item-label-color);
+      background-color: var(--selected-nav-item-pill-bg);
+
+      .custom-icon svg {
+        color: var(--selected-nav-item-icon-color);
+      }
+
+      .nav-chevron {
+        color: var(--selected-nav-item-icon-color);
+      }
+    }
+  }
+
+  .accordion-item {
+    width: 100%;
+    margin: 0 !important;
+    border: none;
+
+    .accordion-body {
+      padding: 0 0 0 20px !important;
+      margin-top: 4px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+
+      &.expanded {
+        display: flex;
+      }
+
+      .accordion-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+    }
+  }
+
+  &.dark-theme {
+    background: var(--background-surface-layer-01);
+    border-color: var(--cc-weak-border);
+  }
 }
 
 // Dark theme adjustments
