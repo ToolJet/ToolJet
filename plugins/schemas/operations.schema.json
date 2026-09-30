@@ -3,7 +3,7 @@
   "title": "Operations schema",
   "description": "Tooljet Operations schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "$schema": {
       "type": "string",
@@ -18,29 +18,23 @@
       "description": "description of datasource"
     },
     "type": {
-      "type": "string",
-      "items": {
-        "$ref": "#/definitions/type"
-      }
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "defaults": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "type": "object"
     },
     "properties": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
-    }
-  },
-  "definitions": {
-    "type": {
-      "enum": [
-        "api",
-        "cloud-storage",
-        "database"
-      ]
+      "type": "object"
     }
   }
 }

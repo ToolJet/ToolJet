@@ -3,7 +3,7 @@
   "title": "Manifest schema",
   "description": "Tooljet manifest schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "$schema": {
       "type": "string",
@@ -18,51 +18,62 @@
       "description": "description of datasource"
     },
     "type": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/type"
-      }
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "defaults": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "type": "object"
     },
     "source": {
       "type": "object",
-      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind"
+      ],
       "properties": {
         "name": {
           "type": "string"
         },
         "kind": {
           "type": "string"
+        }
+      }
+    },
+    "tj:source": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
         },
-        "exposedVariables": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "isLoading": {
-              "type": "string"
-            },
-            "data": {
-              "type": "string"
-            },
-            "rawData": {
-              "type": "string"
-            }
-          }
+        "kind": {
+          "type": "string"
         }
       }
     }
   },
-  "definitions": {
-    "type": {
-      "enum": [
-        "api",
-        "cloud-storage",
-        "database"
+  "anyOf": [
+    {
+      "required": [
+        "source"
+      ]
+    },
+    {
+      "required": [
+        "tj:source"
       ]
     }
-  }
+  ]
 }
