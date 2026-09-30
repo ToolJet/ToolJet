@@ -114,6 +114,7 @@ Analyze the commits and diff to determine:
 
 **Issue linking rules:**
 - Use `Closes #123` if the PR fully resolves the issue, `Relates to: #123` if partial
+- Issues in the private tracker (e.g. from `kickoff`) need the full reference: `Closes ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR
 - Multiple parents: `Relates to: #123, #456`
 - Sub-issues: list issue numbers ONLY — do NOT repeat the title after the number (GitHub auto-renders titles from issue references)
   ```
