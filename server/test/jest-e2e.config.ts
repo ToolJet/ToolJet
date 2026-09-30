@@ -3,22 +3,19 @@ import type { Config } from '@jest/types';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { coverageConfig } from './jest-coverage.config';
+import { editionProjects } from './jest-projects.config';
 
 // CE when asked for, or when the private test tree is absent (public clone).
 const isCE = process.env.TOOLJET_EDITION === 'ce' || !existsSync(join(__dirname, '../ee/test'));
 
-const config: Config.InitialOptions = {
+// Per-tree options. `roots`, `rootDir` and the `test-helper` mapping are set per project by editionProjects().
+const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
-  // rootDir is server/ (not server/test/) so the v8 coverage provider — which
-  // hard-filters collected coverage to files under rootDir — doesn't drop every
-  // src/** and ee/** file before collectCoverageFrom even gets consulted.
-  rootDir: '..',
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts', '<rootDir>/test/jest-retry-setup.ts'],
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
-  roots: isCE ? ['<rootDir>/test'] : ['<rootDir>/test', '<rootDir>/ee/test'],
   // Explicitly setting this key drops Jest's own default ('/node_modules/'), so it's
   // restored here — rootDir now covers server/node_modules too.
   // NOTE: git-sync-gitlab.spec.ts is NOT quarantined — it self-guards, skipping the whole
@@ -27,9 +24,6 @@ const config: Config.InitialOptions = {
   testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
-  testTimeout: 60000,
-  verbose: true,
-  slowTestThreshold: 0,
   transformIgnorePatterns: [
     'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
@@ -59,8 +53,19 @@ const config: Config.InitialOptions = {
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
-    '^test-helper$': isCE ? '<rootDir>/test/test.helper.ts' : '<rootDir>/ee/test/test.helper.ts',
   },
+};
+
+const config: Config.InitialOptions = {
+  // rootDir is server/ (not server/test/) so the v8 coverage provider — which
+  // hard-filters collected coverage to files under rootDir — doesn't drop every
+  // src/** and ee/** file before collectCoverageFrom even gets consulted.
+  rootDir: '..',
+  projects: editionProjects(join(__dirname, '..'), isCE, shared),
+  // Global-only options: Jest ignores these inside a project.
+  testTimeout: 60000,
+  verbose: true,
+  slowTestThreshold: 0,
   ...coverageConfig(isCE),
   // run-e2e.sh always overrides this per-shard (--coverageDirectory=.coverage/shard-N);
   // this is only the default for direct `jest --config test/jest-e2e.config.ts` invocations.
