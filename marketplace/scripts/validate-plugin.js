@@ -1,86 +1,172 @@
-import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync, cpSync, rmSync } from 'fs';
+/*
+ * Validates marketplace plugins. Per plugin it checks:
+ *   - required files exist (lib/index.ts, lib/types.ts, lib/icon.svg, package.json)
+ *   - lib/manifest.json and lib/operations.json match plugins/schemas/*.schema.json
+ *   - source.kind appears exactly once in plugins.json and equals the directory name
+ *   - @spec/<kind>/<name> refs use the plugin id and have openapi-specs/<name>.(json|yaml)
+ *   - without @spec refs, every operation value appears as a string literal in lib/*.ts
+ *
+ * usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test
+ * PLUGINS_JSON overrides the registry path.
+ */
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, cpSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { basename, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 import Ajv from 'ajv';
 
-const root = resolve(fileURLToPath(import.meta.url), '../..');
-const schemaDir = join(root, '../plugins/schemas');
-const registryPath = () => process.env.PLUGINS_JSON || join(root, '../server/src/assets/marketplace/plugins.json');
-const REQUIRED = ['lib/index.ts', 'lib/types.ts', 'lib/icon.svg', 'package.json'];
+const SELF = fileURLToPath(import.meta.url);
+const MARKETPLACE_DIR = resolve(SELF, '../..');
+const PLUGINS_DIR = join(MARKETPLACE_DIR, 'plugins');
+const SCHEMA_DIR = join(MARKETPLACE_DIR, '../plugins/schemas');
+const registryPath = () =>
+  process.env.PLUGINS_JSON || join(MARKETPLACE_DIR, '../server/src/assets/marketplace/plugins.json');
+
+const REQUIRED_FILES = ['lib/index.ts', 'lib/types.ts', 'lib/icon.svg', 'package.json'];
+const SCHEMA_CHECKED_FILES = ['manifest', 'operations'];
+const SPEC_EXTENSIONS = ['json', 'yaml'];
+const QUOTES = ['"', "'", '`'];
+// Pre-existing registry drift; suppressed so --all stays green, any other error still fails.
 const KNOWN_FAILURES = {
   presto: 'id "Presto" appears 0 times in plugins.json (expected 1)',
   s3: 'id "s3" appears 0 times in plugins.json (expected 1)',
 };
+const USAGE = 'usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test';
 
-const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
-const strings = (v) =>
-  typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : [];
+/**
+ * @typedef {{ id: string }} RegistryEntry
+ * @typedef {(doc: unknown) => boolean} SchemaValidator  Ajv validator; sets `.errors` on failure
+ * @typedef {object} LoadedPlugin
+ * @property {string} dirName          basename of the plugin directory
+ * @property {string[]} presentFiles   which REQUIRED_FILES exist
+ * @property {{ manifest?: object, operations?: object }} docs  parsed lib/*.json, absent if missing
+ * @property {string} sourceText       all lib/*.ts concatenated
+ * @property {string[]} specFiles      file names in openapi-specs/
+ * @property {RegistryEntry[] | undefined} registry  undefined when --skip-registry
+ */
 
-function validate(arg, skipRegistry) {
-  const dir = existsSync(arg) ? resolve(arg) : join(root, 'plugins', arg);
-  const errors = [];
-  if (!existsSync(join(dir, 'lib'))) return [`plugin directory not found: ${dir}`];
-  REQUIRED.filter((f) => !existsSync(join(dir, f))).forEach((f) => errors.push(`missing ${f}`));
+// ---- calculations: pure, return error strings ----
 
-  const ajv = new Ajv({ allErrors: true });
-  const docs = {};
-  for (const name of ['manifest', 'operations']) {
-    const file = join(dir, 'lib', `${name}.json`);
-    if (!existsSync(file)) {
-      errors.push(`missing lib/${name}.json`);
-      continue;
-    }
-    docs[name] = readJson(file);
-    const check = ajv.compile(readJson(join(schemaDir, `${name}.schema.json`)));
-    if (!check(docs[name])) check.errors.forEach((e) => errors.push(`${name}.json${e.dataPath} ${e.message}`));
+const stringsIn = (v) =>
+  typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(stringsIn) : [];
+
+const sourceKind = (manifest) => (manifest?.source ?? manifest?.['tj:source'])?.kind;
+
+function checkRequiredFiles(presentFiles) {
+  return REQUIRED_FILES.filter((f) => !presentFiles.includes(f)).map((f) => `missing ${f}`);
+}
+
+function checkAgainstSchema(name, doc, validator) {
+  if (!doc) return [`missing lib/${name}.json`];
+  return validator(doc) ? [] : validator.errors.map((e) => `${name}.json${e.dataPath} ${e.message}`);
+}
+
+function checkRegistryEntry(id, registry) {
+  const n = registry.filter((p) => p.id === id).length;
+  return n === 1 ? [] : [`id "${id}" appears ${n} times in plugins.json (expected 1)`];
+}
+
+function checkDirectoryMatchesId(dirName, id) {
+  return dirName === id ? [] : [`directory "${dirName}" must equal source.kind "${id}"`];
+}
+
+function checkSpecReferences(specRefs, id, specFiles) {
+  return specRefs.flatMap((ref) => {
+    const [, kind, name] = ref.split('/');
+    const errors = [];
+    if (kind !== id) errors.push(`${ref} must use the plugin id "${id}"`);
+    if (!SPEC_EXTENSIONS.some((x) => specFiles.includes(`${name}.${x}`)))
+      errors.push(`missing openapi-specs/${name}.(json|yaml) for ${ref}`);
+    return errors;
+  });
+}
+
+function checkOperationHandlers(operations, sourceText) {
+  const list = operations.properties?.operation?.list ?? [];
+  return list
+    .filter((o) => !QUOTES.some((q) => sourceText.includes(q + o.value + q)))
+    .map((o) => `operation "${o.value}" not handled in lib/*.ts`);
+}
+
+/** @param {LoadedPlugin} plugin @param {Record<string, SchemaValidator>} validators */
+function checkPlugin(plugin, validators) {
+  const { manifest, operations } = plugin.docs;
+  const id = sourceKind(manifest);
+  const errors = [
+    ...checkRequiredFiles(plugin.presentFiles),
+    ...SCHEMA_CHECKED_FILES.flatMap((name) => checkAgainstSchema(name, plugin.docs[name], validators[name])),
+  ];
+  if (plugin.registry) {
+    const registryErrors = checkRegistryEntry(id, plugin.registry);
+    errors.push(...(registryErrors.length ? registryErrors : checkDirectoryMatchesId(plugin.dirName, id)));
   }
-
-  const id = (docs.manifest?.source ?? docs.manifest?.['tj:source'])?.kind;
-  if (!skipRegistry) {
-    const n = readJson(registryPath()).filter((p) => p.id === id).length;
-    if (n !== 1) errors.push(`id "${id}" appears ${n} times in plugins.json (expected 1)`);
-    else if (basename(dir) !== id) errors.push(`directory "${basename(dir)}" must equal source.kind "${id}"`);
-  }
-
-  if (docs.operations) {
-    const specs = strings(docs.operations).filter((s) => s.startsWith('@spec/'));
-    if (specs.length) {
-      for (const s of specs) {
-        const [, kind, name] = s.split('/');
-        if (kind !== id) errors.push(`${s} must use the plugin id "${id}"`);
-        if (!['json', 'yaml'].some((x) => existsSync(join(dir, 'openapi-specs', `${name}.${x}`))))
-          errors.push(`missing openapi-specs/${name}.(json|yaml) for ${s}`);
-      }
-    } else {
-      const list = docs.operations.properties?.operation?.list ?? [];
-      const src = readdirSync(join(dir, 'lib'))
-        .filter((f) => f.endsWith('.ts'))
-        .map((f) => readFileSync(join(dir, 'lib', f), 'utf8'))
-        .join('\n');
-      list
-        .filter((o) => !['"', "'", '`'].some((q) => src.includes(q + o.value + q)))
-        .forEach((o) => errors.push(`operation "${o.value}" not handled in lib/*.ts`));
-    }
+  if (operations) {
+    const specRefs = stringsIn(operations).filter((s) => s.startsWith('@spec/'));
+    // Spec-driven plugins route operations through the spec, not lib/*.ts literals.
+    errors.push(
+      ...(specRefs.length
+        ? checkSpecReferences(specRefs, id, plugin.specFiles)
+        : checkOperationHandlers(operations, plugin.sourceText))
+    );
   }
   return errors;
 }
 
+// ---- actions: filesystem ----
+
+const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
+const listDir = (d) => (existsSync(d) ? readdirSync(d) : []);
+
+function loadSchemaValidators() {
+  const ajv = new Ajv({ allErrors: true });
+  return Object.fromEntries(
+    SCHEMA_CHECKED_FILES.map((name) => [name, ajv.compile(readJson(join(SCHEMA_DIR, `${name}.schema.json`)))])
+  );
+}
+
+/** @returns {LoadedPlugin} */
+function loadPlugin(dir, skipRegistry) {
+  const lib = join(dir, 'lib');
+  const jsonIfExists = (name) =>
+    existsSync(join(lib, `${name}.json`)) ? readJson(join(lib, `${name}.json`)) : undefined;
+  return {
+    dirName: basename(dir),
+    presentFiles: REQUIRED_FILES.filter((f) => existsSync(join(dir, f))),
+    docs: Object.fromEntries(SCHEMA_CHECKED_FILES.map((name) => [name, jsonIfExists(name)])),
+    sourceText: listDir(lib)
+      .filter((f) => f.endsWith('.ts'))
+      .map((f) => readFileSync(join(lib, f), 'utf8'))
+      .join('\n'),
+    specFiles: listDir(join(dir, 'openapi-specs')),
+    registry: skipRegistry ? undefined : readJson(registryPath()),
+  };
+}
+
+function validateTarget(target, skipRegistry, validators) {
+  const dir = existsSync(target) ? resolve(target) : join(PLUGINS_DIR, target);
+  if (!existsSync(join(dir, 'lib'))) return [`plugin directory not found: ${dir}`];
+  return checkPlugin(loadPlugin(dir, skipRegistry), validators);
+}
+
+const allPluginIds = () =>
+  readdirSync(PLUGINS_DIR).filter((d) => d !== 'common' && existsSync(join(PLUGINS_DIR, d, 'lib')));
+
+// ---- reporting + CLI ----
+
 function run(args) {
   const skipRegistry = args.includes('--skip-registry');
-  let targets = args.filter((a) => !a.startsWith('--'));
-  if (args.includes('--all'))
-    targets = readdirSync(join(root, 'plugins')).filter(
-      (d) => d !== 'common' && existsSync(join(root, 'plugins', d, 'lib'))
-    );
-  if (!targets.length)
-    return console.error('usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test') || 1;
+  const targets = args.includes('--all') ? allPluginIds() : args.filter((a) => !a.startsWith('--'));
+  if (!targets.length) {
+    console.error(USAGE);
+    return 1;
+  }
+  const validators = loadSchemaValidators();
   let failed = 0;
   let known = 0;
-  for (const t of targets) {
-    const id = basename(resolve(t));
-    const all = validate(t, skipRegistry);
+  for (const target of targets) {
+    const id = basename(resolve(target));
+    const all = validateTarget(target, skipRegistry, validators);
     const errors = all.filter((e) => e !== KNOWN_FAILURES[id]);
     if (errors.length) {
       failed++;
@@ -94,41 +180,77 @@ function run(args) {
   return failed ? 1 : 0;
 }
 
+// ---- self-test: each case prepares a fresh temp dir and expects an exit code ----
+
+const copyPlugin = (id, dest) =>
+  cpSync(join(PLUGINS_DIR, id), dest, { recursive: true, filter: (p) => !p.includes('node_modules') });
+
+const editJson = (file, edit) => {
+  const doc = readJson(file);
+  edit(doc);
+  writeFileSync(file, JSON.stringify(doc));
+};
+
+const SELF_TEST_CASES = [
+  { label: 'valid plugin passes', exit: 0, prepare: () => ({ args: ['cohere'] }) },
+  {
+    label: 'valid directory passes (skip registry)',
+    exit: 0,
+    prepare: (tmp) => {
+      copyPlugin('cohere', join(tmp, 'cohere'));
+      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
+    },
+  },
+  { label: 'known failure is suppressed', exit: 0, prepare: () => ({ args: ['presto'] }) },
+  {
+    label: 'other error on a known-failure plugin fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('presto', join(tmp, 'presto'));
+      rmSync(join(tmp, 'presto/lib/types.ts'));
+      return { args: [join(tmp, 'presto')] };
+    },
+  },
+  {
+    label: 'invented widget type fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('cohere', join(tmp, 'cohere'));
+      editJson(join(tmp, 'cohere/lib/operations.json'), (ops) => (ops.properties.operation.type = 'codeeditor'));
+      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
+    },
+  },
+  {
+    label: 'manifest without source.name fails',
+    exit: 1,
+    prepare: (tmp) => {
+      copyPlugin('cohere', join(tmp, 'cohere'));
+      editJson(join(tmp, 'cohere/lib/manifest.json'), (m) => delete m.source.name);
+      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
+    },
+  },
+  {
+    label: 'duplicate registry id fails',
+    exit: 1,
+    prepare: (tmp) => {
+      const registry = readJson(registryPath());
+      writeFileSync(join(tmp, 'plugins.json'), JSON.stringify([...registry, registry.find((p) => p.id === 'cohere')]));
+      return { args: ['cohere'], env: { PLUGINS_JSON: join(tmp, 'plugins.json') } };
+    },
+  },
+];
+
 function selfTest() {
   const tmp = mkdtempSync(join(tmpdir(), 'validate-plugin-'));
   try {
-    const copy = join(tmp, 'cohere');
-    const skip = (d) => !d.includes('node_modules');
-    cpSync(join(root, 'plugins/cohere'), copy, { recursive: true, filter: skip });
-    const self = fileURLToPath(import.meta.url);
-    const exec = (args, env = {}) =>
-      spawnSync('node', [self, ...args], { encoding: 'utf8', env: { ...process.env, ...env } });
-    const expect = (label, r, code) => {
-      if (r.status !== code) throw new Error(`${label}: expected exit ${code}, got ${r.status}\n${r.stdout}`);
+    SELF_TEST_CASES.forEach(({ label, exit, prepare }, i) => {
+      const caseDir = join(tmp, String(i));
+      mkdirSync(caseDir);
+      const { args, env = {} } = prepare(caseDir);
+      const r = spawnSync('node', [SELF, ...args], { encoding: 'utf8', env: { ...process.env, ...env } });
+      if (r.status !== exit) throw new Error(`${label}: expected exit ${exit}, got ${r.status}\n${r.stdout}`);
       console.log(`ok ${label}`);
-    };
-    expect('valid plugin passes', exec(['cohere']), 0);
-    expect('valid directory passes (skip registry)', exec([copy, '--skip-registry']), 0);
-    expect('known failure is suppressed', exec(['presto']), 0);
-    const presto = join(tmp, 'presto');
-    cpSync(join(root, 'plugins/presto'), presto, { recursive: true, filter: skip });
-    rmSync(join(presto, 'lib/types.ts'));
-    expect('other error on a known-failure plugin fails', exec([presto]), 1);
-    const opsFile = join(copy, 'lib/operations.json');
-    const ops = readJson(opsFile);
-    ops.properties.operation.type = 'codeeditor';
-    writeFileSync(opsFile, JSON.stringify(ops));
-    expect('invented widget type fails', exec([copy, '--skip-registry']), 1);
-    writeFileSync(opsFile, readFileSync(join(root, 'plugins/cohere/lib/operations.json')));
-    const manifest = join(copy, 'lib/manifest.json');
-    const m = readJson(manifest);
-    delete m.source.name;
-    writeFileSync(manifest, JSON.stringify(m));
-    expect('manifest without source.name fails', exec([copy, '--skip-registry']), 1);
-    const dup = join(tmp, 'plugins.json');
-    const reg = readJson(registryPath());
-    writeFileSync(dup, JSON.stringify([...reg, reg.find((p) => p.id === 'cohere')]));
-    expect('duplicate registry id fails', exec(['cohere'], { PLUGINS_JSON: dup }), 1);
+    });
     return 0;
   } finally {
     rmSync(tmp, { recursive: true, force: true });
