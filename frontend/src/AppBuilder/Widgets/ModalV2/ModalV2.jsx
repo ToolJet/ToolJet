@@ -105,31 +105,30 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children
   const pendingOpensRef = useRef([]);
   const hasEnteredRef = useRef(false);
 
+  const settleOpens = (opens) => {
+    if (!opens.length) return;
+    useStore.getState().flushImplicitBatchEntries();
+    opens.forEach(({ resolve, timer }) => {
+      clearTimeout(timer);
+      resolve();
+    });
+  };
+
   const resolvePendingOpens = () => {
     const pending = pendingOpensRef.current;
-    if (!pending.length) return;
     pendingOpensRef.current = [];
-    useStore.getState().flushImplicitBatchEntries();
-    pending.forEach((resolve) => resolve());
+    settleOpens(pending);
+  };
+
+  // Resolves only this open, so an earlier open's timeout can't resolve a later one early
+  const resolveOpen = (open) => {
+    if (!pendingOpensRef.current.includes(open)) return;
+    pendingOpensRef.current = pendingOpensRef.current.filter((pending) => pending !== open);
+    settleOpens([open]);
   };
 
   const onModalEntered = () => {
@@ -147,9 +146,10 @@ export const ModalV2 = function Modal({
 
   function openModal() {
     const opened = new Promise((resolve) => {
-      pendingOpensRef.current.push(resolve);
+      const open = { resolve };
       // Never block the caller if the modal doesn't finish entering
-      setTimeout(resolvePendingOpens, OPEN_TIMEOUT_MS);
+      open.timer = setTimeout(() => resolveOpen(open), OPEN_TIMEOUT_MS);
+      pendingOpensRef.current.push(open);
     });
     setExposedVariable('show', true);
     if (hasEnteredRef.current) {
@@ -355,7 +355,9 @@ export const ModalV2 = function Modal({
         restoreFocus={false}
         animation={false}
         onShow={() => {
-          onShowModal();
+          // Not onShowModal(): that would register a second pending open for the same show
+          setSelectedComponentAsModal(id);
+          setExposedVariable('show', true);
           fireEvent('onOpen');
         }}
         onHide={() => {
