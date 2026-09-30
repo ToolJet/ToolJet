@@ -5067,6 +5067,20 @@ function migrateProperties(
     styles.padding = { value: 'default' };
   }
 
+  // Navigation: these keys moved from properties to styles (see server/data-migrations/
+  // 1783372800000-MoveNavigationLayoutStylesToStyles.ts for the equivalent one-off DB fixup).
+  // Apps exported before that change still carry them under properties, so relocate on import too.
+  if (['Navigation'].includes(componentType)) {
+    for (const key of ['orientation', 'displayStyle', 'navItemSize', 'horizontalAlignment', 'verticalAlignment']) {
+      if (properties[key] !== undefined) {
+        if (styles[key] === undefined) {
+          styles[key] = properties[key];
+        }
+        delete properties[key];
+      }
+    }
+  }
+
   return { properties, styles, general, generalStyles, validation };
 }
 
