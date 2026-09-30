@@ -559,7 +559,8 @@ export const createPageMenuSlice = (set, get) => {
       switchPage(
         page?.id,
         pages.find((p) => page.id === p?.id)?.handle,
-        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : [],
+        moduleId
       );
     },
 
@@ -630,7 +631,8 @@ export const createPageMenuSlice = (set, get) => {
       switchPage(
         page?.id,
         pages.find((p) => page.id === p?.id)?.handle,
-        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : [],
+        moduleId
       );
       currentMode !== 'view' && setCurrentPageHandle(page.handle);
       return true;

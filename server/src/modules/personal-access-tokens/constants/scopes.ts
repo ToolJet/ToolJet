@@ -1,5 +1,7 @@
+import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
+import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -50,11 +52,10 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.APP_ENVIRONMENTS,
   ],
   [PAT_BUNDLE.WORKFLOWS]: [MODULES.WORKFLOWS],
-  [PAT_BUNDLE.WORKSPACE_USERS]: [MODULES.ORGANIZATION_USER],
+  [PAT_BUNDLE.WORKSPACE_USERS]: [MODULES.ORGANIZATION_USER, MODULES.GROUP_PERMISSIONS],
   [PAT_BUNDLE.WORKSPACE_ADMIN]: [
     MODULES.ORGANIZATIONS,
     MODULES.USER,
-    MODULES.GROUP_PERMISSIONS,
     MODULES.ORGANIZATION_CONSTANT,
     MODULES.ORGANIZATION_VARIABLE,
     MODULES.ORGANIZATION_PAYMENTS,
@@ -110,17 +111,41 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
 /**
  * The live allowlist. Everything not reachable from these bundles is denied.
  *
- * Currently the exact set an app-building automation client needs and nothing more. MODULES.AI is
+ * Supports app-building and workflow automation clients. MODULES.AI is
  * deliberately unassigned pending a decision — it builds apps, but its endpoints spend money on
- * model calls, so an app-scoped automation token should not reach it by default.
+ * model calls, so a workspace automation token should not reach it by default.
  */
-export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [PAT_BUNDLE.APPS, PAT_BUNDLE.DATA, PAT_BUNDLE.WORKSPACE_USERS];
+export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [
+  PAT_BUNDLE.APPS,
+  PAT_BUNDLE.DATA,
+  PAT_BUNDLE.WORKFLOWS,
+  PAT_BUNDLE.WORKSPACE_USERS,
+];
 
 const ALLOWED_MODULES: ReadonlySet<MODULES> = new Set(
   PAT_ALLOWED_BUNDLES.flatMap((bundle) => PAT_BUNDLE_MODULES[bundle])
 );
 
 const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  [MODULES.GROUP_PERMISSIONS]: new Set([
+    GROUP_FEATURE.GET_ALL,
+    GROUP_FEATURE.GET_ONE,
+    GROUP_FEATURE.GET_ALL_GROUP_USER,
+    GROUP_FEATURE.CREATE,
+    GROUP_FEATURE.UPDATE,
+    GROUP_FEATURE.DELETE,
+    GROUP_FEATURE.DELETE_GROUP_USER,
+    GROUP_FEATURE.DUPLICATE,
+    GROUP_FEATURE.GET_ADDABLE_APPS,
+    GROUP_FEATURE.GET_ADDABLE_DS,
+    GROUP_FEATURE.GET_ALL_GRANULAR_PERMISSIONS,
+    GROUP_FEATURE.CREATE_GRANULAR_APP_PERMISSIONS,
+    GROUP_FEATURE.CREATE_GRANULAR_DATA_PERMISSIONS,
+    GROUP_FEATURE.UPDATE_GRANULAR_APP_PERMISSIONS,
+    GROUP_FEATURE.UPDATE_GRANULAR_DATA_PERMISSIONS,
+    GROUP_FEATURE.DELETE_GRANULAR_APP_PERMISSIONS,
+    GROUP_FEATURE.DELETE_GRANULAR_DATA_PERMISSIONS,
+  ]),
   [MODULES.ORGANIZATION_USER]: new Set([
     ORGANIZATION_USER_FEATURE.VIEW_ALL_USERS,
     ORGANIZATION_USER_FEATURE.USER_INVITE,
@@ -141,6 +166,11 @@ export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
  */
 export function patCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
+  // Installed API specs are read-only datasource metadata. Keep plugin administration in its
+  // instance-admin bundle while allowing data clients to discover valid query contracts.
+  if (module === MODULES.PLUGINS && feature === PLUGIN_FEATURE.GET_SPEC) {
+    return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.DATA);
+  }
   if (!ALLOWED_MODULES.has(module)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];
   return !allowedFeatures || (!!feature && allowedFeatures.has(feature));
