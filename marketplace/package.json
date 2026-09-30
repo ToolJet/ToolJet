@@ -6,6 +6,7 @@
   ],
   "version": "1.0.0",
   "devDependencies": {
+    "ajv": "^6.15.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
@@ -31,6 +32,7 @@
     "start:dev": "npm run build && npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "eslint .  '**/*.ts'",
+    "validate:plugin": "node scripts/validate-plugin.js",
     "format": "eslint . --fix '**/*.ts'"
   }
 }
