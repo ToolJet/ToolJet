@@ -34,7 +34,7 @@ const WorkspaceLimitModal = ({ showModal: propShowModal, current, limit, toggleM
             </span>
             <p className="description" data-cy="modal-description">
               You have reached the number of workspaces ({current}/{limit}) which can be created in ToolJet Cloud.
-              Contact us at <a href="mailto:hello@tooljet.com">hello@tooljet.com</a> to increase this limit.
+              Contact us at <a href="mailto:support@tooljet.com">support@tooljet.com</a> to increase this limit.
             </p>
           </div>
         </Modal.Header>
@@ -44,7 +44,7 @@ const WorkspaceLimitModal = ({ showModal: propShowModal, current, limit, toggleM
           </button>
           <a
             className="btn contact-support-btn"
-            href="mailto:hello@tooljet.com?subject=Increase%20workspace%20limit"
+            href="mailto:support@tooljet.com?subject=Increase%20workspace%20limit"
             data-cy="contact-support-button"
           >
             <Headset size={16} />
