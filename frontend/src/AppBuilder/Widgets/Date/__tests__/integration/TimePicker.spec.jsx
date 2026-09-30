@@ -6,6 +6,7 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { sharedDateStyleTests } from './sharedDateStyles';
 
 // Engineering scenarios for TimePicker (display name "Time Picker").
 // Contract: frontend/ee/test/app-builder/widgets/TimePicker/TESTING.md.
@@ -241,42 +242,12 @@ describe('TimePicker widget', () => {
     await waitFor(() => expect(store().getExposedValueOfComponent(ID, MODULE_ID).value).toBeNull());
   });
 
-  test('[TimePicker-STYLE-001] visibility=false applies the invisible class', async () => {
-    // Break this catches: dropping the `invisible: !visibility` class mapping
-    // (BaseDateComponent.jsx:149), so a hidden picker stays visible.
-    widget.render({ properties: { visibility: binding('{{false}}') } });
+  const styleTests = sharedDateStyleTests({ widget, wrapper, input, borderRadiusKey: 'fieldBorderRadius' });
 
-    await waitFor(() => expect(wrapper()).toBeInTheDocument());
-    expect(wrapper()).toHaveClass('invisible');
-  });
-
-  test('[TimePicker-STYLE-002] disabledState sets the input disabled attribute and aria', async () => {
-    // Break this catches: dropping `disabled`/`aria-disabled` from the input
-    // (DatepickerInput.jsx:71,98), so a disabled picker stays editable.
-    widget.render({ properties: { disabledState: binding('{{true}}') } });
-
-    await waitFor(() => expect(input()).toBeInTheDocument());
-    expect(input()).toBeDisabled();
-    expect(input()).toHaveAttribute('aria-disabled', 'true');
-  });
-
-  test('[TimePicker-STYLE-003] boxShadow is applied to the input inline style', async () => {
-    // Break this catches: not forwarding `boxShadow` to the input inline style
-    // (BaseDateComponent.jsx:82 -> DatepickerInput.jsx:46).
-    widget.render({ styles: { boxShadow: binding('0px 0px 5px red') } });
-
-    await waitFor(() => expect(input()).toBeInTheDocument());
-    expect(input()).toHaveStyle({ boxShadow: '0px 0px 5px red' });
-  });
-
-  test('[TimePicker-STYLE-004] fieldBorderRadius is applied to the input inline style', async () => {
-    // Break this catches: not forwarding `fieldBorderRadius` to the input
-    // inline border-radius (BaseDateComponent.jsx:81 -> DatepickerInput.jsx:46).
-    widget.render({ styles: { fieldBorderRadius: binding('{{10}}') } });
-
-    await waitFor(() => expect(input()).toBeInTheDocument());
-    expect(input()).toHaveStyle({ borderRadius: '10px' });
-  });
+  test('[TimePicker-STYLE-001] visibility=false applies the invisible class', styleTests.visibility);
+  test('[TimePicker-STYLE-002] disabledState sets the input disabled attribute and aria', styleTests.disabledState);
+  test('[TimePicker-STYLE-003] boxShadow is applied to the input inline style', styleTests.boxShadow);
+  test('[TimePicker-STYLE-004] fieldBorderRadius is applied to the input inline style', styleTests.borderRadius);
 
   test('[TimePicker-LOAD-001] loadingState marks the input busy and disabled', async () => {
     // Break this catches: not driving `aria-busy`/`disabled` from loading
