@@ -1,17 +1,11 @@
 import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
 import {
   buildLinearWorkflow,
   revealWorkflowToken,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
 
-// A webhook is a public entry point into a workflow. This case drives it for
-// real — it enables the webhook in the UI, reads back the endpoint and token,
-// then fires an actual HTTP request from outside the app.
-//
-// Only the happy path is covered. The disabled state and a bad/revoked token
-// are both untested.
 const data = {};
 
 describe("Workflows - webhook trigger", () => {
@@ -33,8 +27,6 @@ describe("Workflows - webhook trigger", () => {
       responseReturn: workflowsText.responseNodeQuery,
     });
 
-    // Confirm the workflow works when run from the editor before trusting the
-    // webhook path — otherwise a webhook failure is ambiguous.
     cy.verifyTextInResponseOutput(workflowsText.runjsExpectedValueForWebhooks);
 
     cy.get(workflowSelector.workflowTriggerIcon).click();

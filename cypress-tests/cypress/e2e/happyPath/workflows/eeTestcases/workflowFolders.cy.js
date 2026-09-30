@@ -1,29 +1,25 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { workflowsText } from "Texts/platform/workflows";
-import { workflowSelector } from "Selectors/platform/workflows";
 import { dashboardSelector } from "Selectors/platform/dashboard";
+import { workflowSelector } from "Selectors/platform/workflows";
 import {
-  createFolder,
-  deleteFolder,
-  viewFolderCardOptions,
-  verifyModal,
   cancelModal,
   closeModal,
+  createFolder,
+  deleteFolder,
+  verifyModal,
+  viewFolderCardOptions,
 } from "Support/utils/common";
 import {
-  openWorkflowsDashboard,
-  moveWorkflowToFolder,
-  removeWorkflowFromFolder,
-  cleanupWorkflows,
   cleanupFolders,
-} from "Support/utils/workFlows";
+  cleanupWorkflows,
+  moveWorkflowToFolder,
+  openWorkflowsDashboard,
+  removeWorkflowFromFolder,
+} from "Support/utils/workflows/workFlows";
+import { commonText } from "Texts/common";
+import { workflowsText } from "Texts/platform/workflows";
 
-// Workflow folders are the apps folder feature scoped to workflows: the same
-// folder API, the same folder UI, discriminated by type. These cases mirror
-// dashboard.cy.js "Should verify the folder CRUD operation" plus its
-// add/remove-to-folder blocks, and reuse the same helpers.
 const data = {};
 
 describe("Workflows - folders and folder movement", () => {
@@ -37,9 +33,7 @@ describe("Workflows - folders and folder movement", () => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
   });
 
-  // Teardown lives here, not at the end of each test, so a test that fails
-  // part-way still cleans up. Folders are cleaned for both types because one
-  // test deliberately creates an app folder with the same name.
+
   afterEach(() => {
     cleanupWorkflows([data.workflowName]);
     cleanupFolders([data.folderName, data.updatedFolderName], ["workflow", "front-end"]);
@@ -106,9 +100,6 @@ describe("Workflows - folders and folder movement", () => {
     openWorkflowsDashboard();
     createFolder(data.folderName);
 
-    // Assert only the stable prefix: the trailing sentence of this confirmation
-    // says "Apps" even on the workflows dashboard, which is a copy defect raised
-    // separately — not something to encode in an assertion.
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.deleteFolderOption(data.folderName)).click();
     cy.get(commonSelectors.modalComponent)

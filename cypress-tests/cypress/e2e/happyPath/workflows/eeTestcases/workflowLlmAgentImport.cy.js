@@ -1,28 +1,20 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { workflowsText } from "Texts/platform/workflows";
 import { workflowSelector } from "Selectors/platform/workflows";
 import {
-  openWorkflowsDashboard,
-  importWorkflowApp,
-  workflowImportFile,
-  isPluginInstalled,
-  setOpenAiApiKey,
-  runWorkflowFromEditor,
+  cleanupDataSources,
+  cleanupWorkflows,
   getWorkflowExecution,
   getWorkflowQueries,
-  cleanupWorkflows,
-  cleanupDataSources,
-} from "Support/utils/workFlows";
+  importWorkflowApp,
+  isPluginInstalled,
+  openWorkflowsDashboard,
+  runWorkflowFromEditor,
+  setOpenAiApiKey,
+  workflowImportFile,
+} from "Support/utils/workflows/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
 
-// An exported multi-agent workflow: an orchestrating agent (agent2) hands off
-// to three chained agents — multiplyAgent → additionAgent → divisionAgent —
-// each backed by an OpenAI model node and doing its arithmetic only through a
-// RunJS/RunPy tool. agent1 sits on the canvas, unconnected to the flow.
-//
-// The export depends on the OpenAI marketplace plugin, which the dashboard
-// import installs before creating the model queries. The fixture carries no
-// API key, so the end-to-end run case is commented out until one is available.
 const modelQueries = ["openai1", "openai2", "openai3", "openai4", "openai5"];
 const flowAgents = ["agent2", "multiplyAgent", "additionAgent", "divisionAgent"];
 const nodeNames = [
@@ -86,9 +78,6 @@ describe("Workflows - LLM agent workflow import", () => {
 
     isPluginInstalled("openai").should("equal", true);
 
-    // Import drops a data source whose plugin is missing, along with its
-    // queries, and still reports success — so check the model queries arrived
-    // and bound to the data source this import created.
     cy.apiGetDataSourceIdByName(data.dataSourceName).then((dataSourceId) => {
       expect(dataSourceId, "imported OpenAI data source").to.be.a("string");
       cy.location("pathname").then((pathname) =>
@@ -129,30 +118,27 @@ describe("Workflows - LLM agent workflow import", () => {
     );
   });
 
-  // Needs a valid OpenAI key: set openai_api_key in cypress.env.json and the CI
-  // secret, then uncomment. Expected result is (12 × 12 + 100) / 2 = 122, since
-  // the Response node returns divisionAgent's result.
-  // it("The imported agents chain through their tools and return the computed result", () => {
-  //   const apiKey = Cypress.env("openai_api_key");
-  //   // Checked without an assertion so the key never reaches the command log.
-  //   if (!apiKey) {
-  //     throw new Error("Set openai_api_key in cypress.env.json to run this case");
-  //   }
-  //
-  //   importAgentWorkflow();
-  //   setOpenAiApiKey(data.dataSourceName, apiKey);
-  //
-  //   runWorkflowFromEditor().then((result) => {
-  //     expect(result.executionStatus).to.equal("completed");
-  //
-  //     getWorkflowExecution(result.executionId).then(({ nodes }) => {
-  //       const executedAgents = nodes
-  //         .filter((node) => node.type === "agent" && node.executed)
-  //         .map((node) => node.definition.nodeName);
-  //       expect(executedAgents).to.have.members(flowAgents);
-  //     });
-  //   });
-  //   cy.get(workflowSelector.workflowLogErrorRow).should("not.exist");
-  //   cy.verifyResponseNodeOutput("122");
-  // });
+  it.skip("The imported agents chain through their tools and return the computed result", () => {
+    const apiKey = Cypress.env("openai_api_key");
+    // Checked without an assertion so the key never reaches the command log.
+    if (!apiKey) {
+      throw new Error("Set openai_api_key in cypress.env.json to run this case");
+    }
+  
+    importAgentWorkflow();
+    setOpenAiApiKey(data.dataSourceName, apiKey);
+  
+    runWorkflowFromEditor().then((result) => {
+      expect(result.executionStatus).to.equal("completed");
+  
+      getWorkflowExecution(result.executionId).then(({ nodes }) => {
+        const executedAgents = nodes
+          .filter((node) => node.type === "agent" && node.executed)
+          .map((node) => node.definition.nodeName);
+        expect(executedAgents).to.have.members(flowAgents);
+      });
+    });
+    cy.get(workflowSelector.workflowLogErrorRow).should("not.exist");
+    cy.verifyResponseNodeOutput("122");
+  });
 });

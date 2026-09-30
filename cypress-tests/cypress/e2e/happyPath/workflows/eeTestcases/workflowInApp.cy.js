@@ -8,10 +8,9 @@ import {
   cleanupWorkflows,
   cleanupApps,
   cleanupDataSources,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
 
-// A workflow is consumed from an app as a query. Each case checks the workflow
-// works on its own, then that an app running it gets the workflow's result.
+
 const data = {};
 
 describe("Workflows - running from an app", () => {
@@ -25,9 +24,6 @@ describe("Workflows - running from an app", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  // Teardown runs here so a test that fails part-way still cleans up — a leaked
-  // workflow or data source breaks later specs on the same instance. Workflows
-  // go first: a data source still used by a workflow query can't be deleted.
   afterEach(() => {
     cleanupWorkflows([data.workflowName]);
     cleanupApps([data.appName]);
@@ -51,8 +47,6 @@ describe("Workflows - running from an app", () => {
       responseStatus: "200",
     });
 
-    // Run directly first: the run succeeds and its logs carry the data. This
-    // has to happen before cy.openApp, which overwrites the version ids used.
     cy.apiExecuteWorkflow(workflowsText.jsonValuePlaceholder);
     cy.apiValidateLogs();
     cy.apiValidateLogsWithData(workflowsText.jsonValuePlaceholder);
