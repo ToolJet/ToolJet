@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo, useContext } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback, useContext } from 'react';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
@@ -72,7 +72,6 @@ const FormComponent = (props) => {
     showFooter = false,
     headerHeight = 80,
     footerHeight = 80,
-    canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
     newJsonSchema,
@@ -113,7 +112,7 @@ const FormComponent = (props) => {
 
   const formContent = {
     display: 'flex',
-    height: canHeight || '100%',
+    height: '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -245,13 +244,19 @@ const FormComponent = (props) => {
   const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
   const [clearCount, setClearCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
+  // `resetForm` (and `resetOnSubmit`) restore the FIELDS to their configured defaults. They must not
+  // disturb the form's own chrome state — visibility, disabled and loading. The parent's
+  // `resetComponent()` remounts this whole component, which re-runs `useExposeState` and silently
+  // reverts all three. Keying the field subtree resets exactly the fields and nothing else.
+  const [resetCount, setResetCount] = useState(0);
+  const resetFields = useCallback(() => setResetCount((n) => n + 1), []);
   const mounted = useMounted();
 
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
         setSubmitAttemptCount(0);
-        resetComponent();
+        resetFields();
       },
       clearForm: async function () {
         setSubmitAttemptCount(0);
@@ -266,7 +271,7 @@ const FormComponent = (props) => {
         }
         fireEvent('onSubmit').then(() => {
           setSubmitAttemptCount(0);
-          if (resetOnSubmit) resetComponent();
+          if (resetOnSubmit) resetFields();
         });
       },
     };
@@ -398,7 +403,7 @@ const FormComponent = (props) => {
     fireEvent('onSubmit').then(() => {
       setSubmitAttemptCount(0);
       if (resetOnSubmit) {
-        debounce(() => resetComponent(), 100)();
+        debounce(() => resetFields(), 100)();
       }
     });
   };
@@ -426,24 +431,11 @@ const FormComponent = (props) => {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  const [canHeight, setCanHeight] = useState('100%');
-  useEffect(() => {
-    // const newHeight = parseInt(height, 10) - 14;
-
-    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
-    const wrapHeight = parseInt(computedFormBodyHeight, 10);
-    // Set height to the larger value between computed body height and canvas scroll height
-    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
-
-    const roundedHeight = Math.round(maxHeight / 10) * 10;
-    setCanHeight(`${roundedHeight}px`);
-  }, [computedFormBodyHeight, canvasHeight]);
-
   const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
 
   return (
     <form
-      className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
+      className={`jet-container jet-form-widget ${advanced ? 'jet-container-json-form' : ''}`.trim()}
       id={id}
       data-cy={dataCy}
       ref={parentRef}
@@ -481,7 +473,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormSignalContext.Provider value={formSignalContextValue}>
+            <FormSignalContext.Provider key={resetCount} value={formSignalContextValue}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer

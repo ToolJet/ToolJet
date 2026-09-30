@@ -42,6 +42,27 @@ export const drain = () => new Promise((resolve) => setTimeout(resolve, 0));
 export { binding };
 
 /**
+ * A child seeded under a sub-container widget, or under one of its slots.
+ *
+ * Container, Accordion and Form each hand-rolled this; it is shared because every sub-container
+ * widget needs it — a child is an ordinary component definition whose `parent` is the container's
+ * id, or `<id>-<slot>` for a header/footer slot child (appCanvasUtils.js:398-410).
+ *
+ * @param parent     the container component's id
+ * @param id         the child's component id
+ * @param name       the child's component name, which is what the parent aggregates by
+ * @param componentType  the child's registered type, e.g. 'TextInput'
+ * @param properties     property overrides for the child
+ * @param slot       'header' or 'footer' to seed into a slot instead of the body
+ */
+export function containerChild(parent, id, name, componentType = 'TextInput', { properties = {}, slot } = {}) {
+  if (!parent) throw new Error(`containerChild(${id}) requires a parent container id`);
+  const definition = componentDefinition(id, name, componentType, properties);
+  definition.component.parent = slot ? `${parent}-${slot}` : parent;
+  return definition;
+}
+
+/**
  * An option in the shape the inspector persists: `label`/`value`/`caption` plain,
  * and `visible`/`disable`/`default` as resolver-bound `{ value }` wrappers.
  */
