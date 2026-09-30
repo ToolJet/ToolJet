@@ -20,7 +20,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     _extractedMetadata?: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    const { superAdmin, isAdmin, isBuilder } = userAllPermissions;
+    const { superAdmin, isAdmin, isBuilder, isEndUser } = userAllPermissions;
 
     if (superAdmin || isAdmin) {
       can(
@@ -68,24 +68,26 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (!isBuilder) return;
+    if (!isBuilder && !isEndUser) return;
 
     // tj_admin_groups is populated by EE GroupExistenceGuard only; always [] in CE
     const adminGroups: GroupPermissions[] = request?.tj_admin_groups || [];
     if (adminGroups.length === 0) return;
 
-    can(
-      [
-        FEATURE_KEY.GET_ALL,
-        FEATURE_KEY.GET_ADDABLE_APPS,
-        FEATURE_KEY.GET_ADDABLE_DS,
-        FEATURE_KEY.GET_ADDABLE_FOLDERS,
-        FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS,
-        FEATURE_KEY.GET_ADDABLE_MODULE_FOLDERS,
-        FEATURE_KEY.GET_USER_ADMIN_GROUPS,
-      ],
-      GroupPermissions
-    );
+    can([FEATURE_KEY.GET_ALL, FEATURE_KEY.GET_USER_ADMIN_GROUPS], GroupPermissions);
+
+    if (isBuilder) {
+      can(
+        [
+          FEATURE_KEY.GET_ADDABLE_APPS,
+          FEATURE_KEY.GET_ADDABLE_DS,
+          FEATURE_KEY.GET_ADDABLE_FOLDERS,
+          FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS,
+          FEATURE_KEY.GET_ADDABLE_MODULE_FOLDERS,
+        ],
+        GroupPermissions
+      );
+    }
 
     const requestedGroup: GroupPermissions | undefined = request?.tj_group;
     const requestedGroupId: string | undefined = request?.tj_resource_id || requestedGroup?.id;
@@ -101,16 +103,16 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_ADDABLE_USERS,
           FEATURE_KEY.GET_ALL_GROUP_USER,
           FEATURE_KEY.GET_GROUP_ADMINS,
-          FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS,
         ],
         GroupPermissions
       );
-    } else if (requestedGroup?.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
+      if (isBuilder) can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions);
+    } else if (isBuilder && requestedGroup?.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
       can(
         [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_ALL_GROUP_USER, FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS],
         GroupPermissions
       );
     }
-    // Builders never get: ASSIGN_GROUP_ADMIN, REVOKE_GROUP_ADMIN, GET_ADDABLE_ADMINS
+    // Group admins never get: ASSIGN_GROUP_ADMIN, REVOKE_GROUP_ADMIN, GET_ADDABLE_ADMINS
   }
 }

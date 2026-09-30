@@ -40,7 +40,6 @@ function BaseSettingsMenu({
   const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
   const isCloudEdition = edition === 'cloud' || (!!tooljetVersion && checkIfToolJetCloud(tooljetVersion));
   const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
-  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder);
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -74,8 +73,11 @@ function BaseSettingsMenu({
     return featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
   }, [featureAccess]);
 
+  const isGroupAdmin = !!currentUserValue?.is_group_admin && hasCustomGroupsLicense;
+  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder) || isGroupAdmin;
+
   const getWorkspaceSettingsRoute = () => {
-    if (isBuilder && currentUserValue?.is_group_admin && hasCustomGroupsLicense) {
+    if (isGroupAdmin) {
       return getPrivateRoute('workspace_settings_groups');
     }
     if (isBuilder && isEEorCloud) {

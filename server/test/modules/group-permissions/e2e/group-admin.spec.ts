@@ -29,7 +29,6 @@ import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
  *
  * Revocation hooks:
  *   POST /api/organization-users/:orgUserId/archive      | archive triggers revocation
- *   PUT  /api/organization-users/:orgUserId              | downgrade to end-user triggers revocation
  */
 
 const email = (label: string) => `${label}-${Date.now().toString(36)}@tooljet.io`;
@@ -113,20 +112,16 @@ describe.skip('GroupAdminController', () => {
         expect(row).not.toBeNull();
       });
 
-      it('returns 400 when assigning an end-user as group admin', async () => {
+      it('workspace admin can assign an end-user as group admin → 201', async () => {
         const admin = await createAdmin(nestApp, email('admin-endusercheck'));
         const endUser = await createEndUser(nestApp, email('enduser-target'), {
           workspace: admin.workspace,
         });
-
-        // createEndUser puts the user in the 'end-user' default permission group.
-        // isAdminOrBuilder() checks for membership in 'admin'/'builder' default groups,
-        // so this user is rejected without any extra DB manipulation.
         const group = await createCustomGroup(admin.workspace.id, 'avengers');
 
         const response = await assignAdminViaApi(admin.cookie, admin.workspace.id, group.id, endUser.user.id);
 
-        expect(response.statusCode).toBe(400);
+        expect(response.statusCode).toBe(201);
       });
 
       it('is idempotent — assigning the same user twice returns existing row (no duplicate)', async () => {
@@ -379,41 +374,6 @@ describe.skip('GroupAdminController', () => {
     });
 
     // -------------------------------------------------------------------------
-    // Auto-revocation: role downgrade to end-user
-    // -------------------------------------------------------------------------
-
-    describe('PUT /api/organization-users/:id | Group admin revoked on downgrade to end-user', () => {
-      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
-      it.skip('group-admin row is deleted when builder is downgraded to end-user', async () => {
-        const admin = await createAdmin(nestApp, email('admin-downgrade'));
-        const builder = await createBuilder(nestApp, email('builder-downgrade'), {
-          workspace: admin.workspace,
-        });
-
-        const group = await createCustomGroup(admin.workspace.id, 'avengers');
-
-        const groupAdminRow = await saveEntity(GroupAdmin, {
-          userId: builder.user.id,
-          groupId: group.id,
-          organizationId: admin.workspace.id,
-        });
-
-        // Downgrade builder to end-user role
-        const updateResponse = await request(nestApp.getHttpServer())
-          .put(`/api/organization-users/${builder.orgUser.id}`)
-          .set('tj-workspace-id', admin.workspace.id)
-          .set('Cookie', admin.cookie)
-          .send({ role: 'end-user' });
-
-        // 200 or 201 depending on impl
-        expect([200, 201]).toContain(updateResponse.statusCode);
-
-        const remaining = await findEntity(GroupAdmin, { id: groupAdminRow.id });
-        expect(remaining).toBeNull();
-      });
-    });
-
-    // -------------------------------------------------------------------------
     // GET /api/v2/group-permissions/:id/admins | List admins for group
     // -------------------------------------------------------------------------
 
@@ -484,7 +444,7 @@ describe.skip('GroupAdminController', () => {
     // -------------------------------------------------------------------------
 
     describe('GET /api/v2/group-permissions/:id/admins/addable | Addable admins', () => {
-      it('workspace admin gets 200 — builders and admins appear, end-users do not', async () => {
+      it('workspace admin gets 200 — builders, admins and end-users all appear', async () => {
         const admin = await createAdmin(nestApp, email('admin-addable'));
         const builder = await createBuilder(nestApp, email('builder-addable'), {
           workspace: admin.workspace,
@@ -503,31 +463,7 @@ describe.skip('GroupAdminController', () => {
 
         const userIds: string[] = response.body.map((u: any) => u.id);
         expect(userIds).toContain(builder.user.id);
-        expect(userIds).not.toContain(endUser.user.id);
-      });
-
-      it('end-user who is also in a custom group is still excluded from addable list', async () => {
-        // Regression: the old query joined group_users without restricting to
-        // the default group, so an end-user in any custom group appeared eligible.
-        const admin = await createAdmin(nestApp, email('admin-addable-regression'));
-        const endUser = await createEndUser(nestApp, email('enduser-customgroup'), {
-          workspace: admin.workspace,
-        });
-
-        // Put end-user in a custom group — should NOT make them eligible.
-        const customGroup = await createCustomGroup(admin.workspace.id, 'custom-group-1');
-        await createUserGroupPermissions(nestApp, endUser.user as any, [customGroup.name]);
-
-        const targetGroup = await createCustomGroup(admin.workspace.id, 'target-group');
-
-        const response = await request(nestApp.getHttpServer())
-          .get(`/api/v2/group-permissions/${targetGroup.id}/admins/addable`)
-          .set('tj-workspace-id', admin.workspace.id)
-          .set('Cookie', admin.cookie);
-
-        expect(response.statusCode).toBe(200);
-        const userIds: string[] = response.body.map((u: any) => u.id);
-        expect(userIds).not.toContain(endUser.user.id);
+        expect(userIds).toContain(endUser.user.id);
       });
 
       it('already-assigned group admin is excluded from addable list', async () => {

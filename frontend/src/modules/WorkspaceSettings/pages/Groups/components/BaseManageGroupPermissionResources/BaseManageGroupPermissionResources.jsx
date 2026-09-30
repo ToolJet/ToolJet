@@ -409,27 +409,7 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
     };
 
-    if (selectedNewRole === 'end-user') {
-      groupPermissionV2Service
-        .getUserAdminGroups(updatingUserRole.id)
-        .then(({ groups }) => {
-          if (groups.length > 0) {
-            this.closeChangeRoleModal();
-            this.setState({
-              showAutoRoleChangeModal: true,
-              autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
-              autoRoleChangeModalList: groups.map((g) => g.name),
-            });
-          } else {
-            proceedWithRoleChange();
-          }
-        })
-        .catch(() => {
-          proceedWithRoleChange();
-        });
-    } else {
-      proceedWithRoleChange();
-    }
+    proceedWithRoleChange();
   };
   closeChangeRoleModal = () =>
     this.setState({
@@ -548,12 +528,8 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   fetchAddableAdmins = () => {
-    const isBuilder = authenticationService.currentSessionValue?.user_permissions?.is_builder;
-
-    console.log('isBuilder', isBuilder);
-
-    // if the user is a builder, don't fetch addable admins as they won't have permissions to add any admins to the group
-    if (isBuilder === true) {
+    // only workspace admins can assign group admins, so group admins don't fetch the addable list
+    if (!authenticationService.currentSessionValue?.admin) {
       return;
     }
 
@@ -954,8 +930,9 @@ class BaseManageGroupPermissionResources extends React.Component {
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
-    // and cannot change user roles (but can still add/remove users).
+    // and cannot change user roles (but can still add/remove users). Group-admin end-users only manage users.
     const isAdmin = !!authenticationService.currentSessionValue?.admin;
+    const canViewPermissionTabs = isAdmin || !!authenticationService.currentSessionValue?.user_permissions?.is_builder;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
@@ -1129,59 +1106,63 @@ class BaseManageGroupPermissionResources extends React.Component {
                     Group admins
                   </a>
                 )}
-                <a
-                  onClick={() => {
-                    this.setState({ currentTab: 'permissions', showUserSearchBox: false });
-                    this.setSelectedUsers([]);
-                  }}
-                  className={cx('nav-item nav-link', {
-                    active: currentTab === 'permissions' && !isBasicPlan,
-                    'expired-gradient-border': currentTab === 'permissions' && isBasicPlan,
-                  })}
-                  data-cy="permissions-link"
-                >
-                  {isBasicPlan && currentTab === 'permissions' ? (
-                    <SolidIcon className="manage-group-tab-icons" name="lockGradient" />
-                  ) : (
-                    <SolidIcon
-                      className="manage-group-tab-icons"
-                      fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
-                      name="lock"
-                      width="16"
-                    />
-                  )}
-                  <span className={isBasicPlan && currentTab === 'permissions' ? 'paid-feature' : ''}>
-                    {this.props.t(
-                      'header.organization.menus.manageGroups.permissionResources.permissions',
-                      'Permissions'
-                    )}
-                  </span>
-                </a>
-                <a
-                  onClick={() => {
-                    this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
-                    this.setSelectedUsers([]);
-                  }}
-                  className={cx('nav-item nav-link', {
-                    active: currentTab === 'granularAccess' && !isBasicPlan,
-                    'expired-gradient-border': currentTab === 'granularAccess' && isBasicPlan,
-                  })}
-                  data-cy="granular-access-link"
-                >
-                  {isBasicPlan && currentTab === 'granularAccess' ? (
-                    <SolidIcon className="manage-group-tab-icons" name="granularaccessgrad" />
-                  ) : (
-                    <SolidIcon
-                      className="manage-group-tab-icons"
-                      fill={currentTab === 'granularAccess' ? '#3E63DD' : '#C1C8CD'}
-                      name="granularaccess"
-                      width="16"
-                    />
-                  )}
-                  <span className={isBasicPlan && currentTab === 'granularAccess' ? 'paid-feature' : ''}>
-                    Granular access
-                  </span>
-                </a>
+                {canViewPermissionTabs && (
+                  <>
+                    <a
+                      onClick={() => {
+                        this.setState({ currentTab: 'permissions', showUserSearchBox: false });
+                        this.setSelectedUsers([]);
+                      }}
+                      className={cx('nav-item nav-link', {
+                        active: currentTab === 'permissions' && !isBasicPlan,
+                        'expired-gradient-border': currentTab === 'permissions' && isBasicPlan,
+                      })}
+                      data-cy="permissions-link"
+                    >
+                      {isBasicPlan && currentTab === 'permissions' ? (
+                        <SolidIcon className="manage-group-tab-icons" name="lockGradient" />
+                      ) : (
+                        <SolidIcon
+                          className="manage-group-tab-icons"
+                          fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                          name="lock"
+                          width="16"
+                        />
+                      )}
+                      <span className={isBasicPlan && currentTab === 'permissions' ? 'paid-feature' : ''}>
+                        {this.props.t(
+                          'header.organization.menus.manageGroups.permissionResources.permissions',
+                          'Permissions'
+                        )}
+                      </span>
+                    </a>
+                    <a
+                      onClick={() => {
+                        this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
+                        this.setSelectedUsers([]);
+                      }}
+                      className={cx('nav-item nav-link', {
+                        active: currentTab === 'granularAccess' && !isBasicPlan,
+                        'expired-gradient-border': currentTab === 'granularAccess' && isBasicPlan,
+                      })}
+                      data-cy="granular-access-link"
+                    >
+                      {isBasicPlan && currentTab === 'granularAccess' ? (
+                        <SolidIcon className="manage-group-tab-icons" name="granularaccessgrad" />
+                      ) : (
+                        <SolidIcon
+                          className="manage-group-tab-icons"
+                          fill={currentTab === 'granularAccess' ? '#3E63DD' : '#C1C8CD'}
+                          name="granularaccess"
+                          width="16"
+                        />
+                      )}
+                      <span className={isBasicPlan && currentTab === 'granularAccess' ? 'paid-feature' : ''}>
+                        Granular access
+                      </span>
+                    </a>
+                  </>
+                )}
               </nav>
 
               <div className="manage-groups-body">
@@ -1620,19 +1601,21 @@ class BaseManageGroupPermissionResources extends React.Component {
 
                   {/* Granular Access */}
                   <aside className={`tab-pane ${currentTab === 'granularAccess' ? 'active show' : ''}`}>
-                    <ManageGranularAccess
-                      groupPermissionId={groupPermission.id}
-                      groupPermission={groupPermission}
-                      setErrorState={this.setErrorState}
-                      updateParentState={this.changeThisComponentState}
-                      fetchGroup={this.fetchGroupPermission}
-                      darkMode={this.props.darkMode}
-                      isBasicPlan={isBasicPlan}
-                      isFeatureEnabled={isFeatureEnabled}
-                      isModulesEnabled={isModulesEnabled}
-                      hasEndUsers={hasEndUsers}
-                      isAdmin={isAdmin}
-                    />
+                    {canViewPermissionTabs && (
+                      <ManageGranularAccess
+                        groupPermissionId={groupPermission.id}
+                        groupPermission={groupPermission}
+                        setErrorState={this.setErrorState}
+                        updateParentState={this.changeThisComponentState}
+                        fetchGroup={this.fetchGroupPermission}
+                        darkMode={this.props.darkMode}
+                        isBasicPlan={isBasicPlan}
+                        isFeatureEnabled={isFeatureEnabled}
+                        isModulesEnabled={isModulesEnabled}
+                        hasEndUsers={hasEndUsers}
+                        isAdmin={isAdmin}
+                      />
+                    )}
                   </aside>
 
                   {/* Group Admins Tab */}

@@ -100,9 +100,15 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @Post(':id/users')
   async createGroupUsers(
     @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
     @Param('id') groupId: string,
     @Body() addGroupUserDto: AddGroupUserDto
   ) {
+    user.roleGroup = userPermissions.isAdmin
+      ? USER_ROLE.ADMIN
+      : userPermissions.isEndUser
+        ? USER_ROLE.END_USER
+        : USER_ROLE.BUILDER;
     addGroupUserDto.groupId = groupId;
     await this.groupPermissionsService.addGroupUsers(addGroupUserDto, user);
     return;
