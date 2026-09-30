@@ -1,5 +1,5 @@
 {
-  "name": "Beacon — Service Status & Incident Communication",
+  "name": "Service status and incident communication",
   "description": "Keep customers informed during incidents. Manage component health, incidents, maintenance windows and subscribers, and publish a public status page.",
   "widgets": [
     "Table"
@@ -10,6 +10,6 @@
       "id": "tooljetdb"
     }
   ],
-  "id": "beacon-service-status-and-incident-communication",
+  "id": "service-status-and-incident-communication",
   "category": "status-pages"
 }

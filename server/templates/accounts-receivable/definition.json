@@ -245,7 +245,7 @@
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
-                            "is_not_null": true,
+                            "is_not_null": false,
                             "is_primary_key": false,
                             "is_unique": false
                         },
@@ -338,7 +338,7 @@
                             "appMode": "auto",
                             "theme": {
                                 "id": "0c1f4571-828e-497c-8fe9-006bc74ce9c7",
-                                "name": "Ledger · Skill UI Trial 2026",
+                                "name": "Accounts receivable",
                                 "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                 "definition": {
                                     "brand": {
@@ -19745,7 +19745,7 @@
                                 "appMode": "auto",
                                 "theme": {
                                     "id": "0c1f4571-828e-497c-8fe9-006bc74ce9c7",
-                                    "name": "Ledger · Skill UI Trial 2026",
+                                    "name": "Accounts receivable",
                                     "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                     "definition": {
                                         "brand": {

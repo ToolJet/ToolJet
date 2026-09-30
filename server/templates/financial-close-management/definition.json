@@ -245,7 +245,7 @@
                         "character_maximum_length": null,
                         "numeric_precision": null,
                         "constraints_type": {
-                            "is_not_null": true,
+                            "is_not_null": false,
                             "is_primary_key": false,
                             "is_unique": false
                         },
@@ -337,7 +337,7 @@
                             "backgroundFxQuery": "",
                             "appMode": "auto",
                             "theme": {
-                                "name": "Closebook · Financial close management theme",
+                                "name": "Financial close management",
                                 "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                 "definition": {
                                     "brand": {
@@ -27494,7 +27494,7 @@
                                 "backgroundFxQuery": "",
                                 "appMode": "auto",
                                 "theme": {
-                                    "name": "Closebook · Financial close management theme",
+                                    "name": "Financial close management",
                                     "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                     "definition": {
                                         "brand": {

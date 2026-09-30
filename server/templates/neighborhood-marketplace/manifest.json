@@ -1,6 +1,6 @@
 {
-  "name": "Lumen Tasks",
-  "description": "A calm personal task list with priorities and due dates, built to keep you focused on the next step.",
+  "name": "Neighborhood marketplace",
+  "description": "A private neighborhood marketplace for posting, browsing and managing shared items.",
   "widgets": [
     "Table",
     "Container"
@@ -11,6 +11,6 @@
       "id": "tooljetdb"
     }
   ],
-  "id": "lumen-tasks",
+  "id": "neighborhood-marketplace",
   "category": "productivity-and-community"
 }

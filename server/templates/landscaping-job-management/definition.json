@@ -411,7 +411,7 @@
                 "appV2": {
                     "id": "afe88105-8a80-4093-b73f-4ff904e8b63d",
                     "type": "front-end",
-                    "name": "Landscaping job management",
+                    "name": "Groundwork · Landscaping job management",
                     "slug": "afe88105-8a80-4093-b73f-4ff904e8b63d",
                     "isPublic": false,
                     "isMaintenanceOn": false,
@@ -1037,7 +1037,7 @@
                                     "value": "plainText"
                                 }
                             },
-                            "general": null,
+                            "general": {},
                             "styles": {
                                 "cssClass": {
                                     "value": ""
@@ -1052,7 +1052,8 @@
                                     "value": "var(--cc-appBackground-surface)"
                                 },
                                 "borderColor": {
-                                    "value": "var(--cc-primary-brand)"
+                                    "value": "#3d5531ff",
+                                    "fxActive": false
                                 },
                                 "loaderColor": {
                                     "value": "var(--cc-surface1-surface)"
@@ -1064,13 +1065,15 @@
                                     "value": "9"
                                 },
                                 "backgroundColor": {
-                                    "value": "var(--cc-primary-brand)"
+                                    "value": "#3d5531ff",
+                                    "fxActive": false
                                 },
                                 "hoverBackgroundMode": {
                                     "value": "manual"
                                 },
                                 "hoverBackgroundColor": {
-                                    "value": "var(--cc-primary-brand)"
+                                    "value": "#3d5531ff",
+                                    "fxActive": false
                                 },
                                 "iconColor": {
                                     "value": "var(--cc-surface1-surface)"
@@ -1094,7 +1097,11 @@
                                     "value": "primary"
                                 }
                             },
-                            "generalStyles": null,
+                            "generalStyles": {
+                                "boxShadow": {
+                                    "value": "0px 0px 0px 0px #00000040"
+                                }
+                            },
                             "displayPreferences": {
                                 "showOnDesktop": {
                                     "value": "{{true}}"
@@ -1105,7 +1112,7 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-14T15:16:46.432Z",
-                            "updatedAt": "2026-09-17T22:57:08.483Z",
+                            "updatedAt": "2026-09-30T10:42:58.671Z",
                             "layouts": [
                                 {
                                     "id": "6287637c-820a-400c-ade5-7cf391cc954e",
@@ -20758,7 +20765,7 @@
                                     "value": "{{true}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "disabledState": {
                                     "value": "{{false}}"
@@ -20818,7 +20825,7 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:00:42.955Z",
+                            "updatedAt": "2026-09-30T10:40:28.837Z",
                             "layouts": [
                                 {
                                     "id": "4afda7a1-a180-4a04-af74-077409c97122",
@@ -21081,7 +21088,7 @@
                                     "value": "{{false}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "visibility": {
                                     "value": "{{true}}"
@@ -21144,21 +21151,8 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:01:04.380Z",
+                            "updatedAt": "2026-09-30T10:41:03.869Z",
                             "layouts": [
-                                {
-                                    "id": "7a93472f-5996-4314-a1bd-df7068dd00d4",
-                                    "type": "desktop",
-                                    "top": 70,
-                                    "left": 2,
-                                    "width": 39,
-                                    "height": 262,
-                                    "widthPx": null,
-                                    "fillWidth": null,
-                                    "componentId": "ac2690f0-8600-4a8d-af81-ed695209d01d",
-                                    "dimensionUnit": "count",
-                                    "updatedAt": "2026-09-17T22:56:45.942Z"
-                                },
                                 {
                                     "id": "83f4974a-0f43-4828-a2ca-6e4b9c791782",
                                     "type": "mobile",
@@ -21171,6 +21165,19 @@
                                     "componentId": "ac2690f0-8600-4a8d-af81-ed695209d01d",
                                     "dimensionUnit": "count",
                                     "updatedAt": "2026-09-17T22:56:45.942Z"
+                                },
+                                {
+                                    "id": "7a93472f-5996-4314-a1bd-df7068dd00d4",
+                                    "type": "desktop",
+                                    "top": 70,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 250,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "ac2690f0-8600-4a8d-af81-ed695209d01d",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-30T10:40:38.884Z"
                                 }
                             ]
                         },
@@ -21392,7 +21399,7 @@
                                     "value": "{{true}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "disabledState": {
                                     "value": "{{false}}"
@@ -21452,7 +21459,7 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:00:46.275Z",
+                            "updatedAt": "2026-09-30T10:40:31.521Z",
                             "layouts": [
                                 {
                                     "id": "a75b38d8-ea59-4e77-a956-88b9ee4662c9",
@@ -21715,7 +21722,7 @@
                                     "value": "{{false}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "visibility": {
                                     "value": "{{true}}"
@@ -21778,21 +21785,8 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:00:55.035Z",
+                            "updatedAt": "2026-09-30T10:40:56.033Z",
                             "layouts": [
-                                {
-                                    "id": "aed1d4a4-abbc-4fa7-8e02-1d006f0b9858",
-                                    "type": "desktop",
-                                    "top": 70,
-                                    "left": 2,
-                                    "width": 39,
-                                    "height": 262,
-                                    "widthPx": null,
-                                    "fillWidth": null,
-                                    "componentId": "8fe3ff86-3d42-4855-8306-6155a0e44c28",
-                                    "dimensionUnit": "count",
-                                    "updatedAt": "2026-09-17T22:56:45.942Z"
-                                },
                                 {
                                     "id": "ba0a1463-7ab2-4f3f-9a8b-c8dd21cc02aa",
                                     "type": "mobile",
@@ -21805,6 +21799,19 @@
                                     "componentId": "8fe3ff86-3d42-4855-8306-6155a0e44c28",
                                     "dimensionUnit": "count",
                                     "updatedAt": "2026-09-17T22:56:45.942Z"
+                                },
+                                {
+                                    "id": "aed1d4a4-abbc-4fa7-8e02-1d006f0b9858",
+                                    "type": "desktop",
+                                    "top": 70,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 250,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "8fe3ff86-3d42-4855-8306-6155a0e44c28",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-30T10:40:43.969Z"
                                 }
                             ]
                         },
@@ -22026,7 +22033,7 @@
                                     "value": "{{true}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "disabledState": {
                                     "value": "{{false}}"
@@ -22086,7 +22093,7 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:00:49.074Z",
+                            "updatedAt": "2026-09-30T10:40:33.721Z",
                             "layouts": [
                                 {
                                     "id": "075d3cac-7f55-4417-9c4b-f94d021d9ae9",
@@ -22349,7 +22356,7 @@
                                     "value": "{{false}}"
                                 },
                                 "dynamicHeight": {
-                                    "value": "{{true}}"
+                                    "value": "{{false}}"
                                 },
                                 "visibility": {
                                     "value": "{{true}}"
@@ -22412,21 +22419,8 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-17T22:56:45.942Z",
-                            "updatedAt": "2026-09-17T23:00:59.979Z",
+                            "updatedAt": "2026-09-30T10:40:59.803Z",
                             "layouts": [
-                                {
-                                    "id": "47d038b3-a483-4034-a596-8d59f92247e1",
-                                    "type": "desktop",
-                                    "top": 70,
-                                    "left": 2,
-                                    "width": 39,
-                                    "height": 262,
-                                    "widthPx": null,
-                                    "fillWidth": null,
-                                    "componentId": "7286d6f5-ce1b-4a93-bed6-4a4e85fd5bec",
-                                    "dimensionUnit": "count",
-                                    "updatedAt": "2026-09-17T22:56:45.942Z"
-                                },
                                 {
                                     "id": "b49321bd-ad01-4085-a87b-0c9cf575361d",
                                     "type": "mobile",
@@ -22439,6 +22433,19 @@
                                     "componentId": "7286d6f5-ce1b-4a93-bed6-4a4e85fd5bec",
                                     "dimensionUnit": "count",
                                     "updatedAt": "2026-09-17T22:56:45.942Z"
+                                },
+                                {
+                                    "id": "47d038b3-a483-4034-a596-8d59f92247e1",
+                                    "type": "desktop",
+                                    "top": 70,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 250,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "7286d6f5-ce1b-4a93-bed6-4a4e85fd5bec",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-30T10:40:48.427Z"
                                 }
                             ]
                         },
@@ -26783,7 +26790,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:15:45.992Z",
-                            "updatedAt": "2026-09-17T22:59:18.644Z"
+                            "updatedAt": "2026-09-30T10:40:25.618Z"
                         },
                         {
                             "id": "53a366fc-6a6d-4747-89ee-6a142c725f47",
@@ -27144,7 +27151,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:16:00.151Z",
-                            "updatedAt": "2026-09-17T22:59:19.111Z"
+                            "updatedAt": "2026-09-30T10:40:25.131Z"
                         },
                         {
                             "id": "c98a90a4-c1f1-4a90-ae22-778329f2ae27",
@@ -27165,7 +27172,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:16:00.811Z",
-                            "updatedAt": "2026-09-17T22:59:19.555Z"
+                            "updatedAt": "2026-09-30T10:40:24.664Z"
                         },
                         {
                             "id": "3b3ed491-7af2-42ab-8fe4-f67b1612e1dd",
@@ -27187,7 +27194,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:16:01.495Z",
-                            "updatedAt": "2026-09-17T22:59:20.029Z"
+                            "updatedAt": "2026-09-30T10:40:24.015Z"
                         },
                         {
                             "id": "0f52562a-5113-4cd1-a8b5-e386a256a2b8",
@@ -27319,7 +27326,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:16:05.408Z",
-                            "updatedAt": "2026-09-17T22:59:20.492Z"
+                            "updatedAt": "2026-09-30T10:40:23.435Z"
                         },
                         {
                             "id": "00d9850f-9abd-40f6-b45d-5a44c619b9f2",
@@ -27341,7 +27348,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "23dd8c4a-9446-4319-b810-12746233fa01",
                             "createdAt": "2026-09-14T15:16:06.188Z",
-                            "updatedAt": "2026-09-17T22:59:21.014Z"
+                            "updatedAt": "2026-09-30T10:40:22.778Z"
                         },
                         {
                             "id": "a94f4338-bbd9-4dbb-9a81-45c901ef78dc",
@@ -27880,5 +27887,5 @@
             }
         }
     ],
-    "tooljet_version": "3.20.233-cloud-lts"
+    "tooljet_version": "3.20.235-cloud-lts"
 }

@@ -443,7 +443,7 @@
                             "backgroundFxQuery": "",
                             "appMode": "auto",
                             "theme": {
-                                "name": "Batchhouse SME 2026",
+                                "name": "Bakery production management",
                                 "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                 "definition": {
                                     "brand": {
@@ -27092,7 +27092,7 @@
                                 "backgroundFxQuery": "",
                                 "appMode": "auto",
                                 "theme": {
-                                    "name": "Batchhouse SME 2026",
+                                    "name": "Bakery production management",
                                     "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
                                     "definition": {
                                         "brand": {
