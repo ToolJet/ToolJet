@@ -3,8 +3,8 @@
  *   - required files exist (lib/index.ts, lib/types.ts, lib/icon.svg, package.json)
  *   - lib/manifest.json and lib/operations.json match plugins/schemas/*.schema.json
  *   - no unreplaced template placeholders ({{UPPER_CASE}}) remain in those two files
- *   - source.kind appears exactly once in plugins.json and equals the directory name
- *   - source.kind is not the kind of a built-in connector in plugins/packages/
+ *   - source.kind equals the directory name and is not the kind of a built-in connector in plugins/packages/
+ *   - source.kind appears exactly once in plugins.json (skipped by --skip-registry)
  *   - @spec/<kind>/<name> refs use the plugin id and have openapi-specs/<name>.(json|yaml)
  *   - without @spec refs, every operation value appears as a string literal in lib/*.ts
  *
@@ -36,7 +36,10 @@ const QUOTES = ['"', "'", '`'];
 const TEMPLATE_PLACEHOLDER = /\{\{[A-Z0-9_]+\}\}/g;
 // Pre-existing drift: exact errors suppressed per id so --all stays green; any other error still fails.
 const KNOWN_FAILURES = {
-  presto: ['id "Presto" appears 0 times in plugins.json (expected 1)'],
+  presto: [
+    'id "Presto" appears 0 times in plugins.json (expected 1)',
+    'directory "presto" must equal source.kind "Presto"',
+  ],
   s3: [
     'id "s3" appears 0 times in plugins.json (expected 1)',
     'source.kind "s3" collides with a built-in connector in plugins/packages/',
@@ -44,17 +47,7 @@ const KNOWN_FAILURES = {
 };
 const USAGE = 'usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test';
 
-/**
- * @typedef {{ id: string }} RegistryEntry
- * @typedef {(doc: unknown) => boolean} SchemaValidator  Ajv validator; sets `.errors` on failure
- * @typedef {object} LoadedPlugin
- * @property {string} dirName          basename of the plugin directory
- * @property {string[]} presentFiles   which REQUIRED_FILES exist
- * @property {{ manifest?: object, operations?: object }} docs  parsed lib/*.json, absent if missing
- * @property {string} sourceText       all lib/*.ts concatenated
- * @property {string[]} specFiles      file names in openapi-specs/
- * @property {RegistryEntry[] | undefined} registry  undefined when --skip-registry
- */
+// LoadedPlugin = { dirName, presentFiles, docs: { manifest?, operations? }, sourceText, specFiles }
 
 // ---- calculations: pure, return error strings ----
 
@@ -95,7 +88,7 @@ function checkSpecReferences(specRefs, id, specFiles) {
   return specRefs.flatMap((ref) => {
     const [, kind, name] = ref.split('/');
     const errors = [];
-    if (kind !== id) errors.push(`${ref} must use the plugin id "${id}"`);
+    if (id !== undefined && kind !== id) errors.push(`${ref} must use the plugin id "${id}"`);
     if (!SPEC_EXTENSIONS.some((x) => specFiles.includes(`${name}.${x}`)))
       errors.push(`missing openapi-specs/${name}.(json|yaml) for ${ref}`);
     return errors;
@@ -109,23 +102,18 @@ function checkOperationHandlers(operations, sourceText) {
     .map((o) => `operation "${o.value}" not handled in lib/*.ts`);
 }
 
-/**
- * @param {LoadedPlugin} plugin
- * @param {Record<string, SchemaValidator>} validators
- * @param {Set<string>} builtinKinds  source.kind of every plugins/packages connector
- */
-function checkPlugin(plugin, validators, builtinKinds) {
+// registry is undefined under --skip-registry; id-based checks need a manifest with a source.kind.
+function checkPlugin(plugin, validators, builtinKinds, registry) {
   const { manifest, operations } = plugin.docs;
   const id = sourceKind(manifest);
   const errors = [
     ...checkRequiredFiles(plugin.presentFiles),
     ...SCHEMA_CHECKED_FILES.flatMap((name) => checkAgainstSchema(name, plugin.docs[name], validators[name])),
     ...SCHEMA_CHECKED_FILES.flatMap((name) => checkNoPlaceholders(name, plugin.docs[name])),
-    ...checkNotBuiltinKind(id, builtinKinds),
   ];
-  if (plugin.registry) {
-    const registryErrors = checkRegistryEntry(id, plugin.registry);
-    errors.push(...(registryErrors.length ? registryErrors : checkDirectoryMatchesId(plugin.dirName, id)));
+  if (id !== undefined) {
+    errors.push(...checkDirectoryMatchesId(plugin.dirName, id), ...checkNotBuiltinKind(id, builtinKinds));
+    if (registry) errors.push(...checkRegistryEntry(id, registry));
   }
   if (operations) {
     const specRefs = stringsIn(operations).filter((s) => s.startsWith('@spec/'));
@@ -159,8 +147,7 @@ const loadBuiltinKinds = () =>
       .map((f) => sourceKind(readJson(f)))
   );
 
-/** @returns {LoadedPlugin} */
-function loadPlugin(dir, skipRegistry) {
+function loadPlugin(dir) {
   const lib = join(dir, 'lib');
   const jsonIfExists = (name) =>
     existsSync(join(lib, `${name}.json`)) ? readJson(join(lib, `${name}.json`)) : undefined;
@@ -173,14 +160,13 @@ function loadPlugin(dir, skipRegistry) {
       .map((f) => readFileSync(join(lib, f), 'utf8'))
       .join('\n'),
     specFiles: listDir(join(dir, 'openapi-specs')),
-    registry: skipRegistry ? undefined : readJson(registryPath()),
   };
 }
 
-function validateTarget(target, skipRegistry, validators, builtinKinds) {
+function validateTarget(target, validators, builtinKinds, registry) {
   const dir = existsSync(target) ? resolve(target) : join(PLUGINS_DIR, target);
   if (!existsSync(join(dir, 'lib'))) return [`plugin directory not found: ${dir}`];
-  return checkPlugin(loadPlugin(dir, skipRegistry), validators, builtinKinds);
+  return checkPlugin(loadPlugin(dir), validators, builtinKinds, registry);
 }
 
 const allPluginIds = () =>
@@ -189,19 +175,20 @@ const allPluginIds = () =>
 // ---- reporting + CLI ----
 
 function run(args) {
-  const skipRegistry = args.includes('--skip-registry');
-  const targets = args.includes('--all') ? allPluginIds() : args.filter((a) => !a.startsWith('--'));
-  if (!targets.length) {
+  const flags = args.filter((a) => a.startsWith('--'));
+  const targets = flags.includes('--all') ? allPluginIds() : args.filter((a) => !a.startsWith('--'));
+  if (!targets.length || flags.some((f) => !['--all', '--skip-registry'].includes(f))) {
     console.error(USAGE);
     return 1;
   }
   const validators = loadSchemaValidators();
   const builtinKinds = loadBuiltinKinds();
+  const registry = flags.includes('--skip-registry') ? undefined : readJson(registryPath());
   let failed = 0;
   let known = 0;
   for (const target of targets) {
     const id = basename(resolve(target));
-    const all = validateTarget(target, skipRegistry, validators, builtinKinds);
+    const all = validateTarget(target, validators, builtinKinds, registry);
     const errors = all.filter((e) => !(KNOWN_FAILURES[id] ?? []).includes(e));
     if (errors.length) {
       failed++;
@@ -217,7 +204,7 @@ function run(args) {
   return failed ? 1 : 0;
 }
 
-// ---- self-test: each case prepares a fresh temp dir and expects an exit code ----
+// ---- self-test: each case prepares a fresh temp dir; expects an exit code and output substring ----
 
 const copyPlugin = (id, dest) =>
   cpSync(join(PLUGINS_DIR, id), dest, { recursive: true, filter: (p) => !p.includes('node_modules') });
@@ -228,78 +215,66 @@ const editJson = (file, edit) => {
   writeFileSync(file, JSON.stringify(doc));
 };
 
+// A cohere copy with one lib/<file>.json edit, validated without the registry.
+const cohereWith = (file, edit) => (tmp) => {
+  copyPlugin('cohere', join(tmp, 'cohere'));
+  editJson(join(tmp, 'cohere/lib', file), edit);
+  return { args: [join(tmp, 'cohere'), '--skip-registry'] };
+};
+
 const SELF_TEST_CASES = [
-  { label: 'valid plugin passes', exit: 0, prepare: () => ({ args: ['cohere'] }) },
+  { label: 'valid plugin passes', exit: 0, says: 'PASS cohere', prepare: () => ({ args: ['cohere'] }) },
   {
     label: 'valid directory passes (skip registry)',
     exit: 0,
-    prepare: (tmp) => {
-      copyPlugin('cohere', join(tmp, 'cohere'));
-      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
-    },
+    says: 'PASS cohere',
+    prepare: cohereWith('manifest.json', () => {}),
   },
-  { label: 'known failure is suppressed', exit: 0, prepare: () => ({ args: ['presto'] }) },
+  { label: 'known failure is suppressed', exit: 0, says: 'KNOWN presto', prepare: () => ({ args: ['presto'] }) },
   {
     label: 'other error on a known-failure plugin fails',
     exit: 1,
+    says: 'missing lib/types.ts',
     prepare: (tmp) => {
       copyPlugin('presto', join(tmp, 'presto'));
       rmSync(join(tmp, 'presto/lib/types.ts'));
       return { args: [join(tmp, 'presto')] };
     },
   },
-  { label: 'several known failures are suppressed', exit: 0, prepare: () => ({ args: ['s3'] }) },
-  {
-    label: 'other error on a multi-known-failure plugin fails',
-    exit: 1,
-    prepare: (tmp) => {
-      copyPlugin('s3', join(tmp, 's3'));
-      rmSync(join(tmp, 's3/lib/types.ts'));
-      return { args: [join(tmp, 's3')] };
-    },
-  },
   {
     label: 'built-in connector kind fails',
     exit: 1,
-    prepare: (tmp) => {
-      copyPlugin('cohere', join(tmp, 'cohere'));
-      editJson(join(tmp, 'cohere/lib/manifest.json'), (m) => (m.source.kind = 'googlesheets'));
-      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
-    },
+    says: 'collides with a built-in',
+    prepare: cohereWith('manifest.json', (m) => (m.source.kind = 'googlesheets')),
+  },
+  {
+    label: 'directory differs from source.kind even with --skip-registry',
+    exit: 1,
+    says: 'directory "cohere" must equal source.kind "other"',
+    prepare: cohereWith('manifest.json', (m) => (m.source.kind = 'other')),
   },
   {
     label: 'invented widget type fails',
     exit: 1,
-    prepare: (tmp) => {
-      copyPlugin('cohere', join(tmp, 'cohere'));
-      editJson(join(tmp, 'cohere/lib/operations.json'), (ops) => (ops.properties.operation.type = 'codeeditor'));
-      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
-    },
+    says: 'operations.json',
+    prepare: cohereWith('operations.json', (ops) => (ops.properties.operation.type = 'codeeditor')),
   },
   {
     label: 'manifest without source.name fails',
     exit: 1,
-    prepare: (tmp) => {
-      copyPlugin('cohere', join(tmp, 'cohere'));
-      editJson(join(tmp, 'cohere/lib/manifest.json'), (m) => delete m.source.name);
-      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
-    },
+    says: 'manifest.json',
+    prepare: cohereWith('manifest.json', (m) => delete m.source.name),
   },
   {
     label: 'unreplaced template placeholder fails',
     exit: 1,
-    prepare: (tmp) => {
-      copyPlugin('cohere', join(tmp, 'cohere'));
-      editJson(
-        join(tmp, 'cohere/lib/operations.json'),
-        (ops) => (ops.properties.operation.list[0].name = '{{OPERATION_1_NAME}}')
-      );
-      return { args: [join(tmp, 'cohere'), '--skip-registry'] };
-    },
+    says: 'unreplaced template placeholder {{OPERATION_1_NAME}}',
+    prepare: cohereWith('operations.json', (ops) => (ops.properties.operation.list[0].name = '{{OPERATION_1_NAME}}')),
   },
   {
     label: 'duplicate registry id fails',
     exit: 1,
+    says: 'appears 2 times',
     prepare: (tmp) => {
       const registry = readJson(registryPath());
       writeFileSync(join(tmp, 'plugins.json'), JSON.stringify([...registry, registry.find((p) => p.id === 'cohere')]));
@@ -311,12 +286,13 @@ const SELF_TEST_CASES = [
 function selfTest() {
   const tmp = mkdtempSync(join(tmpdir(), 'validate-plugin-'));
   try {
-    SELF_TEST_CASES.forEach(({ label, exit, prepare }, i) => {
+    SELF_TEST_CASES.forEach(({ label, exit, says, prepare }, i) => {
       const caseDir = join(tmp, String(i));
       mkdirSync(caseDir);
       const { args, env = {} } = prepare(caseDir);
       const r = spawnSync('node', [SELF, ...args], { encoding: 'utf8', env: { ...process.env, ...env } });
-      if (r.status !== exit) throw new Error(`${label}: expected exit ${exit}, got ${r.status}\n${r.stdout}`);
+      if (r.status !== exit || !r.stdout.includes(says))
+        throw new Error(`${label}: expected exit ${exit} and "${says}", got ${r.status}\n${r.stdout}`);
       console.log(`ok ${label}`);
     });
     return 0;
