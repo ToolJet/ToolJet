@@ -20,24 +20,12 @@
     "type": {
       "anyOf": [
         {
-          "enum": [
-            "ai",
-            "api",
-            "cloud-storage",
-            "database",
-            "object"
-          ]
+          "$ref": "#/definitions/pluginType"
         },
         {
           "type": "array",
           "items": {
-            "enum": [
-              "ai",
-              "api",
-              "cloud-storage",
-              "database",
-              "object"
-            ]
+            "$ref": "#/definitions/pluginType"
           }
         }
       ]
@@ -61,19 +49,7 @@
       }
     },
     "tj:source": {
-      "type": "object",
-      "required": [
-        "name",
-        "kind"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "kind": {
-          "type": "string"
-        }
-      }
+      "$ref": "#/properties/source"
     },
     "properties": {
       "type": "object",
@@ -150,6 +126,15 @@
             "null"
           ]
         }
+      ]
+    },
+    "pluginType": {
+      "enum": [
+        "ai",
+        "api",
+        "cloud-storage",
+        "database",
+        "object"
       ]
     }
   }

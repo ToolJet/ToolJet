@@ -20,20 +20,12 @@
     "type": {
       "anyOf": [
         {
-          "enum": [
-            "api",
-            "cloud-storage",
-            "database"
-          ]
+          "$ref": "#/definitions/pluginType"
         },
         {
           "type": "array",
           "items": {
-            "enum": [
-              "api",
-              "cloud-storage",
-              "database"
-            ]
+            "$ref": "#/definitions/pluginType"
           }
         }
       ]
@@ -103,6 +95,13 @@
             "null"
           ]
         }
+      ]
+    },
+    "pluginType": {
+      "enum": [
+        "api",
+        "cloud-storage",
+        "database"
       ]
     }
   }
