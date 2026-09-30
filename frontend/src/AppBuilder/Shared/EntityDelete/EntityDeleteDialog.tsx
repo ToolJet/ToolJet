@@ -36,7 +36,7 @@ const KIND_SUBTITLES: Record<string, string | undefined> = {
 const subtitleOf = (entry: UsageEntry, componentsById?: ComponentsById): string =>
   entry.kind === 'component'
     ? getComponentDisplayName(componentsById?.[entry.id as string]?.component?.component)
-    : KIND_SUBTITLES[entry.kind] ?? '';
+    : (KIND_SUBTITLES[entry.kind] ?? '');
 
 type SubjectIconProps = {
   subject: DeleteSubject;

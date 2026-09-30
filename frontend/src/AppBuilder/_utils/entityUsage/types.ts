@@ -1,13 +1,5 @@
 export type UsageEntryKind =
-  | 'component'
-  | 'query'
-  | 'variable'
-  | 'pageVariable'
-  | 'global'
-  | 'constant'
-  | 'page'
-  | 'action'
-  | 'unknown';
+  'component' | 'query' | 'variable' | 'pageVariable' | 'global' | 'constant' | 'page' | 'action' | 'unknown';
 
 /**
  * One reason an entry is related to the subject.

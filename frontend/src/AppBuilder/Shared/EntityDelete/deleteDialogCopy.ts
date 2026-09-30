@@ -37,7 +37,7 @@ export type DeleteDialogCopyInput = {
 const PLURALS: Record<string, string> = { component: 'components', query: 'queries' };
 
 export const pluralizeEntity = (entityLabel: string, count: number): string =>
-  count === 1 ? entityLabel : PLURALS[entityLabel] ?? `${entityLabel}s`;
+  count === 1 ? entityLabel : (PLURALS[entityLabel] ?? `${entityLabel}s`);
 
 /** Card header count, e.g. "Used by 1 entity" / "Used by 4 entities". */
 export const usedByLabel = (count: number): string => `Used by ${count} ${count === 1 ? 'entity' : 'entities'}`;
