@@ -3,12 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import Radio from '@/_ui/Radio';
 
-// The "Authorize" access-scope selector (Read only / Read and write) for Google
-// Sheets. It is a Google-Sheets concept — the chosen access_type maps to the
-// Google OAuth scope — and is independent of the auth method, so it is shared by
-// both the Service Account form (Googlesheets.jsx) and the OAuth form
-// (OAuthWrapper.jsx). Keeping it in one component lets each form place it after
-// its own credential fields instead of between the auth-type dropdown and them.
 const GoogleSheetsAccessType = ({ options, optionchanged, disabled = false }) => {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();

@@ -185,7 +185,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         dataSource?.manifestFile?.data?.defaults ??
         dataSource?.manifestFile?.data?.source?.options ??
         {},
-      tooljetVersion
+      tooljetVersion ?? localStorage.getItem('currentVersion')
     );
     const pluginId = id;
     const kind = selectedDataSource?.kind;

@@ -6,10 +6,6 @@ import {
 } from '../utils';
 
 describe('getTooljetEditionFromVersion', () => {
-  // buildVersion() on the server emits `<rawVersion>-<edition>` and, for LTS,
-  // `<baseVersion>-<edition>-lts`. rawVersion itself may carry a pre-release tag
-  // like `-beta`, so the edition is the last segment (ignoring a trailing -lts),
-  // never a fixed index.
   it.each([
     ['3.21.71-cloud', 'cloud'],
     ['3.21.71-beta-cloud', 'cloud'],
