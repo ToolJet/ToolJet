@@ -73,6 +73,14 @@ export const getFormattedSteps = (steps) => {
   return [];
 };
 
+// Plotly 4 can't parse hsv()/hsva(), so convert those to hex/rgba. Others pass through.
+export function toPlotlyColor(color) {
+  if (typeof color !== 'string' || !/^hsva?\(/i.test(color)) return color;
+  const parsed = tinycolor(color);
+  if (!parsed.isValid()) return color;
+  return parsed.getAlpha() < 1 ? parsed.toRgbString() : parsed.toHexString();
+}
+
 /**
  * Merge an author-supplied Plotly axis over the widget's own defaults.
  *

@@ -18,6 +18,7 @@
  */
 
 import { waitFor } from '@testing-library/react';
+import tinycolor from 'tinycolor2';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const widget = createWidgetHarness({
@@ -258,5 +259,29 @@ describe('Chart: native modes are unaffected by JSON-schema handling', () => {
     expect(gd._fullData[0].type).toBe('pie');
     expect(vals(gd._fullData[0].values)).toEqual([100, 80, 40]);
     expect(vals(gd._fullData[0].labels)).toEqual(['Jan', 'Feb', 'Mar']);
+  });
+
+  // Plotly 4 can't parse hsv()/hsva() and falls back to its default colours.
+  test('an hsv() marker colour still colours the bars', async () => {
+    widget.render({
+      properties: { type: binding('bar'), data: binding(DATA), markerColor: binding('hsv(120, 100%, 50%)') },
+    });
+    const gd = await plot();
+
+    expect(tinycolor(gd._fullData[0].marker.color).toHexString()).toBe('#008000');
+  });
+
+  test('an hsva() background colour still colours the chart background', async () => {
+    widget.render({
+      properties: { type: binding('bar'), data: binding(DATA) },
+      styles: { backgroundColor: binding('hsva(0, 100%, 100%, 0.5)') },
+    });
+    const gd = await plot();
+
+    for (const key of ['paper_bgcolor', 'plot_bgcolor']) {
+      const bg = tinycolor(gd._fullLayout[key]);
+      expect(bg.toHexString()).toBe('#ff0000');
+      expect(bg.getAlpha()).toBe(0.5);
+    }
   });
 });

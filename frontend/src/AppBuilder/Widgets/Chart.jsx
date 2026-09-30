@@ -8,7 +8,7 @@ import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue, getModifiedColor, buildChartAxis } from './utils';
+import { getCssVarValue, getModifiedColor, buildChartAxis, toPlotlyColor } from './utils';
 import { applyPlotlyCompat } from './plotlyCompat';
 
 var tinycolor = require('tinycolor2');
@@ -127,8 +127,8 @@ export default function Chart({
     ...chartLayout,
     width: width - 6,
     height: height - 2,
-    plot_bgcolor: updatedBgColor,
-    paper_bgcolor: updatedBgColor,
+    plot_bgcolor: toPlotlyColor(updatedBgColor),
+    paper_bgcolor: toPlotlyColor(updatedBgColor),
     title: {
       // Keep the author's other title settings (x, xanchor, pad, ...) and font,
       // rather than replacing the whole object with just our text and colour.
@@ -198,7 +198,7 @@ export default function Chart({
           type: chartType || 'line',
           x: rawData.map((item) => item['x']),
           y: rawData.map((item) => item['y']),
-          marker: { color: modifiedMarkerColor },
+          marker: { color: toPlotlyColor(modifiedMarkerColor) },
         },
       ];
     }
