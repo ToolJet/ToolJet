@@ -497,7 +497,7 @@ export class OnboardingService implements IOnboardingService {
         );
         if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
           throw new HttpException(
-            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at hello@tooljet.com to increase this limit.`,
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
             451
           );
         }
