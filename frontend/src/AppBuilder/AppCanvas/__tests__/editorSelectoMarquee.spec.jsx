@@ -47,26 +47,37 @@ const rectOf = ({ left, top, width, height }) => ({
   toJSON() {},
 });
 
-// The widget boxes WidgetWrapper renders: `.moveable-box[widgetid]` inside each canvas.
-const CanvasTargets = () => (
-  <div className="canvas-container">
-    <div component-id="canvas" data-parentid="canvas" className="real-canvas" data-rect="canvas" data-testid="main">
-      <div className="moveable-box" widgetid="mainA" data-rect="mainA" />
-      <div className="moveable-box" widgetid="mainB" data-rect="mainB" />
-      <div className="moveable-box" widgetid="box1" data-rect="box1">
-        <div className="real-canvas sub-canvas" data-parentid="box1" component-id="box1">
-          <div className="moveable-box" widgetid="hiddenChild" data-rect="hiddenChild" />
+// The widget boxes WidgetWrapper renders: `.moveable-box[widgetid]` inside each canvas, under the
+// editor wrapper that runs the canvas mouseup handler before Selecto's own (window) listener.
+const CanvasTargets = ({ onMouseUp }) => (
+  <div id="main-editor-canvas" onMouseUp={onMouseUp}>
+    <div className="canvas-container">
+      <div
+        id="real-canvas"
+        component-id="canvas"
+        data-parentid="canvas"
+        className="real-canvas"
+        data-rect="canvas"
+        data-testid="main"
+      >
+        <div className="moveable-box" widgetid="mainA" data-rect="mainA" />
+        <div className="moveable-box" widgetid="mainB" data-rect="mainB" />
+        <div className="moveable-box" widgetid="box1" data-rect="box1">
+          <div className="real-canvas sub-canvas" data-parentid="box1" component-id="box1" data-testid="box1-body">
+            <div className="moveable-box" widgetid="hiddenChild" data-rect="hiddenChild" />
+          </div>
         </div>
       </div>
-    </div>
-    <div component-id="canvas-header" data-rect="header" data-testid="header">
-      <div className="moveable-box" widgetid="header1" data-rect="header1" />
+      <div component-id="canvas-header" data-rect="header" data-testid="header">
+        <div className="moveable-box" widgetid="header1" data-rect="header1" />
+      </div>
     </div>
   </div>
 );
 
 const MAIN_LASSO = { start: 'main', from: [50, 50], to: [450, 200] }; // covers mainA, mainB, hiddenChild
 const HEADER_LASSO = { start: 'header', from: [50, 1210], to: [450, 1290] }; // covers header1
+const BOX_LASSO = { start: 'main', from: [550, 50], to: [950, 250] }; // covers box1 only
 
 describe('EditorSelecto marquee end', () => {
   let session;
@@ -93,14 +104,16 @@ describe('EditorSelecto marquee end', () => {
     root = session.render(
       <>
         <EditorSelecto />
-        <CanvasTargets />
+        <CanvasTargets onMouseUp={(e) => session.store.read((state) => state.handleCanvasContainerMouseUp)(e)} />
       </>
     );
   });
 
   afterEach(() => restoreRect());
 
-  const lasso = ({ start, from, to }, { shiftKey = false } = {}) => {
+  // Released on the element under the end point, as in the editor (default: where it started).
+  // `releaseShiftFirst` lets go of Shift before the mouse, so the mouseup itself has no Shift.
+  const lasso = ({ start, from, to, end = start }, { shiftKey = false, releaseShiftFirst = false } = {}) => {
     const [x0, y0] = from;
     const [x1, y1] = to;
     // Selecto switches to add-mode from the Shift keydown itself, not the mouse event's shiftKey.
@@ -109,8 +122,16 @@ describe('EditorSelecto marquee end', () => {
     for (const t of [0.33, 0.66, 1]) {
       fireEvent.mouseMove(window, { clientX: x0 + (x1 - x0) * t, clientY: y0 + (y1 - y0) * t, buttons: 1, shiftKey });
     }
-    fireEvent.mouseUp(window, { clientX: x1, clientY: y1, shiftKey });
-    if (shiftKey) fireEvent.keyUp(window, { key: 'Shift', code: 'ShiftLeft', keyCode: 16 });
+    if (releaseShiftFirst) fireEvent.keyUp(window, { key: 'Shift', code: 'ShiftLeft', keyCode: 16 });
+    fireEvent.mouseUp(root.getByTestId(end), { clientX: x1, clientY: y1, shiftKey: shiftKey && !releaseShiftFirst });
+    if (shiftKey && !releaseShiftFirst) fireEvent.keyUp(window, { key: 'Shift', code: 'ShiftLeft', keyCode: 16 });
+  };
+
+  const shiftClick = (testId, [x, y]) => {
+    fireEvent.keyDown(window, { key: 'Shift', code: 'ShiftLeft', keyCode: 16, shiftKey: true });
+    fireEvent.mouseDown(root.getByTestId(testId), { clientX: x, clientY: y, button: 0, buttons: 1, shiftKey: true });
+    fireEvent.mouseUp(root.getByTestId(testId), { clientX: x, clientY: y, shiftKey: true });
+    fireEvent.keyUp(window, { key: 'Shift', code: 'ShiftLeft', keyCode: 16 });
   };
 
   const select = (ids) => session.store.act('setSelectedComponents', ids);
@@ -164,5 +185,30 @@ describe('EditorSelecto marquee end', () => {
     lasso(HEADER_LASSO);
 
     expect(selected()).toEqual(['header1']);
+  });
+
+  test('a Shift+click on a container body adds the container to the selection', async () => {
+    await select(['mainA']);
+
+    shiftClick('box1-body', [850, 180]);
+
+    expect(selected()).toEqual(['box1', 'mainA']);
+  });
+
+  test('a Shift+click on empty main canvas clears the selection', async () => {
+    await select(['mainA']);
+
+    shiftClick('main', [500, 500]);
+
+    expect(selected()).toEqual([]);
+  });
+
+  test('a Shift lasso released after letting go of Shift adds only what is under it', async () => {
+    lasso(MAIN_LASSO); // Selecto now remembers mainA and mainB
+    await select(['header1']);
+
+    lasso(BOX_LASSO, { shiftKey: true, releaseShiftFirst: true });
+
+    expect(selected()).toEqual(['box1', 'header1']);
   });
 });

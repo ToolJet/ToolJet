@@ -14,11 +14,18 @@ const EditorSelecto = () => {
   const getComponentDefinition = useStore((state) => state.getComponentDefinition);
   const canvasStartId = useRef(null);
 
+  // The selection when the lasso began.
+  // Releasing on empty canvas clears the live selection just before selectEnd runs, so a Shift+lasso adds to this copy instead.
+  const selectionAtStart = useRef([]);
+  const isShiftAtStart = useRef(false);
+
   const belongsToMarqueeCanvas = (id) =>
     isInMarqueeCanvas(getComponentDefinition(id, moduleId)?.component?.parent, canvasStartId.current);
 
   const onAreaSelectStart = (e) => {
     canvasStartId.current = resolveMarqueeCanvasId(e.inputEvent.target);
+    selectionAtStart.current = getSelectedComponents();
+    isShiftAtStart.current = !!e.inputEvent.shiftKey;
   };
 
   const onAreaSelection = (e) => {
@@ -40,23 +47,35 @@ const EditorSelecto = () => {
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      // Only Shift adds to the existing selection; a plain lasso replaces it, so a selection in
-      // another canvas can't ride along into a follow-up delete.
-      const isMultiSelect = e.inputEvent.shiftKey;
-      // Select everything under the lasso. `added` alone is relative to Selecto's own last
-      // selection, which goes stale when selection changes elsewhere (clicks, canvas mouseup).
-      // With Shift held Selecto toggles, so what was already remembered shows up as
-      // `beforeSelected` minus `selected` and is added back to recover the full hit list.
-      const lassoedTargets = e.inputEvent.shiftKey
-        ? [...e.added, ...e.beforeSelected.filter((el) => !e.selected.includes(el))]
-        : e.selected;
+      // Only Shift (held when the gesture started or ended) adds to the existing selection;
+      // a plain lasso replaces it, so a selection in another canvas can't ride along into a follow-up delete.
+      const isMultiSelect = isShiftAtStart.current || !!e.inputEvent.shiftKey;
+
+      if (e.isClick) {
+        // A click selects the component clicked, like a plain click does;
+        const clickedId = e.inputEvent.target?.closest?.('.moveable-box')?.getAttribute('widgetid');
+        if (clickedId) {
+          setSelectedComponents(mergeMarqueeSelection([clickedId], selectionAtStart.current, isMultiSelect));
+        }
+        canvasStartId.current = null;
+        return;
+      }
+
+      // Select exactly what is under the lasso. Selecto reports it relative to its own last selection,
+      // which goes stale when selection changes elsewhere (clicks, canvas mouseup). In Shift mode it
+      // toggles against that memory (`selected` = memory XOR hits, `beforeSelected` = memory);
+      // otherwise `beforeSelected` is empty. Either way, selected XOR beforeSelected is the hit list.
+      const lassoedTargets = [
+        ...e.selected.filter((el) => !e.beforeSelected.includes(el)),
+        ...e.beforeSelected.filter((el) => !e.selected.includes(el)),
+      ];
       const selectedIds = lassoedTargets.map((el) => el.getAttribute('widgetid'));
 
       if (selectedIds.length > 0) {
         // Only the marquee's own hits are scoped.
         const scopedIds = selectedIds.filter(belongsToMarqueeCanvas);
 
-        setSelectedComponents(mergeMarqueeSelection(scopedIds, getSelectedComponents(), isMultiSelect));
+        setSelectedComponents(mergeMarqueeSelection(scopedIds, selectionAtStart.current, isMultiSelect));
       }
       canvasStartId.current = null;
     },
