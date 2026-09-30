@@ -63,6 +63,8 @@ const widget = createWidgetHarness({
     showFilterButton: binding('{{true}}'),
     isAllColumnsEditable: binding('{{false}}'),
     showBulkUpdateActions: binding('{{true}}'),
+    disableSaveChanges: binding('{{false}}'),
+    disableAddNewRowSave: binding('{{false}}'),
     showBulkSelector: binding('{{false}}'),
     highlightSelectedRow: binding('{{false}}'),
     enabledSort: binding('{{true}}'),
@@ -1422,6 +1424,141 @@ describe('Table: inline cell editing', () => {
     expect(cell('name', 0).className).not.toContain('isEditable');
     expect(cell('name', 1).className).toContain('isEditable');
   });
+
+  const MAXLEN_COLUMNS = [
+    {
+      name: 'name',
+      key: 'name',
+      id: 'col-name',
+      columnType: 'string',
+      columnSize: 120,
+      isEditable: true,
+      maxLength: 5,
+    },
+    { name: 'email', key: 'email', id: 'col-email', columnType: 'string', columnSize: 160, isEditable: false },
+    { name: 'age', key: 'age', id: 'col-age', columnType: 'number', columnSize: 80, isEditable: true },
+  ];
+
+  test('[Table-EDIT-008] isValid is true at idle - no changeSet entries and no add-new-row draft', async () => {
+    widget.render();
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    expect(exposed('isValid')).toBe(true);
+  });
+
+  test('[Table-EDIT-009] isValid reflects the changeSet own per-cell validity, independent of any add-new-row draft', async () => {
+    widget.render({ properties: { columns: { value: MAXLEN_COLUMNS } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'ABCDEFGHIJ');
+    await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).toBeInTheDocument());
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await editCellTo(cell('name', 0), 'ABC');
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
+
+  test('[Table-EDIT-010] isValid is the logical AND of changeSet validity and add-new-row-draft validity', async () => {
+    widget.render({ properties: { columns: { value: MAXLEN_COLUMNS } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'ABCDEFGHIJ');
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await editCellTo(cell('name', 0), 'ABC');
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    await editCellTo(nameAddCell, 'ABCDEFGHIJ');
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await editCellTo(nameAddCell, 'ABC');
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
+
+  test('[Table-EDIT-011] disableSaveChanges disables the Save-changes button whenever the toggle is on, regardless of changeSet validity', async () => {
+    widget.render({ properties: { disableSaveChanges: binding('{{true}}') } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Adaline');
+    await waitFor(() => expect(document.querySelector('[data-cy="table-button-save-changes"]')).toBeInTheDocument());
+    expect(document.querySelector('[data-cy="table-button-save-changes"]')).toBeDisabled();
+  });
+
+  test('[Table-EDIT-012] disableSaveChanges set falsy preserves the unconditional-enabled Save-changes button', async () => {
+    widget.render({
+      properties: {
+        disableSaveChanges: binding('{{false}}'),
+      },
+      events: [
+        {
+          id: 'evt-bulk-update',
+          name: 'onBulkUpdate',
+          index: 0,
+          sourceId: ID,
+          target: 'component',
+          event: {
+            eventId: 'onBulkUpdate',
+            actionId: 'set-custom-variable',
+            key: 'bulkUpdateFired',
+            value: '{{true}}',
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Adaline');
+    await waitFor(() => expect(document.querySelector('[data-cy="table-button-save-changes"]')).toBeInTheDocument());
+    expect(document.querySelector('[data-cy="table-button-save-changes"]')).not.toBeDisabled();
+
+    rtlFireEvent.click(document.querySelector('[data-cy="table-button-save-changes"]'));
+    await waitFor(() => expect(store().getVariable('bulkUpdateFired', MODULE_ID)).toBe(true));
+  });
+
+  test('[Table-EDIT-013] disableSaveChanges disabled-gate is independent of showBulkUpdateActions mount-gate', async () => {
+    widget.render({
+      properties: {
+        showBulkUpdateActions: binding('{{true}}'),
+        disableSaveChanges: binding('{{true}}'),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'Adaline');
+    const saveButton = await waitFor(() => {
+      const el = document.querySelector('[data-cy="table-button-save-changes"]');
+      if (!el) throw new Error('save button not rendered');
+      return el;
+    });
+    expect(saveButton).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
+  });
+
+  test('[Table-EDIT-014] isValid returns to true when a data-prop change clears the changeSet', async () => {
+    widget.render({ properties: { columns: { value: MAXLEN_COLUMNS } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    await editCellTo(cell('name', 0), 'ABCDEFGHIJ');
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    const NEW_ROWS = [
+      { id: 1, name: 'Ada', email: 'ada@example.com', age: 30 },
+      { id: 2, name: 'Grace', email: 'grace@example.com', age: 40 },
+    ];
+    widget.render({
+      properties: { columns: { value: MAXLEN_COLUMNS }, data: binding(`{{${JSON.stringify(NEW_ROWS)}}}`) },
+    });
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
 });
 
 describe('Table: add row and refresh', () => {
@@ -1534,6 +1671,101 @@ describe('Table: add row and refresh', () => {
     });
 
     expect(addRow.style.minHeight).toBe('32px');
+  });
+
+  const MAXLEN_COLUMNS_ADDROW = [
+    {
+      name: 'name',
+      key: 'name',
+      id: 'col-name',
+      columnType: 'string',
+      columnSize: 120,
+      isEditable: true,
+      maxLength: 5,
+    },
+    { name: 'email', key: 'email', id: 'col-email', columnType: 'string', columnSize: 160, isEditable: false },
+    { name: 'age', key: 'age', id: 'col-age', columnType: 'number', columnSize: 80, isEditable: true },
+  ];
+
+  test('[Table-ADDROW-005] isValid reflects the add-new-row drafts own per-cell validity, independent of the changeSet', async () => {
+    widget.render({ properties: { columns: { value: MAXLEN_COLUMNS_ADDROW } } });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    await editCellTo(nameAddCell, 'ABCDEFGHIJ');
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await editCellTo(nameAddCell, 'ABC');
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+
+    await editCellTo(nameAddCell, 'ABCDEFGHIJ');
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    rtlFireEvent.click(document.querySelector('[data-cy="discard-button"]'));
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
+
+  test('[Table-ADDROW-006] disableAddNewRowSave disables AddNewRows own Save button whenever the toggle is on, regardless of draft validity', async () => {
+    widget.render({
+      properties: {
+        disableAddNewRowSave: binding('{{true}}'),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    await editCellTo(nameAddCell, 'Marie');
+    await waitFor(() => expect(document.querySelector('[data-cy="save-button"]')).toBeDisabled());
+  });
+
+  test('[Table-ADDROW-007] disableAddNewRowSave set falsy preserves the unconditional-enabled AddNewRow Save button', async () => {
+    widget.render({
+      properties: {
+        disableAddNewRowSave: binding('{{false}}'),
+      },
+      events: [
+        {
+          id: 'evt-new-rows',
+          name: 'onNewRowsAdded',
+          index: 0,
+          sourceId: ID,
+          target: 'component',
+          event: {
+            eventId: 'onNewRowsAdded',
+            actionId: 'set-custom-variable',
+            key: 'newRowsFired',
+            value: '{{true}}',
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const nameAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="name-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    await editCellTo(nameAddCell, 'Marie');
+    await waitFor(() => expect(document.querySelector('[data-cy="save-button"]')).toBeInTheDocument());
+    expect(document.querySelector('[data-cy="save-button"]')).not.toBeDisabled();
+
+    rtlFireEvent.click(document.querySelector('[data-cy="save-button"]'));
+    await waitFor(() => expect(store().getVariable('newRowsFired', MODULE_ID)).toBe(true));
   });
 
   test('[Table-ACTCOL-001] a configured left-position action renders in the left action column', async () => {
@@ -2713,10 +2945,9 @@ describe('Table: saved-app compatibility and instance isolation', () => {
 describe('Table: server-config parity', () => {
   test.failing('[Table-BUG-006] the server widget config declares the same actions as the frontend config', () => {
     const path = require('path');
-    const { tableConfig: serverConfig } = require(path.join(
-      __dirname,
-      '../../../../../../../server/src/modules/apps/services/widget-config/table.js'
-    ));
+    const { tableConfig: serverConfig } = require(
+      path.join(__dirname, '../../../../../../../server/src/modules/apps/services/widget-config/table.js')
+    );
     const frontendHandles = tableConfig.actions.map((a) => a.handle).sort();
     const serverHandles = serverConfig.actions.map((a) => a.handle).sort();
     // Currently missing from the server config: 'refreshTable' (introduced by commit 8927235253).
