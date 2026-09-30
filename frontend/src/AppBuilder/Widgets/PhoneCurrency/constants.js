@@ -33,17 +33,57 @@ export const parseValueToNumber = (val, numberFormat) => {
 };
 
 /**
+ * How many decimal places the Decimal places setting actually asks for.
+ *
+ * `isSet` distinguishes an explicit `0` — a whole-number currency such as JPY — from a setting that
+ * is cleared, non-numeric or negative, which falls back to two. `Number('') === 0`, so keying off
+ * the number alone would read a cleared setting as "no decimals".
+ *
+ * Declared once because the FIELD and the VALUE both need it: the field passes it to the input
+ * library, and every normalization below trims to it. Read separately they disagreed, and a cleared
+ * setting truncated a Default value to whole numbers while typing still accepted decimals.
+ */
+export const resolveDecimalPlaces = (decimalPlaces) => {
+  const parsed = Number(decimalPlaces);
+  const isSet =
+    decimalPlaces !== '' &&
+    decimalPlaces !== null &&
+    decimalPlaces !== undefined &&
+    Number.isFinite(parsed) &&
+    parsed >= 0;
+  return { isSet, places: isSet ? parsed : 2 };
+};
+
+/**
  * Keep at most `digits` decimal places, by truncation rather than rounding — the behaviour the
  * `setValue` action has always had. Moved here from useInput.js so the rule below is the only
  * place a currency amount is normalized.
+ *
+ * Done on the number, not on its text. `toString()` renders anything at or above 1e21, or below
+ * 1e-6, in exponential form — `2.89e+23` — and the dot in that mantissa is NOT a decimal
+ * separator. Splitting on it read `8912833829332324e+23` as the decimals and kept two characters,
+ * turning a 24-digit amount into `2.89`: a different, entirely plausible-looking number.
  */
 const limitDecimalPlaces = (value, digits) => {
-  const num = value?.toString();
-  if (num?.includes('.')) {
-    const [int, dec] = num.split('.');
-    return Number(int + '.' + dec.slice(0, digits));
-  }
-  return num;
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return value;
+  const places = Math.max(0, Math.min(20, Number(digits) || 0));
+
+  // `toString()` is exact for an ordinary amount — it gives the shortest text that round-trips, so
+  // slicing it truncates without rounding and without float arithmetic. It is only unusable at the
+  // two ends of the range, where it switches to exponential form and the mantissa dot is not a
+  // decimal separator. Both ends are answered before the slice.
+
+  // At 1e21 and above there is no fractional part left to trim.
+  if (Math.abs(amount) >= 1e21) return amount;
+  // Below the smallest amount `places` decimals can express, truncation is zero. This also covers
+  // everything under 1e-6, the other end where `toString()` turns exponential.
+  if (amount !== 0 && Math.abs(amount) < 10 ** -places) return 0;
+
+  const text = String(amount);
+  if (!text.includes('.')) return amount;
+  const [whole, decimals] = text.split('.');
+  return Number(places > 0 ? `${whole}.${decimals.slice(0, places)}` : whole);
 };
 
 /**
@@ -61,7 +101,11 @@ export const toCanonicalAmount = (rawValue, numberFormat, decimalPlaces) => {
   // Total by construction. `Infinity` and `NaN` reach here as genuine numbers — the registered
   // schema accepts them — and the field would render them as the literal text. They become 0,
   // which is what an unusable amount has always fallen back to.
-  return String(Number.isFinite(amount) ? amount : 0);
+  if (!Number.isFinite(amount)) return '0';
+  // `String()` renders 1e21 and above in exponential form, and the field's library reads that as
+  // digits plus a stray decimal, printing `…240,000,000.8912833829332324`. Above that threshold a
+  // double is always a whole number, so it can be written out in full instead.
+  return Math.abs(amount) >= 1e21 ? BigInt(Math.trunc(amount)).toString() : String(amount);
 };
 
 export const CurrencyMap = {

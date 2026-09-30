@@ -6,6 +6,19 @@ import { AiUtilService } from '@ee/ai/util.service';
 import { AiActiveRun } from '@entities/ai_active_run.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { io } from 'socket.io-client';
+import { EventEmitter } from 'events';
+
+function socketListeners(events: Record<string, (...args: any[]) => any>) {
+  const emitter = new EventEmitter();
+  return {
+    on: jest.fn((event, callback) => {
+      emitter.on(event, callback);
+      events[event] = (...args) => Promise.all(emitter.listeners(event).map((listener) => listener(...args)));
+    }),
+    off: jest.fn((event, callback) => emitter.off(event, callback)),
+    io: new EventEmitter(),
+  };
+}
 
 describe('AI build cancellation', () => {
   let util: any;
@@ -20,10 +33,7 @@ describe('AI build cancellation', () => {
       active: false,
       emit: jest.fn(),
       timeout: jest.fn(() => socket),
-      on: jest.fn((event, callback) => {
-        events[event] = callback;
-      }),
-      io: { on: jest.fn() },
+      ...socketListeners(events),
       disconnect: jest.fn(() => {
         socket.connected = false;
         events.disconnect?.('io client disconnect');
@@ -230,10 +240,7 @@ describe('AI build cancellation', () => {
       active: false,
       emit: jest.fn(),
       timeout: jest.fn(() => secondSocket),
-      on: jest.fn((event, callback) => {
-        secondEvents[event] = callback;
-      }),
-      io: { on: jest.fn() },
+      ...socketListeners(secondEvents),
       disconnect: jest.fn(() => {
         secondSocket.connected = false;
         secondEvents.disconnect?.('io client disconnect');
