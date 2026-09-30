@@ -23,10 +23,19 @@ missing module means the dependency was not added to the plugin's `package.json`
 npm run validate:plugin -- <id>
 ```
 
-It checks the required files, both JSON files against `plugins/schemas/`, that the id appears
-exactly once in `plugins.json` and is not a built-in connector kind, that every `@spec/`
-reference has a file in `openapi-specs/`, and, without `@spec/`, that every operation value is
-handled in `lib/*.ts`. Exit 0 is a pass; each failure prints `FAIL <id>: <reason>`.
+It checks:
+
+- the required files exist;
+- `manifest.json` and `operations.json` match `plugins/schemas/`;
+- no unreplaced `{{UPPER_CASE}}` template placeholder remains in those two files;
+- the id (`source.kind`) appears exactly once in `plugins.json`, is not a built-in connector
+  kind, and equals the directory name;
+- every `@spec/` reference uses the plugin id and has a file in `openapi-specs/`; without
+  `@spec/`, every operation value is handled in `lib/*.ts`.
+
+Output is `PASS <id>`, `KNOWN <id>: <reason>` for drift already recorded in the validator (not
+a failure), or `FAIL <id>: <reason>`, then a summary line. Exit 0 means no `FAIL`.
+`--skip-registry` skips only the `plugins.json` check.
 
 ## 3. Lint
 
@@ -64,8 +73,8 @@ URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
 2. Sign in. A fresh database redirects to `/setup`: create the first admin only if the user
    agrees; otherwise ask for a login.
 3. Open `<host>/integrations/marketplace`, search for the `plugins.json` name, click **Install**
-   (toast "<Name> installed"). If it already shows **Installed**, use the refresh icon on its card
-   in `<host>/integrations/installed` instead (toast "<Name> reloaded").
+  . If it already shows **Installed**, use the refresh icon on its card
+   in `<host>/integrations/installed` instead.
 4. Open or reload `<host>/<workspace-id>/data-sources` and search for the plugin. It is under the
    section for the manifest `type` (APIs, Databases, Cloud Storages), or **Plugins** when there is
    none. **Add** creates the data source and opens its form.
@@ -73,9 +82,8 @@ URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
    branch; compare with the design reference if there is one. Footer: `customTesting: false`
    shows **Test connection** and **Save**, `true` only **Save**; an OAuth code flow shows neither.
 6. Credentials: never ask for or type production secrets. With test credentials from the user,
-   **Test connection** must toast "Test connection verified"; then **Save**. Without them, enter
-   placeholders and expect "Test connection could not be verified": report "auth not exercised",
-   not a pass.
+   **Test connection** must report success; then **Save**. Without them, enter placeholders and
+   expect a failed test: report "auth not exercised", not a pass.
 7. Query editor: **Create an app**, click **+** in the query panel, pick the data source. Every
    `operations.json` operation must list and show its parameters. For `api-endpoint`, open a few
    operations with path params and a body. `@spec` files are cached for an hour: after a reload,

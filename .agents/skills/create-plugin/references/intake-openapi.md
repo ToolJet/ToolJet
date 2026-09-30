@@ -71,12 +71,14 @@ node ../.agents/skills/create-plugin/scripts/split-spec.mjs <spec> plugins/<id>/
 ```
 
 Each `name=TagA,TagB` writes `<name>.yaml` (`.json` for JSON input) with those tags' operations
-and only the components they reference. `*` takes every operation no earlier group took. With no
-groups it writes one file per tag. It exits non-zero if an operation is left unassigned or a
-`$ref` cannot be resolved, and prints each file's operation count; the counts must add up to the
-total. For one file, pass a single `"<name>=*"` group rather than copying the spec: the script
-also collapses type arrays. A warning names a multi-type schema it
-cannot collapse; pick one type by hand. Validate every output file (section 1).
+and only the components they reference. `*` takes every operation no named group lists (at most
+one such group); untagged operations need it. Groups are always explicit. The script exits
+non-zero, before writing anything, on a group without `=`, duplicate group names, an operation
+in zero or two groups, a path item `$ref` (inline it first), or an unresolvable `$ref`. It prints
+each file's operation count; the counts must add up to the total. For one file, pass a single
+`"<name>=*"` group rather than copying the spec: the script also collapses type arrays (not
+inside `example`, `default` or `enum`). A warning names a multi-type schema it cannot collapse;
+pick one type by hand. Validate every output file (section 1).
 
 ## 4. Place the spec
 

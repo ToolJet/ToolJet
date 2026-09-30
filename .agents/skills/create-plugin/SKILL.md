@@ -84,7 +84,7 @@ overwrites the manifest and operations from templates. In `README.md`, fix the h
 replace the docs link (a placeholder page that does not exist) with a one-line description. Then:
 
 1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json` (the
-   file has no trailing newline; keep it that way). From the repo root, fill in and run:
+   file has no trailing newline; keep it that way). From the repo root, fill in and run (it inserts one entry before the closing `]` in the file's own format):
 
    ```bash
    node -e 'const fs=require("fs"),f="server/src/assets/marketplace/plugins.json",s=fs.readFileSync(f,"utf8").trimEnd();
