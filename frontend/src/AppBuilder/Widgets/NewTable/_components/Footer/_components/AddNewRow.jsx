@@ -22,6 +22,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
+  const disableAddNewRowSave = useTableStore((state) => state.getTableProperties(id)?.disableAddNewRowSave, shallow);
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
@@ -277,6 +278,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
             hideAddNewRowPopup();
           }}
           size="sm"
+          disabled={disableAddNewRowSave}
           customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         >
           <span>Save</span>

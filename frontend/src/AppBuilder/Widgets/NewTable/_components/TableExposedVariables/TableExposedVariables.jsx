@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import moment from 'moment';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
@@ -10,6 +10,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTableRefresh } from '../../_hooks/useTableRefresh';
+import { isEditedFieldsMapValid } from '../../_utils/columnValidity';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -28,6 +29,7 @@ export const TableExposedVariables = ({
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
   const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
+  const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
@@ -116,6 +118,21 @@ export const TableExposedVariables = ({
       updatedData: updatedData,
     });
   }, [data, editedRows, editedFields, setExposedVariables]);
+
+  // isValid is true only while every currently-edited cell - both the existing-row
+  // changeSet and any in-progress add-new-row draft - passes its column's own
+  // validation (the same check each column adapter already runs for its own
+  // .is-invalid styling, see columnValidity.js).
+  const isValid = useMemo(
+    () =>
+      isEditedFieldsMapValid(editedFields, columnProperties) &&
+      isEditedFieldsMapValid(addNewRowDetails, columnProperties),
+    [editedFields, addNewRowDetails, columnProperties]
+  );
+
+  useEffect(() => {
+    setExposedVariables({ isValid });
+  }, [isValid, setExposedVariables]);
 
   useEffect(() => {
     if (addNewRowDetails) {
