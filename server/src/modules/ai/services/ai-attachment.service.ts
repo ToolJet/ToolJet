@@ -14,7 +14,7 @@ import { isUUID } from 'class-validator';
 import { createHash, randomUUID } from 'crypto';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
-import { DataSource, EntityManager, In, IsNull } from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, QueryFailedError } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 
 export const MAX_AI_ATTACHMENT_BYTES = 10 * 1024 * 1024;
@@ -190,6 +190,15 @@ export class AiAttachmentService {
       this.diagnostic('upload', error);
       if (signal?.aborted) throw error;
       if (typeof error.getStatus === 'function') throw error;
+      if (
+        error instanceof QueryFailedError &&
+        'code' in error.driverError &&
+        ['42P01', '42703'].includes(String(error.driverError.code))
+      ) {
+        throw new ServiceUnavailableException(
+          'File uploads are unavailable because attachment setup is incomplete. Ask your administrator to apply the latest database updates.'
+        );
+      }
       throw new ServiceUnavailableException('File upload failed. Please retry.');
     }
   }

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomUUID } from 'crypto';
-import { DataSource, getMetadataArgsStorage } from 'typeorm';
+import { DataSource, getMetadataArgsStorage, QueryFailedError } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService, MAX_AI_ATTACHMENT_BYTES } from '@modules/ai/services/ai-attachment.service';
 import { CreateAiAttachments1789689600000 } from '../../../../migrations/1789689600000-CreateAiAttachments';
@@ -154,6 +154,20 @@ describe('Agent-backed attachment metadata', () => {
     expect(columns.some((entry) => entry.options.type === 'bytea' || entry.propertyName === 'data')).toBe(false);
     repository.save.mockRejectedValue(new Error('private binary parameters'));
     await expect(service.upload(owner, file())).rejects.toThrow('File upload failed. Please retry.');
+  });
+
+  it.each(['42P01', '42703'])('explains incomplete database setup without exposing SQL or file data (%s)', async (code) => {
+    repository.save.mockRejectedValue(
+      new QueryFailedError(
+        'INSERT INTO attachment_receipt VALUES ($1)',
+        ['synthetic private file bytes'],
+        Object.assign(new Error('internal schema detail'), { code })
+      )
+    );
+    await expect(service.upload(owner, file())).rejects.toThrow(
+      'File uploads are unavailable because attachment setup is incomplete. Ask your administrator to apply the latest database updates.'
+    );
+    expect(agent.attachmentRequest).not.toHaveBeenCalled();
   });
 
   it.each([null, 'not-an-array', ids, ['not-a-uuid']])(
