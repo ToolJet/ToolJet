@@ -3,7 +3,11 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
-import { parseValueToNumber, toCanonicalAmount } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import {
+  parseValueToNumber,
+  resolveDecimalPlaces,
+  toCanonicalAmount,
+} from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 import { getCountryCallingCodeSafe, toE164 } from '@/AppBuilder/Widgets/PhoneCurrency/utils';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
@@ -105,7 +109,7 @@ export const useInput = ({
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
-  const decimalPlaces = properties?.decimalPlaces || 0;
+  const decimalPlaces = resolveDecimalPlaces(properties?.decimalPlaces).places;
 
   /* ── LABEL WIDTH CALCULATION ───────────────────────────────────────────────────────────────────────── */
 
@@ -172,8 +176,10 @@ export const useInput = ({
   useEffect(() => {
     if (inputType === 'phone') {
       const code = getCountryCallingCodeSafe(country);
-      // The value belongs to the current country, so that is the only dial code we strip.
-      setPhoneInputValue(toE164(properties.value, code, code));
+      // The widget normalises the authored value against its DEFAULT country before this hook sees it,
+      // so that is the code the value carries — not the current one
+      const seedCode = getCountryCallingCodeSafe(properties.defaultCountry || 'US');
+      setPhoneInputValue(toE164(properties.value, code, seedCode));
     } else if (inputType === 'currency') {
       setCurrencyInputValue(`${properties.value ?? ''}`);
     } else {
@@ -185,16 +191,17 @@ export const useInput = ({
 
   useEffect(() => {
     if (inputType !== 'phone') return;
-    // `setValue` CSA for phone input
-    // - `value` is Phone number without country code.
-    // - `nextCountry` (default: current) is the country to apply.
+    // `value`: bare national digits, or international with a dial code.
     setExposedVariable('setValue', async function (value, nextCountry = country) {
+      const nextCode = getCountryCallingCodeSafe(nextCountry);
+      const currentCode = getCountryCallingCodeSafe(country);
       // Ignore an invalid country, and build the E.164 value from the TARGET country's calling code.
-      const targetCountry = getCountryCallingCodeSafe(nextCountry) ? nextCountry : country;
-      const code = getCountryCallingCodeSafe(targetCountry);
+      const targetCountry = nextCode ? nextCountry : country;
+      const targetCode = nextCode ? nextCode : currentCode;
       setCountry(targetCountry);
-      // The caller states the target country, so that is the code we strip if present.
-      setPhoneInputValue(toE164(value, code, code), targetCountry);
+      // The caller names the target country, but the value may still be written in the one the widget currently holds,
+      // That is the code to strip; a value already in the target's own shape is already handled by `toE164`.
+      setPhoneInputValue(toE164(value, targetCode, currentCode), targetCountry);
       fireEvent('onChange');
     });
   }, [inputType, country]);
@@ -319,9 +326,11 @@ export const useInput = ({
   const setCurrencyInputValue = (displayValue, numericValue) => {
     const nextDisplay = displayValue ?? '';
     const nextNumber =
-      numericValue != null && !Number.isNaN(numericValue)
-        ? numericValue
-        : parseValueToNumber(nextDisplay, numberFormat);
+      nextDisplay === ''
+        ? null
+        : numericValue != null && !Number.isNaN(numericValue)
+          ? numericValue
+          : parseValueToNumber(nextDisplay, numberFormat);
     writeValue({
       state: nextDisplay,
       exposed: nextNumber,

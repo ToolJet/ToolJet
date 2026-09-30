@@ -451,6 +451,26 @@ describe('label, placeholder and property changes', () => {
     }
   });
 
+  // Second mount for the same rule. Break this catches: reading the fallback as zero anywhere the
+  // VALUE is normalised while the FIELD keeps reading it as two. An unusable setting would then
+  // truncate a Default value and a `setValue` amount to whole numbers while typing still accepted
+  // decimals — the same amount landing on two different numbers depending on how it arrived.
+  test('[CurrencyInput-PROP-006] an unusable decimalPlaces falls back to two for the value too', async () => {
+    for (const setting of ['', 'abc']) {
+      harness.teardown();
+      harness.setup();
+      harness.render({ properties: { value: binding('1234.56'), decimalPlaces: binding(setting) } });
+      await waitFor(() => expect(input()).toBeTruthy());
+      await drain();
+
+      expect(harness.exposed().value).toBe(1234.56);
+
+      await harness.act('setValue', '1234.56');
+      await drain();
+      expect(harness.exposed().value).toBe(1234.56);
+    }
+  });
+
   // Break this catches: normalizing an amount set by the `setValue` action while letting the
   // Default value through untouched. The setting would then govern typing and actions but not the
   // value the field loads with, so a field configured for whole rupees could open showing
@@ -494,8 +514,9 @@ describe('label, placeholder and property changes', () => {
       return { field: input().value, value: harness.exposed().value };
     };
 
-    // Previously '0' — the field could never be empty.
-    expect(await seed('')).toEqual({ field: '', value: 0 });
+    // Previously '0' — the field could never be empty. The exposed amount is `null` rather than
+    // 0 under PROP-008, so a cleared Default value reads as "no amount" everywhere, not as zero.
+    expect(await seed('')).toEqual({ field: '', value: null });
 
     // Previously '1' — parseFloat stopped at the group separator.
     expect(await seed('1,256.7')).toEqual({ field: '1,256.7', value: 1256.7 });
@@ -576,13 +597,17 @@ describe('label, placeholder and property changes', () => {
         input: typeof v === 'symbol' ? 'symbol' : String(v),
         field: input().value,
         formatted: String(harness.exposed().formattedValue),
-        exposedIsFinite: Number.isFinite(harness.exposed().value),
+        // `null` is the deliberate answer for a field holding no amount (PROP-008). Tying it to an
+        // empty field keeps this sweep's guarantee intact — nothing may expose NaN or undefined,
+        // and a null may only appear when there is genuinely nothing in the field.
+        exposedAmountIsUsable:
+          harness.exposed().value === null ? input().value === '' : Number.isFinite(harness.exposed().value),
       };
       expect(observed).toEqual({
         input: observed.input,
         field: expect.not.stringContaining('NaN'),
         formatted: expect.not.stringContaining('NaN'),
-        exposedIsFinite: true,
+        exposedAmountIsUsable: true,
       });
       expect(observed.field).not.toContain('undefined');
       expect(observed.formatted).not.toContain('undefined');
@@ -598,6 +623,92 @@ describe('label, placeholder and property changes', () => {
 
     expect(input().value).toBe('');
     expect(harness.exposed().isValid).toBe(false);
+  });
+
+  // Break this catches: publishing a parsed `0` for a field that holds no amount, which makes
+  // "cleared" and "zero" the same value to an app reading `value`. Every other surface of this
+  // widget already tells them apart — the field renders '' against '0', validation judges ''
+  // against '0' so a mandatory empty field fails, and formattedValue shows '$ ' against '$ 0'.
+  // `value` was the only one collapsing them, and it is the one an app actually reads.
+  test('[CurrencyInput-PROP-008] an empty field exposes no amount, and a zero still exposes zero', async () => {
+    harness.render({ properties: { value: binding('') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    expect(harness.exposed().value).toBeNull();
+    expect(input().value).toBe('');
+
+    // A configured zero is a real amount and must survive as one.
+    harness.render({ properties: { value: binding('{{0}}') } });
+    await waitFor(() => expect(input().value).toBe('0'));
+    await drain();
+
+    expect(harness.exposed().value).toBe(0);
+  });
+
+  // Second mount for the same scenario: a field can be emptied four ways and they must agree.
+  test('[CurrencyInput-PROP-008] every way of emptying the field reports no amount', async () => {
+    harness.render({ properties: { value: binding('{{1234}}') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+
+    await userEvent.clear(input());
+    await drain();
+    expect(harness.exposed().value).toBeNull();
+
+    await harness.act('setValue', 1234);
+    await drain();
+    await harness.act('clear');
+    await drain();
+    expect(harness.exposed().value).toBeNull();
+
+    await harness.act('setValue', 1234);
+    await drain();
+    await harness.act('setValue', '');
+    await drain();
+    expect(harness.exposed().value).toBeNull();
+  });
+
+  // Break this catches: trimming the decimals by slicing `toString()` without answering the two
+  // ranges where it turns exponential. At 1e21 and above the text is `2.89e+23`, and the dot in
+  // that mantissa is NOT a decimal separator — slicing it read the exponent as the decimals and
+  // kept two characters, so a 24-digit amount became `2.89`. A plausible-looking small number is
+  // the worst possible failure here, because nothing downstream can tell it is wrong.
+  //
+  // Also catches trimming with `Math.trunc(amount * 10 ** places)`, which avoids the exponent but
+  // loses ordinary amounts to float error: `1234567.89 * 100` is `123456788.99999999`, so that
+  // form publishes `1234567.88`.
+  test('[CurrencyInput-PROP-009] an amount past double precision keeps its magnitude', async () => {
+    harness.render({ properties: { value: binding('289128338293323232332323') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // The double cannot hold all 24 digits, so the stored magnitude is what a double can express —
+    // but it is that magnitude, not a small number wearing its first digits.
+    expect(harness.exposed().value).toBe(2.8912833829332324e23);
+    expect(input().value).toBe('289,128,338,293,323,240,000,000');
+
+    // The action normalises by the same rule, so it lands on the same amount.
+    await harness.act('setValue', '289128338293323232332323');
+    await drain();
+    expect(harness.exposed().value).toBe(2.8912833829332324e23);
+  });
+
+  // Second mount for the same scenario: the other end of the range, and the ordinary amount that a
+  // float-multiplication fix would break.
+  test('[CurrencyInput-PROP-009] a sub-cent amount truncates to zero and an exact one is untouched', async () => {
+    harness.render({ properties: { value: binding('0.00000015') } });
+    await waitFor(() => expect(input()).toBeTruthy());
+    await drain();
+
+    // Smaller than two decimal places can express, so truncating to the setting gives zero.
+    expect(harness.exposed().value).toBe(0);
+    expect(input().value).toBe('0');
+
+    harness.render({ properties: { value: binding('1234567.89') } });
+    await waitFor(() => expect(input().value).toBe('1,234,567.89'));
+    await drain();
+
+    expect(harness.exposed().value).toBe(1234567.89);
   });
 });
 

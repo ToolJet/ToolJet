@@ -30,6 +30,11 @@ export const toE164 = (rawValue, targetCallingCode, strippableCallingCode = targ
   let nationalNumber;
   if (text.startsWith('+')) {
     const digits = text.slice(1).replace(/\D/g, '');
+
+    // Already written in the TARGET country's code, so it is canonical whatever country the caller believed it was in.
+    const target = `${targetCallingCode ?? ''}`;
+    if (target && digits.startsWith(target)) return digits.length > target.length ? `+${digits}` : '';
+
     const knownCode = `${strippableCallingCode ?? ''}`;
     nationalNumber = knownCode && digits.startsWith(knownCode) ? digits.slice(knownCode.length) : digits;
   } else {

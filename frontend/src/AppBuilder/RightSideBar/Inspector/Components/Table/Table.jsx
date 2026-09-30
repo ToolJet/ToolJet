@@ -353,8 +353,6 @@ export const Table = (props) => {
   );
 
   // Derived state
-  const displaySearchBox = component.component.definition.properties.displaySearchBox?.value ?? true;
-
   const displayServerSideFilter = useMemo(
     () => resolveReferences(component.component.definition.properties.showFilterButton?.value) ?? false,
     [component.component.definition.properties.showFilterButton?.value]
@@ -435,14 +433,14 @@ export const Table = (props) => {
 
   const searchSortFilterOptions = useMemo(
     () => [
-      ...(displaySearchBox ? ['displaySearchBox'] : []),
+      'displaySearchBox',
       ...(displayServerSideSearch ? ['serverSideSearch'] : []),
       'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
       'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
     ],
-    [displaySearchBox, displayServerSideSearch, enabledSort, displayServerSideFilter]
+    [displayServerSideSearch, enabledSort, displayServerSideFilter]
   );
 
   const paginationOptions = useMemo(
