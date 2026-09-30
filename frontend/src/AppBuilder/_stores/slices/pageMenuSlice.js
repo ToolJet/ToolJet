@@ -461,6 +461,8 @@ export const createPageMenuSlice = (set, get) => {
         handle: newHandle,
         components: {},
         index: pages.length + 1,
+        // Mirror the server default so a new page reports auto-layout on before re-hydration.
+        ...(!isPageGroup ? { autoComputeLayout: true } : {}),
         ...pageObj,
         isPageGroup,
         ...(isPageGroup

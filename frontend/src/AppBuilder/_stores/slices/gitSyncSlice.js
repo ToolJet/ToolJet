@@ -32,7 +32,6 @@ export const createGitSyncSlice = (set, get) => ({
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
-      console.log('app git', appGit);
       return allowEditing;
     } catch (error) {
       console.error('Failed to fetch app git configs:', error);

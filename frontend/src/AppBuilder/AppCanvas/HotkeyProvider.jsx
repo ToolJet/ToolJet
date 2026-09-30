@@ -153,7 +153,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
         maxWidth: canvasMaxWidth,
         margin: '0 auto',
         transform: 'translateZ(0)',
-        ...(isModuleMode && { height: '100%' }),
+        // Mobile frame below is height:100%; without a definite height here that chain collapses to 0.
+        ...((isModuleMode || (currentLayout === 'mobile' && mode === 'edit')) && { height: '100%' }),
       }}
     >
       {children}

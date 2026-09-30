@@ -462,7 +462,6 @@ const useAppData = (
           }
           setGlobalSettings(global_settings);
         }
-
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(

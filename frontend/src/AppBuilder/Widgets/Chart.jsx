@@ -41,7 +41,6 @@ export default function Chart({
   const modifiedGridLines = getCssVarValue(document.documentElement, 'var(--cc-weak-border)');
   const modifiedTextColor = getCssVarValue(document.documentElement, 'var(--cc-primary-text)');
   const modifiedAxisColor = getCssVarValue(document.documentElement, 'var(--cc-default-border)');
-  console.log('modifiedAxisColor', modifiedAxisColor);
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;

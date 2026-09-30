@@ -12,7 +12,7 @@ import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } fro
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
-import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
+import MobileAutoLayoutToolbar from './MobileAutoLayoutToolbar';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
@@ -51,8 +51,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const { isAppDarkMode } = useAppDarkMode();
-  const canvasContainerHeight = computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
-  const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
+  // On mobile the canvas keeps its collapsed-query height; the query panel overlays it via z-index.
+  const canvasContainerHeight =
+    currentLayout === 'mobile'
+      ? computeCanvasContainerHeight(0, false)
+      : computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth();
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
@@ -207,7 +210,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   );
 
   const gridContent =
-    currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
+    currentMode === 'view' ? null : (
       <Suspense fallback={null}>
         <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
       </Suspense>
@@ -242,20 +245,21 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 />
               </Suspense>
             )}
-            {currentMode === 'edit' && (
-              <AutoComputeMobileLayoutAlert
-                currentLayout={currentLayout}
-                darkMode={isAppDarkMode}
-                isCurrentVersionLocked={isCurrentVersionLocked}
-              />
-            )}
             <div
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
                 'tw-w-full tw-mx-auto': isMobileLayout,
               })}
-              style={{ minWidth: minCanvasWidth }}
+              style={{
+                // minCanvasWidth is desktop-only; on mobile it forces a scrollbar that shifts the frame.
+                minWidth: isMobileLayout ? undefined : minCanvasWidth,
+                // Reserve room below the phone frame for the toolbar gutter
+                ...(isMobileLayout && currentMode === 'edit' ? { paddingBottom: '76px' } : {}),
+              }}
             >
+              {currentMode === 'edit' && (
+                <MobileAutoLayoutToolbar currentLayout={currentLayout} darkMode={isAppDarkMode} moduleId={moduleId} />
+              )}
               {/* The same overlay the viewer uses for lazy-loading. It has to sit here rather than
                   deeper in the canvas: the wrappers below collapse to zero height while the widget
                   tree is unmounted, and this is the nearest full-height positioned ancestor. */}
@@ -270,6 +274,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
                   ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
+                  // Reserve the vertical scrollbar symmetrically so it doesn't shift the centered mobile frame.
+                  ...(isMobileLayout ? { scrollbarGutter: 'stable both-edges' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
