@@ -56,6 +56,11 @@ function tjEnvFileContents(config: Record<string, string>): string {
 
 function makeServices() {
   const orgRepo = {
+    // boot-time resolveAllSlugs() loads every org in one query
+    find: jest.fn().mockResolvedValue([
+      { id: FILE_WORKSPACE_ID, slug: FILE_WORKSPACE_SLUG, name: 'File workspace' },
+      { id: ENV_VAR_WORKSPACE_ID, slug: ENV_VAR_WORKSPACE_SLUG, name: 'Env var workspace' },
+    ]),
     findOne: jest.fn().mockImplementation(({ where }: any) => {
       if (where?.slug === FILE_WORKSPACE_SLUG) return Promise.resolve({ id: FILE_WORKSPACE_ID, slug: where.slug });
       if (where?.slug === ENV_VAR_WORKSPACE_SLUG)

@@ -26,7 +26,16 @@ Cypress.Commands.add(
       // (typed "custombtn"), and `#ff0000` dropped its `#` (typed "ff0000",
       // breaking hex-colour fx values). `#` is added to the class and `-` stays
       // last so it's a literal.
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
+      // {{/}}/(( must come FIRST (alternation is first-match-wins), or a
+      // {{...}} expression types as scrambled single braces, not one pair —
+      // e.g. "{{components.toggleswitch1.valu}e}". The reduce below already
+      // branches on "{{" / "}}" / "((" tokens, which single-brace-only
+      // alternatives can never produce.
+      const regex = /(\{\{|\}\}|\{|\}|\(\(|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
+      // prefix backspaces away the closer autoclose inserted, so every branch
+      // must consume it exactly once. Leaving it set re-applies it to the NEXT
+      // token and eats a real character — with a "{{" token that is a whole
+      // brace: "{{ 'x' }}" typed as "{'x' }}".
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
@@ -38,10 +47,13 @@ Cypress.Commands.add(
             prefix = "{backspace}";
           } else if (part === "}}") {
             acc.push(prefix + part);
+            prefix = "";
           } else if (part === " ") {
             acc.push(prefix + " ");
+            prefix = "";
           } else if (part === ":") {
             acc.push(prefix + ":");
+            prefix = "";
           } else {
             acc.push(prefix + part);
             prefix = "";
@@ -59,9 +71,16 @@ Cypress.Commands.add(
       });
     } else {
       splitIntoFlatArray(value).forEach((i) => {
+        // No .click() per token. It lands on the element CENTRE, and {end} only
+        // reaches the end of that VISUAL row (the editor sets lineWrapping), so
+        // on a wrapped value the caret parked mid-text and every later token was
+        // inserted at that one spot — the words came back REVERSED:
+        //   "…reprehenderit nihil ipsam quod voluptatum modi officia nisi."
+        //   → "…reprehen     modivoluptatumquodipsamnihilderi  nisi.officiat"
+        // The clear phase above already focused the editor; the caret advances
+        // on its own. Keystrokes are otherwise unchanged.
         cy.wrap(subject)
           .last()
-          .click()
           .realType(
             `{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}${i}`,
             { parseSpecialCharSequences: false, delay: 0, force: true }
