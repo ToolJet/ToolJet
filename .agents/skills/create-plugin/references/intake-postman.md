@@ -14,10 +14,13 @@ Convert the collection to an OpenAPI 3.0 YAML spec, audit it, then continue with
 
 ## 2. Convert
 
-Try the converter first, then audit its output:
+Run the converter in a temp directory outside the repo, then audit its output. The package's
+binary is `p2o`, so name it with `-p`. `replaceVars` fills `{{baseUrl}}`-style variables from the
+collection's `variable[]`; `operationId: auto` derives ids from request names.
 
 ```bash
-npx postman-to-openapi <collection>.postman_collection.json -f <name>-openapi.yaml
+echo '{"replaceVars":true,"operationId":"auto"}' > p2o-options.json
+npx -y -p postman-to-openapi@3.0.1 p2o <collection>.postman_collection.json -f <name>-openapi.yaml -o p2o-options.json > /dev/null
 ```
 
 Fix its known defects:
@@ -29,6 +32,9 @@ Fix its known defects:
 | Disabled query params dropped                  | Leave them out, list them as "not converted"                                                                                                                                      |
 | Non-standard MIME types (`application/text`)   | Standard types (`text/plain`)                                                                                                                                                     |
 | Duplicate `operationId`s                       | Add a numeric suffix                                                                                                                                                              |
+| Raw JSON body as `'*/*'` with a string schema  | `application/json` with an object schema built from the example (happens when the body has no `options.raw.language`)                                                             |
+| `Content-Type` or `Accept` header parameters   | Remove them                                                                                                                                                                       |
+| `servers` still holds `{{var}}`                | The variable has no value in the collection; ask the user for the base URL                                                                                                        |
 
 If the converter fails, write the spec by hand with the same rules: `info` (collection name,
 `version: "1.0.0"`), `servers`, one path entry per normalized path + method with `operationId`,
@@ -41,7 +47,8 @@ Walk the whole `item` tree, recursing through nested folders.
 
 - Folder name becomes the tag (outermost folder for nested ones).
 - `{{baseurl}}`, `{{host}}`, `{{server}}` go to `servers[].url`, not parameters.
-- `{{var}}` in a path segment becomes path parameter `{var}`.
+- `{{var}}` or `:var` in a path segment becomes path parameter `{var}`; the request's
+  `url.variable[]` values become its `example`.
 - Hard-coded IDs (`/invoice/147`, UUIDs) become `{id}`, or `{userId}`-style names when a path has
   several. Rename repeated names (`/company/{id}/item/{id}`).
 - `url.query[]` entries become query params; `request.header[]` becomes header params, skipping

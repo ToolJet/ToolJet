@@ -4,7 +4,10 @@
 validated against `plugins/schemas/manifest.schema.json` and `operations.schema.json`; the V1 widget
 `type` enums there are the complete list of accepted names (V2 `tj:ui:properties.*.widget` is not
 schema-checked). Templates live in
-`../assets/templates/`; replace every `{{PLACEHOLDER}}` with real values.
+`../assets/templates/`; replace every `{{PLACEHOLDER}}` with real values: `PLUGIN_TITLE` and
+`PLUGIN_NAME` are the display name, `PLUGIN_KIND` the id, `SPEC_NAME` the `@spec/` file name,
+`DEFAULT_BASE_URL` the API base URL, the OAuth ones come from the provider's docs, and
+`OPERATION_1_*` / `PARAM_1_*` are copied once per operation and parameter.
 
 ## V1 or V2 manifest
 
@@ -53,11 +56,12 @@ operations.json (`type`):
 | `auth.type`         | Template                                       | Shape                                                                                         |
 | ------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `api_key`           | `v1/api-key-manifest.json`                     | Flat `api_key` password field                                                                 |
-| `bearer`            | `v1/bearer-manifest.json`                      | `dropdown-component-flip` auth picker, nested token group                                     |
+| `bearer`            | `v1/bearer-manifest.json`                      | Auth picker with a token group; for a single method, a flat `bearer_token` field is fine      |
 | `basic`             | `v1/basic-manifest.json`                       | Flat URL, username, password                                                                  |
 | `oauth2`            | `v1/oauth-manifest.json`                       | One `react-component-oauth` property with `oauth_configs`; OAuth URLs and grant in `defaults` |
 | `none`              | `v1/none-manifest.json`                        | No credentials; optional base URL                                                             |
 | `custom`            | `v1/custom-manifest.json`                      | Base URL + custom headers; add fields as needed                                               |
+| `connection_fields` | `v1/database-manifest.json`                    | Connection URL + optional encrypted auth token; `type: database`                              |
 | `connection_fields` | `v2/database-manifest.json`, or V1 flat fields | Host, port, database, username, password, SSL                                                 |
 
 Several methods at once: V1 uses a `dropdown-component-flip` whose `list` values name sibling

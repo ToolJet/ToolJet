@@ -9,9 +9,10 @@ its absence tells the generators to build a `dropdown-component-flip` operations
   README and type definitions to find the client constructor, its auth options, and the public
   methods.
 - **Database driver**: connection parameters (host, port, database, user, password, SSL, or a
-  connection string) and what users run (a raw query, plus any structured operations).
-- **API docs URL**: fetch the docs; list endpoints, auth, request and response formats. If the
-  provider publishes an OpenAPI spec, switch to `intake-openapi.md`.
+  connection URL and token) and what users run (a raw query, plus any structured operations).
+- **API docs URL**: fetch the docs; list endpoints, auth, request and response formats. If a page
+  is an app shell with no content, follow its links to the real docs host. If the provider
+  publishes an OpenAPI spec, say so and ask whether to switch to `intake-openapi.md`.
 - **Description only**: ask until operations and auth are concrete.
 
 ## 2. Auth type

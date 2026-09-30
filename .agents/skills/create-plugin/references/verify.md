@@ -12,8 +12,10 @@ test -d plugins/common/dist || npm run build --workspace=@tooljet-marketplace/co
 npm run build --workspace=@tooljet-marketplace/<id>
 ```
 
-`ncc` compiles `lib/index.ts`, so this is also the type check. Exit code 0 is a pass; do not pipe the build through `tail`. A missing module means
-the dependency was not added to the plugin's `package.json` (`npm i <pkg> --workspace=@tooljet-marketplace/<id>`).
+`ncc` compiles `lib/index.ts`, so this is also the type check. Exit code 0 is a pass. Do not pipe
+the build (a pipe reports the last command's exit code); add `; echo "exit $?"` to see it. A
+missing module means the dependency was not added to the plugin's `package.json`
+(`npm i <pkg> --workspace=@tooljet-marketplace/<id>`).
 
 ## 2. Validator
 
@@ -29,10 +31,13 @@ failure prints `FAIL <id>: <reason>`.
 ## 3. Lint
 
 ```bash
+ESLINT_USE_FLAT_CONFIG=false npx eslint --fix 'plugins/<id>/lib/**/*.ts'
 ESLINT_USE_FLAT_CONFIG=false npx eslint 'plugins/<id>/lib/**/*.ts'
 ```
 
-The env var matches CI: without it, eslint 8 picks up the frontend's flat config and fails.
+The first run applies prettier formatting; the second must exit 0, and prints nothing when clean.
+Fix what remains by hand. The env var matches CI: without it, eslint 8 picks up the frontend's
+flat config and fails.
 
 ## 4. Spec and PRD coverage
 
@@ -43,24 +48,39 @@ The validator cannot see `plugin-spec.json` or the PRD. Check by reading:
 - Every PRD requirement maps to an operation or field; list any that do not.
 - `source.kind` equals the id; secrets are encrypted; `customTesting` matches whether
   `testConnection` exists.
-- For `api-endpoint`, the shipped spec still passes `npx @apidevtools/swagger-cli validate`.
+- For `api-endpoint`, every shipped spec still passes `npx @apidevtools/swagger-cli validate`
+  (3.1 patch versions: `intake-openapi.md` section 1).
 
 ## 5. UI check (optional)
 
-Needs a browser automation tool and a running ToolJet with `ENABLE_MARKETPLACE_FEATURE=true`
-and `ENABLE_MARKETPLACE_DEV_MODE=true` (see
-`docs/docs/contributing-guide/marketplace/marketplace-setup.md`). If either is missing, skip
-and say which; do not block the run on it.
+Needs a browser automation tool, a ToolJet already running from this checkout with the server
+started by `npm run start:dev`, and an admin or builder login. Skip, saying which is missing, if
+any is absent, if the frontend is unreachable, or on the Cloud edition (no marketplace). Never
+block the run on it. Install facts: `marketplace/AGENTS.md`, Local install. Set
+`ENABLE_MARKETPLACE_DEV_MODE=true` in the root `.env` and restart the server first. The frontend
+URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
 
-Use the frontend URL from `.env` (`TOOLJET_HOST`):
-
-1. Install the plugin from `/integrations`; after later edits, use the reload button.
-2. Data source form: fields, order, labels, widgets, and every `dropdown-component-flip` /
-   `toggle-flip` branch. Compare with the design reference if one exists.
-3. Query editor in an app: every operation lists and each shows its parameters. For
-   `api-endpoint`, open a few operations with path params and bodies.
-4. With test credentials from the user, run one read operation and the test-connection button
-   (when shown).
+1. Build (section 1). After any later edit, rebuild before reloading.
+2. Sign in. A fresh database redirects to `/setup`: create the first admin only if the user
+   agrees; otherwise ask for a login.
+3. Open `<host>/integrations/marketplace`, search for the `plugins.json` name, click **Install**
+   (toast "<Name> installed"). If it already shows **Installed**, use the refresh icon on its card
+   in `<host>/integrations/installed` instead (toast "<Name> reloaded").
+4. Open or reload `<host>/<workspace-id>/data-sources` and search for the plugin. It is under the
+   section for the manifest `type` (APIs, Databases, Cloud Storages), or **Plugins** when there is
+   none. **Add** creates the data source and opens its form.
+5. Form: fields, order, labels, widgets, and every `dropdown-component-flip` / `toggle-flip`
+   branch; compare with the design reference if there is one. Footer: `customTesting: false`
+   shows **Test connection** and **Save**, `true` only **Save**; an OAuth code flow shows neither.
+6. Credentials: never ask for or type production secrets. With test credentials from the user,
+   **Test connection** must toast "Test connection verified"; then **Save**. Without them, enter
+   placeholders and expect "Test connection could not be verified": report "auth not exercised",
+   not a pass.
+7. Query editor: **Create an app**, click **+** in the query panel, pick the data source. Every
+   `operations.json` operation must list and show its parameters. For `api-endpoint`, open a few
+   operations with path params and a body. `@spec` files are cached for an hour: after a reload,
+   bypass the browser cache.
+8. With test credentials only, run one read operation (**Run** or **Preview**) and check it does not error.
 
 Take a screenshot per step. Report structural differences (missing field, wrong order, wrong
 widget, wrong label), not pixel differences.

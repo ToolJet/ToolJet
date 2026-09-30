@@ -26,7 +26,7 @@ marketplace/plugins/<id>/
 
 - Human path, from the repo root: `npx tooljet plugin create <name> --type=database|api|cloud-storage --marketplace`. It prompts for a display name (and a repo URL), renders the hygen templates in `marketplace/_templates/plugin/new/`, runs `npm i` in `marketplace/`, and appends an entry to `server/src/assets/marketplace/plugins.json`. `npx tooljet` is the published `@tooljet/cli` pinned in the root `package.json`, not `cli/src`: without `--marketplace` it asks "is it a marketplace integration?" and a "no" scaffolds into `plugins/packages/`.
 - Non-interactive path (agents): `cd marketplace && ../node_modules/.bin/hygen plugin new --name <id> --type <type> --display_name "<Name>" --plugins_path .`, then add the `plugins.json` entry by hand and run `npm i`. The hygen binary comes from the root `npm install` (locked through `@tooljet/cli`). Details: `.agents/skills/create-plugin/SKILL.md`.
-- `plugins.json` `id` must be unique and equal both the manifest `source.kind` and the directory name: `@spec/` files are looked up by it (`findByKind` matches `pluginId`, `server/src/modules/plugins/service.ts`), and dev-mode install reads `marketplace/plugins/<id>/` (`server/src/modules/plugins/util.service.ts`). `create` aborts if the id already exists.
+- `plugins.json` `id` must be unique and equal both the manifest `source.kind` and the directory name: `@spec/` files are looked up by it (`findByKind` matches `pluginId`, `server/src/modules/plugins/service.ts`), and install outside production reads `marketplace/plugins/<id>/` (`server/src/modules/plugins/util.service.ts`). `create` aborts if the id already exists.
 
 ## OpenAPI mode
 
@@ -46,6 +46,14 @@ ESLINT_USE_FLAT_CONFIG=false npm run lint   # as CI does
 - `npm run build --workspaces` runs alphabetically, but plugins import `common`'s `dist`, so build it first: `npm run build --workspace=@tooljet-marketplace/common` (`.github/workflows/ci.yml`, marketplace job).
 - Tests: `plugins/<id>/__tests__/index.js` is a scaffolded `it.todo` stub in every plugin. No jest/TypeScript config exists under `marketplace/` and CI does not run marketplace tests, so `npx jest` fails to parse `lib/index.ts`. Verify with `npm run build`, `validate:plugin`, and lint; add a jest config only if a plugin needs real unit tests.
 - Add npm deps to one plugin with `npm i <pkg> --workspace=<package-name>`.
+
+## Local install
+
+- Source: with `NODE_ENV` other than `production` (`cd server && npm run start:dev`), install reads `dist/index.js`, `lib/*.json`, `lib/icon.svg` and `openapi-specs/` from `marketplace/plugins/<id>/`; in production it fetches them from the marketplace host, so an unpublished plugin fails (`util.service.ts`). Install and reload copy those files into the database; nothing watches the directory, so rebuild before reloading.
+- `ENABLE_MARKETPLACE_DEV_MODE=true` (server env, restart to apply) shows the reload button in Installed plugins and makes the server re-read plugin code on every query instead of its in-memory cache (`plugin-selector.service.ts`). Forced off on Cloud (`server/src/modules/configs/service.ts`). No code reads `ENABLE_MARKETPLACE_FEATURE`.
+- Access: marketplace pages need an admin, super admin or builder, and are hidden on Cloud (`frontend/src/Routes/MarketplaceRoute.jsx`). Registry cards come from `plugins.json` via the server.
+- `GET /plugins/specs/...` responses carry `Cache-Control: public, max-age=3600` (`controller.ts::getSpec`).
+- Headless: `cd server && PLUGINS_TO_INSTALL=<id> npm run plugins:install`; the root `.env` overrides the shell env.
 
 ## Invariants & gotchas
 

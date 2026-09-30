@@ -33,6 +33,7 @@ export default class Example implements QueryService {
 - Every `operation.list` value must appear as a string literal in `lib/*.ts`, typically as a
   `case` label. The validator checks.
 - No `any`. Type responses you use; `unknown` plus a narrow cast where the shape is open.
+  `QueryResult.data` is `object | object[]`, so cast a parsed `unknown` body (`data as object`).
 
 ## Dependencies
 
@@ -88,15 +89,15 @@ Reference for behavior only (it uses `any`, which you must not): `run()` in
 
 ## Auth
 
-| `auth.type`         | Request                                                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `api_key`           | Header or query param named in `auth.config` (`headerName`, `in`), e.g. `headers[headerName] = sourceOptions.api_key`     |
-| `bearer`            | `Authorization: Bearer <token>`                                                                                           |
-| `basic`             | `Authorization: Basic base64(user:pass)`                                                                                  |
-| `oauth2`            | Access token from `sourceOptions` (see below)                                                                             |
-| `connection_fields` | Driver client built from the connection fields; reuse via `cacheConnection` / `getCachedConnection` when the driver pools |
-| `custom`            | Whatever the source requires (headers from a `react-component-headers` field, request signing)                            |
-| `none`              | Nothing                                                                                                                   |
+| `auth.type`         | Request                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `api_key`           | Header or query param from `auth.config` (`headerName`, `in`), fixed in code: `headers['x-api-key'] = sourceOptions.api_key` |
+| `bearer`            | `Authorization: Bearer <token>`                                                                                              |
+| `basic`             | `Authorization: Basic base64(user:pass)`                                                                                     |
+| `oauth2`            | Access token from `sourceOptions` (see below)                                                                                |
+| `connection_fields` | Driver client built from the connection fields; reuse via `cacheConnection` / `getCachedConnection` when the driver pools    |
+| `custom`            | Whatever the source requires (headers from a `react-component-headers` field, request signing)                               |
+| `none`              | Nothing                                                                                                                      |
 
 ## OAuth2
 

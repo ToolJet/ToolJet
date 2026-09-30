@@ -32,7 +32,8 @@ nearest existing plugin of the same auth type.
   `"className": "codehinter-plugins"`.
 - **`operationsMode: "api-endpoint"`**: start from `v1/api-endpoint-operations.json`; set
   `key` to `<id>_operation` and `spec_url` to the spec's `specUrl` value (string or object).
-  Make sure every `@spec/<id>/<name>` has `openapi-specs/<name>.yaml` (or `.json`) in the plugin.
+  Write the spec files with `scripts/split-spec.mjs` (`intake-openapi.md` section 3), so every
+  `@spec/<id>/<name>` has `openapi-specs/<name>.yaml` (or `.json`) in the plugin.
 
 Keep the `$schema` URLs from the templates; editors use them for hints.
 

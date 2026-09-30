@@ -1,9 +1,11 @@
 ---
 name: create-plugin
 description: >-
-  Create or validate a ToolJet marketplace data-source plugin from an OpenAPI spec,
-  Postman collection, npm package, database driver, or API docs. Use when asked to
-  create, generate, scaffold, or validate a marketplace plugin or connector.
+  Create, build, generate, scaffold, update, or validate a ToolJet marketplace plugin
+  (connector, integration, or data source) under marketplace/plugins/, from an OpenAPI
+  spec, Postman collection, npm package, database driver, or API docs. Use for any
+  request to add or check a ToolJet marketplace plugin, connector, or data source.
+  Not for built-in connectors in plugins/packages/.
 ---
 
 # Build a marketplace plugin
@@ -16,7 +18,9 @@ are out of scope; if asked for one, stop and say so.
 Read `marketplace/AGENTS.md` first. It owns the codebase facts (layout, registry, build, OAuth
 widget, `customTesting`, `@spec/` hosting); this skill links to it rather than repeating it.
 
-To validate an existing plugin only, skip to step 5.
+To validate an existing plugin only, skip to step 5. Report what the checks and this skill's
+rules find in legacy code (`any`, a missing `testConnection`) as observations; fix nothing unless
+asked.
 
 ## 1. Intake
 
@@ -54,15 +58,17 @@ Produce `plugin-spec.json`, the contract both generators work from. Route by sou
 | npm package, DB driver, docs URL, description | `references/intake-docs.md`                                         |
 
 Write `plugin-spec.json` outside the repo (or delete it before committing). It is an
-intermediate artifact and is never committed.
+intermediate artifact and is never committed. Without subagents, it may stay in the conversation
+instead of a file. Nothing validates it; the step 5 checks do.
 
 **User gate.** Show the auth type, the operation list, `operationsMode`, and the schema version
 (V1 unless the form needs cascading V2 widgets). Proceed only on a yes.
 
 ## 3. Scaffold
 
-Render the repo's plugin templates directly; no prompts (needs the root `npm install` once). This is what `tooljet plugin create`
-runs internally (the human path is in `marketplace/AGENTS.md`):
+Render the repo's plugin templates directly, with no prompts. This is what `tooljet plugin create`
+runs internally (the human path is in `marketplace/AGENTS.md`). Once per checkout, run
+`npm install` at the repo root first (it provides `hygen`; takes a few minutes).
 
 ```bash
 cd marketplace
@@ -71,27 +77,22 @@ cd marketplace
 
 It writes `plugins/<id>/` (`lib/{index.ts,types.ts,manifest.json,operations.json,icon.svg}`,
 `__tests__/index.js`, `package.json`, `tsconfig.json`, `README.md`, `.gitignore`) and nothing
-else. Then:
+else. It upper-cases the first letter of the display name (`libSQL` becomes `LibSQL`); step 4
+overwrites the manifest and operations from templates, so fix only the `README.md` heading. Then:
 
-1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json`,
-   formatted like its neighbours (the file has no trailing newline; keep it that way). `tags` is
-   free-form; reuse an existing tag when one fits:
+1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json` (the
+   file has no trailing newline; keep it that way). From the repo root, fill in and run:
 
-   ```json
-   {
-     "name": "<Display Name>",
-     "description": "<one line>",
-     "version": "1.0.0",
-     "id": "<id>",
-     "author": "Tooljet",
-     "timestamp": "<new Date().toUTCString()>",
-     "repo": "",
-     "tags": ["<Category>"]
-   }
+   ```bash
+   node -e 'const fs=require("fs"),f="server/src/assets/marketplace/plugins.json",s=fs.readFileSync(f,"utf8").trimEnd();
+   const e={name:"<Display Name>",description:"<one line>",version:"1.0.0",id:"<id>",author:"Tooljet",timestamp:new Date().toUTCString(),repo:"",tags:["<Category>"]};
+   fs.writeFileSync(f,s.slice(0,-1).trimEnd()+",\n"+JSON.stringify(e,null,2).replace(/^/gm,"  ")+"\n]")'
    ```
 
-2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`). Backend
-   dependencies are installed in step 4.
+   `tags` is free-form; reuse an existing one when it fits. To list them:
+   `node -p '[...new Set(require("./server/src/assets/marketplace/plugins.json").flatMap((p) => p.tags || []))]'`
+
+2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`).
 3. If the id contains `-`, rename the generated class in `lib/index.ts` to a valid identifier.
 4. Icon: save the provided SVG as `lib/icon.svg`, otherwise keep the placeholder.
 
@@ -106,8 +107,9 @@ directory:
 - Frontend, `lib/manifest.json`, `lib/operations.json`, `openapi-specs/`: `references/frontend.md`.
 
 If your harness supports subagents, run them in parallel, one each, and pass the reference path
-in the prompt. Otherwise do backend then frontend in this session. Install the backend's dependencies before
-step 5. Both need `references/manifest-and-operations.md` for widget and auth patterns.
+in the prompt. Otherwise do backend then frontend in this session. Both need
+`references/manifest-and-operations.md` for widget and auth patterns. Install what `index.ts`
+imports (`npm i <pkg> --workspace=@tooljet-marketplace/<id>`) before step 5.
 
 ## 5. Verify
 
