@@ -11,6 +11,10 @@ This guide will provide step-by-step instructions for creating ToolJet plugins u
 
 The `tooljet` CLI is a user-friendly command-line tool designed to simplify the plugin building process. As part of this guide, we will create a basic plugin for GitHub. 
 
+:::tip
+An AI coding agent can help with plugin creation and validation using the `build-marketplace-plugin` skill (`.agents/skills/build-marketplace-plugin/SKILL.md` in the ToolJet repository). It works with any agent that reads `AGENTS.md` and `.agents/skills`, scaffolding, generating, and validating plugins with `npm run validate:plugin`.
+:::
+
 ## Step 1: Creating a New Plugin - GitHub Plugin
 
 The first step is to bootstrap a new plugin for the ToolJet marketplace. The plugin will authenticate users with a GitHub Personal Access Token and include fundamental operations such as fetching user details, repositories, issues, and pull requests.
