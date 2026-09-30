@@ -1,5 +1,5 @@
 // Split an OpenAPI spec into self-contained files for @spec/<id>/<name>.
-// Run from marketplace/ after `npm install` there (js-yaml is hoisted into its node_modules by eslint):
+// Run from marketplace/ after `npm install` there (js-yaml is a declared marketplace devDependency):
 //   node ../.agents/skills/create-plugin/scripts/split-spec.mjs <spec> <out-dir> name=TagA,TagB [name=* ...]
 // Groups are explicit; `*` takes every operation no named group lists (at most one `*` group).
 // Each file keeps only the components its operations reference. Nothing is written unless all checks pass.

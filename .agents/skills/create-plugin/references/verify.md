@@ -72,8 +72,7 @@ URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
 1. Build (section 1). After any later edit, rebuild before reloading.
 2. Sign in. A fresh database redirects to `/setup`: create the first admin only if the user
    agrees; otherwise ask for a login.
-3. Open `<host>/integrations/marketplace`, search for the `plugins.json` name, click **Install**
-  . If it already shows **Installed**, use the refresh icon on its card
+3. Open `<host>/integrations/marketplace`, search for the `plugins.json` name, click **Install**. If it already shows **Installed**, use the refresh icon on its card
    in `<host>/integrations/installed` instead.
 4. Open or reload `<host>/<workspace-id>/data-sources` and search for the plugin. It is under the
    section for the manifest `type` (APIs, Databases, Cloud Storages), or **Plugins** when there is

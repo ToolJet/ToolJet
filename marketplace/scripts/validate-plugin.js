@@ -47,7 +47,16 @@ const KNOWN_FAILURES = {
 };
 const USAGE = 'usage: validate-plugin <plugin-id-or-dir>... | --all [--skip-registry] | --self-test';
 
-// LoadedPlugin = { dirName, presentFiles, docs: { manifest?, operations? }, sourceText, specFiles }
+/**
+ * @typedef {object} LoadedPlugin  one plugin dir, read by loadPlugin()
+ * @property {string} dirName  directory basename; must match manifest source.kind
+ * @property {string[]} presentFiles  REQUIRED_FILES that exist in the dir
+ * @property {{manifest?: object, operations?: object}} docs  parsed lib/<name>.json, undefined if missing
+ * @property {string} sourceText  all lib/*.ts concatenated (operation handler lookup)
+ * @property {string[]} specFiles  file names in openapi-specs/
+ * @typedef {{id: string}} RegistryEntry  one item of the plugins.json array; id must appear exactly once
+ * @typedef {Object<'manifest'|'operations', import('ajv').ValidateFunction>} Validators  compiled Ajv fns from loadSchemaValidators()
+ */
 
 // ---- calculations: pure, return error strings ----
 
