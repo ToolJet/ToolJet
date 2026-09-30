@@ -17,6 +17,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 import './fileInput.scss';
 const { ClearIndicator } = components;
@@ -43,6 +44,7 @@ export const FileInput = (props) => {
     setExposedVariables,
     dataCy,
   } = props;
+  const cyBase = generateCypressDataCy(dataCy);
 
   const {
     alignment = 'top',
@@ -259,8 +261,10 @@ export const FileInput = (props) => {
           _width={_width}
           widthType={widthType}
           inputId={`component-${id}`}
+          id={`${id}-label`}
           fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
+          dataCy={cyBase}
         />
 
         <div
@@ -270,7 +274,15 @@ export const FileInput = (props) => {
           }}
         >
           <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
-            <input {...inputProps} className="tw-hidden" />
+            <input
+              {...inputProps}
+              aria-required={isMandatory}
+              aria-disabled={disabledState || disablePicker}
+              aria-busy={isLoading}
+              aria-labelledby={`${id}-label`}
+              className="tw-hidden"
+              data-cy={`${cyBase}-input-field`}
+            />
 
             <div
               className="tw-flex tw-items-center tw-gap-2 tw-border-l-0 tw-border-t-0 tw-border-b-0 tw-border-r tw-border-solid tw-border-border-default tw-px-0"
@@ -280,6 +292,7 @@ export const FileInput = (props) => {
                 <div
                   className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-px-2 tw-rounded-none tw-justify-center"
                   style={{ height: '100%' }}
+                  data-cy={`${cyBase}-loader`}
                 >
                   <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
                 </div>
@@ -292,8 +305,11 @@ export const FileInput = (props) => {
                   variant="ghost"
                   size="default"
                   className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background focus:tw-bg-button-outline"
-                  style={{ height: '100%' }}
+                  // cursor set directly: the ancestor's `.tj-file-input-disabled` cursor relies on
+                  // Button's own disabled:pointer-events-none, which doesn't apply to this element.
+                  style={{ height: '100%', cursor: disabledState || disablePicker ? 'not-allowed' : 'pointer' }}
                   disabled={disabledState || disablePicker}
+                  data-cy={`${cyBase}-button`}
                 >
                   {iconVisibility && (
                     <TablerIcon
@@ -301,6 +317,7 @@ export const FileInput = (props) => {
                       size={16}
                       color={iconColor}
                       className="cursor-pointer clear-indicator"
+                      data-cy={`${cyBase}-icon`}
                     />
                   )}
                   <span className="tw-text-lg">Browse</span>
@@ -329,6 +346,7 @@ export const FileInput = (props) => {
                     clearFiles();
                   }}
                   style={{ flexShrink: 0 }}
+                  data-cy={`${cyBase}-clear-button`}
                 >
                   <IconX width={16} className="cursor-pointer" color={'var(--icon-default)'} />
                 </Button>
@@ -347,6 +365,7 @@ export const FileInput = (props) => {
             fontWeight: '400',
             lineHeight: '16px',
           }}
+          data-cy={`${cyBase}-invalid-feedback`}
         >
           {uiErrorMessage}
         </div>

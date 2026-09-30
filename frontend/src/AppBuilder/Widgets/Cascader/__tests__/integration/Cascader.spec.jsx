@@ -1245,7 +1245,7 @@ describe('Cascader widget', () => {
 
     await writeProp('iconVisibility', true, 'styles');
     await writeProp('iconColor', '#334455', 'styles');
-    await waitFor(() => expect(control.querySelectorAll('svg').length).toBe(chevronOnly + 1));
+    await waitFor(() => expect(control.querySelectorAll('svg')).toHaveLength(chevronOnly + 1));
     const icon = [...control.querySelectorAll('svg')].find((el) => el.style.width === '16px');
     expect(icon).toBeTruthy();
     expect(icon).toHaveStyle({ color: '#334455' });

@@ -6,6 +6,7 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
+import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
@@ -16,6 +17,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import Beta from '@/_ui/Beta';
 import './styles.scss';
 
 // Simple error boundary component for module errors
@@ -58,6 +60,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       hasModuleAccess: state.hasModuleAccess,
     }),
     shallow
+  );
+
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
   const componentList = useMemo(() => {
@@ -232,6 +238,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
+              : activeTab === 'custom'
+              ? t('globals.searchCustomComponents', 'Search components')
               : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
@@ -304,6 +312,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
                 </ModuleErrorBoundary>
+              </Tab>
+            )}
+            {hasCustomComponentLibrariesAccess && (
+              <Tab
+                eventKey="custom"
+                title={
+                  <>
+                    {t('globals.custom', 'Custom')}
+                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                  </>
+                }
+                darkMode={darkMode}
+              >
+                {searchBox()}
+                <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
             )}
           </Tabs>
