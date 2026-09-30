@@ -169,6 +169,20 @@ describe('AppEnvironmentsController', () => {
           }
         );
 
+        it.each(['environment_changed', 'version_deleted'])(
+          'should return 404 for %s when both the app and the environment belong to another workspace',
+          async (action) => {
+            const response = await asWorkspaceA(
+              request(app.getHttpServer())
+                .post(`/api/app-environments/post-action/${action}`)
+                .send({ appId: orgB.appId, editorEnvironmentId: orgB.environmentId })
+            );
+
+            expect(response.statusCode).toBe(404);
+            expectNothingOfWorkspaceB(response.body);
+          }
+        );
+
         it('should resolve the version for environment_changed within the caller own workspace', async () => {
           const response = await asWorkspaceA(
             request(app.getHttpServer())
