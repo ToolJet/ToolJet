@@ -42,7 +42,10 @@ single string `type` on parameter schemas and top-level body properties
   | anything else                | `custom`                                                                         |
 
   Several schemes: model the one the user picks (ask if unsure), say which were dropped, and warn
-  that operations needing a dropped scheme will fail with 401. An optional credential: see
+  that operations needing a dropped scheme will fail with 401. Several OAuth2 flows: use
+  `authorizationCode` and ignore `implicit`. Take the token URL from the provider's OAuth docs
+  when it differs from the spec's (Google: `https://oauth2.googleapis.com/token`, as
+  `googlecalendar` uses). An optional credential: see
   `manifest-and-operations.md`, Rules.
 
 - **Base URL**: `servers[0].url` into `metadata.baseUrl`. Note any server variables. If it is
@@ -71,7 +74,8 @@ Each `name=TagA,TagB` writes `<name>.yaml` (`.json` for JSON input) with those t
 and only the components they reference. `*` takes every operation no earlier group took. With no
 groups it writes one file per tag. It exits non-zero if an operation is left unassigned or a
 `$ref` cannot be resolved, and prints each file's operation count; the counts must add up to the
-total. For one file, pass a single `"<name>=*"` group. A warning names a multi-type schema it
+total. For one file, pass a single `"<name>=*"` group rather than copying the spec: the script
+also collapses type arrays. A warning names a multi-type schema it
 cannot collapse; pick one type by hand. Validate every output file (section 1).
 
 ## 4. Place the spec

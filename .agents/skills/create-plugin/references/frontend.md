@@ -18,7 +18,7 @@ nearest existing plugin of the same auth type.
 2. Fill `title`, `description`, `source.name` (display name), `source.kind` (the plugin id),
    and the manifest `type` (`api`, `database`, or `cloud-storage`).
 3. Add connection-wide fields only: credentials, base URL, account or region. Per-request values
-   belong in operations.
+   belong in operations. Fixed or multiple hosts need no field (`backend.md`, Dependencies).
 4. Encrypt every secret. Keep `required` in step with the fields.
 5. Set `customTesting` deliberately (`marketplace/AGENTS.md`) and tell the backend job which
    value you chose.

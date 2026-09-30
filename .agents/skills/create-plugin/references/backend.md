@@ -27,13 +27,20 @@ export default class Example implements QueryService {
 - `sourceOptions` keys are the manifest `properties` keys; `queryOptions` keys are the
   operations.json keys.
 - Failures: `throw new QueryError(message, description, data)`. The description is what the user
-  sees; include the provider's error body.
+  sees; include the provider's error message. `data` is `Record<string, unknown>`
+  (`common/lib/query.error.ts`), so wrap an `unknown` body; `body as object` fails with TS2345:
+
+  ```ts
+  throw new QueryError('Query could not be completed', `HTTP ${res.status}`, { status: res.status, body });
+  ```
+
 - `testConnection`: implement it when the manifest's `customTesting` is `false` (see
   `marketplace/AGENTS.md`). Make the cheapest authenticated call (current user, `limit=1`).
 - Every `operation.list` value must appear as a string literal in `lib/*.ts`, typically as a
   `case` label. The validator checks.
 - No `any`. Type responses you use; `unknown` plus a narrow cast where the shape is open.
-  `QueryResult.data` is `object | object[]`, so cast a parsed `unknown` body (`data as object`).
+  `QueryResult.data` is `object | object[]`, so cast a parsed `unknown` body (`data as object`);
+  driver row types may need `rows as unknown as object[]`.
 
 ## Dependencies
 
@@ -44,6 +51,12 @@ export default class Example implements QueryService {
   plugins use one. Do not add axios or node-fetch next to `got`.
 - If the user supplies the base URL, call `validateUrlForSSRF(url)` before requesting it (see
   `marketplace/plugins/servicenow/lib/index.ts`).
+- API on several hosts (forecast, archive and geocoding on separate domains): keep fixed hosts as
+  constants in `index.ts`, picked per operation, with no manifest field
+  (`marketplace/plugins/hugging_face/lib/index.ts`). Add a manifest field only for a host the user
+  chooses: region or sandbox vs production as a `dropdown` (`fedex` `base_url`), or a self-hosted
+  URL. With no connection fields, drop the template's `base_url`; empty `options`, `properties`
+  and `required` are valid.
 
 ## Mode A: hand-written operations (no `operationsMode`)
 
@@ -101,9 +114,21 @@ Reference for behavior only (it uses `any`, which you must not): `run()` in
 
 ## OAuth2
 
-Follow `marketplace/plugins/quickbooks/lib/index.ts`; it has all four pieces:
+Follow `marketplace/plugins/quickbooks/lib/index.ts` for behavior; it has all four pieces. Do not
+copy its `any` types, its logging, or its manifest's `customTesting: false` without a
+`testConnection`.
 
-- `authUrl(sourceOptions)`: build the provider's authorize URL. The redirect URI is
+`sourceOptions` arrives in different shapes per entry point; read keys with a helper that accepts
+all of them (like `getValue` in `marketplace/plugins/googlecalendar/lib/index.ts`, typed without
+its `any`):
+
+| Method                | Shape                                                  |
+| --------------------- | ------------------------------------------------------ |
+| `authUrl`             | form values `{ key: { value } }`, or flat on reconnect |
+| `accessDetailsFrom`   | array of `{ key, value }`, or a flat object            |
+| `refreshToken`, `run` | flat `{ key: value }`                                  |
+
+- `authUrl(sourceOptions): string`: build the provider's authorize URL. The redirect URI is
   `${TOOLJET_HOST}${SUB_PATH || '/'}oauth2/authorize` (honour `tj_redirect_host`). Include
   `state` (`crypto.randomUUID()`); many providers reject requests without it.
 - `accessDetailsFrom(authCode, sourceOptions, resetSecureData)`: exchange the code. Check the

@@ -33,6 +33,10 @@ its absence tells the generators to build a `dropdown-component-flip` operations
   (`list_customers`), a `displayName`, and typed `parameters`.
 - Databases: usually a single query operation (SQL or the native query language) plus a few
   structured ones only when the PRD asks.
+- Note parameters that depend on each other (the docs say "required when X is set") and have
+  the backend fill a sensible default rather than failing.
+- Endpoints on several hosts: list the host per operation; `backend.md`, Dependencies, says how
+  to wire them.
 - Parameter `widget`: `codehinter` by default (it accepts `{{ }}` expressions), `dropdown` for
   closed enums (with `options`), `toggle` for booleans.
 

@@ -18,14 +18,14 @@ are out of scope; if asked for one, stop and say so.
 Read `marketplace/AGENTS.md` first. It owns the codebase facts (layout, registry, build, OAuth
 widget, `customTesting`, `@spec/` hosting); this skill links to it rather than repeating it.
 
-To validate an existing plugin only, skip to step 5. Report what the checks and this skill's
-rules find in legacy code (`any`, a missing `testConnection`) as observations; fix nothing unless
-asked.
+To validate an existing plugin only, run step 5 and report with the checklist in
+`references/verify.md` section 6; fix nothing unless asked.
 
 ## 1. Intake
 
 Ask one question at a time. Skip any the user already answered. If the user says to use defaults,
-state them: type `api`, no PRD, no icon, no design reference, current branch, version `1.0.0`, V1.
+state them: type `api`, no PRD, no icon, no design reference, current branch, version `1.0.0`, V1,
+and a `tags` category (step 3).
 
 | #   | Question                    | Notes                                                                            |
 | --- | --------------------------- | -------------------------------------------------------------------------------- |
@@ -37,13 +37,15 @@ state them: type `api`, no PRD, no icon, no design reference, current branch, ve
 | 6   | Design reference?           | Figma link, screenshot, or none                                                  |
 | 7   | Where to work?              | Current branch or a new branch/worktree. Default: current branch                 |
 
-Right after question 1, check the id is free:
+Right after question 1, check the id is free, including built-in connector kinds:
 
 ```bash
 grep -n '"id": "<id>"' server/src/assets/marketplace/plugins.json; ls marketplace/plugins/<id>
+grep -l '"kind": "<id>"' plugins/packages/*/lib/manifest.json
 ```
 
-If either exists, stop and ask whether to update that plugin instead. Updating skips step 3 and
+A built-in match (e.g. `googlesheets`) means pick another id; the validator rejects it. A
+marketplace match: stop and ask whether to update that plugin instead. Updating skips step 3 and
 edits the existing files. Never add a second registry entry for the same id: the validator fails
 on duplicates (the CLI would abort with "Plugin id already exists").
 
@@ -78,7 +80,8 @@ cd marketplace
 It writes `plugins/<id>/` (`lib/{index.ts,types.ts,manifest.json,operations.json,icon.svg}`,
 `__tests__/index.js`, `package.json`, `tsconfig.json`, `README.md`, `.gitignore`) and nothing
 else. It upper-cases the first letter of the display name (`libSQL` becomes `LibSQL`); step 4
-overwrites the manifest and operations from templates, so fix only the `README.md` heading. Then:
+overwrites the manifest and operations from templates. In `README.md`, fix the heading and
+replace the docs link (a placeholder page that does not exist) with a one-line description. Then:
 
 1. Register the plugin: append an entry to `server/src/assets/marketplace/plugins.json` (the
    file has no trailing newline; keep it that way). From the repo root, fill in and run:
@@ -86,10 +89,11 @@ overwrites the manifest and operations from templates, so fix only the `README.m
    ```bash
    node -e 'const fs=require("fs"),f="server/src/assets/marketplace/plugins.json",s=fs.readFileSync(f,"utf8").trimEnd();
    const e={name:"<Display Name>",description:"<one line>",version:"1.0.0",id:"<id>",author:"Tooljet",timestamp:new Date().toUTCString(),repo:"",tags:["<Category>"]};
-   fs.writeFileSync(f,s.slice(0,-1).trimEnd()+",\n"+JSON.stringify(e,null,2).replace(/^/gm,"  ")+"\n]")'
+   fs.writeFileSync(f,s.slice(0,-1).trimEnd()+",\n"+JSON.stringify(e,null,2).replace(/\[\s+("[^"]*")\s+\]/,"[$1]").replace(/^/gm,"  ")+"\n]")'
    ```
 
-   `tags` is free-form; reuse an existing one when it fits. To list them:
+   `tags` is free-form: reuse an existing one when it fits, else one short Title Case category
+   (`Database`, `Weather`). To list them:
    `node -p '[...new Set(require("./server/src/assets/marketplace/plugins.json").flatMap((p) => p.tags || []))]'`
 
 2. Link the workspace: `npm i` in `marketplace/` (updates `package-lock.json`).

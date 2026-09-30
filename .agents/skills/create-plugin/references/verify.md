@@ -9,11 +9,11 @@ stub and there is no jest setup for plugins (`marketplace/AGENTS.md`).
 ```bash
 cd marketplace
 test -d plugins/common/dist || npm run build --workspace=@tooljet-marketplace/common
-npm run build --workspace=@tooljet-marketplace/<id>
+npm run build --workspace=@tooljet-marketplace/<id>; echo "exit $?"
 ```
 
 `ncc` compiles `lib/index.ts`, so this is also the type check. Exit code 0 is a pass. Do not pipe
-the build (a pipe reports the last command's exit code); add `; echo "exit $?"` to see it. A
+the build: a pipe reports the last command's exit code. A
 missing module means the dependency was not added to the plugin's `package.json`
 (`npm i <pkg> --workspace=@tooljet-marketplace/<id>`).
 
@@ -24,9 +24,9 @@ npm run validate:plugin -- <id>
 ```
 
 It checks the required files, both JSON files against `plugins/schemas/`, that the id appears
-exactly once in `plugins.json`, that every `@spec/` reference has a file in `openapi-specs/`, and,
-without `@spec/`, that every operation value is handled in `lib/*.ts`. Exit 0 is a pass; each
-failure prints `FAIL <id>: <reason>`.
+exactly once in `plugins.json` and is not a built-in connector kind, that every `@spec/`
+reference has a file in `openapi-specs/`, and, without `@spec/`, that every operation value is
+handled in `lib/*.ts`. Exit 0 is a pass; each failure prints `FAIL <id>: <reason>`.
 
 ## 3. Lint
 
@@ -84,3 +84,18 @@ URL is `TOOLJET_HOST` in that `.env`; if it is unset, ask the user.
 
 Take a screenshot per step. Report structural differences (missing field, wrong order, wrong
 widget, wrong label), not pixel differences.
+
+## 6. Validate-only report
+
+For an existing plugin, run sections 1 to 3 (4 when a PRD or spec is given) and report, fixing
+nothing unless asked:
+
+- Build, validator and lint: pass or fail, with the exact error lines.
+- `any` count in `lib/*.ts` (`grep -c ': any\|as any\|<any>'`).
+- `customTesting` against `testConnection`: `false` or absent without `testConnection` means the
+  button fails with "testConnection method not implemented" (an OAuth code flow hides the button,
+  so there it is only inconsistent); `true` with a `testConnection` leaves it unused.
+- Secrets without `encrypted: true`, and `required` keys missing from `properties`.
+- Older spellings: `specUrl` instead of `spec_url` (the server accepts both; templates use
+  `spec_url`), `react-component-oauth-authentication` (`marketplace/AGENTS.md`).
+- `plugins.json` entry count, and `source.kind` equal to the directory name.
