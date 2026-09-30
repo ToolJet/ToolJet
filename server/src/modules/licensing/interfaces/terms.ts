@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {
@@ -69,6 +70,7 @@ export interface Terms {
       history: boolean;
       jsLibraries: boolean;
       publicApp: boolean;
+      customComponentLibraries?: boolean;
     };
   };
   modules?: {

@@ -35,7 +35,8 @@ export class TooljetDbUtilService {
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
-    organizationId: string
+    organizationId: string,
+    remainingRowCapacity: number = Infinity
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -77,7 +78,8 @@ export class TooljetDbUtilService {
           primaryKeyColumnSchema,
           row,
           rowsProcessed,
-          csvStream
+          csvStream,
+          remainingRowCapacity
         )
       )
       .on('data', (row) => {
@@ -594,10 +596,14 @@ export class TooljetDbUtilService {
     primaryKeyColumnSchema: TooljetDatabaseColumn[],
     row: unknown,
     rowsProcessed: number,
-    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>,
+    remainingRowCapacity: number = Infinity
   ) {
     if (rowsProcessed >= this.MAX_ROW_COUNT)
       csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
+
+    if (rowsProcessed >= remainingRowCapacity)
+      csvStream.emit('error', "You've reached your limit of rows in ToolJet database tables. Upgrade for more.");
 
     try {
       const columnsInCsv = Object.keys(row);

@@ -15,7 +15,13 @@
  */
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, countInvocationsOn, binding, store } from '../../../__tests__/integration/widgetHarness';
+import {
+  createWidgetHarness,
+  countInvocationsOn,
+  binding,
+  drain,
+  store,
+} from '../../../__tests__/integration/widgetHarness';
 
 const RS = 'rs1';
 const FORM = 'form1';
@@ -725,7 +731,7 @@ describe('RangeSliderV2', () => {
       await widget.session.store.act(async () => {
         widget.setComponentProperty(RS, 'value', '{{40}}', 'properties');
       });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().value).toBe(75);
     });
@@ -778,7 +784,7 @@ describe('RangeSliderV2', () => {
       expect(handle(container)).toHaveAttribute('aria-disabled', 'true');
 
       press(handle(container), 'ArrowRight');
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
       expect(widget.exposed().value).toBe(50);
     });
 
@@ -828,7 +834,7 @@ describe('RangeSliderV2', () => {
       await widget.session.store.act(async () => {
         widget.setComponentProperty(RS, 'disabledState', '{{false}}', 'properties');
       });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().isDisabled).toBe(true);
     });
@@ -1216,8 +1222,10 @@ describe('RangeSliderV2', () => {
       expect(el).toHaveAttribute('aria-valuenow', '25');
       expect(el).toHaveAttribute('aria-disabled', 'false');
       expect(el).toHaveAttribute('aria-orientation', 'horizontal');
-      expect(el).toHaveAttribute('aria-labelledby', `${RS}-label`);
-      expect(labelEl(container)).toHaveAttribute('id', `${RS}-label`);
+      // Relational, not a literal id: the id is per mounted instance, so what matters
+      // is that the handle points at the label this instance actually rendered.
+      expect(el.getAttribute('aria-labelledby')).toBe(labelEl(container).id);
+      expect(el).toHaveAccessibleName('Budget');
     });
 
     test('[RangeSliderV2-A11Y-002] a label squeezed to zero width still names the handle', async () => {
@@ -1248,8 +1256,27 @@ describe('RangeSliderV2', () => {
 
       expect(labelEl(container)).toBeInTheDocument();
       expect(handle(container)).not.toHaveAttribute('aria-label');
-      expect(handle(container)).toHaveAttribute('aria-labelledby', `${RS}-label`);
+      expect(handle(container).getAttribute('aria-labelledby')).toBe(labelEl(container).id);
     });
+  });
+
+  test('[RangeSliderV2-A11Y-002] two rows of the same component keep separate label ids', async () => {
+    // ListView hands every row the SAME component id, so a label id derived from it
+    // alone collides and every row's handle is named after row 1. Two RenderWidgets
+    // on one id is that shape.
+    const { container } = widget.render({
+      properties: { ...SINGLE, label: binding('Row label') },
+      also: [{ id: RS, componentType: 'RangeSliderV2' }],
+    });
+    await waitFor(() => expect(widget.exposed().value).not.toBeUndefined());
+
+    const all = within(container).getAllByRole('slider');
+    expect(all).toHaveLength(2);
+    const named = all.map((el) => el.getAttribute('aria-labelledby'));
+    expect(named[0]).toBeTruthy();
+    expect(named[1]).toBeTruthy();
+    expect(named[0]).not.toBe(named[1]);
+    all.forEach((el) => expect(el).toHaveAccessibleName('Row label'));
   });
 
   describe('instance isolation', () => {
@@ -1286,8 +1313,9 @@ describe('RangeSliderV2', () => {
 
       const all = within(container).getAllByRole('slider');
       expect(all).toHaveLength(2);
-      expect(all[0]).toHaveAttribute('aria-labelledby', `${RS}-label`);
-      expect(all[1]).toHaveAttribute('aria-labelledby', `${OTHER}-label`);
+      expect(all[0].getAttribute('aria-labelledby')).not.toBe(all[1].getAttribute('aria-labelledby'));
+      expect(all[0]).toHaveAccessibleName('First');
+      expect(all[1]).toHaveAccessibleName('Second');
 
       press(all[0], 'ArrowRight');
 

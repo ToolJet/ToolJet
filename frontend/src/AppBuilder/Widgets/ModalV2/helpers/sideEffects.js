@@ -4,7 +4,11 @@
 const getModalHostEl = () =>
   document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0];
 
-export const onShowSideEffects = () => {
+// Modals logically open, independent of DOM/animation timing.
+const openModalIds = new Set();
+
+export const onShowSideEffects = (id) => {
+  openModalIds.add(id);
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const modalHostEl = getModalHostEl();
   const allModalContainers = modalHostEl?.querySelectorAll('.modal') || [];
@@ -23,15 +27,17 @@ export const onShowSideEffects = () => {
   }
 };
 
-export const onHideSideEffects = () => {
+export const onHideSideEffects = (id) => {
+  openModalIds.delete(id);
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const modalHostEl = getModalHostEl();
-  if (!modalHostEl) return;
-  const allModalContainers = modalHostEl.querySelectorAll('.modal');
-  const hasManyModalsOpen = allModalContainers.length > 1;
+
+  // Self-heal if the Set is stuck non-empty but nothing is actually rendered.
+  const nothingRendered = !modalHostEl || modalHostEl.querySelectorAll('.modal').length === 0;
 
   // Enable page scrolling for the canvas if there is no modal open
-  if (canvasElement && !hasManyModalsOpen) {
+  if (canvasElement && (openModalIds.size === 0 || nothingRendered)) {
+    openModalIds.clear();
     canvasElement.style.setProperty('overflow', 'auto', 'important');
   }
 };

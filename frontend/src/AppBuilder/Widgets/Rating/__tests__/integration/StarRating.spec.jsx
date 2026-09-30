@@ -21,9 +21,15 @@
  * ACT-003 (D-02), STATE-005 (D-04), A11Y-003 (D-10). The rest are characterization, and the ones
  * pinning behaviour the contract records as sharp rather than desirable say so in a comment.
  */
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, countInvocationsOn, binding, store } from '../../../__tests__/integration/widgetHarness';
+import {
+  createWidgetHarness,
+  countInvocationsOn,
+  binding,
+  drain,
+  store,
+} from '../../../__tests__/integration/widgetHarness';
 
 const SR = 'sr1';
 const FORM = 'form1';
@@ -54,6 +60,19 @@ const liveRegion = (container) => container.querySelector('[role="status"][aria-
 const legacyRoot = (container) => container.querySelector('.star-rating');
 const standardRoot = (container) => container.querySelector('.star-rating-container');
 const iconFill = (el) => el.querySelector('svg')?.getAttribute('fill');
+/**
+ * The half-rating path reads `getBoundingClientRect()` on the icon and its svg.
+ * jsdom reports zeroes for both, so a pointer move can never produce a half
+ * without these. Geometry is one of the boundaries the harness README allows
+ * controlling; the widget's own maths stays real.
+ */
+const ICON_LEFT = 100;
+const ICON_WIDTH = 20;
+function stubIconGeometry(icon) {
+  icon.getBoundingClientRect = () => ({ left: ICON_LEFT, width: ICON_WIDTH, right: ICON_LEFT + ICON_WIDTH });
+  icon.firstChild.getBoundingClientRect = () => ({ left: ICON_LEFT, width: ICON_WIDTH, right: ICON_LEFT + ICON_WIDTH });
+}
+
 const checkedCount = (container) => icons(container).filter((el) => el.getAttribute('aria-checked') === 'true').length;
 
 describe('StarRating', () => {
@@ -196,7 +215,7 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(2));
 
       await widget.session.user.click(icons(container)[4]);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().value).toBe(2);
       expect(widget.variables().calls ?? 0).toBe(0);
@@ -217,9 +236,38 @@ describe('StarRating', () => {
       });
       await waitFor(() => expect(widget.exposed().value).toBe(1));
 
+      // Browser geometry is an approved controlled boundary — the widget derives
+      // the half from the pointer's position within the icon, so without stubbing
+      // the rects jsdom reports 0 and this only ever exercises the integer path.
       const icon = icons(container)[2];
+      stubIconGeometry(icon);
+
+      // Left half of the icon: the widget stores 0.5 precision.
+      fireEvent.mouseMove(icon, { clientX: ICON_LEFT + ICON_WIDTH * 0.25 });
       icon.focus();
       await widget.session.user.keyboard('{Enter}');
+
+      // Third icon committed as a half — a value the keyboard alone cannot select.
+      await waitFor(() => expect(widget.exposed().value).toBe(2.5));
+    });
+
+    test('[StarRating-INT-004] a keyboard commit over the right half stays whole', async () => {
+      const { container } = widget.render({
+        properties: {
+          maxRating: binding('{{5}}'),
+          defaultSelected: binding('{{1}}'),
+          allowHalfStar: binding('{{true}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(1));
+
+      const icon = icons(container)[2];
+      stubIconGeometry(icon);
+
+      fireEvent.mouseMove(icon, { clientX: ICON_LEFT + ICON_WIDTH * 0.75 });
+      icon.focus();
+      await widget.session.user.keyboard('{Enter}');
+
       await waitFor(() => expect(widget.exposed().value).toBe(3));
     });
 
@@ -328,6 +376,18 @@ describe('StarRating', () => {
       expect(group(container)).toBeInTheDocument();
       expect(icons(container)).toHaveLength(3);
       expect(checkedCount(container)).toBe(2);
+    });
+    test('[StarRating-BIND-005] an infinite star count renders an empty rating instead of crashing', async () => {
+      // Copilot review: `{{1/0}}` arrives as Infinity, which is truthy and not
+      // negative, so it walked straight past the first version of this guard and
+      // threw the same RangeError the fractional case did.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{1/0}}'), defaultSelected: binding('{{2}}') },
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+      expect(group(container)).toBeInTheDocument();
+      expect(icons(container)).toHaveLength(0);
     });
   });
 
@@ -442,7 +502,7 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(2));
 
       await widget.act('setValue', input);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().value).toBe(2);
     });
@@ -532,7 +592,7 @@ describe('StarRating', () => {
       await widget.session.store.act(async () => {
         widget.setComponentProperty(SR, 'defaultSelected', '{{2}}', 'properties');
       });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().value).toBe(5);
     });
@@ -615,7 +675,7 @@ describe('StarRating', () => {
       expect(icons(container)[0]).toHaveAttribute('tabindex', '-1');
 
       await widget.session.user.click(icons(container)[4]);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().value).toBe(2);
       expect(widget.variables().calls ?? 0).toBe(0);
@@ -657,7 +717,7 @@ describe('StarRating', () => {
       await widget.session.store.act(async () => {
         widget.setComponentProperty(SR, 'disabledState', '{{false}}', 'properties');
       });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await drain();
 
       expect(widget.exposed().isDisabled).toBe(true);
     });
@@ -976,6 +1036,26 @@ describe('StarRating', () => {
 
       expect(group(container)).toHaveAccessibleName('Squeezed');
     });
+  });
+
+  test('[StarRating-A11Y-003] two rows of the same component keep separate label ids', async () => {
+    // Copilot review: ListView hands every row the SAME component id, so a label
+    // id derived from it alone collides and aria-labelledby names every row after
+    // the first. Two RenderWidgets on one id is that shape.
+    const { container } = widget.render({
+      properties: { maxRating: binding('{{5}}'), label: binding('Row label') },
+      also: [{ id: SR, componentType: 'StarRating' }],
+    });
+    await waitFor(() => expect(widget.exposed().value).not.toBeUndefined());
+
+    const groups = within(container).getAllByRole('radiogroup', { hidden: true });
+    expect(groups).toHaveLength(2);
+
+    const named = groups.map((g) => g.getAttribute('aria-labelledby'));
+    expect(named[0]).toBeTruthy();
+    expect(named[1]).toBeTruthy();
+    expect(named[0]).not.toBe(named[1]);
+    groups.forEach((g) => expect(g).toHaveAccessibleName('Row label'));
   });
 
   describe('instance isolation', () => {
