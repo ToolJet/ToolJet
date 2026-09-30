@@ -10,7 +10,8 @@ description: >-
 
 Turn an API source into a working plugin under `marketplace/plugins/<id>/`: a connection form
 (`manifest.json`), a query form (`operations.json`), and a `QueryService` (`index.ts`). The
-repo-owned validator is the gate, not this document.
+repo-owned validator is the gate, not this document. Built-in connectors in `plugins/packages/`
+are out of scope; if asked for one, stop and say so.
 
 Read `marketplace/AGENTS.md` first. It owns the codebase facts (layout, registry, build, OAuth
 widget, `customTesting`, `@spec/` hosting); this skill links to it rather than repeating it.
