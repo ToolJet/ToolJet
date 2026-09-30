@@ -17,6 +17,7 @@ export const appService = {
   getApp,
   fetchApp,
   fetchAppBySlug,
+  getRestrictedAccessInfo,
   getAppByVersion,
   fetchAppByVersion,
   saveApp,
@@ -140,6 +141,13 @@ function deleteApp(id) {
 function fetchAppBySlug(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
+}
+
+function getRestrictedAccessInfo(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/restricted-access-info/${slug}`, requestOptions).then((resp) =>
+    handleResponse(resp, true)
+  );
 }
 
 function getAppByVersion(appId, versionId) {

@@ -1,26 +1,52 @@
+/**
+ * DropdownV2 option sorting — the one Unit-layer scenario in the approved
+ * contract (ee/test/app-builder/widgets/DropdownV2/TESTING.md).
+ *
+ * `sortArray` is the deterministic seam behind the registered `sort` property:
+ * DropdownV2.jsx builds `selectOptions` and hands the result to it, so option
+ * ORDER is decided here while option identity (the typed `value` each label
+ * carries) must survive untouched. The fixture is deep-frozen on purpose —
+ * the helper receives a memoised array that other renders read, so sorting in
+ * place is a real defect, not a style preference.
+ */
 import { sortArray } from '../utils';
 
-describe('sortArray', () => {
-  const options = () => [{ label: 'Mango' }, { label: 'Apple' }, { label: 'Grapes' }];
+/** Labels deliberately out of alphabetical order, values deliberately not strings. */
+const buildOptions = () => [
+  { label: 'Gamma', value: 0 },
+  { label: 'alpha', value: false },
+  { label: 'Beta', value: 'b' },
+];
 
-  it('[TagsInput-BUG-010] sorts ascending by label', () => {
-    expect(sortArray(options(), 'asc').map((o) => o.label)).toEqual(['Apple', 'Grapes', 'Mango']);
+/** The same fixture, frozen — the shape the immutability guarantee needs. */
+const buildFrozenOptions = () => Object.freeze(buildOptions().map(Object.freeze));
+
+describe('DropdownV2 sortArray', () => {
+  // Break this catches: swapping `none`/`asc`/`desc` branches, comparing on
+  // `value` instead of `label`, or dropping the localeCompare so 'alpha' sorts
+  // after 'Gamma' by code point.
+  test.each([
+    ['none', ['Gamma', 'alpha', 'Beta']],
+    ['asc', ['alpha', 'Beta', 'Gamma']],
+    ['desc', ['Gamma', 'Beta', 'alpha']],
+  ])('[DropdownV2-OPT-007] sort %s presents labels as %s', (sort, expectedLabels) => {
+    const options = buildOptions();
+
+    const sorted = sortArray(options, sort);
+
+    expect(sorted.map((option) => option.label)).toEqual(expectedLabels);
+    // Presentation changed; identity did not — each label keeps its own typed value.
+    expect(sorted.map((option) => [option.label, option.value])).toEqual(
+      expectedLabels.map((label) => [label, options.find((option) => option.label === label).value])
+    );
   });
 
-  it('[TagsInput-BUG-010] sorts descending by label', () => {
-    expect(sortArray(options(), 'desc').map((o) => o.label)).toEqual(['Mango', 'Grapes', 'Apple']);
-  });
+  // Fixed on 2026-09-30: `sortArray` now copies before sorting, so this is a live guarantee.
+  test('[DropdownV2-OPT-007] sorting leaves the caller’s array untouched', () => {
+    const options = buildFrozenOptions();
 
-  it('[TagsInput-BUG-010] leaves the caller array untouched', () => {
-    // Break this catches: sorting in place, reordering the caller's own options.
-    const original = options();
+    sortArray(options, 'asc');
 
-    sortArray(original, 'asc');
-
-    expect(original.map((o) => o.label)).toEqual(['Mango', 'Apple', 'Grapes']);
-  });
-
-  it('[TagsInput-BUG-010] returns the array as-is for any other sort', () => {
-    expect(sortArray(options(), 'none').map((o) => o.label)).toEqual(['Mango', 'Apple', 'Grapes']);
+    expect(options.map((option) => option.label)).toEqual(['Gamma', 'alpha', 'Beta']);
   });
 });

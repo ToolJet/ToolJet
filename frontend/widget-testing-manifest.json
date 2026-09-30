@@ -4,19 +4,23 @@
   "widgets": [
     {
       "componentType": "Button",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Button/TESTING.md"
     },
     {
       "componentType": "ButtonGroupV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ButtonGroupV2/TESTING.md"
     },
     {
       "componentType": "PopoverMenu",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PopoverMenu/TESTING.md"
     },
     {
       "componentType": "FileButton",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileButton/TESTING.md"
     },
     {
       "componentType": "Table",
@@ -36,7 +40,8 @@
     },
     {
       "componentType": "ModalV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ModalV2/TESTING.md"
     },
     {
       "componentType": "Container",
@@ -65,7 +70,7 @@
     },
     {
       "componentType": "Kanban",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/Kanban/TESTING.md"
     },
     {
@@ -111,25 +116,27 @@
     },
     {
       "componentType": "DropdownV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/DropdownV2/TESTING.md"
     },
     {
       "componentType": "MultiselectV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/MultiselectV2/TESTING.md"
     },
     {
       "componentType": "TagsInput",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/TagsInput/TESTING.md"
     },
     {
       "componentType": "Checkbox",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/Checkbox/TESTING.md"
     },
     {
       "componentType": "ToggleSwitchV2",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/ToggleSwitchV2/TESTING.md"
     },
     {
@@ -138,15 +145,18 @@
     },
     {
       "componentType": "FileInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FileInput/TESTING.md"
     },
     {
       "componentType": "TreeSelect",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/TreeSelect/TESTING.md"
     },
     {
       "componentType": "Cascader",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Cascader/TESTING.md"
     },
     {
       "componentType": "DatePickerV2",
@@ -166,23 +176,28 @@
     },
     {
       "componentType": "Navigation",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Navigation/TESTING.md"
     },
     {
       "componentType": "Link",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Link/TESTING.md"
     },
     {
       "componentType": "Steps",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Steps/TESTING.md"
     },
     {
       "componentType": "Pagination",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Pagination/TESTING.md"
     },
     {
       "componentType": "Icon",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Icon/TESTING.md"
     },
     {
       "componentType": "Image",
@@ -190,7 +205,8 @@
     },
     {
       "componentType": "SvgImage",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/SvgImage/TESTING.md"
     },
     {
       "componentType": "PDF",
@@ -218,19 +234,23 @@
     },
     {
       "componentType": "CircularProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CircularProgressBar/TESTING.md"
     },
     {
       "componentType": "ProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ProgressBar/TESTING.md"
     },
     {
       "componentType": "Divider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Divider/TESTING.md"
     },
     {
       "componentType": "VerticalDivider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/VerticalDivider/TESTING.md"
     },
     {
       "componentType": "Statistics",
@@ -238,16 +258,18 @@
     },
     {
       "componentType": "Timeline",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Timeline/TESTING.md"
     },
     {
       "componentType": "Timer",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/Timer/TESTING.md"
     },
     {
       "componentType": "Spinner",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Spinner/TESTING.md"
     },
     {
       "componentType": "JSONExplorer",
@@ -258,8 +280,14 @@
       "status": "not-started"
     },
     {
+      "componentType": "LibraryComponent",
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/LibraryComponent/TESTING.md"
+    },
+    {
       "componentType": "Html",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Html/TESTING.md"
     },
     {
       "componentType": "IFrame",
@@ -267,7 +295,8 @@
     },
     {
       "componentType": "FilePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/FilePicker/TESTING.md"
     },
     {
       "componentType": "CodeEditor",
@@ -288,7 +317,7 @@
     },
     {
       "componentType": "Chat",
-      "status": "verified",
+      "status": "partial",
       "contract": "ee/test/app-builder/widgets/Chat/TESTING.md"
     },
     {

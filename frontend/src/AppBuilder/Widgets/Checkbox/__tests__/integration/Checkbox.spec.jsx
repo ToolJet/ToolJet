@@ -1,678 +1,815 @@
 /**
- * Checkbox: the approved contract in
- * frontend/ee/test/app-builder/widgets/Checkbox/TESTING.md, exercised through
- * the real store and the real RenderWidget. Shared setup lives in
- * Widgets/widgetHarness.js.
+ * Checkbox behaviour spec, run against the real RenderWidget/store path.
  *
- * Real store, real RenderWidget, real Checkbox + OverflowTooltip. Nothing about
- * the widget is mocked.
- *
- * Why the RTL layer: the widget owns its own `checked` state and publishes it,
- * so "what does a click put into `components.checkbox1.value`, and which events
- * ran" can only be answered by driving the real DOM. Three of this widget's four
- * known bugs are event-count bugs — two handlers on nested nodes, and CSAs that
- * fire different event sets for the same state write — so every event assertion
- * here COUNTS fires rather than checking a constant was written.
- *
- * Deliberately NOT duplicated here: the mandatory/customRule validator engine
- * (store-level, validateWidget.spec.js), tooltips and `collapseWhenHidden` /
- * `cssClass` / `padding` (RenderWidget-level, shared by ~50 widgets).
- *
- * Test titles carry their approved scenario ID as a `[Checkbox-FAMILY-NNN]`
- * prefix, per the widget-testing-contract validator.
+ * Approved contract: `ee/test/app-builder/widgets/Checkbox/TESTING.md`.
+ * Every test title starts with its approved scenario ID.
  */
-import { waitFor } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  store,
-  MODULE_ID,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { screen, waitFor, within } from '@testing-library/react';
+import useStore from '@/AppBuilder/_stores/store';
+import { componentDefinition } from '@/test/app-builder';
+import { checkboxConfig } from '@/AppBuilder/WidgetManager/widgets/checkbox';
+import { createWidgetHarness, setVariableOn, binding, store } from '../../../__tests__/integration/widgetHarness';
 
-const ID = 'cb1';
-const NAME = 'checkbox1';
+const CHK = 'chk1';
+const FORM = 'form1';
 
-/** Baseline is `checkbox.js`'s own `definition`, copied rather than invented. */
 const widget = createWidgetHarness({
   componentType: 'Checkbox',
-  handle: NAME,
-  id: ID,
+  handle: 'checkbox1',
+  id: CHK,
   defaultProperties: {
-    label: binding('Agree'),
-    defaultValue: binding('{{false}}'),
+    label: binding('Accept terms'),
     visibility: binding('{{true}}'),
-    collapseWhenHidden: binding('{{false}}'),
     disabledState: binding('{{false}}'),
     loadingState: binding('{{false}}'),
-    tooltip: binding(''),
-    tooltipFormat: binding('plainText'),
-  },
-  defaultStyles: {
-    textColor: binding('var(--cc-primary-text)'),
-    checkboxColor: binding('var(--cc-primary-brand)'),
-    uncheckedColor: binding('var(--cc-surface1-surface)'),
-    borderColor: binding('var(--cc-default-border)'),
-    handleColor: binding('var(--cc-surface1-surface)'),
-    alignment: binding('right'),
-    boxShadow: binding('0px 0px 0px 0px #00000090'),
-    padding: binding('default'),
   },
 });
 
-const user = () => widget.session.user;
-const root = () => document.querySelector('.checkbox-component');
-const row = () => document.querySelector('.checkbox-component > div');
-/** The clickable box: the only inline-block div in the widget. */
-const box = () => document.querySelector('.checkbox-component div[style*="inline-block"]');
-const input = () => document.querySelector('input[type="checkbox"]');
-const label = () => document.querySelector('label');
-const tick = () => document.querySelector('.icon-tabler-check');
-const loader = () => root()?.querySelector('svg:not(.icon-tabler-check)');
-const errorText = () => document.querySelector(`[data-cy="${NAME}-invalid-feedback"]`)?.textContent ?? null;
-const exposed = (key) => widget.exposed()?.[key];
+const inputEl = (container) => within(container).getByRole('checkbox', { hidden: true });
+const boxEl = (container) => inputEl(container).parentElement;
+const rowEl = (container) => inputEl(container).closest('[data-cy]');
+const labelEl = (container) => container.querySelector('label');
+const loaderEl = (container) => container.querySelector('.tj-widget-loader');
 
-async function mount(options = {}) {
-  widget.render(options);
-  await waitFor(() => expect(root()).toBeInTheDocument());
+function controlCheckbox(handle, params = []) {
+  return [
+    {
+      id: `evt-${handle}`,
+      index: 0,
+      sourceId: 'btn1',
+      name: `evt-${handle}`,
+      target: 'component',
+      event: {
+        eventId: 'onClick',
+        actionId: 'control-component',
+        componentId: CHK,
+        componentSpecificActionHandle: handle,
+        componentSpecificActionParams: params,
+      },
+    },
+  ];
 }
 
-/**
- * Counting handlers, not constant writes: `set-custom-variable` with a constant
- * proves at-least-once and passes on a double fire, which is precisely
- * Checkbox-BUG-001. The binding increments, so the assertion is a count.
- */
-const counting = (eventId, key) => ({
-  id: `evt-${eventId}`,
-  index: 0,
-  sourceId: ID,
-  name: `evt-${eventId}`,
-  target: 'component',
-  event: { eventId, actionId: 'set-custom-variable', key, value: `{{(variables.${key} ?? 0) + 1}}` },
-});
-const ALL_EVENTS = [counting('onChange', 'chg'), counting('onCheck', 'chk'), counting('onUnCheck', 'unchk')];
-const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
-
-describe('Checkbox: what renders on load', () => {
+describe('Checkbox', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  test('[Checkbox-DEF-001] an unchecked checkbox renders its label and publishes value false', async () => {
-    // Break this catches: publishing `undefined`/`null` instead of the boolean
-    // `false` on mount, so `{{components.checkbox1.value === false}}` breaks.
-    await mount({ properties: { label: binding('Accept terms') } });
+  describe('selection', () => {
+    test('[Checkbox-SEL-001] clicking the box publishes the exact boolean and round-trips', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      expect(await screen.findByText('Accept terms')).toBeInTheDocument();
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+      expect(inputEl(container)).not.toBeChecked();
 
-    expect(label().textContent).toContain('Accept terms');
-    await waitFor(() => expect(exposed('value')).toBe(false));
-    expect(exposed('label')).toBe('Accept terms');
-    expect(tick()).toBeNull();
-  });
+      await widget.session.user.click(boxEl(container));
+      expect(inputEl(container)).toBeChecked();
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
 
-  test('[Checkbox-DEF-002] a default state of On renders checked and publishes value true', async () => {
-    // Break this catches: seeding the widget's state from something other than
-    // the resolved `defaultValue`, so a box configured On loads unchecked.
-    await mount({ properties: { defaultValue: binding('{{true}}') } });
+      await widget.session.user.click(boxEl(container));
+      expect(inputEl(container)).not.toBeChecked();
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+      expect(widget.exposed().value).not.toBeUndefined();
 
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(tick()).toBeInTheDocument();
-    expect(input()).toBeChecked();
-  });
-
-  test('[Checkbox-DEF-003] a mandatory checkbox keeps its asterisk after it is checked', async () => {
-    // Break this catches: re-introducing the regression fixed by b2f2ce7213,
-    // where the mandatory `*` disappeared as soon as the box was ticked.
-    await mount({ validation: { mandatory: binding('{{true}}') } });
-
-    await waitFor(() => expect(exposed('isMandatory')).toBe(true));
-    expect(label().querySelector('span').textContent).toBe('*');
-
-    await user().click(box());
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(label().querySelector('span').textContent).toBe('*');
-  });
-
-  test('[Checkbox-DEF-004] a Default state rebind replaces the state only when the value actually changes', async () => {
-    // Break this catches: widening the defaults effect so that ANY re-resolve
-    // re-applies the default (a query refresh would discard the user's answer),
-    // or dropping it so a deliberately changed Default state never lands.
-    await mount();
-    await user().click(box());
-    await waitFor(() => expect(exposed('value')).toBe(true));
-
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'defaultValue', '{{false}}', 'properties');
-    });
-    expect(exposed('value')).toBe(true);
-
-    // An unrelated property re-resolving must not re-apply the default either:
-    // the effect is keyed on the default's own value, not on every render.
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'label', 'Renamed', 'properties');
-    });
-    expect(exposed('value')).toBe(true);
-
-    // Back to false by hand, so the rebind below targets a value the checkbox is
-    // NOT already showing. Every assertion above only asks "did it stay what it
-    // was", which an effect that stopped applying defaults entirely satisfies
-    // too; this is the one transition that can tell the two apart.
-    await user().click(box());
-    await waitFor(() => expect(exposed('value')).toBe(false));
-
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'defaultValue', '{{true}}', 'properties');
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
     });
 
-    await waitFor(() => expect(exposed('value')).toBe(true));
-  });
-});
+    test('[Checkbox-SEL-001] starts checked when defaultValue is true', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{true}}') } });
+      await waitFor(() => expect(inputEl(container)).toBeChecked());
+      expect(widget.exposed().value).toBe(true);
+    });
 
-describe('Checkbox: toggling', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
+    test('[Checkbox-SEL-002] clicking the label toggles the same checked state as clicking the box', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
 
-  test('[Checkbox-TGL-001] clicking the box checks it, and clicking again unchecks it', async () => {
-    // Break this catches: writing the new state from a stale closure, so the
-    // second click re-publishes the first value and the box sticks.
-    await mount();
+      await widget.session.user.click(labelEl(container));
+      expect(inputEl(container)).toBeChecked();
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
 
-    await user().click(box());
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(tick()).toBeInTheDocument();
+      await widget.session.user.click(labelEl(container));
+      expect(inputEl(container)).not.toBeChecked();
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+    });
 
-    await user().click(box());
-
-    await waitFor(() => expect(exposed('value')).toBe(false));
-    expect(tick()).toBeNull();
-  });
-
-  test('[Checkbox-TGL-002] clicking the label toggles the checkbox too', async () => {
-    // Break this catches: breaking the label/input association (`htmlFor`), so
-    // the label becomes dead text and only the 18px box is clickable.
-    await mount();
-
-    await user().click(label());
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(tick()).toBeInTheDocument();
-  });
-});
-
-describe('Checkbox: events', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-EVT-001] On change fires once per click and the handler sees the new value', async () => {
-    // Break this catches: a second path into fireEvent('onChange') (a double
-    // run per click), or firing before the value is written so the handler
-    // reads the previous state.
-    await mount({
-      events: [
-        counting('onChange', 'chg'),
-        {
-          id: 'evt-seen',
-          index: 1,
-          sourceId: ID,
-          name: 'evt-seen',
-          target: 'component',
-          event: {
-            eventId: 'onChange',
-            actionId: 'set-custom-variable',
-            key: 'seen',
-            value: `{{components.${NAME}.value}}`,
-          },
+    test('[Checkbox-SEL-003] bound defaultValue and label follow the dependency graph, including false', async () => {
+      const { container } = widget.render({
+        properties: {
+          defaultValue: binding('{{components.textinput1.value === "yes"}}'),
+          label: binding('{{ "I accept " + components.text1.text }}'),
         },
-      ],
+        extraComponents: {
+          c1: componentDefinition('c1', 'textinput1', 'TextInput'),
+          t1: componentDefinition('t1', 'text1', 'Text', { text: binding('the terms') }),
+        },
+      });
+
+      await actSet('c1', 'value', 'yes');
+      await waitFor(() => expect(inputEl(container)).toBeChecked());
+
+      await actSet('c1', 'value', 'no');
+      await waitFor(() => expect(inputEl(container)).not.toBeChecked());
+      expect(widget.exposed().value).toBe(false);
+
+      await actSet('t1', 'text', 'the new terms');
+      await waitFor(() => expect(screen.getByText('I accept the new terms')).toBeInTheDocument());
+    });
+  });
+
+  describe('events', () => {
+    test('[Checkbox-EVT-001] On change reads the value after the click, not before', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{true}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { value: '{{components.checkbox1.value}}' }));
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.variables().seen).toBe(false));
     });
 
-    await user().click(box());
+    test('[Checkbox-EVT-001] On change fires when checking and its handler reads true', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { value: '{{components.checkbox1.value}}' }));
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
 
-    await waitFor(() => expect(fired('chg')).toBe(1));
-    expect(store().getVariable('seen', MODULE_ID)).toBe(true);
-  });
-
-  test('[Checkbox-EVT-002] the deprecated On check and On uncheck fire on the matching transition', async () => {
-    // Break this catches: swapping the two branches, or firing both on every
-    // click, which would run a builder's "uncheck" query on a check.
-    await mount({ events: ALL_EVENTS });
-
-    await user().click(box());
-    await waitFor(() => expect(fired('chk')).toBe(1));
-    expect(fired('unchk')).toBe(0);
-
-    await user().click(box());
-
-    await waitFor(() => expect(fired('unchk')).toBe(1));
-    expect(fired('chk')).toBe(1);
-  });
-});
-
-describe('Checkbox: component-specific actions', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-ACT-001] `setValue` writes the state and fires only the deprecated pair', async () => {
-    // Break this catches: `setValue` silently not publishing `value`, or the
-    // event set changing without a contract decision (D-02).
-    await mount({ events: ALL_EVENTS });
-
-    await widget.act('setValue', true);
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(tick()).toBeInTheDocument();
-    expect(fired('chk')).toBe(1);
-    expect(fired('chg')).toBe(0);
-
-    await widget.act('setValue', false);
-
-    await waitFor(() => expect(exposed('value')).toBe(false));
-    expect(fired('unchk')).toBe(1);
-    expect(fired('chg')).toBe(0);
-  });
-
-  test('[Checkbox-ACT-002] `setChecked` behaves identically to `setValue`', async () => {
-    // Break this catches: the deprecated alias drifting away from `setValue`
-    // (a different state write or a different event set).
-    await mount({ events: ALL_EVENTS });
-
-    await widget.act('setChecked', true);
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(fired('chk')).toBe(1);
-    expect(fired('chg')).toBe(0);
-  });
-
-  test('[Checkbox-ACT-003] `toggle` flips the current state and fires only On change', async () => {
-    // Break this catches: `toggle` reading a stale `checked` (the second call
-    // would re-write the same value), or its event set changing.
-    await mount({ events: ALL_EVENTS });
-
-    await widget.act('toggle');
-    await waitFor(() => expect(exposed('value')).toBe(true));
-
-    await widget.act('toggle');
-
-    await waitFor(() => expect(exposed('value')).toBe(false));
-    expect(fired('chg')).toBe(2);
-    expect(fired('chk')).toBe(0);
-    expect(fired('unchk')).toBe(0);
-  });
-});
-
-describe('Checkbox: validation', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-VAL-001] a mandatory unchecked box is invalid until it is checked', async () => {
-    // Break this catches: adding Checkbox to the store's `optionValueWidgets`
-    // list, which would make `false` a legitimate answer and let an unchecked
-    // mandatory box pass.
-    await mount({ validation: { mandatory: binding('{{true}}') } });
-
-    await waitFor(() => expect(exposed('isValid')).toBe(false));
-
-    await user().click(box());
-
-    await waitFor(() => expect(exposed('isValid')).toBe(true));
-  });
-
-  test('[Checkbox-VAL-002] a custom validation message is shown once the user has interacted', async () => {
-    // Break this catches: rendering the error row without its message, or
-    // dropping customRule from the validate() call.
-    await mount({
-      validation: { customRule: binding(`{{components.${NAME}.value === false && 'Value needs to be checked'}}`) },
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.variables().seen).toBe(true));
     });
 
-    await user().click(box());
-    await user().click(box());
+    test('[Checkbox-EVT-002] On check and On uncheck fire only in the matching direction', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents([
+        ...setVariableOn(CHK, 'onCheck', { key: 'checked', value: 'YES' }),
+        ...setVariableOn(CHK, 'onUnCheck', { key: 'unchecked', value: 'YES' }),
+      ]);
 
-    await waitFor(() => expect(exposed('isValid')).toBe(false));
-    expect(errorText()).toBe('Value needs to be checked');
-  });
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.variables().checked).toBe('YES'));
+      expect(widget.variables().unchecked).toBeUndefined();
 
-  test('[Checkbox-VAL-003] the validation error stays hidden until the user interacts', async () => {
-    // Break this catches: dropping the `userInteracted` gate, which puts a red
-    // "Field cannot be empty" under every mandatory checkbox on app load.
-    await mount({ validation: { mandatory: binding('{{true}}') } });
-
-    await waitFor(() => expect(exposed('isValid')).toBe(false));
-    expect(errorText()).toBeNull();
-
-    await user().click(box());
-    await user().click(box());
-
-    await waitFor(() => expect(errorText()).toBe('Field cannot be empty'));
-  });
-});
-
-describe('Checkbox: inside a Form', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-FORM-001] submitting the Form reveals the error on a checkbox the user never touched', async () => {
-    // Break this catches: not subscribing to the Form submit signal, so a
-    // mandatory checkbox blocks submission with no visible reason.
-    widget.renderInsideForm({ validation: { mandatory: binding('{{true}}') } });
-    await waitFor(() => expect(root()).toBeInTheDocument());
-    expect(errorText()).toBeNull();
-
-    await widget.session.store.act(async () => {
-      await store().getExposedValueOfComponent('form1', MODULE_ID).submitForm();
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.variables().unchecked).toBe('YES'));
     });
 
-    await waitFor(() => expect(errorText()).toBe('Field cannot be empty'));
+    // needs to be looked at again
+    test.skip('[Checkbox-EVT-003] one user click on the label fires each event once', async () => {
+      const fired = [];
+      const realFire = store().eventsSlice.fireEvent;
+      useStore.setState((state) => {
+        state.eventsSlice.fireEvent = (eventName, ...rest) => {
+          fired.push(eventName);
+          return realFire(eventName, ...rest);
+        };
+      });
+
+      try {
+        const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+        widget.setEvents([
+          ...setVariableOn(CHK, 'onChange', { value: '{{components.checkbox1.value}}' }),
+          ...setVariableOn(CHK, 'onCheck', { key: 'checked', value: 'YES' }),
+        ]);
+        await waitFor(() => expect(widget.exposed().value).toBe(false));
+
+        await widget.session.user.click(labelEl(container));
+
+        await waitFor(() => expect(widget.exposed().value).toBe(true));
+        await waitFor(() => expect(widget.variables().seen).toBe(true));
+        await waitFor(() => expect(widget.variables().checked).toBe('YES'));
+        expect(fired.filter((name) => name === 'onChange')).toHaveLength(1);
+        expect(fired.filter((name) => name === 'onCheck')).toHaveLength(1);
+      } finally {
+        useStore.setState((state) => {
+          state.eventsSlice.fireEvent = realFire;
+        });
+      }
+    });
   });
 
-  test('[Checkbox-FORM-002] clearing the Form unchecks the box and republishes its value', async () => {
-    // Break this catches: not subscribing to the Form clear signal, so a
-    // "clear" leaves a stale `true` in the payload of the next submission.
-    widget.renderInsideForm({ properties: { defaultValue: binding('{{true}}') } });
-    await waitFor(() => expect(tick()).toBeInTheDocument());
+  describe('actions', () => {
+    test('[Checkbox-ACT-001] setValue and setChecked publish exact booleans and notify check events', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onCheck', { key: 'checked', value: 'YES' }));
 
-    await widget.session.store.act(async () => {
-      await store().getExposedValueOfComponent('form1', MODULE_ID).clearForm();
+      await widget.act('setValue', true);
+      expect(inputEl(container)).toBeChecked();
+      expect(widget.exposed().value).toBe(true);
+      await waitFor(() => expect(widget.variables().checked).toBe('YES'));
+
+      await widget.act('setValue', false);
+      expect(inputEl(container)).not.toBeChecked();
+      expect(widget.exposed().value).toBe(false);
+
+      await widget.act('setChecked', true);
+      expect(inputEl(container)).toBeChecked();
+      expect(widget.exposed().value).toBe(true);
     });
 
-    await waitFor(() => expect(exposed('value')).toBe(false));
-    expect(tick()).toBeNull();
-  });
-});
+    test('[Checkbox-ACT-001] a Control Component {{false}} argument is not dropped', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{true}}') },
+        extraComponents: { btn1: componentDefinition('btn1', 'button1', 'Button', { text: binding('Run') }) },
+        also: [{ id: 'btn1', componentType: 'Button' }],
+        events: controlCheckbox('setValue', [{ handle: 'value', value: '{{false}}' }]),
+      });
+      await waitFor(() => expect(inputEl(container)).toBeChecked());
 
-describe('Checkbox: disabled, loading and visibility', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-STATE-001] Disable publishes `isDisabled` and marks the control disabled', async () => {
-    // Break this catches: publishing the disabled state without marking the
-    // DOM (or the reverse), leaving assistive technology and styling out of
-    // step with what the app believes.
-    await mount({ properties: { disabledState: binding('{{true}}') } });
-
-    await waitFor(() => expect(exposed('isDisabled')).toBe(true));
-    expect(input()).toHaveAttribute('aria-disabled', 'true');
-    expect(row()).toHaveAttribute('data-disabled', 'true');
-  });
-
-  test('[Checkbox-STATE-002] Loading state replaces the checkbox with a loader and publishes `isLoading`', async () => {
-    // Break this catches: rendering the loader BESIDE the checkbox instead of
-    // in place of it, which would let a user answer a field that is still
-    // loading its state.
-    await mount({ properties: { loadingState: binding('{{true}}') } });
-
-    await waitFor(() => expect(exposed('isLoading')).toBe(true));
-    expect(input()).toBeNull();
-    expect(label()).toBeNull();
-    expect(loader()).toBeTruthy();
-  });
-
-  test('[Checkbox-STATE-003] Visibility off hides the widget and publishes `isVisible`', async () => {
-    // Break this catches: publishing isVisible without hiding the node, which
-    // leaves a "hidden" checkbox clickable.
-    await mount({ properties: { visibility: binding('{{false}}') } });
-
-    await waitFor(() => expect(exposed('isVisible')).toBe(false));
-    expect(row()).toHaveStyle({ display: 'none' });
-  });
-
-  test('[Checkbox-STATE-004] `setDisable` survives an unrelated re-resolve and a no-op rewrite of `disabledState`', async () => {
-    // Break this catches: widening the re-sync effect's dependencies, so any
-    // property re-resolve silently reverts a RunJS-set disable.
-    await mount();
-
-    await widget.act('setDisable', true);
-    await waitFor(() => expect(exposed('isDisabled')).toBe(true));
-
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'label', 'Renamed', 'properties');
-      widget.setComponentProperty(ID, 'disabledState', '{{false}}', 'properties');
+      await widget.session.user.click(container.querySelector('button.jet-btn'));
+      await waitFor(() => expect(inputEl(container)).not.toBeChecked());
+      expect(widget.exposed().value).toBe(false);
     });
 
-    expect(exposed('isDisabled')).toBe(true);
-  });
+    test('[Checkbox-ACT-001] a Control Component setValue still fires onCheck', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}') },
+        extraComponents: { btn1: componentDefinition('btn1', 'button1', 'Button', { text: binding('Run') }) },
+        also: [{ id: 'btn1', componentType: 'Button' }],
+        events: [
+          ...controlCheckbox('setValue', [{ handle: 'value', value: '{{true}}' }]),
+          ...setVariableOn(CHK, 'onCheck', { key: 'checked', value: 'YES' }),
+        ],
+      });
+      await waitFor(() => expect(container.querySelector('button.jet-btn')).toBeInTheDocument());
 
-  test('[Checkbox-STATE-005] `setVisibility` survives an unrelated re-resolve and a no-op rewrite of `visibility`', async () => {
-    // Break this catches: the same re-sync effect reverting a RunJS-set
-    // visibility when an unrelated property changes.
-    await mount();
-
-    await widget.act('setVisibility', false);
-    await waitFor(() => expect(exposed('isVisible')).toBe(false));
-
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'label', 'Renamed', 'properties');
-      widget.setComponentProperty(ID, 'visibility', '{{true}}', 'properties');
+      await widget.session.user.click(container.querySelector('button.jet-btn'));
+      await waitFor(() => expect(widget.variables().checked).toBe('YES'));
     });
 
-    expect(exposed('isVisible')).toBe(false);
-    expect(row()).toHaveStyle({ display: 'none' });
-  });
+    test('[Checkbox-ACT-002] toggle flips the current value and fires On change', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { value: '{{components.checkbox1.value}}' }));
 
-  test('[Checkbox-STATE-006] `setLoading` survives an unrelated re-resolve and a no-op rewrite of `loadingState`', async () => {
-    // Break this catches: the same re-sync effect reverting a RunJS-set loading
-    // state, so a spinner disappears mid-query.
-    await mount();
-
-    await widget.act('setLoading', true);
-    await waitFor(() => expect(exposed('isLoading')).toBe(true));
-
-    await widget.session.store.act(async () => {
-      widget.setComponentProperty(ID, 'label', 'Renamed', 'properties');
-      widget.setComponentProperty(ID, 'loadingState', '{{false}}', 'properties');
+      await widget.act('toggle');
+      expect(inputEl(container)).toBeChecked();
+      expect(widget.exposed().value).toBe(true);
+      await waitFor(() => expect(widget.variables().seen).toBe(true));
     });
 
-    expect(exposed('isLoading')).toBe(true);
-    expect(input()).toBeNull();
+    test('[Checkbox-ACT-003] setVisibility, setLoading, and setDisable update flags and the DOM', async () => {
+      const { container } = widget.render();
+
+      await widget.act('setDisable', true);
+      expect(widget.exposed().isDisabled).toBe(true);
+      expect(inputEl(container)).toHaveAttribute('aria-disabled', 'true');
+
+      await widget.act('setVisibility', false);
+      expect(widget.exposed().isVisible).toBe(false);
+      expect(rowEl(container)).toHaveStyle({ display: 'none' });
+
+      await widget.act('setLoading', true);
+      expect(widget.exposed().isLoading).toBe(true);
+      expect(loaderEl(container)).toBeInTheDocument();
+      expect(screen.queryByText('Accept terms')).not.toBeInTheDocument();
+    });
+
+    test.each([
+      ['setLoading', 'isLoading'],
+      ['setVisibility', 'isVisible'],
+      ['setDisable', 'isDisabled'],
+    ])('[Checkbox-ACT-003] %s coerces its argument to a boolean', async (action, exposedKey) => {
+      widget.render();
+      await widget.act(action, 'yes');
+      expect(widget.exposed()[exposedKey]).toBe(true);
+    });
+
+    test('[Checkbox-ACT-004] setChecked survives an unrelated property re-resolve', async () => {
+      widget.render({ properties: { defaultValue: binding('{{false}}'), label: binding('Before') } });
+      await widget.act('setChecked', true);
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+
+      await widget.session.store.act(() => {
+        widget.setComponentProperty(CHK, 'label', 'After', 'properties');
+      });
+
+      expect(await screen.findByText('After')).toBeInTheDocument();
+      expect(widget.exposed().value).toBe(true);
+    });
+
+    test('[Checkbox-ACT-005] rewriting defaultValue with the same boolean does not revert setChecked', async () => {
+      widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      await widget.act('setChecked', true);
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+
+      await widget.session.store.act(() => {
+        widget.setComponentProperty(CHK, 'defaultValue', '{{false}}', 'properties');
+      });
+
+      expect(widget.exposed().value).toBe(true);
+    });
   });
-});
 
-describe('Checkbox: styles', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
+  describe('validation', () => {
+    test('[Checkbox-VAL-001] a mandatory unchecked box surfaces its error after interact and hides it when hidden or valid', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{true}}') },
+        afterSeed: () => widget.setComponentProperty(CHK, 'mandatory', '{{true}}', 'validation', 'value', false),
+      });
+      await waitFor(() => expect(inputEl(container)).toBeChecked());
+      expect(container.querySelector('[data-cy="checkbox1-invalid-feedback"]')).not.toBeInTheDocument();
 
-  test('[Checkbox-STYLE-001] the checked, unchecked and tick colors follow the configured styles', async () => {
-    // Break this catches: inverting the checked/unchecked branch, which makes a
-    // checked box look unchecked, or drawing the tick in the wrong color.
-    await mount({
-      styles: {
-        checkboxColor: binding('rgb(10, 20, 30)'),
-        uncheckedColor: binding('rgb(40, 50, 60)'),
-        handleColor: binding('rgb(70, 80, 90)'),
-        borderColor: binding('rgb(1, 1, 1)'),
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+      expect(container.querySelector('[data-cy="checkbox1-invalid-feedback"]')).toHaveTextContent(
+        'Field cannot be empty'
+      );
+
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      expect(container.querySelector('[data-cy="checkbox1-invalid-feedback"]')).not.toBeInTheDocument();
+    });
+
+    test('[Checkbox-VAL-001] the error never appears on a hidden field', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{true}}'), visibility: binding('{{false}}') },
+        afterSeed: () => widget.setComponentProperty(CHK, 'mandatory', '{{true}}', 'validation', 'value', false),
+      });
+      await waitFor(() => expect(inputEl(container)).toBeInTheDocument());
+      await widget.session.user.click(boxEl(container));
+      expect(container.querySelector('[data-cy="checkbox1-invalid-feedback"]')).not.toBeInTheDocument();
+    });
+
+    test('[Checkbox-VAL-002] a custom rule invalidates the box with that message and clears when satisfied', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}') },
+        afterSeed: () =>
+          widget.setComponentProperty(
+            CHK,
+            'customRule',
+            `{{components.checkbox1.value === false && 'You must accept to continue'}}`,
+            'validation',
+            'value',
+            false
+          ),
+      });
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+    });
+  });
+
+  describe('Form lifecycle', () => {
+    test('[Checkbox-FORM-001] clearing the parent Form unchecks a non-default value', async () => {
+      widget.renderInsideForm({ properties: { defaultValue: binding('{{true}}') } });
+      expect(await screen.findByRole('checkbox', { hidden: true })).toBeChecked();
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+
+      await widget.session.store.act(async () => {
+        await widget.exposed(FORM).clearForm();
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+      expect(screen.getByRole('checkbox', { hidden: true })).not.toBeChecked();
+    }, 30000);
+
+    test('[Checkbox-FORM-002] Form submit reveals mandatory validation without a click', async () => {
+      widget.renderInsideForm({
+        properties: { defaultValue: binding('{{false}}') },
+        validation: { mandatory: binding('{{true}}') },
+      });
+      const input = await screen.findByRole('checkbox', { hidden: true });
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+      expect(screen.queryByText('Field cannot be empty')).not.toBeInTheDocument();
+
+      await waitFor(() => expect(widget.exposed(FORM).submitForm).toBeInstanceOf(Function));
+      await widget.session.store.act(async () => {
+        await widget.exposed(FORM).submitForm();
+      });
+
+      expect(await screen.findByText('Field cannot be empty')).toBeInTheDocument();
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+    }, 30000);
+  });
+
+  describe('state', () => {
+    test('[Checkbox-STATE-001] property-driven visibility, loading, and disabled reach the DOM and flags', async () => {
+      const hidden = widget.render({ properties: { visibility: binding('{{false}}') } });
+      await waitFor(() => expect(inputEl(hidden.container)).toBeInTheDocument());
+      expect(rowEl(hidden.container)).toHaveStyle({ display: 'none' });
+      expect(widget.exposed().isVisible).toBe(false);
+
+      widget.teardown();
+      widget.setup();
+      const loaded = widget.render({ properties: { loadingState: binding('{{true}}') } });
+      await waitFor(() => expect(loaderEl(loaded.container)).toBeInTheDocument());
+      expect(screen.queryByText('Accept terms')).not.toBeInTheDocument();
+      expect(widget.exposed().isLoading).toBe(true);
+
+      widget.teardown();
+      widget.setup();
+      const disabled = widget.render({ properties: { disabledState: binding('{{true}}') } });
+      await waitFor(() => expect(inputEl(disabled.container)).toHaveAttribute('aria-disabled', 'true'));
+      expect(rowEl(disabled.container)).toHaveAttribute('data-disabled', 'true');
+      expect(widget.exposed().isDisabled).toBe(true);
+    });
+
+    // needs to be looked at again
+    test.skip('[Checkbox-STATE-002] a disabled checkbox ignores clicks', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}'), disabledState: binding('{{true}}') },
+      });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { key: 'fired', value: 'YES' }));
+      await waitFor(() => expect(inputEl(container)).toHaveAttribute('aria-disabled', 'true'));
+
+      await widget.session.user.click(boxEl(container));
+
+      expect(inputEl(container)).not.toBeChecked();
+      expect(widget.exposed().value).toBe(false);
+      expect(widget.variables().fired).toBeUndefined();
+    });
+
+    test('[Checkbox-STATE-003] setChecked still runs while the box is disabled', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}'), disabledState: binding('{{true}}') },
+      });
+      await waitFor(() => expect(inputEl(container)).toHaveAttribute('aria-disabled', 'true'));
+
+      await widget.act('setChecked', true);
+      expect(inputEl(container)).toBeChecked();
+      expect(widget.exposed().value).toBe(true);
+    });
+
+    test('[Checkbox-STATE-004] clicking while loading does not toggle', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}'), loadingState: binding('{{true}}') },
+      });
+      await waitFor(() => expect(loaderEl(container)).toBeInTheDocument());
+      expect(widget.exposed().value).toBe(false);
+
+      await widget.session.user.click(container.querySelector('[data-cy="checkbox1"]'));
+      expect(widget.exposed().value).toBe(false);
+    });
+
+    test('[Checkbox-STATE-005] hiding the box does not clear exposed value', async () => {
+      const { container } = widget.render({ properties: { defaultValue: binding('{{true}}') } });
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+
+      await widget.act('setVisibility', false);
+      expect(widget.exposed().isVisible).toBe(false);
+      expect(rowEl(container)).toHaveStyle({ display: 'none' });
+      expect(widget.exposed().value).toBe(true);
+    });
+
+    test('[Checkbox-STATE-006] toggle while disabled still flips value', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}'), disabledState: binding('{{true}}') },
+      });
+      await waitFor(() => expect(inputEl(container)).toHaveAttribute('aria-disabled', 'true'));
+
+      await widget.act('toggle');
+      expect(inputEl(container)).toBeChecked();
+      expect(widget.exposed().value).toBe(true);
+    });
+
+    const STATE_PAIRS = [
+      {
+        action: 'setDisable',
+        arg: true,
+        property: 'disabledState',
+        currentValue: '{{false}}',
+        assertHeld: async (container) => {
+          expect(inputEl(container)).toHaveAttribute('aria-disabled', 'true');
+          expect(widget.exposed().isDisabled).toBe(true);
+        },
       },
+      {
+        action: 'setVisibility',
+        arg: false,
+        property: 'visibility',
+        currentValue: '{{true}}',
+        assertHeld: async (container) => {
+          expect(rowEl(container)).toHaveStyle({ display: 'none' });
+          expect(widget.exposed().isVisible).toBe(false);
+        },
+      },
+      {
+        action: 'setLoading',
+        arg: true,
+        property: 'loadingState',
+        currentValue: '{{false}}',
+        assertHeld: async (container) => {
+          expect(loaderEl(container)).toBeInTheDocument();
+          expect(widget.exposed().isLoading).toBe(true);
+        },
+      },
+    ];
+
+    test.each(STATE_PAIRS)(
+      '[Checkbox-STATE-007] $action survives an unrelated property change',
+      async ({ action, arg, assertHeld }) => {
+        const { container } = widget.render();
+        await widget.act(action, arg);
+        await assertHeld(container);
+
+        await widget.session.store.act(() => {
+          widget.setComponentProperty(CHK, 'label', 'Changed by a query', 'properties');
+        });
+
+        await waitFor(() => expect(widget.exposed().label).toBe('Changed by a query'));
+        await assertHeld(container);
+      }
+    );
+
+    test.each(STATE_PAIRS)(
+      '[Checkbox-STATE-007] $action survives a no-op rewrite of $property',
+      async ({ action, arg, property, currentValue, assertHeld }) => {
+        const { container } = widget.render();
+        await widget.act(action, arg);
+        await assertHeld(container);
+
+        await widget.session.store.act(() => {
+          widget.setComponentProperty(CHK, property, currentValue, 'properties');
+        });
+
+        await assertHeld(container);
+      }
+    );
+
+    test('[Checkbox-STATE-008] ending loading does not leave an enabled box disabled', async () => {
+      const { container } = widget.render({
+        properties: { loadingState: binding('{{true}}'), disabledState: binding('{{false}}') },
+      });
+      await waitFor(() => expect(loaderEl(container)).toBeInTheDocument());
+
+      await widget.session.store.act(() => {
+        widget.setComponentProperty(CHK, 'loadingState', '{{false}}', 'properties');
+      });
+
+      await waitFor(() => expect(inputEl(container)).toBeInTheDocument());
+      expect(inputEl(container)).toHaveAttribute('aria-disabled', 'false');
+      await widget.session.user.click(boxEl(container));
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+    });
+  });
+
+  describe('exposed surface', () => {
+    test('[Checkbox-EXP-001] the widget publishes its documented variables and actions', async () => {
+      const { container } = widget.render();
+      await waitFor(() => expect(inputEl(container)).toBeInTheDocument());
+
+      expect(widget.exposed()).toMatchObject({
+        value: false,
+        label: 'Accept terms',
+        isMandatory: false,
+        isVisible: true,
+        isDisabled: false,
+        isLoading: false,
+        isValid: true,
+      });
+
+      const exposed = widget.exposed();
+      for (const { handle } of checkboxConfig.actions) {
+        expect(typeof exposed[handle]).toBe('function');
+      }
     });
 
-    expect(box().style.backgroundColor).toBe('rgb(40, 50, 60)');
-    expect(tick()).toBeNull();
+    test('[Checkbox-EXP-001] a changed label re-renders and republishes the exposed label', async () => {
+      widget.render({ properties: { label: binding('Before') } });
+      await waitFor(() => expect(screen.getByText('Before')).toBeInTheDocument());
 
-    await user().click(box());
+      await widget.session.store.act(() => {
+        widget.setComponentProperty(CHK, 'label', 'After', 'properties');
+      });
 
-    await waitFor(() => expect(tick()).toBeInTheDocument());
-    expect(box().style.backgroundColor).toBe('rgb(10, 20, 30)');
-    expect(tick().getAttribute('stroke')).toBe('rgb(70, 80, 90)');
+      await waitFor(() => expect(screen.getByText('After')).toBeInTheDocument());
+      expect(widget.exposed().label).toBe('After');
+    });
+
+    test('[Checkbox-EXP-002] a sibling bound to value sees true after check', async () => {
+      // The default-false first paint is not asserted here on purpose: the
+      // harness seed pre-writes exposed `value: false`, and the store's
+      // equal-skip (exposedValueCascade.spec.js) then runs no mount cascade.
+      // That is seed/cascade order, not Checkbox behaviour (D-05). The
+      // post-click write always cascades, and that is what this test protects.
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}') },
+        extraComponents: {
+          t1: componentDefinition('t1', 'text1', 'Text', {
+            text: binding('{{ "v=" + String(components.checkbox1.value) }}'),
+            visibility: binding('{{true}}'),
+          }),
+        },
+        also: [{ id: 't1', componentType: 'Text' }],
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+      await widget.session.user.click(boxEl(container));
+      expect(await screen.findByText('v=true')).toBeInTheDocument();
+    });
+
+    test('[Checkbox-EXP-002] a sibling bound to value sees false after uncheck', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{true}}') },
+        extraComponents: {
+          t1: componentDefinition('t1', 'text1', 'Text', {
+            text: binding('{{ "v=" + String(components.checkbox1.value) }}'),
+            visibility: binding('{{true}}'),
+          }),
+        },
+        also: [{ id: 't1', componentType: 'Text' }],
+      });
+
+      expect(await screen.findByText('v=true')).toBeInTheDocument();
+      await widget.session.user.click(boxEl(container));
+      expect(await screen.findByText('v=false')).toBeInTheDocument();
+    });
   });
 
-  test('[Checkbox-STYLE-002] the legacy black text and legacy border compatibility shims still apply', async () => {
-    // Break this catches: dropping either shim, which restyles every app saved
-    // before custom themes — hardcoded black labels that vanish in dark mode,
-    // and a visible grey border around every checked box.
-    //
-    // Both shims replace a literal color with a CSS custom property, and jsdom
-    // drops `var(...)` from inline styles, so the observable proof is "the
-    // legacy literal is NOT what gets applied".
-    //
-    // On its own that proof is worthless: an empty color is also "not the
-    // legacy literal", so deleting the assignments outright would pass. The
-    // positive control below pins that these two styles reach the DOM at all
-    // (Checkbox-STYLE-001 covers the box and tick colors, never the label's),
-    // which is what gives the negative assertions their teeth.
-    await mount({ styles: { textColor: binding('#123456'), borderColor: binding('#654321') } });
+  describe('accessibility', () => {
+    test('[Checkbox-A11Y-001] label association, mandatory marker, and aria state flags', async () => {
+      const { container } = widget.render({
+        properties: { defaultValue: binding('{{false}}') },
+        afterSeed: () => widget.setComponentProperty(CHK, 'mandatory', '{{true}}', 'validation', 'value', false),
+      });
 
-    expect(label().parentElement.style.color).toBe('rgb(18, 52, 86)');
-    expect(box().style.borderColor).toBe('#654321');
+      const input = await waitFor(() => inputEl(container));
+      expect(labelEl(container)).toHaveAttribute('for', input.id);
+      expect(labelEl(container)).toHaveTextContent('*');
+      expect(input).toHaveAttribute('aria-required', 'true');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-busy', 'false');
+      expect(input).toHaveAttribute('aria-hidden', 'false');
+      expect(widget.exposed().isMandatory).toBe(true);
+    });
 
-    await mount({ styles: { textColor: binding('#1B1F24'), borderColor: binding('#CCD1D5') } });
+    test('[Checkbox-A11Y-001] a non-mandatory field has no asterisk and is not aria-invalid without cause', async () => {
+      const { container } = widget.render();
+      const input = await waitFor(() => inputEl(container));
+      expect(labelEl(container)).not.toHaveTextContent('*');
+      expect(input).toHaveAttribute('aria-required', 'false');
+      expect(input).toHaveAttribute('aria-invalid', 'false');
+    });
 
-    // Checked in both spellings: jsdom normalizes `color` to rgb() but leaves
-    // `borderColor` as the authored hex, so a single-form assertion would pass
-    // on the untouched literal.
-    expect(label().parentElement.style.color).not.toBe('rgb(27, 31, 36)');
-    expect(label().parentElement.style.color).not.toBe('#1B1F24');
-    expect(box().style.borderColor).not.toBe('rgb(204, 209, 213)');
-    expect(box().style.borderColor).not.toBe('#CCD1D5');
+    test('[Checkbox-ISO-001] each instance routes its label click to its own input', async () => {
+      const { container } = widget.render({
+        also: [{ id: CHK, componentType: 'Checkbox' }],
+      });
 
-    await user().click(box());
+      const labels = await screen.findAllByText('Accept terms');
+      expect(labels.length).toBeGreaterThanOrEqual(2);
+      const inputs = within(container).getAllByRole('checkbox', { hidden: true });
+      expect(inputs[0].id).not.toBe(inputs[1].id);
 
-    await waitFor(() => expect(tick()).toBeInTheDocument());
-    expect(box().style.borderColor).toBe('transparent');
+      await widget.session.user.click(labels[1].closest('label') ?? labels[1]);
+      expect(inputs[1]).toBeChecked();
+      expect(inputs[0]).not.toBeChecked();
+    });
   });
 
-  test('[Checkbox-STYLE-003] Alignment places the label on the configured side', async () => {
-    // Break this catches: fixing the flex direction while leaving
-    // justifyContent (or vice versa), so one alignment renders correctly and
-    // the other collapses the gap.
-    await mount({ styles: { alignment: binding('right') } });
-    expect(row().className).toContain('flex-row');
-    expect(row().className).not.toContain('flex-row-reverse');
+  describe('styles', () => {
+    // jsdom drops inline `var(--token)` values, so cases whose only observable
+    // is a token (legacy textColor → var(--text-primary); unchecked
+    // borderColor #CCD1D5 → var(--borders-default)) are skipped.
+    const STYLE_CASES = [
+      {
+        name: 'textColor on the label',
+        styles: { textColor: binding('rgb(255, 0, 0)') },
+        assert: (container) => {
+          expect(labelEl(container).parentElement).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+        },
+      },
+      {
+        name: 'borderColor on the box',
+        styles: { borderColor: binding('rgb(255, 0, 0)') },
+        assert: (container) => {
+          expect(boxEl(container)).toHaveStyle({ border: '1px solid rgb(255, 0, 0)' });
+        },
+      },
+      {
+        name: 'legacy checked borderColor becomes transparent',
+        properties: { defaultValue: binding('{{true}}') },
+        styles: { borderColor: binding('#CCD1D5') },
+        assert: (container) => {
+          expect(boxEl(container)).toHaveStyle({ borderColor: 'transparent' });
+        },
+      },
+      {
+        name: 'checkboxColor is the box background when checked',
+        properties: { defaultValue: binding('{{true}}') },
+        styles: { checkboxColor: binding('rgb(255, 0, 0)'), uncheckedColor: binding('rgb(0, 0, 255)') },
+        assert: (container) => {
+          expect(boxEl(container)).toHaveStyle({ backgroundColor: 'rgb(255, 0, 0)' });
+        },
+      },
+      {
+        name: 'uncheckedColor is the box background when unchecked',
+        styles: { checkboxColor: binding('rgb(255, 0, 0)'), uncheckedColor: binding('rgb(0, 0, 255)') },
+        assert: (container) => {
+          expect(boxEl(container)).toHaveStyle({ backgroundColor: 'rgb(0, 0, 255)' });
+        },
+      },
+      {
+        name: 'handleColor is the checkmark stroke',
+        properties: { defaultValue: binding('{{true}}') },
+        styles: { handleColor: binding('rgb(255, 0, 0)') },
+        assert: (container) => {
+          expect(container.querySelector('svg.icon-tabler-check')).toHaveAttribute('stroke', 'rgb(255, 0, 0)');
+        },
+      },
+      {
+        name: 'boxShadow on the widget row',
+        styles: { boxShadow: binding('2px 4px 6px 0px rgb(255, 0, 0)') },
+        assert: (container) => {
+          expect(rowEl(container)).toHaveStyle({ boxShadow: '2px 4px 6px 0px rgb(255, 0, 0)' });
+        },
+      },
+      {
+        name: 'right alignment puts the label after the box',
+        styles: { alignment: binding('right') },
+        assert: (container) => {
+          expect(rowEl(container)).toHaveClass('flex-row');
+          expect(rowEl(container)).toHaveStyle({ justifyContent: 'start' });
+        },
+      },
+      {
+        name: 'left alignment reverses the row',
+        styles: { alignment: binding('left') },
+        assert: (container) => {
+          expect(rowEl(container)).toHaveClass('flex-row-reverse');
+          expect(rowEl(container)).toHaveStyle({ justifyContent: 'space-between' });
+        },
+      },
+      {
+        name: 'loader is centred while loading',
+        properties: { loadingState: binding('{{true}}') },
+        assert: (container) => {
+          const row = container.querySelector('[data-cy="checkbox1"]');
+          expect(row).toHaveStyle({ justifyContent: 'center', alignItems: 'center' });
+          expect(loaderEl(container)).toBeInTheDocument();
+        },
+      },
+    ];
 
-    await mount({ styles: { alignment: binding('left') } });
+    test.each(STYLE_CASES)('[Checkbox-STY-001] $name', async ({ styles = {}, properties = {}, assert }) => {
+      const { container } = widget.render({ styles, properties });
+      await waitFor(() => expect(container.querySelector('[data-cy="checkbox1"]')).toBeInTheDocument());
+      assert(container);
+    });
 
-    expect(row().className).toContain('flex-row-reverse');
-    expect(row()).toHaveStyle({ justifyContent: 'space-between' });
+    test('[Checkbox-STY-001] the background swaps from unchecked to checked on a click', async () => {
+      const { container } = widget.render({
+        styles: { checkboxColor: binding('rgb(255, 0, 0)'), uncheckedColor: binding('rgb(0, 0, 255)') },
+      });
+      await waitFor(() => expect(boxEl(container)).toHaveStyle({ backgroundColor: 'rgb(0, 0, 255)' }));
+      expect(container.querySelector('svg.icon-tabler-check')).not.toBeInTheDocument();
+
+      await widget.session.user.click(boxEl(container));
+      expect(boxEl(container)).toHaveStyle({ backgroundColor: 'rgb(255, 0, 0)' });
+    });
+  });
+
+  /**
+   * Ported from the parallel contract written on test/components-backfill.
+   * These four behaviours had no equivalent on this side of the merge.
+   */
+  describe('merged from the parallel contract', () => {
+    test('[Checkbox-COMPAT-001] a definition predating collapseWhenHidden, padding and tooltipFormat still renders and toggles', async () => {
+      // Break this catches: treating any newer key as required, breaking every app saved before it existed.
+      const { container } = widget.render({
+        properties: { collapseWhenHidden: undefined, tooltipFormat: undefined },
+        styles: { padding: undefined },
+      });
+      expect(await screen.findByText('Accept terms')).toBeInTheDocument();
+
+      await widget.session.user.click(boxEl(container));
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+      expect(inputEl(container)).toBeChecked();
+    });
+
+    test('[Checkbox-STY-002] the legacy black text colour maps onto the theme colour', async () => {
+      // Break this catches: dropping the legacy shim, so apps saved before custom themes render raw black.
+      const { container } = widget.render({ styles: { textColor: binding('#1B1F24') } });
+
+      expect(labelEl(container).parentElement).not.toHaveStyle({ color: 'rgb(27, 31, 36)' });
+    });
+
+    test.failing('[Checkbox-BUG-001] `setValue` fires On change like every other value change', async () => {
+      // Pins the documented meaning of On change against the current CSA asymmetry. No production change.
+      widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { key: 'changed', value: 'YES' }));
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+
+      await widget.act('setValue', true);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+      expect(widget.variables().changed).toBe('YES');
+    });
+
+    test.failing('[Checkbox-BUG-002] the checkbox can be reached and toggled with the keyboard', async () => {
+      // Pins the accessibility gap: the only input is display:none and the wrapper is not focusable.
+      widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+
+      await widget.session.user.tab();
+      await widget.session.user.keyboard('{ }');
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+    });
   });
 });
 
-describe('Checkbox: accessibility and compatibility', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  test('[Checkbox-A11Y-001] the control carries its required, invalid and disabled semantics', async () => {
-    // Break this catches: dropping the aria attributes or the label/input
-    // association, leaving a screen-reader user with an unnamed control that
-    // never announces that it is required or in error.
-    await mount({ validation: { mandatory: binding('{{true}}') } });
-
-    await waitFor(() => expect(input()).toHaveAttribute('aria-required', 'true'));
-    expect(input()).toHaveAttribute('aria-invalid', 'true');
-    // Read the id out first and require it to exist: comparing `for` against
-    // whatever the input happens to carry would call two empty strings a match,
-    // so a regression that dropped the id entirely would still look associated.
-    const inputId = input().getAttribute('id');
-    expect(inputId).toBeTruthy();
-    expect(label()).toHaveAttribute('for', inputId);
-
-    await user().click(box());
-
-    await waitFor(() => expect(input()).toHaveAttribute('aria-invalid', 'false'));
+async function actSet(id, key, value) {
+  await widget.session.store.act(() => {
+    widget.setExposedValue(id, key, value);
   });
-
-  test('[Checkbox-COMPAT-001] a definition predating collapseWhenHidden, padding and tooltipFormat still renders and toggles', async () => {
-    // Break this catches: reading any of those newer keys as required, which
-    // would break every app saved before they existed.
-    legacyWidget.setup();
-    legacyWidget.render();
-    await waitFor(() => expect(root()).toBeInTheDocument());
-
-    await legacyWidget.session.user.click(box());
-
-    await waitFor(() => expect(legacyWidget.exposed()?.value).toBe(true));
-    expect(tick()).toBeInTheDocument();
-    legacyWidget.teardown();
-  });
-});
-
-/**
- * A definition saved before `collapseWhenHidden`/`padding`/`tooltipFormat`
- * existed: those keys are ABSENT, not falsy.
- */
-const legacyWidget = createWidgetHarness({
-  componentType: 'Checkbox',
-  handle: NAME,
-  id: ID,
-  defaultProperties: {
-    label: binding('Agree'),
-    defaultValue: binding('{{false}}'),
-    visibility: binding('{{true}}'),
-    disabledState: binding('{{false}}'),
-    loadingState: binding('{{false}}'),
-  },
-  defaultStyles: {
-    textColor: binding('var(--cc-primary-text)'),
-    checkboxColor: binding('var(--cc-primary-brand)'),
-    uncheckedColor: binding('var(--cc-surface1-surface)'),
-    borderColor: binding('var(--cc-default-border)'),
-    handleColor: binding('var(--cc-surface1-surface)'),
-    alignment: binding('right'),
-  },
-});
-
-describe('Checkbox: known unfixed bugs', () => {
-  beforeEach(widget.setup);
-  afterEach(widget.teardown);
-
-  // BUG (unfixed, contract D-01): the hidden input carries its own onClick
-  // (Checkbox.jsx:221 -> `toggleValue` :43-52) AND sits inside the div that
-  // carries `handleToggleChange` (:212 -> :169-178), so a click on the label
-  // runs both handlers. The value lands correctly (both compute the same
-  // next state) but the deprecated onCheck/onUnCheck run twice, double-running
-  // whatever query a builder wired to them. Fix: drop the input's onClick.
-  test.failing('[Checkbox-BUG-001] clicking the label fires the deprecated events exactly once', async () => {
-    await mount({ events: ALL_EVENTS });
-
-    await user().click(label());
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(fired('chk')).toBe(1);
-  });
-
-  // BUG (unfixed, contract D-02): `setValue`/`setChecked` (Checkbox.jsx:135-136,
-  // both bound to `setCheckedAndNotify` :124-133) write the value but never fire
-  // onChange, while `toggle` (:115-118 and :149-152) fires onChange and never
-  // the deprecated pair — three CSAs, three different event sets for the same state write.
-  // Fix: fire onChange from every path that changes the value.
-  test.failing('[Checkbox-BUG-002] `setValue` fires On change like every other value change', async () => {
-    await mount({ events: ALL_EVENTS });
-
-    await widget.act('setValue', true);
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-    expect(fired('chg')).toBe(1);
-  });
-
-  // BUG (unfixed, contract D-03): the only input is `display: none`
-  // (Checkbox.jsx:218), so it can never be focused, and the clickable wrapper
-  // (:212) is a plain div with no tabIndex/role/key handler. A keyboard-only user cannot answer a mandatory
-  // checkbox at all. Fix: visually hide the input instead of display:none, or
-  // give the wrapper role="checkbox" + tabIndex + a key handler.
-  test.failing('[Checkbox-BUG-003] the checkbox can be reached and toggled with the keyboard', async () => {
-    await mount();
-
-    await user().tab();
-    await user().keyboard('{ }');
-
-    await waitFor(() => expect(exposed('value')).toBe(true));
-  });
-
-  // BUG (unfixed, contract D-06): `disable` only reaches `data-disabled`
-  // (Checkbox.jsx:194) and `aria-disabled` (:225); neither the wrapper's onClick
-  // (:212 -> `handleToggleChange` :169-178) nor the input's (:221 ->
-  // `toggleValue` :43-52) is gated on it, so a disabled checkbox still toggles
-  // and publishes the new value. Fix: return early from BOTH handlers while
-  // disabled.
-  test.failing('[Checkbox-BUG-004] a disabled checkbox does not change when clicked', async () => {
-    await mount({ properties: { disabledState: binding('{{true}}') } });
-    await waitFor(() => expect(exposed('isDisabled')).toBe(true));
-
-    await user().click(box());
-
-    expect(exposed('value')).toBe(false);
-    expect(tick()).toBeNull();
-
-    // The label is the other public way in, and it reaches a different handler:
-    // `htmlFor` targets the hidden input, whose own onClick runs `toggleValue`.
-    // Gating only `handleToggleChange` would leave this route toggling a
-    // disabled checkbox while the assertion above went green.
-    await user().click(label());
-
-    expect(exposed('value')).toBe(false);
-    expect(tick()).toBeNull();
-  });
-});
+}

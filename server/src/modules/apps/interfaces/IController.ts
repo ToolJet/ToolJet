@@ -46,4 +46,6 @@ export interface IAppsController {
   releaseVersion(user: UserEntity, app: AppEntity, versionReleaseDto: VersionReleaseDto): Promise<any>;
 
   getAppAuthenticationConfig(slug: string): Promise<any>;
+
+  getRestrictedAccessInfo(slug: string, user: UserEntity): Promise<any>;
 }
