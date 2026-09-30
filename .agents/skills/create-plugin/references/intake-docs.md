@@ -40,4 +40,4 @@ its absence tells the generators to build a `dropdown-component-flip` operations
 V1 unless the connection form needs V2-only widgets or conditional validation; see
 `manifest-and-operations.md`. Most database drivers still fit V1.
 
-Validate the spec (SKILL.md step 2), then run the user gate.
+Field shape: `intake-openapi.md` section 5. Then run the user gate (SKILL.md step 2).

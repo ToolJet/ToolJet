@@ -52,19 +52,6 @@ Walk the whole `item` tree, recursing through nested folders.
 - `operationId`: tag + request name in camelCase (`Account` + `Account-Create` = `accountCreate`),
   unique across the spec.
 
-| Postman `body.mode`                            | Content type                        |
-| ---------------------------------------------- | ----------------------------------- |
-| `raw` + JSON content-type or JSON-looking body | `application/json`                  |
-| `raw` + `text/plain` or `application/text`     | `text/plain`                        |
-| `raw` + `application/xml`                      | `application/xml`                   |
-| `formdata`                                     | `multipart/form-data`               |
-| `urlencoded`                                   | `application/x-www-form-urlencoded` |
-| `binary`                                       | `application/octet-stream`          |
-| `graphql`                                      | `application/json`                  |
-
-Example values infer types: integer, boolean, `format: date` / `date-time` for ISO dates,
-otherwise `string` (numeric strings stay strings).
-
 ## 4. Auth
 
 Check collection-level `auth` and per-request overrides. Uniform auth goes in top-level

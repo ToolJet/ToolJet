@@ -25,8 +25,8 @@ marketplace/plugins/<id>/
 ## Scaffold and register
 
 - Human path, from the repo root: `npx tooljet plugin create <name> --type=database|api|cloud-storage --marketplace`. It prompts for a display name (and a repo URL), renders the hygen templates in `marketplace/_templates/plugin/new/`, runs `npm i` in `marketplace/`, and appends an entry to `server/src/assets/marketplace/plugins.json`. `npx tooljet` is the published `@tooljet/cli` pinned in the root `package.json`, not `cli/src`: without `--marketplace` it asks "is it a marketplace integration?" and a "no" scaffolds into `plugins/packages/`.
-- Non-interactive path (agents): `cd marketplace && npx --yes hygen@6 plugin new --name <id> --type <type> --display_name "<Name>" --plugins_path .`, then add the `plugins.json` entry by hand and run `npm i`. Details: `.agents/skills/create-plugin/SKILL.md`.
-- `plugins.json` `id` must be unique and equal the manifest `source.kind`: `@spec/` files are looked up by it (`findByKind` matches `pluginId`, `server/src/modules/plugins/service.ts`). Directory name == id is the convention `create` follows, not enforced. `create` aborts if the id already exists.
+- Non-interactive path (agents): `cd marketplace && ../node_modules/.bin/hygen plugin new --name <id> --type <type> --display_name "<Name>" --plugins_path .`, then add the `plugins.json` entry by hand and run `npm i`. The hygen binary comes from the root `npm install` (locked through `@tooljet/cli`). Details: `.agents/skills/create-plugin/SKILL.md`.
+- `plugins.json` `id` must be unique and equal both the manifest `source.kind` and the directory name: `@spec/` files are looked up by it (`findByKind` matches `pluginId`, `server/src/modules/plugins/service.ts`), and dev-mode install reads `marketplace/plugins/<id>/` (`server/src/modules/plugins/util.service.ts`). `create` aborts if the id already exists.
 
 ## OpenAPI mode
 

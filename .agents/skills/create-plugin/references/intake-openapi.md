@@ -80,7 +80,11 @@ How `@spec/` is installed and served: `marketplace/AGENTS.md`, OpenAPI mode.
 }
 ```
 
-Validate it (SKILL.md step 2), then run the user gate.
+Fields: `auth.type` is one of `none|api_key|bearer|basic|oauth2|connection_fields|custom`;
+`schemaVersion` is `v1|v2`; `metadata.type` is `api|database|cloud-storage`; `specUrl` is a string
+or `{EntityLabel: "@spec/<id>/<name>"}`; each parameter has `name`, `type`
+(`string|number|boolean|json|array`), optional `required`, `widget` (`codehinter|dropdown|toggle`),
+`options`. Then run the user gate (SKILL.md step 2).
 
 Reference plugin: `marketplace/plugins/quickbooks/` (`react-component-api-endpoint`, `@spec/`,
 OAuth2).

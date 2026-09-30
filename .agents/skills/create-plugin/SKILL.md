@@ -53,13 +53,6 @@ Produce `plugin-spec.json`, the contract both generators work from. Route by sou
 | Postman collection                            | `references/intake-postman.md`, then `references/intake-openapi.md` |
 | npm package, DB driver, docs URL, description | `references/intake-docs.md`                                         |
 
-Validate it against `assets/plugin-spec.schema.json` (draft-07; ajv is installed in
-`marketplace/`):
-
-```bash
-cd marketplace && node -e "const A=require('ajv'),fs=require('fs');const v=new A({allErrors:true}).compile(JSON.parse(fs.readFileSync(process.argv[1])));if(!v(JSON.parse(fs.readFileSync(process.argv[2]))))throw new Error(JSON.stringify(v.errors,null,1));console.log('spec ok')" ../.agents/skills/create-plugin/assets/plugin-spec.schema.json <path-to>/plugin-spec.json
-```
-
 Write `plugin-spec.json` outside the repo (or delete it before committing). It is an
 intermediate artifact and is never committed.
 
@@ -68,12 +61,12 @@ intermediate artifact and is never committed.
 
 ## 3. Scaffold
 
-Render the repo's plugin templates directly; no prompts. This is what `tooljet plugin create`
+Render the repo's plugin templates directly; no prompts (needs the root `npm install` once). This is what `tooljet plugin create`
 runs internally (the human path is in `marketplace/AGENTS.md`):
 
 ```bash
 cd marketplace
-npx --yes hygen@6 plugin new --name <id> --type <type> --display_name "<Display Name>" --plugins_path .
+../node_modules/.bin/hygen plugin new --name <id> --type <type> --display_name "<Display Name>" --plugins_path .
 ```
 
 It writes `plugins/<id>/` (`lib/{index.ts,types.ts,manifest.json,operations.json,icon.svg}`,
@@ -102,8 +95,7 @@ else. Then:
 3. If the id contains `-`, rename the generated class in `lib/index.ts` to a valid identifier.
 4. Icon: save the provided SVG as `lib/icon.svg`, otherwise keep the placeholder.
 
-Identity rule: `marketplace/AGENTS.md` (plugins.json `id` = `source.kind`; directory = id by
-convention).
+Identity rule: `marketplace/AGENTS.md` (plugins.json `id` = `source.kind` = directory name).
 
 ## 4. Generate
 
