@@ -1,5 +1,7 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { isEmpty, set } from 'lodash';
+import { isEmpty, isPlainObject, merge, set } from 'lodash';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -53,6 +55,8 @@ import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
 import { OrganizationThemes } from '@entities/organization_themes.entity';
+import { CreateThemeDto } from '@modules/organization-themes/dto';
+import { TJDefaultTheme } from '@modules/organization-themes/constants';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -2057,13 +2061,20 @@ export class AppImportExportService {
 
   // Themes belong to a workspace: link the app to a theme here, created from the exported definition if missing
   async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
-    const theme = globalSettings?.theme;
-    if (!theme?.name || !theme.definition || theme.organizationId === organizationId) return globalSettings;
+    const { name, definition } = globalSettings?.theme ?? {};
+    if (!isPlainObject(definition) || globalSettings.theme.organizationId === organizationId) return globalSettings;
+
+    // Null, missing or array parts take the default theme's values; the rest must pass the theme settings' checks
+    const own = JSON.parse(
+      JSON.stringify(definition, (_, value) => (value === null || Array.isArray(value) ? undefined : value))
+    );
+    const theme = plainToInstance(CreateThemeDto, { name, organizationId, definition: merge({}, TJDefaultTheme, own) });
+    if (validateSync(theme, { whitelist: true }).length) return globalSettings;
 
     const { id } =
-      (await manager.findOne(OrganizationThemes, { where: { organizationId, name: theme.name } })) ??
-      (await manager.save(OrganizationThemes, { organizationId, name: theme.name, definition: theme.definition }));
-    return { ...globalSettings, theme: { ...theme, id, organizationId } };
+      (await manager.findOne(OrganizationThemes, { where: { organizationId, name } })) ??
+      (await manager.save(OrganizationThemes, theme));
+    return { ...globalSettings, theme: { ...globalSettings.theme, id, organizationId } };
   }
 
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
