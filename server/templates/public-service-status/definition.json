@@ -1772,7 +1772,7 @@
                                     "value": "var(--cc-weak-border)"
                                 },
                                 "textColor": {
-                                    "value": "#FFFFFF"
+                                    "value": "var(--cc-primary-brand)"
                                 },
                                 "borderRadius": {
                                     "value": 10
@@ -1799,13 +1799,13 @@
                                     "value": "none"
                                 },
                                 "iconColor": {
-                                    "value": "#FFFFFF"
+                                    "value": "var(--cc-primary-brand)"
                                 },
                                 "cssClass": {
                                     "value": ""
                                 },
                                 "loaderColor": {
-                                    "value": "var(--cc-surface1-surface)"
+                                    "value": "var(--cc-primary-brand)"
                                 },
                                 "contentAlignment": {
                                     "value": "center"
@@ -1838,7 +1838,7 @@
                             },
                             "validation": {},
                             "createdAt": "2026-09-16T20:20:00.622Z",
-                            "updatedAt": "2026-09-21T05:21:15.906Z",
+                            "updatedAt": "2026-09-30T10:30:50.112Z",
                             "layouts": [
                                 {
                                     "id": "6da5c862-7ba5-4e03-9fed-05b7ab6bdf29",
@@ -4556,7 +4556,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "c5943fcd-7fd7-4134-bd69-8baa5d80428c",
                             "createdAt": "2026-09-16T20:19:18.929Z",
-                            "updatedAt": "2026-09-21T13:38:08.521Z"
+                            "updatedAt": "2026-09-30T10:30:19.773Z"
                         },
                         {
                             "id": "3a45dde5-cf3f-4fab-87ea-ea3c6b744020",
@@ -4579,7 +4579,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "c5943fcd-7fd7-4134-bd69-8baa5d80428c",
                             "createdAt": "2026-09-16T20:19:19.045Z",
-                            "updatedAt": "2026-09-21T13:38:06.987Z"
+                            "updatedAt": "2026-09-30T10:30:18.998Z"
                         },
                         {
                             "id": "987b8d56-1a72-4ee8-a1e9-ec8ae1c0d6b5",
@@ -4602,7 +4602,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "c5943fcd-7fd7-4134-bd69-8baa5d80428c",
                             "createdAt": "2026-09-16T20:19:19.151Z",
-                            "updatedAt": "2026-09-21T13:38:06.299Z"
+                            "updatedAt": "2026-09-30T10:30:18.421Z"
                         },
                         {
                             "id": "5f9210cc-0ff4-4fa1-9a91-2af3dea02c3c",
@@ -4666,7 +4666,7 @@
                             "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
                             "appVersionId": "c5943fcd-7fd7-4134-bd69-8baa5d80428c",
                             "createdAt": "2026-09-16T20:19:19.366Z",
-                            "updatedAt": "2026-09-21T13:38:05.700Z"
+                            "updatedAt": "2026-09-30T10:30:17.889Z"
                         }
                     ],
                     "dataSources": [
@@ -4938,5 +4938,5 @@
             }
         }
     ],
-    "tooljet_version": "3.20.233-cloud-lts"
+    "tooljet_version": "3.20.235-cloud-lts"
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Status Blue",
+  "name": "Status page",
   "description": "A public status page for your services. Show live service health and incident history, subscribe customers to updates, and manage services and incidents from admin pages.",
   "widgets": [
     "Table"
@@ -10,6 +10,6 @@
       "id": "tooljetdb"
     }
   ],
-  "id": "status-blue",
+  "id": "status-page",
   "category": "status-pages"
 }
