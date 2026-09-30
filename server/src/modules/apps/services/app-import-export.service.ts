@@ -1455,6 +1455,7 @@ export class AppImportExportService {
         isGitApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1692,6 +1693,15 @@ export class AppImportExportService {
     if (appVersionIds.length > 0) {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
+  }
+
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
   }
 
   async createImportedAppForUser(
@@ -3438,13 +3448,16 @@ export class AppImportExportService {
           }
         }
       }
-      await manager.save(
+      const newDsvo = await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
           options: clonedOptions,
         })
       );
+      // Clone OAuth token rows too — only matters when this datasource already existed in the
+      // target org (import referencing an existing DS); a freshly-imported DS has no token yet.
+      await this.dataSourcesUtilService.duplicateTokenData(dOpt.id, newDsvo.id, manager);
     }
   }
 

@@ -35,7 +35,7 @@ export interface ILoginConfigsService {
   /**
    * Update general organization configs
    */
-  updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto): Promise<any>;
+  updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto): Promise<void>;
 
   /**
    * Get instance SSO configs
