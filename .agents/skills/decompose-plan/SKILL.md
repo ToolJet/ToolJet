@@ -74,7 +74,7 @@ Leave out file names and function signatures. They change as earlier slices land
 
 ```markdown
 - [ ] AC1: Given <state>, when <action>, then <observable result>.
-  Verify: <unit | e2e | frontend | browser> — <what proves it: the spec to write, or the browser steps and expected screen>
+  Verify: <unit | guard-unit | e2e | frontend | browser> — <what proves it: the spec to write, or the browser steps and expected screen>
 ```
 
 - **One outcome per criterion.** "Works correctly", "handles errors" and "is fast" are not criteria.
@@ -82,6 +82,25 @@ Leave out file names and function signatures. They change as earlier slices land
 - **Persisted shape.** When it changes, add an export/import or git-sync round-trip criterion.
 - **Browser checks** list concrete steps and the expected state, so an agent can run them with Playwright or Chrome DevTools.
 - **`manual`** is allowed only on HITL slices, and says who checks it.
+
+**Test plan per slice: every slice is built test-first, using the conventions that fit it.**
+
+| Slice touches | Convention | Test types |
+|---|---|---|
+| `server/` or `server/ee/` | `server/docs/testing.md` | `unit` (branching a service, guard or util owns), `guard-unit` (real CASL ability factory, no HTTP), `e2e` (meaning only exists through HTTP → guard → DB → response) |
+| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix` | `frontend` |
+| Other frontend | the nearest existing specs' pattern | `frontend`, `browser` for flows |
+| Docs, config, CI only | none: no runtime behavior to test | — |
+
+For backend slices, choose each criterion's `Verify:` type with the testing.md decision rule. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
+- **Axes:** edition, plan, role/permission, module gate, tenant scope, resource state.
+- **Pruning:** short-circuiting gates are tested once each, and only interacting axes are cross-producted.
+- **Must-cover items that apply:**
+  - every 4xx/5xx at e2e;
+  - CASL allowed/denied;
+  - module-gate denial distinct from license denial;
+  - cross-tenant isolation on every list/read;
+  - mutation correctness.
 
 ## 6. Quiz once
 
@@ -123,6 +142,8 @@ Write it to `.agents/plans/<parent#>-<slug>.md`. The directory is gitignored bec
 What to build: <end-to-end behavior>
 
 Layers: Schema: ... / API: ... / UI: ...
+
+Test plan: convention <server/docs/testing.md | app-builder README | none> — matrix cells covered: ... ; skipped (short-circuit / no divergence): ...
 
 Acceptance criteria:
 - [ ] AC1: Given ..., when ..., then ...

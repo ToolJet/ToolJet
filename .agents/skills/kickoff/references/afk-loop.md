@@ -38,9 +38,17 @@ Instructions, in order:
    - Never create a `.env`.
 2. **Plan-first slices.** Comment a 5–10 line approach on the sub-issue and return `awaiting-approval`. Write no code until the main session resumes you with the user's answer.
 3. **App Builder slices.** Follow `app-builder-feature` or `app-builder-bug-fix`.
-4. **Tests first.**
-   - For each acceptance criterion, write the test its `Verify:` line names, and see it fail.
-   - Then implement until it passes.
+4. **Tests first, following the slice's test-plan convention.**
+   - **Backend slices** follow `server/docs/testing.md`:
+     - run its decision checklist before each test;
+     - match its directory layout, edition/plan describe blocks, `@group` JSDoc, seed helpers and isolation rules;
+     - mock only boundaries ToolJet doesn't own, and never its own repositories in e2e.
+   - **App Builder slices** follow `frontend/src/test/app-builder/README.md` through `app-builder-feature` or `app-builder-bug-fix`.
+   - **Red first.**
+     - Write the test each criterion's `Verify:` line names, run it, and see it fail for the right reason. For e2e, red means the real pipeline returns the wrong status or shape, not a compile error.
+     - Commit the failing tests first: `test: <slice> acceptance criteria (red)`. For a bug-fix slice, this is the failing reproduction.
+   - **Green.** Implement the smallest change that passes, commit it, then refactor with the tests green.
+   - **No test is needed** for framework guarantees, trivial pass-throughs or DTOs without custom validation (testing.md → *What NOT to test*).
 5. **Progress log.** Comment on the sub-issue at each milestone: tests written, a criterion turning green, a decision taken, blocked. When resumed, read the last comment first.
 6. **Commit, then check.**
    - Commit with the `commit` skill. Pre-commit hooks must pass; `--no-verify` is never allowed.
@@ -83,7 +91,20 @@ The verifier's prompt:
 > - tests: run them;
 > - browser checks: follow the steps against a running app and capture a screenshot.
 >
-> Then decide from the diff and the evidence whether the criterion is truly met, and probe edge cases the tests miss. Post a verification report comment on the sub-issue (`Verification report` table: criterion, verdict met / not met / unclear, evidence) and return the same table.
+>
+> Then decide from the diff and the evidence whether the criterion is truly met, and probe edge cases the tests miss.
+>
+> Check TDD and conventions:
+> - The red commit exists, and its tests fail when run against the commit before the implementation.
+> - Mutation check: break the implementation on purpose; the tests must fail.
+> - Backend tests follow `server/docs/testing.md`:
+>   - the right unit / guard-unit / e2e choice;
+>   - the planned matrix cells are present (including cross-tenant and gate denials where they apply);
+>   - no mocked own repositories;
+>   - no snapshot blobs;
+>   - one behavior per `it`.
+>
+> Any violation is a `not met` finding. Post a verification report comment on the sub-issue (`Verification report` table: criterion, verdict met / not met / unclear, evidence) and return the same table.
 
 - **Any criterion not met or unclear:** send the finding back to a builder. This counts against the 3-cycle budget.
 - **Everything met:**
