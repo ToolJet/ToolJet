@@ -1,12 +1,14 @@
 ---
 name: cut-release
 description: >-
-  Cut a ToolJet release branch and retarget feature PRs onto it. TRIGGER when the user asks to
-  create a release branch, start a release, cut an LTS or beta release, bump the release version
-  and move PRs onto a release branch, or retarget/rebase feature PRs to a release branch. Creates
+  Cut a ToolJet release branch and retarget feature PRs onto it, or add more PRs to an
+  already-cut release. TRIGGER when the user asks to create a release branch, start a release, cut
+  an LTS or beta release, bump the release version and move PRs onto a release branch,
+  retarget/rebase feature PRs to a release branch, or add/append PRs to an existing release. Creates
   release/v<version> across root + submodules, bumps the version, changes each PR's base to the
   release branch, merges the release branch into each PR branch, and comments the roster (flagging
-  conflicts and @mentioning authors) on the release base PR.
+  conflicts and @mentioning authors) on the release base PR. Re-runnable: given an existing release
+  branch it skips the cut and bump and just appends the new PRs.
 ---
 
 Cut a release branch, bump the version, and retarget a set of feature PRs onto it.
@@ -27,6 +29,9 @@ Parse `$ARGUMENTS`. Two inputs are required — ask for whichever is missing bef
    - a **submodule PR** (`ToolJet/ee-server` or `ToolJet/ee-frontend`).
 
    Classify each by its URL. If only a bare number is given, ask which repo it belongs to.
+3. **Target release branch** *(optional)* — e.g. `release/v3.20.237-lts`. Pass this to **add PRs to an existing release** instead of cutting a new one. When omitted, the branch name is computed (Phase 1); if that branch already exists remotely, the skill switches to append mode automatically.
+
+> **Fresh-cut vs. append mode.** If the target release branch does not yet exist → **fresh cut** (Phase 1 creates it and bumps the version). If it already exists → **append mode**: skip the version bump and branch creation, reuse the release base PRs, and just retarget/merge the new PRs onto it (Phases 2–5). The skill is re-runnable — running it again with more PRs simply adds them.
 
 > **Edition and PR line must match.** A beta release only accepts PRs on the beta line (base `main`/`develop`); an lts release only accepts PRs on the lts line (base `lts-3.16`). A cross-line PR is a hard error — see "Validate edition vs. PR base" in Phase 2. This is checked **before anything is created**.
 
@@ -48,6 +53,21 @@ ROOT=$(git rev-parse --show-toplevel); SEE="$ROOT/server/ee"; FEE="$ROOT/fronten
 ---
 
 ## Phase 1 — Create the release branch and bump the version
+
+**Skip this entire phase in append mode.** First resolve `$RELBR` and the mode:
+
+```bash
+ROOT=$(git rev-parse --show-toplevel); BASE="<lts-3.16 for lts | main for beta>"
+# $RELBR = the --target release branch if given, else the computed name (Step 1).
+if git -C "$ROOT" ls-remote --heads origin "$RELBR" | /usr/bin/grep -q .; then
+  echo "APPEND MODE — $RELBR exists; skip version bump + branch creation, go to Phase 2."
+else
+  echo "FRESH CUT — create $RELBR (Phase 1 below)."
+fi
+```
+
+- **Append mode** ($RELBR exists): do **not** bump the version or recreate the branch. Set `$NEWVER` from the branch name (strip the leading `release/v`). Ensure the submodule release branches exist (Step 3 is still idempotent — create any missing one). Then jump to Phase 2. The release base PRs already exist and are reused in Phase 1 Step 4 / Phase 4.
+- **Fresh cut** ($RELBR absent): run the whole phase below.
 
 The three version files (`.version`, `server/.version`, `frontend/.version`) all live in the **root** repo, so the version bump is a root-only commit.
 
@@ -242,11 +262,28 @@ gh api -X POST repos/<owner/repo>/issues/<number>/labels -f "labels[]=merge-conf
 
 ## Phase 4 — Comment the roster on each release base PR
 
-Post the roster on **every** release base PR from Phase 1 Step 4 — the **root** PR gets the full roster (all PRs, both repos); **each submodule** release PR gets a roster of that submodule's PRs. Cross-link the submodule release PR(s) from the root roster. List conflicts explicitly and **@mention the author** of each conflicted PR so they get notified.
+Post/refresh the roster on **every** release base PR — the **root** PR gets the full roster (all PRs, both repos); **each submodule** release PR gets a roster of that submodule's PRs. Cross-link the submodule release PR(s) from the root roster. List conflicts explicitly and **@mention the author** of each conflicted PR.
+
+**Build the roster from a live query, not from this run's input** — so append-mode re-runs show the complete set (previously-added PRs included). Every retargeted PR has its base set to `$RELBR`, so query by base:
 
 ```bash
-gh pr comment <release-pr-number> --repo ToolJet/ToolJet --body "$(cat <<'EOF'
-## Retargeted onto `release/v<NEWVER>`
+gh pr list --repo ToolJet/ToolJet    --base "$RELBR" --state all --json number,author,state,title
+gh pr list --repo ToolJet/ee-server  --base "$RELBR" --state all --json number,author,state,title
+gh pr list --repo ToolJet/ee-frontend --base "$RELBR" --state all --json number,author,state,title
+```
+
+Map each PR's status: `MERGED` → ✅ Merged; `OPEN` and reached ready in Phase 3 → ✅ ready to merge; left conflicted → ⚠️ conflict. **Update the existing roster comment in place** (don't post a duplicate on re-runs): find your prior roster comment and edit it via REST, else post a new one.
+
+```bash
+# find a prior roster comment id (first one whose body starts with the roster heading):
+gh api repos/ToolJet/ToolJet/issues/<release-pr-number>/comments --jq '.[] | select(.body|startswith("## Retargeted onto")) | .id' | /usr/bin/head -1
+# edit it:   gh api -X PATCH repos/ToolJet/ToolJet/issues/comments/<id> -f body="$(cat <<'EOF' ... EOF)"
+# or create: gh pr comment <release-pr-number> --repo ToolJet/ToolJet --body "$(cat <<'EOF' ... EOF)"
+```
+
+Roster body shape:
+```
+## Retargeted onto `release/vNEWVER`
 
 | PR | Repo | Author | Status |
 |----|------|--------|--------|
@@ -254,12 +291,10 @@ gh pr comment <release-pr-number> --repo ToolJet/ToolJet --body "$(cat <<'EOF'
 | #45  | ee-server | @bob | ⚠️ conflict |
 
 ### Needs attention (merge conflicts)
-- ee-server#45 — @bob: resolve conflicts against `release/v<NEWVER>` and push.
-EOF
-)"
+- ee-server#45 — @bob: resolve conflicts against `release/vNEWVER` and push.
 ```
 
-Status is **ready to merge** (the PR is retargeted and integrated with the release branch, not yet merged) or **conflict** — never "merged" at this point; the actual merge is Phase 5. Omit the "Needs attention" section when nothing conflicted.
+Status is **ready to merge** (retargeted + integrated, not yet merged), **merged** (Phase 5 done), or **conflict**. Omit the "Needs attention" section when nothing conflicted.
 
 ---
 
