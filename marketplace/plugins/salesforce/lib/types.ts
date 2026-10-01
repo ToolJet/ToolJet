@@ -8,6 +8,9 @@ export type SourceOptions = {
   multiple_auth_enabled: boolean;
   tokenData: any;
   auth_type?: string;
+  scopes?: string;
+  code_verifier?: string;
+  code_challenge_method?: string;
 };
 export type QueryOptions = {
   operation: string;
