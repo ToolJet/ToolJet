@@ -1086,6 +1086,23 @@ describe('Table: search and filter', () => {
     await widget.act('setFilters', [{ column: '2026', condition: 'isNotEmpty' }]);
     await waitFor(() => expect(bodyRowCount()).toBe(2));
   });
+
+  test('[Table-BUG-025] setFilters with an unknown column leaves existing filters untouched and logs a debugger error instead of clearing them', async () => {
+    widget.render({
+      properties: { data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`), rowsPerPage: binding('{{10}}') },
+    });
+    await waitFor(() => expect(bodyRowCount()).toBe(MANY_ROWS.length));
+
+    await widget.act('setFilters', [{ column: 'name', condition: 'equals', value: 'Row3' }]);
+    await waitFor(() => expect(bodyRowCount()).toBe(1));
+    expect(exposed('filters')).toEqual([{ column: 'name', condition: 'equals', value: 'Row3' }]);
+
+    await widget.act('setFilters', [{ column: 'does-not-exist', condition: 'equals', value: 'x' }]);
+    await drain();
+    expect(bodyRowCount()).toBe(1);
+    expect(exposed('filters')).toEqual([{ column: 'name', condition: 'equals', value: 'Row3' }]);
+    expect(debuggerLogs().some((log) => log.componentId === ID && log.key.includes('setFilters'))).toBe(true);
+  });
 });
 
 const checkboxIn = (rowEl) => rowEl?.querySelector('[data-cy="checkbox-input"]');
