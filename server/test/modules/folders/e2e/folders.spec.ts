@@ -365,7 +365,7 @@ describe('FoldersController', () => {
       expect(response.body.updated_at).toBeDefined();
     });
 
-    it('should return 400 when creating a folder with a duplicate name in the same org', async () => {
+    it('should return 409 when creating a folder with a duplicate name in the same org', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
       });
