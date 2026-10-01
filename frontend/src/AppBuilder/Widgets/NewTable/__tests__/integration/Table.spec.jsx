@@ -2450,6 +2450,62 @@ describe('Table: per-column-type rendering', () => {
     await waitFor(() => expect(cell('interest', 0).querySelector('.is-invalid')).toBeInTheDocument());
   });
 
+  test('[Table-BUG-022] a select column customRule can reference {{rowData}} for cross-column validation', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            { name: 'id', key: 'id', id: 'col-id', columnType: 'number', columnSize: 60 },
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              isEditable: true,
+              customRule: "{{rowData.id === 1 ? 'Row 1 cannot be active' : ''}}",
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ id: 1, status: 'active' }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('status', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('status', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-BUG-022] a tagsV2 column customRule can reference {{rowData}} for cross-column validation', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            { name: 'id', key: 'id', id: 'col-id', columnType: 'number', columnSize: 60 },
+            {
+              name: 'interest',
+              key: 'interest',
+              id: 'col-interest',
+              columnType: 'tagsV2',
+              columnSize: 200,
+              isEditable: true,
+              customRule: "{{rowData.id === 1 ? 'Row 1 cannot have interests' : ''}}",
+              options: [
+                { label: 'Reading', value: 'Reading' },
+                { label: 'Music', value: 'Music' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ id: 1, interest: ['Reading'] }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('interest', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('interest', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
   test('[Table-COLTYPE-MARKDOWN-002] a markdown column sanitizes bound content via DOMPurify before rendering', async () => {
     widget.render({
       properties: {
