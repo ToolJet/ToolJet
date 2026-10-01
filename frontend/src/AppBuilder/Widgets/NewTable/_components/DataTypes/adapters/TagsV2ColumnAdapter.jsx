@@ -35,7 +35,7 @@ export const TagsV2Column = ({
       customRule: { value: column?.customRule },
     },
     widgetValue: value,
-    customResolveObjects: { value },
+    customResolveObjects: { value, cellValue: value },
   });
   const { isValid, validationError } = validationData;
 
