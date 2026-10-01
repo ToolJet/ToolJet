@@ -164,3 +164,32 @@ describe('"Invalid date" after edit when Date format and Parse format differ', (
     expect(input).not.toHaveValue('Invalid date');
   });
 });
+
+describe('[Table-BUG] DatePickerRenderer: truncated validation error tooltip', () => {
+  let scrollWidthSpy;
+  let clientWidthSpy;
+
+  beforeEach(() => {
+    scrollWidthSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(50);
+  });
+
+  afterEach(() => {
+    scrollWidthSpy.mockRestore();
+    clientWidthSpy.mockRestore();
+  });
+
+  it('shows the full validation error in a tooltip on hover when the error text is truncated', async () => {
+    const validationError = 'Date must fall between the configured minimum and maximum allowed dates';
+
+    render(<DatePickerRenderer {...baseProps} isValid={false} validationError={validationError} />);
+
+    const errorEl = document.querySelector('.invalid-feedback-date');
+    expect(errorEl).toBeInTheDocument();
+
+    await userEvent.hover(errorEl);
+
+    const tooltip = await screen.findByText(validationError, { selector: '.overlay-cell-table' });
+    expect(tooltip).toBeInTheDocument();
+  });
+});
