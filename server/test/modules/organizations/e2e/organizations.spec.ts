@@ -143,6 +143,7 @@ describe('OrganizationsController', () => {
             .set('Cookie', loggedUser.tokenCookie);
 
           expect(response.statusCode).toBe(400);
+          expect(response.body).toMatchObject({ message: expect.arrayContaining(["Workspace slug can't be empty"]) });
         });
 
         it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
@@ -175,6 +176,23 @@ describe('OrganizationsController', () => {
           expect(response.statusCode).toBe(400);
         });
 
+        it('should change the organization name if changes are done by admin', async () => {
+          const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
+          const loggedUser = await login(app);
+
+          const response = await request(app.getHttpServer())
+            .patch('/api/organizations')
+            .send({ name: 'new name' })
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', loggedUser.tokenCookie);
+
+          expect(response.statusCode).toBe(200);
+          await organization.reload();
+          expect(organization).toMatchObject({ name: 'new name' });
+        });
+      });
+
+      describe('PATCH /api/login-configs/organization-general | Update general config', () => {
         it('should not change organization params if changes are not done by admin', async () => {
           const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
           const developerUserData = await createUser(app, {
@@ -196,26 +214,15 @@ describe('OrganizationsController', () => {
           const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
           const loggedUser = await login(app);
 
-          const nameResponse = await request(app.getHttpServer())
-            .patch('/api/organizations')
-            .send({ name: 'new name' })
-            .set('tj-workspace-id', organization.id)
-            .set('Cookie', loggedUser.tokenCookie);
-
-          expect(nameResponse.statusCode).toBe(200);
-
-          const generalResponse = await request(app.getHttpServer())
+          const response = await request(app.getHttpServer())
             .patch('/api/login-configs/organization-general')
             .send({ domain: 'tooljet.io', enableSignUp: true })
             .set('tj-workspace-id', organization.id)
             .set('Cookie', loggedUser.tokenCookie);
 
-          expect(generalResponse.statusCode).toBe(200);
-
+          expect(response.statusCode).toBe(200);
           await organization.reload();
-          expect(organization.name).toBe('new name');
-          expect(organization.domain).toBe('tooljet.io');
-          expect(organization.enableSignUp).toBeTruthy();
+          expect(organization).toMatchObject({ domain: 'tooljet.io', enableSignUp: true });
         });
       });
       describe('PATCH /api/login-configs/organization-sso | Update SSO config', () => {
@@ -248,7 +255,7 @@ describe('OrganizationsController', () => {
           const ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
           expect(ssoConfigs.sso).toBe('git');
           expect(ssoConfigs.enabled).toBeTruthy();
-          const gitConfigs = ssoConfigs.configs as Record<string, any>;
+          const gitConfigs = ssoConfigs.configs as Record<string, unknown>;
           expect(gitConfigs['clientId']).toBe('client-id');
           expect(gitConfigs['clientSecret']).not.toBe('client-secret');
         });

@@ -400,6 +400,7 @@ describe('FoldersController', () => {
         .send({ type: FOLDER_TYPE });
 
       expect(response.statusCode).toBe(400);
+      expect(response.body).toMatchObject({ message: expect.arrayContaining(["Folder name can't be empty"]) });
     });
 
     // Parallel to the FOLDER (front-end) create case above, but for a WORKFLOW
