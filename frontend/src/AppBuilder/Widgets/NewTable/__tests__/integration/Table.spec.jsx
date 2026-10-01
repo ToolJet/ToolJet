@@ -2526,6 +2526,63 @@ describe('Table: per-column-type rendering', () => {
     expect(img.style.borderRadius).toBe('8px');
   });
 
+  test('[Table-COLTYPE-IMAGE-002] an image column renders configured altText as the img alt attribute, defaulting to empty when unset', async () => {
+    widget.render({
+      properties: {
+        data: binding(
+          `{{${JSON.stringify([{ id: 1, avatar: 'https://example.com/a.png', logo: 'https://example.com/b.png' }])}}}`
+        ),
+        columns: {
+          value: [
+            {
+              name: 'avatar',
+              key: 'avatar',
+              id: 'col-avatar',
+              columnType: 'image',
+              columnSize: 80,
+              altText: 'Profile photo',
+            },
+            {
+              name: 'logo',
+              key: 'logo',
+              id: 'col-logo',
+              columnType: 'image',
+              columnSize: 80,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('avatar', 0)?.querySelector('img')).toBeInTheDocument());
+    expect(cell('avatar', 0).querySelector('img')).toHaveAttribute('alt', 'Profile photo');
+    expect(cell('logo', 0).querySelector('img')).toHaveAttribute('alt', '');
+  });
+
+  test('[Table-COLTYPE-IMAGE-003] an image column exposes configured altText as a hover tooltip, so long text is reachable even when clipped inline', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, avatar: 'https://example.com/a.png' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'avatar',
+              key: 'avatar',
+              id: 'col-avatar',
+              columnType: 'image',
+              columnSize: 80,
+              altText: 'A much longer description of this profile photo than the cell can display',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('avatar', 0)?.querySelector('img')).toBeInTheDocument());
+    expect(cell('avatar', 0).querySelector('img')).toHaveAttribute(
+      'title',
+      'A much longer description of this profile photo than the cell can display'
+    );
+  });
+
   test('[Table-COLTYPE-LINK-001] a link column renders displayText as a hyperlink to the bound URL, honoring linkTarget', async () => {
     widget.render({
       properties: {
