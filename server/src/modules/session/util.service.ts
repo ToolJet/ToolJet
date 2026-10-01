@@ -30,6 +30,9 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 
+// Slack for comparing a minted window against the parent's; a bounded session is short by far more.
+const EXPIRY_DERIVATION_TOLERANCE_MS = 60 * 1000;
+
 @Injectable()
 export class SessionUtilService {
   constructor(
@@ -512,8 +515,16 @@ export class SessionUtilService {
           throw new UnauthorizedException('PAT session expired');
         }
 
-        // Extend PAT session expiry
-        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        /* Extend PAT session expiry — unless this session was deliberately minted SHORT, which
+           renewal would otherwise undo on its very first request.
+
+           Derived from the row rather than a new column: a bounded session is minted shorter than
+           the parent window and, never being extended, stays that way. */
+        const parentWindowMs = session.pat.sessionExpiryMinutes * 60 * 1000;
+        const mintedWindowMs = session.expiry.getTime() - session.createdAt.getTime();
+        if (mintedWindowMs >= parentWindowMs - EXPIRY_DERIVATION_TOLERANCE_MS) {
+          session.expiry = new Date(Date.now() + parentWindowMs);
+        }
       } else {
         // Regular session extension
         if (session.expiry < now) {
