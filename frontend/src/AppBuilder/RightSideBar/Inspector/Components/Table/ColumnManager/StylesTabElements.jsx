@@ -101,6 +101,20 @@ export const StylesTabElements = ({
               width={'100%'}
             />
           </div>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
         </>
       )}
       {column.columnType === 'boolean' && (
@@ -225,6 +239,20 @@ export const StylesTabElements = ({
               </ToggleGroup>
             </div>
           </div>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
         </>
       )}
 
@@ -255,6 +283,20 @@ export const StylesTabElements = ({
               props={column}
               component={component}
               paramMeta={{ type: 'colorSwatches', displayName: 'Unselected color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
               paramType="properties"
             />
           </div>
