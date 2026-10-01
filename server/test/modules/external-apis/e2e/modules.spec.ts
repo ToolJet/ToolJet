@@ -450,6 +450,99 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
         })
         .expect(400);
     });
+
+    it('imports single module using per-item appName — no warning in response', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      const res = await importModule(app.getHttpServer(), orgId, {
+        tooljet_version: exportBody.tooljet_version,
+        app: [{ ...exportBody.app[0], appName: 'Per-Item Name' }],
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
+
+      expect(res.message).toBe('Module imported successfully.');
+      expect(res.warnings).toBeUndefined();
+
+      const listing = await listModules(app.getHttpServer(), orgId);
+      const names = listing.modules.map((m: any) => m.name);
+      expect(names).toContain('Per-Item Name');
+    });
+
+    it('imports multiple modules using per-item appName — each gets its own name, no warning', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      const res = await importModule(app.getHttpServer(), orgId, {
+        tooljet_version: exportBody.tooljet_version,
+        app: [
+          { ...exportBody.app[0], appName: 'Module Alpha' },
+          { ...exportBody.app[0], appName: 'Module Beta' },
+        ],
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
+
+      expect(res.message).toBe('Module imported successfully.');
+      expect(res.warnings).toBeUndefined();
+
+      const listing = await listModules(app.getHttpServer(), orgId);
+      const names = listing.modules.map((m: any) => m.name);
+      expect(names).toContain('Module Alpha');
+      expect(names).toContain('Module Beta');
+    });
+
+    it('imports single module using top-level appName — returns deprecation warning', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      const res = await importModule(app.getHttpServer(), orgId, {
+        tooljet_version: exportBody.tooljet_version,
+        appName: 'Legacy Name',
+        app: exportBody.app,
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
+
+      expect(res.message).toBe('Module imported successfully.');
+      expect(res.warnings).toEqual([
+        'appName at root level is deprecated. Move it inside each item in the app array.',
+      ]);
+
+      const listing = await listModules(app.getHttpServer(), orgId);
+      const names = listing.modules.map((m: any) => m.name);
+      expect(names).toContain('Legacy Name');
+    });
+
+    it('returns 400 when top-level appName is used with multiple items', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          appName: 'Shared Name',
+          app: [exportBody.app[0], exportBody.app[0]],
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(400);
+    });
   });
 
   // ---------------------------------------------------------------------------
