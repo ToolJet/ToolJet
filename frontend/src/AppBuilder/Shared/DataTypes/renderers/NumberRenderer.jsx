@@ -3,6 +3,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { noop } from 'lodash';
+import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
 
 /**
  * Utility function to generate input step for decimal places
@@ -193,9 +194,7 @@ export const NumberRenderer = ({
             />
           </div>
         </div>
-        {!isValid && widgetType !== 'KeyValuePair' && (
-          <div className="invalid-feedback text-truncate">{validationError}</div>
-        )}
+        {!isValid && widgetType !== 'KeyValuePair' && <ValidationErrorTooltip message={validationError} />}
       </div>
     );
   }
