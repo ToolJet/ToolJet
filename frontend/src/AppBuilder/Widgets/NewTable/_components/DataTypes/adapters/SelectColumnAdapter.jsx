@@ -43,7 +43,7 @@ export const CustomSelectColumn = ({
       customRule: { value: column?.customRule },
     },
     widgetValue: value,
-    customResolveObjects: { value },
+    customResolveObjects: { value, cellValue: value },
   });
   const { isValid, validationError } = validationData;
 

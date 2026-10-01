@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -257,6 +257,8 @@ export const SelectRenderer = ({
 
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const showInvalid = widgetType !== 'KeyValuePair' && isEditable && !isValid;
 
   useEffect(() => {
     // Enable click-outside-to-close for: multiselect, new row cells, or key-value-pair widget
@@ -390,69 +392,66 @@ export const SelectRenderer = ({
     return null;
   }
 
+  const showChipOverflow = isMulti && (selectedValue?.length || defaultValue?.length) && !isFocused && isOverflowing();
+
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && (selectedValue?.length || defaultValue?.length) && !isFocused ? (
+        showInvalid ? (
+          <div className="overlay-cell-table" style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
+            {validationError}
+          </div>
+        ) : showChipOverflow ? (
           getOverlay(selectedValue || defaultValue, containerWidth, darkMode)
         ) : (
           <div />
         )
       }
-      trigger={isMulti && !isFocused && isOverflowing() && ['hover', 'focus']}
+      show={isHovered && (showInvalid || showChipOverflow)}
       rootClose={true}
     >
-      <>
-        <div
-          className="w-100 h-100 d-flex align-items-center"
-          ref={containerRef}
-          onClick={(e) => {
-            if ((isNewRow && isEditable) || widgetType === 'KeyValuePair') {
-              setIsFocused((prev) => !prev);
-            }
+      <div
+        className="w-100 h-100 d-flex align-items-center"
+        ref={containerRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={(e) => {
+          if ((isNewRow && isEditable) || widgetType === 'KeyValuePair') {
+            setIsFocused((prev) => !prev);
+          }
+        }}
+      >
+        <Select
+          options={options}
+          hasSearch={false}
+          fuzzySearch={fuzzySearch}
+          isDisabled={disabled}
+          className={`${className || ''} ${showInvalid ? 'is-invalid' : ''}`}
+          components={customComponents}
+          value={selectedValue}
+          onMenuInputFocus={() => {
+            setIsFocused(true);
           }}
-        >
-          <Select
-            options={options}
-            hasSearch={false}
-            fuzzySearch={fuzzySearch}
-            isDisabled={disabled}
-            className={className}
-            components={customComponents}
-            value={selectedValue}
-            onMenuInputFocus={() => {
-              setIsFocused(true);
-            }}
-            onChange={handleChange}
-            useCustomStyles={true}
-            styles={customStyles}
-            defaultValue={defaultValue}
-            placeholder={placeholder}
-            isMulti={isMulti}
-            hideSelectedOptions={false}
-            isClearable={false}
-            clearIndicator={false}
-            darkMode={darkMode}
-            menuIsOpen={menuIsOpen}
-            isFocused={isFocused}
-            optionColors={optionColors}
-          />
-        </div>
-        {/* Validation error - only shown for non-KeyValuePair widgets */}
-        {widgetType !== 'KeyValuePair' && isEditable && !isValid && (
-          <div
-            onClick={() => {
-              if (!isValid) {
-                setIsFocused(true);
-              }
-            }}
-            className="invalid-feedback d-block"
-          >
-            {validationError}
-          </div>
-        )}
-      </>
+          onChange={handleChange}
+          useCustomStyles={true}
+          styles={customStyles}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          isMulti={isMulti}
+          hideSelectedOptions={false}
+          isClearable={false}
+          clearIndicator={false}
+          darkMode={darkMode}
+          menuIsOpen={menuIsOpen}
+          isFocused={isFocused}
+          optionColors={optionColors}
+        />
+        {/* Presence-only marker (no visible content/layout impact): activates the existing
+            `.jet-data-table td:has(.invalid-feedback):hover` rule that reddens the cell's own
+            outer border on hover — the actual error text is shown via the OverlayTrigger above. */}
+        {showInvalid && <span className="invalid-feedback" style={{ display: 'none' }} />}
+      </div>
     </OverlayTrigger>
   );
 };
