@@ -230,6 +230,7 @@ export const tagsInputConfig = {
   events: {
     onTagAdded: { displayName: 'On tag added' },
     onTagDeleted: { displayName: 'On tag deleted' },
+    onSearchTextChanged: { displayName: 'On search text changed' },
     onFocus: { displayName: 'On focus' },
     onBlur: { displayName: 'On blur' },
   },
@@ -379,6 +380,13 @@ export const tagsInputConfig = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '6' },
       accordian: 'field',
     },
+    chipBorderRadius: {
+      type: 'input',
+      displayName: 'Tag radius',
+      // Defaults to the 2px the chips have always been, so saved apps keep their shape.
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '2' },
+      accordian: 'field',
+    },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box Shadow',
@@ -403,6 +411,8 @@ export const tagsInputConfig = {
     },
   },
   exposedVariables: {
+    searchText: '',
+    lastDeletedTag: {},
     values: [],
     tags: [],
     newTagsAdded: [],
@@ -470,6 +480,7 @@ export const tagsInputConfig = {
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
+      chipBorderRadius: { value: '2' },
       selectedTextColor: { value: 'var(--cc-primary-text)' },
       fieldBorderColor: { value: 'var(--cc-default-border)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },

@@ -65,6 +65,7 @@ const TagsInput = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    chipBorderRadius,
     boxShadow,
     labelColor,
     alignment,
@@ -259,6 +260,9 @@ const TagsInput = ({
   // Handle change (selection/deselection)
   const onChangeHandler = (items, action) => {
     if (action.action === 'remove-value' || action.action === 'pop-value') {
+      const { label, value } = action.removedValue ?? {};
+      // Published before the event so the builder's handler reads the tag that just went.
+      setExposedVariable('lastDeletedTag', label === undefined ? {} : { label, value });
       fireEvent('onTagDeleted');
     } else if (action.action === 'select-option') {
       fireEvent('onTagAdded');
@@ -340,8 +344,14 @@ const TagsInput = ({
     }
 
     setInputValue(value);
+    // Only a keystroke counts as a search-text change; the many paths that clear the field on
+    // commit are covered by the effect below, which keeps the variable fresh without re-firing.
+    fireEvent('onSearchTextChanged');
     setFocusedOptionIndex(-1);
   };
+
+  // Typing a disabled option's label must not select it, the way arrow-key focus already refuses to.
+  const findSelectableOption = (label) => filteredOptions.find((opt) => opt.label === label && !opt.isDisabled);
 
   // Handle keyboard events
   const handleKeyDown = (e) => {
@@ -394,7 +404,7 @@ const TagsInput = ({
     // Enter key - select highlighted option OR create new tag
     if (e.key === 'Enter') {
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
 
       // When search is disabled, handle selection directly
       if (!enableSearch && inputValue.trim()) {
@@ -454,7 +464,7 @@ const TagsInput = ({
     if ((e.key === ',' || e.key === ';') && inputValue.trim()) {
       e.preventDefault();
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
       if (matchingOption) {
         const newSelected = [...selected, matchingOption];
         setInputValues(newSelected);
@@ -469,7 +479,7 @@ const TagsInput = ({
     // Tab - select existing option or create new tag, otherwise let it move focus
     if (e.key === 'Tab' && inputValue.trim()) {
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
       if (matchingOption) {
         e.preventDefault();
         const newSelected = [...selected, matchingOption];
@@ -560,6 +570,8 @@ const TagsInput = ({
         setExposedVariable('isDisabled', !!value);
       },
       label: label,
+      searchText: '',
+      lastDeletedTag: {},
       isVisible: properties.visibility,
       isLoading: tagsLoadingState,
       isDisabled: properties.disabledState,
@@ -594,7 +606,8 @@ const TagsInput = ({
         // Find matching option by value first, then by label as fallback
         const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
 
-        if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
+        // Against the array being built, not the pre-call selection: value and label name the same option.
+        if (matchingOption && !newSelected.some((s) => s.value === matchingOption.value)) {
           newSelected.push(matchingOption);
         }
       });
@@ -616,6 +629,11 @@ const TagsInput = ({
       setInputValues(newSelected);
     });
   }, [allOptions, selected]);
+
+  useEffect(() => {
+    setExposedVariable('searchText', inputValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
 
   useFormClear(() => setInputValues([]));
 
@@ -941,6 +959,7 @@ const TagsInput = ({
             focusedOptionIndex={focusedOptionIndex}
             autoPickChipColor={autoPickChipColor}
             getChipColor={getChipColor}
+            chipBorderRadius={chipBorderRadius}
           />
         </div>
       </div>

@@ -3,7 +3,7 @@ import { IconX } from '@tabler/icons-react';
 
 const TagsInputChip = (props) => {
   const { data, removeProps, selectProps } = props;
-  const { getChipColor } = selectProps || {};
+  const { getChipColor, chipBorderRadius } = selectProps || {};
 
   // Get the chip colors using the getChipColor function (returns { bg, text })
   const chipColors = getChipColor
@@ -16,6 +16,7 @@ const TagsInputChip = (props) => {
       style={{
         backgroundColor: chipColors.bg,
         color: chipColors.text,
+        borderRadius: `${Number.parseFloat(chipBorderRadius)}px`,
       }}
     >
       <span className="tags-input-chip-label">{data.label}</span>

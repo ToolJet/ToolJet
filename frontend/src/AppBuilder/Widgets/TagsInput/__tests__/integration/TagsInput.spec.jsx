@@ -30,6 +30,7 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { tagsInputConfig } from '@/AppBuilder/WidgetManager/widgets/TagsInput';
 
 const ID = 'tags1';
 const NAME = 'tagsinput1';
@@ -77,6 +78,7 @@ const widget = createWidgetHarness({
     selectedTextColor: binding('var(--cc-primary-text)'),
     errTextColor: binding('rgb(200, 0, 0)'),
     fieldBorderRadius: binding('6'),
+    chipBorderRadius: binding('2'),
     padding: binding('default'),
   },
 });
@@ -1109,12 +1111,172 @@ describe('TagsInput: known unfixed bugs', () => {
   // membership against the pre-call `selected` (:579) rather than the
   // `newSelected` array it is building (:570), so a repeated tag in one call is
   // pushed twice. Fix: test against `newSelected`.
-  test.failing('[TagsInput-BUG-002] `selectTags` passing the same tag twice selects it once', async () => {
+  test('[TagsInput-BUG-002] `selectTags` passing the same tag twice selects it once', async () => {
     await mount();
 
     await widget.act('selectTags', ['newport', 'newport']);
 
     await waitFor(() => expect(chips()).toEqual(['Newport']));
     expect(exposed('values')).toEqual(['newport']);
+  });
+
+  test('[TagsInput-BUG-002] `selectTags` given one option by value and by label selects it once', async () => {
+    // Break this catches: matching value-then-label against the pre-call selection, so the two
+    // names for a single option both pass the membership check and it is chipped twice. Two chips
+    // sharing a value cannot then be removed individually.
+    await mount();
+
+    await widget.act('selectTags', ['new_york', 'New York']);
+
+    await waitFor(() => expect(chips()).toEqual(['New York']));
+    expect(exposed('values')).toEqual(['new_york']);
+  });
+});
+
+describe('TagsInput: disabled options cannot be selected', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const SCHEMA_WITH_DISABLED = `{{[
+    {label: 'Alpha', value: 'a', visible: true, default: false, disable: false},
+    {label: 'Blocked', value: 'b', visible: true, default: false, disable: true}
+  ]}}`;
+
+  const mountWithDisabled = (properties = {}) =>
+    mount({
+      properties: { advanced: binding('{{true}}'), schema: binding(SCHEMA_WITH_DISABLED), ...properties },
+    });
+
+  // Break this catches: any typed-text path that selects by matching the label without
+  // re-checking `disable`, which is every path except the arrow-key one.
+  test.each([
+    ['Enter', '{Enter}', {}],
+    ['a comma', ',', {}],
+    ['a semicolon', ';', {}],
+    ['Tab', '{Tab}', {}],
+    ['Enter with search turned off', '{Enter}', { enableSearch: binding('{{false}}') }],
+  ])('[TagsInput-BUG-011] %s does not select a disabled option', async (_name, keys, properties) => {
+    await mountWithDisabled({ allowNewTags: binding('{{false}}'), ...properties });
+    // With search off the menu never opens, but the field still takes typing.
+    if (!properties.enableSearch) await openMenu();
+    else await user().click(field());
+
+    await typeText('Blocked');
+    await user().keyboard(keys);
+
+    expect(chips()).toEqual([]);
+    expect(exposed('values')).toEqual([]);
+  });
+
+  test('[TagsInput-BUG-011] an enabled option is still selectable the same way', async () => {
+    // Break this catches: a guard that rejects every typed selection, not just the disabled ones.
+    await mountWithDisabled({ allowNewTags: binding('{{false}}') });
+    await openMenu();
+
+    await typeText('Alpha');
+    await user().keyboard('{Enter}');
+
+    await waitFor(() => expect(chips()).toEqual(['Alpha']));
+    expect(exposed('values')).toEqual(['a']);
+  });
+});
+
+describe('TagsInput: chip border radius', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[TagsInput-CHIP-002] the configured chip radius reaches the chip, and defaults to the shipped 2px', async () => {
+    // Break this catches: registering the style without applying it, or changing the default and
+    // reshaping the chips of every app saved before the style existed.
+    // The shipped default is the BC half: anything but 2 reshapes every chip saved before this style.
+    expect(tagsInputConfig.definition.styles.chipBorderRadius.value).toBe('2');
+
+    await mount({ properties: { values: binding(['newport']) } });
+    await waitFor(() => expect(chipNodes()).toHaveLength(1));
+    expect(chipNodes()[0]).toHaveStyle({ borderRadius: '2px' });
+
+    await mount({ properties: { values: binding(['newport']) }, styles: { chipBorderRadius: binding('12') } });
+
+    await waitFor(() => expect(chipNodes()).toHaveLength(1));
+    expect(chipNodes()[0]).toHaveStyle({ borderRadius: '12px' });
+  });
+});
+
+describe('TagsInput: search text is published for server side search', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[TagsInput-SRCH-004] typing publishes searchText, and clearing it empties the variable', async () => {
+    // Break this catches: never publishing the typed text, which leaves the documented
+    // Server side search query with nothing to filter on.
+    await mount();
+    expect(exposed('searchText')).toBe('');
+
+    await openMenu();
+    await typeText('New');
+
+    await waitFor(() => expect(exposed('searchText')).toBe('New'));
+
+    await user().clear(input());
+
+    await waitFor(() => expect(exposed('searchText')).toBe(''));
+  });
+
+  test('[TagsInput-SRCH-004] committing a tag clears searchText, so a bound query stops filtering on it', async () => {
+    // Break this catches: publishing only from the input-change handler. Nine other paths clear the
+    // field directly, so searchText would keep reporting text the user no longer has typed.
+    await mount();
+    await openMenu();
+    await typeText('Newport');
+    await waitFor(() => expect(exposed('searchText')).toBe('Newport'));
+
+    await user().keyboard('{Enter}');
+
+    await waitFor(() => expect(chips()).toEqual(['Newport']));
+    expect(exposed('searchText')).toBe('');
+  });
+
+  test('[TagsInput-SRCH-005] On search text changed fires once per keystroke', async () => {
+    // Break this catches: firing on selection or blur too, which would re-run the builder's
+    // query for events that did not change the search text.
+    await mount({ events: countingEvent('onSearchTextChanged', 'searched') });
+    await openMenu();
+
+    await typeText('New');
+
+    await waitFor(() => expect(fireCount('searched')).toBe(3));
+
+    await clickOption('Newport');
+
+    expect(fireCount('searched')).toBe(3);
+  });
+});
+
+describe('TagsInput: the deleted tag is readable from the delete event', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[TagsInput-DEL-003] removing a chip publishes which tag went, for the On tag deleted handler to read', async () => {
+    // Break this catches: firing On tag deleted with no record of the tag, leaving the handler to
+    // diff `values` by hand to find out what the user removed.
+    await mount({ properties: { values: binding(['newport', 'new_york']) } });
+    await waitFor(() => expect(chips()).toEqual(['Newport', 'New York']));
+    expect(exposed('lastDeletedTag')).toEqual({});
+
+    await user().click(chipNodes()[0].querySelector('.tags-input-chip-remove'));
+
+    await waitFor(() => expect(exposed('lastDeletedTag')).toEqual({ label: 'Newport', value: 'newport' }));
+    expect(exposed('values')).toEqual(['new_york']);
+  });
+
+  test('[TagsInput-DEL-003] Backspace publishes the tag it removed', async () => {
+    // Break this catches: covering only the chip control, so the keyboard path reports a stale tag.
+    await mount({ properties: { values: binding(['newport', 'new_york']) } });
+    await waitFor(() => expect(chips()).toHaveLength(2));
+
+    await user().click(field());
+    await user().keyboard('{Backspace}');
+
+    await waitFor(() => expect(exposed('lastDeletedTag')).toEqual({ label: 'New York', value: 'new_york' }));
   });
 });
