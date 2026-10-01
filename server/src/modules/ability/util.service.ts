@@ -175,14 +175,14 @@ export class AbilityUtilService {
       });
     }, manager);
 
-    return AbilityUtilService.buildUserAppsPermissions(
+    return this.buildUserAppsPermissions(
       appsGranularPermissions,
       appsOwnedByUser.map((app) => app.id),
       ownerGetsViewAccess
     );
   }
 
-  static buildUserAppsPermissions(
+  private buildUserAppsPermissions(
     appsGranularPermissions: GranularPermissions[],
     ownedAppsId: string[] = [],
     ownerGetsViewAccess = false
