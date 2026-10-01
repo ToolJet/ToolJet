@@ -3,6 +3,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isCellContentOverflowing } from '../utils';
+import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
 
 /**
  * TextRenderer - Pure multiline text value renderer with editing support
@@ -194,9 +195,7 @@ export const TextRenderer = ({
           {renderContent()}
         </div>
         {isEditable && !isValid && widgetType !== 'KeyValuePair' && (
-          <div className="invalid-feedback text-truncate" onClick={focusInput}>
-            {validationError}
-          </div>
+          <ValidationErrorTooltip message={validationError} onClick={focusInput} />
         )}
       </div>
     </OverlayTrigger>

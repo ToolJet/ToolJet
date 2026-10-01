@@ -3,6 +3,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
 import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
+import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
 
 /**
  * StringRenderer - Pure string value renderer with editing support
@@ -193,9 +194,7 @@ export const StringRenderer = ({
         )}
       </div>
       {widgetType !== 'KeyValuePair' && !isValid && (
-        <div className="invalid-feedback text-truncate" onClick={focusInput}>
-          {validationError}
-        </div>
+        <ValidationErrorTooltip message={validationError} onClick={focusInput} />
       )}
     </div>
   );

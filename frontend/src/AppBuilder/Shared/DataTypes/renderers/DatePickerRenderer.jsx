@@ -6,6 +6,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -406,7 +407,9 @@ export const DatePickerRenderer = ({
             dateChangeHandledRef.current = false;
           }}
         />
-        {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
+        {isEditable && !isValid && (
+          <ValidationErrorTooltip message={validationError} className="invalid-feedback-date" />
+        )}
       </div>
     </OverlayTrigger>
   );
