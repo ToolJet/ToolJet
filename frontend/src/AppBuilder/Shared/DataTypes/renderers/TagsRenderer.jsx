@@ -346,8 +346,8 @@ export const TagsRenderer = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -410,6 +410,13 @@ export const TagsRenderer = ({
     const valueContainer = containerRef.current.querySelector('.tags-renderer-select__value-container');
     return valueContainer?.clientHeight > containerRef.current?.clientHeight;
   }, []);
+
+  const hasSelectedValue = isMulti ? Boolean(selectedValue?.length) : Boolean(selectedValue && !isArray(selectedValue));
+
+  // Non-editable cells with no value should render blank instead of the dropdown's placeholder text.
+  if (!isEditable && !hasSelectedValue) {
+    return null;
+  }
 
   return (
     <OverlayTrigger
