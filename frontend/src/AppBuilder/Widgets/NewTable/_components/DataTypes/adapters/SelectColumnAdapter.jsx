@@ -29,6 +29,7 @@ export const CustomSelectColumn = ({
   isNewRow,
   autoAssignColors = false,
   id,
+  rowData,
 
   widgetType,
 }) => {
@@ -43,7 +44,7 @@ export const CustomSelectColumn = ({
       customRule: { value: column?.customRule },
     },
     widgetValue: value,
-    customResolveObjects: { value, cellValue: value },
+    customResolveObjects: { value, cellValue: value, rowData },
   });
   const { isValid, validationError } = validationData;
 

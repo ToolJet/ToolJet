@@ -329,6 +329,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   id={id}
+                  rowData={rowData}
                 />
               );
             }
@@ -375,6 +376,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   id={id}
+                  rowData={rowData}
                 />
               );
             }
