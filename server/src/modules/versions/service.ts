@@ -35,6 +35,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -51,7 +52,8 @@ export class VersionService implements IVersionService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly userAppVersionStateRepository: UserAppVersionStateRepository
   ) {}
 
   /**
@@ -327,6 +329,7 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
+    this.persistActiveVersion(user, app, response.editing_version);
     const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
@@ -345,6 +348,16 @@ export class VersionService implements IVersionService {
     );
 
     return response;
+  }
+
+  // Fire-and-forget. Only for a real version-only row -- a feature-branch draft (BRANCH type)
+  // has no version dimension to remember, and getVersion is also called once per embedded
+  // module, whose version is resolved by ModuleViewer pinning, not personal browsing state.
+  protected persistActiveVersion(user: User, app: App, editingVersion?: { id?: string; versionType?: string }): void {
+    if (!editingVersion?.id || editingVersion.versionType === AppVersionType.BRANCH) return;
+    void this.userAppVersionStateRepository
+      .upsertLastActiveVersion(user.id, app.id, editingVersion.id)
+      .catch((err) => console.error('Failed to persist last-active version:', err));
   }
 
   async getVersionByStableIds(

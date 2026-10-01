@@ -16,6 +16,7 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { EncryptionModule } from '@modules/encryption/module';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -77,6 +78,7 @@ export class VersionModule extends SubModule {
         VersionRepository,
         OrganizationGitSyncRepository,
         AppsRepository,
+        UserAppVersionStateRepository,
         VersionsCreateService,
         PageService,
         EventsService,

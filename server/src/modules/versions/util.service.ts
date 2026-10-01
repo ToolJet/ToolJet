@@ -784,8 +784,8 @@ export class VersionUtilService implements IVersionUtilService {
       const versionId = versionToDelete.id;
       const resourceLabel = app.type === 'module' ? 'module' : 'app';
 
-      // A released/current version can never be deleted, regardless of git state.
-      if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
+      // The current version can never be deleted, regardless of git state.
+      if (app.currentVersionId === versionId) {
         throw new BadRequestException('You cannot delete a released version');
       }
 
