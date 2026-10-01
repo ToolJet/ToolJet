@@ -2059,12 +2059,12 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  // Themes belong to a workspace: link the app to a theme here, created from the exported definition if missing
+  // Link the app to this workspace's copy of its exported theme
   async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
     const { name, definition } = globalSettings?.theme ?? {};
     if (!isPlainObject(definition) || globalSettings.theme.organizationId === organizationId) return globalSettings;
 
-    // Null, missing or array parts take the default theme's values; the rest must pass the theme settings' checks
+    // Fill unusable parts from the default theme, then apply the theme settings' checks
     const own = JSON.parse(
       JSON.stringify(definition, (_, value) => (value === null || Array.isArray(value) ? undefined : value))
     );
