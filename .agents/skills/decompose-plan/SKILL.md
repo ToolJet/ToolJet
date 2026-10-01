@@ -60,15 +60,28 @@ For each slice, record:
 | Repos | root, `server/ee`, `frontend/ee` |
 | Stack / branch | See below |
 | User story | `As a <role>, I want <capability> so that <benefit>.` exactly |
-| Acceptance criteria | Observable and testable; each one becomes a failing test first |
+| Acceptance criteria | Agent-verifiable, in the format below |
 
 **Stacks.**
 - **Chains:** slices joined by blocked-by form a chain, and each chain is one `gh stack`, bottom to top in dependency order.
 - **Diamonds:** a diamond (two slices depending on one) is linearised into a single stack, in topological order.
 - **Independent slices:** each gets its own stack, or a plain PR if there is only one.
-- **Branches:** `<type>/<issue#>-<slug>`. The issue number is filled in after filing; until then use `<type>/<parent#>-s<n>-<slug>`.
+- **Branches:** `<type>/<parent#>-s<n>-<slug>`. The name is final: it is known before filing and never renamed. Keep the slug public-safe, because root branch names are public.
 
 Leave out file names and function signatures. They change as earlier slices land.
+
+**Acceptance criteria are what the verifier subagent checks.** Each one is a single observable outcome plus how to prove it:
+
+```markdown
+- [ ] AC1: Given <state>, when <action>, then <observable result>.
+  Verify: <unit | e2e | frontend | browser> — <what proves it: the spec to write, or the browser steps and expected screen>
+```
+
+- **One outcome per criterion.** "Works correctly", "handles errors" and "is fast" are not criteria.
+- **Cover the denial path.** When the slice has authorization, add a criterion such as "a user without `<permission>` gets 403", and an edition case such as "CE returns 404 or hides the entry point".
+- **Persisted shape.** When it changes, add an export/import or git-sync round-trip criterion.
+- **Browser checks** list concrete steps and the expected state, so an agent can run them with Playwright or Chrome DevTools.
+- **`manual`** is allowed only on HITL slices, and says who checks it.
 
 ## 6. Quiz once
 
@@ -109,5 +122,6 @@ What to build: <end-to-end behavior>
 Layers: Schema: ... / API: ... / UI: ...
 
 Acceptance criteria:
-- [ ] ...
+- [ ] AC1: Given ..., when ..., then ...
+  Verify: e2e — ...
 ```

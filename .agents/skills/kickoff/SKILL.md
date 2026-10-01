@@ -67,10 +67,9 @@ Ask: "Plan approved. Grill it before filing?" If yes, invoke `grill-me` on the p
 
 ## 4. File and branch
 
-1. Invoke `create-issue` in plan mode (`frontend/ee/.agents/skills/create-issue/references/plan-mode.md`). It does one approval, files sub-issues blockers-first with a native parent, type and blocked-by, and posts the plan on the parent.
-2. Rename the plan's placeholder branches to `<type>/<issue#>-<slug>`.
-3. Create the stacks: `references/stacks.md`.
-4. Print a summary table: issue, title, mode, blocked by, stack and branch.
+1. Invoke `create-issue` in plan mode (`frontend/ee/.agents/skills/create-issue/references/plan-mode.md`). It shows every sub-issue body for one batch approval, files the sub-issues blockers-first with a native parent, type and blocked-by, and posts the plan on the parent.
+2. Create the stacks from the plan's branch names (fixed at planning, never renamed): `references/stacks.md`.
+3. Print a summary table: issue, title, mode, blocked by, stack and branch.
 
 ## 5. Implement
 

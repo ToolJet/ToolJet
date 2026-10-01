@@ -1,30 +1,28 @@
-# Stacks
+# Stacks: branch, rebase and merge strategy
 
 Every slice gets one branch and one PR. Slices chained by blocked-by share a `gh stack`, so slice N+1 builds on slice N's branch before N merges.
 
 ## Rules
 
-- **Operations:** only the main session runs stack commands (`init`, `add`, `rebase`, `push`, `submit`, `sync`, `merge`). Subagents only commit on the branch they were assigned.
-- **Branch names:** each repo a slice touches (root, `server/ee`, `frontend/ee`) gets its own stack, using the same branch names in all three.
-- **Pointers:** a root branch sets each submodule pointer to the tip of the matching EE branch.
-- **Trunk:** the trunk is the base branch the user names. Ask if it is unclear; `main` for beta work, an `lts-*` branch for LTS.
-- **Worktrees:** a branch can be checked out in only one worktree. Hand each subagent exactly one branch.
+- **Branch names** come from the plan: `<type>/<parent#>-s<n>-<slug>`. They are fixed before filing and never renamed.
+- **Public-safe names.** Root branch names, commit subjects and PR titles are public. Describe the change generically: no customer names, nothing that exists only in EE.
+- **Repos.** Each repo a stack touches (root, `server/ee`, `frontend/ee`) gets its own stack, with the same branch names. A layer that doesn't change an EE repo has no branch there.
+- **Pointer rule.** Root branch `k` points each submodule at the tip of that repo's branch `k`. If that repo has no branch `k`, it points at the nearest lower layer's branch, or at the trunk commit when there is none.
+- **Who runs stack commands.** Only the main session, and only with no worktree holding a stack branch (see `afk-loop.md` → *Before any stack operation*).
+- **Trunk.** The base branch the user names: `main` for beta work, an `lts-*` branch for LTS. Ask if it's unclear.
+- **Force pushes.** `push`, `sync` and `rebase` followed by `push` rewrite remote branches (`--force-with-lease`). Show the user the exact command and wait for a yes every time.
 
 ## Create
 
-Create the stacks from the main checkout, bottom to top, once per repo the stack touches. Start with the EE repos:
+Create the stacks from the main checkout, EE repos first, bottom to top. Only include layers that touch that repo:
 
 ```bash
-(cd server/ee && gh stack init --base <trunk> <b1> <b2> <b3>)
+(cd server/ee && gh stack init --base <trunk> <b1> <b3>)
 (cd frontend/ee && gh stack init --base <trunk> <b1> <b2> <b3>)
 gh stack init --base <trunk> <b1> <b2> <b3>
 ```
 
-Skip any repo the stack doesn't touch. A slice that doesn't touch a repo still keeps its branch in that repo's stack when a later slice there needs it; otherwise leave the slice out of that repo's stack.
-
-## Submit (after user approval)
-
-Submit EE repos first, then root:
+## Submit (user approval)
 
 ```bash
 (cd server/ee && gh stack submit --auto)
@@ -32,16 +30,44 @@ Submit EE repos first, then root:
 gh stack submit --auto
 ```
 
-This opens draft PRs chained bottom to top. Then invoke `create-pr` to fill each PR body from its template. Reference issues as `ToolJet/tj-ee#N`.
+- `--auto` opens draft PRs chained bottom to top, titled from the commits. Immediately run `create-pr` to set public-safe titles and the template bodies, referencing issues as `ToolJet/tj-ee#N`.
+- If `gh stack submit` fails because stacked PRs aren't available on a repo, use `create-pr` with each PR's base set to the branch below it, and tell the user.
 
-If `gh stack submit` fails because stacked PRs aren't available on a repo, fall back to `create-pr` with each PR's base set to the branch below it, and tell the user.
+## Update after a change
 
-## Keep the stack current
+Use this when a lower slice changes (a review or CI fix), or when trunk moves and a PR conflicts or goes stale.
 
-- **When a lower slice changes:**
-  1. Run `gh stack rebase` in each EE repo.
-  2. Commit the new EE tips as submodule pointers on every root branch above the change.
-  3. Run `gh stack rebase` in root.
-  4. Run `gh stack push` in every repo.
-- **Why step 2 matters:** an EE rebase rewrites SHAs, so a root branch that isn't re-pointed references an orphaned commit.
-- **Merge:** `gh stack merge <pr>` from the bottom, EE before root, then `gh stack sync --prune` in each repo.
+1. **EE repos first.** For each EE repo with a stack:
+   - Run `gh stack rebase`, or `gh stack sync` once submitted. `sync` fetches, fast-forwards trunk, cascade-rebases and pushes atomically.
+   - Rebases rewrite EE SHAs.
+2. **Root.** Run `gh stack rebase`. Conflicts on `server/ee` or `frontend/ee` are expected. Resolve each one by pointing at the EE tip for the branch being rebased:
+
+   ```bash
+   b=$(sed 's|refs/heads/||' .git/rebase-merge/head-name)
+   git -C server/ee checkout -q "<EE branch for $b per the pointer rule>"
+   git -C frontend/ee checkout -q "<EE branch for $b per the pointer rule>"
+   git add server/ee frontend/ee && gh stack rebase --continue
+   ```
+
+3. **Check every pointer** before pushing. Each root branch must match the pointer rule:
+
+   ```bash
+   git ls-tree <b> server/ee frontend/ee        # recorded
+   git -C server/ee rev-parse <b>               # expected (or the nearest lower layer)
+   ```
+
+   On a mismatch: `git switch <b>`, check out the right EE branches, commit `chore: update submodule pointers`, then `gh stack rebase --upstack` and check again.
+4. **Push** (after a yes): `gh stack push` in each EE repo, then in root.
+
+A root branch that isn't re-pointed after an EE rebase references orphaned commits, and its CI fails on the submodule checkout.
+
+## Merge
+
+- **Method: merge commit** (`--merge`). All three repos allow it, and root `main` already merges PRs this way. A merge commit keeps the EE branch commits' SHAs, so root pointers to them stay valid after the EE PR merges. Squash or rebase merges create new EE SHAs and orphan every root pointer above them. Never use them for stacked work.
+- **Order:** bottom layer first, and within a layer every EE PR before its root PR:
+  1. `cd server/ee && gh stack merge <pr> --merge`, and the same in `frontend/ee`.
+  2. `gh stack merge <pr> --merge` in root, once its CI is green against the merged EE commits.
+  3. `gh stack sync --prune` in every repo. This retargets the next layer onto trunk, rebases it and deletes merged branches.
+  4. Repeat for the next layer.
+- **Ready to merge** means: CI green, the verifier passed, `review-pr` findings resolved, and the user approved.
+- Never merge a layer while a layer below it is still open.

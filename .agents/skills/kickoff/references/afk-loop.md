@@ -1,75 +1,111 @@
 # AFK loop
 
-Subagents build AFK slices, a fresh subagent verifies each one, and the main session owns every push and PR.
+Subagents build AFK slices, a fresh subagent verifies each one against its acceptance criteria, and the main session owns every worktree, stack operation, push and PR.
 
 ## Ready set
 
 A sub-issue is ready when:
 - it is open and in AFK mode;
-- none of its blockers is still open without a committed branch.
+- **every blocker's verifier has passed**. A blocker that is only committed, still being verified, or `blocked` does not release anything that depends on it.
 
-A blocker doesn't need to be merged: the slice builds on the blocker's stack branch.
+Recompute the ready set after every verification and offer newly ready slices.
 
-Recompute the ready set after every subagent returns and offer newly ready slices.
+## Worktrees (main session)
 
-## Dispatch
+A branch can be checked out in only one worktree, so the main session creates and removes them explicitly. Don't use the harness's `isolation: "worktree"` option: it cuts a new branch from HEAD instead of the stack branch.
 
-- **One builder subagent per ready slice**, each in its own git worktree (`isolation: "worktree"` in Claude Code), checked out on its stack branch.
-- **At most 2 run in parallel.** Each worktree installs its own dependencies and creates its own test databases.
+```bash
+git switch <trunk>                                  # main checkout must not hold stack branches
+git -C server/ee switch --detach; git -C frontend/ee switch --detach
+git worktree add ../tj-wt-<slug> <branch>           # one per dispatched slice
+```
+
+- **At most 2 builders run in parallel.** Each worktree installs its own dependencies and creates its own test databases.
 - Subagents don't spawn subagents.
 
-## Builder prompt
+## Builder
 
-Give each builder:
-- the sub-issue body (`gh issue view <n> --repo ToolJet/tj-ee --comments`), which is the contract;
+Give the builder:
+- the worktree path;
+- the sub-issue (`gh issue view <n> --repo ToolJet/tj-ee --comments`), which is the contract;
 - the parent's plan comment;
 - the paths of the nearest `AGENTS.md` files, plus `server/docs/testing.md` for backend work.
 
-Instruct it to follow these steps in order:
+Instructions, in order:
 
-1. **Bootstrap:** run `scripts/agent-worktree-setup.sh`, with `--frontend` if the slice touches `frontend/`. The script writes only `.env.test` with isolated `PG_DB` and `TOOLJET_DB`. Never create a `.env` in the worktree.
-2. **Plan-first slices:** comment a 5–10 line approach on the sub-issue and return `awaiting-approval`. Write no code until the main session resumes you with the user's answer.
-3. **App Builder slices:** follow `app-builder-feature` or `app-builder-bug-fix`.
-4. **Tests first:** write a failing test for each acceptance criterion, then make it pass.
-5. **Progress log:** comment on the sub-issue at each milestone: tests written, a criterion turning green, a decision taken, blocked. If you are resumed, read the last comment first.
-6. **Before returning:**
-   - run lint in each folder you touched (`cd server && npm run lint`, and the same for `frontend`);
-   - run `scripts/test-changed.sh` for server changes;
-   - run the frontend tests for frontend changes.
-7. **Commit** with the `commit` skill. The pre-commit hooks must pass; `--no-verify` is never allowed. Do not push. Do not open PRs. Do not run stack commands.
-8. **Budget:** at most 3 failed fix cycles on the same criterion. When the budget is spent, stop, comment what you found, and return `blocked`.
+1. **Bootstrap.** `cd <worktree> && scripts/agent-worktree-setup.sh`, adding `--frontend` if the slice touches `frontend/`.
+   - The submodules come from the main checkout's local repos and are switched to the same-named EE branch when it exists.
+   - Never create a `.env`.
+2. **Plan-first slices.** Comment a 5–10 line approach on the sub-issue and return `awaiting-approval`. Write no code until the main session resumes you with the user's answer.
+3. **App Builder slices.** Follow `app-builder-feature` or `app-builder-bug-fix`.
+4. **Tests first.**
+   - For each acceptance criterion, write the test its `Verify:` line names, and see it fail.
+   - Then implement until it passes.
+5. **Progress log.** Comment on the sub-issue at each milestone: tests written, a criterion turning green, a decision taken, blocked. When resumed, read the last comment first.
+6. **Commit, then check.**
+   - Commit with the `commit` skill. Pre-commit hooks must pass; `--no-verify` is never allowed.
+   - Then run:
+     - lint in each touched folder (`cd server && npm run lint`, and the same for `frontend`);
+     - the specs for each criterion;
+     - `scripts/test-changed.sh` when files under root `server/` changed. It diffs commits only, so it must run after the commit. Skip it for a submodule pointer bump alone: it treats `server/ee` as unrecognized and runs the whole suite. EE changes are covered by the criteria specs.
+   - Fix any failure and commit again.
+7. **No push, no PR, no stack commands.**
+8. **Budget.** At most 3 failed fix cycles on the same criterion. When the budget is spent, stop, comment what you found, and return `blocked`.
 
 The builder returns:
-- the branch;
+- the branch, and the EE branches it committed to;
 - a status: `done`, `blocked` or `awaiting-approval`;
-- each criterion with pass/fail and test output;
-- open questions.
+- each criterion with pass/fail and the test that proves it;
+- any open questions.
+
+## Collect (main session)
+
+After a builder returns, bring its EE commits back into the main checkout's submodules. The worktree's submodules are separate local clones:
+
+```bash
+git -C server/ee fetch ../tj-wt-<slug>/server/ee +<branch>:<branch>     # if server/ee changed
+git -C frontend/ee fetch ../tj-wt-<slug>/frontend/ee +<branch>:<branch> # if frontend/ee changed
+```
+
+The root branch is shared with the worktree, so it needs no fetch.
 
 ## Verify
 
-For each `done` branch, dispatch a fresh verifier subagent. It gets no builder context, only the sub-issue and the branch, and its prompt is:
+For each `done` branch, dispatch a fresh verifier subagent. It gets no builder context: only the sub-issue and the branch. It runs in its own worktree on a detached checkout, because the builder's worktree may still hold the branch:
 
-> Refute this. Check out `<branch>`. Rerun the tests. For every acceptance criterion, decide from the diff and your own test runs whether it is truly met. Probe edge cases the tests miss. Return a verdict per criterion: met, not met or unclear, with evidence.
+```bash
+git worktree add --detach ../tj-vf-<slug> <branch>
+```
 
-- **Any criterion not met or unclear:** the finding goes back to a builder. This counts against the 3-cycle budget.
-- **Everything met:** run `review-pr` on the local diff, then summarize for the user: the criteria, the verifier's verdicts, and the review findings.
+The verifier's prompt:
+
+> Refute this. In `<path>`, run `scripts/agent-worktree-setup.sh` after first `git switch -c verify/<slug>` (the script needs a named branch). For every acceptance criterion in the sub-issue, run its `Verify:` method yourself:
+> - tests: run them;
+> - browser checks: follow the steps against a running app and capture a screenshot.
+>
+> Then decide from the diff and the evidence whether the criterion is truly met, and probe edge cases the tests miss. Post a verification report comment on the sub-issue (`Verification report` table: criterion, verdict met / not met / unclear, evidence) and return the same table.
+
+- **Any criterion not met or unclear:** send the finding back to a builder. This counts against the 3-cycle budget.
+- **Everything met:**
+  1. Run `review-pr` on the local diff.
+  2. Summarize for the user: the criteria, the verifier's verdicts and the review findings.
+  3. Remove both worktrees: `scripts/agent-worktree-setup.sh --drop` in each, then `git worktree remove`.
 
 ## Ship (user approval required)
 
-1. Submit the stack and fill the PR bodies: `stacks.md`.
-2. Watch CI: `gh pr checks <pr> --watch`.
-   - A red check goes back to a builder on that branch, within the budget. Then the main session runs `gh stack push`.
-   - Mark a PR ready (`gh pr ready <pr>`) only when CI is green.
+1. Follow `stacks.md`: submit, fill the PR bodies, and watch CI with `gh pr checks <pr> --watch`.
+2. A red check goes back to a builder on that branch, within the budget. Then follow `stacks.md` → *Update after a change*.
+3. Mark a PR ready (`gh pr ready <pr>`) only when CI is green.
 
 ## Circuit breaker
 
-When a builder returns `blocked` or runs out of budget:
+When a builder returns `blocked`, or the budget is spent:
 - switch the sub-issue from AFK to HITL (append a comment with the findings and why);
 - stop dispatching every slice stacked above it;
 - tell the user.
 
 There is no retry loop beyond the budget.
 
-## Cleanup
+## Before any stack operation
 
-After a branch merges or its worktree is removed, run `scripts/agent-worktree-setup.sh --drop` in that worktree to drop its test databases, then remove the worktree.
+Remove every worktree that holds a stack branch, after collecting its EE commits. `gh stack rebase`, `push` and `sync` need to check out each branch in the main checkout.
