@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useListItemManager } from '../../shared/hooks';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { DEFAULT_SELECT_COLUMN_OPTIONS } from '../utils';
 
 /**
  * Hook for managing Table columns
@@ -29,7 +28,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
           return rest;
         });
       } else {
-        modifiedColumn.options = DEFAULT_SELECT_COLUMN_OPTIONS.map((opt) => ({ ...opt }));
+        modifiedColumn.options = [];
       }
       modifiedColumn.defaultOptionsList = [];
     }
