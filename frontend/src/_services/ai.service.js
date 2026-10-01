@@ -3,6 +3,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
+  downloadAttachment,
+  removeAttachment,
   sendMessage,
   voteMessage,
   getCopilotSuggestion,
@@ -23,6 +25,27 @@ export const aiService = {
   getOpenRouterModels,
   getProviderModels,
 };
+
+async function downloadAttachment(id, signal, thumbnail = false) {
+  const response = await fetch(
+    `${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content${thumbnail ? '?thumbnail=1' : ''}`,
+    {
+      headers: authHeader(true),
+      credentials: 'include',
+      signal,
+    }
+  );
+  if (!response.ok) throw new Error('Unable to load attachment');
+  return response.blob();
+}
+
+function removeAttachment(id) {
+  return fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeader(true),
+    credentials: 'include',
+  }).then(handleAITextResponse);
+}
 
 function handleAITextResponse(response) {
   return response.text().then((text) => {
@@ -62,30 +85,133 @@ async function voteMessage(messageId, voteType) {
 // freezing the chat in a perpetual loading state. Aborting after this much total
 // silence lets the caller settle and re-sync from the persisted conversation.
 const AI_STREAM_STALL_TIMEOUT_MS = 30000;
+const MAX_ATTACHMENT_STREAM_CHARS = 8 * 1024 * 1024;
+
+// XHR exposes upload progress while preserving the streaming Response contract used by SSE.
+// The upload deadline measures inactivity, so a slow connection can keep making progress.
+export function attachmentStreamFetch(url, options, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    let stream;
+    let offset = 0;
+    let opened = false;
+    let finished = false;
+    const abort = () => xhr.abort();
+    const finish = (error) => {
+      if (finished) return;
+      finished = true;
+      options.signal?.removeEventListener('abort', abort);
+      if (error) {
+        if (opened) stream.error(error);
+        else reject(error);
+      } else stream.close();
+    };
+    const flush = (final = false) => {
+      if (!opened || finished) return;
+      const text = xhr.responseText;
+      // XHR retains its response buffer. Hand long builds to the existing status watcher
+      // instead of retaining an unbounded second copy of all SSE updates in the browser.
+      if (text.length > MAX_ATTACHMENT_STREAM_CHARS) {
+        finish(new Error('Attachment response buffer limit reached; reconnecting to the build.'));
+        xhr.abort();
+        return;
+      }
+      let end = text.length;
+      // Do not split a UTF-16 surrogate pair between browser progress events.
+      if (!final && end > offset && /[\uD800-\uDBFF]/.test(text[end - 1])) end--;
+      if (end > offset) stream.enqueue(new TextEncoder().encode(text.slice(offset, end)));
+      offset = end;
+    };
+    xhr.open(options.method || 'GET', url);
+    xhr.withCredentials = options.credentials === 'include';
+    Object.entries(options.headers || {}).forEach(([name, value]) => xhr.setRequestHeader(name, value));
+    xhr.upload.onprogress = onProgress;
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState !== 2 || opened || !xhr.status) return;
+      opened = true;
+      const headers = new Headers();
+      xhr
+        .getAllResponseHeaders()
+        .trim()
+        .split(/[\r\n]+/)
+        .filter(Boolean)
+        .forEach((line) => {
+          const colon = line.indexOf(':');
+          if (colon > 0) headers.append(line.slice(0, colon), line.slice(colon + 1).trim());
+        });
+      const body = new ReadableStream({
+        start(controller) {
+          stream = controller;
+        },
+        cancel: abort,
+      });
+      resolve(
+        new Response(body, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers,
+        })
+      );
+    };
+    xhr.onprogress = () => flush();
+    xhr.onload = () => {
+      flush(true);
+      finish();
+    };
+    xhr.onerror = () => finish(new Error('Attachment connection lost. Please retry.'));
+    xhr.onabort = () => finish(new DOMException('Request aborted', 'AbortError'));
+    options.signal?.addEventListener('abort', abort, { once: true });
+    if (options.signal?.aborted) return finish(new DOMException('Request aborted', 'AbortError'));
+    xhr.send(options.body);
+  });
+}
 
 async function sendMessage(body, onMessage, isDocs = false) {
   const fullResponse = [];
   const url = isDocs ? `${config.apiUrl}/ai/conversation/docs-message` : `${config.apiUrl}/ai/conversation/message`;
+  const { attachments = [], ...payload } = body;
+  const files = attachments.filter((file) => file instanceof File);
+  const retained = attachments.filter((file) => !(file instanceof File));
+  if (retained.length) payload.attachmentIds = retained.map((file) => file.id);
+  let requestBody = JSON.stringify(payload);
+  const headers = { ...authHeader() };
+  if (files.length) {
+    if (isDocs) throw new Error('Attachments are supported in builder chats.');
+    const form = new FormData();
+    form.append('payload', requestBody);
+    files.forEach((file) => form.append('files', file));
+    requestBody = form;
+    // The browser supplies the multipart boundary.
+    delete headers['Content-Type'];
+    delete headers['content-type'];
+  } else {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const controller = new AbortController();
   let stalled = false;
   let stallTimer = null;
-  const armStallTimer = () => {
+  const armStallTimer = (timeout = AI_STREAM_STALL_TIMEOUT_MS) => {
     if (stallTimer) clearTimeout(stallTimer);
     stallTimer = setTimeout(() => {
       stalled = true;
       controller.abort();
-    }, AI_STREAM_STALL_TIMEOUT_MS);
+    }, timeout);
   };
 
   try {
-    armStallTimer();
+    armStallTimer(files.length ? 120000 : AI_STREAM_STALL_TIMEOUT_MS);
     await fetchEventSource(url, {
       method: 'POST',
-      headers: { ...authHeader(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers,
+      body: requestBody,
       credentials: 'include',
       signal: controller.signal,
+      ...(files.length
+        ? {
+            fetch: (input, options) => attachmentStreamFetch(input, options, () => armStallTimer(120000)),
+          }
+        : {}),
       retryStrategy: {
         next: () => null,
       },
@@ -117,12 +243,14 @@ async function sendMessage(body, onMessage, isDocs = false) {
       },
       onerror: (error) => {
         console.log(error);
-        throw new Error(error);
+        throw error instanceof Error ? error : new Error(error);
       },
       onclose: () => {
         console.log('Connection closed');
       },
     });
+    // fetch-event-source resolves when its signal is aborted, rather than rejecting.
+    if (stalled) throw new Error('Stream stalled');
   } catch (error) {
     if (stalled) {
       const stallError = new Error('AI stream stalled — connection lost before completion');
