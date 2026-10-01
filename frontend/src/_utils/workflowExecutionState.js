@@ -1,3 +1,7 @@
+// Jobless past this age = evicted job or dead worker, not success.
+const WORKFLOW_TIMEOUT_MS = 60 * 1000;
+export const STALE_EXECUTION_THRESHOLD_MS = Math.max(WORKFLOW_TIMEOUT_MS * 2, 5 * 60 * 1000);
+
 /**
  * Derives the display state from raw execution data
  * FIXME: We need to simplify states across the board (DB, BullMQ, frontend)
@@ -8,9 +12,12 @@
  * @param {string} execution.status - DB status ('success', 'failed', 'terminated', null)
  * @param {string} [execution.jobState] - BullMQ state ('active', 'waiting', 'delayed', 'completed', 'failed')
  * @param {boolean} [execution.terminationRequested] - Redis termination flag
- * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'completed' | 'failed' | 'terminated'
+ * @returns {string} Display state: 'pending' | 'running' | 'terminating' | 'waiting' | 'completed' | 'failed' | 'terminated' | 'unknown'
  */
 export function getExecutionDisplayState(execution) {
+  // DB status authoritative for suspended runs; their BullMQ job already completed.
+  if (execution.status === 'waiting' || execution.status === 'waiting_for_delay') return 'waiting';
+
   // Already finished in database - this is the final state
   if (execution.executed) {
     if (execution.status === 'terminated') return 'terminated';
@@ -26,7 +33,10 @@ export function getExecutionDisplayState(execution) {
   // Job doesn't exist in queue anymore
   // This can happen if job completed but DB not updated yet
   if (!jobState) {
-    // Poll will fetch fresh data soon
+    const startedAt = execution.startedAt || execution.createdAt;
+    if (startedAt && Date.now() - new Date(startedAt).getTime() > STALE_EXECUTION_THRESHOLD_MS) {
+      return 'unknown';
+    }
     return 'completed';
   }
 
@@ -65,22 +75,23 @@ export function getExecutionDisplayState(execution) {
  * Check if execution is in progress (not in final state)
  *
  * @param {Object} execution - Raw execution object
- * @returns {boolean} True if execution is pending, running, or terminating
+ * @returns {boolean} True if execution is pending, running, terminating, or waiting
  */
 export function isExecutionInProgress(execution) {
   const state = getExecutionDisplayState(execution);
-  return ['pending', 'running', 'terminating'].includes(state);
+  return ['pending', 'running', 'terminating', 'waiting'].includes(state);
 }
 
 /**
  * Check if execution is in final state
  *
  * @param {Object} execution - Raw execution object
- * @returns {boolean} True if execution is completed, failed, or terminated
+ * @returns {boolean} True if execution is completed, failed, terminated, or unknown
  */
 export function isExecutionFinished(execution) {
   const state = getExecutionDisplayState(execution);
-  return ['completed', 'failed', 'terminated'].includes(state);
+  // unknown never progresses: count as finished.
+  return ['completed', 'failed', 'terminated', 'unknown'].includes(state);
 }
 
 /**
@@ -138,6 +149,22 @@ export function getExecutionDisplayConfig(execution) {
       showTime: true,
       icon: 'terminated',
     },
+    waiting: {
+      state: 'waiting',
+      text: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
+      showSpinner: false,
+      showCancelButton: false,
+      showTime: false,
+      icon: 'waiting',
+    },
+    unknown: {
+      state: 'unknown',
+      text: null,
+      showSpinner: false,
+      showCancelButton: false,
+      showTime: true,
+      icon: 'unknown',
+    },
   };
 
   return configs[state] || configs.running; // Fallback to running if unknown state
@@ -171,6 +198,8 @@ export function getExecutionStatusText(execution) {
     completed: 'Completed',
     failed: 'Failed',
     terminated: 'Terminated',
+    waiting: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
+    unknown: 'Unknown',
   };
 
   return statusTexts[state] || 'Unknown';

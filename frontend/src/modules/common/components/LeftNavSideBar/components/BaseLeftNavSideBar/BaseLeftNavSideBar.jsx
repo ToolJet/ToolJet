@@ -20,6 +20,10 @@ const BaseLeftNavSideBar = ({
   canCreateVariableOrConstant,
   featureAccess,
 }) => {
+  // Prefix match: dashboard tabs keep the icon active.
+  const workflowsRoute = getPrivateRoute('workflows');
+  const isWorkflowsRoute = router.pathname === workflowsRoute || router.pathname.startsWith(`${workflowsRoute}/`);
+
   return (
     <div>
       <ul className="sidebar-inner nav nav-vertical">
@@ -70,9 +74,7 @@ const BaseLeftNavSideBar = ({
               <Link
                 to={getPrivateRoute('workflows')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
-                className={`tj-leftsidebar-icon-items  ${
-                  router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                }`}
+                className={`tj-leftsidebar-icon-items  ${isWorkflowsRoute && `current-seleted-route`}`}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -81,16 +83,7 @@ const BaseLeftNavSideBar = ({
                   padding: '8px',
                 }}
               >
-                <SolidIcon
-                  name="workflows"
-                  fill={
-                    router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                      ? '#3E63DD'
-                      : darkMode
-                        ? '#4C5155'
-                        : '#C1C8CD'
-                  }
-                />
+                <SolidIcon name="workflows" fill={isWorkflowsRoute ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'} />
               </Link>
             </ToolTip>
           </li>

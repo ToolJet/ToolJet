@@ -129,8 +129,9 @@ export class AppsUtilService implements IAppsUtilService {
         return manager.save(
           manager.create(App, {
             type,
-            // Workflows still carry name/icon on apps.*; non-workflows store metadata
-            // on app_versions and leave apps.* fields null/placeholder.
+            // Every app type — workflows included — stores name/icon on app_versions and
+            // leaves apps.* null/placeholder. Resolve a workflow's name via
+            // AppsRepository.findAllOrganizationWorkflows, never apps.name.
             name: null,
             createdAt: new Date(),
             updatedAt: new Date(),

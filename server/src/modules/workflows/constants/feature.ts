@@ -46,5 +46,13 @@ export const FEATURES: FeaturesConfig = {
 
     [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: {},
     [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: {},
+    // The approvals service writes the resolve entry itself (with the decision metadata); the key
+    // only makes it selectable in the audit log action filter.
+    [FEATURE_KEY.HUMAN_IN_THE_LOOP]: {
+      auditLogsKey: 'WORKFLOW_APPROVAL_RESOLVED',
+      skipAuditLogs: true,
+    },
+    [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: {},
+    [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: {},
   },
 };

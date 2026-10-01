@@ -134,13 +134,19 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
-| **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (reserve for component-level interactions) |
-| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated | — |
+| **Workflow Trigger** | What starts a workflow: `manual`, `schedule`, `webhook`, `app` (run triggered from inside an application), `workflow` (run invoked by a parent workflow), or `unknown` (history predating the `trigger_type` column — never back-fill by guessing) | Event — reserved for component-level interactions, but the executions dashboard also labels the `app` trigger "Event" per Figma; see Flagged Ambiguities |
+| **Workflow Execution** | A single run of a workflow. DB `status`: `success` (also the insert default, so an in-flight run carries it), `failure`, `terminated`, and the non-terminal `waiting` / `waiting_for_delay`; `executed` separates a finished run from an in-flight one. The executions dashboard shows a derived display state (DB status plus BullMQ job state plus the termination flag) as Queued, Running, Stopping, Waiting, Success, Failed, Stopped or Unknown (no live job past the stale threshold) | Run; "Stopped" is the UI label for `terminated` |
 | **Workflow Execution Node** | A single step within a workflow execution | — |
-| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | — |
+| **Wait Node** | A workflow node that pauses an execution for a configured duration, then continues through its single output | — |
+| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs. Registered as a BullMQ job scheduler keyed by schedule id; the Postgres row and that registration are independent, so an *active* schedule may hold no registration and never fire | — |
+| **Upcoming Run** | A future firing of a Workflow Schedule, shown on the executions dashboard. Not a Workflow Execution: no `workflow_executions` row exists until it starts | Workflow Execution — an Upcoming Run is a prediction, an Execution is a record |
 | **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | — |
 | **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | — |
 | **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
+| **Workflow input** | A typed, version-level value that can be supplied by a manual run, schedule, webhook, or parent workflow; trigger values override its optional default | `definition.workflowInputs` |
+| **Human Node** | A workflow node that pauses a run to await a person's decision (custom outcomes) and optional structured input; the run suspends until resolved via the approval API (`type: 'human'`, EE feature) | HITL node |
+| **Approval Request** | A decision a suspended workflow run waits on — at most one pending per (execution, node); statuses `pending`, `resolved`, `expired`, `cancelled`. Resolved through the approval API either by its `token` (link route, session optional) or by id from the approvals dashboard (`WorkflowApprovalRequest`, `workflow_approval_requests`) | Approval |
+| **Waiting** (execution status) | Non-terminal status of a workflow execution suspended at a **Human Node**, awaiting input (`status='waiting'`, `executed=false`) | — |
 
 ## AI Features
 
@@ -193,7 +199,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 - A **Query** connects an **App** to a **Data Source** and may apply a **Transformation** to results
 - A **Global Data Source** is shared across all **Apps** in a **Workspace**; an **App-Level Data Source** belongs to one **App**
 - An **Environment** (dev/staging/prod) holds per-environment **Data Source** configurations and **Workspace Constant** values
-- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Workflow** is triggered by a **Workflow Trigger** (manual/schedule/webhook/app/workflow/unknown) and produces a **Workflow Execution** composed of **Workflow Execution Nodes**
+- A **Human Node** suspends a **Workflow Execution** (status **Waiting**) and creates an **Approval Request**, resolved by token or by id via the approval API
 - A **Plan** determines the **License Terms**, which gate **Features** via **Feature Flags**
 - A **Plugin** backs a **Data Source** type; **Marketplace Plugins** extend the built-in set
 
@@ -213,7 +220,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 
 - **"Branch"** is now three things: a **Workspace Branch** (workspace-scoped git branch entity), a **branch-head Version** (`versionType: BRANCH`, UUID name, display name from the Workspace Branch), and the plain git branch on the remote. Say which one; never use bare "branch" for an app Version.
 
-- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook). Do not use them interchangeably.
+- **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook, app, workflow, unknown). Do not use them interchangeably in code or general docs — **except** the workflow executions dashboard UI, which labels the `app` trigger "Event" (per Figma, product-owner call); that one shipped label is a known, accepted exception, not a precedent for reuse elsewhere.
 
 - **"Module"** is heavily overloaded: in the backend it's a NestJS architectural module (`server/src/modules/*`); in the frontend it's a reusable app building block (EE feature, app type `MODULE`). Always qualify which you mean.
 

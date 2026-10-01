@@ -22,6 +22,9 @@ export enum FEATURE_KEY {
   WORKFLOW_PACKAGES = 'workflow_packages',
   TERMINATE_WORKFLOW_EXECUTION = 'terminate_workflow_execution',
   WORKFLOW_EXECUTION_STATE = 'workflow_execution_state',
+  HUMAN_IN_THE_LOOP = 'human_in_the_loop',
+  LIST_APPROVAL_REQUESTS = 'list_approval_requests',
+  LIST_WORKSPACE_EXECUTIONS = 'list_workspace_executions',
 }
 
 // Queue and job name constants
@@ -30,12 +33,17 @@ export const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 export const SCHEDULE_JOB = 'workflow-scheduler-job';
 export const EXECUTION_JOB = 'workflow-execution-job';
 
+export const WORKFLOW_APPROVAL_TIMEOUT_QUEUE = 'workflow-approval-timeout-queue';
+export const APPROVAL_DEADLINE_JOB = 'approval-deadline-job';
+export const APPROVAL_REMINDER_JOB = 'approval-reminder-job';
+
 export const WORKFLOW_EXECUTION_STATUS = {
   TRIGGERED: 'workflow_execution_triggered',
   RUNNING: 'workflow_execution_running',
   COMPLETED: 'workflow_execution_completed',
   ERROR: 'workflow_execution_error',
   TERMINATED: 'workflow_execution_terminated',
+  WAITING: 'workflow_execution_waiting',
 };
 
 // Re-export types from types module for backward compatibility

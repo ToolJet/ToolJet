@@ -172,15 +172,12 @@ export const Folders = function Folders({
     const branchName = getBranchNameFromUrl() || getResolvedBranchName();
     if (branchName && appType !== 'workflow') params.set('branch', branchName);
     const query = params.toString();
-    navigate(
-      {
-        pathname: `/${getWorkspaceId()}${
-          appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
-        }`,
-        search: query ? `?${query}` : '',
-      },
-      { replace: true }
-    );
+    const base = `/${getWorkspaceId()}${
+      appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
+    }`;
+    // Stay on the current dashboard tab (e.g. /approvals) when picking a folder.
+    const pathname = location.pathname.startsWith(`${base}/`) ? location.pathname : base;
+    navigate({ pathname, search: query ? `?${query}` : '' }, { replace: true });
   }
 
   function deleteFolder(folder) {

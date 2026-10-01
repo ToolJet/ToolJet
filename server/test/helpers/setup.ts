@@ -537,6 +537,11 @@ export interface InitTestAppOptions {
    * The fresh app is NOT cached and will be properly closed by closeTestApp().
    */
   freshApp?: boolean;
+  /**
+   * @deprecated No-op. WorkflowsModule is now always mounted in the test app; kept so
+   * existing workflow specs that pass it keep compiling.
+   */
+  withWorkflows?: boolean;
 }
 
 export interface InitTestAppResult {

@@ -13,6 +13,7 @@ export class WorkflowSchedulesService implements IWorkflowSchedulesService {
 
   async create(createWorkflowScheduleDto: {
     workflowId: string;
+    name: string;
     active: boolean;
     environmentId: string;
     type: string;
@@ -34,6 +35,7 @@ export class WorkflowSchedulesService implements IWorkflowSchedulesService {
     id: string,
     updateWorkflowScheduleDto: Partial<{
       active: boolean;
+      name: string;
       environmentId: string;
       workflowId: string;
       type: string;

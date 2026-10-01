@@ -4,15 +4,17 @@ import {
   SendOrganizationUserWelcomeEmailPayload,
   SendPasswordResetEmailPayload,
   SendPasswordExpiredResetEmailPayload,
+  SendWorkflowApprovalEmailPayload,
 } from '../dto';
 
 export interface IEmailService {
   mailTransport(smtp: any): any;
-  sendEmail(to: string, subject: string, templateData: any): Promise<any>;
+  sendEmail(to: string | string[], subject: string, templateData: any): Promise<any>;
   sendWelcomeEmail(payload: SendWelcomeEmailPayload): Promise<any>;
   sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload): Promise<any>;
   sendPasswordResetEmail(payload: SendPasswordResetEmailPayload): Promise<any>;
   sendPasswordExpiredResetEmail(payload: SendPasswordExpiredResetEmailPayload): Promise<any>;
   sendCommentMentionEmail(payload: SendCommentMentionEmailPayload): Promise<any>;
+  sendWorkflowApprovalEmail(payload: SendWorkflowApprovalEmailPayload): Promise<any>;
   init(): Promise<void>;
 }

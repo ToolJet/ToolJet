@@ -3,11 +3,13 @@ import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
-// Workflow trigger types
 export const WORKFLOW_TRIGGER_TYPE = {
   MANUAL: 'manual',
   SCHEDULE: 'schedule',
   WEBHOOK: 'webhook',
+  APP: 'app',
+  WORKFLOW: 'workflow',
+  UNKNOWN: 'unknown',
 } as const;
 
 export type WorkflowTriggerType = (typeof WORKFLOW_TRIGGER_TYPE)[keyof typeof WORKFLOW_TRIGGER_TYPE];
@@ -53,6 +55,9 @@ interface Features {
   [FEATURE_KEY.WORKFLOW_PACKAGES]: FeatureConfig;
   [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: FeatureConfig;
   [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: FeatureConfig;
+  [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
+  [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
@@ -101,5 +106,15 @@ export class WorkflowTerminationError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, WorkflowTerminationError);
     }
+  }
+}
+
+export class WorkflowSuspendedSignal extends Error {
+  constructor(
+    public readonly executionId: string,
+    public readonly requestId: string
+  ) {
+    super('Workflow execution suspended');
+    this.name = 'WorkflowSuspendedSignal';
   }
 }
