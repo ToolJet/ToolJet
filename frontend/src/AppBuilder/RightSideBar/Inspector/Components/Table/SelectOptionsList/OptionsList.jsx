@@ -384,7 +384,7 @@ export const OptionsList = ({
                       {column?.options?.map((option, optionIndex) => {
                         const resolvedItemName = option.label;
                         return (
-                          <Draggable key={option.label} draggableId={option.label} index={optionIndex}>
+                          <Draggable key={optionIndex} draggableId={`option-${optionIndex}`} index={optionIndex}>
                             {(provided, snapshot) => {
                               return (
                                 <div
@@ -400,7 +400,7 @@ export const OptionsList = ({
                                     rootClose={true}
                                     overlay={selectPopover(option, optionIndex)}
                                   >
-                                    <div key={resolvedItemName}>
+                                    <div key={optionIndex}>
                                       <List.Item
                                         isDraggable={true}
                                         primaryText={resolvedItemName}
