@@ -64,3 +64,55 @@ describe('useColumnManager - handlePropertyChange columnType=json', () => {
     expect(updatedColumns[0].jsonIndentation).toBe(true);
   });
 });
+
+describe('useColumnManager - handlePropertyChange columnType=select/newMultiSelect/tagsV2 options seeding', () => {
+  const buildComponent = (columns) => ({
+    component: {
+      name: 'table1',
+      definition: {
+        properties: {
+          columns: { value: columns },
+        },
+      },
+    },
+  });
+
+  test.each(['select', 'newMultiSelect', 'tagsV2'])(
+    '[Table-BUG-023] does not seed default sample options when a column with no existing options is switched to columnType %s',
+    (columnType) => {
+      const columns = [{ name: 'category', columnType: 'string' }];
+      const paramUpdated = jest.fn();
+      const component = buildComponent(columns);
+
+      const { result } = renderHook(() => useColumnManager({ component, paramUpdated, currentState: {} }));
+
+      act(() => {
+        result.current.updateColumnProperty(0, 'columnType', columnType);
+      });
+
+      const updatedColumns = paramUpdated.mock.calls[0][2];
+      expect(updatedColumns[0].options).toEqual([]);
+    }
+  );
+
+  test("[Table-BUG-023] preserves a column's existing options (minus makeDefaultOption) when switched to columnType select", () => {
+    const columns = [
+      {
+        name: 'category',
+        columnType: 'string',
+        options: [{ label: 'A', value: 'A', makeDefaultOption: true }],
+      },
+    ];
+    const paramUpdated = jest.fn();
+    const component = buildComponent(columns);
+
+    const { result } = renderHook(() => useColumnManager({ component, paramUpdated, currentState: {} }));
+
+    act(() => {
+      result.current.updateColumnProperty(0, 'columnType', 'select');
+    });
+
+    const updatedColumns = paramUpdated.mock.calls[0][2];
+    expect(updatedColumns[0].options).toEqual([{ label: 'A', value: 'A' }]);
+  });
+});
