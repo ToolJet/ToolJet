@@ -798,6 +798,7 @@ jobs:
       - build-frontend
     if: >-
       !cancelled()
+      && (github.base_ref || github.ref_name) == 'main'
       && needs.detect-changes.outputs.mode == 'full'
       && (needs.detect-changes.outputs.server == 'true'
       || needs.detect-changes.outputs.frontend == 'true')
@@ -820,6 +821,7 @@ jobs:
       - build-marketplace
     if: >-
       !cancelled()
+      && (github.base_ref || github.ref_name) == 'main'
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.marketplace == 'true'
       && needs.build-plugins.result == 'success'
