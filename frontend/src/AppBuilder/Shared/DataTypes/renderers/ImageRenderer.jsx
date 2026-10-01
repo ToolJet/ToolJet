@@ -13,6 +13,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
  * @param {string} props.borderRadius - Border radius for the image
  * @param {string} props.objectFit - CSS object-fit property ('cover' | 'contain' | 'fill' | etc.)
  * @param {string} props.horizontalAlignment - Horizontal alignment ('left' | 'center' | 'right')
+ * @param {string} props.altText - Alternative text for the image
  */
 export const ImageRenderer = ({
   value,
@@ -21,6 +22,7 @@ export const ImageRenderer = ({
   borderRadius,
   objectFit = 'contain',
   horizontalAlignment = 'left',
+  altText = '',
 }) => {
   if (!value) {
     return null;
@@ -34,7 +36,8 @@ export const ImageRenderer = ({
     >
       <img
         src={value}
-        alt=""
+        alt={altText}
+        title={altText || undefined}
         style={{
           pointerEvents: 'auto',
           width: width ? `${width}px` : 'auto',

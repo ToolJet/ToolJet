@@ -7,7 +7,7 @@ import { ImageRenderer } from '@/AppBuilder/Shared/DataTypes';
  * Wraps the shared ImageRenderer with Table-specific props.
  * Maintains the same API as the original ImageColumn for backward compatibility.
  */
-export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit, horizontalAlignment }) => {
+export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit, horizontalAlignment, altText }) => {
   return (
     <ImageRenderer
       value={cellValue}
@@ -16,6 +16,7 @@ export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit,
       borderRadius={borderRadius}
       objectFit={objectFit}
       horizontalAlignment={horizontalAlignment}
+      altText={altText}
     />
   );
 };
