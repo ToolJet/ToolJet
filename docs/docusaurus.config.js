@@ -29,6 +29,14 @@ module.exports = {
   },
   themes: ['@docusaurus/theme-mermaid'],
   trailingSlash: true,
+  // Discover font CSS from HTML instead of waiting for the site's CSS @import.
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap',
+  ],
+  headTags: [
+    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' } },
+  ],
   themeConfig: {
     mermaid: {
       theme: { light: 'neutral', dark: 'dark' },
@@ -151,7 +159,7 @@ module.exports = {
         },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc. All rights reserved.
-      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
+      <img alt="" width="1" height="1" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
       <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("okh5zgrqwwcsl4ac5rqac309eup0mjb3",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>      
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -199,8 +207,8 @@ module.exports = {
                   if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
                   const tempA = document.createElement('a');
                   tempA.href = href;
-                  const isInternal = allowedDomains.some(domain => tempA.hostname.includes(domain));
-                  if (!isInternal) return;
+                  const isInternal = allowedDomains.some(domain => tempA.hostname === domain || tempA.hostname.endsWith('.' + domain));
+                  if (!isInternal || tempA.origin === window.location.origin) return;
                   const linkParams = new URLSearchParams(tempA.search);
                   Object.entries(utmParams).forEach(([key, value]) => {
                       if (!linkParams.has(key)) linkParams.set(key, value);
@@ -324,15 +332,21 @@ module.exports = {
             //   badge: false,
             // },
             "2.50.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               label: '2.50.0-LTS (Legacy)',
               banner: 'none',
               badge: false
             },
             "3.0.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               banner: 'none',
               badge: false
             },
             "3.5.0-LTS": {
+              // Keep legacy docs readable, but prefer current docs in search.
+              noIndex: true,
               banner: 'none',
               badge: false
             },
@@ -349,7 +363,13 @@ module.exports = {
         sitemap: {
           changefreq: 'weekly',
           priority: 0.5,
-          ignorePatterns: ['/docs/1.x.x/**'],
+          ignorePatterns: [
+            '/docs/1.x.x/**',
+            '/docs/2.50.0-LTS/**',
+            '/docs/3.0.0-LTS/**',
+            '/docs/3.5.0-LTS/**',
+            '/search',
+          ],
           filename: 'sitemap.xml',
         },
 
