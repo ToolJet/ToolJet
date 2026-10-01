@@ -9,7 +9,13 @@ import {
 } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 import jsforce from 'jsforce';
+import { createHash } from 'crypto';
 import { getCurrentToken } from '@tooljet-marketplace/common';
+
+const GRANT_AUTHORIZATION_CODE = 'authorization_code';
+const GRANT_AUTHORIZATION_CODE_PKCE = 'authorization_code_pkce';
+// RFC 7636: 43-128 chars from the unreserved set
+const CODE_VERIFIER_PATTERN = /^[A-Za-z0-9\-._~]{43,128}$/;
 
 export default class Salesforce implements QueryService {
   async run(
@@ -24,7 +30,10 @@ export default class Salesforce implements QueryService {
     const authType = sourceOptions.auth_type;
     const multipleAuthEnabled = sourceOptions.multiple_auth_enabled;
 
-    if (authType === 'oauth2' && grantType === 'authorization_code' && multipleAuthEnabled === true) {
+    // By default initially we will consider the grant type as authorization_code if not provided.
+    const isAuthCodeGrant = !grantType || grantType === GRANT_AUTHORIZATION_CODE || grantType === GRANT_AUTHORIZATION_CODE_PKCE;
+
+    if (authType === 'oauth2' && isAuthCodeGrant && multipleAuthEnabled === true) {
       const authValidationResult = initializeOAuth(sourceOptions, context, this.authUrl.bind(this));
 
       if (authValidationResult.status === 'needs_oauth') return authValidationResult as any;
@@ -189,18 +198,29 @@ export default class Salesforce implements QueryService {
 
   authUrl(source_options): string {
     const { client_id, client_secret, redirect_uri } = this.getOAuthCredentials(source_options);
-    if (!client_id || !client_secret || !redirect_uri) {
+    if (!this.hasRequiredCredentials(source_options, { client_id, client_secret, redirect_uri })) {
       throw new Error('OAuth2 client credentials are missing from authUrl');
     }
-    const oauth2 = new jsforce.OAuth2({
+    const oauth2 = this.createOAuth2(source_options, {
       clientId: client_id,
       clientSecret: 'authurl',
       redirectUri: redirect_uri,
     });
-    let authorizationUrl = oauth2.getAuthorizationUrl({
+
+    const scopes = this.getScopes(source_options);
+    const params: Record<string, string> = {
       // Update the scopes as per your requirement.
-      scope: `${source_options.scopes.value} refresh_token offline_access`,
-    });
+      scope: `${scopes} refresh_token offline_access`,
+    };
+
+    if (this.isPkceGrant(source_options)) {
+      const codeVerifier = this.getCodeVerifier(source_options);
+      const method = this.getCodeChallengeMethod(source_options);
+      params.code_challenge = this.buildCodeChallenge(codeVerifier, method);
+      params.code_challenge_method = method;
+    }
+
+    let authorizationUrl = oauth2.getAuthorizationUrl(params);
 
     // Note: Prompt for login each time, even if it's not multi-user auth ( Skip Salesforce session for Oauth flow )
     // if (source_options.multiple_auth_enabled) {
@@ -219,19 +239,24 @@ export default class Salesforce implements QueryService {
     }
 
     const { client_id, client_secret, redirect_uri } = this.getOAuthCredentials(source_options);
-    if (!client_id || !client_secret || !redirect_uri) {
+    if (!this.hasRequiredCredentials(source_options, { client_id, client_secret, redirect_uri })) {
       throw new Error('OAuth2 client credentials are missing from accessDetailsFrom in salesforce');
     }
 
-    const oauth2 = new jsforce.OAuth2({
+    const oauth2 = this.createOAuth2(source_options, {
       clientId: client_id,
-      clientSecret: client_secret,
+      clientSecret: client_secret || undefined,
       redirectUri: redirect_uri,
     });
     const conn = new jsforce.Connection({ oauth2: oauth2 });
 
+    const tokenParams: Record<string, string> = {};
+    if (this.isPkceGrant(source_options)) {
+      tokenParams.code_verifier = this.getCodeVerifier(source_options);
+    }
+
     try {
-      await conn.authorize(authCode);
+      await conn.authorize(authCode, tokenParams);
     } catch (error) {
       throw new QueryError('Authorization Error', error.message, {});
     }
@@ -266,6 +291,59 @@ export default class Salesforce implements QueryService {
       return option.value;
     }
     return option;
+  }
+
+  private getStringOption(source_options: any, key: string): string {
+    const value = this.getOptionValue(this.normalizeSourceOptions(source_options)?.[key]);
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private getGrantType(source_options: any): string {
+    return this.getStringOption(source_options, 'grant_type') || GRANT_AUTHORIZATION_CODE;
+  }
+
+  private isPkceGrant(source_options: any): boolean {
+    return this.getGrantType(source_options) === GRANT_AUTHORIZATION_CODE_PKCE;
+  }
+
+  private getScopes(source_options: any): string {
+    return this.getStringOption(source_options, 'scopes') || 'full';
+  }
+
+  private getCodeVerifier(source_options: any): string {
+    const codeVerifier = this.getStringOption(source_options, 'code_verifier');
+    if (!CODE_VERIFIER_PATTERN.test(codeVerifier)) {
+      throw new QueryError(
+        'Invalid code verifier',
+        'Code verifier is required for Authorization code with PKCE and must be 43-128 characters long (A-Z, a-z, 0-9, "-", ".", "_", "~").',
+        {}
+      );
+    }
+    return codeVerifier;
+  }
+
+  // Client secret is optional for PKCE: some Salesforce apps don't require it for the web server / refresh flow.
+  private hasRequiredCredentials(
+    source_options: any,
+    credentials: { client_id: string; client_secret: string; redirect_uri: string }
+  ): boolean {
+    const { client_id, client_secret, redirect_uri } = credentials;
+    return !!client_id && !!redirect_uri && (!!client_secret || this.isPkceGrant(source_options));
+  }
+
+  private getCodeChallengeMethod(source_options: any): 'S256' | 'plain' {
+    return this.getStringOption(source_options, 'code_challenge_method') === 'plain' ? 'plain' : 'S256';
+  }
+
+  private buildCodeChallenge(codeVerifier: string, method: 'S256' | 'plain'): string {
+    return method === 'plain' ? codeVerifier : createHash('sha256').update(codeVerifier).digest('base64url');
+  }
+
+  private createOAuth2(
+    source_options: any,
+    credentials: { clientId: string; clientSecret: string; redirectUri: string }
+  ) {
+    return new jsforce.OAuth2(credentials);
   }
 
   getOAuthCredentials(source_options: any) {
@@ -314,13 +392,13 @@ export default class Salesforce implements QueryService {
     const accessTokenDetails = {};
     // Refresh logic
     const { client_id, client_secret, redirect_uri } = this.getOAuthCredentials(sourceOptions);
-    if (!client_id || !client_secret || !redirect_uri) {
+    if (!this.hasRequiredCredentials(sourceOptions, { client_id, client_secret, redirect_uri })) {
       throw new Error('OAuth2 client credentials are missing from accessDetailsFrom in salesforce');
     }
 
-    const oauth2 = new jsforce.OAuth2({
+    const oauth2 = this.createOAuth2(sourceOptions, {
       clientId: client_id,
-      clientSecret: client_secret,
+      clientSecret: client_secret || undefined,
       redirectUri: redirect_uri,
     });
 

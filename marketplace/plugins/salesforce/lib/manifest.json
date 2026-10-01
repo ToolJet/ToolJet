@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Salesforce datasource",
   "description": "A schema defining Salesforce datasource",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "api",
   "source": {
     "name": "Salesforce",
@@ -38,6 +38,21 @@
       },
       "plugin_id": {
         "type": "string"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "grant_type": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "code_verifier": {
+        "type": "string"
+      },
+      "code_challenge_method": {
+        "type": "string"
       }
     },
     "customTesting": true,
@@ -58,6 +73,9 @@
     },
     "oauth_type": {
       "value": "custom_app"
+    },
+    "code_challenge_method": {
+      "value": "S256"
     }
   },
   "properties": {
@@ -87,12 +105,21 @@
           "oauth2"
         ],
         "allowed_grant_types": [
-          "authorization_code"
+          "authorization_code",
+          "authorization_code_pkce"
         ],
         "allowed_field_groups": {
           "authorization_code": [
             "client_id",
-            "client_secret"
+            "client_secret",
+            "scopes"
+          ],
+          "authorization_code_pkce": [
+            "client_id",
+            "client_secret",
+            "scopes",
+            "code_challenge_method",
+            "code_verifier"
           ]
         },
         "oauthTypes": {
@@ -110,7 +137,8 @@
               "tooljet_app"
             ]
           }
-        }
+        },
+        "show_auth_type_dropdown": true
       }
     }
   },
