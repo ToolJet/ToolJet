@@ -806,6 +806,63 @@ describe('Checkbox', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(true));
     });
   });
+
+  describe('long labels', () => {
+    // jsdom reports every box as zero-sized, so overflow has to be forced for OverflowTooltip to fire.
+    const forceOverflow = () => {
+      const heights = { scrollHeight: 100, clientHeight: 20 };
+      const originals = Object.fromEntries(
+        Object.keys(heights).map((key) => [key, Object.getOwnPropertyDescriptor(HTMLElement.prototype, key)])
+      );
+      Object.entries(heights).forEach(([key, value]) => {
+        Object.defineProperty(HTMLElement.prototype, key, { configurable: true, get: () => value });
+      });
+      return () =>
+        Object.entries(originals).forEach(([key, descriptor]) => {
+          if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+          else delete HTMLElement.prototype[key];
+        });
+    };
+
+    test('[Checkbox-BUG-003] a clipped label opens no empty tooltip bubble', async () => {
+      // Break this catches: showing the bubble on overflow alone, so a non-string child renders it blank.
+      const restore = forceOverflow();
+      try {
+        const { container } = widget.render({ properties: { label: binding('A label long enough to clip') } });
+        await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+        await widget.session.user.hover(labelEl(container));
+
+        await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+      } finally {
+        restore();
+      }
+    });
+
+    test('[Checkbox-HEIGHT-001] dynamic height lets a long label wrap and grow the widget in the viewer', async () => {
+      // Break this catches: keeping the authored height and nowrap, so the label clips however tall the box grows.
+      const { container } = widget.render({
+        properties: { label: binding('A label long enough to wrap'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+      expect(rowEl(container)).toHaveStyle({ height: 'auto', whiteSpace: 'normal' });
+      expect(rowEl(container).style.minHeight).not.toBe('');
+    });
+
+    test('[Checkbox-HEIGHT-002] dynamic height stays inert on the editor canvas', async () => {
+      // Break this catches: reflowing while the builder is sizing the box, which the platform reserves for view mode.
+      const { container } = widget.render({
+        properties: { label: binding('A label long enough to wrap'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'edit',
+      });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+      expect(rowEl(container).style.height).not.toBe('auto');
+      expect(rowEl(container).style.minHeight).toBe('');
+    });
+  });
 });
 
 async function actSet(id, key, value) {

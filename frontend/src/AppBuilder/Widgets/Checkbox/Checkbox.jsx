@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
@@ -16,6 +18,10 @@ export const Checkbox = ({
   validate,
   width,
   id,
+  currentMode,
+  currentLayout,
+  subContainerIndex,
+  componentType,
 }) => {
   const isInitialRender = useRef(true);
   const reactId = useId();
@@ -39,6 +45,24 @@ export const Checkbox = ({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [validationStatus, setValidationStatus] = useState(validate(checked));
   const { isValid, validationError } = validationStatus;
+
+  // The label wraps only once the row stops forcing a single line, so dynamic height drives both.
+  const rowRef = useRef(null);
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(rowRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    // The live state, not the property: setVisibility can hide the widget without the property changing.
+    visibility,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    subContainerIndex,
+    componentType,
+  });
 
   const toggleValue = (e) => {
     const isChecked = e.target.checked;
@@ -191,6 +215,7 @@ export const Checkbox = ({
   const renderCheckBox = () => (
     <>
       <div
+        ref={rowRef}
         data-disabled={disable}
         className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
         style={{
@@ -199,8 +224,9 @@ export const Checkbox = ({
           alignItems: loading && 'center',
           gap: '6px',
           justifyContent: `${loading ? 'center' : alignment === 'left' ? 'space-between' : 'start'}`,
-          height,
-          whiteSpace: 'nowrap',
+          height: isDynamicHeightEnabled ? 'auto' : height,
+          ...(isDynamicHeightEnabled && { minHeight: typeof height === 'number' ? `${height}px` : height }),
+          whiteSpace: isDynamicHeightEnabled ? 'normal' : 'nowrap',
         }}
         data-cy={dataCy}
       >
