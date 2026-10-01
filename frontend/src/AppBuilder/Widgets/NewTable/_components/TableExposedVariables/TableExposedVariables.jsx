@@ -429,20 +429,40 @@ export const TableExposedVariables = ({
     function setFilters(_filters) {
       if (!isArray(_filters)) return;
       const filterArr = [];
+      const invalidFilters = [];
       _filters.forEach((_filter) => {
         const { column = '', value = '', condition = '' } = _filter;
         const columnId = columns.find((col) => col.columnDef?.header === column)?.id;
         if (columnId && filterFunctions[condition]) {
           filterArr.push({ id: columnId, value: { column, condition, value } });
+        } else {
+          invalidFilters.push(_filter);
         }
       });
+      if (invalidFilters.length > 0) {
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          kind: 'component',
+          key: `Table "${componentName}" - setFilters called with an invalid filter`,
+          componentId: id,
+          strace: 'page_level',
+          message: `setFilters() was called with ${JSON.stringify(
+            invalidFilters
+          )}, which references a column or condition not found on this table. Expected a configured column name and one of the supported filter conditions.`,
+          error: { componentId: id, value: invalidFilters },
+          errorTarget: 'Component Property',
+          timestamp: moment().toISOString(),
+        });
+        return;
+      }
       setColumnFilters(filterArr);
     }
     function clearFilters() {
       setColumnFilters([]);
     }
     setExposedVariables({ clearFilters, setFilters });
-  }, [setColumnFilters, setExposedVariables, columns]);
+  }, [setColumnFilters, setExposedVariables, columns, componentName, id]);
 
   // CSA to set sort programmatically
   const setSort = useCallback(
