@@ -87,3 +87,10 @@ export const PAGE_CANVAS_HEADER_HEIGHT = 60;
 export const PAGE_CANVAS_FOOTER_HEIGHT = 60;
 
 export const PAGE_CANVAS_HEADER_FOOTER_PADDING = 5;
+
+// The page header/footer slots are canvases in their own right
+// widgets dropped into them carry `parent: 'canvas-header'` / `'canvas-footer'`.
+// The slot Container is created with id `${moduleId}-header|footer`,
+// which resolves to these literals because moduleId is always 'canvas' in the editor.
+export const CANVAS_HEADER_ID = 'canvas-header';
+export const CANVAS_FOOTER_ID = 'canvas-footer';
