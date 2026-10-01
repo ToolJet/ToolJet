@@ -87,8 +87,8 @@ describe('AppController', () => {
         const response = await request(app.getHttpServer())
           .post('/api/onboarding/signup')
           .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
-        // Rejected by the signup guard (403) or the onboarding service (406), depending on edition
-        expect([403, 406]).toContain(response.statusCode);
+        // CE's signup guard rejects with 403; the EE outcome (406) is covered in ee/test
+        expect(response.statusCode).toBe(403);
         expect(await findEntity(User, { email: 'test@tooljet.io' })).toBeNull();
       });
     });
@@ -455,8 +455,8 @@ describe('AppController', () => {
         const response = await request(app.getHttpServer())
           .post('/api/onboarding/signup')
           .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
-        // Rejected by the signup guard (403) or the onboarding service (406), depending on edition
-        expect([403, 406]).toContain(response.statusCode);
+        // CE's signup guard rejects with 403; the EE outcome (406) is covered in ee/test
+        expect(response.statusCode).toBe(403);
         expect(await findEntity(User, { email: 'test@tooljet.io' })).toBeNull();
       });
     });
