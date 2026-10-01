@@ -296,6 +296,7 @@ export const tableConfig = {
     disableRowDeselection: {
       type: 'toggle',
       displayName: 'Disable row deselection',
+      tip: 'Prevents deselecting a row by clicking its cells. Does not affect the selection checkbox.',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
