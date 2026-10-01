@@ -390,6 +390,34 @@ describe('Table: pagination', () => {
     await waitFor(() => expect(bodyRowCount()).toBe(MANY_ROWS.length));
   });
 
+  test('[Table-BUG-024] the footer still shows the record count in client mode when enablePagination is off', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`),
+        enablePagination: binding('{{true}}'),
+        serverSidePagination: binding('{{false}}'),
+      },
+    });
+    await waitFor(() =>
+      expect(document.querySelector('[data-cy="footer-number-of-records"]')).toHaveTextContent(
+        `${MANY_ROWS.length} Records`
+      )
+    );
+
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify(MANY_ROWS)}}}`),
+        enablePagination: binding('{{false}}'),
+        serverSidePagination: binding('{{false}}'),
+      },
+    });
+    await waitFor(() =>
+      expect(document.querySelector('[data-cy="footer-number-of-records"]')).toHaveTextContent(
+        `${MANY_ROWS.length} Records`
+      )
+    );
+  });
+
   test('[Table-PAG-004] setPage CSA and clicking a page control both move the page, but only the click fires onPageChanged', async () => {
     let onPageChangedCount = 0;
     widget.render({
