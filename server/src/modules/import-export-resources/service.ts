@@ -80,7 +80,8 @@ export class ImportExportResourcesService {
     importResourcesDto: ImportResourcesDto,
     cloning = false,
     isGitApp = false,
-    isTemplateApp = false
+    isTemplateApp = false,
+    beforeAppImport?: (tableNameMapping: Record<string, { id: string; table_name: string }>) => Promise<void>
   ) {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
@@ -113,6 +114,7 @@ export class ImportExportResourcesService {
         imports.tooljet_database = res.tooljet_database;
         imports.tableNameMapping = tableNameMapping;
       }
+      await beforeAppImport?.(tableNameMapping);
 
       if (!isEmpty(importResourcesDto.app)) {
         for (const appImportDto of importResourcesDto.app) {
@@ -142,6 +144,14 @@ export class ImportExportResourcesService {
       }
 
       return imports;
+    }).catch(async (error) => {
+      // bulkImport commits the tables before the app is created, so drop them on failure (clones may reuse tables)
+      if (!cloning) {
+        const organizationId = importResourcesDto.organization_id;
+        const left = await this.tooljetDbImportExportService.dropTables(organizationId, tableNameMapping);
+        if (left.length) console.error(`Could not drop tables of a failed import: ${left.join(', ')}`);
+      }
+      throw error;
     });
   }
 

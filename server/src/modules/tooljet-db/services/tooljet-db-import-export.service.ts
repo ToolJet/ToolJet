@@ -129,6 +129,21 @@ export class TooljetDbImportExportService {
     }
   }
 
+  // Retries tables still referenced by another table; returns the ones that could not be dropped
+  async dropTables(organizationId: string, tableNameMapping: Record<string, { table_name: string }>) {
+    let pending = Object.values(tableNameMapping).map((table) => table.table_name);
+    while (pending.length) {
+      const failed = [];
+      for (const table_name of pending)
+        await this.tableOperationsService
+          .perform(organizationId, 'drop_table', { table_name })
+          .catch(() => failed.push(table_name));
+      if (failed.length === pending.length) break;
+      pending = failed;
+    }
+    return pending;
+  }
+
   // NOTE: Use bulkImport if foreign keys are involved
   async import(
     organizationId: string,
