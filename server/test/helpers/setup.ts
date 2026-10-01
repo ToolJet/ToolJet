@@ -65,11 +65,7 @@ export function setDataSources(nestApp: INestApplication) {
   } catch {
     // tooljetDb connection may not exist in all test configurations
   }
-  // GetConnection's constructor sets this on first instantiation, but reusing a cached app
-  // (initTestApp's cache-hit path) never re-runs it — dbTransactionWrap-based service code
-  // (getConnectionInstance()) would keep reading whichever app's DataSource happened to be
-  // built last, diverging from _defaultDataSource and making writes from one app invisible
-  // to reads from the other. Keep them in lockstep here instead.
+  // cached-app reuse skips the GetConnection ctor; resync so dbTransactionWrap reads the active app's DataSource
   setConnectionInstance(_defaultDataSource);
 }
 
@@ -324,7 +320,7 @@ export async function withRealTransactions(fn: () => Promise<void>) {
 // App factory
 // ---------------------------------------------------------------------------
 
-/** Plan → Terms mapping. Unknown plans resolve to basic terms. */
+/** Plan → Terms mapping. Unknown plans throw; the EE helper registers the rest. */
 const PLAN_TO_TERMS: Record<string, Partial<Terms>> = {
   basic: CE_BASIC_PLAN_TERMS as Partial<Terms>,
 };
@@ -336,7 +332,11 @@ export function registerPlanTerms(terms: Record<string, Partial<Terms>>): void {
 
 /** Creates a real LicenseBase instance for the given plan. */
 function createLicenseInstance(plan: string): LicenseBase {
-  const terms = PLAN_TO_TERMS[plan] ?? PLAN_TO_TERMS.basic;
+  const terms = PLAN_TO_TERMS[plan];
+  if (!terms)
+    throw new Error(
+      `No test terms for plan '${plan}'. Register them with registerPlanTerms() or move the spec to ee/test.`
+    );
   const futureDate = new Date();
   futureDate.setMinutes(futureDate.getMinutes() + 30);
   return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);

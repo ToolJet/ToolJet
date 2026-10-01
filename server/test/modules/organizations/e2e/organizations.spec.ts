@@ -440,12 +440,12 @@ describe('OrganizationsController', () => {
     }, 60000);
   });
 
-  describe('on the team plan', () => {
+  describe('with personal workspaces disabled', () => {
     let app: INestApplication;
     let instanceSettingsRepository: Repository<InstanceSettings>;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ plan: 'team' }));
+      ({ app } = await initTestApp());
       instanceSettingsRepository = getEntityRepository(InstanceSettings);
     });
 
