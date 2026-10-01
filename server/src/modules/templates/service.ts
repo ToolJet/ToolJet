@@ -15,6 +15,7 @@ import { ImportExportResourcesService } from '@modules/import-export-resources/s
 import { PluginsService } from '@modules/plugins/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 
 @Injectable()
 export class TemplatesService {
@@ -45,7 +46,7 @@ export class TemplatesService {
     return this.importTemplate(currentUser, templateDefinition, appName, identifier);
   }
 
-  // Free plans ignore app themes: write in their light colours (icons use placeholder text) and drop the theme
+  // Free plans ignore app themes: write in their light colours (icons use placeholder text), keep the default theme
   protected withThemeColours(templateDefinition: any) {
     const colours = templateDefinition.app?.[0]?.definition?.appV2?.appVersions?.[0]?.globalSettings?.theme?.definition;
     if (!colours) return templateDefinition;
@@ -56,7 +57,8 @@ export class TemplatesService {
         .replace(/var\(--cc-default-icon\)/g, 'var(--cc-placeholder-text)')
         .replace(/var\(--cc-(\w+)-(\w+)\)/g, (token, type, group) => colours[group]?.colors?.[type]?.light ?? token)
     );
-    app[0].definition.appV2.appVersions.forEach((version) => delete version.globalSettings?.theme);
+    const theme = { name: defaultThemeName, definition: TJDefaultTheme };
+    app[0].definition.appV2.appVersions.forEach((version) => Object.assign(version.globalSettings ?? {}, { theme }));
     return { ...templateDefinition, app };
   }
 
