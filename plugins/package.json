@@ -30,7 +30,6 @@
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/cosmosdb": "file:packages/cosmosdb",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
-    "@tooljet-plugins/ibmdb": "file:packages/ibmdb",
     "@tooljet-plugins/databricks": "file:packages/databricks",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
     "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",
@@ -40,6 +39,7 @@
     "@tooljet-plugins/graphql": "file:packages/graphql",
     "@tooljet-plugins/grpc": "file:packages/grpc",
     "@tooljet-plugins/grpcv2": "file:packages/grpcv2",
+    "@tooljet-plugins/ibmdb": "file:packages/ibmdb",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
@@ -83,7 +83,9 @@
       "fast-xml-parser": "^5.5.7"
     },
     "protobufjs": "^7.6.5",
-    "ws": "^8.21.0"
+    "ws": "^8.21.0",
+    "js-yaml@3": "^3.15.2",
+    "js-yaml@4": "^4.3.2"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
