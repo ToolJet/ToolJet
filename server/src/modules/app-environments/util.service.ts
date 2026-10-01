@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, getConnectionInstance } from 'src/helpers/database.helper';
@@ -140,6 +140,23 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     const shouldRenderPromoteButton = !isCurrentVersionInProduction && !isVersionReleased;
     const shouldRenderReleaseButton = isCurrentVersionInProduction || isVersionReleased;
     return { shouldRenderPromoteButton, shouldRenderReleaseButton };
+  }
+
+  /**
+   * Client-supplied ids are untrusted. Throws 404 (not 403) when an id belongs to another
+   * workspace, so the response does not confirm that it exists.
+   */
+  async assertOwnedByOrganization(
+    organizationId: string,
+    { appId, environmentId }: { appId?: string; environmentId?: string },
+    manager: EntityManager
+  ): Promise<void> {
+    if (appId && !(await manager.exists(App, { where: { id: appId, organizationId } }))) {
+      throw new NotFoundException();
+    }
+    if (environmentId && !(await manager.exists(AppEnvironment, { where: { id: environmentId, organizationId } }))) {
+      throw new NotFoundException();
+    }
   }
 
   async getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any> {
