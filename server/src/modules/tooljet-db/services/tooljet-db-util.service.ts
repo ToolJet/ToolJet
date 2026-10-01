@@ -638,8 +638,11 @@ export class TooljetDbUtilService {
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
       case TJDB.jsonb:
-        if (typeof columnValue !== 'string') return columnValue;
-        return JSON.parse(columnValue);
+        // Hand jsonb to the driver as JSON text: node-postgres serialises a JS array as a Postgres
+        // array literal ({...}), which a jsonb column rejects. Parsing still validates the cell.
+        if (typeof columnValue !== 'string') return JSON.stringify(columnValue);
+        JSON.parse(columnValue);
+        return columnValue;
       default:
         return columnValue;
     }

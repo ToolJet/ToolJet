@@ -91,7 +91,9 @@ export class TemplatesService {
 
         if (tableDetails) {
           const tableNameAsPerDefinition = tableDetails.table_name;
-          this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, currentUser.organizationId);
+          // Seed one table at a time, in definition order: foreign keys already exist at this point,
+          // so a referencing table must wait until the table it points to has its rows.
+          await this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, currentUser.organizationId);
         }
       }
 
