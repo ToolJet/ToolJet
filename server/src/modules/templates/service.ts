@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
@@ -13,6 +13,8 @@ import { AppsRepository } from '@modules/apps/repository';
 import { Like } from 'typeorm';
 import { ImportExportResourcesService } from '@modules/import-export-resources/service';
 import { PluginsService } from '@modules/plugins/service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class TemplatesService {
@@ -24,6 +26,10 @@ export class TemplatesService {
     protected logger: Logger
   ) {}
 
+  // Property injection leaves the constructor unchanged for subclasses
+  @Inject(LicenseTermsService)
+  protected licenseTermsService: LicenseTermsService;
+
   async perform(
     currentUser: User,
     identifier: string,
@@ -31,10 +37,27 @@ export class TemplatesService {
     dependentPlugins: Array<string>,
     shouldAutoImportPlugin: boolean
   ) {
-    const templateDefinition = this.findTemplateDefinition(identifier);
+    let templateDefinition = this.findTemplateDefinition(identifier);
+    if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.CUSTOM_THEMES, currentUser.organizationId)))
+      templateDefinition = this.withThemeColours(templateDefinition);
     if (dependentPlugins.length)
       await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
     return this.importTemplate(currentUser, templateDefinition, appName, identifier);
+  }
+
+  // Free plans ignore app themes: write in their light colours (icons use placeholder text) and drop the theme
+  protected withThemeColours(templateDefinition: any) {
+    const colours = templateDefinition.app?.[0]?.definition?.appV2?.appVersions?.[0]?.globalSettings?.theme?.definition;
+    if (!colours) return templateDefinition;
+
+    const app = JSON.parse(
+      JSON.stringify(templateDefinition.app)
+        .replace(/"appMode":"auto"/g, '"appMode":"light"')
+        .replace(/var\(--cc-default-icon\)/g, 'var(--cc-placeholder-text)')
+        .replace(/var\(--cc-(\w+)-(\w+)\)/g, (token, type, group) => colours[group]?.colors?.[type]?.light ?? token)
+    );
+    app[0].definition.appV2.appVersions.forEach((version) => delete version.globalSettings?.theme);
+    return { ...templateDefinition, app };
   }
 
   async createSampleApp(currentUser: User) {
