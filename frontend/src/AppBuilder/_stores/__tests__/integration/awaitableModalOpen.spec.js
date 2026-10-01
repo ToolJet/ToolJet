@@ -2,12 +2,14 @@
  * Awaitable modal open (PR #18083): the step after opening a modal must be able
  * to use the modal's children.
  *
- * The bug: `components.modal1.open()` followed by `components.textinput1.setText()`
- * failed, because the child had not mounted yet — and in RunJS, `components` was
- * a snapshot from the start of the run, so the child's actions never appeared
- * even after waiting. Two App Builder surfaces had to change:
- *   - the Show modal action returns open()'s promise, so the next action waits;
- *   - RunJS `components` reads the store live, like `queries` already did.
+ * The bug: in RunJS, `await components.modal1.open()` followed by
+ * `components.textinput1.setText()` failed with "setText is not a function".
+ * `components` was a snapshot from the start of the run, taken before the
+ * modal's child had mounted, so the child's actions never appeared even after
+ * waiting. RunJS `components` now reads the store live, like `queries` already did.
+ *
+ * The no-code Show modal action is deliberately unchanged: it does not wait for
+ * open(), and Control component reads the store live on its own.
  *
  * Arranged through the real store only. The modal and its child are registered
  * the way a mounted widget registers itself — `setExposedValues` — with the
@@ -52,7 +54,6 @@ function seedModalWithChild({ onOpened = () => mountTextInput() } = {}) {
   let release = null;
   const modal = {
     openCalls: 0,
-    closeCalls: 0,
     finishOpening() {
       if (!release) throw new Error('modal1.open() has not been called');
       release();
@@ -73,9 +74,7 @@ function seedModalWithChild({ onOpened = () => mountTextInput() } = {}) {
           };
         });
       },
-      close: async () => {
-        modal.closeCalls += 1;
-      },
+      close: async () => {},
     },
     MODULE_ID
   );
@@ -83,66 +82,6 @@ function seedModalWithChild({ onOpened = () => mountTextInput() } = {}) {
 }
 
 afterEach(() => drainExposedValueBatch());
-
-describe('Show modal action', () => {
-  const onClick = (actionId, event, index) => ({
-    id: `evt-${index}`,
-    index,
-    sourceId: 'button1',
-    name: `evt-${index}`,
-    target: 'component',
-    event: { eventId: 'onClick', actionId, ...event },
-  });
-  const showModal = onClick('show-modal', { modal: 'modal1' }, 0);
-  const setText = onClick(
-    'control-component',
-    {
-      componentId: 'textinput1',
-      componentSpecificActionHandle: 'setText',
-      componentSpecificActionParams: [{ handle: 'text', value: '123' }],
-    },
-    1
-  );
-
-  test('the next action waits until the modal has opened, so it can set text on a child', async () => {
-    const modal = seedModalWithChild();
-
-    const run = state().eventsSlice.executeActionsForEventId('onClick', [showModal, setText], 'view', {}, MODULE_ID);
-    await drain();
-
-    // Still opening: the child has only its seeded defaults, and Set text has not run yet
-    expect(modal.openCalls).toBe(1);
-    expect(exposed('textinput1').setText).toBeUndefined();
-    expect(exposed('textinput1').value).toBe('');
-
-    modal.finishOpening();
-    await run;
-
-    expect(exposed('textinput1').value).toBe('123');
-  });
-
-  test('works again after the modal is closed and reopened', async () => {
-    const modal = seedModalWithChild();
-    const closeModal = onClick('close-modal', { modal: 'modal1' }, 0);
-
-    const first = state().eventsSlice.executeActionsForEventId('onClick', [showModal], 'view', {}, MODULE_ID);
-    await drain();
-    modal.finishOpening();
-    await first;
-    await state().eventsSlice.executeActionsForEventId('onClick', [closeModal], 'view', {}, MODULE_ID);
-    expect(modal.closeCalls).toBe(1);
-
-    const second = state().eventsSlice.executeActionsForEventId('onClick', [showModal, setText], 'view', {}, MODULE_ID);
-    await drain();
-    expect(modal.openCalls).toBe(2);
-    expect(exposed('textinput1').value).toBe('');
-
-    modal.finishOpening();
-    await second;
-
-    expect(exposed('textinput1').value).toBe('123');
-  });
-});
 
 describe('RunJS components', () => {
   function runJs(code) {

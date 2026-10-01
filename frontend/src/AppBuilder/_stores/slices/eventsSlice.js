@@ -261,8 +261,9 @@ export const createEventsSlice = (set, get) => ({
           throw new Error('No modal is associated with this event.');
         }
         const exposedValue = getExposedValueOfComponent(modalId, moduleId);
-        // Return open()'s promise so the next action waits until the modal has opened
-        return Promise.resolve(show ? exposedValue.open() : exposedValue.close());
+        show ? exposedValue.open() : exposedValue.close();
+
+        return Promise.resolve();
       } catch (error) {
         get().eventsSlice.logError(
           show ? 'show_modal' : 'close_modal',
