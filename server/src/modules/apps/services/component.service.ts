@@ -162,7 +162,7 @@ export class ComponentsService implements IComponentsService {
 
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, {
-          where: { id: componentId },
+          where: { id: componentId, page: { appVersionId } },
         });
 
         if (doesComponentExist[1] === 0) {
@@ -448,7 +448,7 @@ export class ComponentsService implements IComponentsService {
       // Handle layout operation if present
       if (batchOperations.layout) {
         const { diff } = batchOperations.layout;
-        await this.updateComponentLayouts(diff, manager);
+        await this.updateComponentLayouts(diff, appVersionId, manager);
         results.layout = Object.keys(diff).length;
       }
 
@@ -689,7 +689,7 @@ export class ComponentsService implements IComponentsService {
       let { component } = diff[componentId];
 
       const doesComponentExist = await manager.findAndCount(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       if (doesComponentExist[1] === 0) {
@@ -701,7 +701,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       const componentData: Component = await manager.findOne(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       const incomingProperties = component.definition?.properties;
@@ -830,6 +830,7 @@ export class ComponentsService implements IComponentsService {
   ) {
     const components = await manager.findBy(Component, {
       id: In(componentIds),
+      page: { appVersionId },
     });
 
     if (!components.length) {
@@ -846,11 +847,13 @@ export class ComponentsService implements IComponentsService {
       });
     }
 
-    await manager.delete(Component, { id: In(componentIds) });
+    // Delete only ids confirmed in scope above, not the raw caller-supplied list.
+    await manager.delete(Component, { id: In(components.map((c) => c.id)) });
   }
 
   protected async updateComponentLayouts(
     layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    appVersionId: string,
     manager: EntityManager
   ) {
     const parentWrites = this.collectParentWritesFromDiff(layoutDiff);
@@ -871,7 +874,7 @@ export class ComponentsService implements IComponentsService {
 
     for (const componentId in layoutDiff) {
       const doesComponentExist = await manager.findAndCount(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       if (doesComponentExist[1] === 0) {

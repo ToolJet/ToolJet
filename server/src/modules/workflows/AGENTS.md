@@ -25,7 +25,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 | Bundle API | `controllers/workflow-bundles.controller.ts`, `dto/workflow-bundle.dto.ts` |
 | Config | `constants/index.ts` (queue/job names, statuses), `constants/queue-config.ts` (priority, retries, timeout, concurrency), `types/index.ts` |
 | Access | `guards/workflow-access.guard.ts`, `ability/app/`, `constants/feature.ts` (`FEATURE_KEY`) |
-| Misc | `listeners/app-actions.listener.ts` (app.deleted / maintenance-toggled → schedule cleanup), `services/agent-node.service.ts` (AI agent node), `services/workflow-version.util.service.ts` |
+| Misc | `listeners/app-actions.listener.ts` (app.deleted / maintenance-toggled → schedule cleanup — also emitted by `platform-git-sync`'s orphan-pull delete, not just `AppsService.delete`), `services/agent-node.service.ts` (AI agent node), `services/workflow-version.util.service.ts` |
 
 ## Edition split
 - CE = interface stubs (services throw `Method not implemented.`); controllers/DI wiring live in CE `module.ts`, implementations resolved from `ee/workflows` via `SubModule.getProviders`. Never import `@ee` from CE.
@@ -41,6 +41,11 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - Schedules are BullMQ job schedulers keyed by schedule id; DB (`workflow_schedules`) is source of truth, reconciled on worker boot by `ScheduleBootstrapService`. Cron validated with `cron-validator`.
 - Job payload carries a serialized `WorkflowExecution` + dto; default params come from `appVersion.definition.defaultParams` merged with call params at process time.
 - Webhook endpoint is versioned (`version: '2'`) and throttled via `WEBHOOK_THROTTLE_TTL`/`WEBHOOK_THROTTLE_LIMIT`.
+- **Webhook enablement is version state, not app state.** It lives on `app_versions.workflow_enabled`, not `apps.workflow_enabled` — so it is branch-scoped and travels through git with the version. `apps.workflow_enabled` is retained but unwritten and unread (rollback source only); don't read it. A write lands on the branch's draft and Postgres triggers fan it across that branch's other version rows, published ones included — which is what keeps an already-published version triggerable after the flip. `workflow_api_token` is the opposite: app-level, and deliberately excluded from git so each workspace keeps its own.
+- **A pull or PR merge can turn a webhook on.** Enable it on a feature branch, merge, and the default branch's endpoint goes live. Accepted and intended — not a bug to guard.
+- Enablement can only be toggled on a **feature** branch when multi-branching is on (`blockedFields`); single-branch and git-off workspaces toggle it directly.
+- Triggering a DRAFT or feature-branch version is allowed — the restriction was only ever two frontend lines. The environment gate still applies: a draft sits at development priority, so `?environment=production` is rejected.
+- `WorkflowWebhooksService.updateWorkflow` writes the **version row** (feature branch → that branch's BRANCH row, otherwise the default-branch draft). Only the token backfill still writes `apps`.
 
 ## Related modules
 - `apps` — workflow is an App (`APP_TYPES.WORKFLOW`); versions/environments come from apps/versions modules.

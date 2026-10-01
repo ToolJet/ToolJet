@@ -18,6 +18,7 @@ type CreateResourcePermissionMap = {
   [ResourceType.MODULE]: CreateAppsPermissionsObject;
   [ResourceType.WORKFLOW_FOLDER]: CreateFolderPermissionsObject;
   [ResourceType.MODULE_FOLDER]: CreateFolderPermissionsObject;
+  [ResourceType.DATA_SOURCE_FOLDER]: CreateFolderPermissionsObject;
 };
 
 export type CreateResourcePermissionObject<T extends ResourceType> = CreateResourcePermissionMap[T];
@@ -50,6 +51,9 @@ export interface CreateFolderPermissionsObject {
   canEditFolder?: boolean;
   canEditApps?: boolean;
   canViewApps?: boolean;
+  // Data-source folders only: false restricts query-run on the folder's data sources. Ignored for
+  // app/workflow/module folders. Defaults true.
+  canRunQuery?: boolean;
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.FOLDER>;
 }
 
@@ -72,6 +76,7 @@ type ResourceToPermissionItemMap = {
   [ResourceType.MODULE]: AppsPermissionAddResourceItem[];
   [ResourceType.WORKFLOW_FOLDER]: FolderPermissionAddResourceItem[];
   [ResourceType.MODULE_FOLDER]: FolderPermissionAddResourceItem[];
+  [ResourceType.DATA_SOURCE_FOLDER]: FolderPermissionAddResourceItem[];
 };
 
 export type GranularPermissionAddResourceItems<T extends ResourceType> = ResourceToPermissionItemMap[T];
@@ -115,6 +120,9 @@ export interface FoldersGroupPermissionsActions {
   canEditFolder: boolean;
   canEditApps: boolean;
   canViewApps: boolean;
+  // Data-source folders only: false restricts query-run on the folder's data sources. Optional so
+  // app/workflow/module folder updates need not send it.
+  canRunQuery?: boolean;
 }
 
 export interface ResourcePermissionMetaData {
@@ -142,7 +150,8 @@ export interface UpdateResourceGroupPermissionsObject<
     | ResourceType.FOLDER
     | ResourceType.MODULE
     | ResourceType.WORKFLOW_FOLDER
-    | ResourceType.MODULE_FOLDER,
+    | ResourceType.MODULE_FOLDER
+    | ResourceType.DATA_SOURCE_FOLDER,
 > {
   group: GroupPermissions;
   granularPermissions: GranularPermissions;
@@ -166,6 +175,7 @@ type ResourceActionMap = {
   [ResourceType.MODULE]: AppsGroupPermissionsActions;
   [ResourceType.WORKFLOW_FOLDER]: FoldersGroupPermissionsActions;
   [ResourceType.MODULE_FOLDER]: FoldersGroupPermissionsActions;
+  [ResourceType.DATA_SOURCE_FOLDER]: FoldersGroupPermissionsActions;
 };
 
 export type ResourceGroupActions<T extends ResourceType> = ResourceActionMap[T];

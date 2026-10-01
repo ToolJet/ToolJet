@@ -7,5 +7,5 @@ export interface IWorkflowWebhooksService {
     response: any
   ): Promise<any>;
 
-  updateWorkflow(id: string, workflowValuesToUpdate: any): Promise<any>;
+  updateWorkflow(id: string, workflowValuesToUpdate: any, branchId?: string): Promise<any>;
 }

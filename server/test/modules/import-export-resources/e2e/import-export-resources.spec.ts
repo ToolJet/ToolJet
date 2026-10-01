@@ -209,6 +209,36 @@ describe('ImportExportResourcesController', () => {
       });
     });
 
+    // Regression for tj-ee#5465 (cross-org import/clone via body.organization_id).
+    describe('POST /api/v2/resources/import | cross-tenant organization_id', () => {
+      it('should not allow an admin to import an app into a different organization via body.organization_id', async () => {
+        const attacker = await createAdmin(app, 'attacker@tooljet.io');
+        const victimOrgAdmin = await createAdmin(app, 'victim-org-admin@tooljet.io');
+        const attackerApp = await seedApp(attacker);
+        const exportBody = await exportApp(attacker, attackerApp.id);
+
+        const appCountBefore = await countEntities(App, {
+          organizationId: victimOrgAdmin.user.defaultOrganizationId,
+        } as any);
+
+        await request(app.getHttpServer())
+          .post('/api/v2/resources/import')
+          .set('tj-workspace-id', attacker.user.defaultOrganizationId)
+          .set('Cookie', attacker.cookie)
+          .send({
+            organization_id: victimOrgAdmin.user.defaultOrganizationId,
+            tooljet_version: exportBody.tooljet_version,
+            app: exportBody.app.map((a: any) => ({ ...a, appName: 'planted-by-attacker' })),
+          })
+          .expect(403);
+
+        const appCountAfter = await countEntities(App, {
+          organizationId: victimOrgAdmin.user.defaultOrganizationId,
+        } as any);
+        expect(appCountAfter).toBe(appCountBefore);
+      });
+    });
+
     describe('POST /api/v2/resources/import | import apps (round-trip)', () => {
       it('should allow an admin to import an exported payload (round-trip)', async () => {
         const admin = await createAdmin(app, 'admin@tooljet.io');
@@ -259,6 +289,33 @@ describe('ImportExportResourcesController', () => {
 
         expect(response.body).toHaveProperty('imports');
         expect(response.body.success).toBe(true);
+      });
+    });
+
+    describe('POST /api/v2/resources/clone | cross-tenant organization_id', () => {
+      it('should not allow an admin to clone their own app into a different organization via body.organization_id', async () => {
+        const attacker = await createAdmin(app, 'attacker-clone@tooljet.io');
+        const victimOrgAdmin = await createAdmin(app, 'victim-org-admin-clone@tooljet.io');
+        const attackerApp = await seedApp(attacker);
+
+        const appCountBefore = await countEntities(App, {
+          organizationId: victimOrgAdmin.user.defaultOrganizationId,
+        } as any);
+
+        await request(app.getHttpServer())
+          .post('/api/v2/resources/clone')
+          .set('tj-workspace-id', attacker.user.defaultOrganizationId)
+          .set('Cookie', attacker.cookie)
+          .send({
+            app: [{ id: attackerApp.id, name: 'planted-clone' }],
+            organization_id: victimOrgAdmin.user.defaultOrganizationId,
+          })
+          .expect(403);
+
+        const appCountAfter = await countEntities(App, {
+          organizationId: victimOrgAdmin.user.defaultOrganizationId,
+        } as any);
+        expect(appCountAfter).toBe(appCountBefore);
       });
     });
 

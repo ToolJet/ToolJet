@@ -155,7 +155,7 @@
     "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^9.1.0",
     "@types/nodemailer": "^8.0.1",
     "openid-client": "^5.4.0",
     "otpauth": "^9.4.1",
@@ -200,7 +200,7 @@
       "ws": "$ws"
     },
     "mailparser": {
-      "nodemailer": "^9.0.1"
+      "nodemailer": "^9.1.0"
     },
     "jsondiffpatch": "^0.7.6",
     "@opentelemetry/propagator-jaeger": "^2.9.0",
@@ -208,10 +208,11 @@
     "@grpc/grpc-js": "^1.14.4",
     "brace-expansion": "^1.1.18",
     "fast-uri": "^3.1.5",
-    "multer": "^2.2.0",
+    "multer": "^2.3.0",
     "nanoid": "^3.3.17",
     "socket.io-parser": "^4.2.7",
-    "js-yaml": "^4.3.1"
+    "js-yaml": "^4.3.2",
+    "@xmldom/xmldom": "^0.8.15"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",

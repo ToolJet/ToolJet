@@ -18,7 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "nodemailer": "^9.0.5",
+    "nodemailer": "^9.1.1",
     "react": "^17.0.2"
   }
 }

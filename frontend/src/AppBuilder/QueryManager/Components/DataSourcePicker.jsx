@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
@@ -10,23 +10,27 @@ import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
 import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { staticDataSources } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
 
 function DataSourcePicker({ darkMode }) {
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
+  const dataSourceFolders = useStore((state) => state.dataSourceFolders);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
-  const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
-    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
+  const allUserDefinedSources = useMemo(
+    () => [...dataSources, ...globalDataSources].filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy),
+    [dataSources, globalDataSources]
   );
   const [searchTerm, setSearchTerm] = useState();
-  const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
-  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+  // Data-source folders start collapsed; a folder is shown expanded while searching so matches surface.
+  const [expandedFolders, setExpandedFolders] = useState(new Set());
   const navigate = useNavigate();
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
@@ -54,20 +58,6 @@ function DataSourcePicker({ darkMode }) {
     setPreviewData(null);
   };
 
-  useEffect(() => {
-    if (searchTerm) {
-      const formattedSearchTerm = searchTerm.toLowerCase();
-      const filteredResults = allUserDefinedSources.filter(
-        ({ name, kind }) =>
-          name.toLowerCase().includes(formattedSearchTerm) || kind.toLowerCase().includes(formattedSearchTerm)
-      );
-      setFilteredUserDefinedDataSources(filteredResults);
-    } else {
-      setFilteredUserDefinedDataSources(allUserDefinedSources);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, globalDataSources, dataSources]);
-
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
     navigate(`/${workspaceId}/data-sources`);
@@ -77,66 +67,60 @@ function DataSourcePicker({ darkMode }) {
     createFolder('New folder', currentVersionId);
   };
 
-  const toggleGroup = (kind) => {
-    setCollapsedGroups((prev) => {
+  const toggleFolder = (folderId) => {
+    setExpandedFolders((prev) => {
       const next = new Set(prev);
-      if (next.has(kind)) {
-        next.delete(kind);
-      } else {
-        next.add(kind);
-      }
+      if (next.has(folderId)) next.delete(folderId);
+      else next.add(folderId);
       return next;
     });
   };
 
   const flatItems = useMemo(() => {
-    const groupedSources = filteredUserDefinedDataSources.reduce((acc, source) => {
-      if (!acc[source.kind]) acc[source.kind] = { sources: [], representative: source };
-      acc[source.kind].sources.push(source);
-      return acc;
-    }, {});
+    // Connected data sources grouped by their data-source folder (folders first, collapsed by
+    // default; expanded while searching), then stray (unfoldered) sources as a flat list.
+    const { folders, stray } = buildDataSourceFolderGroups(allUserDefinedSources, dataSourceFolders, searchTerm);
+    const isSearching = !!(searchTerm && searchTerm.trim());
 
     const items = [];
-    Object.entries(groupedSources).forEach(([kind, { sources, representative }]) => {
-      const isCollapsed = collapsedGroups.has(kind);
-      items.push({ type: 'group-header', kind, representative, isCollapsed });
-      if (!isCollapsed) {
-        sources.forEach((source, idx) => {
-          items.push({ type: 'group-item', source, isLastInGroup: idx === sources.length - 1 });
-        });
+    folders.forEach(({ folder, sources }) => {
+      const isExpanded = expandedFolders.has(folder.id) || isSearching;
+      items.push({ type: 'folder-header', folder, isExpanded });
+      if (isExpanded) {
+        sources.forEach((source, idx) =>
+          items.push({ type: 'folder-item', source, isLastInGroup: idx === sources.length - 1 })
+        );
       }
     });
+    stray.forEach((source) => items.push({ type: 'stray-item', source }));
     return items;
-  }, [filteredUserDefinedDataSources, collapsedGroups]);
+  }, [allUserDefinedSources, dataSourceFolders, searchTerm, expandedFolders]);
 
   const renderItem = (item) => {
-    if (item.type === 'group-header') {
+    if (item.type === 'folder-header') {
       return (
-        <div style={{ borderBottom: item.isCollapsed ? '1px solid var(--border-weak)' : 'none' }}>
+        <div style={{ padding: '0 8px' }}>
           <button
-            className="d-flex align-items-center justify-content-between w-100 datasource-picker-group-btn"
-            onClick={() => toggleGroup(item.kind)}
-            data-cy={`ds-group-${item.kind}`}
+            className="d-flex align-items-center w-100 query-datasource-quick-action"
+            onClick={() => toggleFolder(item.folder.id)}
+            data-cy={`ds-folder-${String(item.folder.name).toLowerCase().replace(/\s+/g, '-')}`}
           >
-            <div className="d-flex align-items-center datasource-picker-group-label">
-              <DataSourceIcon source={item.representative} height={16} />
-              <span className="datasource-picker-group-name">
-                {item.kind.charAt(0).toUpperCase() + item.kind.slice(1)}
-              </span>
-            </div>
-            <SolidIcon name={item.isCollapsed ? 'TriangleDownCenter' : 'TriangleUpCenter'} width="16" height="16" />
+            <DynamicIcon
+              name={item.isExpanded ? 'folder-open' : 'folder-dot'}
+              size={16}
+              style={{ flexShrink: 0, color: 'var(--icon-default, #6a727c)' }}
+            />
+            <span className="ds-source-label" title={decodeEntities(item.folder.name)}>
+              {decodeEntities(item.folder.name)}
+            </span>
           </button>
         </div>
       );
     }
 
+    const isFolderItem = item.type === 'folder-item';
     return (
-      <div
-        style={{
-          padding: item.isLastInGroup ? '0 8px 8px' : '0 8px 0',
-          borderBottom: item.isLastInGroup ? '1px solid var(--border-weak)' : 'none',
-        }}
-      >
+      <div style={{ padding: isFolderItem ? '0 8px 0 20px' : '0 8px 0' }}>
         <button
           className="d-flex align-items-center w-100 query-datasource-quick-action"
           onClick={() => handleChangeDataSource(item.source)}
@@ -144,6 +128,7 @@ function DataSourcePicker({ darkMode }) {
           data-tooltip-content={decodeEntities(item.source.name)}
           data-cy={`${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
         >
+          <DataSourceIcon source={item.source} height={16} />
           <span className="ds-source-label">{decodeEntities(item.source.name)}</span>
         </button>
       </div>
@@ -242,7 +227,9 @@ function DataSourcePicker({ darkMode }) {
           <Virtuoso
             style={{ height: 'calc(100vh - 420px)', minHeight: 200 }}
             data={flatItems}
-            itemKey={(_, item) => (item.type === 'group-item' ? item.source.id : `${item.type}-${item.kind}`)}
+            itemKey={(_, item) =>
+              item.type === 'folder-header' ? `folder-header-${item.folder.id}` : `${item.type}-${item.source.id}`
+            }
             itemContent={(_, item) => renderItem(item)}
           />
         </>

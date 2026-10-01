@@ -61,7 +61,7 @@ export class WorkspacePushDto {
 
   @IsOptional()
   @IsString()
-  scope?: 'app' | 'module' | 'datasource' | 'all';
+  scope?: 'app' | 'module' | 'workflow' | 'datasource' | 'all';
   @IsOptional()
   @IsBoolean()
   onlyUnsyncedDatasources?: boolean;
@@ -78,8 +78,8 @@ export class WorkspacePullDto {
 }
 
 export class PullConflictResolutionDto {
-  @IsIn(['app', 'module', 'datasource'])
-  type: 'app' | 'module' | 'datasource';
+  @IsIn(['app', 'module', 'datasource', 'workflow'])
+  type: 'app' | 'module' | 'datasource' | 'workflow';
 
   @IsUUID()
   existingCoRelationId: string;

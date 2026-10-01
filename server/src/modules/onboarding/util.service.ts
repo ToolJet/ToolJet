@@ -211,10 +211,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         }
       }
 
-      if (!isCloudEdition && response) {
-        if (!existingUser.password) {
-          await this.activateUserWithPassword(existingUser, { password, firstName, lastName }, targetOrg, manager);
-        }
+      if (!isCloudEdition && response && existingUser.password) {
         if (!targetOrg) {
           throw new NotAcceptableException('No valid workspace found to log into.');
         }

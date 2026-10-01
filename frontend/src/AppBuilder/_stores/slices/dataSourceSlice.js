@@ -5,6 +5,9 @@ const initialState = {
   dataSources: [],
   loadingDataSources: true,
   globalDataSources: [],
+  // Data-source folders for the app builder pickers: [{ id, name, data_sources: [<ds-id>...] }].
+  // Comes on the getForApp response, permission-filtered, empty folders already dropped server-side.
+  dataSourceFolders: [],
   sampleDataSource: null,
   isFetchingGlobalDataSource: false,
   globalDataSourceList: null,
@@ -42,6 +45,7 @@ export const createDataSourceSlice = (set) => ({
       .then((data) => {
         set({
           globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
+          dataSourceFolders: data.data_source_folders ?? [],
           sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
           loadingDataSources: false,
         });

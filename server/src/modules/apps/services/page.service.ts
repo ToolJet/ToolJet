@@ -503,7 +503,7 @@ export class PageService implements IPageService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const currentPage = await manager.findOne(Page, {
-        where: { id: pageUpdates.pageId },
+        where: { id: pageUpdates.pageId, appVersionId },
       });
 
       if (!currentPage) {
@@ -532,7 +532,7 @@ export class PageService implements IPageService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
-        where: { id: pageId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageExists) {

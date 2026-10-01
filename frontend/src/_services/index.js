@@ -10,6 +10,7 @@ export * from './organization_user.service';
 export * from './custom_styles.service';
 export * from './openapi.service';
 export * from './folder.service';
+export * from './dataSourceFolder.service';
 export * from './tooljet.service';
 export * from './comments.service';
 export * from './library-app.service';

@@ -29,9 +29,14 @@ export class GitOAuthService implements IGitOAuthService {
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
+    // GitHub only allows a verified address to be set as the public profile email, so a
+    // present `email` here is verified; the /user/emails fallback carries its own `verified` flag.
+    let emailVerified = !!email;
     if (!email) {
       // email visibility not set to public
-      email = await this.#getEmailId(access_token, hostName);
+      const primaryEmail = await this.#getPrimaryEmail(access_token, hostName);
+      email = primaryEmail?.email;
+      emailVerified = !!primaryEmail?.verified;
     }
 
     const userinfoResponse = {
@@ -39,16 +44,16 @@ export class GitOAuthService implements IGitOAuthService {
       access_token,
     };
 
-    return { userSSOId: access_token, firstName, lastName, email, sso: 'git', userinfoResponse };
+    return { userSSOId: access_token, firstName, lastName, email, emailVerified, sso: 'git', userinfoResponse };
   }
 
-  async #getEmailId(access_token: string, hostName: string) {
+  async #getPrimaryEmail(access_token: string, hostName: string): Promise<{ email: string; verified: boolean }> {
     const response: any = await got(this.#getUserEmailUrl(hostName), {
       method: 'get',
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
     }).json();
 
-    return response?.find((emails) => emails.primary)?.email;
+    return response?.find((emails) => emails.primary);
   }
 
   async signIn(code: string, configs: any): Promise<any> {
