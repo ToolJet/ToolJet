@@ -2342,6 +2342,114 @@ describe('Table: per-column-type rendering', () => {
     expect(cell('interest', 0).textContent).toContain('Music');
   });
 
+  test('[Table-BUG-020] an editable select column failing its customRule surfaces a visible error, matching other column types', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              isEditable: true,
+              customRule: 'Always invalid',
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ status: 'active' }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('status', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('status', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-BUG-020] an editable tagsV2 column failing its customRule surfaces a visible error, matching other column types', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'interest',
+              key: 'interest',
+              id: 'col-interest',
+              columnType: 'tagsV2',
+              columnSize: 200,
+              isEditable: true,
+              customRule: 'Always invalid',
+              options: [
+                { label: 'Reading', value: 'Reading' },
+                { label: 'Music', value: 'Music' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ interest: ['Reading'] }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('interest', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('interest', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-BUG-021] a select column customRule can reference {{cellValue}}, not just {{value}}', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              isEditable: true,
+              customRule: "{{cellValue ? '' : 'Pick one'}}",
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ status: '' }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('status', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('status', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-BUG-021] a tagsV2 column customRule can reference {{cellValue}}, not just {{value}}', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'interest',
+              key: 'interest',
+              id: 'col-interest',
+              columnType: 'tagsV2',
+              columnSize: 200,
+              isEditable: true,
+              customRule: "{{cellValue && cellValue.length ? '' : 'Pick at least one'}}",
+              options: [
+                { label: 'Reading', value: 'Reading' },
+                { label: 'Music', value: 'Music' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ interest: [] }])}}}`),
+      },
+    });
+    await waitFor(() => expect(cell('interest', 0)).toBeInTheDocument());
+    await waitFor(() => expect(cell('interest', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
   test('[Table-COLTYPE-MARKDOWN-002] a markdown column sanitizes bound content via DOMPurify before rendering', async () => {
     widget.render({
       properties: {

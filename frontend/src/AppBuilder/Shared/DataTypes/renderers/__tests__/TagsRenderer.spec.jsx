@@ -1,5 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TagsRenderer } from '../TagsRenderer';
 
 const baseProps = {
@@ -43,5 +44,47 @@ describe('[Table-BUG] TagsRenderer: non-editable empty cell', () => {
     const { container } = render(<TagsRenderer {...baseProps} isEditable={false} isMulti={false} value="a" />);
 
     expect(container.textContent).toContain('A');
+  });
+});
+
+describe('[Table-BUG] TagsRenderer: customRule validation error tooltip', () => {
+  it('shows the full error message in a tooltip on hover, regardless of row height', async () => {
+    const { container } = render(
+      <TagsRenderer
+        {...baseProps}
+        isEditable={true}
+        isMulti={false}
+        value="a"
+        isValid={false}
+        validationError="Always invalid"
+      />
+    );
+
+    const control = container.querySelector('.is-invalid');
+    expect(control).toBeInTheDocument();
+
+    await userEvent.hover(control);
+
+    const tooltip = await screen.findByText('Always invalid', { selector: '.overlay-cell-table' });
+    expect(tooltip).toBeInTheDocument();
+  });
+
+  it("renders a presence-only .invalid-feedback marker so the table cell's own `:has(.invalid-feedback):hover` border rule activates, and omits it when valid", () => {
+    const { container: validContainer } = render(
+      <TagsRenderer {...baseProps} isEditable={true} isMulti={false} value="a" isValid={true} />
+    );
+    expect(validContainer.querySelector('.invalid-feedback')).not.toBeInTheDocument();
+
+    const { container: invalidContainer } = render(
+      <TagsRenderer
+        {...baseProps}
+        isEditable={true}
+        isMulti={false}
+        value="a"
+        isValid={false}
+        validationError="Always invalid"
+      />
+    );
+    expect(invalidContainer.querySelector('.invalid-feedback')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { SelectRenderer } from '../SelectRenderer';
 
 const baseProps = {
@@ -45,5 +46,50 @@ describe('[Table-BUG] SelectRenderer: non-editable empty cell', () => {
     const { container } = render(<SelectRenderer {...baseProps} isEditable={false} isMulti={false} value="a" />);
 
     expect(container.textContent).toContain('A');
+  });
+});
+
+describe('[Table-BUG] SelectRenderer: customRule validation error tooltip', () => {
+  it('shows the full error message in a tooltip on hover, regardless of row height', async () => {
+    const { container } = render(
+      <SelectRenderer
+        {...baseProps}
+        isEditable={true}
+        isMulti={false}
+        value="a"
+        isValid={false}
+        validationError="Always invalid"
+      />
+    );
+
+    const control = container.querySelector('.is-invalid');
+    expect(control).toBeInTheDocument();
+
+    await userEvent.hover(control);
+
+    const tooltip = await screen.findByText('Always invalid', { selector: '.overlay-cell-table' });
+    expect(tooltip).toBeInTheDocument();
+  });
+
+  it("renders a presence-only .invalid-feedback marker so the table cell's own `:has(.invalid-feedback):hover` border rule activates, and omits it when valid", () => {
+    // The actual error text is shown via the OverlayTrigger tooltip (tested above), not this marker.
+    // table-component.scss already has `.jet-data-table td:has(.invalid-feedback):hover { border:
+    // red }` — this marker's only job is to make that pre-existing, already-styled selector match.
+    const { container: validContainer } = render(
+      <SelectRenderer {...baseProps} isEditable={true} isMulti={false} value="a" isValid={true} />
+    );
+    expect(validContainer.querySelector('.invalid-feedback')).not.toBeInTheDocument();
+
+    const { container: invalidContainer } = render(
+      <SelectRenderer
+        {...baseProps}
+        isEditable={true}
+        isMulti={false}
+        value="a"
+        isValid={false}
+        validationError="Always invalid"
+      />
+    );
+    expect(invalidContainer.querySelector('.invalid-feedback')).toBeInTheDocument();
   });
 });
