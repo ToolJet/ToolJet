@@ -252,6 +252,8 @@ export const TagsRenderer = ({
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
+  const [isHovered, setIsHovered] = useState(false);
+  const showInvalid = isEditable && !isValid;
 
   useEffect(() => {
     if (!menuIsOpen) {
@@ -418,75 +420,75 @@ export const TagsRenderer = ({
     return null;
   }
 
+  const showChipOverflow = isMulti && (selectedValue?.length || defaultValue?.length) && !isFocused && isOverflowing();
+
   return (
     <OverlayTrigger
       placement="bottom"
       overlay={
-        isMulti && (selectedValue?.length || defaultValue?.length) && !isFocused ? (
+        showInvalid ? (
+          <div className="overlay-cell-table" style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
+            {validationError}
+          </div>
+        ) : showChipOverflow ? (
           getOverlay(selectedValue || defaultValue, darkMode)
         ) : (
           <div />
         )
       }
-      trigger={isMulti && !isFocused && isOverflowing() && ['hover', 'focus']}
+      show={isHovered && (showInvalid || showChipOverflow)}
       rootClose={true}
     >
-      <>
-        <div
-          className="w-100 h-100 d-flex align-items-center"
-          ref={containerRef}
-          onClick={() => {
-            if (isNewRow && isEditable) {
-              setIsFocused((prev) => !prev);
-            }
-          }}
-        >
-          <Select
-            options={sortedOptions}
-            hasSearch={false}
-            isDisabled={disabled}
-            className={className}
-            components={customComponents}
-            value={selectedValue}
-            onMenuInputFocus={() => setIsFocused(true)}
-            onChange={handleChange}
-            useCustomStyles={true}
-            styles={customStyles}
-            defaultValue={defaultValue}
-            placeholder={placeholder}
-            isMulti={isMulti}
-            hideSelectedOptions
-            isClearable={false}
-            clearIndicator={false}
-            darkMode={darkMode}
-            isEditable={isEditable}
-            menuIsOpen={menuIsOpen}
-            isFocused={isFocused}
-            optionColors={optionColors}
-            optionsLoadingState={optionsLoadingState}
-            allOptions={allOptions}
-            onCreateTag={handleCreate}
-            autoPickChipColor={autoAssignColors}
-            selectedTextColor={textColor || 'var(--text-primary)'}
-            tagBackgroundColor="var(--surfaces-surface-03)"
-            getChipColor={getChipColor}
-            inputRef={searchInputRef}
-            inputValue={inputValue}
-            onInputChange={handleInputChange}
-            onMenuClose={() => setInputValue('')}
-          />
-        </div>
-        {isEditable && !isValid && (
-          <div
-            onClick={() => {
-              if (!isValid) setIsFocused(true);
-            }}
-            className="invalid-feedback d-block"
-          >
-            {validationError}
-          </div>
-        )}
-      </>
+      <div
+        className="w-100 h-100 d-flex align-items-center"
+        ref={containerRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => {
+          if (isNewRow && isEditable) {
+            setIsFocused((prev) => !prev);
+          }
+        }}
+      >
+        <Select
+          options={sortedOptions}
+          hasSearch={false}
+          isDisabled={disabled}
+          className={`${className || ''} ${showInvalid ? 'is-invalid' : ''}`}
+          components={customComponents}
+          value={selectedValue}
+          onMenuInputFocus={() => setIsFocused(true)}
+          onChange={handleChange}
+          useCustomStyles={true}
+          styles={customStyles}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          isMulti={isMulti}
+          hideSelectedOptions
+          isClearable={false}
+          clearIndicator={false}
+          darkMode={darkMode}
+          isEditable={isEditable}
+          menuIsOpen={menuIsOpen}
+          isFocused={isFocused}
+          optionColors={optionColors}
+          optionsLoadingState={optionsLoadingState}
+          allOptions={allOptions}
+          onCreateTag={handleCreate}
+          autoPickChipColor={autoAssignColors}
+          selectedTextColor={textColor || 'var(--text-primary)'}
+          tagBackgroundColor="var(--surfaces-surface-03)"
+          getChipColor={getChipColor}
+          inputRef={searchInputRef}
+          inputValue={inputValue}
+          onInputChange={handleInputChange}
+          onMenuClose={() => setInputValue('')}
+        />
+        {/* Presence-only marker (no visible content/layout impact): activates the existing
+            `.jet-data-table td:has(.invalid-feedback):hover` rule that reddens the cell's own
+            outer border on hover — the actual error text is shown via the OverlayTrigger above. */}
+        {showInvalid && <span className="invalid-feedback" style={{ display: 'none' }} />}
+      </div>
     </OverlayTrigger>
   );
 };

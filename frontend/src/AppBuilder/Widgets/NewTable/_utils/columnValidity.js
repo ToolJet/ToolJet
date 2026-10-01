@@ -44,7 +44,7 @@ export function isCellValueValid(column, value) {
     return validateWidget({
       validationObject: { customRule: { value: column.customRule } },
       widgetValue: value,
-      customResolveObjects: { value },
+      customResolveObjects: { value, cellValue: value },
     }).isValid;
   }
 
