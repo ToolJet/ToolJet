@@ -18,7 +18,7 @@ gh issue view <n> --repo ToolJet/tj-ee --comments
 ```
 
 - **Lightweight issue** (no user stories or scope): ask "Who is this for, what must they be able to do, and what is out of scope?" before going further.
-- **Figma or ClickUp links:** don't fetch them. Ask the user to paste the parts that matter into the issue.
+- **Linked or missing context** (Figma, ClickUp, screenshots, recordings, examples): follow `.agents/skills/kickoff/references/context-intake.md`. Fetch through an available MCP or CLI, authenticate or offer setup when one is missing, otherwise ask the user to paste or attach the material. Every link ends up fetched, pasted, or explicitly skipped.
 
 ## 2. Clarify intent
 
@@ -101,6 +101,9 @@ Write it to `.agents/plans/<parent#>-<slug>.md`. The directory is gitignored bec
 # Plan: <feature>
 
 > Source: ToolJet/tj-ee#<parent>
+
+## Context sources
+- <Figma frame / ClickUp task / screenshot / …>: fetched | pasted | skipped (Unknown) — <key facts used>
 
 ## Durable decisions
 - Edition scope: ...
