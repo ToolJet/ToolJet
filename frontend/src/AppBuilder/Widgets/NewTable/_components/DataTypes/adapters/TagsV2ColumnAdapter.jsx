@@ -24,6 +24,7 @@ export const TagsV2Column = ({
   isNewRow,
   autoAssignColors,
   id,
+  rowData,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -35,7 +36,7 @@ export const TagsV2Column = ({
       customRule: { value: column?.customRule },
     },
     widgetValue: value,
-    customResolveObjects: { value, cellValue: value },
+    customResolveObjects: { value, cellValue: value, rowData },
   });
   const { isValid, validationError } = validationData;
 
