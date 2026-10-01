@@ -11,3 +11,13 @@ describe('Table widget schema — refresh action', () => {
     expect(refreshAction).toBeDefined();
   });
 });
+
+// Break this catches: the "Disable row deselection" label stops clarifying that it governs
+// cell clicks, not the selection checkbox, if the tip text is removed or reworded away from that meaning.
+describe('Table widget schema — disableRowDeselection tooltip', () => {
+  test('clarifies that the setting affects cell clicks, not the selection checkbox', () => {
+    expect(tableConfig.properties.disableRowDeselection.tip).toBe(
+      'Prevents deselecting a row by clicking its cells. Does not affect the selection checkbox.'
+    );
+  });
+});
