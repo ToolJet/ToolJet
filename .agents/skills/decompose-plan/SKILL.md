@@ -88,7 +88,7 @@ Leave out file names and function signatures. They change as earlier slices land
 | Slice touches | Convention | Test types |
 |---|---|---|
 | `server/` or `server/ee/` | `server/docs/testing.md` | `unit` (branching a service, guard or util owns), `guard-unit` (real CASL ability factory, no HTTP), `e2e` (meaning only exists through HTTP → guard → DB → response) |
-| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix` | `frontend` |
+| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix`. Widget work also goes through `app-builder-widget-tdd` | `frontend` |
 | Other frontend | the nearest existing specs' pattern | `frontend`, `browser` for flows |
 | Docs, config, CI only | none: no runtime behavior to test | — |
 
