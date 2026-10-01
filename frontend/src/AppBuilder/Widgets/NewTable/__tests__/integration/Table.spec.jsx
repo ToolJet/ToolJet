@@ -2747,6 +2747,28 @@ describe('Table: per-column-type rendering', () => {
     );
   });
 
+  test('[Table-COLTYPE-IMAGE-004] an image column applies a configured cellBackgroundColor, now exposed for this column type', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, avatar: 'https://example.com/a.png' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'avatar',
+              key: 'avatar',
+              id: 'col-avatar',
+              columnType: 'image',
+              columnSize: 80,
+              cellBackgroundColor: 'rgb(255, 0, 0)',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('avatar', 0)?.querySelector('img')).toBeInTheDocument());
+    expect(cell('avatar', 0).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
   test('[Table-COLTYPE-LINK-001] a link column renders displayText as a hyperlink to the bound URL, honoring linkTarget', async () => {
     widget.render({
       properties: {
@@ -2774,6 +2796,30 @@ describe('Table: per-column-type rendering', () => {
     expect(link).toHaveAttribute('target', '_blank');
   });
 
+  test('[Table-COLTYPE-LINK-002] a link column applies a configured cellBackgroundColor, now exposed for this column type', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, site: 'https://example.com' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'site',
+              key: 'site',
+              id: 'col-site',
+              columnType: 'link',
+              columnSize: 120,
+              isEditable: false,
+              displayText: 'Visit',
+              cellBackgroundColor: 'rgb(255, 0, 0)',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('site', 0)?.querySelector('a')).toBeInTheDocument());
+    expect(cell('site', 0).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
   test('[Table-COLTYPE-RATING-001] a rating column renders defaultRating stars/hearts per iconType and supports allowHalfStar', async () => {
     widget.render({
       properties: {
@@ -2797,6 +2843,29 @@ describe('Table: per-column-type rendering', () => {
     });
     await waitFor(() => expect(cell('score', 0)?.querySelector('.rating-widget-group')).toBeInTheDocument());
     expect(cell('score', 0).querySelectorAll('.rating-widget-group > *')).toHaveLength(5);
+  });
+
+  test('[Table-COLTYPE-RATING-003] a rating column applies a configured cellBackgroundColor, now exposed for this column type', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'score',
+              key: 'score',
+              id: 'col-score',
+              columnType: 'rating',
+              columnSize: 120,
+              isEditable: false,
+              defaultRating: 3,
+              cellBackgroundColor: 'rgb(255, 0, 0)',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('score', 0)?.querySelector('.rating-widget-group')).toBeInTheDocument());
+    expect(cell('score', 0).style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 
   test('[Table-COLTYPE-BUTTON-003] button-column styling applies per the configured button, and sorting/filtering are disabled for that column', async () => {
