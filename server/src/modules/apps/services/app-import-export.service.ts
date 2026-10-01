@@ -1,7 +1,5 @@
-import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { isEmpty, isPlainObject, merge, set } from 'lodash';
-import { plainToInstance } from 'class-transformer';
-import { validateSync } from 'class-validator';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -54,11 +52,6 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
-import { OrganizationThemes } from '@entities/organization_themes.entity';
-import { CreateThemeDto } from '@modules/organization-themes/dto';
-import { TJDefaultTheme } from '@modules/organization-themes/constants';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -352,10 +345,6 @@ export class AppImportExportService {
     protected readonly transactionLogger: TransactionLogger,
     protected readonly abilityService: AbilityService
   ) {}
-
-  // Property injection leaves the constructor unchanged for subclasses
-  @Inject(LicenseTermsService)
-  protected licenseTermsService: LicenseTermsService;
 
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
@@ -2065,25 +2054,9 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  // Link the app to this workspace's copy of its exported theme
-  async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
-    const { name, definition } = globalSettings?.theme ?? {};
-    if (!isPlainObject(definition) || globalSettings.theme.organizationId === organizationId) return globalSettings;
-    // Free plans can't use custom themes, so none is created
-    const hasThemes = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.CUSTOM_THEMES, organizationId);
-    if (!hasThemes) return globalSettings;
-
-    // Fill unusable parts from the default theme, then apply the theme settings' checks
-    const own = JSON.parse(
-      JSON.stringify(definition, (_, value) => (value === null || Array.isArray(value) ? undefined : value))
-    );
-    const theme = plainToInstance(CreateThemeDto, { name, organizationId, definition: merge({}, TJDefaultTheme, own) });
-    if (validateSync(theme, { whitelist: true }).length) return globalSettings;
-
-    const { id } =
-      (await manager.findOne(OrganizationThemes, { where: { organizationId, name } })) ??
-      (await manager.save(OrganizationThemes, theme));
-    return { ...globalSettings, theme: { ...globalSettings.theme, id, organizationId } };
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
   }
 
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
