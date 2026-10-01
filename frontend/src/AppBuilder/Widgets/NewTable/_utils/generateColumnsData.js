@@ -479,6 +479,7 @@ export default function generateColumnsData({
                   borderRadius={column?.borderRadius}
                   objectFit={column?.objectFit}
                   horizontalAlignment={column?.horizontalAlignment}
+                  altText={column?.altText}
                 />
               );
 
