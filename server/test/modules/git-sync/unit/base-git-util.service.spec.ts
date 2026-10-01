@@ -67,6 +67,24 @@ describe('BaseGitUtilService (EE)', () => {
         call({ gitLab: { isEnabled: true } }, { gitType: GITConnectionType.GITHUB_HTTPS, isEnabled: false })
       ).toThrow('Git provider type mismatch');
     });
+
+    it('allows when the enabled Bitbucket provider matches the requested gitType', () => {
+      expect(
+        call({ gitBitbucket: { isEnabled: true } }, { gitType: GITConnectionType.BITBUCKET, isEnabled: true })
+      ).not.toThrow();
+    });
+
+    it('rejects switching away from an active Bitbucket provider', () => {
+      expect(
+        call({ gitBitbucket: { isEnabled: true } }, { gitType: GITConnectionType.GITLAB, isEnabled: true })
+      ).toThrow('Only one Git provider can be active at a time.');
+    });
+
+    it('rejects enabling Bitbucket while another provider is active', () => {
+      expect(call({ gitLab: { isEnabled: true } }, { gitType: GITConnectionType.BITBUCKET, isEnabled: true })).toThrow(
+        'Only one Git provider can be active at a time.'
+      );
+    });
   });
 
   describe('checkVersionCompatibility', () => {

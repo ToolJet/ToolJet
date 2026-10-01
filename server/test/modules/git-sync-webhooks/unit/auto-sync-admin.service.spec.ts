@@ -56,6 +56,12 @@ describe('AutoSyncAdminService', () => {
       expect(resolve({ gitHttps: { isEnabled: true } })).toBe('github');
       expect(resolve({})).toBe('github');
     });
+    it('env config → bitbucket when envGitProvider is bitbucket', () => {
+      expect(resolve({ useEnvConfig: true, envGitProvider: 'bitbucket' })).toBe('bitbucket');
+    });
+    it('db config → bitbucket when gitBitbucket is enabled', () => {
+      expect(resolve({ gitBitbucket: { isEnabled: true } })).toBe('bitbucket');
+    });
   });
 
   describe('enableAutoSync', () => {
@@ -76,6 +82,13 @@ describe('AutoSyncAdminService', () => {
         { organizationId: 'org1' },
         expect.objectContaining({ webhookEnabled: true, webhookSecret: res.secret, webhookEvents: res.events })
       );
+    });
+
+    it('returns the bitbucket webhook URL for a Bitbucket workspace', async () => {
+      manager.findOne.mockResolvedValue({ gitBitbucket: { isEnabled: true } });
+      const res = await svc.enableAutoSync('org1');
+      expect(res.provider).toBe('bitbucket');
+      expect(res.webhookUrl).toBe('https://tj.example.com/api/v2/git-sync/webhooks/bitbucket/org1');
     });
 
     it('reuses an already-provisioned secret and filters to allowed events', async () => {

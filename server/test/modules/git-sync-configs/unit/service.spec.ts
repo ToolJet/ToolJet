@@ -129,6 +129,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
       isBranchingEnabled: true,
       gitHttps: null, // env-config orgs keep no DB row for the active provider
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service, registry } = makeService(orgGit);
     await registry.initialize();
@@ -139,6 +140,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
     expect(result.organization_git.git_type).toBe(GITConnectionType.GITHUB_HTTPS);
     expect(result.organization_git.env_git_provider).toBe(GITConnectionType.GITHUB_HTTPS);
     expect(result.organization_git.git_lab).toBeNull();
+    expect(result.organization_git.git_bitbucket).toBeNull();
     expect(result.organization_git.git_https).toEqual(
       expect.objectContaining({
         https_url: '{{GITHUB_URL}}',
@@ -165,6 +167,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
       isBranchingEnabled: true,
       gitHttps: null,
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service, registry } = makeService(orgGit);
     await registry.initialize();
@@ -173,6 +176,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
 
     expect(result.organization_git.git_type).toBe(GITConnectionType.GITHUB_HTTPS);
     expect(result.organization_git.git_lab).toBeNull();
+    expect(result.organization_git.git_bitbucket).toBeNull();
     expect(result.organization_git.git_https).toEqual({
       github_branch: '{{GITHUB_BRANCH}}',
       is_enabled: true,
@@ -190,6 +194,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
       isBranchingEnabled: true,
       gitHttps: null,
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service, registry } = makeService(orgGit);
     await registry.initialize();
@@ -198,6 +203,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
 
     expect(result.organization_git.git_https).toBeNull();
     expect(result.organization_git.git_lab).toBeNull();
+    expect(result.organization_git.git_bitbucket).toBeNull();
     expect(result.organization_git.git_type).toBeNull();
     expect(result.organization_git.env_git_provider).toBeNull();
   });
@@ -210,6 +216,7 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
       isBranchingEnabled: true,
       gitHttps: { isEnabled: true, httpsUrl: 'https://github.com/org/repo.git', githubPrivateKey: 'secret' },
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service } = makeService(orgGit);
 
@@ -248,6 +255,7 @@ describe('GitSyncConfigsService.getOrgGitStatusById — env config', () => {
       isBranchingEnabled: true,
       gitHttps: null, // env-config orgs keep no DB row for the active provider
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service, registry } = makeService(orgGit);
     await registry.initialize();
@@ -281,6 +289,7 @@ describe('GitSyncConfigsService.getOrgGitStatusById — env config', () => {
         githubBranch: 'ui-branch',
       },
       gitLab: null,
+      gitBitbucket: null,
     };
     const { service, registry } = makeService(orgGit);
     await registry.initialize();
@@ -309,6 +318,7 @@ describe('GitSyncConfigsService — resolves env config before every read', () =
       setProviderState: jest.fn(),
       getGitHttpsTemplateConfig: jest.fn().mockResolvedValue(null),
       getGitLabTemplateConfig: jest.fn().mockResolvedValue(null),
+      getBitbucketTemplateConfig: jest.fn().mockResolvedValue(null),
     };
     const repository = {
       findOrgGitByOrganizationId: jest.fn().mockResolvedValue(orgGit),
@@ -345,6 +355,7 @@ describe('GitSyncConfigsService — resolves env config before every read', () =
     isBranchingEnabled: true,
     gitHttps: { isEnabled: true, httpsUrl: 'https://github.com/org/repo.git' },
     gitLab: null,
+    gitBitbucket: null,
   };
 
   it('getOrgGitByOrgId resolves before reading', async () => {
@@ -384,5 +395,61 @@ describe('GitSyncConfigsService — resolves env config before every read', () =
     const { service, gitSyncEnvUtilService } = makeServiceWithFullRepo(orgGit);
     await service.deleteConfig(WORKSPACE_ID, 'org-git-id', 'github_https');
     expect(gitSyncEnvUtilService.ensureResolved).toHaveBeenCalledWith(WORKSPACE_ID);
+  });
+});
+
+// validateGitProviderConflict / parseGitType are pure guards on the status-update and
+// delete-config paths; exercised directly (private) rather than through the DB-backed callers.
+describe('GitSyncConfigsService — provider guards', () => {
+  type Guards = {
+    validateGitProviderConflict(orgGit: object, dto: { gitType: GITConnectionType; isEnabled: boolean }): void;
+    parseGitType(gitType: string): GITConnectionType;
+  };
+  const guards = Object.create(GitSyncConfigsService.prototype) as Guards;
+
+  describe('validateGitProviderConflict', () => {
+    const check =
+      (orgGit: object, gitType: GITConnectionType, isEnabled = true) =>
+      () =>
+        guards.validateGitProviderConflict(orgGit, { gitType, isEnabled });
+
+    it('allows the request when the enabled Bitbucket provider matches', () => {
+      expect(check({ gitBitbucket: { isEnabled: true } }, GITConnectionType.BITBUCKET)).not.toThrow();
+    });
+
+    it('rejects enabling another provider while Bitbucket is active', () => {
+      expect(check({ gitBitbucket: { isEnabled: true } }, GITConnectionType.GITLAB)).toThrow(
+        'Only one Git provider can be active at a time.'
+      );
+    });
+
+    it('rejects a disable request whose type does not match the active Bitbucket provider', () => {
+      expect(check({ gitBitbucket: { isEnabled: true } }, GITConnectionType.GITHUB_HTTPS, false)).toThrow(
+        'Git provider type mismatch'
+      );
+    });
+
+    it('rejects enabling Bitbucket while another provider is active', () => {
+      expect(check({ gitLab: { isEnabled: true } }, GITConnectionType.BITBUCKET)).toThrow(
+        'Only one Git provider can be active at a time.'
+      );
+    });
+
+    it('allows any provider when none is enabled', () => {
+      expect(check({ gitBitbucket: { isEnabled: false } }, GITConnectionType.BITBUCKET)).not.toThrow();
+    });
+  });
+
+  describe('parseGitType', () => {
+    it.each([GITConnectionType.GITHUB_HTTPS, GITConnectionType.GITLAB, GITConnectionType.BITBUCKET])(
+      'accepts %s',
+      (gitType) => {
+        expect(guards.parseGitType(gitType)).toBe(gitType);
+      }
+    );
+
+    it('rejects an unsupported provider type', () => {
+      expect(() => guards.parseGitType('svn')).toThrow('Unsupported git provider type.');
+    });
   });
 });

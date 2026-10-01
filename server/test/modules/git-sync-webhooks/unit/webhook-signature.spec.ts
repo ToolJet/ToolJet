@@ -69,4 +69,41 @@ describe('WebhookSignatureService', () => {
       await expect(service.verifySignature('gitlab', 'glpat-tok', 'body', 'x', 'org')).resolves.toBe(false);
     });
   });
+
+  // Bitbucket uses the same HMAC-SHA256 `sha256=<hex>` scheme as GitHub (sent as X-Hub-Signature).
+  describe('bitbucket', () => {
+    const secret = 'bb-secret';
+    const body = '{"push":{"changes":[]}}';
+
+    it('accepts a valid HMAC-SHA256 signature', async () => {
+      const { service } = makeService();
+      await expect(service.verifySignature('bitbucket', secret, body, githubSig(secret, body), 'org')).resolves.toBe(
+        true
+      );
+    });
+    it('rejects a signature computed with the wrong secret', async () => {
+      const { service } = makeService();
+      await expect(service.verifySignature('bitbucket', secret, body, githubSig('wrong', body), 'org')).resolves.toBe(
+        false
+      );
+    });
+    it('rejects a signature over a tampered body', async () => {
+      const { service } = makeService();
+      await expect(
+        service.verifySignature('bitbucket', secret, body, githubSig(secret, body + ' '), 'org')
+      ).resolves.toBe(false);
+    });
+    it('does not accept a GitLab-style plain token as the signature', async () => {
+      const { service } = makeService();
+      await expect(service.verifySignature('bitbucket', secret, body, secret, 'org')).resolves.toBe(false);
+    });
+    it('accepts via the OLD secret during the rotation grace period', async () => {
+      const oldSecret = 'bb-previous';
+      const { service, get } = makeService(oldSecret);
+      await expect(
+        service.verifySignature('bitbucket', secret, body, githubSig(oldSecret, body), 'org-9')
+      ).resolves.toBe(true);
+      expect(get).toHaveBeenCalledWith('gitsync:old_secret:org-9');
+    });
+  });
 });

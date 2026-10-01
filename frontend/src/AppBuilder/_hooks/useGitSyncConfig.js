@@ -12,6 +12,7 @@ export const useGitSyncConfig = () => {
   const isGitSyncConfigured =
     orgGit?.git_https?.is_enabled ||
     orgGit?.git_lab?.is_enabled ||
+    orgGit?.git_bitbucket?.is_enabled ||
     !!(orgGitConfig?.is_git_sync_configured ?? orgGitConfig?.isGitSyncConfigured);
 
   const isGitSyncEnabled = isGitSyncConfigured || !!(orgGitConfig?.isEnabled ?? orgGitConfig?.is_enabled);
