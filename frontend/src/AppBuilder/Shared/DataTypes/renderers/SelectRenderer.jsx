@@ -383,6 +383,13 @@ export const SelectRenderer = ({
     return valueContainer?.clientHeight > containerRef.current?.clientHeight;
   }, []);
 
+  const hasSelectedValue = isMulti ? Boolean(selectedValue?.length) : Boolean(selectedValue && !isArray(selectedValue));
+
+  // Non-editable cells with no value should render blank instead of the dropdown's placeholder text.
+  if (widgetType !== 'KeyValuePair' && !isEditable && !hasSelectedValue) {
+    return null;
+  }
+
   return (
     <OverlayTrigger
       placement="bottom"
