@@ -27,6 +27,7 @@ export const tagsInputConfig = {
         {
           handle: 'tags',
           displayName: 'Tags',
+          defaultValue: `{{[]}}`,
         },
       ],
     },
@@ -37,6 +38,7 @@ export const tagsInputConfig = {
         {
           handle: 'tags',
           displayName: 'Tags',
+          defaultValue: `{{[]}}`,
         },
       ],
     },

@@ -449,7 +449,8 @@ const useAppData = (
           } else {
             window.history.replaceState(
               { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
-              '', window.location.href
+              '',
+              window.location.href
             );
             sendMessage(
               state.prompt,
