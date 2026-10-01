@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { isEmpty, isPlainObject, merge, set } from 'lodash';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -57,6 +57,8 @@ import { AppVersionStatus } from '@entities/app_version.entity';
 import { OrganizationThemes } from '@entities/organization_themes.entity';
 import { CreateThemeDto } from '@modules/organization-themes/dto';
 import { TJDefaultTheme } from '@modules/organization-themes/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -350,6 +352,10 @@ export class AppImportExportService {
     protected readonly transactionLogger: TransactionLogger,
     protected readonly abilityService: AbilityService
   ) {}
+
+  // Property injection leaves the constructor unchanged for subclasses
+  @Inject(LicenseTermsService)
+  protected licenseTermsService: LicenseTermsService;
 
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
@@ -2063,6 +2069,9 @@ export class AppImportExportService {
   async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
     const { name, definition } = globalSettings?.theme ?? {};
     if (!isPlainObject(definition) || globalSettings.theme.organizationId === organizationId) return globalSettings;
+    // Free plans can't use custom themes, so none is created
+    const hasThemes = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.CUSTOM_THEMES, organizationId);
+    if (!hasThemes) return globalSettings;
 
     // Fill unusable parts from the default theme, then apply the theme settings' checks
     const own = JSON.parse(
