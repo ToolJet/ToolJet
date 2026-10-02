@@ -1,5 +1,15 @@
 import React from 'react';
 
+// Grouped options arrive as { label, options: [...] }; leaf options as
+// { label, value, ... }. Selection matching (the Select's value prop, the
+// exposed selectedOption) must run over the leaves -- a group entry has no
+// value of its own, so matching against the raw array never finds a child
+// inside a group.
+export const flattenSelectOptions = (options) =>
+  (Array.isArray(options) ? options : []).flatMap((option) =>
+    Array.isArray(option?.options) ? option.options : [option]
+  );
+
 export const getInputFocusedColor = ({ accentColor }) => {
   if (accentColor !== '#4368E3') {
     return accentColor;
