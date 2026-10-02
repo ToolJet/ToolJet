@@ -1752,6 +1752,21 @@ export const createQueryPanelSlice = (set, get) => ({
         queriesInResolvedState[key] = queryEntry;
       }
 
+      // Live getters so that after an `await` (e.g. `await components.modal1.open()`)
+      // each component reflects the current store, including children mounted meanwhile.
+      // Falls back to the start-of-run value if the component is no longer in the store.
+      const componentNameIdMapping = get().modules[moduleId]?.componentNameIdMapping ?? {};
+      const componentsInResolvedState = {};
+      for (const name of new Set([...Object.keys(resolvedState.components), ...Object.keys(componentNameIdMapping)])) {
+        const componentId = componentNameIdMapping[name];
+        Object.defineProperty(componentsInResolvedState, name, {
+          get: () =>
+            get().resolvedStore.modules[moduleId]?.exposedValues?.components?.[componentId] ??
+            resolvedState.components[name],
+          enumerable: true,
+        });
+      }
+
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
         const libraryRegistry = get().jsLibraryRegistry || {};
@@ -1782,7 +1797,7 @@ export const createQueryPanelSlice = (set, get) => ({
         const fnArgs = [
           moment,
           _,
-          resolvedState.components,
+          componentsInResolvedState,
           queriesInResolvedState,
           resolvedState.globals,
           deepClone(resolvedState.page),

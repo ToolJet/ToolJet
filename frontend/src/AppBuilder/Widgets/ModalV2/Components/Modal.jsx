@@ -23,6 +23,7 @@ export const ModalWidget = ({ ...restProps }) => {
     isLoading,
     modalBodyHeight,
     onHideModal,
+    onModalEntered,
     hideCloseButton,
     darkMode,
     modalWidth,
@@ -145,6 +146,7 @@ export const ModalWidget = ({ ...restProps }) => {
         isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
+      onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
         if (hideOnEsc) {
