@@ -56,6 +56,7 @@ const DropDownSelect = ({
   isEditColumn = false,
   isEditTable = false,
   isCreateTable = false,
+  showOptionTooltip = false,
   customChildren,
   isForeignKeyInEditCell = false,
   shouldCloseFkMenu,
@@ -269,6 +270,7 @@ const DropDownSelect = ({
             isCreateColumn={isCreateColumn}
             isEditTable={isEditTable}
             isCreateTable={isCreateTable}
+            showOptionTooltip={showOptionTooltip}
             customChildren={customChildren}
             isForeignKeyInEditCell={isForeignKeyInEditCell}
             closeFKMenu={closeFKMenu}
