@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
+import Spinner from '@/_ui/Spinner';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
@@ -8,8 +9,8 @@ export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, dataCy } = props;
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
-  const { code, data } = properties;
+  const { backgroundColor, boxShadow, borderColor, borderRadius } = styles;
+  const { code, data, visibility, disabledState, loadingState } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
   const messageEventListenerRef = useRef(null);
@@ -160,6 +161,7 @@ export const CustomComponent = (props) => {
         '--cc-custom-component-border-color': borderColor,
         display: visibility ? '' : 'none',
         height,
+        backgroundColor,
         boxShadow,
         border: `1px solid var(--cc-custom-component-border-color) !important`,
         borderRadius: `${borderRadius}px`,
@@ -167,13 +169,21 @@ export const CustomComponent = (props) => {
         outline: 'none', // To override outline coming from card.scss
       }}
       data-cy={dataCy}
+      data-disabled={disabledState}
+      aria-busy={loadingState}
     >
-      <iframe
-        srcDoc={iframeContent}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-        ref={iFrameRef}
-        data-id={id}
-      ></iframe>
+      {loadingState ? (
+        <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
+          <Spinner />
+        </div>
+      ) : (
+        <iframe
+          srcDoc={iframeContent}
+          style={{ width: '100%', height: '100%', border: 'none' }}
+          ref={iFrameRef}
+          data-id={id}
+        ></iframe>
+      )}
     </div>
   );
 };

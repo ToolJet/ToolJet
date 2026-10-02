@@ -6,6 +6,24 @@ export const customComponentConfig = {
   properties: {
     data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' }, defaultValue: '{}' } },
     code: { type: 'code', displayName: 'Code' },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   defaultSize: {
     width: 20,
@@ -17,31 +35,31 @@ export const customComponentConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
       accordian: 'container',
     },
     borderColor: {
       type: 'colorSwatches',
-      displayName: 'Border color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: false,
-      },
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
       accordian: 'container',
     },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'container',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'string' }, defaultValue: '0px 0px 0px 0px #00000040' },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
       accordian: 'container',
     },
   },
@@ -54,7 +72,6 @@ export const customComponentConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
       data: {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
@@ -78,12 +95,15 @@ export const customComponentConfig = {
   ReactDOM.render(<ConnectedComponent />, document.body);`,
         skipResolve: true,
       },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      borderRadius: { value: '{{6}}' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

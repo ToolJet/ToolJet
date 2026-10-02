@@ -50,32 +50,83 @@ export const boundedBoxConfig = {
         defaultValue: `{{['Car', 'Tree']}}`,
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onChange: { displayName: 'On change' },
   },
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'container',
     },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -116,13 +167,19 @@ export const boundedBoxConfig = {
       },
       selector: { value: `RECTANGLE` },
       labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-
-      disabledState: { value: '{{false}}' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
