@@ -39,6 +39,7 @@ graph LR
 | `server/src/modules/apps/` | App aggregate, versions/pages/components/events, release, viewer hydration, and import/export. |
 | `server/src/modules/data-sources/` + `data-queries/` | Connector configuration, environment-scoped credentials, template resolution, query execution, throttling, and result status. |
 | `plugins/packages/` | Built-in connector implementations for databases, APIs, storage, email, and SaaS systems. |
+| `marketplace/plugins/` | Installable third-party connector workspaces. See `marketplace/AGENTS.md`. |
 | `server/src/modules/tooljet-db/` | Built-in database schema operations and authenticated PostgREST proxy. |
 | `server/src/modules/workflows/` | Workflow models, schedules, queues, execution records, and edition-extension points. Some CE controller methods are stubs. |
 | `docker/`, `deploy/` | Development/production images and Docker, Kubernetes, Helm, OpenShift deployment definitions. |
