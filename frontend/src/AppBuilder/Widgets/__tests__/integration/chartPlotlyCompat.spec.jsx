@@ -41,16 +41,28 @@ const widget = createWidgetHarness({
   },
 });
 
+// Chart is React.lazy-loaded (editorHelpers.js) and pulls in the multi-MB Plotly bundle. On a
+// cold Jest cache under CI contention that first transform outran waitFor's 1s default and failed
+// whichever test rendered first, so the chunk is preloaded once and plot() gets a CI-sized budget.
+const PRELOAD_TIMEOUT = 120000;
+const PLOT_TIMEOUT = 10000;
+// Above PLOT_TIMEOUT: a contended first render can block the event loop before waitFor even polls.
+jest.setTimeout(30000);
+
+beforeAll(() => import('@/AppBuilder/Widgets/Chart'), PRELOAD_TIMEOUT);
 beforeEach(() => widget.setup());
 afterEach(() => widget.teardown());
 
 /** The rendered Plotly graph div, once Plotly has resolved its full state. */
 async function plot() {
   let gd;
-  await waitFor(() => {
-    gd = document.querySelector('.js-plotly-plot');
-    expect(gd?._fullData).toBeTruthy();
-  });
+  await waitFor(
+    () => {
+      gd = document.querySelector('.js-plotly-plot');
+      expect(gd?._fullData).toBeTruthy();
+    },
+    { timeout: PLOT_TIMEOUT }
+  );
   return gd;
 }
 
