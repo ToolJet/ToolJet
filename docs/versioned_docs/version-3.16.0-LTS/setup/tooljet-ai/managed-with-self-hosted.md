@@ -23,22 +23,30 @@ See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how 
 
 - A ToolJet license with the AI feature enabled.
 - Outbound HTTPS (443) access from your ToolJet server to ToolJet Managed AI Server.
+- Inbound access from the ToolJet MCP server to your ToolJet instance.
 
 ## Whitelisting Network Access
 
-If your instance runs behind a firewall, proxy, or restricted egress policy, allow outbound HTTPS access to the following domains:
+If your instance runs behind a firewall, proxy, or restricted egress policy, allow the following network access:
 
-| Domain | Purpose |
-|---|---|
-| `https://api-gateway.tooljet.ai` | Routes AI requests to the configured LLM provider |
-| `https://python-server.tooljet.ai` | Backs AI operations that require the Python execution service |
+| Direction | Rule | Purpose |
+|---|---|---|
+| Outbound | `https://api-gateway.tooljet.ai` | Routes AI requests to the configured LLM provider |
+| Outbound | `https://ai-server.tooljet.ai` | Backs the App Builder and other AI operations |
+| Inbound | `9.234.16.21` &rarr; your ToolJet instance | Allows the MCP server to reach your instance's API |
 
-If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these domains are reachable through it.
+The App Builder calls your ToolJet instance's API directly to apply changes to apps, which is why inbound access from the MCP server IP is required.
+
+If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure the outbound domains are reachable through it.
+
+:::info
+Instances still running an older AI Builder use `https://python-server.tooljet.ai` in place of `https://ai-server.tooljet.ai`. Keep that rule in place until the instance is upgraded.
+:::
 
 ## Setup
 
 1. Confirm your license includes AI credits. If you need to purchase more, follow the **Self-Hosted Deployment** steps under [Buy Add-on Credits](/docs/build-with-ai/ai-credits#buy-add-on-credits).
-2. Whitelist the domains listed above in your firewall, proxy, or network egress rules.
+2. Whitelist the domains and inbound rule listed above in your firewall, proxy, or network rules.
 3. No further configuration is needed. AI features become available in your workspace automatically, billed against your instance's pooled AI credits.
 
 ## Billing
