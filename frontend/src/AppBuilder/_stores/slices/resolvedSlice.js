@@ -831,7 +831,9 @@ export const createResolvedSlice = (set, get) => {
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
         const re = extractAndReplaceReferencesFromString(
           value,
-          get().modules[moduleId].componentNameIdMapping,
+          // Rebinds another page's component id onto the current page's equivalent component,
+          // so an app-scoped query's options resolve against whichever page is active.
+          get().getComponentResolutionMapping(moduleId),
           get().modules[moduleId].queryNameIdMapping
         );
 

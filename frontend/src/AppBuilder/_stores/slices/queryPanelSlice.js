@@ -460,7 +460,10 @@ export const createQueryPanelSlice = (set, get) => ({
       const queryState = { ...get().getAllExposedValues(moduleId), parameters };
 
       const options = getQueryVariables(dataQuery.options, queryState, {
-        components: get().getComponentNameIdMapping(moduleId),
+        // Resolution mapping: query options persist page-absolute component ids, so a query run
+        // from a page other than the one it was authored on needs the id rebound to that page's
+        // equivalent component.
+        components: get().getComponentResolutionMapping(moduleId),
         queries: get().getQueryNameIdMapping(moduleId),
       });
       const disableQueryExpr = dataQuery.options?.disableQuery;
@@ -936,7 +939,8 @@ export const createQueryPanelSlice = (set, get) => ({
       // const queryState = { ...getCurrentState(), parameters };
       const queryState = { ...get().getAllExposedValues(moduleId), parameters };
       const options = getQueryVariables(query.options, queryState, {
-        components: get().getComponentNameIdMapping(),
+        // See runQuery: rebinds another page's component id onto the current page's equivalent.
+        components: get().getComponentResolutionMapping(),
         queries: get().getQueryNameIdMapping(),
       });
 
