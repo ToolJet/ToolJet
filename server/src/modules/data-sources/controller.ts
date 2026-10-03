@@ -138,9 +138,23 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user,
     @Param('id') dataSourceId: string,
     @Body() testDataSourceDto: TestDataSourceDto,
+    @DataSource() dataSource: DataSourceEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
     @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId);
+    // return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId);
+    const dsPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    const canEditDataSource =
+      !!userPermissions?.isSuperAdmin ||
+      !!userPermissions?.isAdmin ||
+      !!userPermissions?.dataSourceCreate ||
+      !!userPermissions?.dataSourceDelete ||
+      !!dsPermissions?.isAllConfigurable ||
+      !!dsPermissions?.configurableDataSourceId?.includes(dataSourceId);
+    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId, dataSourceId, branchId, {
+      dataSource,
+      canEditDataSource,
+    });
   }
 
   @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
