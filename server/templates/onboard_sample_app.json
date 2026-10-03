@@ -476,7 +476,7 @@
                               "value": "{{false}}"
                             },
                             "cellSize": {
-                              "value": "regular"
+                              "value": "condensed"
                             },
                             "borderRadius": {
                               "value": "10"
@@ -536,13 +536,13 @@
                               "value": "{{false}}"
                             },
                             "displaySearchBox": {
-                              "value": "{{true}}"
+                              "value": "{{false}}"
                             },
                             "showDownloadButton": {
                               "value": "{{true}}"
                             },
                             "showFilterButton": {
-                              "value": "{{true}}"
+                              "value": "{{false}}"
                             },
                             "autogenerateColumns": {
                               "value": true
@@ -21985,7 +21985,7 @@
                                 "value": "{{false}}"
                               },
                               "cellSize": {
-                                "value": "regular"
+                                "value": "condensed"
                               },
                               "borderRadius": {
                                 "value": "10"
@@ -22045,13 +22045,13 @@
                                 "value": "{{false}}"
                               },
                               "displaySearchBox": {
-                                "value": "{{true}}"
+                                "value": "{{false}}"
                               },
                               "showDownloadButton": {
                                 "value": "{{true}}"
                               },
                               "showFilterButton": {
-                                "value": "{{true}}"
+                                "value": "{{false}}"
                               },
                               "autogenerateColumns": {
                                 "value": true
