@@ -1,0 +1,116 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "CPF.CNPJ datasource",
+  "description": "A schema defining CPF.CNPJ datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "cpf_basic",
+          "name": "CPF: name (package 1)"
+        },
+        {
+          "value": "cpf_full",
+          "name": "CPF: name, birth date, gender, address (package 3)"
+        },
+        {
+          "value": "cnpj_basic",
+          "name": "CNPJ: company name, trade name, address (package 5)"
+        },
+        {
+          "value": "cnpj_full",
+          "name": "CNPJ: full registration, partners (QSA), status, Simples (package 6)"
+        },
+        {
+          "value": "balance",
+          "name": "Balance: remaining credits by package (free)"
+        }
+      ]
+    },
+    "cpf_basic": {
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the CPF to look up",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Only digits, or with mask"
+      }
+    },
+    "cpf_full": {
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the CPF to look up",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Only digits, or with mask"
+      }
+    },
+    "cnpj_basic": {
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the CNPJ to look up",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Only digits, or with mask"
+      }
+    },
+    "cnpj_full": {
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the CNPJ to look up",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Only digits, or with mask"
+      }
+    },
+    "balance": {
+      "package": {
+        "label": "Package",
+        "key": "package",
+        "className": "codehinter-plugins col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for choosing the package",
+        "list": [
+          {
+            "value": "1",
+            "name": "Package 1 (CPF basic)"
+          },
+          {
+            "value": "3",
+            "name": "Package 3 (CPF full)"
+          },
+          {
+            "value": "5",
+            "name": "Package 5 (CNPJ basic)"
+          },
+          {
+            "value": "6",
+            "name": "Package 6 (CNPJ full)"
+          }
+        ]
+      }
+    }
+  }
+}

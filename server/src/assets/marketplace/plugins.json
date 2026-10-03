@@ -391,5 +391,15 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "CPF.CNPJ",
+    "description": "Look up Brazilian CPF and CNPJ registration data from Receita Federal in real time",
+    "version": "1.0.0",
+    "id": "cpfcnpj",
+    "author": "CPF.CNPJ",
+    "timestamp": "Thu, 01 Oct 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": ["Data Enrichment"]
   }
 ]
