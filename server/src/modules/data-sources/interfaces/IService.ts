@@ -45,7 +45,8 @@ export interface IDataSourcesService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object>;
 
   testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User): Promise<object>;
