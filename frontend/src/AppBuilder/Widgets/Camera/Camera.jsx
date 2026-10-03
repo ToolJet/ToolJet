@@ -48,6 +48,8 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const capturedImageRef = useRef(null);
   const savedImageUrlRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const fireEventRef = useRef(fireEvent);
+  fireEventRef.current = fireEvent;
 
   // Media recorder setup
   const recorderOptions = useMemo(
@@ -125,12 +127,16 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   );
 
   // Event handlers
-  const handleCameraSelect = (deviceId) => setSelectedCameraId(deviceId);
+  const handleCameraSelect = (deviceId) => {
+    setSelectedCameraId(deviceId);
+    fireEvent('onCameraSelect');
+  };
 
   const handleMicrophoneSelect = (deviceId) => setSelectedMicrophoneId(deviceId);
 
   const handleFlipCamera = useCallback(() => {
     setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+    fireEventRef.current('onCameraSwitch');
   }, []);
 
   const handleClearRecording = () => {
@@ -211,6 +217,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
 
       try {
         await capturePhoto();
+        fireEvent('onCapture');
       } catch (error) {
         console.error('Failed to capture photo', error);
       }
@@ -272,6 +279,18 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         setExposedVariable('isDisabled', disabledState);
       },
     },
+    {
+      dep: status,
+      sideEffect: () => {
+        setExposedVariable('isRecording', status === 'recording');
+      },
+    },
+    {
+      dep: isMobile ? facingMode : selectedCameraId,
+      sideEffect: () => {
+        setExposedVariable('activeCamera', isMobile ? facingMode : selectedCameraId);
+      },
+    },
   ]);
 
   // Effects
@@ -280,6 +299,9 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   useEffect(() => {
     setExposedVariables({
       ...exposedVariablesTemporaryState,
+      isRecording: false,
+      activeCamera: null,
+      availableCameras: [],
       resetVideo: () => {
         setExposedVariables({
           // videoBlobURL: null,
@@ -291,6 +313,38 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           // imageBlobURL: null,
           imageDataURL: null,
         });
+      },
+      startRecording: () => {
+        if (!mediaStreamRef.current) return;
+        handleClearRecording();
+        startRecording();
+      },
+      stopRecording: () => {
+        stopRecording();
+      },
+      capture: async () => {
+        if (!mediaStreamRef.current) return;
+        try {
+          await capturePhoto();
+          const currentImage = capturedImageRef.current;
+          if (currentImage?.blob) {
+            const dataURL = await blobToDataURL(currentImage.blob);
+            setExposedVariables({ imageDataURL: dataURL });
+            fireEventRef.current('onCapture');
+            clearCapturedImage({ revokePrevious: true });
+          }
+        } catch (error) {
+          console.error('CSA capture failed', error);
+        }
+      },
+      switchCamera: () => {
+        handleFlipCamera();
+        fireEventRef.current('onCameraSwitch');
+      },
+      selectCamera: (deviceId) => {
+        if (!deviceId) return;
+        setSelectedCameraId(deviceId);
+        fireEventRef.current('onCameraSelect');
       },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', value);
@@ -347,6 +401,10 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         }));
 
       setDeviceLists({ cameras, microphones });
+      setExposedVariable(
+        'availableCameras',
+        cameras.map((c) => ({ id: c.id, label: c.label, facing: c.facing }))
+      );
       // On mobile the camera is chosen by facing direction, so no deviceId is selected.
       if (!isMobile) {
         setSelectedCameraId((prev) =>
