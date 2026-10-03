@@ -41,6 +41,7 @@ ti-*
 .claude/*
 !.claude/skills/
 .worktrees/
+.agents/plans/
 
 
 .tj_env.*

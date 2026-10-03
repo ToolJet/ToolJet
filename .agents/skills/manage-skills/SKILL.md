@@ -14,6 +14,21 @@ Skill placement is decided by **sensitivity**, not by which code the skill touch
 
 Private skills always go in `frontend/ee`, even if backend-flavoured — skills are not code, one home is enough.
 
+**Private** means the skill text carries EE-proprietary detail:
+- how EE features are implemented internally (licensing, SSO internals, AI, git-sync internals);
+- customer names or data, support/Slack context;
+- security advisories;
+- internal infrastructure, URLs or processes that aren't public.
+
+**Public** covers generic process (planning, review, commit, PR flow) even when it:
+- names `ToolJet/tj-ee`;
+- cites `server/ee/` or `frontend/ee/` paths;
+- hands off to a private skill.
+
+On a clone without EE, a public skill that hands off to a private one stops at the handoff. That's acceptable.
+
+Why `frontend/ee` and never `server/ee`: one private home keeps a single link chain and one place to look. `server/ee` has no `.agents/`, so don't create one.
+
 ## Steps
 
 1. Ask: *would we mind this skill text on GitHub?* If unsure, treat as private.
