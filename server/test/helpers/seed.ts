@@ -619,8 +619,10 @@ export async function createUser(
     }
   }
 
-  // mirror prod: setup-organization seeds a default branch at org creation
+  // mirror prod: setup-organization seeds a default branch and default app
+  // environments at org creation (server/src/modules/setup-organization/util.service.ts)
   await resolveOrSeedDefaultBranch(organization.id);
+  await ensureAppEnvironments(nestApp, organization.id);
 
   let user: User;
 
