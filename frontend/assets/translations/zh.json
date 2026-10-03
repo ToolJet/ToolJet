@@ -57,17 +57,17 @@
     },
     "slack": {
         "authorize": "授权",
-        "connectToolJetToSlack": "ToolJet可以连接到Slack并列出用户、发送消息等。请选择适当的权限范围",
+        "connectToolJetToSlack": "{{whiteLabelText}}可以连接到Slack并列出用户、发送消息等。请选择适当的权限范围",
         "chatWrite": "聊天:写",
-        "listUsersAndSendMessage": "您的ToolJet应用程序将能够列出用户并向用户和频道发送消息",
+        "listUsersAndSendMessage": "您的{{whiteLabelText}}应用程序将能够列出用户并向用户和频道发送消息",
         "connectSlack": "连接到Slack"
     },
     "googleSheets": {
         "readOnly": "只读",
-        "enableReadAndWrite": "如果您希望您的ToolJet应用程序修改您的Google表格，请确保选择读取和写入访问权限",
-        "readDataFromSheets": "您的ToolJet应用程序只能从Google表格中读取数据",
+        "enableReadAndWrite": "如果您希望您的{{whiteLabelText}}应用程序修改您的Google表格，请确保选择读取和写入访问权限",
+        "readDataFromSheets": "您的{{whiteLabelText}}应用程序只能从Google表格中读取数据",
         "readWrite": "读取和写入",
-        "readModifySheets": "您的ToolJet应用程序可以读取表格数据、修改表格以及执行更多操作",
+        "readModifySheets": "您的{{whiteLabelText}}应用程序可以读取表格数据、修改表格以及执行更多操作",
         "toGoogleSheets": "到Google表格"
     },
     "profile": {
@@ -81,7 +81,7 @@
         "password": "密码",
         "acceptInvite": "接受邀请",
         "successfullyVerifiedEmail": "电子邮件已成功验证",
-        "setupTooljet": "设置ToolJet"
+        "setupTooljet": "设置{{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "忘记密码",
@@ -102,12 +102,12 @@
         "emailConfirmLink": "请检查您的电子邮件以获取确认链接",
         "newPassword": "新密码",
         "passwordConfirmation": "密码确认",
-        "newToTooljet": "新来的吗？",
+        "newToTooljet": "初次使用{{whiteLabelText}}？",
         "enterWorkEmail": "输入您的电子邮件",
         "enterPassword": "输入密码",
         "forgot": "忘记了吗？",
         "workEmail": "电子邮件",
-        "joinTooljet": "加入ToolJet",
+        "joinTooljet": "加入{{whiteLabelText}}",
         "getStartedForFree": "免费开始使用",
         "passwordCharacter": "密码必须至少5个字符",
         "enterFullName": "输入您的全名",
@@ -207,7 +207,7 @@
                 "component": "组件",
                 "addHandler": "新增事件处理程序",
                 "addEventHandler": "+ 添加事件处理程序",
-                "emptyMessage": "此组件没有事件处理程序",
+                "emptyMessage": "此{{componentName}}没有事件处理程序",
                 "page": "页面"
             }
         }
