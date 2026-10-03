@@ -2598,7 +2598,7 @@ class HomePageComponent extends React.Component {
                       />
                     )}
                     <div className="filter-container">
-                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <span>{this.pageCount()} APPS</span>
                       <div className="d-flex align-items-center">
                         <div className="mx-2">Filter by</div>
                         <FolderFilter
