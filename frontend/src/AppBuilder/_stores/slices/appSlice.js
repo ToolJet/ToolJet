@@ -292,6 +292,7 @@ export const createAppSlice = (set, get) => ({
         setQueryMapping,
         cleanUpStore,
         clearTemporaryLayouts,
+        setLastCanvasClick,
         setResolvedGlobals,
         setResolvedPageConstants,
         setIsComponentLayoutReady,
@@ -323,6 +324,7 @@ export const createAppSlice = (set, get) => ({
 
       cleanUpStore();
       clearTemporaryLayouts();
+      setLastCanvasClick(null);
       setCurrentPageId(pageId, moduleId);
       setComponentNameIdMapping(moduleId);
       setQueryMapping(moduleId);
