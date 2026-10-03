@@ -16,7 +16,7 @@ export class FolderAppsModule extends SubModule {
       controllers: isMainImport ? [FolderAppsController] : [],
       imports: [await FoldersModule.register(configs)],
       providers: [FolderAppsService, FolderAppsUtilService, FeatureAbilityFactory],
-      exports: [FolderAppsUtilService],
+      exports: [FolderAppsUtilService, FolderAppsService],
     };
   }
 }
