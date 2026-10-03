@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryError, QueryResult, QueryService, validateUrlForSSRF } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
@@ -16,6 +16,9 @@ export default class influxdb implements QueryService {
         'Content-Type': 'application/json',
       };
     };
+
+    // SSRF Protection: Validate the data source host before making any request.
+    await validateUrlForSSRF(`${protocol}://${host}:${port}`);
 
     try {
       switch (operation) {
@@ -148,6 +151,7 @@ export default class influxdb implements QueryService {
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const { port, host, protocol, api_token } = sourceOptions;
+    await validateUrlForSSRF(`${protocol}://${host}:${port}`);
     const client = await got(`${protocol}://${host}:${port}/influxdb/cloud/api//ping`, {
       method: 'get',
       headers: { Authorization: `Token ${api_token}` },

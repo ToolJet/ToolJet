@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryService, QueryResult, QueryError, validateUrlForSSRF } from '@tooljet-plugins/common';
 import {
   getDocument,
   updateDocument,
@@ -107,6 +107,11 @@ export default class ElasticsearchService implements QueryService {
   async getConnection(sourceOptions: SourceOptions): Promise<Client> {
     const host = sourceOptions.host;
     const port = sourceOptions.port;
+
+    // SSRF Protection: Validate the data source host before connecting. Covers both
+    // run() and testConnection(), which both go through this method.
+    await validateUrlForSSRF(`${this.determineProtocol(sourceOptions)}://${host}:${port}`);
+
     const username = encodeURIComponent(sourceOptions.username);
     const password = encodeURIComponent(sourceOptions.password);
     const sslEnabled = sourceOptions.ssl_enabled;
