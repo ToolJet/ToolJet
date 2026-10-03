@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { QueryOptions } from './types';
 
 const getMaxTokens = (max_tokens: number | string | undefined): number => {
@@ -12,7 +12,7 @@ const getTemperature = (temperature: number | string | undefined): number => {
 };
 
 export async function generateText(
-  geminiClient: GoogleGenerativeAI,
+  geminiClient: GoogleGenAI,
   options: QueryOptions
 ): Promise<string | { error: string; statusCode: number }> {
   const { model, system_prompt, prompt, max_tokens, temperature } = options;
@@ -21,33 +21,26 @@ export async function generateText(
     return { error: 'Prompt is required for text generation.', statusCode: 400 };
   }
 
-  const generativeModel = geminiClient.getGenerativeModel({
+  const response = await geminiClient.models.generateContent({
     model: model || 'models/gemini-1.5-flash',
-    systemInstruction: system_prompt,
-  });
-
-  //try {
-  const response = await generativeModel.generateContent({
     contents: [
       {
         role: 'user',
         parts: [{ text: prompt }],
       },
     ],
-    generationConfig: {
+    config: {
+      systemInstruction: system_prompt,
       maxOutputTokens: getMaxTokens(max_tokens),
       temperature: getTemperature(temperature),
     },
   });
 
-  return response.response.text() || 'No output received';
-} //catch (error) {
-//throw new Error(error?.message || 'An unexpected error occurred');
-//}
-//}
+  return response.text || 'No output received';
+}
 
 export async function chat(
-  geminiClient: GoogleGenerativeAI,
+  geminiClient: GoogleGenAI,
   options: QueryOptions
 ): Promise<string | { error: string; statusCode: number }> {
   const { model, system_prompt, history, user_prompt, max_tokens, temperature } = options;
@@ -56,27 +49,21 @@ export async function chat(
     return { error: 'User prompt is required for chat.', statusCode: 400 };
   }
 
-  const generativeModel = geminiClient.getGenerativeModel({
-    model: model || 'models/gemini-1.5-flash',
-    systemInstruction: system_prompt,
-  });
-
-  //try {
   let histories = [];
   if (history) {
     histories = JSON.parse(history);
   }
-  const chat = await generativeModel.startChat({
+
+  const chatSession = geminiClient.chats.create({
+    model: model || 'models/gemini-1.5-flash',
     history: histories,
-    generationConfig: {
+    config: {
+      systemInstruction: system_prompt,
       maxOutputTokens: getMaxTokens(max_tokens),
       temperature: getTemperature(temperature),
     },
   });
-  const response = await chat.sendMessage(user_prompt);
+  const response = await chatSession.sendMessage({ message: user_prompt });
 
-  return response.response.text() || 'No output received';
-} //catch (error) {
-//throw new Error(error?.message || 'An unexpected error occurred');
-//}
-//}
+  return response.text || 'No output received';
+}
