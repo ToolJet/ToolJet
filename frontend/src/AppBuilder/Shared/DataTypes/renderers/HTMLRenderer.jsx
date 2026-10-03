@@ -134,7 +134,7 @@ export const HTMLRenderer = ({
     >
       {!isEditable ? (
         <div
-          className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+          className={`d-flex align-items-safe-center h-100 w-100 justify-content-${determineJustifyContentValue(
             horizontalAlignment
           )}`}
           style={cellStyles}
