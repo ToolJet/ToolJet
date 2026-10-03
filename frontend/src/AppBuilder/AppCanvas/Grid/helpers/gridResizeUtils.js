@@ -46,3 +46,30 @@ export function computeFlexResizeEndPatch({ lastEvent, gridHeight }) {
 
   return patch;
 }
+
+/**
+ * Converts a resize-stop event's raw x/y pixel offsets into grid position units,
+ * clamping both axes to the canvas's top-left boundary (0,0).
+ */
+export function computeResizeStopPosition({ x, y, gw, gridHeight }) {
+  let top = Math.round(y / gridHeight) * gridHeight;
+  if (top < 0) top = 0;
+
+  let left = Math.round(x / gw);
+  if (left < 0) left = 0;
+
+  return { top, left };
+}
+
+/**
+ * Clamps a resize-end pixel translate to the canvas's bounds so it can be written
+ * straight to the DOM without waiting on a store round-trip to correct it. Needed
+ * because a widget already sitting at a boundary produces an unchanged store value
+ * (e.g. left: 0 -> 0), which skips the re-render that would otherwise fix the transform.
+ */
+export function clampResizeTranslate({ x, y, maxX, maxY }) {
+  return {
+    x: Math.max(0, Math.min(x, maxX)),
+    y: Math.max(0, Math.min(y, maxY)),
+  };
+}
