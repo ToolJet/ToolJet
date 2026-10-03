@@ -668,6 +668,12 @@ export const createQueryPanelSlice = (set, get) => ({
           queryAbortControllers.set(queryId, abortController);
         }
 
+        // Resolve dynamic data source ID if fx mode is enabled
+        let resolvedDataSourceId = undefined;
+        if (dataQuery.options?.dataSourceIdFx && dataQuery.options?.dataSourceIdExpression) {
+          resolvedDataSourceId = get().getResolvedValue(dataQuery.options.dataSourceIdExpression, queryState, moduleId);
+        }
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
@@ -703,7 +709,8 @@ export const createQueryPanelSlice = (set, get) => ({
               return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
             })(),
             modeStore.modules.canvas.currentMode,
-            abortController?.signal
+            abortController?.signal,
+            resolvedDataSourceId
           );
         }
 
@@ -940,6 +947,12 @@ export const createQueryPanelSlice = (set, get) => ({
         queries: get().getQueryNameIdMapping(),
       });
 
+      // Resolve dynamic data source ID if fx mode is enabled
+      let resolvedDataSourceId = undefined;
+      if (query.options?.dataSourceIdFx && query.options?.dataSourceIdExpression) {
+        resolvedDataSourceId = get().getResolvedValue(query.options.dataSourceIdExpression, queryState, moduleId);
+      }
+
       return new Promise(function (resolve, reject) {
         // Create AbortController only for fetch-based preview kinds. See runQuery for rationale.
         const isAbortable = !ABORT_UNSUPPORTED_KINDS.has(query.kind);
@@ -969,7 +982,8 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             currentVersionId,
             currentAppEnvironmentId,
-            abortController?.signal
+            abortController?.signal,
+            resolvedDataSourceId
           );
         }
 
