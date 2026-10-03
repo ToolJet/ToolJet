@@ -12,7 +12,7 @@ Sync and pull the latest changes from GitHub for an existing ToolJet app.
 
 <ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app.","in":"path"}]} />
 
-<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"Must be set to git to enable git-sync mode for this operation.","in":"query"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"Must be set to git even though the app already exists. This tells ToolJet to treat the call as a git-sync pull instead of a regular app update.","in":"query"},{"name":"branchName","type":"string","required":false,"description":"Name of the branch to pull, for apps that span more than one branch. If omitted, ToolJet makes a best effort to resolve the right version on its own.","in":"query"}]} />
 
 <ErrorsTable errors={[
   {"status":"400","description":"Git provider not enabled or git push failed."},
