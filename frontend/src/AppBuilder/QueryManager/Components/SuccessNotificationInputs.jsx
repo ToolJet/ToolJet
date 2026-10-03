@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
+
 export default function SuccessNotificationInputs({ currentState, options, darkMode, optionchanged }) {
   const { t } = useTranslation();
   if (!options?.showSuccessNotification) {
@@ -16,6 +17,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
         <div className="flex-grow-1" style={{ maxWidth: '460px' }}>
           <CodeHinter
             type="basic"
+            componentName="successMessage"
             initialValue={options.successMessage}
             onChange={(value) => optionchanged('successMessage', value)}
             placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
