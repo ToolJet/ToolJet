@@ -66,6 +66,8 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       moduleFolderDelete: flag,
       moduleCreate: flag,
       moduleDelete: flag,
+      dataSourceFolderCreate: flag,
+      dataSourceFolderDelete: flag,
     }
     : {
       appCreate: flag,
