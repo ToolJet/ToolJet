@@ -1,8 +1,7 @@
 # Legacy LTS docs must remain crawlable so search engines can read their noindex tags.
+# Retired 1.x URLs must remain crawlable so search engines can read their 404 responses.
 # Current docs, API references, images and scripts remain crawlable.
 User-agent: *
-Disallow: /1.x.x/
-Disallow: /docs/1.x.x/
 Disallow: /search
 Disallow: /search/
 
