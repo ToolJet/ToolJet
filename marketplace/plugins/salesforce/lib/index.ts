@@ -6,16 +6,29 @@ import {
   App,
   initializeOAuth,
   OAuthUnauthorizedClientError,
+  validateUrlForSSRF,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 import jsforce from 'jsforce';
 import { createHash } from 'crypto';
+import { isIP } from 'net';
 import { getCurrentToken } from '@tooljet-marketplace/common';
 
 const GRANT_AUTHORIZATION_CODE = 'authorization_code';
 const GRANT_AUTHORIZATION_CODE_PKCE = 'authorization_code_pkce';
 // RFC 7636: 43-128 chars from the unreserved set
 const CODE_VERIFIER_PATTERN = /^[A-Za-z0-9\-._~]{43,128}$/;
+
+const DEFAULT_RESOURCE_NAME = 'Account';
+// Standard, custom (Xyz__c) and namespaced (ns__Obj__c) object API names
+const RESOURCE_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
+// Salesforce returns a relative url such as /services/data/v50.0/query/01gxx0000000001AAA-2000
+const NEXT_RECORDS_URL_PATTERN = /^\/services\/data\/v\d+\.\d+\/query\/[A-Za-z0-9_-]+$/;
+
+const LOGIN_URL_PRODUCTION = 'https://login.salesforce.com';
+const LOGIN_URL_SANDBOX = 'https://test.salesforce.com';
+// Custom domain hosts must end with one of these (dot boundary). Extended by SALESFORCE_ALLOWED_LOGIN_DOMAINS.
+const DEFAULT_ALLOWED_LOGIN_DOMAIN_SUFFIXES = ['.my.salesforce.com'];
 
 export default class Salesforce implements QueryService {
   async run(
@@ -51,6 +64,50 @@ export default class Salesforce implements QueryService {
     };
   }
 
+  // Empty / whitespace / missing means "not paginating": the regular SOQL query runs.
+  private getNextRecordsUrl(queryOptions: QueryOptions): string {
+    const value = queryOptions.next_records_url;
+    if (value === undefined || value === null) return '';
+    if (typeof value !== 'string') {
+      throw new QueryError('Invalid next records URL', 'Next records URL must be a string.', {});
+    }
+    const nextRecordsUrl = value.trim();
+    if (!nextRecordsUrl) return '';
+    if (!NEXT_RECORDS_URL_PATTERN.test(nextRecordsUrl)) {
+      throw new QueryError(
+        'Invalid next records URL',
+        'Next records URL must look like /services/data/v50.0/query/<locator>. Use the nextRecordsUrl returned by the previous SOQL query.',
+        {}
+      );
+    }
+    return nextRecordsUrl;
+  }
+
+  // Missing / empty resource name falls back to Account (the only object supported before).
+  private getResourceName(queryOptions: QueryOptions): string {
+    const value = queryOptions.resource_name;
+    if (value === undefined || value === null) return DEFAULT_RESOURCE_NAME;
+    if (typeof value !== 'string') {
+      throw new QueryError('Invalid resource name', 'Resource name must be a string, for example Account.', {});
+    }
+    const resourceName = value.trim() || DEFAULT_RESOURCE_NAME;
+    if (!RESOURCE_NAME_PATTERN.test(resourceName)) {
+      throw new QueryError(
+        'Invalid resource name',
+        'Resource name must be a Salesforce object API name, for example Account, Contact or Custom__c.',
+        {}
+      );
+    }
+    return resourceName;
+  }
+
+  // The id is placed in the REST path, so keep it from changing the path.
+  private assertValidResourceId(resourceId: any): void {
+    if (typeof resourceId === 'string' && /[/?#]|\.\./.test(resourceId)) {
+      throw new QueryError('Invalid resource ID', 'Resource ID must not contain "/", "?", "#" or "..".', {});
+    }
+  }
+
   private async executeOperation(conn: any, queryOptions: QueryOptions) {
     let result = {};
     let response = null;
@@ -59,6 +116,13 @@ export default class Salesforce implements QueryService {
     try {
       switch (operation) {
         case 'soql': {
+          const nextRecordsUrl = this.getNextRecordsUrl(queryOptions);
+          if (nextRecordsUrl) {
+            // Pagination: jsforce resolves the locator against the authenticated instance url only.
+            result = await conn.queryMore(nextRecordsUrl);
+            break;
+          }
+
           const query = queryOptions.soql_query;
           if (!query || query.trim() === '') {
             throw new QueryError(
@@ -72,27 +136,29 @@ export default class Salesforce implements QueryService {
         }
         case 'crud': {
           const actiontype = queryOptions.actiontype;
+          const resource_name = this.getResourceName(queryOptions);
           const resource_id = queryOptions.resource_id;
           const resource_body = queryOptions.resource_body;
+          this.assertValidResourceId(resource_id);
 
           switch (actiontype) {
             case 'retrieve':
-              response = await conn.sobject('Account').retrieve(resource_id);
+              response = await conn.sobject(resource_name).retrieve(resource_id);
               result = response;
               break;
 
             case 'create':
-              response = await conn.sobject('Account').create(resource_body);
+              response = await conn.sobject(resource_name).create(resource_body);
               result = response;
               break;
 
             case 'update':
-              response = await conn.sobject('Account').update({ Id: resource_id, ...resource_body });
+              response = await conn.sobject(resource_name).update({ Id: resource_id, ...resource_body });
               result = response;
               break;
 
             case 'delete':
-              response = await conn.sobject('Account').destroy(resource_id);
+              response = await conn.sobject(resource_name).destroy(resource_id);
               result = response;
               break;
 
@@ -243,6 +309,8 @@ export default class Salesforce implements QueryService {
       throw new Error('OAuth2 client credentials are missing from accessDetailsFrom in salesforce');
     }
 
+    await this.assertLoginUrlIsSafe(this.getLoginUrl(source_options));
+
     const oauth2 = this.createOAuth2(source_options, {
       clientId: client_id,
       clientSecret: client_secret || undefined,
@@ -343,7 +411,69 @@ export default class Salesforce implements QueryService {
     source_options: any,
     credentials: { clientId: string; clientSecret: string; redirectUri: string }
   ) {
-    return new jsforce.OAuth2(credentials);
+    return new jsforce.OAuth2({ ...credentials, loginUrl: this.getLoginUrl(source_options) });
+  }
+
+  // Extra allowed suffixes come from SALESFORCE_ALLOWED_LOGIN_DOMAINS (comma separated). They extend the defaults.
+  private getAllowedLoginDomainSuffixes(): string[] {
+    const extra = (process.env.SALESFORCE_ALLOWED_LOGIN_DOMAINS || '')
+      .split(',')
+      .map((entry) => entry.trim().toLowerCase())
+      .filter(Boolean)
+      .map((entry) => (entry.startsWith('.') ? entry : `.${entry}`))
+      // a bare TLD such as ".com" would allow every host under it
+      .filter((entry) => entry.split('.').filter(Boolean).length >= 2);
+    return [...DEFAULT_ALLOWED_LOGIN_DOMAIN_SUFFIXES, ...extra];
+  }
+
+  // Accepts "mycompany.my.salesforce.com" or "https://mycompany.my.salesforce.com/..." and returns "https://<host>".
+  private normalizeCustomDomain(rawDomain: string): string {
+    const invalid = (message: string) => new QueryError('Invalid custom domain', message, {});
+    let value = rawDomain.trim().toLowerCase();
+    if (!value) throw invalid('Custom domain is required when Login type is Custom domain.');
+    if (value.startsWith('http://')) throw invalid('Custom domain must use https.');
+    value = value.replace(/^https:\/\//, '');
+
+    let url: URL;
+    try {
+      url = new URL(`https://${value}`);
+    } catch (error) {
+      throw invalid('Custom domain is not a valid host name.');
+    }
+    if (url.username || url.password) throw invalid('Custom domain must not contain credentials.');
+    if (url.port && url.port !== '443') throw invalid('Custom domain must not specify a port.');
+
+    const hostname = url.hostname;
+    if (isIP(hostname.replace(/^\[|\]$/g, ''))) throw invalid('Custom domain must be a host name, not an IP address.');
+
+    const allowed = this.getAllowedLoginDomainSuffixes().some(
+      (suffix) => hostname.endsWith(suffix) && hostname.length > suffix.length
+    );
+    if (!allowed) {
+      throw invalid('Custom domain must be a Salesforce domain, for example mycompany.my.salesforce.com.');
+    }
+    return `https://${hostname}`;
+  }
+
+  // Missing / empty / unknown login type is production, which is what the plugin used before this option existed.
+  getLoginUrl(source_options: any): string {
+    // The ToolJet managed app uses ToolJet's own client secret: never send it to a user supplied host.
+    if (this.getStringOption(source_options, 'oauth_type') === 'tooljet_app') return LOGIN_URL_PRODUCTION;
+
+    switch (this.getStringOption(source_options, 'login_type')) {
+      case 'sandbox':
+        return LOGIN_URL_SANDBOX;
+      case 'custom_domain':
+        return this.normalizeCustomDomain(this.getStringOption(source_options, 'custom_domain'));
+      default:
+        return LOGIN_URL_PRODUCTION;
+    }
+  }
+
+  // Production / sandbox are fixed hosts. Only the user supplied custom domain needs the SSRF check.
+  private async assertLoginUrlIsSafe(loginUrl: string): Promise<void> {
+    if (loginUrl === LOGIN_URL_PRODUCTION || loginUrl === LOGIN_URL_SANDBOX) return;
+    await validateUrlForSSRF(loginUrl);
   }
 
   getOAuthCredentials(source_options: any) {
@@ -395,6 +525,8 @@ export default class Salesforce implements QueryService {
     if (!this.hasRequiredCredentials(sourceOptions, { client_id, client_secret, redirect_uri })) {
       throw new Error('OAuth2 client credentials are missing from accessDetailsFrom in salesforce');
     }
+
+    await this.assertLoginUrlIsSafe(this.getLoginUrl(sourceOptions));
 
     const oauth2 = this.createOAuth2(sourceOptions, {
       clientId: client_id,
