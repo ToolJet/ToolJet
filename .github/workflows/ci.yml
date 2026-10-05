@@ -15,7 +15,7 @@ concurrency:
       (github.event_name == 'pull_request'
         && !(github.event.action == 'labeled' && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
         && !(github.event.action != 'labeled' && github.event.pull_request.base.ref == 'main'))
-      && format('-noop-{0}', github.run_id) || '' }}
+      && format('-noop-{0}', github.run_id) || '' }}${{ github.run_attempt > 1 && format('-rerun-{0}', github.run_id) || '' }}
   # cancel superseded PR runs (last label wins); never kill a push-validation run
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -91,7 +91,8 @@ jobs:
             local old new files
             old=$(pin "$1" "$base") && new=$(pin "$1" "$HEAD") || { mark "$3" true; return; }
             [[ "$old" == "$new" ]] && { mark "$3" false; return; }
-            files=$(gh api "repos/ToolJet/$2/compare/$old...$new" --jq '.files[].filename') || { mark "$3" true; return; }
+            # compare is three-dot: a pin that isn't strictly ahead hides the commits it drops
+            files=$(gh api "repos/ToolJet/$2/compare/$old...$new" --jq 'select(.status == "ahead") | .files[].filename') || { mark "$3" true; return; }
             # compare API caps at 300 files
             if [[ $(grep -c . <<<"$files") -ge 300 ]] || grep -qvE '\.md$|^\.agents/' <<<"$files"; then
               mark "$3" true
