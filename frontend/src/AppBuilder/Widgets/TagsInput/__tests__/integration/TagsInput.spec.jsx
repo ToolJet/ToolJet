@@ -1168,6 +1168,34 @@ describe('TagsInput: disabled options cannot be selected', () => {
     expect(exposed('values')).toEqual([]);
   });
 
+  test('[TagsInput-BUG-011] Enter does not select a disabled option while new tags are allowed', async () => {
+    // Break this catches: guarding only the selection paths. With Allow new tags on, Enter routes
+    // through handleCreate, which treats the typed label as a duplicate and selects the existing
+    // option without re-checking `disable` — a sixth way in that the other guards never see.
+    await mountWithDisabled({ allowNewTags: binding('{{true}}') });
+    await openMenu();
+
+    await typeText('Blocked');
+    await user().keyboard('{Enter}');
+
+    expect(chips()).toEqual([]);
+    expect(exposed('values')).toEqual([]);
+  });
+
+  test('[TagsInput-BUG-011] a different case does not create a near-copy of a disabled option', async () => {
+    // Break this catches: matching the typed label case-sensitively on the create path, so `blocked`
+    // sidesteps a disabled `Blocked` and becomes a new tag — making the disable bypassable by
+    // changing case. Enabled options keep case-sensitive creation (D-09 / TagsInput-TAG-008).
+    await mountWithDisabled({ allowNewTags: binding('{{true}}') });
+    await openMenu();
+
+    await typeText('blocked');
+    await user().keyboard('{Enter}');
+
+    expect(chips()).toEqual([]);
+    expect(exposed('values')).toEqual([]);
+  });
+
   test('[TagsInput-BUG-011] an enabled option is still selectable the same way', async () => {
     // Break this catches: a guard that rejects every typed selection, not just the disabled ones.
     await mountWithDisabled({ allowNewTags: binding('{{false}}') });

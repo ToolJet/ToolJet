@@ -191,10 +191,15 @@ const TagsInput = ({
     return colors;
   };
 
-  // Check for duplicate labels (case-sensitive)
-  const isDuplicate = (label) => {
-    return allOptions.some((opt) => opt.label === label);
-  };
+  // Case-sensitive on purpose: D-09 / TagsInput-TAG-008 make `NEWPORT` a new tag, not a reselection.
+  const findOptionByLabel = (label) => allOptions.find((opt) => opt.label === label);
+
+  // The one exception (D-14): a disabled option blocks near-copies too, or the disable is
+  // bypassable by changing case — the menu already finds it case-insensitively.
+  const findDisabledOptionByLabel = (label) =>
+    allOptions.find((opt) => opt.isDisabled && String(opt.label).toLowerCase() === String(label).toLowerCase());
+
+  const isDuplicate = (label) => !!findOptionByLabel(label);
 
   // Find default items based on options
   function findDefaultItem(values, isAdvanced = false, isDefault = false) {
@@ -230,10 +235,14 @@ const TagsInput = ({
     const trimmedValue = newValue.trim();
     if (!trimmedValue) return;
 
-    if (isDuplicate(trimmedValue)) {
-      // If duplicate exists, just select it if not already selected
-      const existingOption = allOptions.find((opt) => opt.label === trimmedValue);
-      if (existingOption && !selected.some((s) => s.value === existingOption.value)) {
+    if (findDisabledOptionByLabel(trimmedValue)) {
+      setInputValue('');
+      return;
+    }
+
+    const existingOption = findOptionByLabel(trimmedValue);
+    if (existingOption) {
+      if (!selected.some((s) => s.value === existingOption.value)) {
         const newSelected = [...selected, existingOption];
         setInputValues(newSelected);
         fireEvent('onTagAdded');
