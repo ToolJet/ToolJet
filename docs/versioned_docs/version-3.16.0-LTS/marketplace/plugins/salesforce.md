@@ -31,6 +31,8 @@ Your Salesforce app needs these settings for ToolJet to connect:
 | **Require PKCE** | If this is turned on, use the **Authorization code with PKCE** grant type in ToolJet. |
 | **Require secret for Web Server Flow** and **Require secret for Refresh Token Flow** | Optional for **Authorization code with PKCE**. If both are turned off, you can leave **Client secret** empty in ToolJet. **Authorization code** always needs a client secret. |
 
+If your users sign in through a sandbox or your org's My Domain login page, you'll pick that as the **Login type** in ToolJet. Nothing changes in the Salesforce app.
+
 From the app, copy the **Consumer Key** and **Consumer Secret**. You'll enter them as the **Client ID** and **Client secret** in ToolJet.
 
 :::info
@@ -42,17 +44,19 @@ Salesforce can take a few minutes to apply a new app or a change to its settings
 1. Add a Salesforce datasource, either by clicking `+Add new Data source` on the query panel or from the [Data Sources](/docs/data-sources/overview/) page on the ToolJet dashboard.
 2. Fill in the connection fields:
 
-   | Field | Grant Type | Description |
-   |:------|:-----------|:------------|
-   | **API version** | Both | Select the API version from the dropdown. |
-   | **Authentication type** | Both | **OAuth 2.0**. |
-   | **Grant type** | Both | **Authorization code** or **Authorization code with PKCE**. Defaults to **Authorization code**. |
-   | **OAuth type** | Both | Select **Custom app** to use the Salesforce app you set up above. ToolJet Cloud also lists **ToolJet app**. |
-   | **Client ID** | Both | The consumer key of your Salesforce app. |
-   | **Client secret** | Both | The consumer secret of your Salesforce app. Required for **Authorization code**. Optional for **Authorization code with PKCE** when your Salesforce app doesn't require a secret. |
-   | **Scopes** | Both | Space-separated Salesforce OAuth scopes. Defaults to `full`. ToolJet adds `refresh_token offline_access` automatically. |
-   | **Code challenge method** | PKCE only | **SHA-256** (default) or **Plain**. Use **SHA-256** unless your Salesforce app requires otherwise. |
-   | **Code verifier** | PKCE only | A secret string of 43 to 128 characters, using only `A-Z`, `a-z`, `0-9`, `-`, `.`, `_` and `~`. ToolJet uses it to create the code challenge, so you don't need to compute anything. |
+   | Field | Description |
+   |:------|:------------|
+   | **API version** | Select an API version. |
+   | **Login type** | **Production** (default), **Sandbox** or **Custom domain**. See [Sign In Through a Sandbox or Custom Domain](#sign-in-through-a-sandbox-or-custom-domain). |
+   | **Custom domain** | Your org's login host, such as `mycompany.my.salesforce.com`. Used only when **Login type** is **Custom domain**. |
+   | **Authentication type** | Select **OAuth 2.0**. |
+   | **Grant type** | **Authorization code** (default) or **Authorization code with PKCE**. |
+   | **OAuth type** | Select **Custom app**. |
+   | **Client ID** | The consumer key of your Salesforce app. |
+   | **Client secret** | The consumer secret of your Salesforce app. Can be left empty with PKCE if your Salesforce app doesn't require a secret. |
+   | **Scopes** | Defaults to `full`. |
+   | **Code challenge method** | PKCE only. Keep the default, **SHA-256**. |
+   | **Code verifier** | PKCE only. A string of 43 to 128 characters using `A-Z`, `a-z`, `0-9`, `-`, `.`, `_` and `~`. |
 
 3. Copy the **Redirect URI** and paste it into the **Callback URL** of your Salesforce app, if you haven't already.
 4. Click **Connect to Salesforce**, then sign in to Salesforce and approve access.
@@ -64,9 +68,27 @@ To generate a valid code verifier, you can run this in a terminal:
 openssl rand -base64 96 | tr -dc 'A-Za-z0-9' | head -c 64
 ```
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/connection-v4.png" alt="Salesforce datasource configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/v5/connection.png" alt="Salesforce datasource configuration" />
 
-> **TODO: verify** Replace this screenshot with one that shows the **Authentication type** and **Grant type** dropdowns, the **Scopes** field and the PKCE fields. Also confirm the ToolJet version that first ships **Authorization code with PKCE** (ToolJet PR #18203) and add it here.
+### Sign In Through a Sandbox or Custom Domain
+
+By default, ToolJet signs users in through `login.salesforce.com`, which works for production and Developer Edition orgs. To connect a sandbox, or to sign in through your org's My Domain login page, change the **Login type**:
+
+- **Sandbox**: ToolJet uses `test.salesforce.com`.
+- **Custom domain**: ToolJet uses the host in **Custom domain**, such as `mycompany.my.salesforce.com` or `mycompany--uat.sandbox.my.salesforce.com`.
+
+For **Custom domain**, ToolJet:
+
+- Needs only the host, such as `mycompany.my.salesforce.com`. ToolJet adds `https://` itself.
+- Also accepts a full URL, but ignores any path or query string. For example, `https://mycompany.my.salesforce.com/home` becomes `https://mycompany.my.salesforce.com`.
+- Rejects a value that starts with `http://` or any scheme other than `https://`.
+- Rejects IP addresses. Depending on your deployment's SSRF protection settings, it also blocks hosts that resolve to internal network addresses. This protection is always on for ToolJet Cloud.
+
+After you change the **Login type** or **Custom domain**, click **Connect to Salesforce** again and save, so the datasource signs in through the new host.
+
+:::info
+On ToolJet Cloud, the **ToolJet app** OAuth type always signs in through `login.salesforce.com`, whatever the **Login type**. To use a sandbox or custom domain, select **Custom app** with your own Salesforce app.
+:::
 
 ### Authentication Required for All Users
 
@@ -75,23 +97,6 @@ You can turn on **Authentication required for all users** for either grant type.
 :::note
 After completing the OAuth flow, the query must be triggered again to load the data.
 :::
-
-### Existing Datasources
-
-Salesforce datasources created before **Authorization code with PKCE** was added keep using **Authorization code** and continue to work without changes. To move one to PKCE, select **Authorization code with PKCE** as the **Grant type**, fill in the PKCE fields, then click **Connect to Salesforce** again and save.
-
-### Troubleshooting
-
-| Problem | Cause | Fix |
-|:--------|:------|:----|
-| Salesforce shows `OAUTH_APPROVAL_ERROR_GENERIC` | The Salesforce app doesn't include the **Perform requests at any time (refresh_token, offline_access)** scope. | Add the scope to the app's OAuth scopes, wait a few minutes, then connect again. |
-| Salesforce rejects the sign-in, saying a code challenge is required | The Salesforce app requires PKCE, but the datasource uses **Authorization code**. | Switch the **Grant type** to **Authorization code with PKCE**. |
-| ToolJet shows **Invalid code verifier** | The code verifier is shorter than 43 or longer than 128 characters, or uses characters that aren't allowed. | Enter a valid code verifier. |
-| ToolJet shows **OAuth2 client credentials are missing** | **Client ID** is empty, or **Client secret** is empty while the grant type is **Authorization code**. | Fill in the missing value, or switch to **Authorization code with PKCE** if your Salesforce app doesn't require a secret. |
-| Salesforce reports a redirect URI mismatch | The app's **Callback URL** doesn't match the **Redirect URI** in ToolJet. | Copy the **Redirect URI** from ToolJet into the app's **Callback URL** exactly. |
-| Sign-in fails for a Salesforce sandbox | ToolJet signs in through `login.salesforce.com`, which is for production and Developer Edition orgs. | Use a production or Developer Edition org. |
-
-> **TODO: verify** The exact Salesforce error text when an app requires PKCE and the datasource uses **Authorization code**.
 
 ## Querying Salesforce
 
@@ -105,6 +110,7 @@ Salesforce datasources created before **Authorization code with PKCE** was added
 
 - To perform a SOQL query, select the **SOQL Query** operation from the dropdown.
 - Enter the SOQL query in the **Query** field.
+- Leave **Next records URL** empty, unless you're fetching the next page of results. See [Paginate SOQL Results](#paginate-soql-results).
 - Click **Run** to execute the query.
 
 ```sql
@@ -112,7 +118,53 @@ SELECT Id, Name
 FROM Account
 ```
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/soql-query-v4.png" alt="SOQL Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/v5/soql-query.png" alt="SOQL Query" />
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+
+    ```json
+    {
+      "records": [
+        {
+          "attributes": {
+            "type": "Account",
+            "url": "/services/data/v50.0/sobjects/Account/001dN000013EJtPQAW"
+          },
+          "Id": "001dN000013EJtPQAW",
+          "Name": "Acme"
+        }
+      ],
+      "totalSize": 1,
+      "done": true
+    }
+    ```
+
+</details>
+
+### Paginate SOQL Results
+
+When a SOQL query matches more records than Salesforce returns in one response (up to 2,000 by default), the response has `done` set to `false` and includes a `nextRecordsUrl`. Use it to fetch the next page.
+
+**Next records URL** takes the `nextRecordsUrl` from a previous SOQL query on the same datasource:
+
+- **Empty**: ToolJet runs the SOQL query in the **Query** field.
+- **Filled in**: ToolJet fetches the next page from that URL and ignores the **Query** field.
+
+The value must be the `nextRecordsUrl` returned by the previous query. Any other value makes the query fail, with **Invalid next records URL** in the error details. When the last page has been fetched, `done` is `true` and the response has no `nextRecordsUrl`.
+
+For example, to show the first page of accounts and load more on demand:
+
+1. Create a SOQL query named `getAccounts` with **Query** set to `SELECT Id, Name FROM Account` and **Next records URL** left empty.
+2. Create a second SOQL query named `getMoreAccounts` on the same datasource, with **Next records URL** set to:
+
+   ```js
+   {{queries.getAccounts.data.nextRecordsUrl}}
+   ```
+
+3. Run `getMoreAccounts` from a component event, such as the **On click** event of a **Load more** button. Show the button only while `{{queries.getAccounts.data.done === false}}`.
+
+To keep paging beyond the second page, point **Next records URL** at the `nextRecordsUrl` of the most recent page instead, for example by storing it in a variable after each run.
 
 :::info
 Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
@@ -120,17 +172,27 @@ Query results can be transformed using transformations. Read our [transformation
 
 ## CRUD Actions
 
-To perform CRUD actions on Salesforce, select the **CRUD Action** operation from the dropdown. The following CRUD actions are supported:
+To perform CRUD actions on Salesforce, select the **CRUD Action** operation from the dropdown, then select an **Action Type**.
+
+Every CRUD action has a **Resource Name**: the API name of the Salesforce object to work with. It works with standard objects such as `Account`, `Contact`, `Lead` or `Opportunity`, custom objects such as `Invoice__c`, and objects from managed packages such as `ns__Invoice__c`.
+
+- Use the object's **API name**, not its label. You can find it in Salesforce under **Setup > Object Manager**.
+- If **Resource Name** is empty, ToolJet uses `Account`.
+- **Resource Name** supports dynamic values, for example `{{components.objectSelect.value}}`.
+- **Resource Name** must start with a letter and contain only letters, numbers and underscores, otherwise the query fails with **Invalid resource name** in the error details.
+- **Resource ID** can't contain `/`, `?`, `#` or `..`, otherwise the query fails with **Invalid resource ID** in the error details.
+
+The following CRUD actions are supported:
 
 ### Create
 
 #### Required parameters:
 
-- **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
-- **Resource Body** - The data you want to insert into the Salesforce object.
+- **Resource Name** - The API name of the Salesforce object to create a record in, such as `Contact`. Defaults to `Account`.
+- **Resource Body** - The field values of the new record, using field API names.
 
-```sql
-{{ {name : "ToolJet"} }}
+```js
+{{ {LastName: "Smith", Email: "smith@example.com"} }}
 ```
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/create-query.png" alt="CRUD - Create" />
@@ -139,8 +201,8 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 #### Required parameters:
 
-- **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
-- **Resource ID** - The ID of the Salesforce object you want to retrieve.
+- **Resource Name** - The API name of the Salesforce object the record belongs to. Defaults to `Account`.
+- **Resource ID** - The ID of the record you want to retrieve.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/retrieve-query.png" alt="CRUD - Read" />
 
@@ -148,8 +210,12 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 #### Required parameters:
 
-- **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
-- **Resource Body** - The data you want to update in the Salesforce object. The resource body should contain the ID of the Salesforce object you want to update.
+- **Resource Name** - The API name of the Salesforce object the record belongs to. Defaults to `Account`.
+- **Resource Body** - The fields to update. Include the record's `Id` along with the fields you want to change.
+
+```js
+{{ {Id: "003D000000QOYQhIAP", Email: "j.smith@example.com"} }}
+```
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/update-query.png" alt="CRUD - Update" />
 
@@ -157,7 +223,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
 
 #### Required parameters:
 
-- **Resource Name** - The name of the Salesforce object you want to create. By default, Account is selected.
-- **Resource ID** - The ID of the Salesforce object you want to delete.
+- **Resource Name** - The API name of the Salesforce object the record belongs to. Defaults to `Account`.
+- **Resource ID** - The ID of the record you want to delete.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/delete-query.png" alt="Delete" />
