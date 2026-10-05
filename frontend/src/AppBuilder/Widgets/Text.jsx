@@ -207,7 +207,10 @@ export const Text = function Text({
       className="text-widget"
       style={computedStyles}
       data-cy={`${generateCypressDataCy(dataCy)}-text`}
-      onMouseOver={() => {
+      // onMouseEnter, not onMouseOver: mouseover bubbles up from every element
+      // the authored HTML or markdown renders, so crossing an internal boundary
+      // re-fires the event for a single visual hover. mouseenter does not bubble.
+      onMouseEnter={() => {
         fireEvent('onHover');
       }}
       onClick={handleClick}
