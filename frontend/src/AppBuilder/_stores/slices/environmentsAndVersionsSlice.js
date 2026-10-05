@@ -363,7 +363,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         editorEnvironmentId: get().selectedEnvironment.id,
       });
       const editorVersion = response.editorVersion;
-      const wasSelectedVersionDeleted = get().selectedVersion?.id === versionId;
+      const deletedVersion = get().selectedVersion;
+      const wasSelectedVersionDeleted = deletedVersion?.id === versionId;
 
       set((state) => {
         const newState = {
@@ -374,17 +375,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           environments: response?.environments?.length ? response.environments : get().environments,
         };
 
-        if (wasSelectedVersionDeleted) {
-          newState.selectedVersion = editorVersion; // last version can't be deleted
-          newState.currentVersionId = editorVersion.id;
-        }
-
         return newState;
       });
 
-      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
-      if (isModuleApp && wasSelectedVersionDeleted) {
-        get().changeEditorVersionAction(appId, editorVersion.id, onSuccess, onFailure, moduleId);
+      if (wasSelectedVersionDeleted) {
+        // Land on the branch's draft, else its most recently created version (last version can't be deleted)
+        const target = (await get().findVersionAfterDelete(appId, deletedVersion)) ?? editorVersion;
+        get().changeEditorVersionAction(appId, target.id, onSuccess, onFailure, moduleId);
         return;
       }
 
@@ -392,6 +389,29 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     } catch (error) {
       console.error('Error in deleteVersionAction:', error);
       onFailure(error);
+    }
+  },
+  findVersionAfterDelete: async (appId, deletedVersion) => {
+    const developmentEnvironment = get().environments.find((environment) => environment.priority === 1);
+    if (!developmentEnvironment) return null;
+    try {
+      // development lists every version of the app, newest first
+      const { appVersions = [] } = await appEnvironmentService.getVersionsByEnvironment(
+        appId,
+        developmentEnvironment.id
+      );
+      const remaining = appVersions.filter((version) => version.id !== deletedVersion.id);
+      // same branch when known, else same kind — never jump from a version onto a feature branch's draft
+      const sameBranch = deletedVersion.branchId
+        ? remaining.filter((version) => (version.branchId ?? version.branch_id) === deletedVersion.branchId)
+        : remaining.filter(
+            (version) => (version.versionType ?? 'version') === (deletedVersion.versionType ?? 'version')
+          );
+      const candidates = sameBranch.length ? sameBranch : remaining;
+      return candidates.find((version) => version.status === 'DRAFT') ?? candidates[0] ?? null;
+    } catch (error) {
+      console.error('Error while finding the version to open after delete', error);
+      return null;
     }
   },
   changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure, moduleId) => {
