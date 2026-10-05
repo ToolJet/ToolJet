@@ -38,7 +38,7 @@
  *    interaction gate in QA (Text-BRW-006) and left only the `data-disabled`
  *    marking and the `disabled` class to Text-STATE-003.
  */
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -318,6 +318,47 @@ describe('Text: events', () => {
 
     await widget.session.user.click(root());
     await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(2));
+  });
+  test('[Text-EVT-004] onHover fires once per hover, not once per nested element', async () => {
+    // Break this catches: listening for every pointer movement that bubbles up
+    // from the rendered content instead of for entry into the component. An
+    // author whose HTML or markdown produces several blocks — three paragraphs
+    // is enough — gets a fresh On hover run each time the pointer crosses an
+    // internal boundary, so a query wired to the event runs over and over for
+    // one visual hover.
+    //
+    // Driven with explicit relatedTarget rather than user.hover(): user-event
+    // leaves relatedTarget unset, so React's enter/leave plugin reads every move
+    // as arriving from outside the document and re-fires enter. Under it BOTH
+    // bindings report three, so it cannot tell the defect from the fix. A real
+    // browser sets relatedTarget to the element being left, which is what the
+    // sequence below reproduces — confirmed with real mouse input in Chrome,
+    // where the same three moves give mouseover 3, mouseenter 1.
+    widget.render({
+      properties: {
+        textFormat: binding('html'),
+        text: binding('<p>first</p><p>second</p><p>third</p>'),
+      },
+      events: countInvocationsOn(ID, 'onHover'),
+    });
+    const paragraphs = await waitFor(() => {
+      const found = root().querySelectorAll('p');
+      expect(found).toHaveLength(3);
+      return found;
+    });
+
+    // Pointer arrives from outside the component: one hover begins.
+    fireEvent.mouseOver(paragraphs[0], { relatedTarget: document.body });
+    await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(1));
+
+    // Pointer moves between the component's own children: still one hover.
+    fireEvent.mouseOut(paragraphs[0], { relatedTarget: paragraphs[1] });
+    fireEvent.mouseOver(paragraphs[1], { relatedTarget: paragraphs[0] });
+    fireEvent.mouseOut(paragraphs[1], { relatedTarget: paragraphs[2] });
+    fireEvent.mouseOver(paragraphs[2], { relatedTarget: paragraphs[1] });
+    await drain();
+
+    expect(store().getVariable('calls', MODULE_ID)).toBe(1);
   });
 });
 
