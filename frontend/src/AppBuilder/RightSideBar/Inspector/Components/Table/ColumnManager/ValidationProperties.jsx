@@ -7,6 +7,8 @@ import Timepicker from '@/ToolJetUI/Timepicker/Timepicker';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/Table/CustomDatePickerHeader';
 import { resolveReferences } from '@/_helpers/utils';
 import cx from 'classnames';
+import { hasMinMaxConflict, RANGE_TYPE_BY_MIN_PROPERTY } from './validationRangeConflict';
+import ValidationRangeWarning from './ValidationRangeWarning';
 
 const getDate = (date, format) => {
   const dateMomentInstance = date && moment(date, format);
@@ -171,6 +173,16 @@ export const ValidationProperties = ({
     return '';
   }
 
+  const getRangeConflictMessage = (validationPair) => {
+    if (!Array.isArray(validationPair) || validationPair.length !== 2) return null;
+    const [minField, maxField] = validationPair;
+    const rangeType = RANGE_TYPE_BY_MIN_PROPERTY[minField.property];
+    if (!rangeType) return null;
+    const conflict = hasMinMaxConflict(rangeType, item?.[minField.property], item?.[maxField.property]);
+    if (!conflict) return null;
+    return `${minField.label} should not be greater than ${maxField.label}.`;
+  };
+
   const renderAsPerFieldType = (validation) => {
     switch (validation.fieldType) {
       case 'datepicker':
@@ -255,14 +267,18 @@ export const ValidationProperties = ({
       <div className="d-flex flex-column custom-gap-8">
         {validationsList.map((validation) => {
           if (Array.isArray(validation)) {
+            const conflictMessage = getRangeConflictMessage(validation);
             return (
-              <div className="d-flex align-item-start align-self-stretch custom-gap-8" key={validation.property}>
-                {validation.map((validation) => {
-                  {
-                    return renderAsPerFieldType(validation);
-                  }
-                })}
-              </div>
+              <React.Fragment key={validation[0].property}>
+                <div className="d-flex align-item-start align-self-stretch custom-gap-8">
+                  {validation.map((validation) => {
+                    {
+                      return renderAsPerFieldType(validation);
+                    }
+                  })}
+                </div>
+                {conflictMessage && <ValidationRangeWarning message={conflictMessage} />}
+              </React.Fragment>
             );
           } else {
             return renderAsPerFieldType(validation);
