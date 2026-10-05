@@ -779,6 +779,14 @@ jobs:
       edition: 'ee'
     secrets: inherit
 
+  # Repo-wide Dependabot-alert policy (not PR-diff scoped) — full lane only, feeds ci-gate.
+  vulnerability-gate:
+    needs: detect-changes
+    if: needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
   # ---------------------------------------------------------------------------
   # 5. Gate — aggregates results, posts PR comment, removes label
   # ---------------------------------------------------------------------------
@@ -803,6 +811,7 @@ jobs:
       - test-gitsync
       - cypress-platform
       - cypress-marketplace
+      - vulnerability-gate
     steps:
       # Comment pipeline — one path for both lanes: download jest JSONs,
       # render markdown via scripts/render-ci-comment.sh, upsert by marker.
@@ -911,6 +920,7 @@ jobs:
               "test-gitsync:${{ needs.test-gitsync.result }}"
               "cypress-platform:${{ needs.cypress-platform.result }}"
               "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
+              "vulnerability-gate:${{ needs.vulnerability-gate.result }}"
             )
           fi
 
@@ -969,6 +979,7 @@ jobs:
           RESULT_FRONTEND: ${{ needs.test-frontend.result }}
           RESULT_CYPRESS_PLATFORM: ${{ needs.cypress-platform.result }}
           RESULT_CYPRESS_MARKETPLACE: ${{ needs.cypress-marketplace.result }}
+          RESULT_VULN_GATE: ${{ needs.vulnerability-gate.result }}
         run: |
           jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" 2>/dev/null || echo '{}')
           job_url() { echo "$jobs_json" | jq -r --arg n "$1" '.jobs[]? | select(.name | contains($n)) | .html_url' | head -1; }
