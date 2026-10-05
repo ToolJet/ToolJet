@@ -860,12 +860,14 @@ class BaseManageGroupPermissions extends React.Component {
             <div className="org-users-page-card-wrap">
               <div style={{ display: 'grid' }} className="org-users-page-sidebar">
                 <div className="default-group-list-container">
-                  <div className="mb-2 d-flex align-items-center">
-                    <SolidIcon name="usergear" />
-                    <span className="ml-1 group-title" data-cy="user-role-title">
-                      USER ROLE
-                    </span>
-                  </div>
+                  {defaultGroups.length > 0 && (
+                    <div className="mb-2 d-flex align-items-center">
+                      <SolidIcon name="usergear" />
+                      <span className="ml-1 group-title" data-cy="user-role-title">
+                        USER ROLE
+                      </span>
+                    </div>
+                  )}
                   {defaultGroups.map((permissionGroup) => {
                     return (
                       <FolderList
