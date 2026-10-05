@@ -112,12 +112,12 @@ Analyze the commits and diff to determine:
 - Don't use GitHub alert boxes (`> [!TIP]` and similar) for routine notes. Their built-in label ("Tip", "Note") reads as noise under a section heading.
 
 **Merge impact:** always state it, as a folded `<details>` block at the end of Changes. It tells the reviewer how hard to look.
-- The summary line carries the verdict, so it reads without expanding: `🛡️ <b>Merge impact:</b> 🟢 reversible` or `🔴 not reversible`.
+- The summary line is the only place the verdict appears, so it reads without expanding:
+  - `🟢 reversible` when a plain revert undoes the PR;
+  - `🔴 not reversible` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
 - Irreversible changes use `<details open>`, so the risk is never folded away.
 - Leave a blank line after `</summary>` and before `</details>`, or GitHub won't render the bullets.
-- **Reversible:**
-  - `🟢 Yes, a plain revert undoes it` when the PR is cheap to roll back;
-  - `🔴 No, <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
+- **Can't undo:** irreversible changes only. What a revert leaves behind.
 - **Rollback:** irreversible changes only. The plan for recovering.
 - **Reach:** what the change can affect: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 - **Not included:** optional. Deliberate omissions or surprising decisions, so they aren't buried in the Changes bullets.
@@ -172,7 +172,7 @@ Analyze the commits and diff to determine:
 <details>
 <summary>🛡️ <b>Merge impact:</b> <🟢 reversible | 🔴 not reversible></summary>
 
-- **Reversible:** <🟢 Yes, a plain revert undoes it | 🔴 No, what can't be undone>
+- **Can't undo:** <irreversible only: what a revert leaves behind>
 - **Rollback:** <irreversible only: plan>
 - **Reach:** <scope>
 - **Not included:** <optional: deliberate omissions or surprising decisions>

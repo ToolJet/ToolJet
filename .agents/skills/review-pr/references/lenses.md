@@ -124,7 +124,7 @@ public contract and a removed field needs a deprecation path.
 
 ## Merge impact and evidence
 
-- **The Reversible answer must be honest.** A PR that drops or rewrites data, changes a public API or contract, or triggers a release or other external side effect is not reversible, whatever its description says. A "🟢 Yes" on such a change, or a folded block on an irreversible one, is a finding.
+- **The reversible verdict must be honest.** A PR that drops or rewrites data, changes a public API or contract, or triggers a release or other external side effect is not reversible, whatever its description says. A "🟢 reversible" on such a change, or a folded block on an irreversible one, is a finding.
 - **Check the stated Reach against the diff:** editions, tenants, modules, contract consumers, and existing saved apps.
 - **An irreversible PR with no Rollback plan or no Evidence section** (before → after proof that it works) is a finding.
 - **A runtime change whose only evidence is "it should work"** is unverified. Ask for the test run or the screenshot.
