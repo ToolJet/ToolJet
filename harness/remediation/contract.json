@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "cli/package-lock.json",
-    "cli/package.json"
+    "cypress-tests/package-lock.json",
+    "cypress-tests/package.json"
   ],
-  "baseSha": "9b5375ee12ffd2add20c4bad1ad7ca31c06e5030",
+  "baseSha": "c9d7dcac85725137c3316fe1b8f77b89caece9f7",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "89377c71f57eef9b",
+    "id": "631132e1e7f578b6",
     "lockArtifacts": [
-      "cli/package-lock.json"
+      "cypress-tests/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "cli/package-lock.json"
+    "rootManifest": "cypress-tests/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "1d4a3c88d20343c13ac83dbe863248d73027c23c780d3f15a37c85bda8d6a477",
+  "remediationKey": "0366ba4fd168f4df64c4596b9e86f6106750a7414eb114dfd48edb2f8c3a8668",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,9 +38,9 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "9b5375ee12ffd2add20c4bad1ad7ca31c06e5030",
+  "scanSha": "c9d7dcac85725137c3316fe1b8f77b89caece9f7",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "3QLZKHy7TRKrobQ8hW1ing",
+  "stoExecutionId": "S6e8Ok_oSy6SY9PKpZSIvQ",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
