@@ -113,11 +113,11 @@ Analyze the commits and diff to determine:
 - Only include evidence that was actually produced: never add an empty or placeholder section
 
 **Merge danger:** always state it, as a `### Merge danger` subsection at the end of Changes. It tells the reviewer how hard to look.
-- **Door:**
-  - `🟢 two-way` when the PR is cheap to revert;
-  - `🔴 one-way: <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
-- **Rollback:** one-way doors only. The plan for undoing it.
-- **Blast radius:** what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+- **Reversible:**
+  - `🟢 Yes, a plain revert undoes it` when the PR is cheap to roll back;
+  - `🔴 No, <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
+- **Rollback:** irreversible changes only. The plan for recovering.
+- **Impact:** what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
 **Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
 - **Issue:**
@@ -166,9 +166,9 @@ Analyze the commits and diff to determine:
 - <what changed, past tense, no prefixes, max 5 bullets>
 
 ### Merge danger
-- **Door:** <🟢 two-way | 🔴 one-way: what can't be undone>
-- **Rollback:** <one-way only: plan>
-- **Blast radius:** <scope>
+- **Reversible:** <🟢 Yes, a plain revert undoes it | 🔴 No, what can't be undone>
+- **Rollback:** <irreversible only: plan>
+- **Impact:** <scope>
 
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
