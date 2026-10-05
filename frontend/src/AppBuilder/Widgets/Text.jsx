@@ -217,7 +217,10 @@ export const Text = function Text({
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {typeof text === 'object' ? JSON.stringify(text) : text}
+                {/* react-markdown accepts only a string. The property path coerces through
+                    `text`'s string schema, but setText() bypasses it, so a number or boolean
+                    from a CSA reaches here raw and the widget dies in its error boundary. */}
+                {typeof text === 'object' ? JSON.stringify(text) : String(text ?? '')}
               </Markdown>
             </div>
           )}
