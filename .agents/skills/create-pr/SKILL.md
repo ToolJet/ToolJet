@@ -131,12 +131,12 @@ Analyze the commits and diff to determine:
 
 **Conditional sections: include only when they apply.**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
-  - Mermaid for interactions, flows and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
-  - an ASCII call tree, component tree or shallow file tree for structure;
+  - Mermaid for anything with steps or order: interactions, flows, lifecycles and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
+  - an ASCII call tree, component tree or shallow file tree, only for a real hierarchy;
   - a `diff` block over one of those shapes when the point is what changed in an existing structure;
   - pseudocode for business logic.
 
-  Pick one or two, not all. Skip it for small fixes, config or copy changes.
+  Pick one or two, not all. Skip it for small fixes, config or copy changes. A note longer than a few words goes inside a Mermaid node or in the prose, not after an arrow in an ASCII block: packed annotations make the block hard to read.
 - **API Reference:** when HTTP endpoints are added or changed. A table with Method, Route, Permission, Request and Response columns.
 - **Evidence:** when runtime behaviour changes. Show proof it works, as before → after:
   - a screenshot for visual changes (capture it with Playwright MCP when a dev server is running);
