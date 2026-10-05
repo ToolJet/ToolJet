@@ -11,6 +11,7 @@ import Input from '@/_ui/Input';
 import cx from 'classnames';
 import { Modal } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import GoogleSheetsAccessType from '@/_components/GoogleSheetsAccessType';
 
 const OAuthWrapper = ({
   optionchanged,
@@ -64,6 +65,11 @@ const OAuthWrapper = ({
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
   const redirectUri = `${getHostURL()}/oauth2/authorize`;
+
+  const isToolJetApp = options?.oauth_type?.value === 'tooljet_app';
+  const hideRedirectUri = isToolJetApp;
+  // nothing to edit with ToolJet-managed OAuth, so allow connect on a fresh data source
+  const canSaveOrConnect = !isSaving && !isDisabled && (hasFieldsChanged() || isToolJetApp);
 
   const docLink =
     selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
@@ -162,16 +168,24 @@ const OAuthWrapper = ({
           )}
         </div>
       )}
-      <div>
-        <label className="form-label mt-3">Redirect URI</label>
-        <Input
-          value={redirectUri}
-          helpText="Save this URL as callback or redirect URL in your OAuth app."
-          type="copyToClipboard"
-          disabled={true}
-          className="form-control"
-        />
-      </div>
+      {!hideRedirectUri && (
+        <div>
+          <label className="form-label mt-3">Redirect URI</label>
+          <Input
+            value={redirectUri}
+            helpText="Save this URL as callback or redirect URL in your OAuth app."
+            type="copyToClipboard"
+            disabled={true}
+            className="form-control"
+          />
+        </div>
+      )}
+      {/* Google Sheets only; other OAuth connectors (e.g. BigQuery) have their own access_type */}
+      {selectedDataSource?.kind === 'googlesheetsv2' && (
+        <div className="mt-3">
+          <GoogleSheetsAccessType options={options} optionchanged={optionchanged} disabled={isDisabled} />
+        </div>
+      )}
       {options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code' && (
         <div>
           <label className="form-check form-switch mt-3">
@@ -247,7 +261,7 @@ const OAuthWrapper = ({
                   <ButtonSolid
                     className={`m2 googlesheetsv2-save-btn${isSaving ? ' btn-loading' : ''}`}
                     isLoading={isSaving}
-                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    disabled={!canSaveOrConnect}
                     onClick={() => saveDataSource()}
                     variant="tertiary"
                   >
@@ -257,7 +271,7 @@ const OAuthWrapper = ({
                     <ButtonSolid
                       className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
                       isLoading={authStatus === 'waiting_for_url'}
-                      disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                      disabled={!canSaveOrConnect}
                       onClick={() => authorizeWithProvider()}
                       variant="primary"
                     >
