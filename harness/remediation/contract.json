@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "docs/package-lock.json",
-    "docs/package.json"
+    "cli/package-lock.json",
+    "cli/package.json"
   ],
-  "baseSha": "c27193f9597ca7bbb0a25ef75038a5f6369413f7",
+  "baseSha": "9b5375ee12ffd2add20c4bad1ad7ca31c06e5030",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "6e1fdbe0475ff988",
+    "id": "89377c71f57eef9b",
     "lockArtifacts": [
-      "docs/package-lock.json"
+      "cli/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "docs/package-lock.json"
+    "rootManifest": "cli/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
+  "remediationKey": "1d4a3c88d20343c13ac83dbe863248d73027c23c780d3f15a37c85bda8d6a477",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,26 +38,26 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "c27193f9597ca7bbb0a25ef75038a5f6369413f7",
+  "scanSha": "9b5375ee12ffd2add20c4bad1ad7ca31c06e5030",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "UiqB0eb1QmSN7mlFajEKgA",
+  "stoExecutionId": "3QLZKHy7TRKrobQ8hW1ing",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "17.13.8"
+        "1.1.21"
       ],
       "coordinate": {
-        "normalisedName": "joi",
-        "purl": "pkg:npm/joi@17.13.4"
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@1.1.18"
       },
-      "fromVersion": "17.13.4",
+      "fromVersion": "1.1.18",
       "issueIds": [
-        "DH8GBjdZeFzN79AtNtehLB"
+        "Pl_259BKHv9l5XFbK9dPLi"
       ],
-      "minimumFixedVersion": "17.13.5",
-      "package": "joi"
+      "minimumFixedVersion": "1.1.19",
+      "package": "brace-expansion"
     }
   ]
 }
