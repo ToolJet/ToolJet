@@ -112,20 +112,21 @@ Analyze the commits and diff to determine:
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only include evidence that was actually produced: never add an empty or placeholder section
 
-**Merge danger:** always state it, as a GitHub alert right under the summary. Its colour tells the reviewer how hard to look.
+**Merge danger:** always state it, as the last part of Changes: a `### Merge danger` subsection holding a GitHub alert. Its colour tells the reviewer how hard to look.
 - **Two-way door** (cheap to revert): a green `[!TIP]` alert, one line: `**Two-way door** · blast radius: <what it can affect>`.
 - **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): a red `[!CAUTION]` alert with three lines: what can't be undone, the rollback plan, and the blast radius.
 - **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
-**Links line:** one `📌` line under the alert, with items separated by ` · `. Include an item only when it has content:
-- **Companion PRs:** submodule PRs as `[ee-server #123](url)` and `[ee-frontend #456](url)`. Leave out a submodule with no changes.
+**Sources:** `📎` lines under the summary. Include a line only when it has content, with items separated by ` · `:
 - **Issue:**
-  - `Closes #123` when the PR fully resolves the issue, `Relates to #123` when it only partly does.
+  - `📎 Closes #123` when the PR fully resolves the issue, `📎 Relates to #123` when it only partly does.
   - Issues in the private tracker (e.g. from `kickoff`) need the full reference, `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
-- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
-- **Sub-issues:** a second `📌` line: `Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
-  - With multiple parents, use one line each: `📌 Sub-issues (#123): #124, #125`.
+- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, on the issue's `📎` line or their own, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- **Sub-issues:** `📎 Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
+  - With multiple parents, use one line each: `📎 Sub-issues (#123): #124, #125`.
   - Wrap the list in `<details>` when there are more than about 6.
+
+**Submodules:** a `**Submodules:**` label followed by one bullet per submodule PR: `- [ee-server #123](url)`. Leave out a submodule with no changes, and the whole block when neither changed.
 
 **Conditional sections: include only when they apply.**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
@@ -149,6 +150,17 @@ Analyze the commits and diff to determine:
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
 
+📎 Closes <#issue> · PRD: [title](url) · Design: [title](url)
+📎 Sub-issues: <#num, #num>
+
+**Submodules:**
+- [ee-server #<n>](<url>)
+- [ee-frontend #<n>](<url>)
+
+## 🔀 Changes
+- <what changed, past tense, no prefixes, max 5 bullets>
+
+### Merge danger
 > [!TIP]
 > **Two-way door** · blast radius: <scope>
 
@@ -158,12 +170,6 @@ Analyze the commits and diff to determine:
 > **Rollback:** <plan>
 > **Blast radius:** <scope>
 -->
-
-📌 [ee-server #<n>](<url>) · [ee-frontend #<n>](<url>) · Closes <#issue> · PRD: [title](url) · Design: [title](url)
-📌 Sub-issues: <#num, #num>
-
-## 🔀 Changes
-- <what changed, past tense, no prefixes, max 5 bullets>
 
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
@@ -180,7 +186,7 @@ Analyze the commits and diff to determine:
 ## 🧪 How to test
 - [ ] <short action-first step>
 ```
-Omit the `📌` line entirely when it has no items.
+Omit any `📎` line, and the Submodules block, when it has no content.
 
 The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` skill by Dex Horthy (both MIT).
 
@@ -189,7 +195,8 @@ The section order follows the questions a reviewer asks: why, how risky, what ch
 ## 📝 What this does
 <1-2 sentence summary>
 
-📌 [ToolJet #<n>](<main repo PR url or PENDING>)
+**Main PR:**
+- [ToolJet #<n>](<main repo PR url or PENDING>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes>
@@ -236,7 +243,7 @@ If a submodule has pointer changes but no branch in the submodule, skip the subm
 
 ### Step 3: Update the main PR body with submodule links
 
-Fill in the main PR's `📌` line with the submodule PR URLs captured in Step 2. After the main PR exists, replace `PENDING` in each submodule PR's `📌` line with the main PR URL.
+Fill in the main PR's Submodules block with the submodule PR URLs captured in Step 2. After the main PR exists, replace `PENDING` in each submodule PR's Main PR link with the main PR URL.
 
 ### Step 4: Create or update the main repo PR
 
