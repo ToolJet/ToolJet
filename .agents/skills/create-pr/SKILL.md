@@ -138,7 +138,6 @@ Analyze the commits and diff to determine:
   - Mermaid for anything with steps or order: interactions, flows, lifecycles and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
   - an ASCII call tree, component tree or shallow file tree, only for a real hierarchy. Nodes are bare names, with a file path at most and no notes;
   - a `diff` over the table, entity or type when the data shape changes;
-  - a `diff` block over one of those shapes when the point is what changed in an existing structure;
   - pseudocode for business logic.
 
   Pick one or two, not all. Skip it for small fixes, config or copy changes. A note longer than a few words goes inside a Mermaid node or in the prose, not after an arrow in an ASCII block: packed annotations make the block hard to read.

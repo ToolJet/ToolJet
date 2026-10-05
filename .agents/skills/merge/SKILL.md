@@ -12,7 +12,7 @@ User input: $ARGUMENTS
 
 **Usage:**
 ```
-/merge                  # merge the remote default branch (main) into current branch
+/merge                  # merge the branch's base (open PR base, else main)
 /merge main             # merge main into current branch
 /merge feature/foo      # merge feature/foo into current branch
 ```
