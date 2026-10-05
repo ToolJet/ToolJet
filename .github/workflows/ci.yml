@@ -37,8 +37,8 @@ jobs:
           && !github.event.pull_request.draft
           && github.event.pull_request.head.repo.full_name == github.repository)
     outputs:
-      server: ${{ (steps.filter.outputs.server == 'true' || steps.sub.outputs.server == 'true') && 'true' || 'false' }}
-      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
+      server: ${{ (steps.filter.outputs.server == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.server == 'true') && 'true' || 'false' }}
+      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -69,6 +69,9 @@ jobs:
             marketplace:
               - 'marketplace/**'
               - '!**/*.md'
+            # toolchain / workflow changes affect every suite
+            root:
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
       # a submodule bump counts only if the EE diff touches more than docs/skills;
       # any lookup failure counts as changed
       - name: Detect EE submodule changes
