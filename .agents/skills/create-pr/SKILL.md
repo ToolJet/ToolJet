@@ -117,13 +117,13 @@ Analyze the commits and diff to determine:
 - **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): a red `[!CAUTION]` alert with three lines: what can't be undone, the rollback plan, and the blast radius.
 - **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
-**Sources:** `📎` lines under the summary. Include a line only when it has content, with items separated by ` · `:
+**Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
 - **Issue:**
-  - `📎 Closes #123` when the PR fully resolves the issue, `📎 Relates to #123` when it only partly does.
+  - `Closes #123` when the PR fully resolves the issue, `Relates to #123` when it only partly does.
   - Issues in the private tracker (e.g. from `kickoff`) need the full reference, `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
-- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, on the issue's `📎` line or their own, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
-- **Sub-issues:** `📎 Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
-  - With multiple parents, use one line each: `📎 Sub-issues (#123): #124, #125`.
+- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- **Sub-issues:** `Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
+  - With multiple parents, use one bullet each: `Sub-issues (#123): #124, #125`.
   - Wrap the list in `<details>` when there are more than about 6.
 
 **Submodules:** a `**Submodules:**` label followed by one bullet per submodule PR: `- [ee-server #123](url)`. Leave out a submodule with no changes, and the whole block when neither changed.
@@ -150,8 +150,11 @@ Analyze the commits and diff to determine:
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
 
-📎 Closes <#issue> · PRD: [title](url) · Design: [title](url)
-📎 Sub-issues: <#num, #num>
+📎 **Sources:**
+- Closes <#issue>
+- PRD: [title](url)
+- Design: [title](url)
+- Sub-issues: <#num, #num>
 
 **Submodules:**
 - [ee-server #<n>](<url>)
@@ -186,7 +189,7 @@ Analyze the commits and diff to determine:
 ## 🧪 How to test
 - [ ] <short action-first step>
 ```
-Omit any `📎` line, and the Submodules block, when it has no content.
+Omit the Sources and Submodules blocks, or any bullet in them, when there's no content.
 
 The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` skill by Dex Horthy (both MIT).
 
