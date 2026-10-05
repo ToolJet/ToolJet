@@ -53,11 +53,11 @@ The following two checks are needed only before dispatching subagents (step 5):
 
 Kickoff never plans without an issue, and every issue lives in `ToolJet/tj-ee`.
 
-| Input | Action |
-|---|---|
-| `ToolJet/tj-ee` issue number or URL | Use it as the parent |
-| `ToolJet/ToolJet` issue | Invoke `create-issue` to file a tj-ee parent that links the public URL. Private sub-issues never go under a public parent |
-| PRD, file, or text | Invoke `create-issue` (Task or Feature) to file the parent, then continue |
+| Input                               | Action                                                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `ToolJet/tj-ee` issue number or URL | Use it as the parent                                                                                                      |
+| `ToolJet/ToolJet` issue             | Invoke `create-issue` to file a tj-ee parent that links the public URL. Private sub-issues never go under a public parent |
+| PRD, file, or text                  | Invoke `create-issue` (Task or Feature) to file the parent, then continue                                                 |
 
 ## 2. Gather context (interactive)
 

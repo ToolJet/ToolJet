@@ -17,14 +17,14 @@ Read the parent issue and its comments (`gh issue view <n> --repo ToolJet/tj-ee 
 
 For each source, first check whether this session has a tool for it, then act:
 
-| Source | Has a tool? | If yes | If no |
-|---|---|---|---|
-| GitHub issue/PR | `gh` (always) | `gh issue view` / `gh pr view --comments` | — |
-| Figma | Figma MCP tools such as `get_design_context`, `get_screenshot`, `get_metadata` | Fetch the linked node: design context plus a screenshot | Offer setup, or ask for exports or screenshots |
-| ClickUp | ClickUp MCP tools such as `clickup_get_task`, `clickup_search` | Fetch the task or doc | Offer setup, or ask the user to paste the relevant part |
-| Jam / other MCP-backed tools | That server's tools | Fetch | Ask the user to paste or describe it |
-| Images in the issue | Readable if the harness can open the URL | View them | Ask the user to drop the screenshots into the conversation |
-| Slack, private docs | Usually not reachable | — | Ask the user to paste the relevant excerpt |
+| Source                       | Has a tool?                                                                    | If yes                                                  | If no                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------- |
+| GitHub issue/PR              | `gh` (always)                                                                  | `gh issue view` / `gh pr view --comments`               | —                                                          |
+| Figma                        | Figma MCP tools such as `get_design_context`, `get_screenshot`, `get_metadata` | Fetch the linked node: design context plus a screenshot | Offer setup, or ask for exports or screenshots             |
+| ClickUp                      | ClickUp MCP tools such as `clickup_get_task`, `clickup_search`                 | Fetch the task or doc                                   | Offer setup, or ask the user to paste the relevant part    |
+| Jam / other MCP-backed tools | That server's tools                                                            | Fetch                                                   | Ask the user to paste or describe it                       |
+| Images in the issue          | Readable if the harness can open the URL                                       | View them                                               | Ask the user to drop the screenshots into the conversation |
+| Slack, private docs          | Usually not reachable                                                          | —                                                       | Ask the user to paste the relevant excerpt                 |
 
 **Server listed but not authenticated.** Run its `authenticate` tool, give the user the login link, then retry.
 

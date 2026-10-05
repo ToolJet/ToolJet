@@ -7,10 +7,10 @@ description: Add, move, or repair agent skills in this repo — decide public ro
 
 Skill placement is decided by **sensitivity**, not by which code the skill touches.
 
-| Would we mind this text on GitHub? | Content lives in | Root gets |
-|---|---|---|
-| No (public) | `.agents/skills/<name>/` | `.claude/skills/<name>` link |
-| Yes (private) | `frontend/ee/.agents/skills/<name>/` | `.agents/skills/<name>` + `.claude/skills/<name>` links |
+| Would we mind this text on GitHub? | Content lives in                     | Root gets                                               |
+| ---------------------------------- | ------------------------------------ | ------------------------------------------------------- |
+| No (public)                        | `.agents/skills/<name>/`             | `.claude/skills/<name>` link                            |
+| Yes (private)                      | `frontend/ee/.agents/skills/<name>/` | `.agents/skills/<name>` + `.claude/skills/<name>` links |
 
 Private skills always go in `frontend/ee`, even if backend-flavoured — skills are not code, one home is enough.
 

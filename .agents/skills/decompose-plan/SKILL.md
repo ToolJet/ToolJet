@@ -50,17 +50,17 @@ Each slice is a thin, demoable path through every layer it needs: migration → 
 
 For each slice, record:
 
-| Field | Rule |
-|---|---|
-| Title | Plain English, no planning jargon |
-| Type | Task / Feature / Bug |
-| Mode | **AFK** (an agent can finish it alone) or **HITL** (needs a human decision). If in doubt, HITL |
-| Plan-first | Yes if it touches a migration, auth, CASL/permissions, licensing, or data deletion |
-| Blocked by | Other slices in this plan |
-| Repos | root, `server/ee`, `frontend/ee` |
-| Stack / branch | See below |
-| User story | `As a <role>, I want <capability> so that <benefit>.` exactly |
-| Acceptance criteria | Agent-verifiable, in the format below |
+| Field               | Rule                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Title               | Plain English, no planning jargon                                                              |
+| Type                | Task / Feature / Bug                                                                           |
+| Mode                | **AFK** (an agent can finish it alone) or **HITL** (needs a human decision). If in doubt, HITL |
+| Plan-first          | Yes if it touches a migration, auth, CASL/permissions, licensing, or data deletion             |
+| Blocked by          | Other slices in this plan                                                                      |
+| Repos               | root, `server/ee`, `frontend/ee`                                                               |
+| Stack / branch      | See below                                                                                      |
+| User story          | `As a <role>, I want <capability> so that <benefit>.` exactly                                  |
+| Acceptance criteria | Agent-verifiable, in the format below                                                          |
 
 **Stacks.**
 - **Chains:** slices joined by blocked-by form a chain, and each chain is one `gh stack`, bottom to top in dependency order.
@@ -85,12 +85,12 @@ Leave out file names and function signatures. They change as earlier slices land
 
 **Test plan per slice: every slice is built test-first, using the conventions that fit it.**
 
-| Slice touches | Convention | Test types |
-|---|---|---|
-| `server/` or `server/ee/` | `server/docs/testing.md` | `unit` (branching a service, guard or util owns), `guard-unit` (real CASL ability factory, no HTTP), `e2e` (meaning only exists through HTTP → guard → DB → response) |
-| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix`. Widget work also goes through `app-builder-widget-tdd` | `frontend` |
-| Other frontend | the nearest existing specs' pattern | `frontend`, `browser` for flows |
-| Docs, config, CI only | none: no runtime behavior to test | — |
+| Slice touches                | Convention                                                                                                                                           | Test types                                                                                                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server/` or `server/ee/`    | `server/docs/testing.md`                                                                                                                             | `unit` (branching a service, guard or util owns), `guard-unit` (real CASL ability factory, no HTTP), `e2e` (meaning only exists through HTTP → guard → DB → response) |
+| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix`. Widget work also goes through `app-builder-widget-tdd` | `frontend`                                                                                                                                                            |
+| Other frontend               | the nearest existing specs' pattern                                                                                                                  | `frontend`, `browser` for flows                                                                                                                                       |
+| Docs, config, CI only        | none: no runtime behavior to test                                                                                                                    | —                                                                                                                                                                     |
 
 For backend slices, choose each criterion's `Verify:` type with the testing.md decision rule. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
 - **Axes:** edition, plan, role/permission, module gate, tenant scope, resource state.
