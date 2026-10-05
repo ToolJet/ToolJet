@@ -851,6 +851,21 @@ describe('Checkbox', () => {
       expect(rowEl(container).style.minHeight).not.toBe('');
     });
 
+    test('[Checkbox-HEIGHT-001] a label with no spaces still wraps instead of staying on one line', async () => {
+      // Break this catches: relying on white-space alone. It only breaks at spaces, so one long
+      // unbroken token never wraps and the widget has nothing to grow to.
+      const { container } = widget.render({
+        properties: {
+          label: binding('aslkjfalsjflajsldfkjaskjflasjlfjasljflaskjflkasjlfjaslfkjasljf'),
+          dynamicHeight: binding('{{true}}'),
+        },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+      expect(labelEl(container).parentElement).toHaveStyle({ overflowWrap: 'anywhere' });
+    });
+
     test('[Checkbox-HEIGHT-002] dynamic height stays inert on the editor canvas', async () => {
       // Break this catches: reflowing while the builder is sizing the box, which the platform reserves for view mode.
       const { container } = widget.render({

@@ -282,6 +282,8 @@ export const Checkbox = ({
                 color: textColor,
                 fontWeight: 400,
                 fontSize: '14px',
+                // white-space alone breaks at spaces only, so one long unbroken label never wraps.
+                ...(isDynamicHeightEnabled && { overflowWrap: 'anywhere' }),
               }}
               whiteSpace="normal"
               width={width - 20}

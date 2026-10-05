@@ -220,6 +220,12 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+// Components that turned dynamicHeight on by default AFTER shipping without it. An export that
+// predates the property has no key, so without this pin it would take the new default on import and
+// resize the app. Mirrors the matching backfill migration, which only reaches components already in
+// this database. A component born with the default on never needs listing here.
+const DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES = ['Checkbox'];
+
 const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
@@ -2889,7 +2895,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -2907,6 +2913,10 @@ function migrateProperties(
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES.includes(componentType) && properties.dynamicHeight === undefined) {
+    properties.dynamicHeight = { value: '{{false}}' };
   }
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
