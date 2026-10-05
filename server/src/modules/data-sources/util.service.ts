@@ -385,6 +385,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         // New path: save tokens directly to datasource_user_token_data
         let access_token: string | null = null;
         let refresh_token: string | null = null;
+        let moreDetails: Record<string, unknown> | null = null;
         // Single-auth rows are always stored under user_id IS NULL (see getUserTokenData) — must
         // stay null here too, or a propagated row lands under a real user_id and the single-auth
         // read path (which queries user_id IS NULL) never finds it on sibling branches.
@@ -397,7 +398,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           }
           access_token = tokenObj['access_token'] ?? null;
           refresh_token = tokenObj['refresh_token'] ?? null;
-          await this.upsertUserTokenData(dataSourceOptionId, tokenUserId, access_token, refresh_token, manager);
+          // Per-user connection details (e.g. salesforce's instance_url) differ between users, so they
+          // live on the user's token row rather than in the shared options
+          moreDetails = this.extractTokenMoreDetails(tokenObj);
+          await this.upsertUserTokenData(
+            dataSourceOptionId,
+            tokenUserId,
+            access_token,
+            refresh_token,
+            manager,
+            moreDetails
+          );
         } else {
           // Some plugins (e.g. salesforce) return extra fields alongside access_token/refresh_token
           // (e.g. instance_url) that the plugin's run()/testConnection() also needs. Those aren't
@@ -423,7 +434,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             tokenUserId,
             access_token,
             refresh_token,
-            manager
+            manager,
+            moreDetails
           );
         }
 
@@ -1260,6 +1272,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     let accessToken: string | null = null;
     let refreshToken: string | null = null;
+    let moreDetails: Record<string, unknown> | null = null;
 
     if (
       [
@@ -1300,6 +1313,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const tokenObj = newTokenData as Record<string, any>;
         accessToken = tokenObj['access_token'] ?? null;
         refreshToken = tokenObj['refresh_token'] ?? null;
+        moreDetails = this.extractTokenMoreDetails(tokenObj);
       } else {
         // newTokenData is an array of [{key, value, encrypted}]
         const tokenArr = newTokenData as Array<Record<string, any>>;
@@ -1323,7 +1337,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const tokenUserId = isMultiAuthEnabled ? userId : null;
       const dso = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, environmentId);
-      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager, moreDetails);
 
       // Propagate token to all branches since tokens are branch-invariant
       await this.propagateTokenToAllBranches(
@@ -1332,7 +1346,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         tokenUserId,
         accessToken,
         refreshToken,
-        manager
+        manager,
+        moreDetails
       );
     });
   }
@@ -1638,7 +1653,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const legacyTokenData = parsedOptions['tokenData'];
         const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id ?? null);
         if (tokenRow) {
-          parsedOptions['tokenData'] = [{ user_id: user?.id, ...tokenRow }];
+          const { more_details, ...tokens } = tokenRow;
+          parsedOptions['tokenData'] = [{ user_id: user?.id, ...more_details, ...tokens }];
         } else if (Array.isArray(legacyTokenData)) {
           const legacyEntry = legacyTokenData.find((entry) => entry?.user_id === user?.id);
           parsedOptions['tokenData'] = legacyEntry ? [legacyEntry] : [];
@@ -1680,10 +1696,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const tokenUserId = isMultiAuthEnabled ? userId : null;
     const accessToken = accessTokenDetails['access_token'] ?? null;
     const refreshToken = accessTokenDetails['refresh_token'] ?? null;
+    const moreDetails = isMultiAuthEnabled ? this.extractTokenMoreDetails(accessTokenDetails) : null;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dso = await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, environmentId);
-      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager);
+      await this.upsertUserTokenData(dso.id, tokenUserId, accessToken, refreshToken, manager, moreDetails);
 
       // Propagate OAuth token to ALL branches (tokens are branch-invariant)
       await this.propagateTokenToAllBranches(
@@ -1692,7 +1709,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         tokenUserId,
         accessToken,
         refreshToken,
-        manager
+        manager,
+        moreDetails
       );
     });
   }
@@ -1707,7 +1725,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId: string | null,
     accessToken: string | null,
     refreshToken: string | null,
-    manager: EntityManager
+    manager: EntityManager,
+    moreDetails: Record<string, unknown> | null = null
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Find all branch versions for this DS
@@ -1720,10 +1739,19 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           where: { dataSourceVersionId: dsv.id, environmentId },
         });
         if (dsvo) {
-          await this.upsertUserTokenData(dsvo.id, userId, accessToken, refreshToken, manager);
+          await this.upsertUserTokenData(dsvo.id, userId, accessToken, refreshToken, manager, moreDetails);
         }
       }
     }, manager);
+  }
+
+  protected extractTokenMoreDetails(tokenDetails: object): Record<string, unknown> | null {
+    const moreDetails = Object.fromEntries(
+      Object.entries(tokenDetails ?? {}).filter(
+        ([key, value]) => !['user_id', 'access_token', 'refresh_token'].includes(key) && value != null && value !== ''
+      )
+    );
+    return Object.keys(moreDetails).length ? moreDetails : null;
   }
 
   protected async getUserTokenData(
@@ -1733,11 +1761,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   ): Promise<{
     access_token: string | null;
     refresh_token: string | null;
+    more_details: Record<string, unknown>;
   } | null> {
     return await dbTransactionWrap(async (mgr: EntityManager) => {
       const qb = mgr
         .createQueryBuilder(DatasourceUserTokenData, 'dst')
-        .select(['dst.authToken', 'dst.refreshToken'])
+        .select(['dst.authToken', 'dst.refreshToken', 'dst.moreDetails'])
         .where('dst.data_source_version_option_id = :dataSourceVersionOptionId', { dataSourceVersionOptionId });
 
       if (userId !== null) {
@@ -1756,7 +1785,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
         : null;
 
-      return { access_token, refresh_token };
+      return { access_token, refresh_token, more_details: row.moreDetails ?? {} };
     }, manager);
   }
 
@@ -1771,9 +1800,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     userId: string | null,
     accessToken: string | null,
     refreshToken: string | null,
-    manager: EntityManager
+    manager: EntityManager,
+    moreDetails: Record<string, unknown> | null = null
   ): Promise<void> {
-    console.log('Called');
     const encryptedAccessToken = accessToken
       ? await this.encryptionService.encryptColumnValue('credentials', 'value', accessToken)
       : null;
@@ -1789,6 +1818,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (refreshToken !== null) {
       setClauses.push('refresh_token = EXCLUDED.refresh_token');
     }
+    // Merged, so a refresh that returns only some details doesn't drop the rest
+    if (moreDetails) {
+      setClauses.push('more_details = datasource_user_token_data.more_details || EXCLUDED.more_details');
+    }
+    const serializedMoreDetails = JSON.stringify(moreDetails ?? {});
     const setClause = setClauses.join(', ');
 
     if (userId !== null) {
@@ -1798,12 +1832,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         INSERT INTO datasource_user_token_data
           (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
         VALUES
-          (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
+          (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, $5::jsonb, now(), now())
         ON CONFLICT (data_source_version_option_id, user_id) WHERE user_id IS NOT NULL
         DO UPDATE SET
           ${setClause}
         `,
-        [userId, dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+        [userId, dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken, serializedMoreDetails]
       );
     } else {
       // Single-auth: conflict target is the partial unique index on (option_id) WHERE user_id IS NULL
@@ -1812,12 +1846,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         INSERT INTO datasource_user_token_data
           (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
         VALUES
-          (gen_random_uuid(), NULL, $1::uuid, $2, $3, '{}', now(), now())
+          (gen_random_uuid(), NULL, $1::uuid, $2, $3, $4::jsonb, now(), now())
         ON CONFLICT (data_source_version_option_id) WHERE user_id IS NULL
         DO UPDATE SET
           ${setClause}
         `,
-        [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
+        [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken, serializedMoreDetails]
       );
     }
   }
@@ -1841,7 +1875,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
         : null;
 
-      await this.upsertUserTokenData(targetDsvoId, row.userId ?? null, accessToken, refreshToken, manager);
+      await this.upsertUserTokenData(
+        targetDsvoId,
+        row.userId ?? null,
+        accessToken,
+        refreshToken,
+        manager,
+        row.moreDetails ?? null
+      );
     }
   }
 
