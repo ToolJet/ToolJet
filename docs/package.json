@@ -38,6 +38,12 @@
   },
   "name": "docs",
   "overrides": {
+    "@docusaurus/types": {
+      "joi": "17.13.8"
+    },
+    "@docusaurus/utils-validation": {
+      "joi": "17.13.8"
+    },
     "fast-uri": "3.1.7",
     "got": "^12.1.0",
     "js-yaml": "4.3.2",
