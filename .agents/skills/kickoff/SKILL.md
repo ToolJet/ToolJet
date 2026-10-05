@@ -86,12 +86,18 @@ Ask: "Plan approved. Grill it before filing?" If yes, invoke `grill-me` on the p
 ## 6. Implement
 
 Ask: "N AFK sub-issues are ready. Dispatch subagents?" The user picks all, some, or none. Then follow `references/afk-loop.md`.
-- HITL sub-issues are never dispatched. List them for a human.
+- HITL sub-issues are never dispatched. List them for a human. When the human is done, ship the slice with `commit` and `create-pr`, using the same stack, base and template as an AFK slice.
 - App Builder slices go through `app-builder-feature` or `app-builder-bug-fix`, whether a human or an agent picks them up.
 
 ## Rules
 
 - Gates are never implied. Filing, pushing, opening PRs, and dispatching each need an explicit yes.
+- **Use the repo skills for every git and GitHub write:**
+  - commits go through `commit`;
+  - every PR open or update goes through `create-pr`, never a raw `gh pr create` or `gh pr edit`. In a stack, pass the branch below as the base; otherwise pass the trunk;
+  - issues go through `create-issue`.
+
+  The one exception is `gh stack submit`, which opens stacked drafts. Run `create-pr` immediately after it.
 - Issues are append-only. Kickoff comments on issues and never edits a body it didn't write.
 - If the user stops after any step, the state is still valid: the plan file, the issues and the branches stand alone.
 - Nothing about a private (EE) change goes into public PR bodies or the public tracker. See the public/private boundary in `AGENTS.md`.

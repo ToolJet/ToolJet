@@ -114,7 +114,7 @@ The verifier's prompt:
 
 ## Ship (user approval required)
 
-1. Follow `stacks.md`: submit, fill the PR bodies, and watch CI with `gh pr checks <pr> --watch`.
+1. Follow `stacks.md`: `gh stack submit`, then `create-pr` for each PR's title and body, then watch CI with `gh pr checks <pr> --watch`.
 2. A red check goes back to a builder on that branch, within the budget. Then follow `stacks.md` → *Update after a change*.
 3. Mark a PR ready (`gh pr ready <pr>`) only when CI is green.
 

@@ -32,6 +32,8 @@ gh stack submit --auto
 
 - `--auto` opens draft PRs chained bottom to top, titled from the commits. Immediately run `create-pr` to set public-safe titles and the template bodies, referencing issues as `ToolJet/tj-ee#N`.
 - If `gh stack submit` fails because stacked PRs aren't available on a repo, use `create-pr` with each PR's base set to the branch below it, and tell the user.
+- **A single independent slice** (no stack): ship it with `create-pr` alone, based on the trunk.
+- **Never run raw `gh pr create` or `gh pr edit`.** `create-pr` finds the PR by its head branch, then pushes, links the EE PRs and applies the template.
 
 ## Update after a change
 
