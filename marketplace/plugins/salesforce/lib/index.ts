@@ -22,8 +22,10 @@ const CODE_VERIFIER_PATTERN = /^[A-Za-z0-9\-._~]{43,128}$/;
 const DEFAULT_RESOURCE_NAME = 'Account';
 // Standard, custom (Xyz__c) and namespaced (ns__Obj__c) object API names
 const RESOURCE_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
-// Salesforce returns a relative url such as /services/data/v50.0/query/01gxx0000000001AAA-2000
+// Path of a next records url, e.g. /services/data/v50.0/query/01gxx0000000001AAA-2000
 const NEXT_RECORDS_URL_PATTERN = /^\/services\/data\/v\d+\.\d+\/query\/[A-Za-z0-9_-]+$/;
+const NEXT_RECORDS_URL_HELP =
+  'Next records URL must be the nextRecordsUrl returned by the previous SOQL query, for example /services/data/v50.0/query/<locator> (the full https://<instance>/services/data/... URL also works).';
 
 const LOGIN_URL_PRODUCTION = 'https://login.salesforce.com';
 const LOGIN_URL_SANDBOX = 'https://test.salesforce.com';
@@ -71,14 +73,24 @@ export default class Salesforce implements QueryService {
     }
     const nextRecordsUrl = value.trim();
     if (!nextRecordsUrl) return '';
-    if (!NEXT_RECORDS_URL_PATTERN.test(nextRecordsUrl)) {
-      throw new QueryError(
-        'Invalid next records URL',
-        'Next records URL must look like /services/data/v50.0/query/<locator>. Use the nextRecordsUrl returned by the previous SOQL query.',
-        {}
-      );
+
+    // The nextRecordsUrl returned by a query is absolute (instance url + path, as built by jsforce), while Salesforce
+    // itself returns a relative path. Accept both and only keep the path: jsforce resolves the locator against the
+    // authenticated instance url, so the host in the value is never used.
+    let path = nextRecordsUrl;
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(nextRecordsUrl)) {
+      try {
+        const url = new URL(nextRecordsUrl);
+        if (url.protocol !== 'https:' || url.username || url.password) throw new Error('Unsupported url');
+        path = url.pathname;
+      } catch (error) {
+        throw new QueryError('Invalid next records URL', NEXT_RECORDS_URL_HELP, {});
+      }
     }
-    return nextRecordsUrl;
+    if (!NEXT_RECORDS_URL_PATTERN.test(path)) {
+      throw new QueryError('Invalid next records URL', NEXT_RECORDS_URL_HELP, {});
+    }
+    return path;
   }
 
   // Missing / empty resource name falls back to Account (the only object supported before).
