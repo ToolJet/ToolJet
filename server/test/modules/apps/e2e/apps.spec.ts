@@ -35,6 +35,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { ComponentsService as ComponentsServiceBase } from '@modules/apps/services/component.service';
 import { ComponentsService as EEComponentsService } from '@ee/apps/services/component.service';
+import { VersionService as EEVersionService } from '@ee/versions/service';
 
 /** @group platform */
 describe('AppsController', () => {
@@ -1367,6 +1368,19 @@ describe('AppsController', () => {
       });
 
       describe('POST /api/apps/:id/versions | Create version', () => {
+        // Run the create inline so the new version is readable right after the request;
+        // the queued response contract is covered in versions/e2e/create-version-response.spec.ts
+        beforeEach(() => {
+          const versionService = EEVersionService.prototype as unknown as {
+            shouldRunInBackground: () => Promise<boolean>;
+          };
+          jest.spyOn(versionService, 'shouldRunInBackground').mockResolvedValue(false);
+        });
+
+        afterEach(() => {
+          jest.restoreAllMocks();
+        });
+
         describe('authorization', () => {
           it('should not be able to fetch app versions if user of another organization', async () => {
             const adminUserData = await createUser(app, {

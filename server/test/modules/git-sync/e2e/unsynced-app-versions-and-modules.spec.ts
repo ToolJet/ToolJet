@@ -22,6 +22,7 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
+import { VersionService as EEVersionService } from '@ee/versions/service';
 
 /**
  * Behaviour of an UNSYNCED app on a git-sync-enabled workspace — an app that existed
@@ -47,9 +48,13 @@ describe('Unsynced app on a git-sync-enabled workspace', () => {
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     importExportService = nestApp.get<AppImportExportService>(AppImportExportService);
+    // Run version creates inline so the drafts are readable right after each request
+    const versionService = EEVersionService.prototype as unknown as { shouldRunInBackground: () => Promise<boolean> };
+    jest.spyOn(versionService, 'shouldRunInBackground').mockResolvedValue(false);
   });
 
   afterAll(async () => {
+    jest.restoreAllMocks();
     await closeTestApp(nestApp);
   }, 60_000);
 

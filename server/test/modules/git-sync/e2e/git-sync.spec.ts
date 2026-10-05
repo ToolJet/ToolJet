@@ -18,6 +18,7 @@ import * as request from 'supertest';
 import { randomUUID as genRepoUUID } from 'crypto';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.service';
+import { VersionService as EEVersionService } from '@ee/versions/service';
 
 // Real configuration pointing at a local Gitea / GitHub Enterprise instance.
 // Tests in the save+retrieve block and the App git life cycle hit this
@@ -115,6 +116,9 @@ describe('GitSyncController', () => {
       jest
         .spyOn(GitSyncQueueService.prototype, 'enqueuePushAppDeletion')
         .mockImplementation((p) => branchSvc.executePushAppDeletion(p));
+      // Version create too: the inline path returns the created version in the response.
+      const versionService = EEVersionService.prototype as unknown as { shouldRunInBackground: () => Promise<boolean> };
+      jest.spyOn(versionService, 'shouldRunInBackground').mockResolvedValue(false);
     });
 
     // Create returns an enqueue ack, not the branch row — resolve ids from the list endpoint.
