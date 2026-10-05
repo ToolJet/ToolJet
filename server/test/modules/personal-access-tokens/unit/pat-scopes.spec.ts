@@ -384,11 +384,16 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     expect(() => run(MODULES.GLOBAL_DATA_SOURCE, DATA_SOURCE_FEATURE.GET)).toThrow(ForbiddenException);
   });
 
-  it('reaches only the query features a page load needs', () => {
-    for (const feature of [DATA_QUERY_FEATURE.GET, DATA_QUERY_FEATURE.RUN_EDITOR, DATA_QUERY_FEATURE.RUN_VIEWER]) {
-      expect(run(MODULES.DATA_QUERY, feature)).toBe('HANDLED');
-    }
-    for (const feature of [DATA_QUERY_FEATURE.PREVIEW, DATA_QUERY_FEATURE.LIST_TABLES]) {
+  it('can list queries but cannot run one', () => {
+    /* The run routes are exempt from the read-only rule and execute whatever the query contains, so
+       withholding them is what stops merely opening an app from changing customer data. */
+    expect(run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.GET)).toBe('HANDLED');
+    for (const feature of [
+      DATA_QUERY_FEATURE.RUN_EDITOR,
+      DATA_QUERY_FEATURE.RUN_VIEWER,
+      DATA_QUERY_FEATURE.PREVIEW,
+      DATA_QUERY_FEATURE.LIST_TABLES,
+    ]) {
       expect(() => run(MODULES.DATA_QUERY, feature)).toThrow(ForbiddenException);
     }
   });

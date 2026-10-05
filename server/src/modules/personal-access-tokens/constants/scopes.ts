@@ -201,13 +201,17 @@ export const PAT_APP_VIEWER_FEATURES: Partial<Record<MODULES, ReadonlySet<string
     DATA_SOURCE_FEATURE.GET_BY_ENVIRONMENT,
   ]),
 
-  /* The query list and the two run routes a page load needs. NOT a safety boundary: both run
-     routes are exempt from the read-only rule and execute whatever the query contains. */
-  [MODULES.DATA_QUERY]: new Set<string>([
-    DATA_QUERY_FEATURE.GET,
-    DATA_QUERY_FEATURE.RUN_EDITOR,
-    DATA_QUERY_FEATURE.RUN_VIEWER,
-  ]),
+  /* The query LIST, and nothing that runs one.
+
+     The run routes are exempt from the read-only rule and execute whatever the query contains,
+     writes included — so a session that can reach them makes merely opening an app capable of
+     changing the customer's data. Withholding them is the boundary itself: the route refuses,
+     rather than the client choosing not to ask.
+
+     The cost is that the app renders without data, so an empty table says nothing about the query
+     behind it. Everything the gate can fail a build on — a crashed component, a collapsed box, a
+     layout off the canvas, a binding painted raw — is geometry and does not need data. */
+  [MODULES.DATA_QUERY]: new Set<string>([DATA_QUERY_FEATURE.GET]),
 
   // The reads the editor boot makes; writes here are non-GET and already barred.
   [MODULES.APP_ENVIRONMENTS]: new Set<string>([
