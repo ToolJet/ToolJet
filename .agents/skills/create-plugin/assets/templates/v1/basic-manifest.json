@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "api",
+  "source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "url": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "url": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "url": {
+      "label": "Base URL",
+      "key": "url",
+      "type": "text",
+      "description": "Enter the base URL"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    }
+  },
+  "required": [
+    "url",
+    "username",
+    "password"
+  ]
+}
