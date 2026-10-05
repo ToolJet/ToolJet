@@ -284,7 +284,8 @@ export const DaterangePicker = ({
     endDate: endDate,
     selectsRange: true,
     monthsShown: 2,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthDropdown: datepickerMode === 'date',
     showYearDropdown: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',
