@@ -112,10 +112,12 @@ Analyze the commits and diff to determine:
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only include evidence that was actually produced: never add an empty or placeholder section
 
-**Merge danger:** always state it, as the last part of Changes: a `### Merge danger` subsection holding a GitHub alert. Its colour tells the reviewer how hard to look.
-- **Two-way door** (cheap to revert): a green `[!TIP]` alert, one line: `**Two-way door** · blast radius: <what it can affect>`.
-- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): a red `[!CAUTION]` alert with three lines: what can't be undone, the rollback plan, and the blast radius.
-- **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+**Merge danger:** always state it, as a `### Merge danger` subsection at the end of Changes. It tells the reviewer how hard to look.
+- **Door:**
+  - `🟢 two-way` when the PR is cheap to revert;
+  - `🔴 one-way: <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
+- **Rollback:** one-way doors only. The plan for undoing it.
+- **Blast radius:** what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
 **Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
 - **Issue:**
@@ -164,15 +166,9 @@ Analyze the commits and diff to determine:
 - <what changed, past tense, no prefixes, max 5 bullets>
 
 ### Merge danger
-> [!TIP]
-> **Two-way door** · blast radius: <scope>
-
-<!-- or, for a one-way door:
-> [!CAUTION]
-> **One-way door:** <what can't be undone>
-> **Rollback:** <plan>
-> **Blast radius:** <scope>
--->
+- **Door:** <🟢 two-way | 🔴 one-way: what can't be undone>
+- **Rollback:** <one-way only: plan>
+- **Blast radius:** <scope>
 
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
