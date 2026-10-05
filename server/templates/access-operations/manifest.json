@@ -1,0 +1,22 @@
+{
+  "name": "Access operations",
+  "description": "Oversee access approvals, provisioning and the active access register against per-application policies.",
+  "widgets": [
+    "Table",
+    "Chart",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "access-operations",
+  "category": "it-assets-and-access"
+}
