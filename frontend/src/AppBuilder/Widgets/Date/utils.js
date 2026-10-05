@@ -57,6 +57,15 @@ const TIMEZONE_IDS = new Set(TIMEZONE_OPTIONS.map((option) => option.value));
 export const resolveTimezone = (timezone) =>
   TIMEZONE_LABEL_TO_ID[timezone] ?? (TIMEZONE_IDS.has(timezone) ? timezone : undefined);
 
+// DaterangePicker onSelect gate (user-approved 2026-10-05): react-datepicker's
+// range mode reports every calendar click — `[start, null]` after the first,
+// `[start, end]` after the second — which made onSelect fire twice per range.
+// onSelect fires only on the interaction that COMPLETES the range; a
+// start-only click and the clear button (zero dates) are silent, matching the
+// sibling date widgets' silent clear.
+export const isRangeSelectionComplete = (startDate, endDate) =>
+  startDate != null && endDate != null && moment(startDate).isValid() && moment(endDate).isValid();
+
 // This function is used to get the unix time from a parsed date and timezone
 // It takes the date converts into a moment object which will now have local timezone
 // The date should be date = utc + selected timezone offset

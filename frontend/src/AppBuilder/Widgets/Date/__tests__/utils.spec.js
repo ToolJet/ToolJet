@@ -38,6 +38,7 @@ import {
   resolveTimezone,
   getUnixTimeFromParsedDate,
   convertToIsoWithTimezoneOffset,
+  isRangeSelectionComplete,
 } from '../utils';
 
 const FORMAT = 'DD-MM-YYYY';
@@ -517,5 +518,43 @@ describe('store-timezone parity math (setStoreTimezone CSA)', () => {
     expect(convertToIsoWithTimezoneOffset(inColombo, 'Asia/Colombo')).toBe('2022-01-01T12:00:00.000+05:30');
     const inGmtMinus12 = getUnixTimeFromParsedDate(DEFAULT, 'Etc/GMT-12', DISPLAY_FORMAT);
     expect(convertToIsoWithTimezoneOffset(inGmtMinus12, 'Etc/GMT-12')).toBe('2022-01-01T12:00:00.000+12:00');
+  });
+});
+
+/**
+ * DaterangePicker onSelect firing gate (customer bug, 2026-10-05, user-approved
+ * option A): react-datepicker's range mode calls the widget's onChange on BOTH
+ * calendar clicks — `[start, null]` after the first, `[start, end]` after the
+ * second — so onSelect fired twice per range selection. The approved contract:
+ * onSelect fires exactly once, on the interaction that COMPLETES the range.
+ * A start-only click is silent, and the clear button is silent (zero dates is
+ * not a completed range — matching the sibling date widgets' silent clear).
+ *
+ * `isRangeSelectionComplete` is the gate the widget's onChange now consults
+ * before firing.
+ */
+describe('isRangeSelectionComplete (DaterangePicker onSelect gate)', () => {
+  const start = moment('01-04-2022', FORMAT).toDate();
+  const end = moment('10-04-2022', FORMAT).toDate();
+
+  test('both dates present → complete, onSelect may fire', () => {
+    expect(isRangeSelectionComplete(start, end)).toBe(true);
+  });
+
+  test('first calendar click (start only) is incomplete → silent', () => {
+    expect(isRangeSelectionComplete(start, null)).toBe(false);
+  });
+
+  test('end-only (backwards selection in progress) is incomplete → silent', () => {
+    expect(isRangeSelectionComplete(null, end)).toBe(false);
+  });
+
+  test('cleared range (both null) is incomplete → clear button is silent', () => {
+    expect(isRangeSelectionComplete(null, null)).toBe(false);
+  });
+
+  test('an invalid Date object does not count as a completed end', () => {
+    expect(isRangeSelectionComplete(start, new Date('nonsense'))).toBe(false);
+    expect(isRangeSelectionComplete(new Date('nonsense'), end)).toBe(false);
   });
 });

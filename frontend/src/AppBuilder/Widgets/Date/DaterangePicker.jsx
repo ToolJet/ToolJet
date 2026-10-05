@@ -3,7 +3,14 @@ import { useDateInput, useDatetimeInput } from './hooks';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
-import { isDateRangeValid, isDateValid, formatExposedDate, formatExposedDateRange, isUsableDateFormat } from './utils';
+import {
+  isDateRangeValid,
+  isDateValid,
+  formatExposedDate,
+  formatExposedDateRange,
+  isUsableDateFormat,
+  isRangeSelectionComplete,
+} from './utils';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
@@ -124,6 +131,10 @@ export const DaterangePicker = ({
       selectedDateRange: formatExposedDateRange(start, end, format, legacyInvalidDates),
     });
     if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
+    // A range selection is two calendar clicks and react-datepicker reports
+    // both (`[start, null]`, then `[start, end]`). onSelect fires once — on
+    // the click that completes the range — not per click.
+    if (!isRangeSelectionComplete(start, end)) return;
     fireEvent('onSelect');
   };
 
@@ -226,7 +237,8 @@ export const DaterangePicker = ({
       endDateInUnix: null,
       selectedDateRange: null,
     });
-    fireEvent('onSelect');
+    // Silent like the sibling date widgets' clear buttons: zero dates is not
+    // a completed range, so no onSelect.
   };
 
   useEffect(() => {
