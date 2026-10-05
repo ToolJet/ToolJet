@@ -7,7 +7,7 @@ import { processEnv, readEnv, withoutDotEnv, writeEnv } from '../env.ts';
 import { freePort } from '../net.ts';
 import { dbNames, localModule, nvmrc, type Repo, repoAt, SUBMODULES, worktrees } from '../repo.ts';
 import { capture, git, run } from '../sh.ts';
-import { loadState, logFile, saveState } from '../state.ts';
+import { loadState, logFile, saveState, type State } from '../state.ts';
 import { emit, kv, since, TjError, ui } from '../ui.ts';
 
 export type SetupOpts = { frontend: boolean; app: boolean; force: boolean };
@@ -38,13 +38,12 @@ async function syncSubmodules(repo: Repo) {
 
 const lockHash = (dir: string) => createHash('sha1').update(readFileSync(join(dir, 'package-lock.json'))).digest('hex');
 
-async function installDeps(repo: Repo, dirs: string[], force: boolean) {
-  const state = loadState(repo.root);
+async function installDeps(repo: Repo, state: State, dirs: string[], force: boolean) {
   state.deps ??= {};
   const deps = state.deps;
   await Promise.all(
     dirs.map(async (d) => {
-      const dir = join(repo.root, d);
+      const dir = d === 'root' ? repo.root : join(repo.root, d);
       const hash = lockHash(dir);
       if (!force && deps[d] === hash && existsSync(join(dir, 'node_modules'))) return ui.info(`${d}: deps up to date`);
       const t = Date.now();
@@ -62,7 +61,6 @@ async function installDeps(repo: Repo, dirs: string[], force: boolean) {
     deps['plugins:build'] = pluginsHash;
     ui.ok(`plugins: built ${since(t)}`);
   } else ui.info('plugins: build up to date');
-  saveState(repo.root, state);
 }
 
 function envSource(repo: Repo, prefer: '.env.test' | '.env') {
@@ -110,7 +108,8 @@ export async function setup(repo: Repo, o: SetupOpts) {
     ui.ok(`.env.test → ${names.test}`);
   }
 
-  await installDeps(repo, ['server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])], o.force);
+  // root: husky, lint-staged and typescript, so pre-commit hooks work in the worktree
+  await installDeps(repo, state, ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])], o.force);
   if (existsSync(envTest)) await dbSetup(repo, 'test');
   else ui.warn('no .env.test — skipping test DB');
 

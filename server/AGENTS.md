@@ -68,7 +68,7 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Schema migrations** (`migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
 - **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
 - Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
 - **Runner / atomicity:** `db:migrate` (and `:prod`) run through `src/migration-helpers/run-all-migrations.ts`, which normally executes all schema migrations then all data migrations in **one transaction** via two `MigrationExecutor` passes sharing a single query runner. A failure in either phase rolls back both — schema no longer commits ahead of a failing data migration. (Exception: enum additions on a fresh install force a two-transaction fallback — see the enum bullet below.) Don't merge the two migration globs into one datasource: TypeORM sorts by class-name timestamp and schema/data timestamps interleave, which would break the all-schema-before-all-data ordering. Keep long-running backfills mindful of `statement_timeout` — the schema locks are held for the whole combined transaction in atomic mode.
@@ -122,6 +122,6 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 
 ## Module context files
 
-Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, versions, workflows.
+Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, personal-access-tokens, versions, workflows.
 
 **Maintenance rule:** meaningfully changing a module (new service, changed invariant, renamed concept, discovered gotcha) means updating its `AGENTS.md` in the same PR. No file yet? Create one from `docs/agents-module-template.md`. Keep them ≤80 lines — pointers and invariants, not prose dumps.

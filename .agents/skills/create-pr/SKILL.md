@@ -28,20 +28,17 @@ Requires the `gh` CLI, authenticated against both ToolJet and the submodule repo
 
 ### Step 1: Branch and base detection
 
-Run these commands:
+Pick the base from what's known, in this order (the user input was: `$ARGUMENTS`):
+1. **The user input**, if given.
+2. **An existing PR for this branch:** keep its base (`gh pr view --json baseRefName`).
+3. **A stack:** the branch below it (`gh stack view`), or a base the user named earlier in the conversation.
+4. **Otherwise the remote's default branch (`main`).** Ask the remote, because a local `origin/HEAD` goes stale:
+
 ```bash
-git rev-parse --abbrev-ref HEAD
-```
-```bash
-git ls-remote --heads origin lts-3.16 develop main 2>/dev/null
+git ls-remote --symref origin HEAD | awk '/^ref:/ {sub("refs/heads/","",$2); print $2}'
 ```
 
-Base branch detection (if user did not provide one — the user input was: `$ARGUMENTS`):
-1. If `origin/lts-3.16` exists, use `lts-3.16`
-2. Else if `origin/develop` exists, use `develop`
-3. Else use `main`
-
-This ordering is repo policy: ToolJet's default base is `lts-3.16`, not `develop`.
+If these disagree, or the work clearly belongs on a release line (e.g. an `lts-*` backport), ask the user instead of guessing.
 
 ### Step 2: Gather commits and diff
 
@@ -111,6 +108,8 @@ Analyze the commits and diff to determine:
 - **Break up anything verbose.** A paragraph running past 2-3 lines, or a bullet carrying more than one idea, gets split into separate lines or sub-bullets — one idea per line. Reviewers skim; a wall of text hides the change instead of explaining it. If a section still reads long after splitting, it is saying too much — cut it, don't reformat it
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only include evidence that was actually produced: never add an empty or placeholder section
+- Separate block elements (paragraphs, labelled lines, lists, code) with a blank line. GitHub joins consecutive lines into one paragraph, so two labelled lines with no blank line between them render as one.
+- Don't use GitHub alert boxes (`> [!TIP]` and similar) for routine notes. Their built-in label ("Tip", "Note") reads as noise under a section heading.
 
 **Merge danger:** always state it, as a `### Merge danger` subsection at the end of Changes. It tells the reviewer how hard to look.
 - **Reversible:**

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { Command } from '../args.ts';
 import { readEnv } from '../env.ts';
 import { reachable } from '../net.ts';
-import { nvmrc, repoAt, SUBMODULES } from '../repo.ts';
+import { defaultBase, nvmrc, repoAt, SUBMODULES } from '../repo.ts';
 import { ports } from '../services.ts';
 import { capture } from '../sh.ts';
 import { loadState } from '../state.ts';
@@ -73,6 +73,15 @@ export const doctor: Command = {
     add({ name: 'gh auth', ok: gh.code === 0, level: 'warn', detail: gh.code === 0 ? 'logged in' : 'not logged in', hint: 'gh auth login' });
     const stack = await capture('gh', ['stack', '--help'], { cwd: repo.root });
     add({ name: 'gh stack', ok: stack.code === 0, level: 'warn', detail: stack.code === 0 ? 'installed' : 'missing', hint: 'gh extension install github/gh-stack' });
+    const localHead = (await capture('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: repo.root })).out;
+    const remoteHead = await defaultBase(repo.root);
+    add({
+      name: 'origin/HEAD',
+      ok: !localHead || localHead === remoteHead,
+      level: 'warn',
+      detail: localHead ? `${localHead} (remote default: ${remoteHead})` : 'unset',
+      hint: 'git remote set-head origin --auto  (a stale value makes gh stack retarget PRs)',
+    });
     const state = loadState(repo.root);
     if (state.ports) add({ name: 'ports', ok: true, level: 'warn', detail: `server :${state.ports.server}, frontend :${state.ports.frontend}` });
 
