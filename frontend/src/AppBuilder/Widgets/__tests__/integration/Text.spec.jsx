@@ -236,6 +236,22 @@ describe('Text: component-specific actions', () => {
     await waitFor(() => expect(root()).toHaveStyle({ display: 'none' }));
   });
 
+  test('[Text-CSA-008] a number set by setText renders in markdown instead of breaking the widget', async () => {
+    // Break this catches: handing the markdown renderer a value it rejects.
+    // The property path coerces through `text`'s string schema, but a CSA
+    // bypasses that, so the raw resolved value reaches the renderer — which
+    // accepts only a string. A builder wiring a button to
+    // `setText({{123}})` on a Markdown Text loses the whole widget to its
+    // error boundary in dev, and silently renders nothing in a production
+    // build, while the same action works in Plain text and HTML.
+    widget.render({ properties: { textFormat: binding('markdown'), text: binding('before') } });
+    expect(await screen.findByTestId('react-markdown')).toHaveTextContent('before');
+
+    await widget.act('setText', 123);
+
+    expect(await screen.findByTestId('react-markdown')).toHaveTextContent('123');
+  });
+
   test('[Text-CSA-003] clear empties the rendered text and exposes an empty string', async () => {
     // Break this catches: a clear that leaves `text` undefined instead of ''
     // turns `{{components.text1.text.length}}` into a runtime error in every
