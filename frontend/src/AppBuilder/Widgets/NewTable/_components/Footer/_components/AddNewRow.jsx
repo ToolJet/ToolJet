@@ -33,14 +33,42 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
+  const getDefaultCellValue = useCallback(
+    (meta) => {
+      const defaultOptionsList = meta?.defaultOptionsList || [];
+      switch (meta?.columnType) {
+        case 'rating':
+          return getResolvedValue(meta.defaultRating) ?? 0;
+        case 'boolean':
+          return false;
+        case 'select':
+          return defaultOptionsList.length ? defaultOptionsList.slice(-1)[0]?.value : '';
+        case 'newMultiSelect':
+          return defaultOptionsList.length ? defaultOptionsList : '';
+        case 'tagsV2': {
+          // Dynamic options can't be trusted to stay valid, so tagsV2 drops its default list in that
+          // case too (mirrors TagsV2ColumnAdapter's own defaultOptionsList gating).
+          const useDynamicOptions = getResolvedValue(meta.useDynamicOptions);
+          const options = useDynamicOptions ? [] : defaultOptionsList;
+          if (!options.length) return '';
+          const allowMultipleSelection = getResolvedValue(meta.allowMultipleSelection) ?? false;
+          return allowMultipleSelection ? options : options.slice(-1)[0]?.value;
+        }
+        default:
+          return '';
+      }
+    },
+    [getResolvedValue]
+  );
+
   const newEmptyRow = useMemo(() => {
     return allColumns.reduce((accumulator, column) => {
       if (column.columnDef?.meta?.skipAddNewRow) return accumulator;
       const key = column.columnDef.accessorKey;
-      accumulator[key] = '';
+      accumulator[key] = getDefaultCellValue(column.columnDef?.meta);
       return accumulator;
     }, {});
-  }, [allColumns]);
+  }, [allColumns, getDefaultCellValue]);
 
   useEffect(() => {
     clearAddNewRowDetails(id);
