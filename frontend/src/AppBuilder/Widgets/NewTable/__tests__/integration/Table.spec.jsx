@@ -2814,6 +2814,30 @@ describe('Table: per-column-type rendering', () => {
     expect(cell('avatar', 0).style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 
+  test('[Table-BUG-028] an image column resolves an fx-bound borderRadius, not just a static literal', async () => {
+    widget.render({
+      properties: {
+        data: binding(`{{${JSON.stringify([{ id: 1, avatar: 'https://example.com/a.png' }])}}}`),
+        columns: {
+          value: [
+            {
+              name: 'avatar',
+              key: 'avatar',
+              id: 'col-avatar',
+              columnType: 'image',
+              columnSize: 80,
+              objectFit: 'cover',
+              borderRadius: '{{20}}',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('avatar', 0)?.querySelector('img')).toBeInTheDocument());
+    const img = cell('avatar', 0).querySelector('img');
+    expect(img.style.borderRadius).toBe('20px');
+  });
+
   test('[Table-COLTYPE-LINK-001] a link column renders displayText as a hyperlink to the bound URL, honoring linkTarget', async () => {
     widget.render({
       properties: {
