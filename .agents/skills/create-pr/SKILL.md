@@ -117,6 +117,7 @@ Analyze the commits and diff to determine:
   - `🔴 No, <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
 - **Rollback:** irreversible changes only. The plan for recovering.
 - **Impact:** what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+- **Not included:** optional. Deliberate omissions or surprising decisions, so they aren't buried in the Changes bullets.
 
 **Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
 - **Issue:**
@@ -132,7 +133,8 @@ Analyze the commits and diff to determine:
 **Conditional sections: include only when they apply.**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
   - Mermaid for anything with steps or order: interactions, flows, lifecycles and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
-  - an ASCII call tree, component tree or shallow file tree, only for a real hierarchy;
+  - an ASCII call tree, component tree or shallow file tree, only for a real hierarchy. Nodes are bare names, with a file path at most and no notes;
+  - a `diff` over the table, entity or type when the data shape changes;
   - a `diff` block over one of those shapes when the point is what changed in an existing structure;
   - pseudocode for business logic.
 
@@ -168,6 +170,7 @@ Analyze the commits and diff to determine:
 - **Reversible:** <🟢 Yes, a plain revert undoes it | 🔴 No, what can't be undone>
 - **Rollback:** <irreversible only: plan>
 - **Impact:** <scope>
+- **Not included:** <optional: deliberate omissions or surprising decisions>
 
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
@@ -186,7 +189,7 @@ Analyze the commits and diff to determine:
 ```
 Omit the Sources and Submodules blocks, or any bullet in them, when there's no content.
 
-The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` skill by Dex Horthy (both MIT).
+The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
