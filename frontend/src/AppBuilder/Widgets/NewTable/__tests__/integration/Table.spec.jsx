@@ -1813,6 +1813,115 @@ describe('Table: add row and refresh', () => {
     await waitFor(() => expect(store().getVariable('newRowsFired', MODULE_ID)).toBe(true));
   });
 
+  test("[Table-ADDROW-008] a new row is seeded with a rating column's configured defaultRating instead of an empty string", async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            { name: 'score', key: 'score', id: 'col-score', columnType: 'rating', columnSize: 120, defaultRating: 4 },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ score: 2 }])}}}`),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    await waitFor(() => expect(document.querySelector('[data-cy="score-column-0"]')).toBeInTheDocument());
+
+    expect(exposed('newRows')[0]).toMatchObject({ score: 4 });
+  });
+
+  test('[Table-ADDROW-009] a new row is seeded with a real boolean false for boolean columns instead of an empty string', async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [{ name: 'active', key: 'active', id: 'col-active', columnType: 'boolean', columnSize: 100 }],
+        },
+        data: binding(`{{${JSON.stringify([{ active: true }])}}}`),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    await waitFor(() => expect(document.querySelector('[data-cy="active-column-0"]')).toBeInTheDocument());
+
+    expect(exposed('newRows')[0].active).toBe(false);
+  });
+
+  test("[Table-ADDROW-010] a new row is seeded with a select column's configured default option instead of an empty string", async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'status',
+              key: 'status',
+              id: 'col-status',
+              columnType: 'select',
+              columnSize: 120,
+              options: [
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ],
+              defaultOptionsList: [{ label: 'Inactive', value: 'inactive' }],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ status: 'active' }])}}}`),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const statusAddCell = await waitFor(() => {
+      const el = document.querySelector('[data-cy="status-column-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    expect(exposed('newRows')[0].status).toBe('inactive');
+    expect(statusAddCell.textContent).toContain('Inactive');
+  });
+
+  test("[Table-ADDROW-011] a new row is seeded with a newMultiSelect column's multiple configured default options instead of an empty string", async () => {
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'interest',
+              key: 'interest',
+              id: 'col-interest',
+              columnType: 'newMultiSelect',
+              columnSize: 200,
+              options: [
+                { label: 'Reading', value: 'Reading' },
+                { label: 'Music', value: 'Music' },
+              ],
+              defaultOptionsList: [
+                { label: 'Reading', value: 'Reading' },
+                { label: 'Music', value: 'Music' },
+              ],
+            },
+          ],
+        },
+        data: binding(`{{${JSON.stringify([{ interest: [] }])}}}`),
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    await waitFor(() => expect(document.querySelector('[data-cy="interest-column-0"]')).toBeInTheDocument());
+
+    expect(exposed('newRows')[0].interest).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ value: 'Reading' }),
+        expect.objectContaining({ value: 'Music' }),
+      ])
+    );
+  });
+
   test('[Table-ACTCOL-001] a configured left-position action renders in the left action column', async () => {
     // generateActionColumns.js measures button text width via canvas.getContext('2d'), which the
     // global test setup stubs to return null (real font-metric measurement is QA/Playwright-owned,
