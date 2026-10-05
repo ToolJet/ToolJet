@@ -39,6 +39,7 @@ export const postgreSqlText = {
   psqlName: "cypress-postgresql",
 
   labelConnectionVerified: "connection verified",
+  toastConnectionVerified: "Test connection verified",
   toastDSAdded: "Data Source Added",
   placeholderNameOfDB: "Name of the database",
   placeholderEnterHost: "Enter host",

@@ -1,10 +1,9 @@
-import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/platform/workflows";
+import { commonSelectors } from "Selectors/common";
 import { workflowSelector } from "Selectors/platform/workflows";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { viewAppCardOptions } from "Support/utils/common";
+import { navigateBackToWorkflowsDashboard } from "Support/utils/workflows/workFlows";
 import { commonText } from "Texts/common";
-import { selectAppCardOption } from "Support/utils/common";
-import { navigateBackToWorkflowsDashboard } from "Support/utils/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
 
 Cypress.Commands.add("createWorkflowApp", (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
@@ -30,12 +29,16 @@ Cypress.Commands.add("connectDataSourceNode", (nodeType) => {
 });
 
 Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
+  cy.get(workflowSelector.workflowRunButton).should("not.be.disabled");
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
     "have.text",
     workflowsText.workflowRunhelperText
   );
+  cy.verifyResponseNodeOutput(expectedText);
+});
 
+Cypress.Commands.add("verifyResponseNodeOutput", (expectedText) => {
   cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
   cy.get('[data-cy="tab-output"]').click();
@@ -144,14 +147,13 @@ Cypress.Commands.add(
   "exportWorkflowApp",
   (workflowName, fixtureFile = "cypress/fixtures/exportedApp.json") => {
     navigateBackToWorkflowsDashboard();
-
-    cy.get(`[data-cy="${workflowName}-card"]`)
-      .trigger('mouseover') 
-      .find('[data-cy="app-card-menu-icon"]')
-      .click({ force: true });
+    viewAppCardOptions(workflowName);
 
     cy.get(commonSelectors.appCardOptions(workflowsText.exportWFOption))
       .click();
+
+    cy.get('[data-cy="modal-component"]').should("be.visible");
+    cy.get('[data-cy="export-selected-version-button"]').click();
 
     cy.wait(2000);
 
@@ -169,10 +171,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("addWorkflowInApp", (workflowName) => {
   cy.get(workflowSelector.showDSPopoverButton).click();
-  cy.get(workflowSelector.workflowSearchInput).type(
-    workflowsText.workflowLabel
-  );
-  cy.contains(`[id*="react-select-"]`, workflowsText.workflowLabel).click();
+  cy.get(workflowSelector.workflowDataSourceOption).click();
   cy.get(workflowSelector.queryRenameInput).clear().type(workflowName);
   cy.get(workflowSelector.workflowDropdown).parent()
   .find('.react-select__control')
