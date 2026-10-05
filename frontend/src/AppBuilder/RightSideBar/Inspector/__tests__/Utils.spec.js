@@ -16,7 +16,7 @@
 jest.mock('../Elements/Code', () => ({ Code: () => null }));
 jest.mock('../Components/Form/_components', () => ({ LabeledDivider: () => null }));
 
-import { validateStaticId, isClickInsidePortaledOverlay } from '../Utils';
+import { validateStaticId, isClickInsidePortaledOverlay, shouldClearLegacyInvalidDates } from '../Utils';
 
 describe('validateStaticId', () => {
   describe('empty/blank values', () => {
@@ -127,5 +127,70 @@ describe('isClickInsidePortaledOverlay', () => {
     expect(isClickInsidePortaledOverlay(target)).toBe(false);
 
     document.body.removeChild(target);
+  });
+});
+
+// DaterangePicker legacy components are migrated with
+// `properties.legacyInvalidDates = {{true}}` so their historical "Invalid date"
+// exposures keep working. The opt-in moment is the user explicitly editing the
+// widget's date data — Default start date, Default end date, or Format — in
+// the inspector: the flag is cleared and the component keeps the corrected
+// exposure from then on. The flag is only ever cleared, never set back, and
+// components without the flag (new ones) are left untouched. Unrelated
+// properties, style edits (e.g. label alignment), and fx-mode toggles must not
+// clear it.
+describe('shouldClearLegacyInvalidDates', () => {
+  const legacyDefinition = { properties: { legacyInvalidDates: { value: '{{true}}' } } };
+
+  const change = (overrides = {}) => ({
+    componentType: 'DaterangePicker',
+    paramName: 'defaultStartDate',
+    paramType: 'properties',
+    attr: 'value',
+    definition: legacyDefinition,
+    ...overrides,
+  });
+
+  test('editing Default start date on a legacy DaterangePicker clears the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change())).toBe(true);
+  });
+
+  test('editing Default end date clears the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change({ paramName: 'defaultEndDate' }))).toBe(true);
+  });
+
+  test('editing Format clears the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change({ paramName: 'format' }))).toBe(true);
+  });
+
+  test('a style edit such as label alignment never touches the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change({ paramName: 'alignment', paramType: 'styles', value: 'side' }))).toBe(
+      false
+    );
+  });
+
+  test('editing an unrelated property (label) does not clear the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change({ paramName: 'label' }))).toBe(false);
+  });
+
+  test('toggling fx mode on a date property is not a value edit and does not clear the flag', () => {
+    expect(shouldClearLegacyInvalidDates(change({ attr: 'fxActive' }))).toBe(false);
+  });
+
+  test('a new component without the flag is left untouched', () => {
+    expect(shouldClearLegacyInvalidDates(change({ definition: { properties: {} } }))).toBe(false);
+  });
+
+  test('a definition without properties is left untouched', () => {
+    expect(shouldClearLegacyInvalidDates(change({ definition: {} }))).toBe(false);
+  });
+
+  test('an already-cleared flag is not rewritten by further date edits', () => {
+    const cleared = { properties: { legacyInvalidDates: { value: '{{false}}' } } };
+    expect(shouldClearLegacyInvalidDates(change({ definition: cleared }))).toBe(false);
+  });
+
+  test('other component types are never affected', () => {
+    expect(shouldClearLegacyInvalidDates(change({ componentType: 'DatetimePickerV2' }))).toBe(false);
   });
 });

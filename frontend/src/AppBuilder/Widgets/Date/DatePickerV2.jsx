@@ -7,6 +7,7 @@ import {
   getUnixTime,
   getUnixTimestampFromSelectedTimestamp,
   isDateValid,
+  isUsableDateFormat,
 } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
@@ -31,8 +32,12 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const { label, defaultValue, dateFormat: dateFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select date';
+  // Tokenless format (e.g. {{42}}) → config error + shipped default fallback.
+  const hasUsableFormat = isUsableDateFormat(dateFormatProp);
+  const dateFormat = hasUsableFormat ? dateFormatProp : 'DD/MM/YYYY';
+  const formatConfigError = Boolean(dateFormatProp) && !hasUsableFormat;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -56,6 +61,8 @@ export const DatePickerV2 = ({
   );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -110,9 +117,9 @@ export const DatePickerV2 = ({
   }, [defaultValue]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : '');
-  }, [selectedTimestamp, dateFormat, textInputFocus]);
+  }, [selectedTimestamp, dateFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -170,10 +177,28 @@ export const DatePickerV2 = ({
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {
+    if (formatConfigError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date format', isConfigError: true });
+      return;
+    }
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date' });
+      return;
+    }
     setValidationStatus(
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
-  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
+  }, [
+    minDate,
+    maxDate,
+    customRule,
+    isMandatory,
+    selectedTimestamp,
+    excludedDates,
+    dateFormat,
+    formatConfigError,
+    textParseError,
+  ]);
 
   useFormClear(() => setInputValue(null, null, true));
 
@@ -227,7 +252,10 @@ export const DatePickerV2 = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
-    showValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
+    // Config contradictions (min>max) display immediately; input errors keep
+    // the blur/submit gate.
+    showValidationError: showValidationError || !!validationStatus.isConfigError,
     isValid,
     validationError,
     showClearBtn,

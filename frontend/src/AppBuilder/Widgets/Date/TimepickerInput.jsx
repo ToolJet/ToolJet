@@ -1,8 +1,17 @@
 import React, { useEffect } from 'react';
 import moment from 'moment-timezone';
 import cx from 'classnames';
+import { parseTimeBound } from './utils';
 
-const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange, minTime, maxTime }) => {
+const TimepickerInput = ({
+  currentTimestamp,
+  isTwentyFourHourMode,
+  darkMode,
+  onTimeChange,
+  minTime,
+  maxTime,
+  timeFormat,
+}) => {
   const [headers, setHeaders] = React.useState(['Hours', 'Minutes']);
   useEffect(() => {
     if (!isTwentyFourHourMode) {
@@ -25,27 +34,9 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   // Get display hour for current selection
   const selectedHourDisplay = !isTwentyFourHourMode ? get12HourDisplay(selectedHour) : selectedHour;
 
-  let minHour = 0;
-  let minMinute = 0;
-  if (minTime) {
-    if (typeof minTime === 'string') {
-      [minHour, minMinute] = minTime.split(':');
-    } else if (typeof minTime === 'object') {
-      minHour = minTime.getHours();
-      minMinute = minTime.getMinutes();
-    }
-  }
-
-  let maxHour = 23;
-  let maxMinute = 59;
-  if (maxTime) {
-    if (typeof maxTime === 'string') {
-      [maxHour, maxMinute] = maxTime.split(':');
-    } else if (typeof maxTime === 'object') {
-      maxHour = maxTime.getHours();
-      maxMinute = maxTime.getMinutes();
-    }
-  }
+  // Meridiem-aware bound parsing — see parseTimeBound in ./utils.
+  const { hour: minHour, minute: minMinute } = parseTimeBound(minTime, timeFormat, { hour: 0, minute: 0 });
+  const { hour: maxHour, minute: maxMinute } = parseTimeBound(maxTime, timeFormat, { hour: 23, minute: 59 });
 
   // Convert 12-hour display to 24-hour format
   const convertTo24Hour = (hour12, isPM) => {

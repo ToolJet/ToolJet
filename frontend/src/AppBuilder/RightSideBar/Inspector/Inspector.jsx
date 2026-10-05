@@ -3,7 +3,7 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule, getDocsLink } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink, shouldClearLegacyInvalidDates } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -337,6 +337,26 @@ export const Inspector = ({
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
       setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+
+      // A legacy DaterangePicker (migrated with properties.legacyInvalidDates)
+      // opts into the corrected invalid-date exposure the moment its date data
+      // — Default start date, Default end date, or Format — is explicitly
+      // edited. The flag is only ever cleared, never set back.
+      if (
+        shouldClearLegacyInvalidDates({
+          componentType: component.component.component,
+          paramName: param.name,
+          paramType,
+          attr,
+          definition: newDefinition,
+        })
+      ) {
+        newDefinition.properties = {
+          ...newDefinition.properties,
+          legacyInvalidDates: { value: '{{false}}' },
+        };
+        setComponentProperty(selectedComponentId, 'legacyInvalidDates', '{{false}}', 'properties', 'value', false);
+      }
     }
 
     componentDefinitionChanged(newComponent, {
