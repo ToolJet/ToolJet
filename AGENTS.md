@@ -139,18 +139,19 @@ Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` 
 
 Context is layered — the closest file to the code you're changing wins:
 
-| File                                    | Scope                                                                 |
-| --------------------------------------- | --------------------------------------------------------------------- |
-| `AGENTS.md` (this file)                 | Repo-wide architecture, editions, structure                           |
-| `.agents/context/product-map.md`        | Public product capabilities, users, journeys, and business rules      |
-| `.agents/context/architecture-map.md`   | Public system components, data flows, integrations, and failure modes |
-| `UBIQUITOUS_LANGUAGE.md`                | Canonical domain glossary                                             |
-| `server/AGENTS.md`                      | Backend + testing conventions                                         |
-| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants                             |
-| `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                 |
-| `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                      |
-| `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary              |
-| `server/docs/testing.md`                | Backend testing — what to test, then how to write it                  |
+| File                                    | Scope                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| `AGENTS.md` (this file)                 | Repo-wide architecture, editions, structure                                            |
+| `.agents/context/product-map.md`        | Public product capabilities, users, journeys, and business rules                       |
+| `.agents/context/architecture-map.md`   | Public system components, data flows, integrations, and failure modes                  |
+| `UBIQUITOUS_LANGUAGE.md`                | Canonical domain glossary                                                              |
+| `server/AGENTS.md`                      | Backend + testing conventions                                                          |
+| `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants                                              |
+| `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                                  |
+| `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                                       |
+| `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary                               |
+| `server/docs/testing.md`                | Backend testing — what to test, then how to write it                                   |
+| `frontend/src/test/README.md`           | Frontend testing — Jest/RTL/MSW conventions; App Builder layer in `frontend/AGENTS.md` |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature.
 

@@ -33,7 +33,7 @@ Stop once the answers stop changing the plan.
 ## 3. Read the codebase
 
 - Start from `AGENTS.md`, `UBIQUITOUS_LANGUAGE.md`, `.agents/context/product-map.md` and `.agents/context/architecture-map.md`, then the nearest module `AGENTS.md` (`server/src/modules/<module>/AGENTS.md`, `frontend/AGENTS.md`).
-- For any backend layer, read `server/docs/testing.md` so the acceptance criteria map to real test types.
+- For each layer, read the **Testing** section of `server/AGENTS.md` / `frontend/AGENTS.md` and the guide it names, so the acceptance criteria map to real test types. For App Builder, also check the widget's status in `frontend/widget-testing-manifest.json`.
 - Trace the path the feature touches: route/state → controller + guards → service → entity/migration → response → UI.
 
 ## 4. Record durable decisions
@@ -74,7 +74,7 @@ Leave out file names and function signatures. They change as earlier slices land
 
 ```markdown
 - [ ] AC1: Given <state>, when <action>, then <observable result>.
-  Verify: <unit | guard-unit | e2e | frontend | browser> — <what proves it: the spec to write, or the browser steps and expected screen>
+  Verify: <unit | guard-unit | e2e | frontend | browser | qa-owned> — <what proves it: the spec to write, or the browser steps and expected screen>
 ```
 
 - **One outcome per criterion.** "Works correctly", "handles errors" and "is fast" are not criteria.
@@ -83,16 +83,17 @@ Leave out file names and function signatures. They change as earlier slices land
 - **Browser checks** list concrete steps and the expected state, so an agent can run them with Playwright or Chrome DevTools.
 - **`manual`** is allowed only on HITL slices, and says who checks it.
 
-**Test plan per slice: every slice is built test-first, using the conventions that fit it.**
+**Test plan per slice: every slice is built test-first.** The testing conventions live in the **Testing** section of the nearest `AGENTS.md`, which names the full guide. Don't hardcode guide paths in the plan.
 
-| Slice touches                | Convention                                                                                                                                           | Test types                                                                                                                                                            |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `server/` or `server/ee/`    | `server/docs/testing.md`                                                                                                                             | `unit` (branching a service, guard or util owns), `guard-unit` (real CASL ability factory, no HTTP), `e2e` (meaning only exists through HTTP → guard → DB → response) |
-| `frontend/src/AppBuilder/**` | `frontend/src/test/app-builder/README.md`, via `app-builder-feature` / `app-builder-bug-fix`. Widget work also goes through `app-builder-widget-tdd` | `frontend`                                                                                                                                                            |
-| Other frontend               | the nearest existing specs' pattern                                                                                                                  | `frontend`, `browser` for flows                                                                                                                                       |
-| Docs, config, CI only        | none: no runtime behavior to test                                                                                                                    | —                                                                                                                                                                     |
+| Slice touches                        | Read                                                           | Test types                         | Mode rule                                                                                            |
+| ------------------------------------ | -------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `server/` or `server/ee/`            | `server/AGENTS.md` → Testing                                   | `unit`, `guard-unit`, `e2e`        | AFK                                                                                                  |
+| Frontend, outside App Builder        | `frontend/AGENTS.md` → Testing                                 | `frontend`, `browser` for flows    | AFK                                                                                                  |
+| App Builder, not a registered widget | `frontend/AGENTS.md` → Testing → App Builder                   | `frontend`                         | AFK, unless the behavior needs grilling                                                              |
+| A widget in the manifest             | `frontend/AGENTS.md` → Testing → App Builder (widget contract) | `frontend`, `browser` (`qa-owned`) | AFK only if the manifest status is `approved`. Otherwise HITL, or a HITL contract slice placed first |
+| Docs, config, CI only                | —                                                              | —                                  | No tests: no runtime behavior                                                                        |
 
-For backend slices, choose each criterion's `Verify:` type with the testing.md decision rule. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
+For backend slices, choose each criterion's `Verify:` type with the decision rule in the server testing guide. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
 - **Axes:** edition, plan, role/permission, module gate, tenant scope, resource state.
 - **Pruning:** short-circuiting gates are tested once each, and only interacting axes are cross-producted.
 - **Must-cover items that apply:**
@@ -143,7 +144,7 @@ What to build: <end-to-end behavior>
 
 Layers: Schema: ... / API: ... / UI: ...
 
-Test plan: convention <server/docs/testing.md | app-builder README | none> — matrix cells covered: ... ; skipped (short-circuit / no divergence): ...
+Test plan: convention <server | frontend | app-builder | app-builder widget (status) | none> — matrix cells covered: ... ; skipped (short-circuit / no divergence): ...
 
 Acceptance criteria:
 - [ ] AC1: Given ..., when ..., then ...

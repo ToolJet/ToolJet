@@ -29,7 +29,7 @@ Give the builder:
 - the worktree path;
 - the sub-issue (`gh issue view <n> --repo ToolJet/tj-ee --comments`), which is the contract;
 - the parent's plan comment;
-- the paths of the nearest `AGENTS.md` files, plus `server/docs/testing.md` for backend work.
+- the paths of the nearest `AGENTS.md` files. Their Testing sections name the testing guide to follow.
 
 Instructions, in order:
 
@@ -39,11 +39,9 @@ Instructions, in order:
 2. **Plan-first slices.** Comment a 5–10 line approach on the sub-issue and return `awaiting-approval`. Write no code until the main session resumes you with the user's answer.
 3. **App Builder slices.** Follow `app-builder-feature` or `app-builder-bug-fix`.
 4. **Tests first, following the slice's test-plan convention.**
-   - **Backend slices** follow `server/docs/testing.md`:
-     - run its decision checklist before each test;
-     - match its directory layout, edition/plan describe blocks, `@group` JSDoc, seed helpers and isolation rules;
-     - mock only boundaries ToolJet doesn't own, and never its own repositories in e2e.
-   - **App Builder slices** follow `frontend/src/test/app-builder/README.md` through `app-builder-feature` or `app-builder-bug-fix`.
+   - Read the **Testing** section of `server/AGENTS.md` / `frontend/AGENTS.md` for each layer you touch, and follow the guide it names: decision checklist, layout, edition blocks, helpers, mocking rules.
+   - **App Builder** slices go through `app-builder-feature` / `app-builder-bug-fix`.
+   - **Widget** slices may only change tests the widget's `approved` contract covers. Anything else is `blocked`, because contracts need human approval.
    - **Red first.**
      - Write the test each criterion's `Verify:` line names, run it, and see it fail for the right reason. For e2e, red means the real pipeline returns the wrong status or shape, not a compile error.
      - Commit the failing tests first: `test: <slice> acceptance criteria (red)`. For a bug-fix slice, this is the failing reproduction.
@@ -55,6 +53,8 @@ Instructions, in order:
    - Then run:
      - lint in each touched folder (`cd server && npm run lint`, and the same for `frontend`);
      - the specs for each criterion;
+     - frontend: `npm run test:layout` and `npx jest --changedSince=origin/<trunk>`;
+     - App Builder widgets: `npm run test:app-builder:contracts` and `:parity`;
      - `scripts/test-changed.sh` when files under root `server/` changed. It diffs commits only, so it must run after the commit. Skip it for a submodule pointer bump alone: it treats `server/ee` as unrecognized and runs the whole suite. EE changes are covered by the criteria specs.
    - Fix any failure and commit again.
 7. **No push, no PR, no stack commands.**
@@ -97,12 +97,11 @@ The verifier's prompt:
 > Check TDD and conventions:
 > - The red commit exists, and its tests fail when run against the commit before the implementation.
 > - Mutation check: break the implementation on purpose; the tests must fail.
-> - Backend tests follow `server/docs/testing.md`:
->   - the right unit / guard-unit / e2e choice;
->   - the planned matrix cells are present (including cross-tenant and gate denials where they apply);
->   - no mocked own repositories;
->   - no snapshot blobs;
->   - one behavior per `it`.
+> - Tests follow the guide named in the touched layer's `AGENTS.md` → Testing:
+>   - **Server:** the right unit / guard-unit / e2e choice; the planned matrix cells (including cross-tenant and gate denials); no mocked own repositories; no snapshot blobs; one behavior per `it`.
+>   - **Frontend:** `test:layout` passes; specs are `*.spec.*` in `__tests__/`; no spec passes against broken code.
+>   - **Widgets:** test titles carry the contract's `[ID]`.
+> - `qa-owned` criteria are checked in a real browser (Playwright / DevTools) with a screenshot. The Cypress spec stays with QA.
 >
 > Any violation is a `not met` finding. Post a verification report comment on the sub-issue (`Verification report` table: criterion, verdict met / not met / unclear, evidence) and return the same table.
 
