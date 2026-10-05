@@ -463,28 +463,26 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const confirmDeleteVersion = () => {
     if (!deleteVersion.versionId) return;
-    const deletingToast = toast.loading('Deleting version...');
+    const { versionId, versionName } = deleteVersion;
+    // Non-blocking: the delete runs in the store, so closing the modal doesn't drop it
+    toast(`Version ${versionName} will be deleted shortly`);
+    resetDeleteModal();
+    closeDropdown();
     deleteVersionAction(
       appId,
-      deleteVersion.versionId,
-      (_newVersionDef) => {
-        toast.dismiss(deletingToast);
-        toast.success(`Version - ${deleteVersion.versionName} Deleted`);
-        resetDeleteModal();
-        closeDropdown();
+      versionId,
+      () => {
+        toast.success(`Version ${versionName} deleted`);
         // Refresh versions for the currently filtered environment, not the global currentEnvironment
         const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
         refreshVersions(appId, environmentToRefresh?.id);
       },
       (error) => {
-        toast.dismiss(deletingToast);
         if (error?.error?.startsWith('Cannot delete this version.')) {
-          setInUseWarning({ show: true, versionName: deleteVersion.versionName });
-          resetDeleteModal();
+          setInUseWarning({ show: true, versionName });
           return;
         }
         toast.error(error?.error || error?.message || 'Failed to delete version');
-        resetDeleteModal();
       }
     );
   };
