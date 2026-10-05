@@ -69,7 +69,9 @@ export async function findWorktree(main: string, ref: string) {
   return all.find((w) => w.branch === ref || w.path === ref || basename(w.path) === ref);
 }
 
+// Ask the remote: a local refs/remotes/origin/HEAD is set once at clone time and goes stale.
 export async function defaultBase(root: string) {
-  const r = await capture('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: root });
-  return r.code === 0 ? r.out : 'origin/main';
+  const r = await capture('git', ['ls-remote', '--symref', 'origin', 'HEAD'], { cwd: root });
+  const branch = /^ref: refs\/heads\/(\S+)\s+HEAD/m.exec(r.out)?.[1];
+  return `origin/${branch ?? 'main'}`;
 }
