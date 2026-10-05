@@ -23,6 +23,7 @@ import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { NotificationsModule } from '@modules/notifications/module';
 import { APP_VERSION_QUEUE } from './constants';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -104,6 +105,7 @@ export class VersionModule extends SubModule {
         VersionRepository,
         OrganizationGitSyncRepository,
         AppsRepository,
+        UserAppVersionStateRepository,
         VersionsCreateService,
         PageService,
         EventsService,
