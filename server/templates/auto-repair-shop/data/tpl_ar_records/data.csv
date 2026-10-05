@@ -1,0 +1,11 @@
+id,subject,group_code,owner,state,schedule,note,value
+,Brake pads and inspection,V01,Alex Morgan,Repairing,Mon · 14:00,Front pads worn; inspect rotors before confirming parts.,420
+,Cooling system diagnosis,V02,Jordan Lee,Diagnosing,Mon · 16:00,Intermittent coolant loss reported. Pressure test first.,180
+,Oil service and filters,V03,Sam Ortiz,Ready,Mon · 12:30,Service completed. Customer pickup to be arranged.,165
+,Wheel alignment,V04,Alex Morgan,Booked,Tue · 09:00,Check tire wear before alignment.,120
+,Battery and charging check,V05,Jordan Lee,Diagnosing,Mon · 15:30,Slow crank after overnight parking.,95
+,Suspension noise inspection,V06,Sam Ortiz,Repairing,Tue · 11:00,Replace worn front link after confirming estimate.,360
+,Annual safety check,V01,Sam Ortiz,Collected,Fri · 17:00,Inspection completed and vehicle collected.,110
+,Air-conditioning diagnosis,V04,Alex Morgan,Booked,Tue · 13:30,Cabin cooling drops while idling.,140
+,Brake fluid replacement,V01,Morgan Ellis,Repairing,Mon · 16:30,Fluid replacement started; final brake check pending.,125
+,Tyre replacement,V02,Jordan Lee,Ready,Tue · 17:30,Four tyres fitted and balanced. Ready for pickup.,280

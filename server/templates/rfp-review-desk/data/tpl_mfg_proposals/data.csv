@@ -1,0 +1,6 @@
+id,proposal_code,rfp_code,supplier_code,quoted_cents,lead_weeks,summary,technical_score,delivery_score,commercial_score,support_score,review_notes
+,PROP-001,RFP-041,SUP-01,46200000,14,"Modular packing cell with conveyor integration, two-day operator training, and on-site commissioning.",5,4,4,5,Best fit for the existing conveyor controls. Confirm the commissioning dates before contracting.
+,PROP-002,RFP-041,SUP-02,43800000,18,Turnkey system with a lower quoted price. Electrical tie-ins are excluded.,4,3,5,4,"Lowest quote, but the electrical scope exclusion and longer lead time need attention."
+,PROP-003,RFP-041,SUP-03,47900000,12,Compact robotic cell with the shortest proposed delivery. Local support coverage still needs clarification.,,,,,
+,PROP-004,RFP-042,SUP-02,11200000,10,Twin compressor upgrade with standard monitoring and a remote support plan.,4,3,4,3,Good core specification. Weekend installation is not included.
+,PROP-005,RFP-042,SUP-04,11600000,8,"Energy monitoring, phased weekend installation, and local service support.",5,5,4,5,Strong installation plan and local service. Preferred after the technical review.

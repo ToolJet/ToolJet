@@ -1,0 +1,19 @@
+{
+  "name": "Property maintenance",
+  "description": "Track maintenance requests across your buildings. See urgent work and assign and resolve every request.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "property-maintenance",
+  "category": "property-and-facilities"
+}
