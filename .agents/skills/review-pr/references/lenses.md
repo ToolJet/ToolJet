@@ -39,7 +39,7 @@ Authority: `server/docs/testing.md`. Sections that matter most in review:
   service test proves nothing about the query.
 - "Edition and plan": CE tests verify gating, EE tests verify behavior.
 
-Frontend: `frontend/AGENTS.md` "Testing context" for what is and is not covered by Cypress.
+Frontend: `frontend/AGENTS.md` → Testing, and the guide it names (`src/test/README.md`), for Jest conventions and what belongs in Cypress.
 
 Specs are a place for concretion, not abstraction. A reader must understand the contract without
 opening a helper. Suggest rewording where the spec hides the detail that makes it pass.
