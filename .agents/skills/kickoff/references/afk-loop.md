@@ -39,7 +39,7 @@ Instructions, in order:
 2. **Plan-first slices.** Comment a 5–10 line approach on the sub-issue and return `awaiting-approval`. Write no code until the main session resumes you with the user's answer.
 3. **App Builder slices.** Follow `app-builder-feature` or `app-builder-bug-fix`.
 4. **Tests first, following the slice's test-plan convention.**
-   - Read the **Testing** section of `server/AGENTS.md` / `frontend/AGENTS.md` for each layer you touch, and follow the guide it names: decision checklist, layout, edition blocks, helpers, mocking rules.
+   - Read the **Testing** section of `server/AGENTS.md` / `frontend/AGENTS.md` for each layer you touch, and follow the guide it names: decision checklist, layout, test tree (`server/test/` CE vs `server/ee/test/` EE), helpers, mocking rules.
    - **App Builder** slices go through `app-builder-feature` / `app-builder-bug-fix`.
    - **Widget** slices may only change tests the widget's `approved` contract covers. Anything else is `blocked`, because contracts need human approval.
    - **Red first.**
@@ -52,6 +52,8 @@ Instructions, in order:
    - Commit with the `commit` skill. Pre-commit hooks must pass; `--no-verify` is never allowed.
    - Then run:
      - lint in each touched folder (`cd server && npm run lint`, and the same for `frontend`);
+     - `bash server/scripts/check-ee-leak.sh` when `server/test/` changed. It is the same check pre-push and CI run;
+     - `TOOLJET_EDITION=ce npm test -- <spec>` (or `test:e2e`) for new `server/test/` specs, to prove they pass as CE;
      - the specs for each criterion;
      - frontend: `npm run test:layout` and `npx jest --changedSince=origin/<trunk>`;
      - App Builder widgets: `npm run test:app-builder:contracts` and `:parity`;
@@ -98,7 +100,7 @@ The verifier's prompt:
 > - The red commit exists, and its tests fail when run against the commit before the implementation.
 > - Mutation check: break the implementation on purpose; the tests must fail.
 > - Tests follow the guide named in the touched layer's `AGENTS.md` → Testing:
->   - **Server:** the right unit / guard-unit / e2e choice; the planned matrix cells (including cross-tenant and gate denials); no mocked own repositories; no snapshot blobs; one behavior per `it`.
+>   - **Server:** each spec in the right tree (CE cases in `server/test/`, EE in `server/ee/test/`, mixed specs split) with `check-ee-leak.sh` passing; the right unit / guard-unit / e2e choice; the planned matrix cells (including cross-tenant and gate denials); no mocked own repositories; no snapshot blobs; one behavior per `it`.
 >   - **Frontend:** `test:layout` passes; specs are `*.spec.*` in `__tests__/`; no spec passes against broken code.
 >   - **Widgets:** test titles carry the contract's `[ID]`.
 > - `qa-owned` criteria are checked in a real browser (Playwright / DevTools) with a screenshot. The Cypress spec stays with QA.

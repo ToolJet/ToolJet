@@ -85,15 +85,22 @@ Leave out file names and function signatures. They change as earlier slices land
 
 **Test plan per slice: every slice is built test-first.** The testing conventions live in the **Testing** section of the nearest `AGENTS.md`, which names the full guide. Don't hardcode guide paths in the plan.
 
-| Slice touches                        | Read                                                           | Test types                         | Mode rule                                                                                            |
-| ------------------------------------ | -------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `server/` or `server/ee/`            | `server/AGENTS.md` → Testing                                   | `unit`, `guard-unit`, `e2e`        | AFK                                                                                                  |
-| Frontend, outside App Builder        | `frontend/AGENTS.md` → Testing                                 | `frontend`, `browser` for flows    | AFK                                                                                                  |
-| App Builder, not a registered widget | `frontend/AGENTS.md` → Testing → App Builder                   | `frontend`                         | AFK, unless the behavior needs grilling                                                              |
-| A widget in the manifest             | `frontend/AGENTS.md` → Testing → App Builder (widget contract) | `frontend`, `browser` (`qa-owned`) | AFK only if the manifest status is `approved`. Otherwise HITL, or a HITL contract slice placed first |
-| Docs, config, CI only                | —                                                              | —                                  | No tests: no runtime behavior                                                                        |
+| Slice touches                        | Read                                                           | Test types                                | Mode rule                                                                                            |
+| ------------------------------------ | -------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `server/` or `server/ee/`            | `server/AGENTS.md` → Testing                                   | `unit`, `guard-unit`, `e2e`               | AFK                                                                                                  |
+| `marketplace/plugins/`               | `marketplace/AGENTS.md`, via `create-plugin`                   | build + `npm run validate:plugin -- <id>` | AFK                                                                                                  |
+| Frontend, outside App Builder        | `frontend/AGENTS.md` → Testing                                 | `frontend`, `browser` for flows           | AFK                                                                                                  |
+| App Builder, not a registered widget | `frontend/AGENTS.md` → Testing → App Builder                   | `frontend`                                | AFK, unless the behavior needs grilling                                                              |
+| A widget in the manifest             | `frontend/AGENTS.md` → Testing → App Builder (widget contract) | `frontend`, `browser` (`qa-owned`)        | AFK only if the manifest status is `approved`. Otherwise HITL, or a HITL contract slice placed first |
+| Docs, config, CI only                | —                                                              | —                                         | No tests: no runtime behavior                                                                        |
 
-For backend slices, choose each criterion's `Verify:` type with the decision rule in the server testing guide. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
+For backend slices, choose each criterion's `Verify:` type with the decision rule in the server testing guide.
+
+**Test tree.** Each server criterion also names its tree:
+- **`server/test/`** is public and runs as CE. It must pass without the submodules.
+- **`server/ee/test/`** is private and runs as EE/Cloud. Specs that import EE code, or only pass against an EE/Cloud app, go here.
+- When behavior differs by edition, the slice gets a case in each tree: the CE outcome in `test/` and the EE outcome in the same-named `ee/test/` file.
+- A slice with any `ee/test/` case touches `server/ee`. Add it to the slice's repos and its stack. List the behavior-matrix cells the slice covers, and the ones it deliberately skips:
 - **Axes:** edition, plan, role/permission, module gate, tenant scope, resource state.
 - **Pruning:** short-circuiting gates are tested once each, and only interacting axes are cross-producted.
 - **Must-cover items that apply:**

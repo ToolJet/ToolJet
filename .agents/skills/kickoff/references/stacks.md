@@ -73,3 +73,4 @@ A root branch that isn't re-pointed after an EE rebase references orphaned commi
   4. Repeat for the next layer.
 - **Ready to merge** means: CI green, the verifier passed, `review-pr` findings resolved, and the user approved.
 - Never merge a layer while a layer below it is still open.
+- **Releases:** don't hand open stacked PRs to `cut-release`. It retargets each PR and merges the release branch into it, which breaks the chain. Merge the stack into trunk first, or give `cut-release` the stack once every layer has merged.
