@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "cypress-tests/package-lock.json",
-    "cypress-tests/package.json"
+    "docs/package-lock.json",
+    "docs/package.json"
   ],
-  "baseSha": "c9d7dcac85725137c3316fe1b8f77b89caece9f7",
+  "baseSha": "ef34d2dd9829b89290496ba7716c0cb55c3af3b8",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "631132e1e7f578b6",
+    "id": "6e1fdbe0475ff988",
     "lockArtifacts": [
-      "cypress-tests/package-lock.json"
+      "docs/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "cypress-tests/package-lock.json"
+    "rootManifest": "docs/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "0366ba4fd168f4df64c4596b9e86f6106750a7414eb114dfd48edb2f8c3a8668",
+  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,9 +38,9 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "c9d7dcac85725137c3316fe1b8f77b89caece9f7",
+  "scanSha": "ef34d2dd9829b89290496ba7716c0cb55c3af3b8",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "S6e8Ok_oSy6SY9PKpZSIvQ",
+  "stoExecutionId": "HX_kvo5rTjmIkzcr3t71pg",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
@@ -58,6 +58,36 @@
       ],
       "minimumFixedVersion": "1.1.19",
       "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "2.1.7"
+      ],
+      "coordinate": {
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@2.1.4"
+      },
+      "fromVersion": "2.1.4",
+      "issueIds": [
+        "NsbKrXeWhXNJCHzHUf8hPt"
+      ],
+      "minimumFixedVersion": "2.1.5",
+      "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "7.4.6"
+      ],
+      "coordinate": {
+        "normalisedName": "webpack-dev-middleware",
+        "purl": "pkg:npm/webpack-dev-middleware@7.4.5"
+      },
+      "fromVersion": "7.4.5",
+      "issueIds": [
+        "QJzPeeDWYXrZWlGlaZnYdF"
+      ],
+      "minimumFixedVersion": "7.4.6",
+      "package": "webpack-dev-middleware"
     }
   ]
 }
