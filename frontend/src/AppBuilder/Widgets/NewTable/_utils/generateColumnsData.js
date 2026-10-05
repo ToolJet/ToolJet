@@ -476,10 +476,10 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   width={column?.width}
                   height={column?.height ? `${column?.height}px` : '100%'}
-                  borderRadius={column?.borderRadius}
-                  objectFit={column?.objectFit}
-                  horizontalAlignment={column?.horizontalAlignment}
-                  altText={column?.altText}
+                  borderRadius={getResolvedValue(column?.borderRadius, { cellValue, rowData })}
+                  objectFit={getResolvedValue(column?.objectFit, { cellValue, rowData })}
+                  horizontalAlignment={getResolvedValue(column?.horizontalAlignment, { cellValue, rowData })}
+                  altText={getResolvedValue(column?.altText, { cellValue, rowData })}
                 />
               );
 
