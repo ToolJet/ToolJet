@@ -112,18 +112,20 @@ Analyze the commits and diff to determine:
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only include evidence that was actually produced: never add an empty or placeholder section
 
-**Issue and reference lines:** these go inside "What this does", one labelled line each, and only when they have content:
-- `📌 **Closes:** #123`, or `📌 **Relates to:** #123` when the PR only partly resolves the issue.
-  - Issues in the private tracker (e.g. from `kickoff`) need the full reference: `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
-- `**PRD:** [title](url)` and `**Design:** [title](url)` on the same 📌 line, when PRD or design links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
-- `📌 **Sub-issues:** #124, #125`: numbers only, because GitHub renders the titles.
-  - With multiple parents, use one line each: `📌 **Sub-issues (#123):** #124, #125`.
-  - Wrap the list in `<details>` when there are more than about 6.
-
-**Merge danger:** always state it. It tells the reviewer how hard to look.
-- **Two-way door** (cheap to revert): one line in "What this does": `🚦 **Merge danger:** 🟢 two-way · blast radius: <what it can affect>`.
-- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): the line reads `🔴 one-way`, and the `⚠️ Merge danger` section is added. Say what can't be undone, the rollback plan, and the blast radius.
+**Merge danger:** always state it, as a GitHub alert right under the summary. Its colour tells the reviewer how hard to look.
+- **Two-way door** (cheap to revert): a green `[!TIP]` alert, one line: `**Two-way door** · blast radius: <what it can affect>`.
+- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): a red `[!CAUTION]` alert with three lines: what can't be undone, the rollback plan, and the blast radius.
 - **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+
+**Links line:** one `📌` line under the alert, with items separated by ` · `. Include an item only when it has content:
+- **Companion PRs:** submodule PRs as `[ee-server #123](url)` and `[ee-frontend #456](url)`. Leave out a submodule with no changes.
+- **Issue:**
+  - `Closes #123` when the PR fully resolves the issue, `Relates to #123` when it only partly does.
+  - Issues in the private tracker (e.g. from `kickoff`) need the full reference, `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
+- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- **Sub-issues:** a second `📌` line: `Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
+  - With multiple parents, use one line each: `📌 Sub-issues (#123): #124, #125`.
+  - Wrap the list in `<details>` when there are more than about 6.
 
 **Conditional sections: include only when they apply.**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
@@ -146,15 +148,19 @@ Analyze the commits and diff to determine:
 ```
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
-- [ee-server](<PR url or "no changes">)
-- [ee-frontend](<PR url or "no changes">)
 
-🚦 **Merge danger:** <🟢 two-way | 🔴 one-way> · blast radius: <scope>
-📌 **Closes:** <#issue> · **PRD:** [title](url) · **Design:** [title](url)
-📌 **Sub-issues:** <#num, #num>
+> [!TIP]
+> **Two-way door** · blast radius: <scope>
 
-## ⚠️ Merge danger
-<one-way doors only: what can't be undone · rollback plan · blast radius>
+<!-- or, for a one-way door:
+> [!CAUTION]
+> **One-way door:** <what can't be undone>
+> **Rollback:** <plan>
+> **Blast radius:** <scope>
+-->
+
+📌 [ee-server #<n>](<url>) · [ee-frontend #<n>](<url>) · Closes <#issue> · PRD: [title](url) · Design: [title](url)
+📌 Sub-issues: <#num, #num>
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes, max 5 bullets>
@@ -174,7 +180,7 @@ Analyze the commits and diff to determine:
 ## 🧪 How to test
 - [ ] <short action-first step>
 ```
-Omit the submodule links entirely if neither submodule has changes.
+Omit the `📌` line entirely when it has no items.
 
 The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` skill by Dex Horthy (both MIT).
 
@@ -182,7 +188,8 @@ The section order follows the questions a reviewer asks: why, how risky, what ch
 ```
 ## 📝 What this does
 <1-2 sentence summary>
-- [ToolJet](<main repo PR url or PENDING>)
+
+📌 [ToolJet #<n>](<main repo PR url or PENDING>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes>
@@ -229,7 +236,7 @@ If a submodule has pointer changes but no branch in the submodule, skip the subm
 
 ### Step 3: Update the main PR body with submodule links
 
-Replace any `PENDING` placeholders in the Submodules section with the actual submodule PR URLs captured in Step 2.
+Fill in the main PR's `📌` line with the submodule PR URLs captured in Step 2. After the main PR exists, replace `PENDING` in each submodule PR's `📌` line with the main PR URL.
 
 ### Step 4: Create or update the main repo PR
 
