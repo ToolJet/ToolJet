@@ -22,7 +22,7 @@ export interface IGroupPermissionsControllerV2 {
     addGroupUserDto: AddGroupUserDto
   ): Promise<void>;
   getAllGroupUser(user: UserEntity, searchInput: string, group: GroupPermissions): Promise<GroupUsers[]>;
-  deleteGroupUser(user: UserEntity, id: string): Promise<void>;
+  deleteGroupUser(user: UserEntity, userPermissions: UserPermissions, id: string): Promise<void>;
   getAddableGroupUser(user: UserEntity, groupId: string, searchInput: string): Promise<UserEntity[]>;
 }
 

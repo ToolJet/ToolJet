@@ -61,7 +61,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.REVOKE_GROUP_ADMIN,
           FEATURE_KEY.GET_GROUP_ADMINS,
           FEATURE_KEY.GET_ADDABLE_ADMINS,
-          FEATURE_KEY.GET_USER_ADMIN_GROUPS,
         ],
         GroupPermissions
       );
@@ -74,7 +73,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const adminGroups: GroupPermissions[] = request?.tj_admin_groups || [];
     if (adminGroups.length === 0) return;
 
-    can([FEATURE_KEY.GET_ALL, FEATURE_KEY.GET_USER_ADMIN_GROUPS], GroupPermissions);
+    can(FEATURE_KEY.GET_ALL, GroupPermissions);
 
     if (isBuilder) {
       can(

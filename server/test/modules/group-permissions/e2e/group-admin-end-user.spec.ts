@@ -12,6 +12,7 @@ import {
 } from 'test-helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupAdmin } from '@entities/group_admin.entity';
+import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 
 /**
@@ -52,7 +53,7 @@ describe('End-user group admins', () => {
       name,
       type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
       ...extra,
-    } as any);
+    } as Partial<GroupPermissions>);
   }
 
   /** An end-user who administers `groupName`, in a fresh workspace with a workspace admin. */
@@ -197,6 +198,18 @@ describe('End-user group admins', () => {
       expect(response.body.message).toMatchObject({ type: 'USER_ROLE_CHANGE_ADMIN_REQUIRED' });
     });
 
+    it('end-user admin cannot add themselves to a builder-level group → 409 and no membership row', async () => {
+      const { admin, endUserAdmin, group } = await setupEndUserGroupAdmin('selfpromote', { appCreate: true });
+
+      const response = await as(endUserAdmin, admin.workspace.id)
+        .post(`/api/v2/group-permissions/${group.id}/users`)
+        .send({ userIds: [endUserAdmin.user.id], groupId: group.id, allowRoleChange: true });
+
+      expect(response.statusCode).toBe(409);
+      expect(response.body.message).toMatchObject({ type: 'USER_ROLE_CHANGE_ADMIN_REQUIRED' });
+      expect(await findEntity(GroupUsers, { groupId: group.id, userId: endUserAdmin.user.id })).toBeNull();
+    });
+
     it('builder group admin cannot promote end-users either → 409', async () => {
       const admin = await createAdmin(nestApp, email('admin-builder-ga'));
       const builder = await createBuilder(nestApp, email('builder-ga'), { workspace: admin.workspace });
@@ -240,7 +253,7 @@ describe('End-user group admins', () => {
         .put('/api/v2/group-permissions/role/user')
         .send({ userId: builder.user.id, newRole: 'end-user' });
 
-      expect([200, 201]).toContain(response.statusCode);
+      expect(response.statusCode).toBe(200);
       expect(await findEntity(GroupAdmin, { id: row.id })).not.toBeNull();
     });
   });
