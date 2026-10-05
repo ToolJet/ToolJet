@@ -22,6 +22,7 @@ import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { EnvironmentSwitcher } from '@/modules/Appbuilder/components';
+import { onJobSwitch } from '@/_helpers/backgroundJobs';
 import './style.scss';
 
 const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
@@ -190,6 +191,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     // selectedEnvironmentFilter is just a UI state for browsing, not the actual global environment
     setSelectedEnvironmentFilter(currentEnvironment);
   };
+
+  // the "Switch to version" toast switched for the user — close the now-stale version list
+  const closeDropdownRef = useRef(closeDropdown);
+  closeDropdownRef.current = closeDropdown;
+  useEffect(() => onJobSwitch(() => closeDropdownRef.current()), []);
 
   const handleToggleDropdown = () => {
     if (isPullingVersion) return;

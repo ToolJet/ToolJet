@@ -9,6 +9,8 @@ import cx from 'classnames';
 import { v4 as uuidv4 } from 'uuid';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { ImportBranchModal } from '@/_ui/WorkspaceBranchDropdown/ImportBranchModal';
+import { branchJobKey, JOB_COPY, waitForJob } from '@/_helpers/backgroundJobs';
+import { showActionToast } from '@/_components/NotificationCenter/NotificationToast';
 import '@/_styles/create-branch-modal.scss';
 
 const RESERVED_NAMES = ['main', 'master', 'head', 'origin'];
@@ -26,6 +28,8 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   // New key per modal mount; the import-confirmation resubmit reuses it deliberately —
   // the first attempt's 409 already freed the key server-side.
   const idempotencyKeyRef = useRef(uuidv4());
+  const stopWaitingRef = useRef(null);
+  useEffect(() => () => stopWaitingRef.current?.(), []);
 
   const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
@@ -81,8 +85,20 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
 
   const performCreate = async (name, confirmImport = false) => {
     setIsCreating(true);
+    // Registered before the request: a fast worker can finish before the response arrives. The
+    // spinner stays until it does; closing the modal hands the switch over to the toast.
+    stopWaitingRef.current = waitForJob(branchJobKey(name), async (notification) => {
+      if (notification.type !== 'success') {
+        setIsCreating(false);
+        return;
+      }
+      await actions.fetchBranches();
+      await actions.switchBranch(notification.metadata.branchId);
+      showActionToast({ type: 'success', message: confirmImport ? JOB_COPY.branchImported : JOB_COPY.branchCreated });
+      onSuccess?.();
+      onClose();
+    });
     try {
-      // Small workspaces are created inline and switched to; large ones run as a background job
       const ack = await actions.createBranch(
         name,
         selectedSourceBranchId,
@@ -93,22 +109,11 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
         idempotencyKeyRef.current
       );
       idempotencyKeyRef.current = uuidv4();
-      if (!ack?.enqueued && ack?.branch) {
-        await actions.switchBranch(ack.branch.id);
-        toast.success(`Switched to ${ack.branch.name}`, { style: { maxWidth: '640px' } });
-      } else {
-        toast.success(
-          ack?.isImport
-            ? 'Importing branch. It will show up in the list once ready.'
-            : 'Creating branch. It will show up in the list once ready.',
-          { style: { maxWidth: '640px' } }
-        );
-      }
       setPendingImportName(null);
-      onSuccess?.();
-      onClose();
+      showActionToast({ type: 'info', message: ack?.isImport ? JOB_COPY.branchImportStarted : JOB_COPY.branchStarted });
     } catch (error) {
       console.error('Error creating branch:', error);
+      stopWaitingRef.current?.();
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
@@ -280,7 +285,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
 
           {/* Footer buttons */}
           <div className="col d-flex justify-content-end gap-2 mt-3">
-            <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
+            <ButtonSolid variant="tertiary" onClick={onClose} size="md" data-cy="cancel-button">
               Cancel
             </ButtonSolid>
             <ButtonSolid

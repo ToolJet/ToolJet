@@ -5,6 +5,8 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { setActiveBranch } from '@/_helpers/active-branch';
 import { toast } from 'react-hot-toast';
+import { JOB_COPY } from '@/_helpers/backgroundJobs';
+import { showActionToast } from '@/_components/NotificationCenter/NotificationToast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -164,7 +166,8 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       if (existingBranch) {
         branchId = existingBranch.id;
       } else {
-        const ack = await actions.createBranch(
+        // created by a background job — the completion toast offers the switch
+        await actions.createBranch(
           selectedBranch,
           undefined,
           undefined,
@@ -174,12 +177,9 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
           idempotencyKeyRef.current
         );
         idempotencyKeyRef.current = uuidv4();
-        if (ack?.enqueued) {
-          toast.success('Creating branch. It will show up in the list once ready.');
-          onClose();
-          return; // nothing to switch to yet
-        }
-        branchId = ack.branch.id;
+        showActionToast({ type: 'info', message: JOB_COPY.branchImportStarted });
+        onClose();
+        return;
       }
 
       // Switch to the target branch — pass appId for co_relation_id resolution

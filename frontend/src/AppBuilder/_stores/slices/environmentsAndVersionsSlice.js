@@ -274,7 +274,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         idempotencyKey
       );
       if (newVersion?.enqueued) {
-        // large app: created by a background job; useAppVersionJobNotifications refreshes + offers the switch
+        // created by a background job; the modal (or the completion toast) switches to it once ready
         onSuccess(newVersion);
         return;
       }
