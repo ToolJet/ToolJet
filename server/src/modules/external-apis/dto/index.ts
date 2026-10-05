@@ -32,6 +32,7 @@ import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-dat
 import { sanitizeInput } from '@helpers/utils.helper';
 import { AllowedCharactersValidator } from '@modules/folders/dto';
 import { applyDecorators } from '@nestjs/common';
+import { PartialType, PickType } from '@nestjs/mapped-types';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
@@ -811,6 +812,70 @@ export class ListFoldersV2QueryDto {
   per_page?: number = 20;
 }
 
+export enum AppVersionStatusV2 {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  RELEASED = 'released',
+}
+
+// Version names double as git tag identities, so the same rules as the internal VersionCreateDto apply.
+const VersionName = () =>
+  applyDecorators(
+    IsString(),
+    Transform(({ value }) => (typeof value === 'string' ? sanitizeInput(value) : value)),
+    IsNotEmpty({ message: 'Version name cannot be empty.' }),
+    MaxLength(25, { message: 'Version name cannot be longer than 25 characters' }),
+    Matches(/^[^\s~^:?*[\]\\@{]+$/, {
+      message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).',
+    })
+  );
+
+export class CreateAppVersionV2Dto {
+  @VersionName()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @IsUUID()
+  version_from_id: string;
+}
+
+export class UpdateAppVersionV2Dto extends PartialType(
+  PickType(CreateAppVersionV2Dto, ['name', 'description'] as const)
+) {}
+
+export class PromoteAppVersionV2Dto {
+  @IsOptional()
+  @IsUUID()
+  target_environment_id?: string;
+}
+
+export class ListAppVersionsV2QueryDto {
+  @IsOptional()
+  @IsEnum(AppVersionStatusV2)
+  status?: AppVersionStatusV2;
+
+  @IsOptional()
+  @IsUUID()
+  environment_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
 // --- v2 Response DTOs ---
 // Apps/Modules/Workflows/Folders v2 handlers build a plain object by hand (see service.ts) and
 // return it through these @Exclude-by-default DTOs via plainToInstance + ClassSerializerInterceptor,
@@ -924,4 +989,64 @@ export class ListFoldersV2ResponseDto {
 export class ResourceExportV2ResponseDto {
   @Expose()
   definition: Record<string, any>;
+}
+
+@Exclude()
+export class EnvironmentV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  priority: number;
+}
+
+@Exclude()
+export class ListEnvironmentsV2ResponseDto {
+  @Expose()
+  @Type(() => EnvironmentV2ResponseDto)
+  data: EnvironmentV2ResponseDto[];
+}
+
+@Exclude()
+export class AppVersionV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  description: string | null;
+
+  @Expose()
+  status: AppVersionStatusV2;
+
+  @Expose({ name: 'environment_id' })
+  environmentId: string;
+
+  @Expose({ name: 'parent_version_id' })
+  parentVersionId: string | null;
+
+  @Expose({ name: 'created_by' })
+  createdBy: string | null;
+
+  @Expose({ name: 'published_at' })
+  publishedAt: Date | null;
+
+  @Expose({ name: 'released_at' })
+  releasedAt: Date | null;
+}
+
+@Exclude()
+export class ListAppVersionsV2ResponseDto {
+  @Expose()
+  @Type(() => AppVersionV2ResponseDto)
+  data: AppVersionV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
 }

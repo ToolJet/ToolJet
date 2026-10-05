@@ -32,6 +32,13 @@ import {
   FolderV2ResponseDto,
   ListFoldersV2ResponseDto,
   ResourceExportV2ResponseDto,
+  ListEnvironmentsV2ResponseDto,
+  CreateAppVersionV2Dto,
+  UpdateAppVersionV2Dto,
+  PromoteAppVersionV2Dto,
+  ListAppVersionsV2QueryDto,
+  AppVersionV2ResponseDto,
+  ListAppVersionsV2ResponseDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -173,4 +180,48 @@ export interface IExternalApisFoldersControllerV2 {
   ): Promise<FolderV2ResponseDto>;
 
   deleteFolder(workspaceIdentifier: string, folderIdentifier: string): Promise<void>;
+}
+
+export interface IExternalApisEnvironmentsControllerV2 {
+  listEnvironments(workspaceIdentifier: string): Promise<ListEnvironmentsV2ResponseDto>;
+}
+
+export interface IExternalApisAppVersionsControllerV2 {
+  createVersion(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    dto: CreateAppVersionV2Dto
+  ): Promise<AppVersionV2ResponseDto>;
+
+  saveVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<AppVersionV2ResponseDto>;
+
+  promoteVersion(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    versionId: string,
+    dto: PromoteAppVersionV2Dto
+  ): Promise<AppVersionV2ResponseDto>;
+
+  releaseVersion(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    versionId: string
+  ): Promise<AppVersionV2ResponseDto>;
+
+  listVersions(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    query: ListAppVersionsV2QueryDto
+  ): Promise<ListAppVersionsV2ResponseDto>;
+
+  getVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<AppVersionV2ResponseDto>;
+
+  updateVersion(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    versionId: string,
+    dto: UpdateAppVersionV2Dto
+  ): Promise<AppVersionV2ResponseDto>;
+
+  deleteVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<void>;
 }

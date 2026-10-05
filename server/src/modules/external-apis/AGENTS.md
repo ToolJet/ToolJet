@@ -1,14 +1,16 @@
 # external-apis module
 
 Owns the **External API**: a machine-to-machine REST surface (`/api/ext/...`, `/api/v2/ext/...`)
-for managing Users, Workspaces, Apps, Modules, Workflows, and their Folders from outside the
+for managing Users, Workspaces, Apps, Modules, Workflows, their Folders, Environments (read-only)
+and App Versions from outside the
 product, authenticated by a static bearer token rather than a user session.
 
 ## Domain terms
 
 - **v1** vs **v2** — v1 (`ExternalApisController`, `ExternalApisAppsController`, ...) is the
   original surface: git-sync operations, user/workspace management, curated app import/export.
-  v2 (`*ControllerV2`) is a newer, workspace-scoped CRUD surface for Apps/Modules/Workflows/Folders
+  v2 (`*ControllerV2`) is a newer, workspace-scoped CRUD surface for Apps/Modules/Workflows/Folders/
+  Environments/App Versions
   under `/api/v2/ext/workspaces/:workspaceIdentifier/...` — a different resource model, not a
   breaking version of v1's routes. Both are mounted side by side; neither replaces the other.
 - **Identifier resolution** — every v2 `:xIdentifier` path param accepts an id, then falls back to
@@ -60,8 +62,16 @@ product, authenticated by a static bearer token rather than a user session.
 - `AppsUtilService.create()`/`update()` leave `apps.name`/`apps.slug` null for API-created
   resources (the real name lives on `app_versions.app_name`) — every v2 create/import path patches
   `.name` in memory afterward before returning it; missing this reintroduces a `name: null` regression.
+- App Versions v2: `status: released` is derived from `apps.current_version_id`, never read from
+  `app_versions.status` (the product never writes `RELEASED`). `published_at`/`released_at` are
+  written only by the v2 save/release paths. Release keeps the product's production gate (no
+  implicit promotion); promote accepts any higher environment. Promote/release logic is copied
+  from the EE `VersionService`/`AppsService` overrides into `util.service.ts`, since neither has an
+  exported util — keep it in sync with those sources.
 
 ## Related modules
 
 - `apps`, `folders`, `folder-apps` — v2 delegates directly to these CE services/util-services
   rather than re-implementing app/folder persistence.
+- `versions`, `app-environments`, `app-history` — App Versions/Environments v2 reuse their exported
+  util services (`VersionUtilService`, `AppEnvironmentUtilService`, `AppHistoryUtilService`).

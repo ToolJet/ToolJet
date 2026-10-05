@@ -10,6 +10,10 @@ import { GranularPermissionsUtilService } from '@ee/group-permissions/util-servi
 import { LicenseUserService } from '@ee/licensing/services/user.service';
 import { UserDetailsService } from '@ee/organization-users/services/user-details.service';
 import { GitSyncConfigsUtilService } from '@ee/git-sync-configs/util.service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { VersionUtilService } from '@ee/versions/util.service';
+import { VersionRepository } from '@modules/versions/repository';
+import { AppEnvironmentUtilService } from '@ee/app-environments/util.service';
 import { GranularPermissionResourceType } from '@modules/external-apis/dto';
 import { AppBase } from '@entities/app_base.entity';
 
@@ -42,6 +46,10 @@ describe('ExternalApiUtilService.validateResourcesExist — workflow name resolu
         { provide: UserDetailsService, useValue: {} },
         { provide: EventEmitter2, useValue: {} },
         { provide: GitSyncConfigsUtilService, useValue: {} },
+        { provide: LicenseTermsService, useValue: {} },
+        { provide: VersionUtilService, useValue: {} },
+        { provide: VersionRepository, useValue: {} },
+        { provide: AppEnvironmentUtilService, useValue: {} },
       ],
     }).compile();
 

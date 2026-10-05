@@ -25,6 +25,7 @@ import { UserBanListRepository } from '@modules/users/repositories/user-ban-list
 import { OrganizationUsersModule } from '@modules/organization-users/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
+import { AppHistoryModule } from '@modules/app-history/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -45,6 +46,8 @@ export class ExternalApiModule extends SubModule {
       ExternalApisAppFoldersControllerV2,
       ExternalApisModuleFoldersControllerV2,
       ExternalApisWorkflowFoldersControllerV2,
+      ExternalApisEnvironmentsControllerV2,
+      ExternalApisAppVersionsControllerV2,
       ExternalApisTjdbController,
       ExternalApisBanController,
       ExternalApisAppExportController,
@@ -61,6 +64,8 @@ export class ExternalApiModule extends SubModule {
       'controllers/app-folders.controller.v2',
       'controllers/module-folders.controller.v2',
       'controllers/workflow-folders.controller.v2',
+      'controllers/environments.controller.v2',
+      'controllers/app-versions.controller.v2',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
       'controllers/app-export.controller',
@@ -84,6 +89,7 @@ export class ExternalApiModule extends SubModule {
         await OrganizationUsersModule.register(configs),
         await FolderAppsModule.register(configs),
         await FoldersModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -113,6 +119,8 @@ export class ExternalApiModule extends SubModule {
             ExternalApisAppFoldersControllerV2,
             ExternalApisModuleFoldersControllerV2,
             ExternalApisWorkflowFoldersControllerV2,
+            ExternalApisEnvironmentsControllerV2,
+            ExternalApisAppVersionsControllerV2,
             ExternalApisTjdbController,
             ExternalApisBanController,
             ExternalApisAppExportController,
