@@ -12,6 +12,8 @@ import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import './Button.scss';
 import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize, getLucideIconSize } from './ButtonUtils.jsx';
 
+const disabledIconColor = 'color-mix(in srgb, var(--icon-on-solid, #FFFFFF) 50%, transparent)';
+
 const buttonVariants = cva(
   'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors focus-visible:tw-outline-none tw-disabled:tw-pointer-events-none tw-disabled:tw-opacity-50',
   {
@@ -140,8 +142,13 @@ const Button = forwardRef(
     },
     ref
   ) => {
-    const iconFillColor =
+    const defaultIconFillColor =
       !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
+
+    // Only apply the on-solid token to solid-background variants to avoid white-on-white icons on outline/secondary buttons
+    const isSolidVariant = variant === 'primary' || variant === 'dangerPrimary';
+
+    const iconFillColor = disabled && isSolidVariant ? disabledIconColor : defaultIconFillColor;
 
     const Comp = asChild ? Slot : component;
     const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
