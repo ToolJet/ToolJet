@@ -11,7 +11,8 @@ export interface IPluginsUtilService {
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
     },
-    specFiles?: Record<string, string>
+    specFiles?: Record<string, string>,
+    darkIcon?: string
   ): Promise<any>;
 
   fetchPluginFiles(
@@ -31,8 +32,15 @@ export interface IPluginsUtilService {
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
     },
-    specFiles?: Record<string, string>
+    specFiles?: Record<string, string>,
+    darkIcon?: string
   ): Promise<any>;
+
+  storeDarkIcon(
+    currentFileId: string | null | undefined,
+    darkIcon: string | undefined,
+    manager: EntityManager
+  ): Promise<string | null>;
 
   updateSpecFilesForReload(
     currentMap: Record<string, string> | null,
