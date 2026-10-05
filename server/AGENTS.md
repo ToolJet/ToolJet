@@ -108,10 +108,11 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 5. Which matrix cells does this cover — and which are deliberately skipped because they short-circuit or don't interact?
 
 - Location: `test/modules/` mirrors `src/modules/`; each module gets `e2e/` and optional `unit/`.
+- Placement: a spec lives where the code it needs lives. `test/` runs as CE and must pass without the private submodules. Specs that import EE code or need an `ee`/`cloud` app go in `ee/test/` (same layout). Mixed specs get split. `scripts/check-ee-leak.sh` enforces this on pre-push and in CI.
 - Isolation: one-time TRUNCATE in global setup, then **suite-level transaction per spec file with per-test SAVEPOINTs** (no per-test TRUNCATE). A no-op QueryRunner proxy routes service "transactions" through the suite TX; `withRealTransactions(fn)` opts out for tests verifying real rollback.
 - Seed data in `beforeAll` (persists across tests in the suite); per-test mocks/config in `beforeEach`; `jest.resetAllMocks()` in `afterEach`; `closeTestApp(app)` in `afterAll` (60s timeout).
-- Describe naming: `Controller` → edition (`EE (plan: enterprise)` / `CE` / `Cloud`) → `POST /api/x | Intent` → `it('should ... with ...')`. Reads top-to-bottom as a sentence.
-- Edition/plan blocks only when behavior differs: EE-only features add a `CE` block asserting the 403/gating error; plan-variant features get one describe per plan.
+- Describe naming: `Controller` → (only when the plan varies) `on the <plan> plan` → `POST /api/x | Intent` → `it('should ... with ...')`. Reads top-to-bottom as a sentence.
+- The tree picks the edition: shared behavior is tested once in `test/` with a bare `initTestApp()` (CE). Behavior that differs gets a case in each tree: the CE outcome (403/404/451) in `test/`, the EE/Cloud outcome in the same-named `ee/test/` file; plan variance is one describe per plan in `ee/test/`.
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
