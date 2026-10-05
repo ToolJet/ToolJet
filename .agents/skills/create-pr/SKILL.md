@@ -113,16 +113,16 @@ Analyze the commits and diff to determine:
 - Only include evidence that was actually produced: never add an empty or placeholder section
 
 **Issue and reference lines:** these go inside "What this does", one labelled line each, and only when they have content:
-- `**Closes:** #123`, or `**Relates to:** #123` when the PR only partly resolves the issue.
+- `📌 **Closes:** #123`, or `📌 **Relates to:** #123` when the PR only partly resolves the issue.
   - Issues in the private tracker (e.g. from `kickoff`) need the full reference: `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
-- `**PRD:** [title](url)` and `**Design:** [title](url)`, when PRD or design links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
-- `**Sub-issues:** #124, #125`: numbers only, because GitHub renders the titles.
-  - With multiple parents, use one line each: `**Sub-issues (#123):** #124, #125`.
+- `**PRD:** [title](url)` and `**Design:** [title](url)` on the same 📌 line, when PRD or design links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- `📌 **Sub-issues:** #124, #125`: numbers only, because GitHub renders the titles.
+  - With multiple parents, use one line each: `📌 **Sub-issues (#123):** #124, #125`.
   - Wrap the list in `<details>` when there are more than about 6.
 
 **Merge danger:** always state it. It tells the reviewer how hard to look.
-- **Two-way door** (cheap to revert): one line in "What this does": `**Merge danger:** two-way · blast radius: <what it can affect>`.
-- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): add the `🚪 Merge danger` section. Say what can't be undone, the rollback plan, and the blast radius.
+- **Two-way door** (cheap to revert): one line in "What this does": `🚦 **Merge danger:** 🟢 two-way · blast radius: <what it can affect>`.
+- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): the line reads `🔴 one-way`, and the `⚠️ Merge danger` section is added. Say what can't be undone, the rollback plan, and the blast radius.
 - **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
 **Conditional sections: include only when they apply.**
@@ -149,11 +149,11 @@ Analyze the commits and diff to determine:
 - [ee-server](<PR url or "no changes">)
 - [ee-frontend](<PR url or "no changes">)
 
-**Merge danger:** <two-way | one-way> · blast radius: <scope>
-**Closes:** <#issue> · **PRD:** [title](url) · **Design:** [title](url)
-**Sub-issues:** <#num, #num>
+🚦 **Merge danger:** <🟢 two-way | 🔴 one-way> · blast radius: <scope>
+📌 **Closes:** <#issue> · **PRD:** [title](url) · **Design:** [title](url)
+📌 **Sub-issues:** <#num, #num>
 
-## 🚪 Merge danger
+## ⚠️ Merge danger
 <one-way doors only: what can't be undone · rollback plan · blast radius>
 
 ## 🔀 Changes
