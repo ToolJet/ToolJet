@@ -295,7 +295,8 @@ const TagsInput = ({
 
   // Find existing option by label or value
   const findMatchingOption = (tagText) => {
-    return allOptions.find((opt) => opt.label === tagText || opt.value === tagText);
+    // Disabled options are skipped on the paste path too — every other way in already refuses them.
+    return allOptions.find((opt) => !opt.isDisabled && (opt.label === tagText || opt.value === tagText));
   };
 
   // Check if tag is already selected
@@ -612,8 +613,11 @@ const TagsInput = ({
         const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
         const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
-        // Find matching option by value first, then by label as fallback
-        const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+        // Find matching option by value first, then by label as fallback. Disabled options are
+        // skipped here too, as DropdownV2's selectOption does — a CSA is not a way around the guard.
+        const matchingOption = allOptions.find(
+          (option) => !option.isDisabled && (option.value === tagValue || option.label === tagLabel)
+        );
 
         // Against the array being built, not the pre-call selection: value and label name the same option.
         if (matchingOption && !newSelected.some((s) => s.value === matchingOption.value)) {

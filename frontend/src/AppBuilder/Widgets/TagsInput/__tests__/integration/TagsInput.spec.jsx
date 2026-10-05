@@ -1196,6 +1196,45 @@ describe('TagsInput: disabled options cannot be selected', () => {
     expect(exposed('values')).toEqual([]);
   });
 
+  test.each([
+    ['its value', 'b'],
+    ['its label', 'Blocked'],
+  ])('[TagsInput-BUG-011] `selectTags` given a disabled option by %s selects nothing', async (_name, tag) => {
+    // Break this catches: the CSA looking an option up by value-or-label without re-checking
+    // `disable`, so a RunJS query or a Control component event walks past the guard the keyboard
+    // paths respect. DropdownV2's selectOption already filters disabled options out.
+    await mountWithDisabled();
+
+    await widget.act('selectTags', [tag]);
+
+    await waitFor(() => expect(exposed('values')).toEqual([]));
+    expect(chips()).toEqual([]);
+  });
+
+  test('[TagsInput-BUG-011] `selectTags` still selects the enabled options in the same call', async () => {
+    // Break this catches: rejecting the whole call because one tag in it is disabled.
+    await mountWithDisabled();
+
+    await widget.act('selectTags', ['b', 'a']);
+
+    await waitFor(() => expect(chips()).toEqual(['Alpha']));
+    expect(exposed('values')).toEqual(['a']);
+  });
+
+  test('[TagsInput-BUG-011] pasting a delimited list does not bring a disabled option in with it', async () => {
+    // Break this catches: the paste path having its own lookup (findMatchingOption) that never
+    // re-checks `disable`, so a comma-separated paste smuggles in what typing alone cannot.
+    await mountWithDisabled({ allowNewTags: binding('{{false}}') });
+    await openMenu();
+
+    // A real paste, not typed commas: typing routes through the comma key handler instead.
+    input().focus();
+    await user().paste('Alpha,Blocked');
+
+    await waitFor(() => expect(chips()).toEqual(['Alpha']));
+    expect(exposed('values')).toEqual(['a']);
+  });
+
   test('[TagsInput-BUG-011] an enabled option is still selectable the same way', async () => {
     // Break this catches: a guard that rejects every typed selection, not just the disabled ones.
     await mountWithDisabled({ allowNewTags: binding('{{false}}') });
