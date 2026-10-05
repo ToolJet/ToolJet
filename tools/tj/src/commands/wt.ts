@@ -1,12 +1,11 @@
-// Worktrees: add (create + setup), rm (stop + drop DBs + remove), ls, path.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { type Command, requireArg } from '../args.ts';
 import { readEnv } from '../env.ts';
-import { dbNames, defaultBase, findWorktree, repoAt, worktreeDir, worktrees } from '../repo.ts';
+import { dbNames, defaultBase, findWorktree, repoAt, SUBMODULES, worktreeDir, worktrees } from '../repo.ts';
 import { status, SERVICES } from '../services.ts';
-import { alive, capture, git, killGroup } from '../sh.ts';
+import { capture, git, killGroup, owned } from '../sh.ts';
 import { clearRun, loadRun, loadState } from '../state.ts';
 import { emit, EXIT, interactive, since, TjError, ui } from '../ui.ts';
 import { setup, setupOptions } from './setup.ts';
@@ -25,12 +24,15 @@ export const wtAdd: Command = {
     const branch = requireArg(ctx, 0, 'branch', this.usage);
     const main = (await repoAt(ctx.cwd)).main;
     const existing = await findWorktree(main, branch);
+    if (!existing) await capture('git', ['fetch', '-q', 'origin', branch], { cwd: main }); // may not exist remotely
     const path = existing?.path ?? (ctx.values.path as string | undefined) ?? worktreeDir(main, branch);
     if (existing) ui.info(`worktree exists: ${path}`);
     else if (await branchExists(main, `refs/heads/${branch}`)) await git(main, 'worktree', 'add', path, branch);
     else if (await branchExists(main, `refs/remotes/origin/${branch}`)) await git(main, 'worktree', 'add', '--track', '-b', branch, path, `origin/${branch}`);
     else {
       const base = (ctx.values.base as string | undefined) ?? (await defaultBase(main));
+      if (!base) throw new TjError('could not read the remote default branch', { hint: 'pass --base <ref>' });
+      if (base.startsWith('origin/')) await git(main, 'fetch', '-q', 'origin', base.slice('origin/'.length));
       await git(main, 'worktree', 'add', '-b', branch, path, base);
       ui.ok(`new branch ${branch} from ${base}`);
     }
@@ -49,8 +51,24 @@ async function confirm(question: string) {
   return /^y(es)?$/i.test(answer.trim());
 }
 
+// Root commits survive `worktree remove` (shared repo); submodule git dirs live in the
+// worktree's admin dir and are deleted with it, so their unpushed commits count too.
+export async function unsavedWork(path: string) {
+  const found: string[] = [];
+  const repos = [{ dir: path, label: 'worktree', pin: '' }, ...SUBMODULES.map((sm) => ({ dir: join(path, sm), label: sm, pin: sm }))];
+  for (const { dir, label, pin } of repos) {
+    if (!existsSync(join(dir, '.git'))) continue;
+    if ((await capture('git', ['status', '--porcelain', '--ignore-submodules=all'], { cwd: dir })).out) found.push(`${label}: uncommitted changes`);
+    if (!pin) continue;
+    const pinned = await capture('git', ['rev-parse', '-q', '--verify', `HEAD:${pin}`], { cwd: path });
+    const ahead = (await capture('git', ['log', '--oneline', 'HEAD', '--branches', '--not', '--remotes', ...(pinned.code === 0 ? [pinned.out] : [])], { cwd: dir })).out;
+    if (ahead) found.push(`${label}: ${ahead.split('\n').length} unpushed commit(s)`);
+  }
+  return found;
+}
+
 async function dropDb(name: string, env: Record<string, string>, prefix: 'PG' | 'TOOLJET_DB') {
-  const get = (k: string) => env[`${prefix}_${k}`] ?? env[`PG_${k}`];
+  const get = (k: string) => env[`${prefix}_${k}`] || env[`PG_${k}`] || undefined;
   const args = ['--if-exists', '-h', get('HOST') ?? 'localhost', '-p', get('PORT') ?? '5432', '-U', get('USER') ?? 'postgres', name];
   const r = await capture('dropdb', args, { cwd: process.cwd(), env: { ...process.env, PGPASSWORD: get('PASS') ?? '' } });
   if (r.code !== 0) throw new TjError(`dropdb ${name} failed: ${r.err}`);
@@ -59,8 +77,9 @@ async function dropDb(name: string, env: Record<string, string>, prefix: 'PG' | 
 export const wtRm: Command = {
   name: 'wt rm',
   summary: 'Stop services, drop the worktree DBs and remove the worktree',
-  usage: 'tj wt rm <branch|path> [--yes] [--delete-branch] [--dry-run]',
+  usage: 'tj wt rm <branch|path> [--yes] [--discard-changes] [--delete-branch] [--dry-run]',
   options: {
+    'discard-changes': { type: 'boolean', desc: 'Remove even with uncommitted changes or unpushed commits' },
     'delete-branch': { type: 'boolean', desc: 'Also delete the local branch (git branch -d)' },
     'dry-run': { type: 'boolean', desc: 'Show what would be removed' },
   },
@@ -74,8 +93,11 @@ export const wtRm: Command = {
     const state = loadState(wt.path);
     const dbs = { ...names, ...state.dbs };
     const env = { ...readEnv(join(wt.path, '.env.test')), ...readEnv(join(wt.path, '.env')) };
-    const plan = { path: wt.path, branch: wt.branch, dropDbs: Object.values(dbs), deleteBranch: !!ctx.values['delete-branch'] };
+    const unsaved = await unsavedWork(wt.path);
+    const plan = { path: wt.path, branch: wt.branch, dropDbs: Object.values(dbs), deleteBranch: !!ctx.values['delete-branch'], unsaved };
     if (ctx.values['dry-run']) return emit({ dryRun: true, ...plan }, () => Object.entries(plan).forEach(([k, v]) => ui.info(`${k}: ${v}`)));
+    if (unsaved.length && !ctx.values['discard-changes'])
+      throw new TjError(`unsaved work would be lost: ${unsaved.join('; ')}`, { code: EXIT.usage, hint: 'commit and push it, or re-run with --discard-changes' });
     if (!ctx.values.yes) {
       if (!interactive) throw new TjError(`would remove ${wt.path} and drop ${plan.dropDbs.length} DBs`, { code: EXIT.usage, hint: 're-run with --yes' });
       if (!(await confirm(`Remove ${wt.path} and drop its DBs?`))) throw new TjError('aborted');
@@ -83,7 +105,7 @@ export const wtRm: Command = {
     const t = Date.now();
     for (const svc of SERVICES) {
       const run = loadRun(wt.path, svc);
-      if (run && alive(run.pid)) {
+      if (run && (await owned(run))) {
         await killGroup(run.pid);
         ui.ok(`${svc} stopped`);
       }

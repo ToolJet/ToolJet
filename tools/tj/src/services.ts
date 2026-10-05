@@ -1,7 +1,6 @@
-// Dev services: how to start them, where they listen, how to tell they're ready.
 import { join } from 'node:path';
 import { readEnv } from './env.ts';
-import { alive } from './sh.ts';
+import { owned } from './sh.ts';
 import { loadRun } from './state.ts';
 import { isFree } from './net.ts';
 
@@ -30,7 +29,7 @@ export function spec(svc: Svc, root: string) {
 export async function status(root: string, svc: Svc) {
   const run = loadRun(root, svc);
   const port = spec(svc, root).port;
-  const running = Boolean(run && alive(run.pid));
+  const running = await owned(run);
   const listening = !(await isFree(port));
   return { service: svc, running, pid: running ? run?.pid : undefined, port, listening, url: `http://localhost:${port}`, log: run?.log };
 }

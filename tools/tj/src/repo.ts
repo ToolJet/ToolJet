@@ -1,4 +1,3 @@
-// Where we are: checkout root, main checkout, branch, names derived from the branch.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
@@ -73,5 +72,5 @@ export async function findWorktree(main: string, ref: string) {
 export async function defaultBase(root: string) {
   const r = await capture('git', ['ls-remote', '--symref', 'origin', 'HEAD'], { cwd: root });
   const branch = /^ref: refs\/heads\/(\S+)\s+HEAD/m.exec(r.out)?.[1];
-  return `origin/${branch ?? 'main'}`;
+  return branch && `origin/${branch}`;
 }

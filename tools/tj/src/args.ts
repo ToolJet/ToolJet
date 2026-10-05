@@ -1,4 +1,3 @@
-// Command registry types + argv → (command, values, positionals). One table drives dispatch and help.
 import { parseArgs } from 'node:util';
 import { EXIT, TjError } from './ui.ts';
 
@@ -22,7 +21,6 @@ export const globalOptions: Record<string, Opt> = {
   help: { type: 'boolean', short: 'h', desc: 'Show help' },
 };
 
-// "wt add x" → command "wt add"; longest name wins.
 export function resolve(commands: Command[], argv: string[]) {
   const words = argv.filter((a) => !a.startsWith('-'));
   for (const n of [2, 1]) {

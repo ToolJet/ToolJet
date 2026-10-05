@@ -30,7 +30,6 @@ export function tail(file: string, n = 30): string {
   return readFileSync(file, 'utf8').trimEnd().split('\n').slice(-n).join('\n');
 }
 
-// Run a step to completion. Output → log (or stderr with --verbose); on failure, show the log tail.
 export function run(label: string, cmd: string, args: string[], opts: RunOpts & { log: string }): Promise<void> {
   mkdirSync(dirname(opts.log), { recursive: true });
   appendFileSync(opts.log, `\n$ ${cmd} ${args.join(' ')}  (cwd ${opts.cwd})\n`);
@@ -68,7 +67,15 @@ export function alive(pid: number): boolean {
   }
 }
 
-// TERM the whole group, KILL after the grace period.
+export async function procStart(pid: number) {
+  return (await capture('ps', ['-o', 'lstart=', '-p', String(pid)], { cwd: process.cwd() })).out;
+}
+
+// pid alone can be reused after a reboot
+export async function owned(run: { pid: number; procStart?: string } | undefined) {
+  return !!run && alive(run.pid) && (!run.procStart || (await procStart(run.pid)) === run.procStart);
+}
+
 export async function killGroup(pid: number, graceMs = 10_000) {
   const signal = (s: NodeJS.Signals) => {
     try {

@@ -1,4 +1,3 @@
-// Ports and readiness.
 import { createConnection, createServer } from 'node:net';
 import { sleep } from './sh.ts';
 
@@ -33,7 +32,6 @@ export function reachable(host: string, port: number, timeoutMs = 1500): Promise
   });
 }
 
-// Poll until the URL answers below 500, the process dies, or time runs out.
 export async function waitHttp(url: string, timeoutMs: number, stillAlive: () => boolean) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {

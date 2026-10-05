@@ -1,4 +1,3 @@
-// Dev servers: detached start with health wait, group stop, status, logs.
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,7 +6,7 @@ import { readEnv } from '../env.ts';
 import { reachable, waitHttp } from '../net.ts';
 import { repoAt } from '../repo.ts';
 import { pickServices, SERVICES, spec, status, type Svc } from '../services.ts';
-import { alive, killGroup, startDetached, tail } from '../sh.ts';
+import { alive, killGroup, owned, procStart, startDetached, tail } from '../sh.ts';
 import { clearRun, loadRun, logFile, saveRun } from '../state.ts';
 import { emit, EXIT, flags, since, TjError, ui } from '../ui.ts';
 
@@ -50,7 +49,7 @@ export const start: Command = {
       const sp = spec(svc, root);
       const log = logFile(root, svc);
       const pid = startDetached('npm', sp.args, { cwd: sp.cwd, env: { ...process.env, ...sp.env }, log });
-      saveRun(root, svc, { pid, port: sp.port, startedAt: new Date().toISOString(), log });
+      saveRun(root, svc, { pid, procStart: await procStart(pid), port: sp.port, startedAt: new Date().toISOString(), log });
       ui.step(`${svc} starting :${sp.port} (pid ${pid})`);
       started.push({ svc, pid, t: Date.now() });
     }
@@ -84,7 +83,7 @@ export const stop: Command = {
     const { root } = await repoAt(cwd);
     for (const svc of pickServices(args)) {
       const run = loadRun(root, svc);
-      if (run && alive(run.pid)) {
+      if (run && (await owned(run))) {
         await killGroup(run.pid);
         ui.ok(`${svc} stopped`);
       } else ui.info(`${svc} not running`);

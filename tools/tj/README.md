@@ -29,7 +29,7 @@ cd "$(tj wt path feat/x)"
 tj start                             # server + frontend in the background, waits for health
 tj status && tj logs server -f
 tj stop
-tj wt rm feat/x --yes                # stop, drop its DBs, remove the worktree
+tj wt rm feat/x --yes                # stop, drop its DBs, remove the worktree (refuses on unsaved work)
 tj db migrate --test                 # migrate the test DB (NODE_ENV=test alone is a no-op)
 ```
 
@@ -39,7 +39,7 @@ tj db migrate --test                 # migrate the test DB (NODE_ENV=test alone 
 - **stderr is progress.**
   - On a terminal: `› step`, `✔ ok`, `⚠ warn`, `✖ fail`, `· info`, `→ hint`.
   - When piped, in CI, or under a coding agent: `step:`, `ok:`, `warn:`, `fail:`, `info:`, `hint:` lines with no colour.
-  - `NO_COLOR` and `FORCE_COLOR` are respected.
+  - `NO_COLOR` is respected.
 - **Exit codes:** `0` ok, `1` failed, `2` usage, `3` not ready (health timeout).
 - **Never prompts** without a terminal. Destructive commands need `--yes` there.
 - Subprocess output goes to `.tj/logs/<name>.log`, or stderr with `--verbose`. On failure the log tail is shown.

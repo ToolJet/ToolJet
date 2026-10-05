@@ -1,4 +1,3 @@
-// Bootstrap a checkout: submodules, env files, deps, plugins build, test DBs, optionally a runnable app.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -30,7 +29,8 @@ async function syncSubmodules(repo: Repo) {
     await git(repo.root, ...url, 'submodule', 'update', '--init', sm);
     const same = await capture('git', ['rev-parse', '-q', '--verify', `origin/${repo.branch}`], { cwd: join(repo.root, sm) });
     if (repo.isWorktree && repo.branch && same.code === 0) {
-      await git(join(repo.root, sm), 'checkout', '-q', '-B', repo.branch, `origin/${repo.branch}`);
+      const has = await capture('git', ['rev-parse', '-q', '--verify', `refs/heads/${repo.branch}`], { cwd: join(repo.root, sm) });
+      await git(join(repo.root, sm), 'checkout', '-q', ...(has.code === 0 ? [repo.branch] : ['-b', repo.branch, `origin/${repo.branch}`]));
       ui.ok(`${sm} on ${repo.branch}`);
     } else ui.ok(`${sm} at pinned commit`);
   }
@@ -53,7 +53,7 @@ async function installDeps(repo: Repo, state: State, dirs: string[], force: bool
       ui.ok(`${d}: deps installed ${since(t)}`);
     }),
   );
-  const pluginsHash = deps.plugins;
+  const pluginsHash = (await capture('git', ['rev-parse', 'HEAD:plugins'], { cwd: repo.root })).out || deps.plugins;
   if (force || deps['plugins:build'] !== pluginsHash || !existsSync(join(repo.root, 'plugins', 'dist'))) {
     const t = Date.now();
     ui.step('plugins: build');
@@ -110,6 +110,7 @@ export async function setup(repo: Repo, o: SetupOpts) {
 
   // root: husky, lint-staged and typescript, so pre-commit hooks work in the worktree
   await installDeps(repo, state, ['root', 'server', 'plugins', ...(o.frontend || o.app ? ['frontend'] : [])], o.force);
+  saveState(repo.root, { ...state, branch: repo.branch });
   if (existsSync(envTest)) await dbSetup(repo, 'test');
   else ui.warn('no .env.test — skipping test DB');
 

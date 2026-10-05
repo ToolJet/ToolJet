@@ -41,7 +41,6 @@ export const ui = {
   bold: (text: string) => paint('bold', text),
 };
 
-// Aligned key/value block on a TTY; `key=value` lines otherwise.
 export function kv(rows: Record<string, unknown>, stream: NodeJS.WriteStream = process.stdout) {
   const keys = Object.keys(rows).filter((k) => rows[k] !== undefined);
   const width = Math.max(0, ...keys.map((k) => k.length));
@@ -52,7 +51,6 @@ export function kv(rows: Record<string, unknown>, stream: NodeJS.WriteStream = p
   }
 }
 
-// Emit a command's result: JSON document on stdout with --json, else the human renderer.
 export function emit(data: Record<string, unknown>, render?: () => void) {
   if (flags.json) process.stdout.write(`${JSON.stringify({ schemaVersion: 1, ok: true, ...data }, null, 2)}\n`);
   else render?.();

@@ -1,4 +1,3 @@
-// tj: ToolJet dev toolkit. One command table drives dispatch, --help and `tj help --json`.
 import { type Command, globalOptions, type Opt, parse, resolve } from './args.ts';
 import { dbMigrate } from './commands/db.ts';
 import { doctor, info } from './commands/info.ts';

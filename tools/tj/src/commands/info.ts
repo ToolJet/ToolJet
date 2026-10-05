@@ -1,4 +1,3 @@
-// info: what this checkout is. doctor: is it able to work, and how to fix what isn't.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Command } from '../args.ts';
@@ -77,9 +76,9 @@ export const doctor: Command = {
     const remoteHead = await defaultBase(repo.root);
     add({
       name: 'origin/HEAD',
-      ok: !localHead || localHead === remoteHead,
+      ok: !localHead || !remoteHead || localHead === remoteHead,
       level: 'warn',
-      detail: localHead ? `${localHead} (remote default: ${remoteHead})` : 'unset',
+      detail: localHead ? `${localHead} (remote default: ${remoteHead ?? 'unknown, remote unreachable'})` : 'unset',
       hint: 'git remote set-head origin --auto  (a stale value makes gh stack retarget PRs)',
     });
     const state = loadState(repo.root);

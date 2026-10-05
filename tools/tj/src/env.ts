@@ -1,4 +1,3 @@
-// .env / .env.test: read with Node's dotenv parser, write by key without touching other lines.
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseEnv } from 'node:util';
@@ -9,7 +8,6 @@ export function readEnv(file: string): Env {
   return existsSync(file) ? (parseEnv(readFileSync(file, 'utf8')) as Env) : {};
 }
 
-// Replace `KEY=` lines in place, append missing keys. Pure, so it's testable.
 export function setKeys(content: string, updates: Env): string {
   const lines = content.split('\n');
   const pending = new Map(Object.entries(updates));
@@ -39,10 +37,14 @@ export async function withoutDotEnv<T>(root: string, fn: () => Promise<T>): Prom
   if (existsSync(hidden) && !existsSync(env)) renameSync(hidden, env); // recover from a crashed run
   const moved = existsSync(env);
   if (moved) renameSync(env, hidden);
+  // SIGINT exits via process.exit, which skips finally
+  const restore = () => moved && existsSync(hidden) && renameSync(hidden, env);
+  process.once('exit', restore);
   try {
     return await fn();
   } finally {
-    if (moved) renameSync(hidden, env);
+    process.off('exit', restore);
+    restore();
   }
 }
 

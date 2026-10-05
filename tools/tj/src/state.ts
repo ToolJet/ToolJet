@@ -6,10 +6,10 @@ export type State = {
   branch?: string;
   dbs?: { dev?: string; tjdbDev?: string; test?: string; tjdbTest?: string };
   ports?: { server?: number; frontend?: number };
-  deps?: Record<string, string>; // dir → package-lock hash at last install
+  deps?: Record<string, string>; // dir → package-lock hash at last install; plugins:build → plugins tree hash
 };
 
-export type RunInfo = { pid: number; port: number; startedAt: string; log: string };
+export type RunInfo = { pid: number; procStart?: string; port: number; startedAt: string; log: string };
 
 const dir = (root: string) => join(root, '.tj');
 export const logFile = (root: string, name: string) => join(dir(root), 'logs', `${name}.log`);
