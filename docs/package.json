@@ -47,9 +47,18 @@
     "fast-uri": "3.1.7",
     "got": "^12.1.0",
     "js-yaml": "4.3.2",
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.21"
+    },
+    "minimatch@9.0.9": {
+      "brace-expansion": "2.1.7"
+    },
     "nanoid": "3.3.19",
     "svgo": "3.3.5",
-    "trim": "^0.0.3"
+    "trim": "^0.0.3",
+    "webpack-dev-server": {
+      "webpack-dev-middleware": "7.4.6"
+    }
   },
   "private": true,
   "scripts": {
