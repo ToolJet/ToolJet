@@ -6752,6 +6752,14 @@ a.step-item-disabled {
   }
 }
 
+// outlined brand action, e.g. "Switch branch"
+.notification-toast-view--accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--border-accent-weak);
+}
+
 // cap the bell list to ~4 rows; scroll the rest (bell sits low, panel grows upward)
 .notification-center .notifications-card .list-group {
   max-height: 320px;
