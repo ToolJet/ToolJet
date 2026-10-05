@@ -122,6 +122,13 @@ DTO, missing `ClassSerializerInterceptor`, missing `toMatchObject` shape test, d
 no consumer grep across `frontend/src` and `frontend/ee`. Anything under `external-apis/` is the
 public contract and a removed field needs a deprecation path.
 
+## Merge danger and evidence
+
+- **The door label must be honest.** A PR that drops or rewrites data, changes a public API or contract, or triggers a release or other external side effect is a one-way door, whatever its description says. A one-way door labelled two-way is a finding.
+- **Check the blast radius against the diff:** editions, tenants, modules, contract consumers, and existing saved apps.
+- **A one-way door with no Evidence section** (before → after proof that it works) is a finding.
+- **A runtime change whose only evidence is "it should work"** is unverified. Ask for the test run or the screenshot.
+
 ## Security
 
 Authority: `server/AGENTS.md` "Security" (parameterized queries only), `frontend/AGENTS.md`

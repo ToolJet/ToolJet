@@ -142,8 +142,11 @@ Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load th
 | Commit across root + submodules                                          | `commit`                                                      |
 | Push and open PRs across root + submodules                               | `create-pr`                                                   |
 | Take an issue to a plan, sub-issues, stacked branches, and AFK subagents | `kickoff` (uses `decompose-plan`, `grill-me`, `create-issue`) |
+| Review sessions and turn lessons into context/tooling fixes              | `retro`                                                       |
 | Add, move, or repair a skill                                             | `manage-skills`                                               |
 | Create or validate a marketplace plugin                                  | `create-plugin`                                               |
+
+When a session involved user corrections, failed approaches, workarounds or stale context, suggest running `retro` before it ends. Don't run it unprompted.
 
 Skills live in the `frontend/ee` submodule by default (`bug-triage`, `kickoff`, …); only contributor-facing skills live in the public root. Private skills appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
 

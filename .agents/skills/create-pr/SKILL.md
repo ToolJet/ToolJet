@@ -110,83 +110,73 @@ Analyze the commits and diff to determine:
 - Keep change bullets short, one line each, past tense, max 5. Combine related items if needed
 - **Break up anything verbose.** A paragraph running past 2-3 lines, or a bullet carrying more than one idea, gets split into separate lines or sub-bullets — one idea per line. Reviewers skim; a wall of text hides the change instead of explaining it. If a section still reads long after splitting, it is saying too much — cut it, don't reformat it
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
-- Only add a Screenshots section if actual screenshots are being included — never add an empty Screenshots heading
+- Only include evidence that was actually produced: never add an empty or placeholder section
 
-**Issue linking rules:**
-- Use `Closes #123` if the PR fully resolves the issue, `Relates to: #123` if partial
-- Issues in the private tracker (e.g. from `kickoff`) need the full reference: `Closes ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR
-- Multiple parents: `Relates to: #123, #456`
-- Sub-issues: list issue numbers ONLY — do NOT repeat the title after the number (GitHub auto-renders titles from issue references)
-  ```
-  Sub-issues:
-  - #124
-  - #125
-  ```
-- Multiple parents with sub-issues — nest under each:
-  ```
-  Sub-issues (#123):
-  - #124
-  - #125
+**Issue and reference lines:** these go inside "What this does", one labelled line each, and only when they have content:
+- `**Closes:** #123`, or `**Relates to:** #123` when the PR only partly resolves the issue.
+  - Issues in the private tracker (e.g. from `kickoff`) need the full reference: `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
+- `**PRD:** [title](url)` and `**Design:** [title](url)`, when PRD or design links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- `**Sub-issues:** #124, #125`: numbers only, because GitHub renders the titles.
+  - With multiple parents, use one line each: `**Sub-issues (#123):** #124, #125`.
+  - Wrap the list in `<details>` when there are more than about 6.
 
-  Sub-issues (#456):
-  - #457
-  ```
+**Merge danger:** always state it. It tells the reviewer how hard to look.
+- **Two-way door** (cheap to revert): one line in "What this does": `**Merge danger:** two-way · blast radius: <what it can affect>`.
+- **One-way door** (a migration that drops or rewrites data, a public API or contract change, a release or external side effect, a deletion): add the `🚪 Merge danger` section. Say what can't be undone, the rollback plan, and the blast radius.
+- **Blast radius** names what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 
-**Conditional sections — include ONLY when applicable:**
-- **References**: Include when PRD or design links (ClickUp, Figma, GitHub issue spec) are available from the conversation context. Skip if no external references exist.
-- **Architecture**: Include when the PR introduces new entities, permission models, complex flows, or changes relationships between entities. Use mermaid `erDiagram` for entity models and `sequenceDiagram` for flows. Skip for bug fixes, config changes, or UI-only work.
-- **API Reference**: Include when the PR adds or modifies HTTP endpoints. Use a markdown table with Method, Route, Permission, Request, Response columns. Skip for internal-only changes.
-- **Sub-issues**: Include when the PR relates to tracked GitHub sub-issues. Detect from branch name, commit messages, or conversation context.
-- **Screenshots**: Include when a dev server is running and pages can be captured with Playwright MCP. Take screenshots of key UI changes. Skip entirely if no dev server is available or the PR has no UI changes — never add an empty Screenshots heading.
+**Conditional sections: include only when they apply.**
+- **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
+  - Mermaid for interactions, flows and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
+  - an ASCII call tree, component tree or shallow file tree for structure;
+  - a `diff` block over one of those shapes when the point is what changed in an existing structure;
+  - pseudocode for business logic.
 
-**Main PR body** — use this template EXACTLY as written, including the emoji prefixes in every heading. All sections after "What this does" are conditional — omit any that don't apply:
+  Pick one or two, not all. Skip it for small fixes, config or copy changes.
+- **API Reference:** when HTTP endpoints are added or changed. A table with Method, Route, Permission, Request and Response columns.
+- **Evidence:** when runtime behaviour changes. Show proof it works, as before → after:
+  - a screenshot for visual changes (capture it with Playwright MCP when a dev server is running);
+  - otherwise the failing → passing test, or command output;
+  - for `kickoff` slices, link the verifier's report comment.
+
+  Skip it for docs, tooling, config or CI-only changes.
+- **How to test:** when there is runtime behaviour a reviewer can exercise. Skip it for docs, tooling, config or CI-only changes.
+
+**Main PR body:** use this template exactly as written, including the emoji prefixes. Every line and section after the summary is conditional; omit any that doesn't apply.
 ```
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
 - [ee-server](<PR url or "no changes">)
 - [ee-frontend](<PR url or "no changes">)
 
-## 📎 References
-<omit entire section if no PRD or design links available>
-- **PRD**: [title](url)
-- **Design**: [title](url)
+**Merge danger:** <two-way | one-way> · blast radius: <scope>
+**Closes:** <#issue> · **PRD:** [title](url) · **Design:** [title](url)
+**Sub-issues:** <#num, #num>
 
-<Closes #issue OR Relates to: #issue — omit if no related issue>
-
-<Sub-issues: — omit if none>
-<- #num>
-
-## 🏗️ Architecture
-<omit entire section if no new entities, models, or flows>
-### Entity Model
-<mermaid erDiagram or bullet list>
-### Flows
-<mermaid sequenceDiagram or description>
-
-## 🔌 API Reference
-<omit entire section if no endpoint changes>
-| Method | Route | Permission | Request | Response |
-|--------|-------|------------|---------|----------|
-| **POST** | `/api/...` | `PERM` | `{ body }` | `{ response }` |
+## 🚪 Merge danger
+<one-way doors only: what can't be undone · rollback plan · blast radius>
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes, max 5 bullets>
 
-## 📸 Screenshots
-<omit entire section if no UI changes or no dev server available>
-<take screenshots with Playwright MCP if dev server is running>
+## 🏗️ Architecture
+<smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
+
+## 🔌 API Reference
+| Method | Route | Permission | Request | Response |
+|--------|-------|------------|---------|----------|
+| **POST** | `/api/...` | `PERM` | `{ body }` | `{ response }` |
+
+## 🧾 Evidence
+- **Before:** <screenshot / output / failing test>
+- **After:** <screenshot / output / passing test>
 
 ## 🧪 How to test
-<omit entire section for docs, tooling, config, or CI-only changes with no runtime behaviour to exercise>
 - [ ] <short action-first step>
 ```
 Omit the submodule links entirely if neither submodule has changes.
-Omit the References section if no PRD or design links are available.
-Omit the issue/sub-issues lines if there are no related issues.
-Omit Architecture if there are no new entities, models, or flows.
-Omit API Reference if there are no endpoint changes.
-Omit Screenshots if there are no UI changes or no dev server is available — never add an empty Screenshots heading.
-Omit How to test when there is no runtime behaviour to exercise (docs, tooling, config, CI) — verification for those is the reviewer reading the diff.
+
+The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` skill by Dex Horthy (both MIT).
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
