@@ -267,7 +267,11 @@ export function createWidgetHarness({
     // options) — a positional passthrough silently swallowed a caller's extra
     // arg into `moduleId` once already (componentsSlice.js:2180).
     setComponentProperty: (componentId, property, value, paramType, attr = 'value', skipResolve = false) =>
-      store().setComponentProperty(componentId, property, value, paramType, attr, skipResolve, MODULE_ID),
+      store().setComponentProperty(componentId, property, value, paramType, attr, skipResolve, MODULE_ID, {
+        saveAfterAction: false,
+      }),
+    setLicenseFeatures: (featureAccess) =>
+      useStore.setState((state) => ({ license: { ...state.license, featureAccess } })),
     variables: () => store().resolvedStore.modules[MODULE_ID].exposedValues.variables,
     exposed,
   };

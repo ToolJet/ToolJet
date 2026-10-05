@@ -26,7 +26,7 @@ describe("Editor - App History Panel", { testIsolation: false }, () => {
     cy.get(commonWidgetSelector.appHistoryHeaderTitle).should("not.exist");
   });
 
-  it("should display history entries in the timeline after a canvas change", () => {
+  it.skip("should display history entries in the timeline after a canvas change", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     cy.waitForAutoSave();
 

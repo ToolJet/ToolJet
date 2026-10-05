@@ -72,7 +72,8 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
-      publicApp?: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
     };
     components?: {
       navigation: boolean;

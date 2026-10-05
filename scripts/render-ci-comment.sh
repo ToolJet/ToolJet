@@ -8,6 +8,7 @@
 #   RESULT_BUILD_{SERVER,PLUGINS,FRONTEND,MARKETPLACE}
 #   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}  — full lane
 #   RESULT_CHANGED                     — changed lane
+#   RESULT_FRONTEND                    — both lanes
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
 #   COVERAGE_MD — coverage gate section from coverage-gate.sh, full lane only
 
@@ -47,6 +48,7 @@ echo
 echo "| Step | Result |"
 echo "|------|--------|"
 echo "| **Lint & Build** | $(icon "$RESULT_BUILD_SERVER") server · $(icon "$RESULT_BUILD_PLUGINS") plugins · $(icon "$RESULT_BUILD_FRONTEND") frontend · $(icon "$RESULT_BUILD_MARKETPLACE") marketplace |"
+echo "| **Frontend tests** | $(cell "${RESULT_FRONTEND:-skipped}") |"
 if [ "$MODE" = "full" ]; then
   echo "| **Unit tests** | $(row unit "$RESULT_UNIT") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"

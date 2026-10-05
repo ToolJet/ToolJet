@@ -151,6 +151,7 @@ export enum LICENSE_FIELD {
   QUERY_FOLDERS = 'queryFoldersEnabled',
   AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
   RELEASE = 'releaseEnabled',
+  CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

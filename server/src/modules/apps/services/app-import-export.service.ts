@@ -1455,6 +1455,7 @@ export class AppImportExportService {
         isGitApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1692,6 +1693,15 @@ export class AppImportExportService {
     if (appVersionIds.length > 0) {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
+  }
+
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
   }
 
   async createImportedAppForUser(

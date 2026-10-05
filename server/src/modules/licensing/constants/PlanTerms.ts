@@ -72,6 +72,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       history: false,
       jsLibraries: false,
       publicApp: false,
+      customComponentLibraries: false,
     },
   },
   modules: {
