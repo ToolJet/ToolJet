@@ -42,6 +42,14 @@ export const checkboxConfig = {
       section: 'additionalActions',
     },
 
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      // Falls back to off, unlike the drop default below: a value that fails to resolve must not
+      // resize a saved app.
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
@@ -216,6 +224,7 @@ export const checkboxConfig = {
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },
+      dynamicHeight: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },

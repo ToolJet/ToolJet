@@ -37,6 +37,24 @@ export function createAppBuilderControls() {
         );
       },
     },
+    // jsdom implements no scrolling API at all: `Element.scrollTo`,
+    // `scrollIntoView` and `scrollBy` are simply absent, so a widget that
+    // scrolls its own content (Chat scrolls to the newest message on every
+    // history change) throws `scrollTo is not a function` and dies in the
+    // error boundary. The real elements and the real handlers stay; only the
+    // no-op browser plumbing is supplied.
+    scrolling: {
+      install() {
+        for (const [target, key] of [
+          [Element.prototype, 'scrollTo'],
+          [Element.prototype, 'scrollBy'],
+          [Element.prototype, 'scrollIntoView'],
+          [window, 'scrollTo'],
+        ]) {
+          restores.push(replacePropertyAndCreateRestore(target, key, jest.fn()));
+        }
+      },
+    },
     observers: {
       install() {
         class Observer {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import CreatableSelect from 'react-select/creatable';
 import './tagsInput.scss';
 import cx from 'classnames';
@@ -19,6 +20,14 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
+// Matches react-select's default maxMenuHeight; the menu never renders taller than this.
+const MENU_MAX_HEIGHT = 300;
+
+const labelMatchesSearch = (label, search) =>
+  String(label ?? '')
+    .toLowerCase()
+    .includes(String(search ?? '').toLowerCase());
 
 const TagsInput = ({
   id,
@@ -56,6 +65,7 @@ const TagsInput = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    chipBorderRadius,
     boxShadow,
     labelColor,
     alignment,
@@ -93,6 +103,7 @@ const TagsInput = ({
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState('bottom');
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
   // Dynamic height support - only enabled in view mode (same as TextArea)
@@ -180,10 +191,15 @@ const TagsInput = ({
     return colors;
   };
 
-  // Check for duplicate labels (case-sensitive)
-  const isDuplicate = (label) => {
-    return allOptions.some((opt) => opt.label === label);
-  };
+  // Case-sensitive on purpose: D-09 / TagsInput-TAG-008 make `NEWPORT` a new tag, not a reselection.
+  const findOptionByLabel = (label) => allOptions.find((opt) => opt.label === label);
+
+  // The one exception (D-14): a disabled option blocks near-copies too, or the disable is
+  // bypassable by changing case — the menu already finds it case-insensitively.
+  const findDisabledOptionByLabel = (label) =>
+    allOptions.find((opt) => opt.isDisabled && String(opt.label).toLowerCase() === String(label).toLowerCase());
+
+  const isDuplicate = (label) => !!findOptionByLabel(label);
 
   // Find default items based on options
   function findDefaultItem(values, isAdvanced = false, isDefault = false) {
@@ -219,10 +235,14 @@ const TagsInput = ({
     const trimmedValue = newValue.trim();
     if (!trimmedValue) return;
 
-    if (isDuplicate(trimmedValue)) {
-      // If duplicate exists, just select it if not already selected
-      const existingOption = allOptions.find((opt) => opt.label === trimmedValue);
-      if (existingOption && !selected.some((s) => s.value === existingOption.value)) {
+    if (findDisabledOptionByLabel(trimmedValue)) {
+      setInputValue('');
+      return;
+    }
+
+    const existingOption = findOptionByLabel(trimmedValue);
+    if (existingOption) {
+      if (!selected.some((s) => s.value === existingOption.value)) {
         const newSelected = [...selected, existingOption];
         setInputValues(newSelected);
         fireEvent('onTagAdded');
@@ -249,6 +269,9 @@ const TagsInput = ({
   // Handle change (selection/deselection)
   const onChangeHandler = (items, action) => {
     if (action.action === 'remove-value' || action.action === 'pop-value') {
+      const { label, value } = action.removedValue ?? {};
+      // Published before the event so the builder's handler reads the tag that just went.
+      setExposedVariable('lastDeletedTag', label === undefined ? {} : { label, value });
       fireEvent('onTagDeleted');
     } else if (action.action === 'select-option') {
       fireEvent('onTagAdded');
@@ -330,8 +353,14 @@ const TagsInput = ({
     }
 
     setInputValue(value);
+    // Only a keystroke counts as a search-text change; the many paths that clear the field on
+    // commit are covered by the effect below, which keeps the variable fresh without re-firing.
+    fireEvent('onSearchTextChanged');
     setFocusedOptionIndex(-1);
   };
+
+  // Typing a disabled option's label must not select it, the way arrow-key focus already refuses to.
+  const findSelectableOption = (label) => filteredOptions.find((opt) => opt.label === label && !opt.isDisabled);
 
   // Handle keyboard events
   const handleKeyDown = (e) => {
@@ -384,7 +413,7 @@ const TagsInput = ({
     // Enter key - select highlighted option OR create new tag
     if (e.key === 'Enter') {
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
 
       // When search is disabled, handle selection directly
       if (!enableSearch && inputValue.trim()) {
@@ -444,7 +473,7 @@ const TagsInput = ({
     if ((e.key === ',' || e.key === ';') && inputValue.trim()) {
       e.preventDefault();
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
       if (matchingOption) {
         const newSelected = [...selected, matchingOption];
         setInputValues(newSelected);
@@ -459,7 +488,7 @@ const TagsInput = ({
     // Tab - select existing option or create new tag, otherwise let it move focus
     if (e.key === 'Tab' && inputValue.trim()) {
       const trimmedInput = inputValue.trim();
-      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
+      const matchingOption = findSelectableOption(trimmedInput);
       if (matchingOption) {
         e.preventDefault();
         const newSelected = [...selected, matchingOption];
@@ -550,6 +579,8 @@ const TagsInput = ({
         setExposedVariable('isDisabled', !!value);
       },
       label: label,
+      searchText: '',
+      lastDeletedTag: {},
       isVisible: properties.visibility,
       isLoading: tagsLoadingState,
       isDisabled: properties.disabledState,
@@ -565,40 +596,53 @@ const TagsInput = ({
 
   // Update selectTags/deselectTags when options change
   useEffect(() => {
+    const rejectNonArrayTags = (handle, tags) => {
+      if (Array.isArray(tags)) return true;
+      toast.error(`${handle} expects an array of tags`);
+      return false;
+    };
+
     setExposedVariable('selectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const newSelected = [...selected];
-        tags.forEach((tag) => {
-          // Support both value and label extraction from object
-          const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
-          const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
+      // An event's Tags field resolves to a string unless the builder wrapped it in `{{}}`.
+      if (!rejectNonArrayTags('selectTags', tags)) return;
 
-          // Find matching option by value first, then by label as fallback
-          const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+      const newSelected = [...selected];
+      tags.forEach((tag) => {
+        // Support both value and label extraction from object
+        const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
+        const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
-          if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
-            newSelected.push(matchingOption);
-          }
-        });
-        setInputValues(newSelected);
-      }
+        // Find matching option by value first, then by label as fallback
+        const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+
+        // Against the array being built, not the pre-call selection: value and label name the same option.
+        if (matchingOption && !newSelected.some((s) => s.value === matchingOption.value)) {
+          newSelected.push(matchingOption);
+        }
+      });
+      setInputValues(newSelected);
     });
 
     setExposedVariable('deselectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const tagIdentifiers = tags.map((tag) => ({
-          value: typeof tag === 'object' && tag?.value ? tag.value : tag,
-          label: typeof tag === 'object' && tag?.label ? tag.label : tag,
-        }));
-        // Filter out options that match by value OR label
-        const newSelected = selected.filter(
-          (option) =>
-            !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
-        );
-        setInputValues(newSelected);
-      }
+      if (!rejectNonArrayTags('deselectTags', tags)) return;
+
+      const tagIdentifiers = tags.map((tag) => ({
+        value: typeof tag === 'object' && tag?.value ? tag.value : tag,
+        label: typeof tag === 'object' && tag?.label ? tag.label : tag,
+      }));
+      // Filter out options that match by value OR label
+      const newSelected = selected.filter(
+        (option) =>
+          !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
+      );
+      setInputValues(newSelected);
     });
   }, [allOptions, selected]);
+
+  useEffect(() => {
+    setExposedVariable('searchText', inputValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
 
   useFormClear(() => setInputValues([]));
 
@@ -636,6 +680,14 @@ const TagsInput = ({
       fireEvent('onFocus');
     }
   };
+
+  // react-select measures the menu before the custom "add" footer is appended, so it picks the wrong side.
+  useEffect(() => {
+    if (!isMenuOpen || !tagsRef.current) return;
+    const { top, bottom } = tagsRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - bottom;
+    setMenuPlacement(spaceBelow < MENU_MAX_HEIGHT && top > spaceBelow ? 'top' : 'bottom');
+  }, [isMenuOpen, selected.length, inputValue]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside, { capture: true });
@@ -689,7 +741,10 @@ const TagsInput = ({
       gap: '4px',
       alignItems: selected.length > 0 ? 'flex-start' : 'center',
       maxWidth: '100%',
-      overflow: 'visible',
+      // `visible` let the chip row paint over whatever sat above; the bar is hidden so it keeps no height.
+      overflow: 'auto',
+      scrollbarWidth: 'none',
+      '::-webkit-scrollbar': { width: 0, height: 0 },
       flex: 1,
       height: isDynamicHeightEnabled ? 'auto' : '100%',
     }),
@@ -728,6 +783,10 @@ const TagsInput = ({
     placeholder: (provided) => ({
       ...provided,
       color: 'var(--text-placeholder)',
+      // `valueContainer` is flex, not react-select's grid, so nothing else stacks this behind the input.
+      position: 'absolute',
+      pointerEvents: 'none',
+      margin: 0,
     }),
     option: (provided, state) => {
       // Use our controlled focus state instead of react-select's auto-focus
@@ -783,7 +842,7 @@ const TagsInput = ({
   const filteredOptions = useMemo(() => {
     return allOptions
       .filter((opt) => !selected.some((s) => s.value === opt.value))
-      .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
+      .filter((opt) => serverSideSearch === true || !inputValue || labelMatchesSearch(opt.label, inputValue));
   }, [allOptions, selected, inputValue, serverSideSearch]);
 
   return (
@@ -894,12 +953,12 @@ const TagsInput = ({
             isMulti
             hideSelectedOptions={true}
             filterOption={(option, inputValue) =>
-              serverSideSearch === true ? true : String(option.label ?? '').includes(inputValue)
+              serverSideSearch === true ? true : labelMatchesSearch(option.label, inputValue)
             }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
             onKeyDown={handleKeyDown}
-            menuPlacement="auto"
+            menuPlacement={menuPlacement}
             menuPortalTarget={document.body}
             minMenuHeight={300}
             // Custom props
@@ -909,6 +968,7 @@ const TagsInput = ({
             focusedOptionIndex={focusedOptionIndex}
             autoPickChipColor={autoPickChipColor}
             getChipColor={getChipColor}
+            chipBorderRadius={chipBorderRadius}
           />
         </div>
       </div>

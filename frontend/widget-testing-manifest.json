@@ -61,7 +61,8 @@
     },
     {
       "componentType": "Listview",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Listview/TESTING.md"
     },
     {
       "componentType": "Calendar",
@@ -69,7 +70,8 @@
     },
     {
       "componentType": "Kanban",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Kanban/TESTING.md"
     },
     {
       "componentType": "TextInput",
@@ -124,7 +126,8 @@
     },
     {
       "componentType": "TagsInput",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/TagsInput/TESTING.md"
     },
     {
       "componentType": "Checkbox",
@@ -133,7 +136,8 @@
     },
     {
       "componentType": "ToggleSwitchV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/ToggleSwitchV2/TESTING.md"
     },
     {
       "componentType": "RadioButtonV2",
@@ -260,7 +264,8 @@
     },
     {
       "componentType": "Timer",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Timer/TESTING.md"
     },
     {
       "componentType": "Spinner",
@@ -313,7 +318,8 @@
     },
     {
       "componentType": "Chat",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Chat/TESTING.md"
     },
     {
       "componentType": "ReorderableList",

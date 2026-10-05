@@ -328,6 +328,10 @@ function walkSpecs(frontendRoot) {
   visit('src/AppBuilder/RightSideBar/Inspector/Components/Navigation/hooks/__tests__', (rel) =>
     /\.(js|jsx)$/.test(rel)
   );
+  // Same exception for the shared option-list editor: its helpers decide option identity for every
+  // options-driven widget, so the scenario that owns them lives in a widget contract while the test
+  // sits beside the Inspector code it covers.
+  visit('src/AppBuilder/RightSideBar/Inspector/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   return specs;
 }
 

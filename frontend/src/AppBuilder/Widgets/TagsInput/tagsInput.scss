@@ -1,12 +1,17 @@
 .tags-input-widget {
   width: 100%;
 
+  // Follow the value container: wrapping a fixed-height field made the row paint over its neighbours.
   .tags-input-values-wrapper {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: inherit;
     gap: 4px;
     align-items: center;
     width: 100%;
+
+    .tags-input-chip {
+      flex-shrink: 0;
+    }
   }
 }
 

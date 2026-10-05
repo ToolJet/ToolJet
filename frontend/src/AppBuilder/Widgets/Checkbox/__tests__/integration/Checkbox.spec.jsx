@@ -756,6 +756,113 @@ describe('Checkbox', () => {
       expect(boxEl(container)).toHaveStyle({ backgroundColor: 'rgb(255, 0, 0)' });
     });
   });
+
+  /**
+   * Ported from the parallel contract written on test/components-backfill.
+   * These four behaviours had no equivalent on this side of the merge.
+   */
+  describe('merged from the parallel contract', () => {
+    test('[Checkbox-COMPAT-001] a definition predating collapseWhenHidden, padding and tooltipFormat still renders and toggles', async () => {
+      // Break this catches: treating any newer key as required, breaking every app saved before it existed.
+      const { container } = widget.render({
+        properties: { collapseWhenHidden: undefined, tooltipFormat: undefined },
+        styles: { padding: undefined },
+      });
+      expect(await screen.findByText('Accept terms')).toBeInTheDocument();
+
+      await widget.session.user.click(boxEl(container));
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+      expect(inputEl(container)).toBeChecked();
+    });
+
+    test('[Checkbox-STY-002] the legacy black text colour maps onto the theme colour', async () => {
+      // Break this catches: dropping the legacy shim, so apps saved before custom themes render raw black.
+      const { container } = widget.render({ styles: { textColor: binding('#1B1F24') } });
+
+      expect(labelEl(container).parentElement).not.toHaveStyle({ color: 'rgb(27, 31, 36)' });
+    });
+
+    test.failing('[Checkbox-BUG-001] `setValue` fires On change like every other value change', async () => {
+      // Pins the documented meaning of On change against the current CSA asymmetry. No production change.
+      widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      widget.setEvents(setVariableOn(CHK, 'onChange', { key: 'changed', value: 'YES' }));
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+
+      await widget.act('setValue', true);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+      expect(widget.variables().changed).toBe('YES');
+    });
+
+    test.failing('[Checkbox-BUG-002] the checkbox can be reached and toggled with the keyboard', async () => {
+      // Pins the accessibility gap: the only input is display:none and the wrapper is not focusable.
+      widget.render({ properties: { defaultValue: binding('{{false}}') } });
+      await waitFor(() => expect(widget.exposed().value).toBe(false));
+
+      await widget.session.user.tab();
+      await widget.session.user.keyboard('{ }');
+
+      await waitFor(() => expect(widget.exposed().value).toBe(true));
+    });
+  });
+
+  describe('long labels', () => {
+    // jsdom reports every box as zero-sized, so overflow has to be forced for OverflowTooltip to fire.
+    const forceOverflow = () => {
+      const heights = { scrollHeight: 100, clientHeight: 20 };
+      const originals = Object.fromEntries(
+        Object.keys(heights).map((key) => [key, Object.getOwnPropertyDescriptor(HTMLElement.prototype, key)])
+      );
+      Object.entries(heights).forEach(([key, value]) => {
+        Object.defineProperty(HTMLElement.prototype, key, { configurable: true, get: () => value });
+      });
+      return () =>
+        Object.entries(originals).forEach(([key, descriptor]) => {
+          if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+          else delete HTMLElement.prototype[key];
+        });
+    };
+
+    test('[Checkbox-BUG-003] a clipped label opens no empty tooltip bubble', async () => {
+      // Break this catches: showing the bubble on overflow alone, so a non-string child renders it blank.
+      const restore = forceOverflow();
+      try {
+        const { container } = widget.render({ properties: { label: binding('A label long enough to clip') } });
+        await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+        await widget.session.user.hover(labelEl(container));
+
+        await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+      } finally {
+        restore();
+      }
+    });
+
+    test('[Checkbox-HEIGHT-001] dynamic height lets a long label wrap and grow the widget in the viewer', async () => {
+      // Break this catches: keeping the authored height and nowrap, so the label clips however tall the box grows.
+      const { container } = widget.render({
+        properties: { label: binding('A label long enough to wrap'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+      expect(rowEl(container)).toHaveStyle({ height: 'auto', whiteSpace: 'normal' });
+      expect(rowEl(container).style.minHeight).not.toBe('');
+    });
+
+    test('[Checkbox-HEIGHT-002] dynamic height stays inert on the editor canvas', async () => {
+      // Break this catches: reflowing while the builder is sizing the box, which the platform reserves for view mode.
+      const { container } = widget.render({
+        properties: { label: binding('A label long enough to wrap'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'edit',
+      });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+
+      expect(rowEl(container).style.height).not.toBe('auto');
+      expect(rowEl(container).style.minHeight).toBe('');
+    });
+  });
 });
 
 async function actSet(id, key, value) {
