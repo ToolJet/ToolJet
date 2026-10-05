@@ -9,6 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -53,7 +54,9 @@ export const Text = function Text({
     borderColor,
     borderRadius,
     isScrollRequired,
+    padding,
   } = styles;
+  const boxHeight = padding === 'none' ? height + BOX_PADDING * 2 : height;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
@@ -156,8 +159,8 @@ export const Text = function Text({
   };
 
   const computedStyles = {
-    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-    height: isDynamicHeightEnabled ? 'auto' : `${height}px`,
+    ...(isDynamicHeightEnabled && { minHeight: `${boxHeight}px` }),
+    height: isDynamicHeightEnabled ? 'auto' : `${boxHeight}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
