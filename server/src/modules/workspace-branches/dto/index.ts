@@ -30,17 +30,9 @@ export class CreateBranchDto {
 }
 
 @Exclude()
-export class BranchSummaryDto {
-  @Expose() id: string;
-  @Expose() name: string;
-}
-
-@Exclude()
 export class CreateBranchResponseDto {
   @Expose() enqueued: boolean;
   @Expose() isImport: boolean;
-  // present only when the branch was created inline (enqueued === false)
-  @Expose() @Type(() => BranchSummaryDto) branch?: BranchSummaryDto;
 }
 
 export class SwitchBranchDto {
