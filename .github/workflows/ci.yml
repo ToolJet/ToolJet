@@ -445,7 +445,7 @@ jobs:
           old=$(git rev-parse HEAD^1:server/ee) new=$(git rev-parse HEAD:server/ee)
           if [ "$old" != "$new" ]; then
             git -C server/ee cat-file -e "$old" 2>/dev/null || git -C server/ee fetch --no-tags --depth=1 origin "$old"
-            git -C server/ee diff --no-color "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ >> /tmp/cov/pr.diff
+            git -C server/ee diff --no-color "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' >> /tmp/cov/pr.diff
           fi
       - name: Upload coverage gate inputs
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
