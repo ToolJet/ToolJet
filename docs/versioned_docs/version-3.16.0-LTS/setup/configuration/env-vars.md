@@ -316,6 +316,12 @@ To use the Maps widget in ToolJet, create a Google Maps API key and set:
 
 - `GOOGLE_MAPS_API_KEY`: Google Maps API key
 
+#### Salesforce Custom Domain
+
+By default, the Salesforce data source only accepts custom login domains ending in `.my.salesforce.com`. To allow other Salesforce domains, set:
+
+- `SALESFORCE_ALLOWED_LOGIN_DOMAINS`: Comma-separated list of additional domain suffixes (e.g., `my.salesforce.mil,my.sfcrmproducts.cn`). These are added to the default `.my.salesforce.com`.
+
 #### Application Monitoring (APM)
 
 - `APM_VENDOR=sentry`: Set APM vendor.
