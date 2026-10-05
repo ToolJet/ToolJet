@@ -134,7 +134,7 @@ Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load th
 | Add, move, or repair a skill                                             | `manage-skills`                                               |
 | Create or validate a marketplace plugin                                  | `create-plugin`                                               |
 
-Private skills (`bug-triage`, `page-load-audit`, …) live in the `frontend/ee` submodule and appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
+Skills live in the `frontend/ee` submodule by default (`bug-triage`, `kickoff`, …); only contributor-facing skills live in the public root. Private skills appear at root as symlinks, so they are absent on clones without EE access. Placement rule and symlink layout: `.agents/skills/manage-skills/SKILL.md`. `scripts/sync-skills.sh` reconciles links; pre-commit runs it in `--check` mode. Never create `.claude/` or `.cursor/` inside a submodule.
 
 ## Context file layout
 
