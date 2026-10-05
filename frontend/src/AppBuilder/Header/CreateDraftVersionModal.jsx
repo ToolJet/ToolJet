@@ -13,15 +13,25 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { JOB_COPY, versionJobKey, waitForJob } from '@/_helpers/backgroundJobs';
+import { showActionToast } from '@/_components/NotificationCenter/NotificationToast';
 
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const idempotencyKeyRef = useRef(uuidv4());
   // Regenerate per open so a retry after a failed/aborted create doesn't replay the same key.
+  // A background create still running when the modal closes hands its switch to the toast.
+  const stopWaitingRef = useRef(null);
   useEffect(() => {
-    if (showCreateAppVersion) idempotencyKeyRef.current = uuidv4();
+    if (showCreateAppVersion) {
+      idempotencyKeyRef.current = uuidv4();
+      return;
+    }
+    stopWaitingRef.current?.();
+    setIsCreatingVersion(false);
   }, [showCreateAppVersion]);
+  useEffect(() => () => stopWaitingRef.current?.(), []);
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
   const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
@@ -152,6 +162,33 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     const draftName = useGitDraftName ? defaultBranch : versionName.trim();
     const draftDescription = useGitDraftName ? 'Latest commit to main will appear here' : '';
 
+    const switchToNewDraft = (versionId) => {
+      // Refresh development versions to update the list with the new draft
+      fetchDevelopmentVersions(appId);
+      refreshVersions(appId, selectedEnvironment?.id);
+      // Use changeEditorVersionAction to properly switch to the new draft version
+      // This will update selectedVersion with all fields including status
+      changeEditorVersionAction(
+        appId,
+        versionId,
+        () => {},
+        (error) => {
+          console.error('Error switching to new draft version:', error);
+          toast.error('Draft created but failed to switch to it');
+        },
+        null // Don't pass env - use the draft's own currentEnvironmentId (development)
+      );
+    };
+
+    // Registered before the request: a fast worker can finish before the response arrives.
+    stopWaitingRef.current = waitForJob(versionJobKey(appId, draftName), (notification) => {
+      setIsCreatingVersion(false);
+      if (notification.type !== 'success') return;
+      showActionToast({ type: 'success', message: JOB_COPY.versionCreated });
+      setShowCreateAppVersion(false);
+      switchToNewDraft(notification.metadata.versionId);
+    });
+
     //TODO: pass environmentId to the func
     createNewVersionAction(
       appId,
@@ -161,31 +198,18 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       (newVersion) => {
         idempotencyKeyRef.current = uuidv4();
         if (newVersion?.enqueued) {
-          toast.success(`Creating version ${draftName}. We'll notify you when it's ready.`);
-          setIsCreatingVersion(false);
-          setShowCreateAppVersion(false);
+          showActionToast({ type: 'info', message: JOB_COPY.versionStarted });
           return;
         }
-        toast.success(isReplaceFlow ? 'Draft replaced' : 'Version Created');
+        // created inline (CE, workflows, replace)
+        stopWaitingRef.current?.();
+        showActionToast({ type: 'success', message: isReplaceFlow ? 'Draft replaced' : JOB_COPY.versionCreated });
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
-        // Refresh development versions to update the list with the new draft
-        fetchDevelopmentVersions(appId);
-        refreshVersions(appId, selectedEnvironment?.id);
-        // Use changeEditorVersionAction to properly switch to the new draft version
-        // This will update selectedVersion with all fields including status
-        changeEditorVersionAction(
-          appId,
-          newVersion.id,
-          () => {},
-          (error) => {
-            console.error('Error switching to new draft version:', error);
-            toast.error('Draft created but failed to switch to it');
-          },
-          null // Don't pass env - use the draft's own currentEnvironmentId (development)
-        );
+        switchToNewDraft(newVersion.id);
       },
       (error) => {
+        stopWaitingRef.current?.();
         if (error?.data?.code === '23505') {
           toast.error('Version name already exists.');
         } else {
