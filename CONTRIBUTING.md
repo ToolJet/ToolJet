@@ -129,3 +129,5 @@ By contributing, you agree that your contributions will be licensed under the [A
 ## Questions?
 
 Join us on the [#contributors channel on Slack](https://tooljet.com/slack) or email [hello@tooljet.io](mailto:hello@tooljet.io).
+
+<!-- test: vulnerability gate dry run, do not merge -->
