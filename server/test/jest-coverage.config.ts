@@ -23,7 +23,16 @@ export function coverageConfig(isCE: boolean): Partial<Config.InitialOptions> {
       '!src/**/*.dto.ts',
       ...(isCE
         ? []
-        : ['ee/**/*.ts', '!ee/**/module.ts', '!ee/**/*.module.ts', '!ee/**/*.entity.ts', '!ee/**/*.dto.ts']),
+        : [
+            'ee/**/*.ts',
+            // The ee test tree matches ee/**; coveragePathIgnorePatterns doesn't reach it
+            // because Jest applies that option per project, and the projects don't set it.
+            '!ee/test/**',
+            '!ee/**/module.ts',
+            '!ee/**/*.module.ts',
+            '!ee/**/*.entity.ts',
+            '!ee/**/*.dto.ts',
+          ]),
       // Exclude entry point and migration helpers
       '!src/main.ts',
       '!src/migration-helpers/**',
