@@ -118,6 +118,7 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
 - `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
+- Test DB: a stale schema fails with `column ... does not exist`. Use `tools/tj/bin/tj db migrate --test`. `NODE_ENV=test npm run db:migrate` is a silent no-op, and the root `.env` overrides shell vars. In a `tj wt add` worktree the test DB is isolated per branch.
 
 ## Module context files
 

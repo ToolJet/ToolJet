@@ -93,9 +93,20 @@ An investigation handoff should contain: problem statement, scope/impact, reprod
 
 ## Node version
 
-`server/package.json` `engines` field is the source of truth; root `.nvmrc` / `.node-version` mirror it. Always `nvm use` before running Node commands — required version differs across branch lines.
+`server/package.json` `engines` field is the source of truth; root `.nvmrc` / `.node-version` mirror it. Always `nvm use` before running Node commands — required version differs across branch lines. `tools/tj/bin/tj` switches to the `.nvmrc` Node by itself.
 
 ## Dev commands
+
+Use the dev toolkit `tools/tj/bin/tj` for setup and services. It never prompts without a terminal, `--json` gives a result on stdout, and `tj help --json` lists every command. See `tools/tj/README.md`.
+
+```
+tools/tj/bin/tj doctor                     # prerequisites + fix hints
+tools/tj/bin/tj wt add <branch> [--app]    # worktree with deps, isolated DBs (+ free ports with --app)
+tools/tj/bin/tj start | stop | status      # dev servers in the background, health-checked
+tools/tj/bin/tj db migrate [--test]        # migrations (test DB the way that works)
+```
+
+Underlying commands:
 
 ```
 cd server && npm run start:dev      # start backend (port from .env PORT)
@@ -107,7 +118,7 @@ cd server && npm test               # run tests
 
 ### Plugins build (required for migrations)
 
-`db:migrate` depends on `@tooljet/plugins/dist/server`:
+`db:migrate` depends on `@tooljet/plugins/dist/server` (`tools/tj/bin/tj setup` builds it when needed):
 
 ```
 cd plugins && npm install && npm run build
@@ -152,6 +163,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                                       |
 | `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary                               |
 | `marketplace/AGENTS.md`                 | Marketplace plugin layout, registration, build                                         |
+| `tools/tj/README.md`                    | Dev toolkit: worktrees, env files, DBs, dev servers, output contract                   |
 | `server/docs/testing.md`                | Backend testing — what to test, then how to write it                                   |
 | `frontend/src/test/README.md`           | Frontend testing — Jest/RTL/MSW conventions; App Builder layer in `frontend/AGENTS.md` |
 
