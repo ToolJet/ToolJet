@@ -111,12 +111,15 @@ Analyze the commits and diff to determine:
 - Separate block elements (paragraphs, labelled lines, lists, code) with a blank line. GitHub joins consecutive lines into one paragraph, so two labelled lines with no blank line between them render as one.
 - Don't use GitHub alert boxes (`> [!TIP]` and similar) for routine notes. Their built-in label ("Tip", "Note") reads as noise under a section heading.
 
-**Merge danger:** always state it, as a `### Merge danger` subsection at the end of Changes. It tells the reviewer how hard to look.
+**Merge impact:** always state it, as a folded `<details>` block at the end of Changes. It tells the reviewer how hard to look.
+- The summary line carries the verdict, so it reads without expanding: `🛡️ <b>Merge impact:</b> 🟢 reversible` or `🔴 not reversible`.
+- Irreversible changes use `<details open>`, so the risk is never folded away.
+- Leave a blank line after `</summary>` and before `</details>`, or GitHub won't render the bullets.
 - **Reversible:**
   - `🟢 Yes, a plain revert undoes it` when the PR is cheap to roll back;
   - `🔴 No, <what can't be undone>` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
 - **Rollback:** irreversible changes only. The plan for recovering.
-- **Impact:** what the change can reach: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+- **Reach:** what the change can affect: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
 - **Not included:** optional. Deliberate omissions or surprising decisions, so they aren't buried in the Changes bullets.
 
 **Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
@@ -166,11 +169,15 @@ Analyze the commits and diff to determine:
 ## 🔀 Changes
 - <what changed, past tense, no prefixes, max 5 bullets>
 
-### Merge danger
+<details>
+<summary>🛡️ <b>Merge impact:</b> <🟢 reversible | 🔴 not reversible></summary>
+
 - **Reversible:** <🟢 Yes, a plain revert undoes it | 🔴 No, what can't be undone>
 - **Rollback:** <irreversible only: plan>
-- **Impact:** <scope>
+- **Reach:** <scope>
 - **Not included:** <optional: deliberate omissions or surprising decisions>
+
+</details>
 
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
@@ -189,7 +196,7 @@ Analyze the commits and diff to determine:
 ```
 Omit the Sources and Submodules blocks, or any bullet in them, when there's no content.
 
-The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge danger ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
+The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
