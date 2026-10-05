@@ -23,6 +23,7 @@ RUN npm --prefix plugins prune --production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm --prefix server run build
 
 FROM debian:12-slim

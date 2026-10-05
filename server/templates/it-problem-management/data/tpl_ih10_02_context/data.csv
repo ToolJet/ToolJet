@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Workforce identity,Maya Chen,Single sign-on and employee authentication.,1,[],1
+,Customer portal,Noah Patel,Customer account and self-service workflows.,1,[],1
+,Data warehouse,Avery Brooks,Scheduled analytics ingestion and reporting.,2,[],1
+,Collaboration suite,Zara Ellis,"Messaging, document collaboration and meetings.",2,[],1
