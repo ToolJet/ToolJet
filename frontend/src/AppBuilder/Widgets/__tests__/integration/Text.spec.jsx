@@ -516,6 +516,22 @@ describe('Text: styles', () => {
     expect(root()).toHaveStyle({ fontSize: '14px' });
   });
 
+  test('[Text-STY-007] with padding set to none the component fills its box instead of leaving a gap', async () => {
+    // Break this catches: the canvas reserves 4px of vertical space for the
+    // padding it puts around every widget, but it reserves it whether or not
+    // that padding is actually there. With padding set to none the Text stays
+    // 4px short, leaving a strip of dead space along the bottom edge that the
+    // builder cannot style or remove. Button already hand-corrects for this
+    // (Button.jsx:109); Text did not.
+    widget.render({ properties: { text: binding('x') }, styles: { padding: binding('default') } });
+    await waitFor(() => expect(root()).not.toBeNull());
+    expect(root()).toHaveStyle({ height: '36px' });
+
+    widget.render({ properties: { text: binding('x') }, styles: { padding: binding('none') } });
+    await waitFor(() => expect(root()).not.toBeNull());
+    expect(root()).toHaveStyle({ height: '40px' });
+  });
+
   test('[Text-STY-005] scroll configuration applies, and is deliberately inert under dynamic height', async () => {
     // Break this catches: dropping the `!isDynamicHeightEnabled` guard
     // (Text.jsx:190-193). A dynamic-height Text would regain an overflow rule
