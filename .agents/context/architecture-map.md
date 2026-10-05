@@ -103,7 +103,7 @@ sequenceDiagram
 
 Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Workflow scheduling/execution queues are registered in `server/src/modules/workflows/module.ts`; processors and schedule bootstrap are registered only when `WORKER=true`. `npm run worker:prod` starts the same compiled server entry with that flag. The non-Cloud deployment also exposes Bull Board under `/jobs`, protected by configured basic authentication. **Boundary:** public workflow contracts are present, but some CE webhook methods throw `Method not implemented`, so full behavior is edition-dependent.
 
-On EE/Cloud, large app-version creates and large branch creates also run through BullMQ rather than inline: the `app-version` queue (`server/src/modules/versions/constants/index.ts`; the worker processor ships with the enterprise edition) and the existing `git-sync-queue` (`server/src/modules/workspace-branches/constants/index.ts`). Both are gated by a size threshold checked before the request commits to a path — small branch/version creates run inline on the web pod instead of enqueuing.
+On EE/Cloud, app-version creates and branch creates always run through BullMQ: the `app-version` queue (`server/src/modules/versions/constants/index.ts`; the worker processor ships with the enterprise edition) and the existing `git-sync-queue` (`server/src/modules/workspace-branches/constants/index.ts`). The request validates and returns an enqueue ack; completion arrives as a live notification, which the frontend uses to switch the user onto the new branch or version.
 
 ## Authentication and authorization
 

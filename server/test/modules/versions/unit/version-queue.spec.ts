@@ -242,12 +242,12 @@ describe('VersionQueueProcessor', () => {
     expect(out).toEqual({ versionId: 'v-new' });
   });
 
-  it('onCompleted emits success notification with versionId, toast:false, and a timestamp-scoped dedupeKey', async () => {
+  it('onCompleted emits a toasted success notification with versionId and a timestamp-scoped dedupeKey', async () => {
     await processor.onCompleted({ id: 'j1', data: payload, timestamp: 111 } as any, { versionId: 'v-new' });
     expect(notify).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'success',
-        toast: false,
+        toast: true,
         title: 'Version created',
         dedupeKey: 'j1:111:completed',
         metadata: expect.objectContaining({

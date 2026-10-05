@@ -102,6 +102,7 @@ class FakeWorkspaceBranchService {
   calls: { method: string; payload: any }[] = [];
   executeCreateBranch = async (payload: any) => {
     this.calls.push({ method: 'executeCreateBranch', payload });
+    return { id: 'branch-1', name: payload.name };
   };
   executePullBranch = async (payload: any) => {
     this.calls.push({ method: 'executePullBranch', payload });
@@ -341,47 +342,6 @@ describe('GitSyncQueueService (enqueue side)', () => {
   });
 });
 
-describe('GitSyncQueueService.tryWithOrgLease', () => {
-  let queue: FakeQueue;
-  let svc: GitSyncQueueService;
-  let fakeRedis: FakeRedisClient;
-  let notify: jest.Mock;
-
-  beforeEach(() => {
-    queue = new FakeQueue();
-    notify = jest.fn().mockResolvedValue(undefined);
-    fakeRedis = new FakeRedisClient();
-    svc = new GitSyncQueueService(
-      queue as unknown as ConstructorParameters<typeof GitSyncQueueService>[0],
-      { notify } as unknown as ConstructorParameters<typeof GitSyncQueueService>[1],
-      { getClient: () => fakeRedis } as unknown as ConstructorParameters<typeof GitSyncQueueService>[2]
-    );
-  });
-
-  it('runs fn and releases the lease when free', async () => {
-    const out = await svc.tryWithOrgLease('org-1', async () => 'done');
-    expect(out).toEqual({ acquired: true, result: 'done' });
-    expect(fakeRedis.store.has('tj:git-sync:lease:org-1')).toBe(false);
-  });
-
-  it('returns acquired:false without calling fn when the lease is held', async () => {
-    fakeRedis.store.set('tj:git-sync:lease:org-1', 'someone-else');
-    const fn = jest.fn();
-    expect(await svc.tryWithOrgLease('org-1', fn)).toEqual({ acquired: false });
-    expect(fn).not.toHaveBeenCalled();
-    expect(fakeRedis.store.get('tj:git-sync:lease:org-1')).toBe('someone-else');
-  });
-
-  it('releases the lease when fn throws and rethrows', async () => {
-    await expect(
-      svc.tryWithOrgLease('org-1', async () => {
-        throw new Error('boom');
-      })
-    ).rejects.toThrow('boom');
-    expect(fakeRedis.store.has('tj:git-sync:lease:org-1')).toBe(false);
-  });
-});
-
 describe('GitSyncQueueProcessor dispatch', () => {
   let service: FakeWorkspaceBranchService;
   let redis: FakeRedisService;
@@ -402,6 +362,14 @@ describe('GitSyncQueueProcessor dispatch', () => {
     const payload = { organizationId: 'org1', name: 'b', sourceBranchId: 's', userId: 'u' };
     await processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, payload));
     expect(service.calls).toEqual([{ method: 'executeCreateBranch', payload }]);
+  });
+
+  it('should resolve with the created branch so BullMQ stores it as job.returnvalue', async () => {
+    const payload = { organizationId: 'org1', name: 'b', sourceBranchId: 's', userId: 'u' };
+    await expect(processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, payload))).resolves.toEqual({
+      id: 'branch-1',
+      name: 'b',
+    });
   });
 
   it('should route git-pull-branch jobs to executePullBranch', async () => {

@@ -331,9 +331,8 @@ export class VersionUtilService implements IVersionUtilService {
     const { versionName, versionType, versionFromId } = versionCreateDto;
     const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
 
-    // Runs before the enqueue decision (shouldRunInBackground counts entities off this same id) so
-    // a foreign/missing source is rejected up front instead of surfacing as a late worker failure.
-    // Same exception buildVersionFromParent throws today for this case (~line 494).
+    // A foreign/missing source is rejected up front instead of surfacing as a late worker failure.
+    // Same exception buildVersionFromParent throws for this case.
     if (versionFromId) {
       const sourceVersion = await this.versionRepository.findOne({
         where: { id: versionFromId, appId: app.id },

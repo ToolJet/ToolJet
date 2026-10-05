@@ -18,7 +18,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 | `service.ts` | `VersionService`: `createOrEnqueueVersion` (HTTP entry for `POST /apps/:id/versions`), getAllVersions, getVersion (editor payload), update/updateSettings, promoteVersion, createDraftVersion; CE `shouldRunInBackground`/`enqueueCreateVersion` are no-ops (always sync) |
 | `util.service.ts` | `VersionUtilService`: `validateVersionCreate` (pre-flight checks, shared by sync and background paths), `createVersion` (sync primitive — calls `validateVersionCreate` then builds), updateVersion (status flips + `handleDefaultBranchPublish`), deleteVersion/deleteVersionGit, checkDraftModulesInApp, checkModulesPromotableToEnvironment |
 | `services/create.service.ts` | `VersionsCreateService.setupNewVersion`: deep-clones settings, data sources+queries, pages/components/layouts, event handlers; remaps old→new ids and entity references; copies workflow bundles |
-| `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion, `countVersionEntities` (components + data queries under a version, for the background-job threshold) |
+| `repository.ts` | `VersionRepository`: findVersion, getVersionsInApp (branch-scoped), findLatestVersionForEnvironment, resolveMetadataVersion, updateVersion |
 | `module-ref.util.ts` | Resolves module pins (`resolveModuleRef`, `resolveAllModuleViewersForVersion`, `listModuleVersions`); pin/unpinned/orphan fallback rules documented in header |
 | `helpers/version-copy-parent.helper.ts` | Parent-id remapping during clone (composite ids, ghost parents) |
 | `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/draft-versions` POST |
@@ -33,7 +33,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 - `server/ee/versions/util.service.ts`: deletes git tag on version delete; `setupVersionFromSource` — cross-app clone (no appId ownership check) for building BRANCH versions from git-imported temp apps.
 - `server/ee/versions/services/create.service.ts` overrides clone internals (incl. `handleModuleViewerComponent`).
 - CE behavior when license lacks MULTI_ENVIRONMENT: version pinned to development env, promote throws.
-- `server/ee/versions/service.ts` overrides `shouldRunInBackground`/`enqueueCreateVersion`: a version create is enqueued to the `app-version` queue when its source version's entity count (`countVersionEntities`) is at or over `BACKGROUND_JOB_THRESHOLDS.version.entities`; workflow apps and `replace` (git single-branch swap) always stay synchronous. CE `createOrEnqueueVersion` runs `validateVersionCreate` before calling the `enqueueCreateVersion` hook, so name/branch errors surface in the request, not later as a failed-job notification. `VersionQueueProcessor` calls the same `VersionUtilService.createVersion` as the inline path — one implementation either way.
+- On EE/Cloud, `shouldRunInBackground` sends every version create that copies an owned source version to the `app-version` queue; workflow apps, `replace` (git single-branch swap) and a missing/foreign source stay synchronous. CE always creates inline. `createOrEnqueueVersion` runs `validateVersionCreate` before calling the `enqueueCreateVersion` hook, so name/branch errors surface in the request, not later as a failed-job notification. The worker calls the same `VersionUtilService.createVersion` as the inline path — one implementation either way.
 
 ## Invariants & gotchas
 

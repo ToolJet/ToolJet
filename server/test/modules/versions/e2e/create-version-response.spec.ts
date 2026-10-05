@@ -9,98 +9,63 @@ import {
   createApplicationVersion,
   getAppEnvironment,
   login,
-  findEntities,
 } from 'test-helper';
-import { AppVersion } from '@entities/app_version.entity';
 
 /**
- * Response-shape coverage for the version-create inline path (tj-ee#5486): narrows the
- * decamelized-entity response to CreateVersionResponseDto, and layers the Idempotency-Key
- * interceptor + name-exists pre-check on top of the existing DB unique constraint.
+ * Request contract for POST /apps/:id/versions on EE (tj-ee#5486): every create that copies an
+ * owned version is handed to the app-version worker and answered with an enqueue ack. Covers what
+ * happens in the request — the ack, Idempotency-Key replay, and the name-exists pre-check. The
+ * worker body is covered by version-queue.spec.ts; CE's inline path by create-or-enqueue-version.spec.ts.
  *
  * @group platform
  */
-describe('POST /api/apps/:id/versions — response shape + idempotency', () => {
+describe('POST /api/apps/:id/versions — EE (plan: enterprise) | enqueue ack + idempotency', () => {
   let nestApp: INestApplication;
-  let tokenCookie: string;
-  let orgId: string;
-  let appId: string;
-  let versionFromId: string;
-  let environmentId: string;
+  let post: (body: object, idempotencyKey?: string) => request.Test;
+  let existingVersionName: string;
 
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     const { organization, user } = await createUser(nestApp, { email: 'cvr-admin@tooljet.io' });
-    orgId = organization.id;
-    tokenCookie = (await login(nestApp, 'cvr-admin@tooljet.io')).tokenCookie;
-
+    const tokenCookie = (await login(nestApp, 'cvr-admin@tooljet.io')).tokenCookie;
     const application = await createApplication(nestApp, { name: 'cvr-app', user });
-    appId = application.id;
     const version = await createApplicationVersion(nestApp, application as any);
-    versionFromId = version.id;
-    environmentId = (await getAppEnvironment(null, 1)).id;
+    existingVersionName = version.name;
+    const environmentId = (await getAppEnvironment(null, 1)).id;
+    post = (body, idempotencyKey) => {
+      const req = request(nestApp.getHttpServer())
+        .post(`/api/apps/${application.id}/versions`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', tokenCookie);
+      if (idempotencyKey) req.set('Idempotency-Key', idempotencyKey);
+      return req.send({ versionFromId: version.id, environmentId, ...body });
+    };
   });
 
   afterAll(async () => {
     await closeTestApp(nestApp);
   }, 60_000);
 
-  it('creates the version inline and returns the narrowed shape', async () => {
-    const res = await request(nestApp.getHttpServer())
-      .post(`/api/apps/${appId}/versions`)
-      .set('tj-workspace-id', orgId)
-      .set('Cookie', tokenCookie)
-      .send({ versionName: 'v2', versionFromId, environmentId });
+  it('should answer with an enqueue ack instead of the created version', async () => {
+    const res = await post({ versionName: 'v2' });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body).toMatchObject({
-      enqueued: false,
-      id: expect.any(String),
-      name: 'v2',
-      current_environment_id: expect.any(String),
-    });
-    expect(res.body).not.toHaveProperty('definition');
+    expect(res.body).toEqual({ enqueued: true });
   });
 
-  it('replays the same body for a repeated Idempotency-Key and creates the version once', async () => {
+  it('should replay the same body for a repeated Idempotency-Key', async () => {
     const idempotencyKey = randomUUID();
-    const body = { versionName: 'v-idem', versionFromId, environmentId };
 
-    const first = await request(nestApp.getHttpServer())
-      .post(`/api/apps/${appId}/versions`)
-      .set('tj-workspace-id', orgId)
-      .set('Cookie', tokenCookie)
-      .set('Idempotency-Key', idempotencyKey)
-      .send(body);
+    const first = await post({ versionName: 'v-idem' }, idempotencyKey);
+    const second = await post({ versionName: 'v-idem' }, idempotencyKey);
+
     expect(first.statusCode).toBe(201);
-
-    const second = await request(nestApp.getHttpServer())
-      .post(`/api/apps/${appId}/versions`)
-      .set('tj-workspace-id', orgId)
-      .set('Cookie', tokenCookie)
-      .set('Idempotency-Key', idempotencyKey)
-      .send(body);
     expect(second.statusCode).toBe(201);
-
     expect(second.body).toEqual(first.body);
-
-    const versions = await findEntities(AppVersion, { where: { appId, name: 'v-idem' } });
-    expect(versions).toHaveLength(1);
   });
 
-  it('rejects a duplicate version name without an Idempotency-Key', async () => {
-    await request(nestApp.getHttpServer())
-      .post(`/api/apps/${appId}/versions`)
-      .set('tj-workspace-id', orgId)
-      .set('Cookie', tokenCookie)
-      .send({ versionName: 'v-dup', versionFromId, environmentId })
-      .expect(201);
-
-    const res = await request(nestApp.getHttpServer())
-      .post(`/api/apps/${appId}/versions`)
-      .set('tj-workspace-id', orgId)
-      .set('Cookie', tokenCookie)
-      .send({ versionName: 'v-dup', versionFromId, environmentId });
+  it('should reject an existing version name before enqueueing', async () => {
+    const res = await post({ versionName: existingVersionName });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Version name already exists.');

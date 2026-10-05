@@ -706,15 +706,11 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e', sourceBranchId: mainBranchId })
           .expect(201);
-        // small workspace → created inline; response carries the branch
-        expect(createBranchResp.body).toMatchObject({
-          enqueued: false,
-          isImport: false,
-          branch: { name: 'feat-e2e' },
-        });
+        // Response is an enqueue ack — the branch row itself is asserted via the
+        // list endpoint in the next step.
+        expect(createBranchResp.body).toMatchObject({ enqueued: true });
         const featBranchId: string = await branchIdByName('feat-e2e', mainBranchId);
         expect(featBranchId).toBeDefined();
-        expect(createBranchResp.body.branch.id).toBe(featBranchId);
 
         step(6, 'list workspace branches → main + feat-e2e');
         // 6. List branches → main + feat-e2e. Creating a branch switches the creator onto it

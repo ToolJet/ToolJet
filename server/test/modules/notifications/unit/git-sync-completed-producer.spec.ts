@@ -8,6 +8,7 @@ const makeJob = (over: Record<string, unknown> = {}) => ({
   id: 'job-1',
   name: GIT_SYNC_JOBS.CREATE_BRANCH,
   processedOn: 1751400000000,
+  returnvalue: { id: 'branch-1' },
   data: { organizationId: 'org1', userId: 'u1', name: 'feature-x' },
   ...over,
 });
@@ -35,9 +36,10 @@ describe('GitSyncQueueProcessor.onCompleted | success notification producer', ()
       userId: 'u1',
       organizationId: 'org1',
       title: 'Branch created',
-      body: 'Branch feature-x is ready and available in the branch list.',
+      body: 'Branch feature-x created successfully.',
       toast: true,
       dedupeKey: 'job-1:completed:1751400000000',
+      metadata: { action: GIT_SYNC_JOBS.CREATE_BRANCH, branchName: 'feature-x', branchId: 'branch-1', isImport: false },
     });
   });
 
@@ -56,6 +58,7 @@ describe('GitSyncQueueProcessor.onCompleted | success notification producer', ()
     );
     expect(notify.mock.calls[0][0].title).toBe('Pull completed');
     expect(notify.mock.calls[1][0].title).toBe('Branch deleted');
+    expect(notify.mock.calls[0][0].metadata).not.toHaveProperty('branchId');
   });
 
   it('stays silent for housekeeping jobs (push-app-deletion)', async () => {
