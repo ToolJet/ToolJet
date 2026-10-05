@@ -300,6 +300,30 @@ describe('MultiselectV2: options, defaults, and the exposed option list', () => 
     expect(harness.exposed().options.at(-1)).toEqual({ label: 'zeta', value: 's', caption: null });
   });
 
+  test('[MultiselectV2-OPT-008] Fully empty options are dropped while a labelled null-valued option stays', async () => {
+    // Break this catches: QA D2 — an option with no label and no value renders
+    // as a blank, selectable row that select-all also counts — and the
+    // over-correction of dropping every null value, which would delete a
+    // labelled `None` option (D-22).
+    harness.render({
+      properties: {
+        advanced: binding('{{true}}'),
+        values: binding('{{[]}}'),
+        schema: binding(
+          '{{[{ label: null, value: null, visible: true }, { value: undefined, visible: true }, { label: "", value: "", visible: true }, { label: "None", value: null, visible: true }, { label: "a", value: "a", visible: true }]}}'
+        ),
+      },
+    });
+    await drain();
+    await openMenu();
+
+    expect(rowLabels()).toEqual(['None', 'a']);
+    expect(harness.exposed().options).toEqual([
+      { label: 'None', value: null, caption: null },
+      { label: 'a', value: 'a', caption: null },
+    ]);
+  });
+
   test('[MultiselectV2-OPT-005] An option `caption` renders under its label and is published', async () => {
     // Break this catches: dropping the `caption: caption ?? null` normalisation
     // (MultiselectV2.jsx:241-247,306-311) so an uncaptioned option publishes no

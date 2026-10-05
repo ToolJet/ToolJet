@@ -17743,6 +17743,14 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.timeline-widget {
+  @include hover-reveal-scrollbar;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+}
+
 .list-timeline-content {
   .list-timeline-title {
     color: var(--cc-primary-text);

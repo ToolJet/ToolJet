@@ -87,3 +87,9 @@ export const sortArray = (arr, sort) => {
   }
   return arr;
 };
+
+const isBlank = (v) => v === null || v === undefined || v === '';
+
+// An option with nothing to show and nothing to select renders as a blank, selectable row.
+// A labelled null value (e.g. { label: 'All', value: null }) is a valid reset option and is kept.
+export const isEmptyOption = (option) => isBlank(option?.label) && isBlank(option?.value);

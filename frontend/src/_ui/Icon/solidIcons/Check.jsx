@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Check = ({ fill = '#3E63DD', width = '8', className = 'tj-icon', viewBox = '0 0 8 8', height }) => {
+const Check = ({ fill = '#3E63DD', width = '8', className = 'tj-icon', viewBox = '0 0 20 20', height }) => {
   return (
     <svg
       className={className}

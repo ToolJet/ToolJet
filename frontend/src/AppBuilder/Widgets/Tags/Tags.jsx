@@ -270,6 +270,8 @@ export const Tags = function Tags({
 
     const tagTitle = getSafeRenderableValue(item.title);
     const hasIcon = getTagIcon(item, tagDataCy) !== null;
+    // Blank and boolean titles render nothing; leave them unwrapped so those chips look as before (D-04)
+    const hasTitleText = tagTitle !== '' && typeof tagTitle !== 'boolean';
 
     return (
       <span
@@ -282,7 +284,13 @@ export const Tags = function Tags({
         aria-label={`${tagTitle}${hasIcon ? ' with icon' : ''}`}
       >
         {getTagIcon(item, tagDataCy)}
-        {tagTitle}
+        {hasTitleText ? (
+          <span title={String(tagTitle)} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {tagTitle}
+          </span>
+        ) : (
+          tagTitle
+        )}
       </span>
     );
   }
