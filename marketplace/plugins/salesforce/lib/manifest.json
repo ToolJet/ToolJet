@@ -128,7 +128,7 @@
       "label": "Custom domain",
       "key": "custom_domain",
       "type": "text",
-      "description": "mycompany.my.salesforce.com (used only when Login type is Custom domain)"
+      "description": "mycompany.my.salesforce.com or any https login host (used only when Login type is Custom domain)"
     },
     "oauth": {
       "label": "",

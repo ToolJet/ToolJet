@@ -27,8 +27,6 @@ const NEXT_RECORDS_URL_PATTERN = /^\/services\/data\/v\d+\.\d+\/query\/[A-Za-z0-
 
 const LOGIN_URL_PRODUCTION = 'https://login.salesforce.com';
 const LOGIN_URL_SANDBOX = 'https://test.salesforce.com';
-// Custom domain hosts must end with one of these (dot boundary). Extended by SALESFORCE_ALLOWED_LOGIN_DOMAINS.
-const DEFAULT_ALLOWED_LOGIN_DOMAIN_SUFFIXES = ['.my.salesforce.com'];
 
 export default class Salesforce implements QueryService {
   async run(
@@ -414,24 +412,16 @@ export default class Salesforce implements QueryService {
     return new jsforce.OAuth2({ ...credentials, loginUrl: this.getLoginUrl(source_options) });
   }
 
-  // Extra allowed suffixes come from SALESFORCE_ALLOWED_LOGIN_DOMAINS (comma separated). They extend the defaults.
-  private getAllowedLoginDomainSuffixes(): string[] {
-    const extra = (process.env.SALESFORCE_ALLOWED_LOGIN_DOMAINS || '')
-      .split(',')
-      .map((entry) => entry.trim().toLowerCase())
-      .filter(Boolean)
-      .map((entry) => (entry.startsWith('.') ? entry : `.${entry}`))
-      // a bare TLD such as ".com" would allow every host under it
-      .filter((entry) => entry.split('.').filter(Boolean).length >= 2);
-    return [...DEFAULT_ALLOWED_LOGIN_DOMAIN_SUFFIXES, ...extra];
-  }
-
   // Accepts "mycompany.my.salesforce.com" or "https://mycompany.my.salesforce.com/..." and returns "https://<host>".
+  // Any https host is accepted; the SSRF check in the async OAuth calls guards against internal addresses.
   private normalizeCustomDomain(rawDomain: string): string {
     const invalid = (message: string) => new QueryError('Invalid custom domain', message, {});
     let value = rawDomain.trim().toLowerCase();
     if (!value) throw invalid('Custom domain is required when Login type is Custom domain.');
-    if (value.startsWith('http://')) throw invalid('Custom domain must use https.');
+    // Only https is accepted; any other scheme (http://, ftp://, ...) is rejected rather than mis-parsed as a host.
+    if (/^[a-z][a-z0-9+.-]*:\/\//.test(value) && !value.startsWith('https://')) {
+      throw invalid('Custom domain must use https.');
+    }
     value = value.replace(/^https:\/\//, '');
 
     let url: URL;
@@ -441,18 +431,13 @@ export default class Salesforce implements QueryService {
       throw invalid('Custom domain is not a valid host name.');
     }
     if (url.username || url.password) throw invalid('Custom domain must not contain credentials.');
-    if (url.port && url.port !== '443') throw invalid('Custom domain must not specify a port.');
-
-    const hostname = url.hostname;
-    if (isIP(hostname.replace(/^\[|\]$/g, ''))) throw invalid('Custom domain must be a host name, not an IP address.');
-
-    const allowed = this.getAllowedLoginDomainSuffixes().some(
-      (suffix) => hostname.endsWith(suffix) && hostname.length > suffix.length
-    );
-    if (!allowed) {
-      throw invalid('Custom domain must be a Salesforce domain, for example mycompany.my.salesforce.com.');
+    // Salesforce login hosts are always host names (TLS certificates are issued for names, not IPs).
+    if (isIP(url.hostname.replace(/^\[|\]$/g, ''))) {
+      throw invalid('Custom domain must be a host name, not an IP address.');
     }
-    return `https://${hostname}`;
+
+    // Only the host (and port, if any) is kept: path, query and fragment are dropped.
+    return `https://${url.host}`;
   }
 
   // Missing / empty / unknown login type is production, which is what the plugin used before this option existed.
