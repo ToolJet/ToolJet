@@ -641,8 +641,7 @@ export class TooljetDbUtilService {
         // Hand jsonb to the driver as JSON text: node-postgres serialises a JS array as a Postgres
         // array literal ({...}), which a jsonb column rejects. Parsing still validates the cell.
         if (typeof columnValue !== 'string') return JSON.stringify(columnValue);
-        // A `null` cell stays a database NULL rather than the JSON value null
-        if (JSON.parse(columnValue) === null) return null;
+        JSON.parse(columnValue);
         return columnValue;
       default:
         return columnValue;
