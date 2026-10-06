@@ -271,6 +271,67 @@ describe('KeyValuePair: inline editing and changeset', () => {
   });
 });
 
+describe('KeyValuePair: changeset popover responsive CTA', () => {
+  // A second harness at a width above the text-fit breakpoint — the default
+  // `widget` harness (200px) exercises the narrow case.
+  const wideWidget = createWidgetHarness({
+    componentType: 'KeyValuePair',
+    handle: NAME,
+    id: ID,
+    defaultProperties: {
+      dataSourceSelector: binding('rawJson'),
+      data: binding(DEFAULT_DATA),
+      fields: binding(DEFAULT_FIELDS),
+      useDynamicField: binding('{{false}}'),
+      fieldDynamicData: binding([]),
+      fieldDeletionHistory: binding([]),
+      dynamicHeight: binding('{{false}}'),
+      showUpdateActions: binding('{{true}}'),
+      loadingState: binding('{{false}}'),
+      visibility: binding('{{true}}'),
+      disabledState: binding('{{false}}'),
+    },
+    widgetWidth: 400,
+  });
+
+  beforeEach(async () => {
+    await widget.setup();
+    await wideWidget.setup();
+  });
+  afterEach(() => {
+    widget.teardown();
+    wideWidget.teardown();
+  });
+
+  const makeChange = async (w) => {
+    w.render();
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await w.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+  };
+
+  test('[KeyValuePair-EDIT-011] below the text-fit breakpoint, Save/Cancel render icon-only, dropping the text labels that would overflow the component', async () => {
+    // Default harness width (200px) is already narrower than the popover's
+    // full-text natural width (see KeyValuePair-EDIT-012 for the wide case).
+    await makeChange(widget);
+
+    expect(saveButton().textContent).not.toContain('Save changes');
+    expect(saveButton().querySelector('svg.lucide-save')).toBeInTheDocument();
+    expect(cancelButton().textContent).not.toContain('Cancel');
+    expect(cancelButton().querySelector('svg.lucide-x')).toBeInTheDocument();
+  });
+
+  test('[KeyValuePair-EDIT-012] above the text-fit breakpoint, Save/Cancel keep their full text labels', async () => {
+    await makeChange(wideWidget);
+
+    expect(saveButton().textContent).toContain('Save changes');
+    expect(cancelButton().textContent).toContain('Cancel');
+  });
+});
+
 describe('KeyValuePair: auto-generated fields (store integration)', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
