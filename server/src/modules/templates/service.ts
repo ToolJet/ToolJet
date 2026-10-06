@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
@@ -25,12 +25,9 @@ export class TemplatesService {
     protected appsRepository: AppsRepository,
     protected tooljetDbBulkUploadService: TooljetDbBulkUploadService,
     protected pluginsService: PluginsService,
-    protected logger: Logger
+    protected logger: Logger,
+    protected licenseTermsService: LicenseTermsService
   ) {}
-
-  // Property injection leaves the constructor unchanged for subclasses
-  @Inject(LicenseTermsService)
-  protected licenseTermsService: LicenseTermsService;
 
   async perform(
     currentUser: User,
