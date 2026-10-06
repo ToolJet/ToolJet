@@ -1,4 +1,5 @@
 import {
+  available,
   noLimits,
   ScopeLimits,
   countAtLimit,
@@ -184,6 +185,28 @@ describe('credit limits (pure)', () => {
     it('saving the same values while on logs nothing', () => {
       const same = { enabled: true, defaults: values, custom: new Map() };
       expect(limitEvents(same, same, 0)).toEqual([]);
+    });
+  });
+  describe('available (AC5)', () => {
+    const limit = { monthly: 1000, addon: 200 };
+
+    it('splits spend logically: the first {monthly limit} credits count as monthly', () => {
+      expect(available({ monthly: 600, addon: 0 }, limit)).toEqual({ monthly: 400, addon: 200 });
+      // Wallet attribution does not matter, only the combined spend.
+      expect(available({ monthly: 0, addon: 600 }, limit)).toEqual({ monthly: 400, addon: 200 });
+    });
+
+    it('monthly limit reached but add-on left: still available', () => {
+      expect(available({ monthly: 1000, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 200 });
+    });
+
+    it('monthly overshoot spills into add-on and never makes available negative', () => {
+      expect(available({ monthly: 1100, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 100 });
+      expect(available({ monthly: 2100, addon: 50 }, limit)).toEqual({ monthly: 0, addon: 0 });
+    });
+
+    it('a net refund counts as no spend', () => {
+      expect(available({ monthly: -50, addon: 0 }, limit)).toEqual(limit);
     });
   });
 });
