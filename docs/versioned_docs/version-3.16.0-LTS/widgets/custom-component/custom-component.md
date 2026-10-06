@@ -9,6 +9,10 @@ ToolJet allows you to create your own React component using the **Custom Compone
 1. **[Data](#data)**: Used to pass data or query names to the component. These queries can be triggered from inside the component.
 2. **[Code](#code)**: Used to write the React code for the **Custom Component**. ToolJet offers two built-in functions to interact with the component: [Update Data](#update-data-function) function and [Run Query](#run-query-function) function.
 
+:::info
+To build components locally, version them, and share them across every app in a workspace, use [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
+:::
+
 
 ## Data
 

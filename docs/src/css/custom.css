@@ -7,7 +7,7 @@
 
 /* You can override the default Infima variables here. */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap');
+/* IBM Plex Sans is linked in the document head for early discovery. */
 
 :root {
   --ifm-color-primary: #4d72fa;

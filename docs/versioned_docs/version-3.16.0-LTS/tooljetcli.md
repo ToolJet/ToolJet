@@ -9,6 +9,10 @@ ToolJet CLI is a powerful tool that empowers developers to effortlessly create a
 Starting from ToolJet CLI version 0.0.14, the creation of datasource plugins has been deprecated to prioritize marketplace plugins. This change enhances the plugin development experience and aligns with ToolJet's roadmap.
 :::
 
+:::info
+You can also use the ToolJet CLI to build and publish React components to your workspace. See [Custom Component Libraries](/docs/app-builder/custom-component-library/overview).
+:::
+
 ## Installation
 
 In order to manage plugins for the ToolJet marketplace, including creating, updating, and deleting, you will need to utilize **[tooljet-cli](https://www.npmjs.com/package/@tooljet/cli)**. This can be installed via npm by entering the following command:

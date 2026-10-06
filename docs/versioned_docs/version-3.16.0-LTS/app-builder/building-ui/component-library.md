@@ -26,3 +26,5 @@ Components can be added to the canvas by dragging and dropping them onto the can
 | **Custom** | [Custom Component](/docs/widgets/custom-component/), [HTML Viewer](/docs/widgets/html/), [iFrame](/docs/widgets/iframe/) |
 | **Miscellaneous** | [Filepicker](/docs/widgets/file-picker/), [Code Editor](/docs/widgets/code-editor/), [Color Picker](/docs/widgets/color-picker/), [Bounded Box](/docs/widgets/bounded-box/), [QR Scanner](/docs/widgets/qr-scanner/) |
 | **Legacy** | [Modal](/docs/3.5.0-LTS/widgets/modal/), [Datetime Picker](/docs/widgets/datepicker/), [Radio Button](/docs/3.5.0-LTS/widgets/radio-button/), [Toggle Switch](/docs/3.5.0-LTS/widgets/toggle-switch/), [Dropdown](/docs/2.50.0-LTS/widgets/dropdown/), [Multiselect](/docs/widgets/multiselect/) |
+
+Components published to your workspace through [Custom Component Libraries](/docs/app-builder/custom-component-library/overview) appear in the **Custom** tab of the component library.
