@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "frontend/package-lock.json",
-    "frontend/package.json"
+    "server/package-lock.json",
+    "server/package.json"
   ],
-  "baseSha": "a9b31cd1b40651c8527b9d7036f93f0b191d70c5",
+  "baseSha": "8bca8e45418bee1c4a5e44224b45257895b0785b",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "d147bff0bfd35332",
+    "id": "7acdd6bfd82d3c20",
     "lockArtifacts": [
-      "frontend/package-lock.json"
+      "server/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "frontend/package-lock.json"
+    "rootManifest": "server/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "1b46937957797102f43e1a1ac3da74822b955697259d9f1f1af395532b77752f",
+  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,9 +38,9 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "a9b31cd1b40651c8527b9d7036f93f0b191d70c5",
+  "scanSha": "8bca8e45418bee1c4a5e44224b45257895b0785b",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "G06tTTjWR-GIkinnO-7JDw",
+  "stoExecutionId": "Pku6-IymSGOd7lw9ewHHhg",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
@@ -61,21 +61,6 @@
     },
     {
       "candidateVersions": [
-        "1.2.2"
-      ],
-      "coordinate": {
-        "normalisedName": "source-map-js",
-        "purl": "pkg:npm/source-map-js@1.2.1"
-      },
-      "fromVersion": "1.2.1",
-      "issueIds": [
-        "2QmFvElGrIOkY6aPpVIHeQ"
-      ],
-      "minimumFixedVersion": "1.2.2",
-      "package": "source-map-js"
-    },
-    {
-      "candidateVersions": [
         "1.8.2"
       ],
       "coordinate": {
@@ -88,6 +73,21 @@
       ],
       "minimumFixedVersion": "1.8.2",
       "package": "compression"
+    },
+    {
+      "candidateVersions": [
+        "1.2.2"
+      ],
+      "coordinate": {
+        "normalisedName": "source-map-js",
+        "purl": "pkg:npm/source-map-js@1.2.1"
+      },
+      "fromVersion": "1.2.1",
+      "issueIds": [
+        "2QmFvElGrIOkY6aPpVIHeQ"
+      ],
+      "minimumFixedVersion": "1.2.2",
+      "package": "source-map-js"
     }
   ]
 }

@@ -259,6 +259,9 @@
     "engine.io-client": {
       "ws": "8.21.3"
     },
+    "express": {
+      "proxy-addr": "2.0.8"
+    },
     "google-gax": {
       "@grpc/grpc-js": "1.14.5"
     },
@@ -269,10 +272,14 @@
       "brace-expansion": "5.0.12"
     },
     "postcss": {
-      "nanoid": "3.3.19"
+      "nanoid": "3.3.19",
+      "source-map-js": "1.2.2"
     },
     "socket.io-client": {
       "socket.io-parser": "4.2.7"
+    },
+    "source-map-loader": {
+      "source-map-js": "1.2.2"
     },
     "superagent": {
       "form-data": "4.0.6"
