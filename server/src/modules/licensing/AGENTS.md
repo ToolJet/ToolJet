@@ -62,6 +62,7 @@ Cloud plan presets: `STARTER/BASIC/PRO/TEAM_PLAN_TERMS_CLOUD` in `ee/licensing/c
 - Trial keys can't be replaced via `updateLicense()` once a paid key was set (EE util.service throws).
 - `LicenseRepository.getLicense()` memoizes per request; a tx-bound `manager` bypasses the memo.
 - Valid license without `type` defaults to `enterprise`; trial licenses still get basic-plan `workflows` limits.
+- `publicApp` (`LICENSE_FIELD.PUBLIC_APP`) is a Cloud-only entitlement: `LicenseBase.publicApp` returns `true` on CE and self-hosted EE whatever the terms say. On Cloud it needs an explicit `app.features.publicApp: true` (Team/Enterprise). It gates `AppAuthGuard` (an unlicensed public app is treated as private), the `APP_PUBLIC_UPDATE` feature, and the share-modal toggle via `featureAccess.publicApp`.
 
 ## Related modules
 

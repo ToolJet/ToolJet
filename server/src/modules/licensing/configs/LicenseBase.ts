@@ -1,5 +1,7 @@
 import { LICENSE_LIMIT, LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import {
   BUSINESS_PLAN_TERMS,
   ENTERPRISE_PLAN_TERMS,
@@ -766,6 +768,10 @@ export default class LicenseBase {
   }
 
   public get publicApp(): boolean {
+    // Public apps are a plan entitlement on Cloud only; self-hosted EE and CE always allow them.
+    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+      return true;
+    }
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
     }

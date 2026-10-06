@@ -48,6 +48,73 @@ describe('LicenseBase.canRelease / canPromote', () => {
   });
 });
 
+describe('LicenseBase.publicApp', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+  const BASIC_TERMS_WITHOUT_PUBLIC_APP = { app: { features: { publicApp: false } } } as any;
+
+  afterEach(() => {
+    process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  describe.each(['ce', 'ee'])('%s edition', (edition) => {
+    beforeEach(() => {
+      process.env.TOOLJET_EDITION = edition;
+    });
+
+    it('allows public apps when the license is expired (basic-plan fallback)', () => {
+      const license = new LicenseBase(
+        BASIC_TERMS_WITHOUT_PUBLIC_APP,
+        { type: LICENSE_TYPE.BUSINESS } as any,
+        undefined,
+        undefined,
+        new Date(Date.now() - 86_400_000)
+      );
+
+      expect(license.publicApp).toBe(true);
+    });
+
+    it('allows public apps even when a valid license sets app.features.publicApp to false', () => {
+      const license = new LicenseBase(BASIC_TERMS_WITHOUT_PUBLIC_APP, {
+        app: { features: { publicApp: false } },
+      } as any);
+
+      expect(license.publicApp).toBe(true);
+    });
+  });
+
+  describe('cloud edition', () => {
+    beforeEach(() => {
+      process.env.TOOLJET_EDITION = 'cloud';
+    });
+
+    it('falls back to the basic-plan term when the license is expired', () => {
+      const license = new LicenseBase(
+        BASIC_TERMS_WITHOUT_PUBLIC_APP,
+        { type: LICENSE_TYPE.BUSINESS, app: { features: { publicApp: true } } } as any,
+        undefined,
+        undefined,
+        new Date(Date.now() - 86_400_000)
+      );
+
+      expect(license.publicApp).toBe(false);
+    });
+
+    it('allows public apps when a valid license sets app.features.publicApp to true', () => {
+      const license = new LicenseBase(BASIC_TERMS_WITHOUT_PUBLIC_APP, {
+        app: { features: { publicApp: true } },
+      } as any);
+
+      expect(license.publicApp).toBe(true);
+    });
+
+    it('blocks public apps when a valid license omits app.features.publicApp', () => {
+      const license = new LicenseBase(BASIC_TERMS_WITHOUT_PUBLIC_APP, {} as any);
+
+      expect(license.publicApp).toBe(false);
+    });
+  });
+});
+
 describe('LicenseBase.licenseType', () => {
   it('collapses to BASIC when the license is expired, regardless of its stated type', () => {
     const license = new LicenseBase(
