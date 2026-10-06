@@ -396,9 +396,10 @@ jobs:
       - name: E2E tests
         id: e2e
         # --group=-gitsync excludes the git-sync e2e specs (they run in the test-gitsync job).
+        # --ci runs the 3 shards in parallel, each on its own cloned DB.
         run: >-
           mkdir -p /tmp/tj-e2e-json &&
-          npm run --prefix server test:e2e:cov -- --group=-gitsync --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+          npm run --prefix server test:e2e:cov -- --ci --group=-gitsync --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
       - name: Upload e2e results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
