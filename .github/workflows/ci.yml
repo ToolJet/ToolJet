@@ -29,6 +29,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
+      migrations: ${{ steps.filter.outputs.migrations }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
       # no CI Gate commit status. full = merge truth (run-ci label / push / dispatch).
       mode: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'run-ci-changed') && 'changed' || 'full' }}
@@ -54,6 +55,10 @@ jobs:
               - '!**/*.md'
             marketplace:
               - 'marketplace/**'
+              - '!**/*.md'
+            # one brace pattern: with 'every', two positive patterns could never both match
+            migrations:
+              - 'server/{migrations,data-migrations}/**'
               - '!**/*.md'
 
   # ---------------------------------------------------------------------------
@@ -786,6 +791,129 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
+  # 3c. Migration timing — restores the base branch's database snapshot from S3
+  # (a pg_dump -Fc of our internal test instance, no customer data) and times the
+  # pending migrations with the PR's code. Only the PR's own migrations (matched by
+  # the 13-digit timestamp in their class names) can fail it; anything merged since
+  # the last snapshot refresh is reported only. The snapshot is kept current by
+  # migration-snapshot-refresh.yml. Off until the repo variable
+  # MIGRATION_SNAPSHOT_BUCKET is set, which is also its kill switch.
+  # ---------------------------------------------------------------------------
+  migration-timing:
+    name: 'Migration timing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [detect-changes, build-plugins]
+    if: >-
+      !cancelled()
+      && github.event_name == 'pull_request'
+      && vars.MIGRATION_SNAPSHOT_BUCKET != ''
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.migrations == 'true'
+      && needs.build-plugins.result == 'success'
+    permissions:
+      contents: read
+      id-token: write   # OIDC → read-only snapshot role
+    container: node:22.15.1-bookworm
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY }}   # key the snapshot's credentials were encrypted with
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_migration_timing
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      # libpq vars for psql / pg_restore / pg_dump / createdb
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      MIGRATION_TIME_LIMIT_SECONDS: ${{ vars.MIGRATION_TIME_LIMIT_SECONDS || '30' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2   # HEAD^1 = PR base, to find the migration files this PR adds
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Test the timing reporter
+        run: node --test scripts/time-migrations.test.mjs
+      # bookworm ships pg 15 clients; a pg 16 dump needs pg_restore 16 (PGDG repo)
+      - name: Install Postgres 16 client and AWS CLI
+        run: |
+          apt-get update && apt-get install -y postgresql-common awscli
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.MIGRATION_SNAPSHOT_READ_ROLE }}
+          aws-region: ${{ vars.MIGRATION_SNAPSHOT_REGION }}
+      - name: Restore snapshot
+        env:
+          SNAPSHOT_URI: s3://${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ github.base_ref }}/latest.dump
+        run: |
+          aws s3 cp "$SNAPSHOT_URI" /tmp/snapshot.dump || {
+            echo "::error::No snapshot at $SNAPSHOT_URI. Copy the parent branch line's latest.dump there."
+            exit 1
+          }
+          createdb "$PG_DB" && createdb "$TOOLJET_DB"
+          pg_restore -j 4 --no-owner --no-privileges -d "$PG_DB" /tmp/snapshot.dump
+      - name: Run pending migrations with timing
+        shell: bash
+        run: |
+          set -o pipefail
+          # TypeORM records the class name's timestamp, which differs from the filename's in
+          # some older files, so read it from the class declaration of each added file
+          JUDGE=$(git diff --name-only --diff-filter=A HEAD^1 HEAD -- server/migrations server/data-migrations \
+            | xargs -r grep -ohE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' | paste -sd, - || true)
+          export JUDGE
+          echo "This PR's migrations: ${JUDGE:-none}"
+          NODE_ENV='' npm run --prefix server db:migrate 2>&1 | node scripts/time-migrations.mjs
+      - name: List empty tables in the snapshot
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '### Empty tables in the snapshot'
+            echo 'Migrations on these tables were timed against zero rows. Top up the snapshot if that matters.'
+            echo
+            psql -d "$PG_DB" -At -c "
+              select '- ' || table_name from information_schema.tables
+              where table_schema = 'public' and table_type = 'BASE TABLE'
+                and (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from (select 1 from %I.%I limit 1) s',
+                     table_schema, table_name), false, true, '')))[1]::text::int = 0
+              order by table_name"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
   # 4. Cypress E2E — reusable workflows, run after server tests pass
   # ---------------------------------------------------------------------------
   cypress-platform:
@@ -867,6 +995,7 @@ jobs:
       - cypress-platform
       - cypress-marketplace
       - vulnerability-gate
+      - migration-timing
     steps:
       # Comment pipeline — one path for both lanes: download jest JSONs,
       # render markdown via scripts/render-ci-comment.sh, upsert by marker.
@@ -977,6 +1106,7 @@ jobs:
               "cypress-platform:${{ needs.cypress-platform.result }}"
               "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
               "vulnerability-gate:${{ needs.vulnerability-gate.result }}"
+              "migration-timing:${{ needs.migration-timing.result }}"
             )
           fi
 

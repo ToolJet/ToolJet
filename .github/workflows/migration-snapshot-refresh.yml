@@ -1,0 +1,137 @@
+name: Migration snapshot refresh
+
+# Keeps the S3 database snapshot used by the 'Migration timing' job in ci.yml current.
+# After a push that touches migrations, restore the branch line's latest.dump, apply
+# the newly merged migrations, and upload the result as <branch>/<sha>.dump plus
+# <branch>/latest.dump. Only merged code ever writes the snapshot; PR runs only read it.
+#
+# Fails closed: if a migration fails, or a pushed commit deletes a migration file the
+# snapshot already ran (a revert by file deletion), nothing is uploaded and latest.dump
+# stays on the last good snapshot. Roll back by copying an older <sha>.dump over latest.dump.
+#
+# Off until the repo variable MIGRATION_SNAPSHOT_BUCKET is set.
+
+on:
+  push:
+    branches: [develop, main, 'release/**']
+    paths:
+      - 'server/migrations/**'
+      - 'server/data-migrations/**'
+  workflow_dispatch:
+
+# one refresh at a time per branch line; a skipped queued run is harmless because the
+# next run's checkout contains every merged migration
+concurrency:
+  group: migration-snapshot-refresh-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write   # OIDC → snapshot write role
+
+jobs:
+  refresh:
+    name: 'Refresh migration snapshot'
+    if: vars.MIGRATION_SNAPSHOT_BUCKET != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container: node:22.15.1-bookworm
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY }}
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_migration_snapshot
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      SNAPSHOT_PREFIX: s3://${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      # db:migrate loads @tooljet/plugins/dist/server
+      - uses: actions/cache@v6
+        with:
+          path: plugins/node_modules
+          key: ${{ runner.os }}-plugins-nm-${{ hashFiles('plugins/package-lock.json') }}
+      - run: npm ci --prefix plugins && npm run --prefix plugins build
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      # bookworm ships pg 15 clients; dumps from pg 16 need pg_dump/pg_restore 16 (PGDG repo)
+      - name: Install Postgres 16 client and AWS CLI
+        run: |
+          apt-get update && apt-get install -y postgresql-common awscli
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.MIGRATION_SNAPSHOT_WRITE_ROLE }}
+          aws-region: ${{ vars.MIGRATION_SNAPSHOT_REGION }}
+
+      - name: Restore latest snapshot
+        run: |
+          aws s3 cp "$SNAPSHOT_PREFIX/latest.dump" /tmp/snapshot.dump || {
+            echo "::error::No snapshot at $SNAPSHOT_PREFIX/latest.dump. Upload an initial dump or copy the parent branch line's."
+            exit 1
+          }
+          createdb "$PG_DB" && createdb "$TOOLJET_DB"
+          pg_restore -j 4 --no-owner --no-privileges -d "$PG_DB" /tmp/snapshot.dump
+
+      # Deleting a migration file doesn't undo it: the snapshot keeps its change while
+      # the code no longer expects it. Only files deleted by this push are checked, so
+      # old migrations removed long ago don't trip it.
+      - name: Stop if this push deleted a migration the snapshot already ran
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BEFORE"
+          # the ledger holds the class name's timestamp, so read it from the deleted file's
+          # content at $BEFORE (it can differ from the filename's)
+          deleted=$(git diff --name-only --diff-filter=D "$BEFORE" "$GITHUB_SHA" -- server/migrations server/data-migrations \
+            | while read -r f; do git show "$BEFORE:$f"; done \
+            | grep -oE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' || true)
+          for ts in $deleted; do
+            if [ -n "$(psql -d "$PG_DB" -Atc "select 1 from migrations where timestamp = $ts limit 1")" ]; then
+              echo "::error::Migration $ts was deleted but the snapshot already ran it. Roll latest.dump back to a copy from before it merged."
+              exit 1
+            fi
+          done
+
+      - name: Apply merged migrations
+        run: NODE_ENV='' npm run --prefix server db:migrate
+
+      - name: Upload new snapshot
+        run: |
+          pg_dump -Fc -d "$PG_DB" -f /tmp/next.dump
+          aws s3 cp /tmp/next.dump "$SNAPSHOT_PREFIX/$GITHUB_SHA.dump"
+          aws s3 cp "$SNAPSHOT_PREFIX/$GITHUB_SHA.dump" "$SNAPSHOT_PREFIX/latest.dump"
+          echo "Snapshot $SNAPSHOT_PREFIX/latest.dump now at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
