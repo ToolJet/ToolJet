@@ -818,9 +818,19 @@ jobs:
           --health-interval 3s
           --health-timeout 3s
           --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
     env:
-      LOCKBOX_MASTER_KEY: lockbox-master-key
+      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
       SECRET_KEY_BASE: secret-key-base
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       PG_HOST: postgres
       PG_PORT: 5432
       PG_USER: postgres
@@ -838,6 +848,9 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
       MIGRATION_TIME_LIMIT_SECONDS: ${{ secrets.MIGRATION_TIME_LIMIT_SECONDS || '30' }}
+      # db:migrate's runner logs nothing per migration by default; 'all' makes TypeORM print the
+      # "<n> migrations are new" / "Migration X has been executed successfully." lines the timer reads
+      ORM_LOGGING: all
     steps:
       - uses: actions/checkout@v7
         with:
