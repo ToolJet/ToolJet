@@ -4,6 +4,7 @@ import {
   ConflictException,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -24,6 +25,8 @@ type Entry = { state: 'pending'; fp: string } | { state: 'done'; fp: string; bod
 // replayed instead of re-running the handler. Requests without the header are untouched.
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(IdempotencyInterceptor.name);
+
   constructor(private readonly redisService: RedisService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -55,11 +58,17 @@ export class IdempotencyInterceptor implements NestInterceptor {
           return of(existing.body);
         }
         return next.handle().pipe(
+          catchError((error) => from(client.del(key)).pipe(mergeMap(() => throwError(() => error)))),
           mergeMap(async (body) => {
-            await client.set(key, JSON.stringify({ state: 'done', fp, body }), 'EX', DONE_TTL_SEC);
+            try {
+              await client.set(key, JSON.stringify({ state: 'done', fp, body }), 'EX', DONE_TTL_SEC);
+            } catch (error) {
+              // The handler already ran: answer with its result. The key stays pending until its TTL,
+              // so a retry gets 409 instead of running the handler a second time.
+              this.logger.error(`failed to store idempotent response for ${key}: ${(error as Error)?.message}`);
+            }
             return body;
-          }),
-          catchError((error) => from(client.del(key)).pipe(mergeMap(() => throwError(() => error))))
+          })
         );
       })
     );

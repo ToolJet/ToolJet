@@ -18,7 +18,7 @@ Generic, edition-agnostic request-idempotency interceptor: an optional `Idempote
 - Header `Idempotency-Key`, optional. Present but not a UUID → 400.
 - Redis key: `tj:idem:{organizationId}:{userId}:{METHOD}:{routePattern}:{idempotencyKey}` — scoped per user, so one user can't replay/block another's request with a guessed key.
 - On first sight: `SET key {state:'pending', fp} EX 600 NX` (600s — matches the git org-lease TTL, long enough for a slow handler, short enough that a crashed pod can't wedge the key forever).
-  - Acquired → handler runs. Success → `SET key {state:'done', fp, body} EX 86400` (replayable for a day). Error → `DEL key` (frees it; the client's retry, possibly with a changed body, gets a clean attempt).
+  - Acquired → handler runs. Success → `SET key {state:'done', fp, body} EX 86400` (replayable for a day). Error → `DEL key` (frees it; the client's retry, possibly with a changed body, gets a clean attempt). Success but the `done` write fails → the handler's result is still returned and the error logged; the key stays `pending` until its TTL, so a retry gets 409 rather than running the handler twice.
 - On a repeat with the same key before it's freed:
   - Fingerprint differs from the stored one → 422 (`Idempotency-Key was reused with a different request`).
   - `state: 'pending'` → 409 (`A request with this Idempotency-Key is still in progress`) — the first attempt hasn't finished.
