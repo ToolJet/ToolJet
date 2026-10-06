@@ -171,6 +171,19 @@ describe('JSONEditor widget', () => {
     expect(inlineLintMarks(container)).toBe(0);
   });
 
+  test('[JSONEditor-EDIT-002] long lines wrap instead of being clipped', async () => {
+    // Break this catches: the widget's stylesheet sets `overflow-x: hidden` on the scroller, so
+    // without the lineWrapping extension a long value is clipped AND unreachable — there is no
+    // horizontal scrollbar to get to it. The sibling CodeEditor has always wrapped.
+    const container = await mounted(
+      jsonEditor.render({
+        properties: { value: binding('{{({ note: "' + 'x'.repeat(400) + '" })}}') },
+      }).container
+    );
+
+    expect(container.querySelector('.cm-content')).toHaveClass('cm-lineWrapping');
+  });
+
   test('[JSONEditor-FOLD-001] expand entire JSON folds and unfolds the document', async () => {
     // Break this catches: losing the folding latch leaves large configs either permanently collapsed
     // or permanently expanded, ignoring the builder's toggle.
