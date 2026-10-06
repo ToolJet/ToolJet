@@ -19,7 +19,7 @@
  * `[KeyValuePair-FAMILY-NNN]` prefix, per the widget-testing-contract validator.
  */
 import React from 'react';
-import { waitFor } from '@testing-library/react';
+import { waitFor, fireEvent } from '@testing-library/react';
 import useStore from '@/AppBuilder/_stores/store';
 import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
 
@@ -116,6 +116,55 @@ describe('KeyValuePair: inline editing and changeset', () => {
     await widget.session.user.click(valueContainer(rows()[0]));
 
     await waitFor(() => expect(document.getElementById(`${ID}-name`)).toHaveFocus());
+  });
+
+  test('[KeyValuePair-EDIT-009] entering edit mode places the caret at the end of the string field text', async () => {
+    widget.render({ properties: { data: binding({ ...DEFAULT_DATA, name: 'Ada Lovelace' }) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    await waitFor(() => expect(input).toHaveFocus());
+
+    const selection = window.getSelection();
+    expect(selection.rangeCount).toBeGreaterThan(0);
+    const range = selection.getRangeAt(0);
+    expect(range.collapsed).toBe(true);
+
+    const expectedRange = document.createRange();
+    expectedRange.selectNodeContents(input);
+    expectedRange.collapse(false);
+    expect(range.endContainer).toBe(expectedRange.endContainer);
+    expect(range.endOffset).toBe(expectedRange.endOffset);
+  });
+
+  test('[KeyValuePair-EDIT-010] clicking again inside an already-editing string field does not force the caret back to the end', async () => {
+    widget.render({ properties: { data: binding({ ...DEFAULT_DATA, name: 'Ada Lovelace' }) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    await waitFor(() => expect(input).toHaveFocus());
+
+    // Stand in for a real click-to-reposition (jsdom has no layout to derive one from).
+    const midRange = document.createRange();
+    midRange.setStart(input.firstChild, 3);
+    midRange.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(midRange);
+
+    // fireEvent, not userEvent: userEvent's own contentEditable heuristics default to
+    // end-of-text, which would mask the regression this scenario checks for.
+    fireEvent.click(input);
+    await new Promise((resolve) => setTimeout(resolve, 0)); // flush handleEditClick's setTimeout(0)
+
+    const rangeAfter = window.getSelection().getRangeAt(0);
+    expect(rangeAfter.collapsed).toBe(true);
+    expect(rangeAfter.endContainer).toBe(input.firstChild);
+    expect(rangeAfter.endOffset).toBe(3);
   });
 
   test('[KeyValuePair-EDIT-002] editing stores the value in changeSet, leaving the exposed data and the original property untouched', async () => {
