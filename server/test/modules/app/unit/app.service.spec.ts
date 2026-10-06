@@ -39,13 +39,14 @@ describe('AppsService.validateReleasedApp', () => {
     can: jest.fn().mockReturnValue(canUpdate),
   });
 
-  it('returns id and slug when app has a released version', () => {
+  it('returns id, slug and the released version id when app has a released version', () => {
     const app = makeApp({ currentVersionId: 'ver-uuid-1' });
     const ability = makeAbility();
 
     const result = validateReleasedApp.call(null, ability, app);
 
-    expect(result).toEqual({ id: 'app-uuid-1', slug: 'my-app' });
+    // currentVersionId is the viewer's pre-fetch cache key for the released app definition.
+    expect(result).toEqual({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: 'ver-uuid-1' });
     expect(ability.can).not.toHaveBeenCalled();
   });
 
