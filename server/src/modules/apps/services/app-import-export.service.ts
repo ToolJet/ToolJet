@@ -3232,6 +3232,19 @@ function migrateProperties(
       if (properties.numberFormat == undefined) {
         properties.numberFormat = { value: 'us' };
       }
+      if (properties.value !== undefined && (properties.value?.value === '' || properties.value?.value === null)) {
+        properties.value = { ...properties.value, value: '0' };
+      }
+    }
+
+    if (['PhoneInput', 'CurrencyInput'].includes(componentType) && properties.dateFormat !== undefined) {
+      if (properties.dateFormat?.fxActive !== undefined) {
+        properties.defaultCountry = {
+          ...properties.defaultCountry,
+          fxActive: properties.defaultCountry?.fxActive ?? properties.dateFormat.fxActive,
+        };
+      }
+      delete properties.dateFormat;
     }
 
     // TreeSelect
