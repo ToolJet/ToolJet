@@ -805,9 +805,6 @@ jobs:
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
       && needs.build-plugins.result == 'success'
-    permissions:
-      contents: read
-      id-token: write   # OIDC → read-only snapshot role
     container: node:22.15.1-bookworm
     services:
       postgres:
@@ -820,7 +817,7 @@ jobs:
           --health-timeout 3s
           --health-retries 5
     env:
-      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY }}   # key the snapshot's credentials were encrypted with
+      LOCKBOX_MASTER_KEY: lockbox-master-key
       SECRET_KEY_BASE: secret-key-base
       PG_HOST: postgres
       PG_PORT: 5432
@@ -869,8 +866,9 @@ jobs:
           apt-get install -y postgresql-client-16
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.MIGRATION_SNAPSHOT_READ_ROLE }}
-          aws-region: ${{ vars.MIGRATION_SNAPSHOT_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
       - name: Restore snapshot
         env:
           SNAPSHOT_URI: s3://${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ github.base_ref }}/latest.dump
