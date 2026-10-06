@@ -30,6 +30,8 @@ jobs:
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       migrations: ${{ steps.filter.outputs.migrations }}
+      # secrets aren't allowed in job-level if:, so expose only whether the snapshot is configured
+      snapshot: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
       # no CI Gate commit status. full = merge truth (run-ci label / push / dispatch).
       mode: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'run-ci-changed') && 'changed' || 'full' }}
@@ -801,7 +803,7 @@ jobs:
     if: >-
       !cancelled()
       && github.event_name == 'pull_request'
-      && vars.MIGRATION_SNAPSHOT_BUCKET != ''
+      && needs.detect-changes.outputs.snapshot == 'true'
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
       && needs.build-plugins.result == 'success'
@@ -835,7 +837,7 @@ jobs:
       PGHOST: postgres
       PGUSER: postgres
       PGPASSWORD: postgres
-      MIGRATION_TIME_LIMIT_SECONDS: ${{ vars.MIGRATION_TIME_LIMIT_SECONDS || '30' }}
+      MIGRATION_TIME_LIMIT_SECONDS: ${{ secrets.MIGRATION_TIME_LIMIT_SECONDS || '30' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -875,7 +877,7 @@ jobs:
         run: |
           # lts-* bases use lts.sql, everything else main.sql
           case "$BASE" in lts*) name=lts ;; *) name=main ;; esac
-          uri="${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/$name.sql"
+          uri="${{ secrets.MIGRATION_SNAPSHOT_BUCKET }}/$name.sql"
           aws s3 cp "$uri" /tmp/snapshot.sql || { echo "::error::No snapshot at $uri"; exit 1; }
           createdb "$PG_DB" && createdb "$TOOLJET_DB"
           psql -q -v ON_ERROR_STOP=1 -d "$PG_DB" -f /tmp/snapshot.sql

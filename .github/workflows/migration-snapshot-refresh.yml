@@ -6,7 +6,7 @@ name: Migration snapshot refresh
 #
 # Fails closed: if a migration fails, or the push deleted a migration file the snapshot
 # already ran (a revert by deletion), nothing is uploaded. Turn on S3 bucket versioning
-# to roll back. Off until vars.MIGRATION_SNAPSHOT_BUCKET (s3://bucket/prefix) is set.
+# to roll back. Off until secrets.MIGRATION_SNAPSHOT_BUCKET (s3://bucket/prefix) is set.
 
 on:
   push:
@@ -26,9 +26,19 @@ permissions:
   contents: read
 
 jobs:
+  # secrets aren't allowed in job-level if:, so a tiny job reports whether the snapshot is configured
+  configured:
+    runs-on: ubuntu-latest
+    outputs:
+      on: ${{ steps.check.outputs.on }}
+    steps:
+      - id: check
+        run: echo "on=${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}" >> "$GITHUB_OUTPUT"
+
   refresh:
     name: 'Refresh migration snapshot'
-    if: vars.MIGRATION_SNAPSHOT_BUCKET != ''
+    needs: configured
+    if: needs.configured.outputs.on == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: node:22.15.1-bookworm
@@ -61,7 +71,7 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
       # lts-* branches refresh lts.sql, main refreshes main.sql
-      SNAPSHOT_URI: ${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ startsWith(github.ref_name, 'lts') && 'lts' || 'main' }}.sql
+      SNAPSHOT_URI: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET }}/${{ startsWith(github.ref_name, 'lts') && 'lts' || 'main' }}.sql
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
