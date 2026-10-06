@@ -52,9 +52,19 @@ jobs:
           --health-interval 3s
           --health-timeout 3s
           --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
     env:
-      LOCKBOX_MASTER_KEY: lockbox-master-key
+      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
       SECRET_KEY_BASE: secret-key-base
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       PG_HOST: postgres
       PG_PORT: 5432
       PG_USER: postgres
