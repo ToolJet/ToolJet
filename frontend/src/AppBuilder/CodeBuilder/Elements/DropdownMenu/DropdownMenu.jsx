@@ -120,6 +120,10 @@ export const DropdownMenu = (props) => {
   // Handle outside clicks
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // AddQueryBtn's popover is portaled to document.body, so it's outside dropdownRef.
+      if (event.target.closest('#component-data-query-add-popover')) {
+        return;
+      }
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
