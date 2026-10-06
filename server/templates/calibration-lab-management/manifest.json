@@ -1,0 +1,21 @@
+{
+  "name": "Calibration lab management",
+  "description": "Track instruments due for calibration, lab capacity and certificate readiness.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "calibration-lab-management",
+  "category": "manufacturing-and-production"
+}

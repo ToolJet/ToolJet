@@ -1,0 +1,4 @@
+id,rfp_code,title,category,owner,due_date,budget_cents,stage,brief,decision_proposal,decision_notes
+,RFP-041,Automated packaging line,Capital equipment,Maya Brooks,2026-10-02,48500000,Evaluating,"Replace the end-of-line packing cell at the East plant. Evaluate integration with existing conveyors, throughput at 40 cases/min, commissioning lead time, and local service coverage.",,
+,RFP-042,Compressed air system,Plant infrastructure,Alex Morgan,2026-10-09,12000000,Decision recorded,"Upgrade two compressors and add energy monitoring. Compare installation downtime, maintenance support, and total scope.",PROP-005,Recommend Bayline for its local service coverage and installation plan. Procurement approval and contracting remain outside this review.
+,RFP-043,Annual safety supplies,Operating supplies,Maya Brooks,2026-10-16,6400000,Collecting proposals,Consolidate PPE and consumables across both plants. Prioritize dependable replenishment and a transparent price schedule.,,

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
@@ -7,12 +7,16 @@ import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
 import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import { TooljetDbBulkUploadService } from '@modules/tooljet-db/services/tooljet-db-bulk-upload.service';
 import { User } from '@entities/user.entity';
 import { AppsRepository } from '@modules/apps/repository';
 import { Like } from 'typeorm';
 import { ImportExportResourcesService } from '@modules/import-export-resources/service';
 import { PluginsService } from '@modules/plugins/service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 
 @Injectable()
 export class TemplatesService {
@@ -24,6 +28,10 @@ export class TemplatesService {
     protected logger: Logger
   ) {}
 
+  // Property injection leaves the constructor unchanged for subclasses
+  @Inject(LicenseTermsService)
+  protected licenseTermsService: LicenseTermsService;
+
   async perform(
     currentUser: User,
     identifier: string,
@@ -32,10 +40,28 @@ export class TemplatesService {
     shouldAutoImportPlugin: boolean,
     branchId?: string
   ) {
-    const templateDefinition = this.findTemplateDefinition(identifier);
+    let templateDefinition = this.findTemplateDefinition(identifier);
+    if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.CUSTOM_THEMES, currentUser.organizationId)))
+      templateDefinition = this.withThemeColours(templateDefinition);
     if (dependentPlugins.length)
       await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
     return this.importTemplate(currentUser, templateDefinition, appName, identifier, branchId);
+  }
+
+  // Free plans ignore app themes: write in their light colours (icons use placeholder text), keep the default theme
+  protected withThemeColours(templateDefinition: any) {
+    const colours = templateDefinition.app?.[0]?.definition?.appV2?.appVersions?.[0]?.globalSettings?.theme?.definition;
+    if (!colours) return templateDefinition;
+
+    const app = JSON.parse(
+      JSON.stringify(templateDefinition.app)
+        .replace(/"appMode":"auto"/g, '"appMode":"light"')
+        .replace(/var\(--cc-default-icon\)/g, 'var(--cc-placeholder-text)')
+        .replace(/var\(--cc-(\w+)-(\w+)\)/g, (token, type, group) => colours[group]?.colors?.[type]?.light ?? token)
+    );
+    const theme = { name: defaultThemeName, definition: TJDefaultTheme };
+    app[0].definition.appV2.appVersions.forEach((version) => Object.assign(version.globalSettings ?? {}, { theme }));
+    return { ...templateDefinition, app };
   }
 
   async createSampleApp(currentUser: User) {
@@ -49,7 +75,7 @@ export class TemplatesService {
     const existNameList = allSampleApps.map((app) => app.name);
     const maxNumber = getMaxCopyNumber(existNameList, ' ');
     const nameWithCount = `${name} ${maxNumber}`;
-    const sampleAppDef = JSON.parse(readFileSync(`templates/sample_app_def.json`, 'utf-8'));
+    const sampleAppDef = this.readTemplateJson('templates/sample_app_def.json');
     if (sampleAppDef?.app?.[0]?.definition?.appV2) {
       delete sampleAppDef.app[0].definition.appV2.slug;
     }
@@ -58,7 +84,7 @@ export class TemplatesService {
 
   async createSampleOnboardApp(currentUser: User) {
     const name = 'Product inventory';
-    const sampleAppDef = JSON.parse(readFileSync(`templates/onboard_sample_app.json`, 'utf-8'));
+    const sampleAppDef = this.readTemplateJson('templates/onboard_sample_app.json');
     // Give each instance a fresh co_relation_id so the onboarding app is not
     // treated as the same git entity across workspaces (the template JSON has a
     // hardcoded appV2.id that createImportedAppForUser would otherwise copy verbatim).
@@ -110,7 +136,9 @@ export class TemplatesService {
 
         if (tableDetails) {
           const tableNameAsPerDefinition = tableDetails.table_name;
-          this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, currentUser.organizationId);
+          // Seed one table at a time, in definition order: foreign keys already exist at this point,
+          // so a referencing table must wait until the table it points to has its rows.
+          await this.processCsvFile(identifier, tableNameAsPerDefinition, newTableid, currentUser.organizationId);
         }
       }
 
@@ -131,12 +159,22 @@ export class TemplatesService {
 
   findTemplateDefinition(identifier: string) {
     try {
-      return JSON.parse(readFileSync(`templates/${identifier}/definition.json`, 'utf-8'));
+      return this.readTemplateJson(`templates/${identifier}/definition.json`);
     } catch (err) {
       this.logger.error(err);
       throw new BadRequestException('App definition not found');
     }
   }
+
+  // Templates may be stored Brotli-compressed as `<file>.br`; fall back to the plain JSON file.
+  protected readTemplateJson(filePath: string) {
+    const compressedPath = `${filePath}.br`;
+    const contents = fs.existsSync(compressedPath)
+      ? zlib.brotliDecompressSync(readFileSync(compressedPath))
+      : readFileSync(filePath);
+    return JSON.parse(contents.toString('utf-8'));
+  }
+
   async processCsvFile(identifier: string, tableName: string, tableId: string, organizationId: string) {
     try {
       const csvFilePath = path.join('templates', `${identifier}/data/${tableName}/data.csv`);

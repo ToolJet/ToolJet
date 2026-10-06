@@ -1,6 +1,7 @@
 import { FeatureConfig } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { MODULES } from '@modules/app/constants/modules';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 
 export type JWTPayload = {
   sessionId: string;
@@ -14,6 +15,7 @@ export type JWTPayload = {
   isPATLogin?: boolean;
   token?: string;
   appId?: string;
+  patScope?: PersonalAccessTokenScope;
   tj_api_source?: string;
   /* Set on synthetic tokens minted for admin API key (TJ_ADMIN_API_KEY) authentication */
   isAdminApiKeyAuth?: boolean;
