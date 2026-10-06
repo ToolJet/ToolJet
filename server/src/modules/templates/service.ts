@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
@@ -18,6 +18,8 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 
+type TemplateDefinitionWithTables = { tooljet_database?: Array<{ id?: string }> };
+
 @Injectable()
 export class TemplatesService {
   constructor(
@@ -25,12 +27,9 @@ export class TemplatesService {
     protected appsRepository: AppsRepository,
     protected tooljetDbBulkUploadService: TooljetDbBulkUploadService,
     protected pluginsService: PluginsService,
-    protected logger: Logger
+    protected logger: Logger,
+    protected licenseTermsService: LicenseTermsService
   ) {}
-
-  // Property injection leaves the constructor unchanged for subclasses
-  @Inject(LicenseTermsService)
-  protected licenseTermsService: LicenseTermsService;
 
   async perform(
     currentUser: User,
@@ -62,6 +61,18 @@ export class TemplatesService {
     const theme = { name: defaultThemeName, definition: TJDefaultTheme };
     app[0].definition.appV2.appVersions.forEach((version) => Object.assign(version.globalSettings ?? {}, { theme }));
     return { ...templateDefinition, app };
+  }
+
+  // Template table ids are fixed in definition.json, and import keeps each one as the table's co_relation_id. Reusing
+  // them would make a second app from the same template attach to the first app's tables (and fail to seed them again),
+  // so every import gets new ids, replaced everywhere they appear: tables, query table_ids and foreign keys.
+  protected withFreshTableIds<T extends TemplateDefinitionWithTables>(templateDefinition: T): T {
+    const tables = templateDefinition?.tooljet_database ?? [];
+    if (!tables.length) return templateDefinition;
+
+    let serialised = JSON.stringify(templateDefinition);
+    for (const { id } of tables) if (id) serialised = serialised.split(id).join(uuidv4());
+    return JSON.parse(serialised) as T;
   }
 
   async createSampleApp(currentUser: User) {
@@ -103,6 +114,7 @@ export class TemplatesService {
     identifier?: string,
     branchId?: string
   ) {
+    templateDefinition = this.withFreshTableIds(templateDefinition);
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
