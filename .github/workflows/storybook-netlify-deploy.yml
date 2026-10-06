@@ -1,10 +1,9 @@
 name: Deploy Storybook to Netlify
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - lts-3.16
+  # push:
+  #   branches:
+  #     - lts-3.16
   workflow_dispatch:
     inputs:
       branch:
