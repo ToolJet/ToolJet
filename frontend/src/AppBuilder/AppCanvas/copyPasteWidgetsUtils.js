@@ -403,6 +403,11 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
       }
     }
 
+    // Rescaling into a narrower parent can produce a width larger than a canvas HAS,
+    // which would overflow the container. The drop path clamps the same way
+    // (appCanvasUtils.js:149-152); `left` is clamped later in calculateComponentPosition.
+    width = Math.min(width, NO_OF_GRIDS);
+
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],
       width,
