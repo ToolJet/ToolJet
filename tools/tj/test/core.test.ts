@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { type Command, parse, resolve } from '../src/args.ts';
+import { installedFrom, nestedModules } from '../src/commands/setup.ts';
 import { unsavedWork } from '../src/commands/wt.ts';
 import { setKeys } from '../src/env.ts';
 import { freePort } from '../src/net.ts';
@@ -77,4 +78,21 @@ test('unsavedWork flags uncommitted files and submodule commits that exist nowhe
   sh(join(wt, 'server/ee'), 'commit', '-q', '--allow-empty', '-m', 'local only');
   writeFileSync(join(wt, 'notes.txt'), 'x');
   assert.deepEqual(await unsavedWork(wt), ['worktree: uncommitted changes', 'server/ee: 1 unpushed commit(s)']);
+});
+
+test('installedFrom accepts node_modules built from the same lock, skipping uninstalled optional deps', () => {
+  const lock = {
+    packages: {
+      '': {},
+      'packages/a': { version: '1.0.0' },
+      'node_modules/x': { version: '1.0.0' },
+      'node_modules/fsevents': { version: '2.3.3', optional: true },
+      'packages/a/node_modules/y': { version: '2.0.0' },
+    },
+  };
+  const hidden = { packages: { 'node_modules/x': { version: '1.0.0' }, 'packages/a/node_modules/y': { version: '2.0.0' } } };
+  assert.equal(installedFrom(lock, hidden), true);
+  assert.equal(installedFrom(lock, { packages: { 'node_modules/x': { version: '1.0.1' } } }), false);
+  assert.equal(installedFrom(lock, { packages: { 'node_modules/x': { version: '1.0.0' } } }), false);
+  assert.deepEqual(nestedModules(hidden), ['packages/a/node_modules']);
 });
