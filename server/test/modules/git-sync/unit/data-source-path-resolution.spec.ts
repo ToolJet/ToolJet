@@ -1,7 +1,6 @@
 /// <reference types="jest" />
 /**
- * WorkspaceGitSyncAdapter — data source serialize PATH resolution, the data-source analogue of
- * PlatformGitPushService's app/module path resolution (push-path-resolution.spec.ts). Verifies the
+ * WorkspaceGitSyncAdapter — data source serialize PATH resolution. Verifies the
  * placement folder is resolved per branch and that the on-disk path nests the data source under its
  * folder (data-sources/<folder>/<ds-name>/…), or sits at root when unfoldered — including that a
  * long (100-char) name survives as a path segment without truncation.

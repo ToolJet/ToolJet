@@ -7,8 +7,7 @@ import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
 
 // Shared between findTables and findDependents - a join_tables query references a table through
 // the joined table itself and through either side of each join condition, three depths plus
-// arrays. Duplicated at apps/util.service.ts:1496 and ee/platform-git-sync/push.service.ts:476;
-// do not add a fourth copy.
+// arrays. Duplicated at apps/util.service.ts:1496; do not add a third copy.
 export function addTablesInJoinOperation(uniqTableIds: Set<string>, joinOptions: Record<string, any>[]): void {
   if (isEmpty(joinOptions)) return;
 
