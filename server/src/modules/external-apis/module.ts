@@ -23,6 +23,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
+import { FolderAppsModule } from '@modules/folder-apps/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -31,6 +32,7 @@ export class ExternalApiModule extends SubModule {
       ExternalApisService,
       ExternalApiUtilService,
       ExternalApisAppsController,
+      ExternalApisAppsControllerV2,
       ExternalApisModulesController,
       ExternalApisTjdbController,
       ExternalApisBanController,
@@ -40,6 +42,7 @@ export class ExternalApiModule extends SubModule {
       'service',
       'util.service',
       'controllers/apps.controller',
+      'controllers/apps.controller.v2',
       'controllers/modules.controller',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
@@ -61,6 +64,7 @@ export class ExternalApiModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
         await OrganizationUsersModule.register(configs),
+        await FolderAppsModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -83,6 +87,7 @@ export class ExternalApiModule extends SubModule {
         ? [
             ExternalApisController,
             ExternalApisAppsController,
+            ExternalApisAppsControllerV2,
             ExternalApisModulesController,
             ExternalApisTjdbController,
             ExternalApisBanController,
