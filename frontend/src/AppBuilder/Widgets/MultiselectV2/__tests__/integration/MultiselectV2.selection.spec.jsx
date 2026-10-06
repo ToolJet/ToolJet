@@ -123,23 +123,35 @@ describe('MultiselectV2: selection, clearing, and the selection limit', () => {
     expect(row('option2')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('[MultiselectV2-SEL-004] Select-all applies every visible option, disabled ones included', async () => {
-    // Break this catches: select-all applying `modifiedSelectOptions` (which
-    // carries the synthetic row) or filtering out disabled options instead of
-    // applying the whole derived list (MultiselectV2.jsx:195-198).
+  test('[MultiselectV2-SEL-004] Select-all and deselect-all change only enabled options', async () => {
+    // Break this catches: QA #137 — select-all applying the whole derived list,
+    // which ticks a disabled row the user cannot tick one at a time — and the
+    // deselect branch emptying the selection, which drops a disabled option the
+    // builder pre-selected through `values` (D-23).
     harness.render({
       properties: {
-        ...EMPTY_SELECTION,
+        values: binding("{{['L']}}"),
         showAllOption: binding('{{true}}'),
-        options: { value: [option('open', 'o'), option('blocked', 'b', { disable: true })] },
+        options: {
+          value: [
+            option('open', 'o'),
+            option('blocked', 'b', { disable: true }),
+            option('locked', 'L', { disable: true }),
+          ],
+        },
       },
     });
     await drain();
     await openMenu();
-    await clickRow('Select all');
 
-    expect(harness.exposed().values).toEqual(['o', 'b']);
+    await clickRow('Select all');
+    expect(harness.exposed().values).toEqual(['o', 'L']);
     expect(harness.exposed().values).not.toContain('multiselect-custom-menulist-select-all');
+    expect(row('blocked')).toHaveAttribute('aria-selected', 'false');
+    expect(row('Select all')).toHaveAttribute('aria-selected', 'true');
+
+    await clickRow('Select all');
+    expect(harness.exposed().values).toEqual(['L']);
   });
 
   test('[MultiselectV2-SEL-005] Clicking select-all again empties the selection', async () => {

@@ -391,4 +391,46 @@ describe('Timeline: dynamic height', () => {
     expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' });
     expect(card().style.minHeight).toBe('');
   });
+
+  test('[Timeline-DYN-003] dynamic height grows vertically but keeps content inside horizontally', async () => {
+    // Break this catches: QA T4 — the dynamic-height card was `overflow: visible`, so on a narrow
+    // widget the fixed timeline gutter pushed text past the widget's right edge (D-05).
+    const { container } = widget.render({
+      properties: { dynamicHeight: binding('{{true}}') },
+      currentMode: 'view',
+    });
+    const card = () => container.querySelector('.card');
+
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+    expect(card().style.height).toBe('auto');
+    expect(card().style.overflowX).toBe('auto');
+  });
+
+  test('[Timeline-CLS-001] no boolean reaches the rendered class names', async () => {
+    // Break this catches: code review C1 — `cond && 'class'` inside a template literal renders the
+    // literal token `false` when the condition is off (D-06).
+    const { container } = widget.render();
+
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+    expect(list(container).className).toBe('list list-timeline');
+    for (const li of items(container)) {
+      expect(li.querySelector('.list-timeline-time')).not.toHaveClass('false');
+    }
+
+    await setProperty('hideDate', true);
+    await waitFor(() => expect(list(container).className).toBe('list list-timeline list-timeline-simple'));
+  });
+
+  test('[Timeline-DARK-001] dark mode leaves date and subtitle on the theme colours', async () => {
+    // Break this catches: code review C3 — Tabler's `text-white-50 !important` on the date and subtitle
+    // overrode the theme tokens, so those lines ignored custom theme colours in dark mode (D-06).
+    const { container } = widget.render({ darkMode: true });
+
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+    for (const li of items(container)) {
+      expect(li.querySelector('.list-timeline-time')).not.toHaveClass('text-white-50');
+      expect(subtitleOf(li)).toBeTruthy();
+      expect(li.querySelector('.text-white-50')).toBeNull();
+    }
+  });
 });

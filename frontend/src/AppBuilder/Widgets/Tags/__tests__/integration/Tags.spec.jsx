@@ -184,7 +184,9 @@ describe('Tags widget', () => {
   test('[Tags-BND-003] missing, non-primitive and odd values render safely', async () => {
     // Break this catches: rendering a raw object title (React crash) or an unknown icon name blanking the widget.
     widget.render({
-      properties: dynamic("[{color:'rgb(1, 1, 1)'},{title:{x:1}},{title:'odd', icon:'NotAnIcon', iconVisibility:true}]"),
+      properties: dynamic(
+        "[{color:'rgb(1, 1, 1)'},{title:{x:1}},{title:'odd', icon:'NotAnIcon', iconVisibility:true}]"
+      ),
     });
     await mounted();
 
@@ -368,6 +370,24 @@ describe('Tags widget', () => {
     expect(badge('success').style.margin).toBe('0px 3px 0px 0px');
   });
 
+  test('[Tags-LAYOUT-002] a long title truncates with an ellipsis and exposes the full text as a tooltip', async () => {
+    // Break this catches: QA #139 — a title wider than the widget hard-clipped mid-word in Wrap mode with
+    // no ellipsis and no way to read it (D-05) — or the fix leaking into the badge text or accessible name.
+    const LONG = 'a very long tag title that is wider than the widget itself';
+    widget.render({ properties: dynamic(`[{title:'${LONG}'}]`) });
+    await mounted();
+
+    const [chip] = badges();
+    const text = chip.querySelector('span[title]');
+    expect(text).not.toBeNull();
+    expect(text.getAttribute('title')).toBe(LONG);
+    expect(text.style.overflow).toBe('hidden');
+    expect(text.style.textOverflow).toBe('ellipsis');
+    expect(text.style.whiteSpace).toBe('nowrap');
+    expect(chip.textContent).toBe(LONG);
+    expect(chip.getAttribute('aria-label')).toBe(LONG);
+  });
+
   test.each([
     ['view', 'auto', '36px', 'visible'],
     ['edit', '36px', '', 'auto'],
@@ -454,6 +474,9 @@ describe('Tags widget', () => {
     expect(titles()).toEqual(['<img src=x onerror=alert(1)>']);
     expect(instance().querySelector('img')).toBeNull();
     expect(instance().querySelector('script')).toBeNull();
-    expect(badges()[0].children).toHaveLength(0);
+    // The only element is the D-05 tooltip span, and it holds plain text only.
+    const [textSpan, ...others] = badges()[0].children;
+    expect(others).toHaveLength(0);
+    expect(textSpan.children).toHaveLength(0);
   });
 });

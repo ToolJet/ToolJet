@@ -7,7 +7,6 @@ export const Timeline = function Timeline({
   id,
   height,
   width,
-  darkMode,
   properties,
   styles,
   dataCy,
@@ -18,8 +17,6 @@ export const Timeline = function Timeline({
 }) {
   const { boxShadow } = styles;
   const { data, hideDate, visibility } = properties;
-
-  const darkModeStyle = darkMode && 'text-white-50';
 
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   // Timeline height is a function of its items (and whether dates show). Trigger the reflow
@@ -39,12 +36,13 @@ export const Timeline = function Timeline({
 
   return (
     <div
-      className="card"
+      className="card timeline-widget"
       style={{
         display: visibility ? '' : 'none',
         height: isDynamicHeightEnabled ? 'auto' : height,
         ...(isDynamicHeightEnabled && { minHeight: height }),
-        overflow: isDynamicHeightEnabled ? 'visible' : 'auto',
+        // Dynamic height grows vertically; wide content still scrolls inside instead of spilling out
+        ...(isDynamicHeightEnabled ? { overflowX: 'auto', overflowY: 'visible' } : { overflow: 'auto' }),
         overflowWrap: 'normal',
         boxShadow,
         backgroundColor: 'var(--cc-surface1-surface)',
@@ -52,16 +50,15 @@ export const Timeline = function Timeline({
       data-cy={dataCy}
     >
       <div className="card-body">
-        <ul className={`list list-timeline ${hideDate && 'list-timeline-simple'}`}>
+        <ul className={`list list-timeline${hideDate ? ' list-timeline-simple' : ''}`}>
           {(isArray(data) ? data : []).map((item, index) => (
             <li key={index}>
               <div className="list-timeline-icon" style={{ backgroundColor: item.iconBackgroundColor }}></div>
               <div className="list-timeline-content">
-                {!hideDate && (
-                  <div className={`list-timeline-time ${darkModeStyle}`}>{getSafeRenderableValue(item.date)}</div>
-                )}
+                {!hideDate && <div className="list-timeline-time">{getSafeRenderableValue(item.date)}</div>}
+                {/* Colours come from theme tokens in theme.scss, which already switch with dark mode */}
                 <p className="list-timeline-title">{getSafeRenderableValue(item.title)}</p>
-                <p className={`${darkModeStyle || 'text-muted'}`}>{getSafeRenderableValue(item.subTitle)}</p>
+                <p className="text-muted">{getSafeRenderableValue(item.subTitle)}</p>
               </div>
             </li>
           ))}

@@ -309,6 +309,33 @@ describe('DropdownV2', () => {
       }
     );
 
+    test('[DropdownV2-OPT-010] fully empty options are dropped while a labelled null-valued option stays selectable', async () => {
+      // Break this catches: QA D2 — an option with no label and no value
+      // renders as a blank, selectable row — and the over-correction of dropping
+      // every null value, which would delete a working `All` reset option (D-19).
+      widget.render({
+        properties: {
+          advanced: binding('{{true}}'),
+          schema: binding(
+            '{{ [{ label: null, value: null, visible: true }, { value: undefined, visible: true }, { label: "", value: "", visible: true }, { label: "All", value: null, visible: true }, { label: "a", value: "a", visible: true }] }}'
+          ),
+        },
+      });
+
+      await openMenu();
+
+      await waitFor(() => expect(optionLabels()).toEqual(['All', 'a']));
+      expect(widget.exposed().options).toEqual([
+        { label: 'All', value: null, caption: null },
+        { label: 'a', value: 'a', caption: null },
+      ]);
+
+      await pickOption('All');
+
+      expect(widget.exposed().value).toBeNull();
+      expect(widget.exposed().selectedOption).toEqual({ label: 'All', value: null, caption: null });
+    });
+
     test('[DropdownV2-OPT-004] initialization selects the first option that is both default and visible', async () => {
       // Break this catches: picking the first `default:true` option regardless
       // of visibility, which selects a value the user can never see or change.

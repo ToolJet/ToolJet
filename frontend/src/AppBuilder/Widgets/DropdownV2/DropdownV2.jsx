@@ -14,7 +14,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray, isEmptyOption } from './utils';
 import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
@@ -152,7 +152,7 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data?.visible ?? true)
+        .filter((data) => (data?.visible ?? true) && !isEmptyOption(data))
         .map((data) => ({
           ...data,
           label: getSafeRenderableValue(data?.label),

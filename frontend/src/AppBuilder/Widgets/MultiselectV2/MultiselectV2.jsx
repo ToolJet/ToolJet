@@ -11,7 +11,13 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
+import {
+  getInputBackgroundColor,
+  getInputBorderColor,
+  getInputFocusedColor,
+  sortArray,
+  isEmptyOption,
+} from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
   getLabelFontSize,
@@ -110,7 +116,7 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible ?? true)
+          .filter((data) => (data?.visible ?? true) && !isEmptyOption(data))
           .map((data) => ({
             ...data,
             label: getSafeRenderableValue(data?.label),
@@ -126,6 +132,11 @@ export const MultiselectV2 = ({
   const hasMaxLimit = maxLimit !== '' && maxLimit !== null && maxLimit !== undefined && !Number.isNaN(Number(maxLimit));
   const maxSelectionLimit = hasMaxLimit ? Math.max(0, Math.floor(Number(maxLimit))) : null;
   const isLimitReached = maxSelectionLimit !== null && selected.length >= maxSelectionLimit;
+
+  // Select all / deselect all are user clicks, so disabled options keep their current state (D-23).
+  const selectedValueSet = new Set(selected.map((item) => item.value));
+  const selectableOptions = selectOptions.filter((option) => !option.isDisabled || selectedValueSet.has(option.value));
+  const isAllSelected = selectableOptions.length === selected.length;
 
   const modifiedSelectOptions = useMemo(() => {
     const SELECT_ALL = 'multiselect-custom-menulist-select-all';
@@ -199,16 +210,17 @@ export const MultiselectV2 = ({
     if (action.option?.value === SELECT_ALL) {
       // Case 1 - If select all is selected
       if (action.action === 'select-option') {
-        setInputValue(applyLimit(selectOptions));
+        setInputValue(applyLimit(selectableOptions));
       } else {
-        setInputValue([]);
+        // Keep the disabled options that are already selected
+        setInputValue(selectableOptions.filter((option) => option.isDisabled));
       }
     } else if (items?.some((item) => item.value === SELECT_ALL)) {
       // Case 2 - If select all is not selected but selected options include select all
       setInputValue(applyLimit(items.filter((item) => item.value !== SELECT_ALL)));
-    } else if (selectOptions?.length === items?.length) {
+    } else if (selectableOptions.length === items?.length) {
       // Case 3 - If all options are selected except select all
-      setInputValue(applyLimit(selectOptions));
+      setInputValue(applyLimit(selectableOptions));
     } else {
       // Case 4 - Normal selection
       setInputValue(applyLimit(items));
@@ -576,7 +588,14 @@ export const MultiselectV2 = ({
             ref={selectRef}
             menuId={id}
             isDisabled={isMultiSelectDisabled}
-            value={selectOptions?.length === selected?.length ? modifiedSelectOptions : selected}
+            value={
+              isAllSelected
+                ? modifiedSelectOptions.filter(
+                    (option) =>
+                      option.value === 'multiselect-custom-menulist-select-all' || selectedValueSet.has(option.value)
+                  )
+                : selected
+            }
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             filterOption={(option, input) => {

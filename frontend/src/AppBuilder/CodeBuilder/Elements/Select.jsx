@@ -17,7 +17,7 @@ export const Option = (props) => {
   return (
     <components.Option {...props}>
       <DeprecatedColumnTooltip columnType={props.value} isDeprecatedStyle={isDeprecatedStyle}>
-        <div className="d-flex justify-content-between">
+        <div className="d-flex justify-content-between align-items-center w-100">
           <span>{props.label}</span>
           {props.isSelected && (
             <span>
