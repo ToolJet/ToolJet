@@ -1,4 +1,9 @@
 /** @group working */
+const mockSaveMessage = jest.fn(async (message) => message);
+jest.mock('@helpers/database.helper', () => ({
+  dbTransactionWrap: (operation) => operation({ save: mockSaveMessage }),
+}));
+
 import { EventEmitter } from 'events';
 import { AiService } from '@ee/ai/service';
 
@@ -29,6 +34,7 @@ describe('AI clarification presentation', () => {
     response.write = jest.fn();
     service = Object.create(AiService.prototype);
     Object.assign(service, {
+      attachmentService: { retain: jest.fn() },
       getCreditsBalance: jest.fn().mockResolvedValue({ balance: 100 }),
       sendSSE: jest.fn(),
       maybeSendBuildCompletionEmail: jest.fn(),
@@ -140,7 +146,7 @@ describe('AI clarification presentation', () => {
     conversation.app.aiGenerationMetadata = { interrupt: true, interruptId: 'calculation-question' };
     const answer = 'Leave the additional total out and keep the equipment fields unchanged.';
     await send(answer);
-    expect(service.aiConversationMessageRepository.save).toHaveBeenCalledWith(
+    expect(mockSaveMessage).toHaveBeenCalledWith(
       expect.objectContaining({ messageType: 'user', content: answer })
     );
     expect(service.aiUtilService.callAgent).toHaveBeenCalledWith(
@@ -149,7 +155,8 @@ describe('AI clarification presentation', () => {
       user,
       user.organizationId,
       expect.any(Object),
-      'app'
+      'app',
+      undefined
     );
   });
 
