@@ -995,6 +995,22 @@ export const createComponentsSlice = (set, get) => ({
     if (Array.isArray(value)) {
       // Nested calls receive the parent's clone of this subtree, so cloning again would repeat per level
       const updatedPropertyValue = preClonedValue ?? cloneDeep(value);
+      if (value.length === 0) {
+        // No elements to resolve, but a row-scoped component still needs its per-row shape
+        // (see setAllValueToComponent) — normally a side effect of resolving each element below.
+        // Resolve the property itself instead, so an empty array gets that shape too.
+        updateResolvedValues(
+          componentId,
+          paramType,
+          property,
+          value,
+          component,
+          resolvedComponentValues,
+          updatePassedValue,
+          moduleId
+        );
+        return { updatedValue: updatedPropertyValue };
+      }
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
@@ -2512,11 +2528,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    set((state) => {
+    (set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } };
+      { type: 'setFocusedParentId', payload: { parentId } });
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -3205,13 +3221,13 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
     const resolvedLabelType = labelType
-      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
+      ? (resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto')
       : undefined;
     const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
     const resolvedLegacyInputSize =
       resolvedStyleLegacyInputSize ??
       (legacyInputSizeProperty
-        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
+        ? (resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false)
         : false);
 
     const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
