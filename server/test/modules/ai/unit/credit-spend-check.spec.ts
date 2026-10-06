@@ -68,7 +68,7 @@ describe('AI spend check (AC6)', () => {
     const user = (
       await createUser(app, {
         email: `${prefix}-builder@tooljet.io`,
-        groups: ['end-user', 'builder'],
+        groups: ['builder'],
         organization: admin.organization,
       })
     ).user as User;

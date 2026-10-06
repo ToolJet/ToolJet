@@ -50,6 +50,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.AUTO_SORT_QUERIES]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    // Role gate only: no licence gate, as before.
+    [FEATURE_KEY.FIX_WITH_AI]: {},
+    [FEATURE_KEY.COPILOT]: {},
     [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },

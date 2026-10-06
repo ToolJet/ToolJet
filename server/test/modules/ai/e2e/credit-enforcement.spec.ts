@@ -150,7 +150,7 @@ describe('AI credit enforcement', () => {
         builders.push(
           await createUser(app, {
             email: `${prefix}-b${n}@tooljet.io`,
-            groups: ['end-user', 'builder'],
+            groups: ['builder'],
             organization: workspace,
           })
         );
@@ -247,7 +247,7 @@ describe('AI credit enforcement', () => {
           expect(res.text).not.toContain('event: generation');
         } else {
           expect(res.statusCode).toBe(402);
-          expect(res.body.category).toBe('credit_limit_reached');
+          expect(res.body.code).toBe('credit_limit_reached');
         }
         expect(await activeRuns(s.builder.id)).toBe(0);
         expect(routeUtil(app).callAgentLegacy).not.toHaveBeenCalled();
@@ -278,7 +278,7 @@ describe('AI credit enforcement', () => {
         const other = (
           await createUser(app, {
             email: `ac3e${enabled}-drain@tooljet.io`,
-            groups: ['end-user', 'builder'],
+            groups: ['builder'],
             organization: s.workspace,
           })
         ).user as User;
@@ -296,7 +296,7 @@ describe('AI credit enforcement', () => {
 
         expect(sseRefusal(message.text)).toBe('pool_empty');
         expect(autosort.statusCode).toBe(402);
-        expect(autosort.body.category).toBe('pool_empty');
+        expect(autosort.body.code).toBe('pool_empty');
         expect(await activeRuns(s.builder.id)).toBe(0);
       }
     );
@@ -371,7 +371,7 @@ describe('AI credit enforcement', () => {
       const builder = (
         await createUser(app, {
           email: 'sh7-builder@tooljet.io',
-          groups: ['end-user', 'builder'],
+          groups: ['builder'],
           organization: superAdmin.organization,
         })
       ).user as User;
@@ -410,7 +410,7 @@ describe('AI credit enforcement', () => {
       );
 
       expect(res.statusCode).toBe(402);
-      expect(res.body.category).toBe('credit_limit_reached');
+      expect(res.body.code).toBe('credit_limit_reached');
     });
   });
 
@@ -427,7 +427,7 @@ describe('AI credit enforcement', () => {
     }, 60_000);
 
     it.each(['fix-with-ai', 'copilot'])('%s is not served', async (path) => {
-      const builder = await createUser(app, { email: `ce7-${path}@tooljet.io`, groups: ['end-user', 'builder'] });
+      const builder = await createUser(app, { email: `ce7-${path}@tooljet.io`, groups: ['builder'] });
 
       const res = await post(
         {

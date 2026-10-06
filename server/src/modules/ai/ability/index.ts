@@ -36,6 +36,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_CONVERSATION,
           FEATURE_KEY.GET_CONVERSATION,
           FEATURE_KEY.AUTO_SORT_QUERIES,
+          FEATURE_KEY.FIX_WITH_AI,
+          FEATURE_KEY.COPILOT,
           FEATURE_KEY.GET_THREAD_TOKEN_USAGE,
           // Deliberately builder-scoped, unlike the admin-only key settings below:
           // the whole point of the preference is that it needs no admin involvement.
