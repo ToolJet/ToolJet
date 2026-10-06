@@ -36,6 +36,9 @@
       },
       "scopes": {
         "type": "string"
+      },
+      "multiple_auth_enabled": {
+        "type": "boolean"
       }
     }
   },
@@ -136,6 +139,13 @@
         "key": "scopes",
         "type": "text",
         "description": "Optional. Space-separated OAuth scopes (e.g. useraccount)"
+      },
+      "multiple_auth_enabled": {
+        "text": "Authentication required for all users",
+        "subtext": "Each user authorizes with their own ServiceNow account, and queries run with that user's permissions. Other users are redirected to the OAuth flow when they first run a query of this data source in an app.",
+        "key": "multiple_auth_enabled",
+        "type": "toggle",
+        "description": "Use per-user OAuth tokens instead of a single shared token"
       }
     }
   },
