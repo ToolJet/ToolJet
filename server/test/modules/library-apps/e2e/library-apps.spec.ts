@@ -36,7 +36,9 @@ describe('LibraryAppsController', () => {
   }, 60_000);
 
   describe('POST /api/library_apps | Create from template', () => {
-    it('should be able to create app if user has app create permission or has instance user type', async () => {
+    // QUARANTINE(library-apps): failing since main CI rehab — see #17262. personal-task-list creates a ToolJet DB
+    // table, which aborts the suite transaction in the CE test setup.
+    it.skip('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['end-user', 'admin'],
