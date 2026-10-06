@@ -1,0 +1,19 @@
+{
+  "name": "Recruitment pipeline",
+  "description": "Move candidates from screening to interview and offer, with feedback and hiring decisions for each role.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "recruitment-pipeline",
+  "category": "people-and-hr"
+}

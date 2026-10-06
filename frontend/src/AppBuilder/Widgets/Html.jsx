@@ -23,12 +23,12 @@ export const Html = function ({
   componentType,
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
+  const { boxShadow, backgroundColor } = styles || {};
   const baseStyle = {
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: backgroundColor ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
     width: '100%',
   };
-  const { boxShadow } = styles || {};
 
   const isInitialRender = useRef(true);
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';

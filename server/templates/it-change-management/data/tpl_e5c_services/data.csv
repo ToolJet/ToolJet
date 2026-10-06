@@ -1,0 +1,4 @@
+id,code,name,owner,criticality,status,revision
+,PAY,Payments platform,Maya Chen,Critical,Active,1
+,IDP,Workforce identity,Jon Bell,High,Active,1
+,DATA,Analytics warehouse,Priya Shah,Standard,Active,1

@@ -1,0 +1,21 @@
+{
+  "name": "Ecommerce returns",
+  "description": "Manage ecommerce returns from request to inspection and a recorded refund or exchange decision.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "ecommerce-returns",
+  "category": "customer-service"
+}

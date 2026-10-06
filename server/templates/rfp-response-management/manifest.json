@@ -1,0 +1,19 @@
+{
+  "name": "RFP response management",
+  "description": "Manage RFP responses with owned answers, reviews and a clear submission record for each opportunity.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "rfp-response-management",
+  "category": "sales-and-bids"
+}

@@ -66,7 +66,7 @@ export const TimePicker = ({
   };
 
   const handleClear = () => {
-    setInputValue(null);
+    setInputValue(null, null, true);
     setDisplayTimestamp('');
   };
 
@@ -121,12 +121,15 @@ export const TimePicker = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, true);
       },
     });
   }, [selectedTimestamp, timeFormat]);
@@ -135,7 +138,7 @@ export const TimePicker = ({
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
   }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
 
-  useFormClear(() => setInputValue(null));
+  useFormClear(() => setInputValue(null, null, true));
 
   const isTwentyFourHourMode = is24HourFormat(timeFormat);
 

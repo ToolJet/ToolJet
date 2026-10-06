@@ -1,0 +1,9 @@
+id,entity,category,title,priority,owner,status,note
+,Oak House,2A,Kitchen tap leaking,High,Flow Plumbing QA,Resolved,Tap cartridge replaced; leak checked.
+,Oak House,4C,Bedroom blind repair,Normal,Unassigned,New,Synthetic sample record. Add progress and completion notes here.
+,Willow Court,1B,Entry buzzer not working,High,Beacon Electrical,Assigned,Synthetic sample record. Add progress and completion notes here.
+,Willow Court,3D,Replace hallway lamp,Normal,Beacon Electrical,Resolved,Synthetic sample record. Add progress and completion notes here.
+,Elm Gardens,6A,Bathroom extractor noisy,Normal,Northside Repairs,Assigned,Synthetic sample record. Add progress and completion notes here.
+,Elm Gardens,2C,Window seal replacement,Normal,Unassigned,New,Synthetic sample record. Add progress and completion notes here.
+,Oak House,1A,Heating control not responding,High,Northside Repairs,New,Synthetic sample record. Add progress and completion notes here.
+,Willow Court,5B,Cupboard hinge adjustment,Normal,Northside Repairs,Resolved,Synthetic sample record. Add progress and completion notes here.

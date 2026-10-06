@@ -1,0 +1,16 @@
+{
+  "name": "Personal task list",
+  "description": "A calm personal task list with priorities and due dates, built to keep you focused on the next step.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "personal-task-list",
+  "category": "productivity-and-community"
+}

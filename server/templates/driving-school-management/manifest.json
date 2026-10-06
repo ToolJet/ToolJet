@@ -1,0 +1,21 @@
+{
+  "name": "Driving school management",
+  "description": "Schedule driving lessons, record the skills practised and track each learner’s progress.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "driving-school-management",
+  "category": "education-and-training"
+}

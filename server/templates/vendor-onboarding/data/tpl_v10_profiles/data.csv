@@ -1,0 +1,4 @@
+id,name,description,requirements,revision
+,Standard supplier,General goods and professional services,"[""Company registration"",""Insurance certificate"",""Data handling agreement""]",1
+,Technology partner,Software and data processing providers,"[""Company registration"",""Security questionnaire"",""Data processing agreement"",""Insurance certificate""]",1
+,Site services,Facilities and on-site contractors,"[""Company registration"",""Liability insurance"",""Safety assessment""]",1

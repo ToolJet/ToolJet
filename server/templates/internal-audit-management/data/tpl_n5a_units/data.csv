@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Finance operations,Priya Shah,"Close, purchasing and payment controls",180,[],1
+,Technology,Ethan Moore,"Access, change and operational resilience controls",220,[],1
+,People operations,Lena Ortiz,Employee lifecycle and personnel data controls,120,[],1
+,Commercial,Daniel Kim,"Contracts, pricing and customer onboarding controls",140,[],1

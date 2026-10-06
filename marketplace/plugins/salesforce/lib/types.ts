@@ -8,11 +8,18 @@ export type SourceOptions = {
   multiple_auth_enabled: boolean;
   tokenData: any;
   auth_type?: string;
+  scopes?: string;
+  code_verifier?: string;
+  code_challenge_method?: string;
+  oauth_type?: string;
+  login_type?: string;
+  custom_domain?: string;
 };
 export type QueryOptions = {
   operation: string;
   language: string;
   soql_query: string;
+  next_records_url?: string;
   actiontype: string;
   resource_id: string;
   resource_name: string;

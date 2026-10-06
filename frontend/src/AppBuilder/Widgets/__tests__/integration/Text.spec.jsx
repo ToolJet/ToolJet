@@ -38,7 +38,7 @@
  *    interaction gate in QA (Text-BRW-006) and left only the `data-disabled`
  *    marking and the `disabled` class to Text-STATE-003.
  */
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -236,6 +236,22 @@ describe('Text: component-specific actions', () => {
     await waitFor(() => expect(root()).toHaveStyle({ display: 'none' }));
   });
 
+  test('[Text-CSA-008] a number set by setText renders in markdown instead of breaking the widget', async () => {
+    // Break this catches: handing the markdown renderer a value it rejects.
+    // The property path coerces through `text`'s string schema, but a CSA
+    // bypasses that, so the raw resolved value reaches the renderer — which
+    // accepts only a string. A builder wiring a button to
+    // `setText({{123}})` on a Markdown Text loses the whole widget to its
+    // error boundary in dev, and silently renders nothing in a production
+    // build, while the same action works in Plain text and HTML.
+    widget.render({ properties: { textFormat: binding('markdown'), text: binding('before') } });
+    expect(await screen.findByTestId('react-markdown')).toHaveTextContent('before');
+
+    await widget.act('setText', 123);
+
+    expect(await screen.findByTestId('react-markdown')).toHaveTextContent('123');
+  });
+
   test('[Text-CSA-003] clear empties the rendered text and exposes an empty string', async () => {
     // Break this catches: a clear that leaves `text` undefined instead of ''
     // turns `{{components.text1.text.length}}` into a runtime error in every
@@ -302,6 +318,47 @@ describe('Text: events', () => {
 
     await widget.session.user.click(root());
     await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(2));
+  });
+  test('[Text-EVT-004] onHover fires once per hover, not once per nested element', async () => {
+    // Break this catches: listening for every pointer movement that bubbles up
+    // from the rendered content instead of for entry into the component. An
+    // author whose HTML or markdown produces several blocks — three paragraphs
+    // is enough — gets a fresh On hover run each time the pointer crosses an
+    // internal boundary, so a query wired to the event runs over and over for
+    // one visual hover.
+    //
+    // Driven with explicit relatedTarget rather than user.hover(): user-event
+    // leaves relatedTarget unset, so React's enter/leave plugin reads every move
+    // as arriving from outside the document and re-fires enter. Under it BOTH
+    // bindings report three, so it cannot tell the defect from the fix. A real
+    // browser sets relatedTarget to the element being left, which is what the
+    // sequence below reproduces — confirmed with real mouse input in Chrome,
+    // where the same three moves give mouseover 3, mouseenter 1.
+    widget.render({
+      properties: {
+        textFormat: binding('html'),
+        text: binding('<p>first</p><p>second</p><p>third</p>'),
+      },
+      events: countInvocationsOn(ID, 'onHover'),
+    });
+    const paragraphs = await waitFor(() => {
+      const found = root().querySelectorAll('p');
+      expect(found).toHaveLength(3);
+      return found;
+    });
+
+    // Pointer arrives from outside the component: one hover begins.
+    fireEvent.mouseOver(paragraphs[0], { relatedTarget: document.body });
+    await waitFor(() => expect(store().getVariable('calls', MODULE_ID)).toBe(1));
+
+    // Pointer moves between the component's own children: still one hover.
+    fireEvent.mouseOut(paragraphs[0], { relatedTarget: paragraphs[1] });
+    fireEvent.mouseOver(paragraphs[1], { relatedTarget: paragraphs[0] });
+    fireEvent.mouseOut(paragraphs[1], { relatedTarget: paragraphs[2] });
+    fireEvent.mouseOver(paragraphs[2], { relatedTarget: paragraphs[1] });
+    await drain();
+
+    expect(store().getVariable('calls', MODULE_ID)).toBe(1);
   });
 });
 
@@ -498,6 +555,22 @@ describe('Text: styles', () => {
     await screen.findByText('defaulted');
 
     expect(root()).toHaveStyle({ fontSize: '14px' });
+  });
+
+  test('[Text-STY-007] with padding set to none the component fills its box instead of leaving a gap', async () => {
+    // Break this catches: the canvas reserves 4px of vertical space for the
+    // padding it puts around every widget, but it reserves it whether or not
+    // that padding is actually there. With padding set to none the Text stays
+    // 4px short, leaving a strip of dead space along the bottom edge that the
+    // builder cannot style or remove. Button already hand-corrects for this
+    // (Button.jsx:109); Text did not.
+    widget.render({ properties: { text: binding('x') }, styles: { padding: binding('default') } });
+    await waitFor(() => expect(root()).not.toBeNull());
+    expect(root()).toHaveStyle({ height: '36px' });
+
+    widget.render({ properties: { text: binding('x') }, styles: { padding: binding('none') } });
+    await waitFor(() => expect(root()).not.toBeNull());
+    expect(root()).toHaveStyle({ height: '40px' });
   });
 
   test('[Text-STY-005] scroll configuration applies, and is deliberately inert under dynamic height', async () => {

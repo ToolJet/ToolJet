@@ -1,0 +1,19 @@
+{
+  "name": "IT change management",
+  "description": "Plan safe change windows, route changes through review and track implementation against the services they affect.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "it-change-management",
+  "category": "it-operations"
+}

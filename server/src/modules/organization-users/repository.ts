@@ -3,6 +3,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import {
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_STATUS,
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
@@ -174,6 +175,21 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       },
     });
+  }
+
+  async countActiveOrganizationsForUser(userId: string, manager?: EntityManager): Promise<number> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.count(OrganizationUser, {
+        where: {
+          userId,
+          status: WORKSPACE_USER_STATUS.ACTIVE,
+          organization: {
+            status: WORKSPACE_STATUS.ACTIVE,
+          },
+        },
+        relations: ['organization'],
+      });
+    }, manager || this.manager);
   }
 
   async getOrganizationUser(organizationId: string, manager?: EntityManager) {

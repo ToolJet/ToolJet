@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Corporate Windows,Maya Chen,Windows workstations across corporate offices.,420,[],1
+,Engineering macOS,Noah Patel,Developer and design laptops.,180,[],1
+,Shared workstations,Avery Brooks,Front-desk and shared operational endpoints.,90,[],1
+,Linux workstations,Zara Ellis,Engineering and analytics workstations.,75,[],1

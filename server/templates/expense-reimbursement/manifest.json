@@ -1,0 +1,15 @@
+{
+  "name": "Expense reimbursement",
+  "description": "Review employee expense claims against policy, check receipts and record approvals and reimbursements.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "expense-reimbursement",
+  "category": "finance-and-accounting"
+}

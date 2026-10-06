@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'html1';
@@ -154,6 +154,37 @@ describe('Html widget', () => {
     expect(root(container)).toHaveStyle({ boxShadow: shadow });
     await setProperty('visibility', false);
     expect(root(container)).toHaveStyle({ boxShadow: shadow });
+  });
+
+  test('[Html-STY-002] configured background color overrides the default light/dark backdrop and survives state transitions', async () => {
+    // Break this catches: dropping the backgroundColor style, ignoring the empty-string sentinel, or losing the value across state transitions.
+    const { container } = html.render({ darkMode: false, styles: { backgroundColor: binding('') } });
+    expect(content(container)).toHaveStyle({ backgroundColor: '#ffffff' });
+
+    html.teardown();
+    html.setup();
+    const dark = html.render({ darkMode: true, styles: { backgroundColor: binding('') } });
+    expect(content(dark.container)).toHaveStyle({ backgroundColor: '#47505D' });
+
+    html.teardown();
+    html.setup();
+    const transparentContainer = html.render({ styles: { backgroundColor: binding('transparent') } }).container;
+    expect(content(transparentContainer)).toHaveStyle({ backgroundColor: 'transparent' });
+
+    html.teardown();
+    html.setup();
+    const { container: customContainer } = html.render({ styles: { backgroundColor: binding('#ff0000') } });
+    expect(content(customContainer)).toHaveStyle({ backgroundColor: '#ff0000' });
+
+    await setProperty('loadingState', true, 'properties');
+    await waitFor(() => expect(customContainer.querySelector('.spinner-border')).toBeInTheDocument());
+    await setProperty('loadingState', false, 'properties');
+    expect(await within(customContainer).findByRole('heading', { name: 'Initial content' })).toBeInTheDocument();
+    expect(content(customContainer)).toHaveStyle({ backgroundColor: '#ff0000' });
+
+    await setProperty('visibility', false, 'properties');
+    await waitFor(() => expect(root(customContainer)).toHaveStyle({ display: 'none' }));
+    expect(content(customContainer)).toHaveStyle({ backgroundColor: '#ff0000' });
   });
 
   test('[Html-COMB-001] loading and visibility remain independent', async () => {

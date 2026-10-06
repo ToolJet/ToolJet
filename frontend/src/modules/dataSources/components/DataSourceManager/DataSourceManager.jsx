@@ -1006,8 +1006,8 @@ export class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1156,7 +1156,8 @@ export class DataSourceManagerComponent extends React.Component {
                   shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1287,7 +1288,8 @@ export class DataSourceManagerComponent extends React.Component {
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer>
                       <div className="col">

@@ -1,0 +1,42 @@
+id,incident_id,update_status,message,created_at
+,1,monitoring,Maintenance completed. We are monitoring service health.,2026-09-10T17:00:00+00:00
+,1,resolved,The maintenance window is complete and the API is operating normally.,2026-09-10T17:15:00+00:00
+,2,investigating,We are investigating slower sign-in responses affecting some customers.,2026-09-17T06:42:00+00:00
+,2,identified,The slowdown is caused by increased load on the identity service. We are scaling capacity.,2026-09-17T07:10:00+00:00
+,2,monitoring,Sign-in latency is back near normal. We continue to monitor.,2026-09-17T08:05:00+00:00
+,3,investigating,Some outbound webhooks are arriving later than expected. Delivery retries are succeeding.,2026-09-16T11:23:00+00:00
+,3,identified,A queue backlog is delaying webhook delivery. Additional workers are being added.,2026-09-16T12:05:00+00:00
+,4,investigating,We are investigating elevated error rates on the Public API.,2026-09-15T14:07:00+00:00
+,4,identified,A bad deploy is the cause. Rollback is in progress.,2026-09-15T14:32:00+00:00
+,4,monitoring,Error rates are falling after the rollback. We are monitoring.,2026-09-15T15:05:00+00:00
+,4,resolved,API error rates are back to normal. The incident is resolved.,2026-09-15T15:42:00+00:00
+,5,investigating,Report exports are taking longer than usual to complete.,2026-09-12T09:32:00+00:00
+,5,monitoring,Export times are improving. We are watching the queue.,2026-09-12T10:20:00+00:00
+,5,resolved,Exports are completing at normal speed.,2026-09-12T10:55:00+00:00
+,6,investigating,Transactional emails are being delivered with a delay.,2026-09-09T07:18:00+00:00
+,6,identified,Our email provider is experiencing a delivery backlog.,2026-09-09T07:55:00+00:00
+,6,resolved,Email delivery is back to normal.,2026-09-09T08:40:00+00:00
+,7,investigating,Some accounts are seeing loading errors in the web application.,2026-09-04T16:12:00+00:00
+,7,monitoring,A fix has been deployed and errors have stopped.,2026-09-04T17:00:00+00:00
+,7,resolved,The web application is loading normally for all accounts.,2026-09-04T17:35:00+00:00
+,8,investigating,Customers are reporting repeated sign-in failures.,2026-09-01T05:52:00+00:00
+,8,identified,A configuration change broke session validation. We are reverting it.,2026-09-01T06:05:00+00:00
+,8,resolved,Sign-in is working normally again.,2026-09-01T06:35:00+00:00
+,9,investigating,Requests to the Public API are timing out at the gateway.,2026-08-27T18:22:00+00:00
+,9,monitoring,Traffic has been rerouted and timeouts have stopped.,2026-08-27T19:10:00+00:00
+,9,resolved,The API gateway is stable and the incident is resolved.,2026-08-27T19:45:00+00:00
+,10,investigating,Nightly exports failed for a small number of workspaces.,2026-08-24T05:07:00+00:00
+,10,resolved,Missed exports have been re-run successfully.,2026-08-24T06:20:00+00:00
+,11,investigating,Search is returning partial results for some queries.,2026-08-20T12:42:00+00:00
+,11,resolved,The search index has been rebuilt and results are complete.,2026-08-20T13:30:00+00:00
+,12,investigating,Webhook receivers are rejecting deliveries because of signature errors.,2026-08-17T09:13:00+00:00
+,12,identified,A key rotation delivered the wrong signing secret to part of the fleet.,2026-08-17T09:50:00+00:00
+,12,resolved,Signing secrets are consistent and deliveries are accepted.,2026-08-17T11:05:00+00:00
+,13,investigating,Large reports are rendering slowly during peak hours.,2026-08-13T14:02:00+00:00
+,13,resolved,Rendering performance is back within target.,2026-08-13T15:20:00+00:00
+,14,investigating,A subset of API requests are failing.,2026-08-08T20:17:00+00:00
+,14,identified,One database shard is overloaded. Traffic is being shifted.,2026-08-08T20:45:00+00:00
+,14,monitoring,Requests are succeeding again. We are monitoring the shard.,2026-08-08T21:20:00+00:00
+,14,resolved,All API requests are succeeding and the incident is resolved.,2026-08-08T21:40:00+00:00
+,15,investigating,Export requests are returning errors intermittently.,2026-08-05T06:27:00+00:00
+,15,resolved,Export requests are completing normally.,2026-08-05T07:50:00+00:00
