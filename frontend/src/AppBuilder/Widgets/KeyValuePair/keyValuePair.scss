@@ -52,6 +52,7 @@
       border: 1px solid var(--borders-default);
       border-radius: 6px;
       cursor: pointer;
+      white-space: nowrap;
 
       &:hover {
         background: var(--surfaces-surface-02);
@@ -69,10 +70,21 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      white-space: nowrap;
 
       &:hover {
         opacity: 0.9;
       }
+    }
+
+    // Icon-only fallback below CTA_TEXT_MIN_WIDTH (KeyValuePair.jsx)
+    .kv-btn-cancel.kv-btn-icon-only,
+    .kv-btn-save.kv-btn-icon-only {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      min-width: 28px;
     }
   }
 

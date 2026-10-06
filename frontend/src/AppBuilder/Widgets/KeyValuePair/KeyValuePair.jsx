@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import cx from 'classnames';
 import { has } from 'lodash';
+import { Save, X } from 'lucide-react';
 import KeyValueRow from './_components/KeyValueRow';
 import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -8,6 +9,9 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+
+// Below this width, Cancel/Save fall back to icon-only (same pattern as Table's ChangeSetUI).
+const CTA_TEXT_MIN_WIDTH = 250;
 
 /**
  * KeyValuePair Widget
@@ -112,6 +116,7 @@ export const KeyValuePair = ({
 
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
+  const showCtaText = widgetWidth > CTA_TEXT_MIN_WIDTH;
   const handleFieldClick = useCallback(
     (fieldKey, fieldValue) => {
       setExposedVariables({ lastClickedField: { key: fieldKey, value: fieldValue } });
@@ -244,11 +249,23 @@ export const KeyValuePair = ({
         <div className="kv-changeset-popover">
           <div className="kv-changeset-content">
             <div className="kv-changeset-actions">
-              <button type="button" className="kv-btn-cancel" onClick={discardChanges} data-cy="kv-button-cancel">
-                Cancel
+              <button
+                type="button"
+                className={cx('kv-btn-cancel', { 'kv-btn-icon-only': !showCtaText })}
+                onClick={discardChanges}
+                data-cy="kv-button-cancel"
+                aria-label="Cancel"
+              >
+                {showCtaText ? 'Cancel' : <X size={14} />}
               </button>
-              <button type="button" className="kv-btn-save" onClick={saveChanges} data-cy="kv-button-save-changes">
-                Save changes
+              <button
+                type="button"
+                className={cx('kv-btn-save', { 'kv-btn-icon-only': !showCtaText })}
+                onClick={saveChanges}
+                data-cy="kv-button-save-changes"
+                aria-label="Save changes"
+              >
+                {showCtaText ? 'Save changes' : <Save size={14} />}
               </button>
             </div>
           </div>
