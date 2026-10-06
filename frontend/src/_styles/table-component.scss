@@ -1344,8 +1344,11 @@
   }
 }
 
-// Table-only: force popover to full editor viewport height
-.table-column-popover#table-column-popover-basic {
+// Force the column/field editor popover to a bounded viewport height so its
+// .popover-body's overflow-y:auto (above) can actually create a scrollbar
+// instead of letting content overflow the popover silently.
+.table-column-popover#table-column-popover-basic,
+.table-column-popover#popover-basic-2 {
   display: flex !important;
   flex-direction: column !important;
   height: calc(100vh - 88px) !important;
