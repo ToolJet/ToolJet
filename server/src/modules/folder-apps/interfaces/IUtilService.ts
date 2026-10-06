@@ -27,6 +27,7 @@ export interface IFolderAppsUtilService {
     folderId: string,
     appIds: string[],
     branchId?: string,
-    matchNullAsDefaultBranch?: boolean
+    matchNullAsDefaultBranch?: boolean,
+    organizationId?: string
   ): Promise<FolderApp[]>;
 }
