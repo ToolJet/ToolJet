@@ -27,14 +27,11 @@ export const aiService = {
 };
 
 async function downloadAttachment(id, signal, thumbnail = false) {
-  const response = await fetch(
-    `${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content${thumbnail ? '?thumbnail=1' : ''}`,
-    {
-      headers: authHeader(true),
-      credentials: 'include',
-      signal,
-    }
-  );
+  const response = await fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content${thumbnail ? '?thumbnail=1' : ''}`, {
+    headers: authHeader(true),
+    credentials: 'include',
+    signal,
+  });
   if (!response.ok) throw new Error('Unable to load attachment');
   return response.blob();
 }
