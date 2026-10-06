@@ -1,7 +1,16 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, closeTestApp, login, saveEntity } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  closeTestApp,
+  login,
+  saveEntity,
+  getDefaultDataSource,
+  getTooljetDbDataSource,
+} from 'test-helper';
 import { DataSource } from 'src/entities/data_source.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 /** Create the built-in static data sources that templates expect to exist. */
 async function createDefaultDataSources(organizationId: string) {
@@ -36,13 +45,7 @@ describe('LibraryAppsController', () => {
   }, 60_000);
 
   describe('POST /api/library_apps | Create from template', () => {
-    // QUARANTINE(library-apps): failing since main CI rehab — see #17262.
-    // Every template in the library creates ToolJet DB tables (personal-task-list is the smallest, with one), and the
-    // test setup never creates the workspace's `workspace_<orgId>` schema, so the import fails with
-    // `schema "workspace_<orgId>" does not exist`. That aborts the suite transaction, and every later test in this
-    // file then fails with QueryRunnerAlreadyReleasedError. To re-enable, create the schema before the import, as
-    // ee/test/modules/tooljet-db/e2e/tooljetdb-limits.spec.ts does.
-    it.skip('should be able to create app if user has app create permission or has instance user type', async () => {
+    it('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['end-user', 'admin'],
@@ -73,23 +76,39 @@ describe('LibraryAppsController', () => {
       // Templates expect built-in static data sources to exist in the organization
       await createDefaultDataSources(adminUserData.organization.id);
 
-      // Use personal-task-list: the smallest template (one ToolJet DB table, no foreign keys, no jsonb)
-      let response = await request(app.getHttpServer())
-        .post('/api/library_apps')
-        .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
-        .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
-        .set('Cookie', nonAdminUserData['tokenCookie']);
+      // Every template creates ToolJet DB tables, which live in the workspace's own schema. Test setup doesn't
+      // create it, and a failed table create aborts the suite transaction for every later test in this file.
+      const tooljetDb = getTooljetDbDataSource();
+      expect(tooljetDb).toBeDefined();
+      const workspaceSchema = `workspace_${adminUserData.organization.id}`;
+      await tooljetDb.query(`CREATE SCHEMA IF NOT EXISTS "${workspaceSchema}"`);
 
-      expect(response.statusCode).toBe(403);
+      try {
+        // Use personal-task-list: the smallest template (one ToolJet DB table, no foreign keys, no jsonb)
+        let response = await request(app.getHttpServer())
+          .post('/api/library_apps')
+          .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
+          .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', nonAdminUserData['tokenCookie']);
 
-      response = await request(app.getHttpServer())
-        .post('/api/library_apps')
-        .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
-        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', adminUserData['tokenCookie']);
+        expect(response.statusCode).toBe(403);
 
-      expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('Personal Task List App');
+        response = await request(app.getHttpServer())
+          .post('/api/library_apps')
+          .send({ identifier: 'personal-task-list', appName: 'Personal Task List App', dependentPlugins: [] })
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(201);
+        const appId = response.body.app[0].id;
+        expect(appId).toBeDefined();
+
+        // apps.name stays null; the app's name lives on its versions
+        const version = await getDefaultDataSource().manager.findOneOrFail(AppVersion, { where: { appId } });
+        expect(version.appName).toBe('Personal Task List App');
+      } finally {
+        await tooljetDb.query(`DROP SCHEMA IF EXISTS "${workspaceSchema}" CASCADE`);
+      }
     });
 
     it('should return error if template identifier is not found', async () => {
