@@ -53,16 +53,29 @@ API contract lens.
 
 ## Comments
 
-No repo file; rule as the user applies it. Default to no comment. When the WHY is not obvious,
-one short line, fragments allowed, no articles, no hedging. Findings:
+No repo file; rule as the user applies it. Default to no comment. Deletion beats relocation.
 
-- Narration of what the code does. The diff already says it.
-- History or agent narration: "previously this...", "we tried X and...", rejected alternatives.
-- Cross-file reasoning that belongs in the module's `AGENTS.md` instead.
-- Private paths, customer names, or internal ticket links in public code.
-- Multi-line blocks that collapse to one line or to nothing.
+The sweep is exhaustive. List every comment block the diff adds or changes, in code, tests and
+submodules, and record a verdict per block: DELETE, KEEP, or AGENTS.md. A partial pass feels
+complete and is not; the blocks not flagged go in "checked and clean" so the author can see the
+sweep was done.
 
-Suggest the one-line replacement in a `suggestion` block, or deletion.
+- DELETE is the default. Narration of what the code does; history ("previously", "the first
+  draft had", "was here and is gone"); measurements and anecdotes; rejected alternatives;
+  reviewer narration ("the reviewer's point"); restating a test name, a function name, or the
+  diff; cross-file pointers the reader gets by following the symbol; private paths, customer
+  names, internal ticket links.
+- KEEP only as one line, fragments allowed, no articles, no hedging, and only when the WHY is not
+  deducible from the code, the symbol it names, or the test name: a trap, an external constraint,
+  a removal condition. Argue against every keep before writing it.
+- AGENTS.md only when both hold: not deducible from the code, and a general rule of the module.
+  Phrase it as the rule sentence that would appear in the doc. If it can only be told as a story
+  about one line, it is DELETE, not a move.
+
+Finding shape: an empty `suggestion` block for DELETE, the one-line replacement in a
+`suggestion` block for KEEP, the rule sentence plus a living-docs finding for AGENTS.md. Where a
+block sits inside the anchor of another finding, fold its verdict into that finding's suggestion
+rather than opening an overlapping thread.
 
 ## Design
 
