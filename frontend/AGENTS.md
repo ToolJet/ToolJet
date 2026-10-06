@@ -94,9 +94,9 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 ## Widget config
 
-### Server-side sync (CRITICAL)
+### Single source of truth
 
-Changing a widget config in `frontend/src/AppBuilder/WidgetManager/widgets/` requires the matching update in `server/src/modules/apps/services/widget-config/`. The two are maintained independently; changing one without the other is a bug.
+Widget configs live in the shared `packages/widget-definitions` package (`src/widgets/`), imported as `@tooljet/widget-definitions` by both the frontend (`AppBuilder/WidgetManager/configs/widgetConfig.js`) and the server (`server/src/modules/apps/services/widget-config/index.js`). Edit a config once there; there is no second copy to keep in sync.
 
 ### Key changes require migrations
 
@@ -106,7 +106,7 @@ Moving, renaming, or removing a config key (e.g. moving `loadingState` from `sty
 
 ### Universal props (`universalProps`)
 
-Schema fields merged into **every** widget by `combineProperties()` in `AppBuilder/WidgetManager/componentTypes.js`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
+Schema fields merged into **every** widget by `combineProperties()` (both defined in `packages/widget-definitions/src/utils.js`; applied in `AppBuilder/WidgetManager/componentTypes.js` and the server's `widget-config/index.js`). Revamped components (`NEW_REVAMPED_COMPONENTS`) get `universalProps`; the rest get `legacyUniversalProps`. Sub-buckets: `general` (properties — e.g. `tooltip`), `generalStyles` (styles — e.g. `boxShadow`). Adding a field here applies it to all widgets at once, with no per-widget edits.
 
 ### CSS class (widget-level)
 

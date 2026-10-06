@@ -5,9 +5,9 @@ excludeAgent: "coding-agent"
 
 # Server Widget Config — Code Review Rules
 
-## Frontend Sync (CRITICAL)
+## Registry Only (CRITICAL)
 
-When any file here is modified, the corresponding config in `frontend/src/AppBuilder/WidgetManager/widgets/` MUST also be updated. Flag PRs that modify one without the other.
+This folder holds only the server's widget registry (`index.js`), which imports the definitions from `@tooljet/widget-definitions` (`packages/widget-definitions`). Flag any widget config file added here: definitions belong in `packages/widget-definitions/src/widgets/`.
 
 ## Key Changes Require Migrations
 

@@ -1,10 +1,10 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { clone, isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
@@ -31,7 +31,7 @@ const SelectTableMenu = ({ darkMode }) => {
     joinTableOptions,
     joinTableOptionsChange,
     deleteJoinTableOptions,
-  } = useContext(TooljetDatabaseContext);
+  } = useToolJetDbOperationsContext();
 
   const joins = clone(joinOptions);
 
@@ -96,7 +96,7 @@ const SelectTableMenu = ({ darkMode }) => {
     return isGroupByUsed || !isEmpty(aggregates) ? false : true;
   }, [joinTableOptions]);
 
-  const { joinOrderByOptions } = useContext(TooljetDatabaseContext);
+  const { joinOrderByOptions } = useToolJetDbOperationsContext();
 
   return (
     <div>
@@ -214,7 +214,7 @@ const SelectTableMenu = ({ darkMode }) => {
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
   const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions, joinOptions, findTableDetails } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
 

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import Layout from '@/_ui/Layout';
-import { authenticationService } from '@/_services';
-import { ManageOrgConstantsSettings } from '@/modules/WorkspaceSettings/components';
-import { fetchEdition } from '@/modules/common/helpers/utils';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { toast } from 'react-hot-toast';
 
-export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
+import { authenticationService } from '@/_services';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+
+import ManageOrgConstantsSettings from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/ManageOrgConstantsSettings';
+
+export default function WorkspaceConstants({ darkMode }) {
   const navigate = useNavigate();
   const { super_admin } = authenticationService?.currentSessionValue ?? {};
 
@@ -23,10 +24,10 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
     }
   }, [canCreateVariableOrConstant]);
   return (
-    <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
+    <>
       <div>
         <ManageOrgConstantsSettings darkMode={darkMode} />
       </div>
-    </Layout>
+    </>
   );
 }

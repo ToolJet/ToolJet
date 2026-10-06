@@ -5,9 +5,7 @@ jest.mock('../../Components/Form/_components', () => ({ LabeledDivider: () => nu
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
 import { renderElement } from '../../Utils';
-import { filepickerConfig } from '@/AppBuilder/WidgetManager/widgets/filepicker';
-import { fileinputConfig } from '@/AppBuilder/WidgetManager/widgets/fileinput';
-import { fileButtonConfig } from '@/AppBuilder/WidgetManager/widgets/fileButton';
+import { filepickerConfig, fileinputConfig, fileButtonConfig } from '@tooljet/widget-definitions';
 
 const state = () => useStore.getState();
 

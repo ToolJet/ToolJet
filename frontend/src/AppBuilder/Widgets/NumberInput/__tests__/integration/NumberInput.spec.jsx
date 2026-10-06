@@ -727,7 +727,7 @@ describe('NumberInput: component-specific actions', () => {
     widget.render();
     await waitFor(() => expect(input()).toBeInTheDocument());
 
-    // Exactly the `actions` list in WidgetManager/widgets/numberinput.js.
+    // Exactly the `actions` list in packages/widget-definitions/src/widgets/numberinput.js.
     for (const handle of ['setText', 'clear', 'setFocus', 'setBlur', 'setVisibility', 'setDisable', 'setLoading']) {
       expect(typeof exposed(handle)).toBe('function');
     }

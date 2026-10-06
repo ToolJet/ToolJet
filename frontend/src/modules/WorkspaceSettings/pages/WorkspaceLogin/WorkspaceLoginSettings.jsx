@@ -13,7 +13,8 @@ import '@/modules/WorkspaceSettings/components/BaseSSOConfigurationList/Configur
 import Skeleton from 'react-loading-skeleton';
 import Spinner from 'react-bootstrap/Spinner';
 import ConfirmDisableAutoSSOModal from '@/_components/ConfirmDisableAutoSSOLoginModal';
-import { AutoSSOLogin, SSOConfigurationList } from './components';
+import AutoSSOLogin from './components/AutoSSOLogin';
+import SSOConfigurationList from './components/SSOConfigurationList';
 class OrganizationLogin extends React.Component {
   protectedSSO = ['openid', 'ldap', 'saml', 'google', 'github'];
   constructor(props) {

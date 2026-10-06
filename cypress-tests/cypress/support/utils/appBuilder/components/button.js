@@ -64,7 +64,7 @@ export const addBasicData = (data) => {
   verifyAndModifyParameter(commonWidgetText.parameterLabel, data.widgetName);
 
   // Tooltip is a `code` property with showLabel:false on the Button config
-  // (frontend/.../WidgetManager/widgets/button.js:60-67), so its editor renders
+  // (packages/widget-definitions/src/widgets/button.js:60-67), so its editor renders
   // as data-cy="tooltip-input-field" via the cyLabel fallback
   // (frontend/.../CodeEditor/SingleLineCodeEditor.jsx:559,682). Type into it,
   // then verify the property value persisted.
@@ -74,7 +74,7 @@ export const addBasicData = (data) => {
   verifyTooltipProperty(buttonText.defaultWidgetName, data.tooltipText);
 
   // Styles tab — Background color (displayName "Background", styles config:
-  // frontend/.../WidgetManager/widgets/button.js:84-86 → data-cy
+  // packages/widget-definitions/src/widgets/button.js:84-86 → data-cy
   // "background-picker"). A distinctive style is enough to prove the clone
   // carries styling; the previously-asserted Border radius style is now a
   // `numberInput` (button.js:218-220), not a code field, so the old

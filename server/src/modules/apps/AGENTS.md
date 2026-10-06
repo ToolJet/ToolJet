@@ -25,7 +25,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 | `util.service.ts` | `AppsUtilService`: create internals, name/slug uniqueness handling, `fetchModules`, module in-use/released checks, `overlayAppMetadata` |
 | `repository.ts` | `AppsRepository`: `findBySlug`, `findByAppName`, `findByIdOrSlug`, `findAllOrganizationApps`, `findAllOrganizationModules` |
 | `services/` | `page.service` + `page.util.service` (PageHelperService), `component.service`, `event.service`, `workflow.service`, `app-import-export.service` |
-| `services/widget-config/` | Per-widget default config (`index.js` aggregates); served to the builder |
+| `services/widget-config/` | `index.js` aggregates the per-widget configs from `@tooljet/widget-definitions` (`packages/widget-definitions`) into `componentTypes` |
 | `subscribers/apps.subscriber.ts` | Workflow slug placeholder on insert; bumps `apps.updated_at` when a version row updates (inserts deliberately don't bump) |
 | `ability/` + `guards/` | CASL `FeatureAbilityFactory` (`app.ability.ts`, `workflow.ability.ts`); `ValidAppGuard`, `ValidSlugGuard`, app-auth/public/private guards |
 
@@ -36,7 +36,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 
 ## Invariants & gotchas
 
-- **Widget config sync (CRITICAL)**: `services/widget-config/` and `frontend/src/AppBuilder/WidgetManager/widgets/` must change together. A config change that moves/renames/removes a key needs a data migration for existing component rows.
+- **Widget config (CRITICAL)**: configs are shared with the frontend via `packages/widget-definitions` — one copy, edited once. A config change that moves/renames/removes a key needs a data migration for existing component rows.
 - App name/slug uniqueness is enforced at the DB level by partial unique indexes on `app_versions` (`app_versions_app_name_branch_id_unique`, `app_versions_slug_branch_id_unique`, `app_versions_slug_default_branch_unique`) plus the `enforce_app_versions_app_name_branch_unique` trigger; `util.service.ts` wraps inserts to surface friendly errors ("This slug is already taken."). Don't add app-level uniqueness checks that race with these.
 - New non-workflow apps get `slug = app.id` as placeholder on the version row; user renames later. Workflow slug placeholder is set by the subscriber on `apps` itself. `apps.slug` stays NULL for non-workflows (multiple NULLs allowed on the unique column).
 - Deleting a MODULE-type app must pass `checkModuleInUseByApps` (called from the EE delete path); releasing a version must pass `checkModulesReleasedInApp` — every module consumed by that version must resolve to the module's released version.

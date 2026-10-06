@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { isEmpty } from 'lodash';
+import { toast } from 'react-hot-toast';
 import TableDetailsDropdown from './TableDetailsDropdown';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import Source from '../Icons/Source.svg';
 import Setting from '../Icons/setting.svg';
 import Target from '../Icons/Target.svg';
 import Actions from '../Icons/Actions.svg';
 import Serial from '../Icons/Serial.svg';
-import _, { isEmpty } from 'lodash';
-import { toast } from 'react-hot-toast';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
 
@@ -33,7 +33,7 @@ function SourceKeyRelation({
   setOnUpdate,
   onUpdate,
 }) {
-  const { tables, organizationId, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { tables, organizationId, selectedTable, setTables } = useTooljetDatabaseContext();
   const [targetColumnList, setTargetColumnList] = useState([]);
 
   async function fetchTables() {
@@ -150,10 +150,10 @@ function SourceKeyRelation({
 
   useEffect(() => {
     // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
-    if (_.isEmpty(onDelete)) {
+    if (isEmpty(onDelete)) {
       setOnDelete(onDeleteOptions[0]);
     }
-    if (_.isEmpty(onUpdate)) {
+    if (isEmpty(onUpdate)) {
       setOnUpdate(onUpdateOptions[0]);
     }
   }, []);
