@@ -791,13 +791,8 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3c. Migration timing — restores the base branch's database snapshot from S3
-  # (a pg_dump -Fc of our internal test instance, no customer data) and times the
-  # pending migrations with the PR's code. Only the PR's own migrations (matched by
-  # the 13-digit timestamp in their class names) can fail it; anything merged since
-  # the last snapshot refresh is reported only. The snapshot is kept current by
-  # migration-snapshot-refresh.yml. Off until the repo variable
-  # MIGRATION_SNAPSHOT_BUCKET is set, which is also its kill switch.
+  # 3c. Migration timing — times pending migrations on the S3 DB snapshot; only the
+  # PR's own can fail. Off until vars.MIGRATION_SNAPSHOT_BUCKET is set.
   # ---------------------------------------------------------------------------
   migration-timing:
     name: 'Migration timing'
