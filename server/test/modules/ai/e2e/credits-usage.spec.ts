@@ -61,6 +61,9 @@ const getUsage = (app: INestApplication, cookie: string[], organizationId: strin
     .set('tj-workspace-id', organizationId)
     .set('Cookie', cookie);
 
+/** Gateway WalletTotals for one person or workspace. */
+const spent = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
+
 const sum = (rows: { monthly: number; addon: number }[], key: 'monthly' | 'addon') =>
   Math.round(rows.reduce((acc, r) => acc + r[key], 0) * 100) / 100;
 
@@ -150,13 +153,12 @@ describe('GET /api/ai/credits-usage', () => {
         cycleStart: CYCLE_START,
         trackingSince,
         users: [
-          { userId: seed.admin.user.id, wallet: 'recurring', spent: 100 },
-          { userId: seed.builderOne.user.id, wallet: 'recurring', spent: 50 },
-          { userId: seed.builderOne.user.id, wallet: 'topup', spent: 20 },
-          { userId: seed.builderTwo.user.id, wallet: 'recurring', spent: 30.5 },
-          { userId: seed.endUser.user.id, wallet: 'recurring', spent: 5 },
-          { userId: unknownUserId, wallet: 'recurring', spent: 7 },
-          { userId: seed.archivedBuilder.user.id, wallet: 'recurring', spent: 9 },
+          { userId: seed.admin.user.id, ...spent(100) },
+          { userId: seed.builderOne.user.id, ...spent(50, 20) },
+          { userId: seed.builderTwo.user.id, ...spent(30.5) },
+          { userId: seed.endUser.user.id, ...spent(5) },
+          { userId: unknownUserId, ...spent(7) },
+          { userId: seed.archivedBuilder.user.id, ...spent(9) },
         ],
         unattributed: { recurring: 11, topup: 2, total: 13 },
         pool: { recurring: 212.5, topup: 22, total: 234.5 },
@@ -266,7 +268,7 @@ describe('GET /api/ai/credits-usage', () => {
           since: CYCLE_START,
           cycleStart: CYCLE_START,
           trackingSince: null,
-          users: [{ userId: a.builderOne.user.id, wallet: 'recurring', spent: 100 }],
+          users: [{ userId: a.builderOne.user.id, ...spent(100) }],
           unattributed: { recurring: 0, topup: 0, total: 0 },
           pool: { recurring: 100, topup: 0, total: 100 },
         },
@@ -380,18 +382,16 @@ describe('GET /api/ai/credits-usage', () => {
           users: [
             {
               userId: builder.user.id,
-              wallet: 'recurring',
-              spent: 100,
+              ...spent(100),
               byOrganization: [
-                { organizationId: sales.id, spent: 60 },
-                { organizationId: finance.id, spent: 40 },
+                { organizationId: sales.id, ...spent(60) },
+                { organizationId: finance.id, ...spent(40) },
               ],
             },
             {
               userId: unknownUserId,
-              wallet: 'recurring',
-              spent: 7,
-              byOrganization: [{ organizationId: finance.id, spent: 7 }],
+              ...spent(7),
+              byOrganization: [{ organizationId: finance.id, ...spent(7) }],
             },
           ],
           unattributed: { recurring: 0, topup: 0, total: 0 },
