@@ -309,6 +309,9 @@
     "cosmiconfig": {
       "js-yaml": "4.3.2"
     },
+    "css-tree": {
+      "source-map-js": "1.2.2"
+    },
     "cssnano-preset-default": {
       "browserslist": "4.28.9"
     },
@@ -330,6 +333,9 @@
     "esbuild": "0.25.9",
     "eslint": {
       "js-yaml": "3.15.2"
+    },
+    "express": {
+      "proxy-addr": "2.0.8"
     },
     "faye-websocket": {
       "websocket-driver": "0.7.5"
@@ -373,7 +379,8 @@
       "probe-image-size": "7.4.0"
     },
     "postcss": {
-      "nanoid": "3.3.19"
+      "nanoid": "3.3.19",
+      "source-map-js": "1.2.2"
     },
     "postcss-colormin": {
       "browserslist": "4.28.9"
@@ -453,6 +460,9 @@
     "refractor": {
       "prismjs": "1.30.0"
     },
+    "sass": {
+      "source-map-js": "1.2.2"
+    },
     "sockjs": {
       "websocket-driver": "0.7.5"
     },
@@ -470,6 +480,7 @@
       "ws": "7.5.13"
     },
     "webpack-dev-server": {
+      "compression": "1.8.2",
       "ws": "8.21.3"
     },
     "y-webrtc": {
