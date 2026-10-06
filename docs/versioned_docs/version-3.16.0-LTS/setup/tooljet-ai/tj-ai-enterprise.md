@@ -77,7 +77,7 @@ The server will read the key from the environment at runtime. ToolJet will not t
 <details id="tj-dropdown">
 <summary>**What is the difference between BYOK and ToolJet AI Enterprise?**</summary>
 
-With BYOK, your API key is used but requests are still routed through ToolJet Managed AI Server. With ToolJet AI Enterprise, you host the server yourself, no data leaves your infrastructure at any point.
+BYOK is a Self-hosted Enterprise add-on. Your API key is used but requests are still routed through ToolJet Managed AI Server. With ToolJet AI Enterprise, you host the server yourself, no data leaves your infrastructure at any point.
 </details>
 
 <details id="tj-dropdown">
