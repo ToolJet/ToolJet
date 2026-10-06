@@ -2117,6 +2117,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           DataSourcesRepository.resolveDsvForDataSource(manager, dataSourceId, branchId)
         ).then((dsv: DataSourceVersion | null) => dsv?.id ?? null);
 
+        // A prior job cancelled while still queued never ran the processor's finally, so its
+        // termination flag can outlive it - clear it before this new job can see it.
+        if (dataSourceVersionId) {
+          await Promise.all(
+            environmentIds.map((environmentId) =>
+              this.openApiSpecTerminationRegistry.clear(dataSourceVersionId, environmentId)
+            )
+          );
+        }
+
         const jobData: OpenApiSpecJobData = {
           dataSourceId,
           dataSourceVersionId,
