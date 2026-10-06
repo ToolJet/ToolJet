@@ -1,195 +1,63 @@
 {
-  "baseSha": "387ca5bc3bbb07316463ee1a08cfe655b28b8027",
-  "inputDigests": {
-    "cli/package-lock.json": "sha256:8ca582998918de3be12fbb2153faa4c686d7d927b7937ca1b82b510700508ad4",
-    "cypress-tests/package-lock.json": "sha256:8e629b70c52645b443f4bc52395a1e608f9fa76f3fec3fa75799d939124e5f31",
-    "docs/package-lock.json": "sha256:cd8c882a505c7baf9dea9beaa6d6983ac0adc9fe6d715db2ddc78d07a8bed9b0",
-    "frontend/package-lock.json": "sha256:bae12cbed06e7b1eb1b476f5a9a759090fc89b2621fbcd70953d671069ad49e5",
-    "marketplace/package-lock.json": "sha256:9366c7b9f6edd76a440a9b7df0e6cecea4e123096d786decb657ba635e852dc7",
-    "marketplace/plugins/common/package-lock.json": "sha256:c5d8ae6f5404fcd76f3bae00ca9a5b4ebe01ae8991343c4e203e33859a38e598",
-    "package-lock.json": "sha256:86aa679fa9ffb9f794b75d62af2b7aa8e046862865d3e35ae34011638ab243c9",
-    "plugins/package-lock.json": "sha256:4147d27c4c9f1fbdc021b1ead0d9365cfbc65b0cf63e7e151a85e1a7e4e1d046",
-    "plugins/packages/googlesheetsv2/package-lock.json": "sha256:1d37202c88bd1628ac7765c812ac555d79ebe5a66dfd3fdb87cbcde4c36e1e89",
-    "server/package-lock.json": "sha256:55941322211b08758c0c8a2f88af7babc56f3c87c7c91dafd3fe6b11e5c23211"
+  "allowedPaths": [
+    "docs/package-lock.json",
+    "docs/package.json"
+  ],
+  "baseSha": "d5d067ae79bd00066575024615b2ec7a1d18a227",
+  "conflictDomain": {
+    "ecosystem": "npm",
+    "id": "6e1fdbe0475ff988",
+    "lockArtifacts": [
+      "docs/package-lock.json"
+    ],
+    "proofClass": "LOCK_EXACT",
+    "rootManifest": "docs/package-lock.json"
   },
-  "remediationKey": "f7a9244a1e6d28e3cc582cc755db1f04799b7162be56688dd01f384cabc7f2eb",
+  "limits": {
+    "maxChangedFiles": 10,
+    "maxChangedLines": 300
+  },
+  "npmLockDomains": [
+    "",
+    "cli",
+    "cypress-tests",
+    "docs",
+    "frontend",
+    "marketplace",
+    "marketplace/plugins/common",
+    "plugins",
+    "plugins/packages/googlesheetsv2",
+    "server"
+  ],
+  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
   "repository": "https://github.com/gregkroon/ToolJet",
-  "scanSha": "387ca5bc3bbb07316463ee1a08cfe655b28b8027",
-  "schema": "harness.remediation/sibling-sync-contract.v1",
-  "stoExecutionId": "p4HrplFtRuykxE6QzbPfMg",
+  "rules": {
+    "lockfileTextPatchForbidden": true,
+    "nativePackageManagerRequired": true,
+    "scmWritesByAgentForbidden": true,
+    "securityControlModificationForbidden": true,
+    "testModificationForbidden": true
+  },
+  "scanSha": "d5d067ae79bd00066575024615b2ec7a1d18a227",
+  "schema": "harness.remediation/contract.v1",
+  "stoExecutionId": "t5ZAuEOmSVWMWf_xm4XABQ",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
-      "issueIds": [
-        "lcXnxRpLqNPmcsk1ImH8Ou"
+      "candidateVersions": [
+        "1.12.0"
       ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "@grpc/grpc-js",
-      "packagesKey": "../plugins/node_modules/@grpc/grpc-js",
-      "version": "1.14.3"
-    },
-    {
+      "coordinate": {
+        "normalisedName": "shell-quote",
+        "purl": "pkg:npm/shell-quote@1.10.0"
+      },
+      "fromVersion": "1.10.0",
       "issueIds": [
-        "p5Qj48q7JyF6ipQWbz3Gt7"
+        "pfxFQwLIM23RrnSeuiNgWA"
       ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "form-data",
-      "packagesKey": "../plugins/node_modules/@types/request/node_modules/form-data",
-      "version": "2.5.5"
-    },
-    {
-      "issueIds": [
-        "aDTYGoospnYke4yq_uNpCP"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "axios",
-      "packagesKey": "../plugins/node_modules/axios",
-      "version": "1.13.6"
-    },
-    {
-      "issueIds": [
-        "NmZ8WE8hgcJUJUomSblQuV"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "basic-ftp",
-      "packagesKey": "../plugins/node_modules/basic-ftp",
-      "version": "5.2.0"
-    },
-    {
-      "issueIds": [
-        "IRpspu7Rr-WljI2pGPzGcw"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "fast-xml-builder",
-      "packagesKey": "../plugins/node_modules/fast-xml-builder",
-      "version": "1.0.0"
-    },
-    {
-      "issueIds": [
-        "hug_-JjEyjDuvFTs3d1hyO"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "fast-xml-parser",
-      "packagesKey": "../plugins/node_modules/fast-xml-parser",
-      "version": "5.4.1"
-    },
-    {
-      "issueIds": [
-        "qW-9gMwTYtzIltk3JvjyS7"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "form-data",
-      "packagesKey": "../plugins/node_modules/form-data",
-      "version": "4.0.5"
-    },
-    {
-      "issueIds": [
-        "B0ut1N3R5ZnjvoVwdP_744"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "ip-address",
-      "packagesKey": "../plugins/node_modules/ip-address",
-      "version": "10.1.0"
-    },
-    {
-      "issueIds": [
-        "H4f0W1xYW2_JgbaXOCtWP8"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "lodash",
-      "packagesKey": "../plugins/node_modules/lodash",
-      "version": "4.17.23"
-    },
-    {
-      "issueIds": [
-        "OmneWf_TecEwQqJoPWeleU"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "mariadb",
-      "packagesKey": "../plugins/node_modules/mariadb",
-      "version": "3.4.5"
-    },
-    {
-      "issueIds": [
-        "N4cQknSrCFr5M6j3MPKuDK"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "fast-xml-parser",
-      "packagesKey": "../plugins/node_modules/minio/node_modules/fast-xml-parser",
-      "version": "4.5.4"
-    },
-    {
-      "issueIds": [
-        "c30qy-Dxqnv2WA6bEn08ET"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "mysql2",
-      "packagesKey": "../plugins/node_modules/mysql2",
-      "version": "3.16.0"
-    },
-    {
-      "issueIds": [
-        "KB0QokJtegyhYu40xTnh47"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "nodemailer",
-      "packagesKey": "../plugins/node_modules/nodemailer",
-      "version": "6.10.1"
-    },
-    {
-      "issueIds": [
-        "-AnyWSy3qp0vKHvXvUUTxQ"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "protobufjs",
-      "packagesKey": "../plugins/node_modules/protobufjs",
-      "version": "7.5.4"
-    },
-    {
-      "issueIds": [
-        "wV6X9MI_nM2BsSd1IndSAR"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "snowflake-sdk",
-      "packagesKey": "../plugins/node_modules/snowflake-sdk",
-      "version": "1.15.0"
-    },
-    {
-      "issueIds": [
-        "hug_-JjEyjDuvFTs3d1hyO"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "fast-xml-parser",
-      "packagesKey": "../plugins/node_modules/snowflake-sdk/node_modules/@google-cloud/storage/node_modules/fast-xml-parser",
-      "version": "5.4.1"
-    },
-    {
-      "issueIds": [
-        "N4cQknSrCFr5M6j3MPKuDK"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "fast-xml-parser",
-      "packagesKey": "../plugins/node_modules/snowflake-sdk/node_modules/fast-xml-parser",
-      "version": "4.5.4"
-    },
-    {
-      "issueIds": [
-        "uEKenH6m2Bw3kcDzvt-sdi"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "ws",
-      "packagesKey": "../plugins/node_modules/thrift/node_modules/ws",
-      "version": "5.2.4"
-    },
-    {
-      "issueIds": [
-        "I-dFcLQrlbipZ3ILE0MTIe"
-      ],
-      "lockfilePath": "frontend/package-lock.json",
-      "name": "ws",
-      "packagesKey": "../plugins/node_modules/ws",
-      "version": "7.5.10"
+      "minimumFixedVersion": "1.11.0",
+      "package": "shell-quote"
     }
   ]
 }
