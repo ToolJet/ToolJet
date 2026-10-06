@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
 import { TableHeader } from './_components/TableHeader';
@@ -33,6 +33,19 @@ export const TableData = ({
   canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
+
+  // .jet-data-table's real clientWidth (excludes any vertical scrollbar's reserved gutter) —
+  // measured after commit so it reflects the layout a just-expanded row actually produced, not
+  // the pre-expansion layout a render-time read would see. Every other row already tracks this
+  // via CSS (width: 100%); an expanded row's content is a fixed px value, so it needs this to
+  // stay in sync whenever expanding adds enough height to toggle the vertical scrollbar.
+  const [measuredTableWidth, setMeasuredTableWidth] = useState(null);
+  useLayoutEffect(() => {
+    const width = tableBodyRef.current?.clientWidth;
+    if (width > 0 && width !== measuredTableWidth) {
+      setMeasuredTableWidth(width);
+    }
+  });
 
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);
@@ -204,6 +217,7 @@ export const TableData = ({
                   top={virtualRow.start}
                   darkMode={darkMode}
                   canvasWidth={canvasWidth}
+                  measuredWidth={measuredTableWidth}
                   expansionHeight={expansionHeight}
                   virtualizer={rowVirtualizer}
                   virtualItemIndex={virtualRow.index}
