@@ -3,7 +3,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 // No FK: billing history outlives users. Spend indexes are built CONCURRENTLY by ops, outside this transaction.
 export class AddUserIdToAiCreditHistory1791305815686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Fail the deploy rather than queue every AI charge behind a long read on these tables.
     await queryRunner.query(`
+      SET LOCAL lock_timeout = '5s';
       ALTER TABLE organization_ai_credit_history ADD COLUMN IF NOT EXISTS user_id uuid;
       ALTER TABLE selfhost_customers_ai_credit_history
         ADD COLUMN IF NOT EXISTS user_id uuid,
