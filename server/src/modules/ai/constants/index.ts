@@ -17,4 +17,5 @@ export enum FEATURE_KEY {
   GET_THREAD_TOKEN_USAGE = 'getThreadTokenUsage',
   GET_LLM_PREFERENCE = 'getLlmPreference',
   UPDATE_LLM_PREFERENCE = 'updateLlmPreference',
+  GET_CREDITS_USAGE = 'getCreditsUsage',
 }

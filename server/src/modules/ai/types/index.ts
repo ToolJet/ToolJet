@@ -21,6 +21,7 @@ interface Features {
   [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: FeatureConfig;
   [FEATURE_KEY.GET_LLM_PREFERENCE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: FeatureConfig;
+  [FEATURE_KEY.GET_CREDITS_USAGE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

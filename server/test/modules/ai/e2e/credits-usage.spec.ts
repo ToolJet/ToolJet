@@ -140,7 +140,11 @@ describe('GET /api/ai/credits-usage', () => {
       return { workspace, admin, builderOne, builderTwo, idleBuilder, endUser, archivedBuilder };
     }
 
-    function usageFor(seed: Awaited<ReturnType<typeof seedWorkspace>>, unknownUserId: string, trackingSince: string | null) {
+    function usageFor(
+      seed: Awaited<ReturnType<typeof seedWorkspace>>,
+      unknownUserId: string,
+      trackingSince: string | null
+    ) {
       return {
         since: CYCLE_START,
         cycleStart: CYCLE_START,
@@ -165,7 +169,10 @@ describe('GET /api/ai/credits-usage', () => {
       const orgId = seed.workspace.id;
       licenseWith(app, { aiPlan: 'credits' });
       const fetchSpy = stubGateway({
-        [`/api/ai/organizations/${orgId}/balance`]: balance({ plan: 1000, remaining: 787.5 }, { plan: 100, remaining: 78 }),
+        [`/api/ai/organizations/${orgId}/balance`]: balance(
+          { plan: 1000, remaining: 787.5 },
+          { plan: 100, remaining: 78 }
+        ),
         [`/api/ai/organizations/${orgId}/usage`]: usageFor(seed, unknownUserId, TRACKING_SINCE),
       });
 
@@ -250,7 +257,10 @@ describe('GET /api/ai/credits-usage', () => {
       const b = await seedWorkspace('ac3b');
       licenseWith(app, { aiPlan: 'credits' });
       const fetchSpy = stubGateway({
-        [`/api/ai/organizations/${b.workspace.id}/balance`]: balance({ plan: 1000, remaining: 900 }, { plan: 0, remaining: 0 }),
+        [`/api/ai/organizations/${b.workspace.id}/balance`]: balance(
+          { plan: 1000, remaining: 900 },
+          { plan: 0, remaining: 0 }
+        ),
         // A gateway answer that wrongly names A's builder must not reveal who that is.
         [`/api/ai/organizations/${b.workspace.id}/usage`]: {
           since: CYCLE_START,
@@ -331,7 +341,7 @@ describe('GET /api/ai/credits-usage', () => {
         metadata: { customerId },
       });
 
-    it('super admin gets instance-wide rows with workspace counts, a per-workspace split and the workspace list', async () => {
+    it('super admin gets instance-wide rows with workspace memberships, a per-workspace split and the workspace list', async () => {
       const superAdmin = await createUser(app, {
         email: 'sh-super@tooljet.io',
         firstName: 'Sam',
@@ -356,9 +366,13 @@ describe('GET /api/ai/credits-usage', () => {
       });
       await createUser(app, { groups: ['end-user', 'builder'], organization: finance }, builder.user);
 
+      const unknownUserId = uuidv4();
       selfhostLicense();
       const fetchSpy = stubGateway({
-        [`/api/ai/selfhost-customers/${customerId}/balance`]: balance({ plan: 80000, remaining: 79900 }, { plan: 0, remaining: 0 }),
+        [`/api/ai/selfhost-customers/${customerId}/balance`]: balance(
+          { plan: 80000, remaining: 79900 },
+          { plan: 0, remaining: 0 }
+        ),
         [`/api/ai/selfhost-customers/${customerId}/usage?groupBy=organization`]: {
           since: CYCLE_START,
           cycleStart: CYCLE_START,
@@ -373,9 +387,15 @@ describe('GET /api/ai/credits-usage', () => {
                 { organizationId: finance.id, spent: 40 },
               ],
             },
+            {
+              userId: unknownUserId,
+              wallet: 'recurring',
+              spent: 7,
+              byOrganization: [{ organizationId: finance.id, spent: 7 }],
+            },
           ],
           unattributed: { recurring: 0, topup: 0, total: 0 },
-          pool: { recurring: 100, topup: 0, total: 100 },
+          pool: { recurring: 107, topup: 0, total: 107 },
         },
       });
 
@@ -391,13 +411,18 @@ describe('GET /api/ai/credits-usage', () => {
       expect(res.body.rows.find((r) => r.userId === builder.user.id)).toMatchObject({
         kind: 'builder',
         name: 'Priya Nair',
-        workspaceCount: 2,
+        workspaceIds: expect.arrayContaining([sales.id, finance.id]),
         monthly: 100,
         addon: 0,
         byWorkspace: expect.arrayContaining([
           { organizationId: sales.id, monthly: 60, addon: 0 },
           { organizationId: finance.id, monthly: 40, addon: 0 },
         ]),
+      });
+      // Unknown spenders keep their workspace split so the workspace filter can place them.
+      expect(res.body.rows.find((r) => r.userId === unknownUserId)).toMatchObject({
+        kind: 'unknown',
+        byWorkspace: [{ organizationId: finance.id, monthly: 7, addon: 0 }],
       });
       const gatewayCalls = fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.startsWith(GATEWAY));
       expect(gatewayCalls).toContain(`${GATEWAY}/api/ai/selfhost-customers/${customerId}/usage?groupBy=organization`);

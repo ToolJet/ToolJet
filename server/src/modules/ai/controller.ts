@@ -83,6 +83,12 @@ export class AiController implements IAiController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GET_CREDITS_USAGE)
+  @Get('/credits-usage')
+  async getCreditsUsage(@User() user) {
+    throw new NotFoundException();
+  }
+
   @InitFeature(FEATURE_KEY.GET_CONVERSATION)
   @Get('conversation/:conversationId')
   async getConversationById(@User() user, @Param('conversationId') conversationId: string) {

@@ -9,6 +9,7 @@ export const aiService = {
   voteMessage,
   getCopilotSuggestion,
   getCreditBalance,
+  getCreditsUsage,
   fixWithAI,
   updateKey,
   getKeySettings,
@@ -27,11 +28,14 @@ export const aiService = {
 };
 
 async function downloadAttachment(id, signal, thumbnail = false) {
-  const response = await fetch(`${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content${thumbnail ? '?thumbnail=1' : ''}`, {
-    headers: authHeader(true),
-    credentials: 'include',
-    signal,
-  });
+  const response = await fetch(
+    `${config.apiUrl}/ai/attachments/${encodeURIComponent(id)}/content${thumbnail ? '?thumbnail=1' : ''}`,
+    {
+      headers: authHeader(true),
+      credentials: 'include',
+      signal,
+    }
+  );
   if (!response.ok) throw new Error('Unable to load attachment');
   return response.blob();
 }
@@ -272,6 +276,11 @@ async function getCreditBalance() {
   return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then((response) =>
     handleResponse(response, undefined, undefined, true)
   );
+}
+
+async function getCreditsUsage() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage`, requestOptions).then(handleResponse);
 }
 
 async function fixWithAI(body) {
