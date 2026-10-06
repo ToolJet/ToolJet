@@ -290,6 +290,22 @@ describe('Link widget', () => {
     expect(loader(container)).toBeNull();
   });
 
+  test('[Link-LOAD-002] Loading keeps the configured box shadow', async () => {
+    // Break this catches: a loader branch with its own bare wrapper, so the shadow the builder
+    // configured vanishes for as long as the link is loading.
+    const { container } = widget.render({
+      properties: { loadingState: binding('{{true}}') },
+      styles: { boxShadow: binding(SHADOW) },
+    });
+    await waitFor(() => expect(loader(container)).toBeInTheDocument());
+
+    expect(loader(container).closest('center').parentElement).toHaveStyle({ boxShadow: SHADOW });
+
+    await setProperty('loadingState', '{{false}}');
+    await waitFor(() => expect(anchor(container)).toBeTruthy());
+    expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
+  });
+
   test('[Link-DIS-001] Disable blocks the click handler', async () => {
     // Break this catches: keeping onClick live while disabled, or dropping the wrapper lock
     // so the shared canvas `disabled` class is the only remaining gate.
@@ -304,6 +320,27 @@ describe('Link widget', () => {
 
     fireEvent.click(linkText(container));
     expect(widget.variables().clicked).toBeUndefined();
+  });
+
+  test('[Link-DIS-002] Disabled Link gives no hover feedback and fires no onHover', async () => {
+    // Break this catches: guarding only the click path, so a disabled link still fires onHover
+    // and leaves the text's own pointer-events on for the hover colour and underline.
+    const { container } = widget.render({
+      properties: { disabledState: binding('{{true}}') },
+      events: countHovers(),
+    });
+    await waitFor(() => expect(widget.exposed().isDisabled).toBe(true));
+
+    expect(linkText(container)).toHaveStyle({ pointerEvents: 'none' });
+    fireEvent.mouseOver(linkText(container));
+    expect(widget.variables().hovered).toBeUndefined();
+
+    await setProperty('disabledState', '{{false}}');
+    await waitFor(() => expect(widget.exposed().isDisabled).toBe(false));
+    expect(linkText(container).style.pointerEvents).toBe('');
+    fireEvent.mouseOver(linkText(container));
+    // Exactly one: the hover made while disabled must not have been counted.
+    await waitFor(() => expect(widget.variables().hovered).toBe(1));
   });
 
   test('[Link-VIS-001] Hidden uses d-none and keeps the anchor', async () => {
@@ -336,7 +373,7 @@ describe('Link widget', () => {
       alignItems: 'center',
       textAlign: 'left',
     });
-    expect(linkText(container).parentElement).toHaveStyle({ justifyContent: 'flex-start', fontSize: '14px' });
+    expect(linkText(container).parentElement).toHaveStyle({ fontSize: '14px' });
 
     await setStyle('textColor', TEXT_COLOR);
     await setStyle('textSize', '{{20}}');
@@ -348,12 +385,45 @@ describe('Link widget', () => {
       expect(root(container)).toHaveStyle({ alignItems: 'flex-start', textAlign: 'right', boxShadow: SHADOW })
     );
     expect(linkText(container).parentElement).toHaveStyle({
-      justifyContent: 'flex-end',
       fontSize: '20px',
       color: 'rgb(51, 102, 255)',
     });
     expect(anchor(container)).toBe(node);
     expect(root(container).style.getPropertyValue('--link-hover-color')).not.toBe('');
+  });
+
+  test('[Link-STY-003] Centre and bottom alignment use auto margins so overflowing text stays reachable', async () => {
+    // Break this catches: aligning only through the wrapper's align-items, which pushes text
+    // taller than the widget above the scroll origin where no scroll offset can reach it.
+    const { container } = widget.render();
+    await waitFor(() => expect(anchor(container)).toBeTruthy());
+
+    expect(anchor(container).style.marginTop).toBe('auto');
+    expect(anchor(container).style.marginBottom).toBe('auto');
+
+    await setStyle('verticalAlignment', 'bottom');
+    await waitFor(() => expect(anchor(container).style.marginBottom).toBe('0px'));
+    expect(anchor(container).style.marginTop).toBe('auto');
+
+    await setStyle('verticalAlignment', 'top');
+    await waitFor(() => expect(anchor(container).style.marginTop).toBe(''));
+    expect(anchor(container).style.marginBottom).toBe('');
+  });
+
+  test('[Link-STY-004] Hover colour darkens a theme-token text colour like a picked colour', async () => {
+    // Break this catches: darkening the raw `var(--token)` string, which no colour parser
+    // understands, so the hover colour silently becomes pure black.
+    document.documentElement.style.setProperty('--cc-primary-brand', '#4368e3');
+    try {
+      const { container } = widget.render();
+      await waitFor(() => expect(linkText(container)).not.toBeNull());
+      expect(root(container).style.getPropertyValue('--link-hover-color')).toBe('#214cdc');
+
+      await setStyle('textColor', TEXT_COLOR);
+      await waitFor(() => expect(root(container).style.getPropertyValue('--link-hover-color')).toBe('#0a47ff'));
+    } finally {
+      document.documentElement.style.removeProperty('--cc-primary-brand');
+    }
   });
 
   test('[Link-STY-002] Underline is a class on the wrapper', async () => {
@@ -384,6 +454,51 @@ describe('Link widget', () => {
     await setStyle('icon', 'IconHome2');
     await waitFor(() => expect(iconNode(container)?.getAttribute('class') || '').not.toBe(defaultIconClass));
     expect(anchor(container)).toBeTruthy();
+  });
+
+  test('[Link-ICO-002] Icon is centred on the first text line at any text size', async () => {
+    // Break this catches: a fixed pixel nudge that only centres the icon at the default 14px
+    // size, so the icon drifts above the text as the size grows.
+    const { container } = widget.render({ styles: { iconVisibility: binding('{{true}}') } });
+    await waitFor(() => expect(iconNode(container)).not.toBeNull());
+
+    const lineBox = () => iconNode(container).parentElement;
+    expect(lineBox()).toHaveStyle({ display: 'inline-flex', alignItems: 'center' });
+    expect(lineBox().textContent).toBe('\u200B');
+    expect(iconNode(container).style.marginTop).toBe('');
+
+    await setStyle('textSize', '{{30}}');
+    await waitFor(() => expect(iconNode(container)).toHaveStyle({ height: '32px' }));
+    expect(lineBox()).toHaveStyle({ display: 'inline-flex', alignItems: 'center' });
+    expect(iconNode(container).style.marginTop).toBe('');
+  });
+
+  test('[Link-ICO-004] Icon flows inline with the text so it hugs the first line', async () => {
+    // Break this catches: laying icon and text out as two flex columns, which pins the icon to
+    // the left edge once the text wraps while the wrapped lines centre or right-align away from it.
+    const { container } = widget.render({
+      styles: { iconVisibility: binding('{{true}}'), horizontalAlignment: binding('center') },
+    });
+    await waitFor(() => expect(iconNode(container)).not.toBeNull());
+
+    const flow = linkText(container).parentElement;
+    expect(iconNode(container).parentElement.parentElement).toBe(flow);
+    expect(flow.firstElementChild).toBe(iconNode(container).parentElement);
+    expect(flow).toHaveStyle({ display: 'block' });
+    expect(flow).not.toHaveClass('d-flex');
+    expect(root(container)).toHaveStyle({ textAlign: 'center' });
+  });
+
+  test('[Link-ICO-003] Long unbroken link text wraps instead of pushing the icon out of view', async () => {
+    // Break this catches: letting a long URL overflow the row, which under centre or right
+    // alignment spills to the left of the scroll origin and hides the icon.
+    const { container } = widget.render({
+      properties: { linkText: binding('https://example.com/a-very-long-path-without-any-space-to-break-on') },
+      styles: { iconVisibility: binding('{{true}}'), horizontalAlignment: binding('right') },
+    });
+    await waitFor(() => expect(linkText(container)).not.toBeNull());
+
+    expect(linkText(container)).toHaveStyle({ overflowWrap: 'anywhere' });
   });
 
   test('[Link-EXP-001] Runtime publishes five exposed variables', async () => {
