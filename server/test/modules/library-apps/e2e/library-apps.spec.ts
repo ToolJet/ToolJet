@@ -36,8 +36,12 @@ describe('LibraryAppsController', () => {
   }, 60_000);
 
   describe('POST /api/library_apps | Create from template', () => {
-    // QUARANTINE(library-apps): failing since main CI rehab — see #17262. personal-task-list creates a ToolJet DB
-    // table, which aborts the suite transaction in the CE test setup.
+    // QUARANTINE(library-apps): failing since main CI rehab — see #17262.
+    // Every template in the library creates ToolJet DB tables (personal-task-list is the smallest, with one), and the
+    // test setup never creates the workspace's `workspace_<orgId>` schema, so the import fails with
+    // `schema "workspace_<orgId>" does not exist`. That aborts the suite transaction, and every later test in this
+    // file then fails with QueryRunnerAlreadyReleasedError. To re-enable, create the schema before the import, as
+    // ee/test/modules/tooljet-db/e2e/tooljetdb-limits.spec.ts does.
     it.skip('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
