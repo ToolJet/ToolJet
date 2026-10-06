@@ -1,0 +1,5 @@
+id,arrival_code,guest_name,room_code,arrival_time,preference,stay_nights
+,ARR-01,Amira Laurent,204,13:30,Quiet room requested,3
+,ARR-02,Daniel & Sofia Costa,105,14:00,Anniversary stay,2
+,ARR-03,Jun Park,202,15:30,Late lunch information,4
+,ARR-04,Elena Rossi,205,17:00,Traveling with an infant,3

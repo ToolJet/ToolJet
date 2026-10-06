@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Salesforce datasource",
   "description": "A schema defining Salesforce datasource",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "type": "api",
   "source": {
     "name": "Salesforce",
@@ -38,6 +38,27 @@
       },
       "plugin_id": {
         "type": "string"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "grant_type": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "code_verifier": {
+        "type": "string"
+      },
+      "code_challenge_method": {
+        "type": "string"
+      },
+      "login_type": {
+        "type": "string"
+      },
+      "custom_domain": {
+        "type": "string"
       }
     },
     "customTesting": true,
@@ -58,6 +79,12 @@
     },
     "oauth_type": {
       "value": "custom_app"
+    },
+    "code_challenge_method": {
+      "value": "S256"
+    },
+    "login_type": {
+      "value": "production"
     }
   },
   "properties": {
@@ -77,6 +104,32 @@
         }
       ]
     },
+    "login_type": {
+      "label": "Login type",
+      "key": "login_type",
+      "type": "dropdown",
+      "description": "Salesforce login host used for authorization",
+      "list": [
+        {
+          "name": "Production",
+          "value": "production"
+        },
+        {
+          "name": "Sandbox",
+          "value": "sandbox"
+        },
+        {
+          "name": "Custom domain",
+          "value": "custom_domain"
+        }
+      ]
+    },
+    "custom_domain": {
+      "label": "Custom domain",
+      "key": "custom_domain",
+      "type": "text",
+      "description": "mycompany.my.salesforce.com or any https login host (used only when Login type is Custom domain)"
+    },
     "oauth": {
       "label": "",
       "key": "oauth",
@@ -87,12 +140,21 @@
           "oauth2"
         ],
         "allowed_grant_types": [
-          "authorization_code"
+          "authorization_code",
+          "authorization_code_pkce"
         ],
         "allowed_field_groups": {
           "authorization_code": [
             "client_id",
-            "client_secret"
+            "client_secret",
+            "scopes"
+          ],
+          "authorization_code_pkce": [
+            "client_id",
+            "client_secret",
+            "scopes",
+            "code_challenge_method",
+            "code_verifier"
           ]
         },
         "oauthTypes": {
@@ -110,7 +172,8 @@
               "tooljet_app"
             ]
           }
-        }
+        },
+        "show_auth_type_dropdown": true
       }
     }
   },

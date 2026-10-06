@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Payroll records,Maya Chen,Restricted synthetic payroll test data only.,60,[],1
+,Customer orders,Noah Patel,Order-service recovery in isolated staging.,30,[],1
+,Product documents,Avery Brooks,Document-store restoration test.,120,[],1
+,Analytics platform,Zara Ellis,Warehouse rebuild and reconciliation.,180,[],1
