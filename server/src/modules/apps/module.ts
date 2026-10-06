@@ -14,6 +14,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from './repository';
+import { UserAppVersionStateRepository } from './repositories/user-app-version-state.repository';
 import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AiModule } from '@modules/ai/module';
@@ -82,6 +83,7 @@ export class AppsModule extends SubModule {
         WorkflowService,
         VersionRepository,
         AppsRepository,
+        UserAppVersionStateRepository,
         OrganizationGitSyncRepository,
         PageService,
         EventsService,

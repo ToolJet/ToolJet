@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { sanitizeInput } from '@helpers/utils.helper';
 import { AppVersionType } from '@entities/app_version.entity';
 
@@ -37,6 +37,17 @@ export class VersionCreateDto {
   @IsOptional()
   @IsBoolean()
   replace?: boolean;
+}
+
+@Exclude()
+export class CreateVersionResponseDto {
+  @Expose() enqueued: boolean;
+  // fields below are present only when the version was created inline (enqueued === false)
+  @Expose() id?: string;
+  @Expose() name?: string;
+  @Expose() status?: string;
+  @Expose({ name: 'current_environment_id' }) currentEnvironmentId?: string;
+  @Expose({ name: 'is_synced' }) isSynced?: boolean;
 }
 
 export class PromoteVersionDto {

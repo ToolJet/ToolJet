@@ -76,7 +76,8 @@ function create(
   versionFromId,
   currentEnvironmentId,
   versionType = 'version',
-  replace = false
+  replace = false,
+  idempotencyKey
 ) {
   const body = {
     versionName,
@@ -92,7 +93,7 @@ function create(
 
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }) },
     credentials: 'include',
     body: JSON.stringify(body),
   };

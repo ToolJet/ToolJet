@@ -10,7 +10,30 @@ import { Alert } from '@/_ui/Alert';
 import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
+import { setActiveBranch, appendBranchName } from '@/_helpers/active-branch';
+import { v4 as uuidv4 } from 'uuid';
+import { branchJobKey, JOB_COPY, waitForJob } from '@/_helpers/backgroundJobs';
+import { showActionToast } from '@/_components/NotificationCenter/NotificationToast';
 import '@/_styles/create-branch-modal.scss';
+
+// Switch onto a branch and reload the editor on it — same routine SwitchBranchModal uses. Also the
+// editor's switcher for the "Switch branch" toast once a background create finishes.
+export async function switchEditorToBranch(branch, appId, successMessage = `Switched to ${branch.name}`) {
+  const targetWsBranch = useWorkspaceBranchesStore.getState().branches.find((b) => b.id === branch.id) || branch;
+  const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
+  setActiveBranch(targetWsBranch);
+  useWorkspaceBranchesStore.setState({ activeBranchId: targetWsBranch.id, currentBranch: targetWsBranch });
+
+  const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+  const pathParts = window.location.pathname.split('/');
+  if (resolvedAppId) {
+    showActionToast({ type: 'success', message: successMessage });
+    window.location.replace(appendBranchName(`/${pathParts[1]}/apps/${result?.slug || resolvedAppId}`, branch.name));
+  } else {
+    sessionStorage.setItem('git_sync_toast', 'This app does not exist on this branch');
+    window.location.replace(`/${pathParts[1]}`);
+  }
+}
 
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
@@ -26,6 +49,10 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const dropdownRef = useRef(null);
+  // New key per modal mount (this component is mounted only while the modal is open)
+  const idempotencyKeyRef = useRef(uuidv4());
+  const stopWaitingRef = useRef(null);
+  useEffect(() => () => stopWaitingRef.current?.(), []);
 
   const { allBranches, isDraftVersionActive, developmentVersions, fetchDevelopmentVersions, releasedVersionId } =
     useStore((state) => ({
@@ -152,23 +179,38 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       return;
     }
 
+    const name = branchName.trim();
     setIsCreating(true);
+    // Registered before the request: a fast worker can finish before the response arrives. The
+    // spinner stays until it does; closing the modal hands the switch over to the toast.
+    stopWaitingRef.current = waitForJob(branchJobKey(name), (notification) => {
+      if (notification.type !== 'success') {
+        setIsCreating(false);
+        return;
+      }
+      switchEditorToBranch({ id: notification.metadata.branchId, name }, appId, JOB_COPY.branchCreated).catch(() =>
+        toast.error(`Branch ${name} was created but switching to it failed`)
+      );
+    });
     try {
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
       await workspaceActions.createBranch(
-        branchName.trim(),
+        name,
         sourceBranchId,
         selectedOption.commitSha || undefined,
         selectedOption.isLocalVersion ? appId : undefined,
-        selectedOption.isLocalVersion ? selectedOption.versionId : undefined
+        selectedOption.isLocalVersion ? selectedOption.versionId : undefined,
+        undefined,
+        idempotencyKeyRef.current
       );
-
-      toast.success('Creating branch. It will show up in the list once ready.', { style: { maxWidth: '640px' } });
-      onClose();
+      idempotencyKeyRef.current = uuidv4();
+      showActionToast({ type: 'info', message: JOB_COPY.branchStarted });
     } catch (error) {
       console.error('Error creating branch:', error);
+      stopWaitingRef.current?.();
+      setIsCreating(false);
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
@@ -183,8 +225,6 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       const msg = error?.data?.message || error?.message || 'Failed to create branch';
       setValidationError(msg);
       toast.error(msg);
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -316,7 +356,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
           {/* Footer buttons */}
           <div className="col d-flex justify-content-end gap-2 mt-3">
-            <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
+            <ButtonSolid variant="tertiary" onClick={onClose} size="md" data-cy="cancel-button">
               Cancel
             </ButtonSolid>
             <ButtonSolid

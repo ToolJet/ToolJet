@@ -25,7 +25,7 @@ function list() {
   );
 }
 
-function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport) {
+function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport, idempotencyKey) {
   const body = {
     name,
     ...(sourceBranchId && { sourceBranchId }),
@@ -36,7 +36,7 @@ function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport
   };
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }) },
     credentials: 'include',
     body: JSON.stringify(body),
   };

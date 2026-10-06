@@ -11,7 +11,7 @@ import { User } from '@entities/user.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
-import { EntityManager, IsNull, Not, In } from 'typeorm';
+import { EntityManager, EntityNotFoundError, IsNull, Not, In } from 'typeorm';
 import { VersionsCreateService } from './services/create.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
@@ -325,9 +325,26 @@ export class VersionUtilService implements IVersionUtilService {
     });
   }
 
-  async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionType } = versionCreateDto;
+  // Pre-flight checks for a new version. Shared by the inline create and the background enqueue
+  // path, so a queued create fails in the modal (not later in a notification) for these errors.
+  async validateVersionCreate(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<string | undefined> {
+    const { versionName, versionType, versionFromId } = versionCreateDto;
     const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+
+    // A foreign/missing source is rejected up front instead of surfacing as a late worker failure.
+    // Same exception buildVersionFromParent throws for this case.
+    if (versionFromId) {
+      const sourceVersion = await this.versionRepository.findOne({
+        where: { id: versionFromId, appId: app.id },
+        select: ['id'],
+      });
+      if (!sourceVersion) {
+        throw new EntityNotFoundError(AppVersion, {
+          where: { id: versionFromId, appId: app.id },
+          relations: ['dataSources', 'dataSources.dataQueries'],
+        });
+      }
+    }
 
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
@@ -363,6 +380,23 @@ export class VersionUtilService implements IVersionUtilService {
       }
     }
 
+    // Same-name collision would otherwise surface only as a unique violation — late (in the worker)
+    // for background creates. Scoped to (name, appId) only, matching the live DB constraint
+    // name_app_id_app_versions_unique — it's NOT branch-scoped (the entity's @Unique(['name',
+    // 'branchId']) is metadata only, not what's actually enforced), so a branch-scoped lookup here
+    // would miss cross-branch collisions and still fail late in the worker. Copy matches the
+    // frontend's existing 23505 message.
+    const sameName = await this.versionRepository.findOne({
+      where: { appId: app.id, name: versionName },
+      select: ['id'],
+    });
+    if (sameName) throw new BadRequestException('Version name already exists.');
+
+    return branchId;
+  }
+
+  async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
+    const branchId = await this.validateVersionCreate(app, user, versionCreateDto);
     const buildVersion = (mgr: EntityManager) =>
       this.buildVersionFromParent(app, user, versionCreateDto, branchId, mgr);
     return manager ? buildVersion(manager) : dbTransactionWrap(buildVersion);
@@ -784,8 +818,8 @@ export class VersionUtilService implements IVersionUtilService {
       const versionId = versionToDelete.id;
       const resourceLabel = app.type === 'module' ? 'module' : 'app';
 
-      // A released/current version can never be deleted, regardless of git state.
-      if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
+      // The current version can never be deleted, regardless of git state.
+      if (app.currentVersionId === versionId) {
         throw new BadRequestException('You cannot delete a released version');
       }
 

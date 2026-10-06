@@ -225,6 +225,10 @@ export class User extends BaseEntity {
   // `branch_id` query param (falls back to the org's default branch). Mirrors how
   // organizationId is resolved per-request from the tj-workspace-id header.
   branchId?: string;
+  // True only when branchId came from an explicit `branch_id` query param / `x-branch-id`
+  // header; false when resolved via a fallback tier. A last-active-branch pointer write must
+  // skip when this is true.
+  branchIdExplicit?: boolean;
   invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;

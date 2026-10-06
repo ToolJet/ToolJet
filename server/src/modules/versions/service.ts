@@ -1,5 +1,11 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -35,6 +41,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { UserAppVersionStateRepository } from '@modules/apps/repositories/user-app-version-state.repository';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -51,7 +58,8 @@ export class VersionService implements IVersionService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly userAppVersionStateRepository: UserAppVersionStateRepository
   ) {}
 
   /**
@@ -200,6 +208,30 @@ export class VersionService implements IVersionService {
     return result;
   }
 
+  // HTTP entry point for version creation. createVersion() stays the synchronous primitive used by
+  // other flows (draft creation, the background worker).
+  async createOrEnqueueVersion(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<{ enqueued: boolean } & Record<string, unknown>> {
+    if (await this.shouldRunInBackground(app, user, versionCreateDto)) {
+      await this.versionsUtilService.validateVersionCreate(app, user, versionCreateDto);
+      await this.enqueueCreateVersion(app, user, versionCreateDto);
+      return { enqueued: true };
+    }
+    const version = await this.createVersion(app, user, versionCreateDto);
+    return { enqueued: false, ...version };
+  }
+
+  protected async shouldRunInBackground(_app: App, _user: User, _dto: VersionCreateDto): Promise<boolean> {
+    return false;
+  }
+
+  protected async enqueueCreateVersion(_app: App, _user: User, _dto: VersionCreateDto): Promise<void> {
+    throw new NotImplementedException();
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     const versionToDelete = app.appVersions[0];
     await this.versionsUtilService.deleteVersion(app, user, manager);
@@ -327,6 +359,7 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
+    this.persistActiveVersion(user, app, response.editing_version);
     const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
@@ -345,6 +378,16 @@ export class VersionService implements IVersionService {
     );
 
     return response;
+  }
+
+  // Fire-and-forget. Only for a real version-only row -- a feature-branch draft (BRANCH type)
+  // has no version dimension to remember, and getVersion is also called once per embedded
+  // module, whose version is resolved by ModuleViewer pinning, not personal browsing state.
+  protected persistActiveVersion(user: User, app: App, editingVersion?: { id?: string; versionType?: string }): void {
+    if (!editingVersion?.id || editingVersion.versionType === AppVersionType.BRANCH) return;
+    void this.userAppVersionStateRepository
+      .upsertLastActiveVersion(user.id, app.id, editingVersion.id)
+      .catch((err) => console.error('Failed to persist last-active version:', err));
   }
 
   async getVersionByStableIds(

@@ -1,6 +1,13 @@
 import { FeatureConfig } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { MODULES } from '@modules/app/constants/modules';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import {
+  UserAppsPermissions,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions,
+} from '@modules/ability/types';
 
 export type JWTPayload = {
   sessionId: string;
@@ -17,6 +24,29 @@ export type JWTPayload = {
   tj_api_source?: string;
   /* Set on synthetic tokens minted for admin API key (TJ_ADMIN_API_KEY) authentication */
   isAdminApiKeyAuth?: boolean;
+};
+
+export type BranchResolution = {
+  branchId: string | null;
+  explicit: boolean;
+};
+
+export type PermissionDataToAuthorize = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar_id: string;
+  admin: boolean;
+  superAdmin: boolean;
+  metadata: any;
+  ssoUserInfo: any;
+  appGroupPermissions: UserAppsPermissions;
+  dataSourceGroupPermissions: UserDataSourcePermissions;
+  folderGroupPermissions?: UserFolderPermissions;
+  role: GroupPermissions;
+  groupPermissions: GroupPermissions[];
+  userPermissions: UserPermissions;
 };
 
 interface Features {

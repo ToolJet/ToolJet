@@ -2,8 +2,9 @@ import config from 'config';
 import { create, zustandDevTools } from './utils';
 import { notificationsService } from '@/_services/notifications.service';
 import { detailAction } from '@/_components/NotificationCenter/detailAction';
-import { showNotificationToast } from '@/_components/NotificationCenter/NotificationToast';
+import { showActionToast, showNotificationToast } from '@/_components/NotificationCenter/NotificationToast';
 import { authenticationService } from '@/_services/authentication.service';
+import { jobToastFor, settleWaitingModal } from '@/_helpers/backgroundJobs';
 
 const PAGE_SIZE = 20;
 
@@ -167,9 +168,16 @@ export const useNotificationsStore = create(
             added = true;
             return { items: [n, ...s.items], unreadCount: s.unreadCount + 1 };
           });
-          if (added && withToast) {
-            const action = detailAction(n);
-            showNotificationToast(n, action ? { onViewDetails: (notif) => get().actions.openDetail(notif) } : {});
+          // the modal that started a background create, if still open, switches and toasts itself
+          const settledByModal = added && settleWaitingModal(n);
+          if (added && withToast && !settledByModal) {
+            const jobToast = jobToastFor(n);
+            if (jobToast) {
+              showActionToast({ type: 'success', ...jobToast });
+            } else {
+              const action = detailAction(n);
+              showNotificationToast(n, action ? { onViewDetails: (notif) => get().actions.openDetail(notif) } : {});
+            }
           }
           if (added) {
             liveSubscribers.forEach((cb) => {
