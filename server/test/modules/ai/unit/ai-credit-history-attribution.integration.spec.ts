@@ -45,6 +45,16 @@ integration('AI credit history attribution columns', () => {
     expect((new AddUserIdToAiCreditHistory1791305815686() as { transaction?: boolean }).transaction).toBeUndefined();
   });
 
+  it('gives up on its table locks after 5s instead of queueing charges', async () => {
+    const runner = db.createQueryRunner();
+    await runner.startTransaction();
+    await new AddUserIdToAiCreditHistory1791305815686().up(runner);
+    const [{ lock_timeout }] = await runner.query('SHOW lock_timeout');
+    await runner.rollbackTransaction();
+    await runner.release();
+    expect(lock_timeout).toBe('5s');
+  });
+
   it('adds nullable attribution columns and is safe to re-run', async () => {
     await migrate('up');
     await migrate('up');
