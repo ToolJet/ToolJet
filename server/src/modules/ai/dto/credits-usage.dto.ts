@@ -110,8 +110,10 @@ export class CreditLimitDefaultsDto {
 }
 
 export class UpdateCreditLimitsDto {
+  /** Omitted = keep the flag (values-only save). Required when `defaults` is omitted. */
+  @ValidateIf((o: UpdateCreditLimitsDto) => o.enabled !== undefined || o.defaults === undefined)
   @IsBoolean()
-  enabled: boolean;
+  enabled?: boolean;
 
   /** Omitted = keep the saved defaults (toggle only). */
   @IsOptional()

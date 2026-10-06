@@ -296,7 +296,10 @@ describe('AI credit limits', () => {
           const updates = rows.filter((r) => r.actionType === 'AI_CREDIT_LIMIT_UPDATED');
           expect(updates.filter((r) => r.metadata.before.monthly.mode === 'equal_share')).toHaveLength(1);
         } finally {
-          await dropSeed(s.workspace.id, [s.admin, ...s.builders, s.endUser].map((u) => u.user.id));
+          await dropSeed(
+            s.workspace.id,
+            [s.admin, ...s.builders, s.endUser].map((u) => u.user.id)
+          );
         }
       });
     });
