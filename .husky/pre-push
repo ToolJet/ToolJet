@@ -18,4 +18,5 @@ if [ -s "$HOME/.nvm/nvm.sh" ]; then
 fi
 command -v node >/dev/null 2>&1 || export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
 
+bash server/scripts/check-ee-leak.sh || exit 1
 npm run ci:changed --silent
