@@ -55,6 +55,9 @@ test('freePort skips ports already handed out', async () => {
   assert.notEqual(await freePort(from, new Set([from])), from);
 });
 
+// git hooks export GIT_DIR/GIT_INDEX_FILE; they would point the temp repos below at the real one
+for (const k of Object.keys(process.env)) if (k.startsWith('GIT_')) delete process.env[k];
+
 const sh = (cwd: string, ...args: string[]) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd, stdio: 'pipe' });
 
 test('unsavedWork flags uncommitted files and submodule commits that exist nowhere else', async () => {
