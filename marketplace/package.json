@@ -38,7 +38,7 @@
       "js-yaml": "4.3.2"
     },
     "minimatch": {
-      "brace-expansion": "1.1.18"
+      "brace-expansion": "1.1.21"
     },
     "node-gyp": {
       "undici": "6.28.1"
