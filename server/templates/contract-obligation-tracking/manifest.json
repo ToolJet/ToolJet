@@ -1,0 +1,16 @@
+{
+  "name": "Contract obligation tracking",
+  "description": "Track contract obligations and deadlines with owners, evidence and a recorded review for every commitment.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "contract-obligation-tracking",
+  "category": "contracts"
+}
