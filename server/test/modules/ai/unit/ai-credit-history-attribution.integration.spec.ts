@@ -63,6 +63,7 @@ integration('AI credit history attribution columns', () => {
   });
 
   it('down removes only the added columns', async () => {
+    await migrate('up');
     await migrate('down');
     expect(await columns('organization_ai_credit_history')).toEqual(['organization_id:NO']);
     expect(await columns('selfhost_customers_ai_credit_history')).toEqual([]);
