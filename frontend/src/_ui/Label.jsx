@@ -59,8 +59,8 @@ function Label({
                 direction == 'right'
                   ? '6px'
                   : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
-                    ? '12px'
-                    : '',
+                  ? '12px'
+                  : '',
               paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
               ...(top && { top }),
             }}
