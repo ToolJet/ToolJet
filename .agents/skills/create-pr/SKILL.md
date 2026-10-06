@@ -142,7 +142,7 @@ Analyze the commits and diff to determine:
 
   Pick one or two, not all. Skip it for small fixes, config or copy changes. A note longer than a few words goes inside a Mermaid node or in the prose, not after an arrow in an ASCII block: packed annotations make the block hard to read.
 - **API Reference:** when HTTP endpoints are added or changed. A table with Method, Route, Permission, Request and Response columns.
-- **Evidence:** when runtime behaviour changes. Show proof it works, as before → after:
+- **Evidence:** when runtime behaviour changes, as a folded `<details>` block at the end of How to test (same rules as Merge impact). Show proof it works, as before → after:
   - a screenshot for visual changes (capture it with Playwright MCP when a dev server is running);
   - otherwise the failing → passing test, or command output;
   - for `kickoff` slices, link the verifier's report comment.
@@ -186,16 +186,20 @@ Analyze the commits and diff to determine:
 |--------|-------|------------|---------|----------|
 | **POST** | `/api/...` | `PERM` | `{ body }` | `{ response }` |
 
-## 🧾 Evidence
+## 🧪 How to test
+- [ ] <short action-first step>
+
+<details>
+<summary>🧾 <b>Evidence</b></summary>
+
 - **Before:** <screenshot / output / failing test>
 - **After:** <screenshot / output / passing test>
 
-## 🧪 How to test
-- [ ] <short action-first step>
+</details>
 ```
 Omit the Sources and Submodules blocks, or any bullet in them, when there's no content.
 
-The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
+The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, how do I try it, and the proof that it works. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
