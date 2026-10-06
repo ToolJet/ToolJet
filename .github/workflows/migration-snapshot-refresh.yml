@@ -1,26 +1,23 @@
 name: Migration snapshot refresh
 
-# Keeps the S3 database snapshot used by the 'Migration timing' job in ci.yml current.
-# After a push that touches migrations, restore the branch line's latest.dump, apply
-# the newly merged migrations, and upload the result as <branch>/<sha>.dump plus
-# <branch>/latest.dump. Only merged code ever writes the snapshot; PR runs only read it.
+# Keeps the S3 snapshots used by the 'Migration timing' job in ci.yml current: after a
+# push to main (main.sql) or lts-* (lts.sql) that touches migrations, restore the
+# snapshot, apply the merged migrations and upload it again. PR runs only read it.
 #
-# Fails closed: if a migration fails, or a pushed commit deletes a migration file the
-# snapshot already ran (a revert by file deletion), nothing is uploaded and latest.dump
-# stays on the last good snapshot. Roll back by copying an older <sha>.dump over latest.dump.
-#
-# Off until the repo variable MIGRATION_SNAPSHOT_BUCKET is set.
+# Fails closed: if a migration fails, or the push deleted a migration file the snapshot
+# already ran (a revert by deletion), nothing is uploaded. Turn on S3 bucket versioning
+# to roll back. Off until vars.MIGRATION_SNAPSHOT_BUCKET (s3://bucket/prefix) is set.
 
 on:
   push:
-    branches: [develop, main, 'release/**']
+    branches: [main, 'lts-*']
     paths:
       - 'server/migrations/**'
       - 'server/data-migrations/**'
   workflow_dispatch:
 
-# one refresh at a time per branch line; a skipped queued run is harmless because the
-# next run's checkout contains every merged migration
+# one refresh at a time per branch; a skipped queued run is harmless because the next
+# run's checkout contains every merged migration
 concurrency:
   group: migration-snapshot-refresh-${{ github.ref_name }}
   cancel-in-progress: false
@@ -63,7 +60,8 @@ jobs:
       PGHOST: postgres
       PGUSER: postgres
       PGPASSWORD: postgres
-      SNAPSHOT_PREFIX: s3://${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ github.ref_name }}
+      # lts-* branches refresh lts.sql, main refreshes main.sql
+      SNAPSHOT_URI: ${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ startsWith(github.ref_name, 'lts') && 'lts' || 'main' }}.sql
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
@@ -84,7 +82,7 @@ jobs:
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
-      # bookworm ships pg 15 clients; dumps from pg 16 need pg_dump/pg_restore 16 (PGDG repo)
+      # bookworm ships pg 15 clients; pg_dump must match the pg 16 server (PGDG repo)
       - name: Install Postgres 16 client and AWS CLI
         run: |
           apt-get update && apt-get install -y postgresql-common awscli
@@ -96,14 +94,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-1
 
-      - name: Restore latest snapshot
+      - name: Restore snapshot
         run: |
-          aws s3 cp "$SNAPSHOT_PREFIX/latest.dump" /tmp/snapshot.dump || {
-            echo "::error::No snapshot at $SNAPSHOT_PREFIX/latest.dump. Upload an initial dump or copy the parent branch line's."
-            exit 1
-          }
+          aws s3 cp "$SNAPSHOT_URI" /tmp/snapshot.sql || { echo "::error::No snapshot at $SNAPSHOT_URI"; exit 1; }
           createdb "$PG_DB" && createdb "$TOOLJET_DB"
-          pg_restore -j 4 --no-owner --no-privileges -d "$PG_DB" /tmp/snapshot.dump
+          psql -q -v ON_ERROR_STOP=1 -d "$PG_DB" -f /tmp/snapshot.sql
 
       # Deleting a migration file doesn't undo it: the snapshot keeps its change while
       # the code no longer expects it. Only files deleted by this push are checked, so
@@ -121,7 +116,7 @@ jobs:
             | grep -oE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' || true)
           for ts in $deleted; do
             if [ -n "$(psql -d "$PG_DB" -Atc "select 1 from migrations where timestamp = $ts limit 1")" ]; then
-              echo "::error::Migration $ts was deleted but the snapshot already ran it. Roll latest.dump back to a copy from before it merged."
+              echo "::error::Migration $ts was deleted but the snapshot already ran it. Restore an earlier S3 version of $SNAPSHOT_URI."
               exit 1
             fi
           done
@@ -131,7 +126,6 @@ jobs:
 
       - name: Upload new snapshot
         run: |
-          pg_dump -Fc -d "$PG_DB" -f /tmp/next.dump
-          aws s3 cp /tmp/next.dump "$SNAPSHOT_PREFIX/$GITHUB_SHA.dump"
-          aws s3 cp "$SNAPSHOT_PREFIX/$GITHUB_SHA.dump" "$SNAPSHOT_PREFIX/latest.dump"
-          echo "Snapshot $SNAPSHOT_PREFIX/latest.dump now at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          pg_dump --no-owner --no-privileges -d "$PG_DB" -f /tmp/next.sql
+          aws s3 cp /tmp/next.sql "$SNAPSHOT_URI"
+          echo "$SNAPSHOT_URI refreshed at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"

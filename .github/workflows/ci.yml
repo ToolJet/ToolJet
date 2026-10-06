@@ -831,7 +831,7 @@ jobs:
       TOOLJET_DB: tooljet_db
       PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
       ENABLE_TOOLJET_DB: 'true'
-      # libpq vars for psql / pg_restore / pg_dump / createdb
+      # libpq vars for psql / createdb
       PGHOST: postgres
       PGUSER: postgres
       PGPASSWORD: postgres
@@ -858,7 +858,7 @@ jobs:
         if: steps.server-nm.outputs.cache-hit != 'true'
       - name: Test the timing reporter
         run: node --test scripts/time-migrations.test.mjs
-      # bookworm ships pg 15 clients; a pg 16 dump needs pg_restore 16 (PGDG repo)
+      # bookworm ships pg 15 clients; match the pg 16 server (PGDG repo)
       - name: Install Postgres 16 client and AWS CLI
         run: |
           apt-get update && apt-get install -y postgresql-common awscli
@@ -871,14 +871,14 @@ jobs:
           aws-region: us-west-1
       - name: Restore snapshot
         env:
-          SNAPSHOT_URI: s3://${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/${{ github.base_ref }}/latest.dump
+          BASE: ${{ github.base_ref }}
         run: |
-          aws s3 cp "$SNAPSHOT_URI" /tmp/snapshot.dump || {
-            echo "::error::No snapshot at $SNAPSHOT_URI. Copy the parent branch line's latest.dump there."
-            exit 1
-          }
+          # lts-* bases use lts.sql, everything else main.sql
+          case "$BASE" in lts*) name=lts ;; *) name=main ;; esac
+          uri="${{ vars.MIGRATION_SNAPSHOT_BUCKET }}/$name.sql"
+          aws s3 cp "$uri" /tmp/snapshot.sql || { echo "::error::No snapshot at $uri"; exit 1; }
           createdb "$PG_DB" && createdb "$TOOLJET_DB"
-          pg_restore -j 4 --no-owner --no-privileges -d "$PG_DB" /tmp/snapshot.dump
+          psql -q -v ON_ERROR_STOP=1 -d "$PG_DB" -f /tmp/snapshot.sql
       - name: Run pending migrations with timing
         shell: bash
         run: |
