@@ -21,6 +21,7 @@ const Header = (props) => {
     fireEvent,
     isDisabled,
     chevronIconColor,
+    dataCy,
   } = props;
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
@@ -76,6 +77,7 @@ const Header = (props) => {
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
           componentType="Container"
+          dataCy={dataCy}
         />
       </div>
       <div className="tj-accordion-close-btn">
@@ -83,7 +85,7 @@ const Header = (props) => {
           type="button"
           disabled={isDisabled}
           aria-label={isExpanded ? 'Collapse accordion' : 'Expand accordion'}
-          data-cy={`accordion-close-button`}
+          data-cy={`${dataCy}-toggle-button`}
           onClick={(e) => {
             if (isDisabled) return;
             e.stopPropagation();
