@@ -34,29 +34,42 @@ const getSizeEnum = (model: string | undefined, size: string | undefined): strin
   // Standard GPT image models: fixed size set + auto
   if (GPT_IMAGE_MODELS.has(model ?? '')) {
     switch (size) {
-      case '1024x1024': return '1024x1024';
-      case '1536x1024': return '1536x1024';
-      case '1024x1536': return '1024x1536';
-      case 'auto':      return 'auto';
-      default:          return '1024x1024';
+      case '1024x1024':
+        return '1024x1024';
+      case '1536x1024':
+        return '1536x1024';
+      case '1024x1536':
+        return '1024x1536';
+      case 'auto':
+        return 'auto';
+      default:
+        return '1024x1024';
     }
   }
 
   if (model === 'dall-e-3') {
     switch (size) {
-      case '1024x1024': return '1024x1024';
-      case '1792x1024': return '1792x1024';
-      case '1024x1792': return '1024x1792';
-      default:          return '1024x1024';
+      case '1024x1024':
+        return '1024x1024';
+      case '1792x1024':
+        return '1792x1024';
+      case '1024x1792':
+        return '1024x1792';
+      default:
+        return '1024x1024';
     }
   }
 
   if (model === 'dall-e-2') {
     switch (size) {
-      case '1024x1024': return '1024x1024';
-      case '512x512':   return '512x512';
-      case '256x256':   return '256x256';
-      default:          return '1024x1024';
+      case '1024x1024':
+        return '1024x1024';
+      case '512x512':
+        return '512x512';
+      case '256x256':
+        return '256x256';
+      default:
+        return '1024x1024';
     }
   }
 
@@ -69,20 +82,17 @@ const getSizeEnum = (model: string | undefined, size: string | undefined): strin
   return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
 };*/
 
-export async function getChatCompletion(
-  openai: OpenAI,
-  options: QueryOptions
-): Promise<string | any> {
+export async function getChatCompletion(openai: OpenAI, options: QueryOptions): Promise<string | any> {
   const { model, prompt, message_history, system_prompt, max_tokens, temperature, stop_sequence } = options;
 
   const tokenLimit = typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens;
   const modelName = model?.toLowerCase() || '';
 
   // Identify "Existing" models that MUST use max_tokens
-  const isExistingModel = 
-    modelName.includes('gpt-4o') || 
-    modelName.includes('gpt-4.0') || 
-    modelName.includes('gpt-4-turbo') || 
+  const isExistingModel =
+    modelName.includes('gpt-4o') ||
+    modelName.includes('gpt-4.0') ||
+    modelName.includes('gpt-4-turbo') ||
     modelName.includes('gpt-3.5-turbo');
 
   const parsedMessages: any[] = [];
@@ -90,7 +100,7 @@ export async function getChatCompletion(
   if (system_prompt && typeof system_prompt === 'string' && system_prompt.trim() !== '') {
     parsedMessages.push({
       role: 'system',
-      content: system_prompt
+      content: system_prompt,
     });
   }
 
@@ -101,13 +111,13 @@ export async function getChatCompletion(
         parsedMessages.push(...historyArray);
       }
     } catch (e) {
-      console.error("Failed to parse message_history JSON", e);
+      console.error('Failed to parse message_history JSON', e);
       throw new Error('Invalid JSON provided for message history.');
     }
   }
 
   if (prompt && prompt !== '') {
-     parsedMessages.push({ role: 'user', content: String(prompt) });
+    parsedMessages.push({ role: 'user', content: String(prompt) });
   }
 
   const requestPayload: any = {
