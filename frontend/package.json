@@ -363,12 +363,15 @@
       "picomatch": "2.3.2"
     },
     "minimatch": {
-      "brace-expansion": "2.1.4"
+      "brace-expansion": "2.1.7"
     },
     "minimatch@3": {
-      "brace-expansion": "1.1.18"
+      "brace-expansion": "2.1.7"
     },
     "on-headers": "1.1.0",
+    "plotly.js": {
+      "probe-image-size": "7.4.0"
+    },
     "postcss": {
       "nanoid": "3.3.19"
     },

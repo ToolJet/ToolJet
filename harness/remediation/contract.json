@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "docs/package-lock.json",
-    "docs/package.json"
+    "frontend/package-lock.json",
+    "frontend/package.json"
   ],
-  "baseSha": "ef34d2dd9829b89290496ba7716c0cb55c3af3b8",
+  "baseSha": "0cfe14d186874381b7d05be92b7f9f7fa37e4e8c",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "6e1fdbe0475ff988",
+    "id": "d147bff0bfd35332",
     "lockArtifacts": [
-      "docs/package-lock.json"
+      "frontend/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "docs/package-lock.json"
+    "rootManifest": "frontend/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
+  "remediationKey": "1b46937957797102f43e1a1ac3da74822b955697259d9f1f1af395532b77752f",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,27 +38,12 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "ef34d2dd9829b89290496ba7716c0cb55c3af3b8",
+  "scanSha": "0cfe14d186874381b7d05be92b7f9f7fa37e4e8c",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "HX_kvo5rTjmIkzcr3t71pg",
+  "stoExecutionId": "RRm5HrfURlKA2PvlaPiVWQ",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
-    {
-      "candidateVersions": [
-        "1.1.21"
-      ],
-      "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.18"
-      },
-      "fromVersion": "1.1.18",
-      "issueIds": [
-        "Pl_259BKHv9l5XFbK9dPLi"
-      ],
-      "minimumFixedVersion": "1.1.19",
-      "package": "brace-expansion"
-    },
     {
       "candidateVersions": [
         "2.1.7"
@@ -76,18 +61,18 @@
     },
     {
       "candidateVersions": [
-        "7.4.6"
+        "7.4.0"
       ],
       "coordinate": {
-        "normalisedName": "webpack-dev-middleware",
-        "purl": "pkg:npm/webpack-dev-middleware@7.4.5"
+        "normalisedName": "probe-image-size",
+        "purl": "pkg:npm/probe-image-size@7.2.3"
       },
-      "fromVersion": "7.4.5",
+      "fromVersion": "7.2.3",
       "issueIds": [
-        "QJzPeeDWYXrZWlGlaZnYdF"
+        "tkPdliYKqSE7f9fJVlCYPj"
       ],
-      "minimumFixedVersion": "7.4.6",
-      "package": "webpack-dev-middleware"
+      "minimumFixedVersion": "7.4.0",
+      "package": "probe-image-size"
     }
   ]
 }
