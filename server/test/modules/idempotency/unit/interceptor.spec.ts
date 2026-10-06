@@ -101,6 +101,19 @@ describe('IdempotencyInterceptor', () => {
     expect(h).toHaveBeenCalledTimes(1);
   });
 
+  it('returns the handler result when storing it fails, and keeps the key pending', async () => {
+    const set = redis.set.bind(redis);
+    redis.set = async (key, val, ex, ttl, nx) => {
+      if (JSON.parse(val).state === 'done') throw new Error('redis down');
+      return set(key, val, ex, ttl, nx);
+    };
+    const h = jest.fn(() => of({ enqueued: true }));
+
+    await expect(run(interceptor, ctx({ key: KEY }), h)).resolves.toEqual({ enqueued: true });
+    await expect(run(interceptor, ctx({ key: KEY }), h)).rejects.toBeInstanceOf(ConflictException);
+    expect(h).toHaveBeenCalledTimes(1);
+  });
+
   it('scopes keys per user', async () => {
     await run(
       interceptor,
