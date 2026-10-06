@@ -44,6 +44,12 @@
     "@docusaurus/utils-validation": {
       "joi": "17.13.8"
     },
+    "css-tree": {
+      "source-map-js": "1.2.2"
+    },
+    "express": {
+      "proxy-addr": "2.0.8"
+    },
     "fast-uri": "3.1.7",
     "got": "^12.1.0",
     "js-yaml": "4.3.2",
@@ -54,9 +60,13 @@
       "brace-expansion": "2.1.7"
     },
     "nanoid": "3.3.19",
+    "postcss": {
+      "source-map-js": "1.2.2"
+    },
     "svgo": "3.3.5",
     "trim": "^0.0.3",
     "webpack-dev-server": {
+      "compression": "1.8.2",
       "webpack-dev-middleware": "7.4.6"
     }
   },

@@ -1,17 +1,17 @@
 {
   "allowedPaths": [
-    "server/package-lock.json",
-    "server/package.json"
+    "docs/package-lock.json",
+    "docs/package.json"
   ],
-  "baseSha": "c7200b6a797981799cdd6b6fad8a3435d30e622c",
+  "baseSha": "bc8e86ffbb1775991d766df8104ffc78f4aaf109",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "7acdd6bfd82d3c20",
+    "id": "6e1fdbe0475ff988",
     "lockArtifacts": [
-      "server/package-lock.json"
+      "docs/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "server/package-lock.json"
+    "rootManifest": "docs/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -29,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
+  "remediationKey": "34243d38125b8b2a4357d7a8e6ca8355825745615c8446398f532c1c4a7dca7a",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -38,71 +38,56 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "c7200b6a797981799cdd6b6fad8a3435d30e622c",
+  "scanSha": "bc8e86ffbb1775991d766df8104ffc78f4aaf109",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "OEWBp1FtTX2If15PSPoCyw",
+  "stoExecutionId": "L5KGs0kPSTuM8hButy0Z1w",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
     {
       "candidateVersions": [
-        "17.13.8"
+        "2.0.8"
       ],
       "coordinate": {
-        "normalisedName": "joi",
-        "purl": "pkg:npm/joi@17.13.3"
+        "normalisedName": "proxy-addr",
+        "purl": "pkg:npm/proxy-addr@2.0.7"
       },
-      "fromVersion": "17.13.3",
+      "fromVersion": "2.0.7",
       "issueIds": [
-        "0ZVz7HtmcN0KUq5b6BVr_K"
+        "ac7Ep_hFUg0zXd4yeSeTPU"
       ],
-      "minimumFixedVersion": "17.13.7",
-      "package": "joi"
+      "minimumFixedVersion": "2.0.8",
+      "package": "proxy-addr"
     },
     {
       "candidateVersions": [
-        "5.0.12"
+        "1.2.2"
       ],
       "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@5.0.9"
+        "normalisedName": "source-map-js",
+        "purl": "pkg:npm/source-map-js@1.2.1"
       },
-      "fromVersion": "5.0.9",
+      "fromVersion": "1.2.1",
       "issueIds": [
-        "qiFZO47GdGp2rvqEYT3dpq"
+        "2QmFvElGrIOkY6aPpVIHeQ"
       ],
-      "minimumFixedVersion": "5.0.10",
-      "package": "brace-expansion"
+      "minimumFixedVersion": "1.2.2",
+      "package": "source-map-js"
     },
     {
       "candidateVersions": [
-        "1.14.5"
+        "1.8.2"
       ],
       "coordinate": {
-        "normalisedName": "@grpc/grpc-js",
-        "purl": "pkg:npm/grpc/grpc-js@1.14.4"
+        "normalisedName": "compression",
+        "purl": "pkg:npm/compression@1.8.1"
       },
-      "fromVersion": "1.14.4",
+      "fromVersion": "1.8.1",
       "issueIds": [
-        "mYMXbTKP7blnFFbYxuNyWi"
+        "mLqw2-DXaEhmu_6Yq5erJE"
       ],
-      "minimumFixedVersion": "1.14.5",
-      "package": "@grpc/grpc-js"
-    },
-    {
-      "candidateVersions": [
-        "11.2.7"
-      ],
-      "coordinate": {
-        "normalisedName": "@nestjs/microservices",
-        "purl": "pkg:npm/nestjs/microservices@11.1.24"
-      },
-      "fromVersion": "11.1.24",
-      "issueIds": [
-        "hobNR6pTmK0pgqK2Q-jEqA"
-      ],
-      "minimumFixedVersion": "11.2.4",
-      "package": "@nestjs/microservices"
+      "minimumFixedVersion": "1.8.2",
+      "package": "compression"
     }
   ]
 }
