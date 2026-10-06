@@ -18,4 +18,5 @@ export enum FEATURE_KEY {
   GET_LLM_PREFERENCE = 'getLlmPreference',
   UPDATE_LLM_PREFERENCE = 'updateLlmPreference',
   GET_CREDITS_USAGE = 'getCreditsUsage',
+  UPDATE_CREDIT_LIMITS = 'updateCreditLimits',
 }

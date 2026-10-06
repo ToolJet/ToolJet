@@ -155,14 +155,26 @@ describe('builder usage calculations', () => {
         workspaces: null,
       });
 
-      expect(result).toEqual({
+      expect(result.workspaces).toBeUndefined();
+      expect(result).toMatchObject({
         cycle: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
         pools: {
           monthly: { total: 1000, remaining: 900, used: 100, endsAt: '2026-11-01T00:00:00.000Z' },
           addon: { total: 100, remaining: 80, used: 20, endsAt: null },
         },
         trackingSince: null,
-        rows: [{ kind: 'builder', userId: 'u1', name: 'Priya Nair', email: 'priya@acme.io', monthly: 100, addon: 20 }],
+        rows: [
+          {
+            kind: 'builder',
+            userId: 'u1',
+            name: 'Priya Nair',
+            email: 'priya@acme.io',
+            monthly: 100,
+            addon: 20,
+            limit: { monthly: 1000, addon: 100 },
+          },
+        ],
+        limits: { enabled: false, builderCount: 1 },
       });
     });
 

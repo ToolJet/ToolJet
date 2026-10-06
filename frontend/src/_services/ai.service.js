@@ -10,6 +10,7 @@ export const aiService = {
   getCopilotSuggestion,
   getCreditBalance,
   getCreditsUsage,
+  updateCreditLimits,
   fixWithAI,
   updateKey,
   getKeySettings,
@@ -281,6 +282,11 @@ async function getCreditBalance() {
 async function getCreditsUsage() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/credits-usage`, requestOptions).then(handleResponse);
+}
+
+async function updateCreditLimits(body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits`, requestOptions).then(handleResponse);
 }
 
 async function fixWithAI(body) {

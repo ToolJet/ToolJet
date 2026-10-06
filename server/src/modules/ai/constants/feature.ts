@@ -62,5 +62,10 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_CREDITS_USAGE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    // One save can log ENABLED and UPDATED, so the service writes audit entries itself.
+    [FEATURE_KEY.UPDATE_CREDIT_LIMITS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+      skipAuditLogs: true,
+    },
   },
 };

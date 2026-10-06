@@ -54,7 +54,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // Cloud pool is per workspace; self-hosted pool is per instance, so only super admins see it.
     const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
     if (superAdmin || (isCloud && isAdmin)) {
-      can([FEATURE_KEY.GET_CREDITS_USAGE], AiConversation);
+      can([FEATURE_KEY.GET_CREDITS_USAGE, FEATURE_KEY.UPDATE_CREDIT_LIMITS], AiConversation);
     }
   }
 }

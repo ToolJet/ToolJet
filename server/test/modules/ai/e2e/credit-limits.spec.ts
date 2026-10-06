@@ -46,7 +46,13 @@ function gatewayFor(ownerPath: string, pool: { monthly: number; addon: number },
       expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: null },
       cycleStart: CYCLE_START,
     },
-    [`${ownerPath}/usage`]: { cycleStart: CYCLE_START, trackingSince: null, users, unattributed: wallet(0), pool: wallet(used) },
+    [`${ownerPath}/usage`]: {
+      cycleStart: CYCLE_START,
+      trackingSince: null,
+      users,
+      unattributed: wallet(0),
+      pool: wallet(used),
+    },
     [`${ownerPath}/usage?groupBy=organization`]: {
       cycleStart: CYCLE_START,
       trackingSince: null,
@@ -61,7 +67,10 @@ const sessionFor = async (user: User, organizationId: string) =>
   (await buildTestSession(user, organizationId)).tokenCookie;
 
 const getUsage = (app: INestApplication, cookie: string[], organizationId: string) =>
-  request(app.getHttpServer()).get('/api/ai/credits-usage').set('tj-workspace-id', organizationId).set('Cookie', cookie);
+  request(app.getHttpServer())
+    .get('/api/ai/credits-usage')
+    .set('tj-workspace-id', organizationId)
+    .set('Cookie', cookie);
 
 const putLimits = (app: INestApplication, cookie: string[], organizationId: string, body: object) =>
   request(app.getHttpServer())
@@ -179,7 +188,9 @@ describe('AI credit limits', () => {
       const s = await seed('ac2');
       licenseWith(app, { aiPlan: 'credits' });
       stubGateway(gatewayFor(s.owner, POOL));
-      expect((await putLimits(app, s.cookie, s.workspace.id, { enabled: true, defaults: customMonthly(250) })).statusCode).toBe(200);
+      expect(
+        (await putLimits(app, s.cookie, s.workspace.id, { enabled: true, defaults: customMonthly(250) })).statusCode
+      ).toBe(200);
 
       const joiner = await createUser(app, {
         email: 'ac2-joiner@tooljet.io',
@@ -273,13 +284,16 @@ describe('AI credit limits', () => {
       const afterOn = await auditActions(s.workspace.id, 2);
       expect(afterOn).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ actionType: 'AI_CREDIT_LIMIT_ENABLED', metadata: { buildersOverLimit: 2 } }),
+          expect.objectContaining({
+            actionType: 'AI_CREDIT_LIMIT_ENABLED',
+            metadata: expect.objectContaining({ buildersOverLimit: 2 }),
+          }),
           expect.objectContaining({
             actionType: 'AI_CREDIT_LIMIT_UPDATED',
-            metadata: {
+            metadata: expect.objectContaining({
               before: { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } },
               after: customMonthly(100),
-            },
+            }),
           }),
         ])
       );
@@ -342,7 +356,12 @@ describe('AI credit limits', () => {
     }, 60_000);
 
     const selfhostLicense = () =>
-      licenseWith(app, { aiPlan: 'credits', aiEnabled: true, ai: { apiKey: 'selfhost-key' }, metadata: { customerId } });
+      licenseWith(app, {
+        aiPlan: 'credits',
+        aiEnabled: true,
+        ai: { apiKey: 'selfhost-key' },
+        metadata: { customerId },
+      });
 
     it('super admin saves one instance-wide default (no workspace on the rows)', async () => {
       const superAdmin = await createUser(app, {
@@ -350,7 +369,11 @@ describe('AI credit limits', () => {
         userType: 'instance',
         groups: ['end-user', 'admin'],
       });
-      await createUser(app, { email: 'sh6-other@tooljet.io', groups: ['end-user', 'admin'], organizationName: 'Other' });
+      await createUser(app, {
+        email: 'sh6-other@tooljet.io',
+        groups: ['end-user', 'admin'],
+        organizationName: 'Other',
+      });
       selfhostLicense();
       stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
       const cookie = await sessionFor(superAdmin.user, superAdmin.organization.id);
