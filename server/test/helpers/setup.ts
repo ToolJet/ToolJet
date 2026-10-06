@@ -278,11 +278,14 @@ export async function rollbackTestTransaction() {
  * Currently used by: tooljet-db-import-export.service.spec.ts (bulk import rollback test).
  */
 export async function withRealTransactions(fn: () => Promise<void>) {
+  const inTest = !!_testSavepoint;
   await rollbackSuiteTransaction();
   try {
     await fn();
   } finally {
     await beginSuiteTransaction();
+    // afterEach rolls back to the test savepoint; without a fresh one it aborts the new suite transaction.
+    if (inTest) await beginTestTransaction();
   }
 }
 

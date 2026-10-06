@@ -1,5 +1,5 @@
 import {
-  NO_LIMITS,
+  noLimits,
   ScopeLimits,
   countAtLimit,
   defaultError,
@@ -11,7 +11,7 @@ import {
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `b${i}`);
 
-const on = (defaults: ScopeLimits['defaults'] = NO_LIMITS.defaults): ScopeLimits => ({
+const on = (defaults: ScopeLimits['defaults'] = noLimits().defaults): ScopeLimits => ({
   enabled: true,
   defaults,
   custom: new Map(),
@@ -22,6 +22,11 @@ const total = (r: ReturnType<typeof resolveLimits>, pool: 'monthly' | 'addon') =
 
 /** @group ai */
 describe('credit limits (pure)', () => {
+  it('noLimits() is a fresh value: a custom limit set on one never reaches another scope', () => {
+    noLimits().custom.set('b0', { monthly: 1 });
+    expect(noLimits().custom.size).toBe(0);
+  });
+
   describe('AC1: equal share', () => {
     it('80,000 over 40 builders is 2,000; over 41 it is 1,951', () => {
       expect(equalShare(80_000, 0, 40)).toBe(2000);
@@ -153,7 +158,7 @@ describe('credit limits (pure)', () => {
   });
 
   describe('AC5: audit events for one save', () => {
-    const before = NO_LIMITS;
+    const before = noLimits();
     const values = { monthly: { mode: 'custom' as const, value: 1000 }, addon: { mode: 'equal_share' as const } };
 
     it('turning on with new values logs ENABLED with the count over, and UPDATED with before and after', () => {

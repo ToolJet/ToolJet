@@ -5,9 +5,11 @@ import {
   classifyPerson,
   joinUsageToPeople,
   poolTotals,
+  resolveScopeLimits,
   toBuilderUsage,
   toCreditsUsage,
 } from '@ee/ai/services/builder-usage.service';
+import { noLimits } from '@ee/ai/services/credit-limits';
 
 const totals = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
 
@@ -137,6 +139,26 @@ describe('builder usage calculations', () => {
         used: 100,
         endsAt: '2026-11-01',
       });
+    });
+  });
+
+  describe('resolveScopeLimits', () => {
+    const pool = (total: number) => ({ total, remaining: total, used: 0, endsAt: null });
+
+    it('splits the floored cycle-start pools among builders only', () => {
+      const r = resolveScopeLimits({
+        pools: { monthly: pool(900.6), addon: pool(30) },
+        memberships: [
+          member({ userId: 'b1' }),
+          member({ userId: 'b2', activeMember: true, workspaceId: 'ws-b' }),
+          member({ userId: 'end', canEdit: false }),
+          member({ userId: 'gone', userArchived: true }),
+        ],
+        limits: noLimits(),
+      });
+
+      expect([...r.byBuilder.keys()]).toEqual(['b1', 'b2']);
+      expect(r.byBuilder.get('b1')).toEqual({ monthly: 450, addon: 15 });
     });
   });
 

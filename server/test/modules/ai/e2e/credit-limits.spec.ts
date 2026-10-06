@@ -1,7 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { initTestApp, closeTestApp, createUser, buildTestSession, getDefaultDataSource } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  buildTestSession,
+  getDefaultDataSource,
+  withRealTransactions,
+} from 'test-helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { User } from '@entities/user.entity';
 
@@ -104,6 +111,16 @@ async function auditActions(organizationId: string, expected: number) {
     await new Promise((r) => setTimeout(r, 100));
   }
   throw new Error('audit entries not written');
+}
+
+/** Committed seed (outside the suite transaction) has to be deleted by hand. */
+async function dropSeed(organizationId: string, userIds: string[]) {
+  const db = getDefaultDataSource();
+  for (const table of ['ai_credit_limits', 'audit_logs', 'data_sources']) {
+    await db.query(`DELETE FROM ${table} WHERE organization_id = $1`, [organizationId]);
+  }
+  await db.query('DELETE FROM organizations WHERE id = $1', [organizationId]);
+  await db.query('DELETE FROM users WHERE id = ANY($1)', [userIds]);
 }
 
 const customMonthly = (value: number) => ({
@@ -256,6 +273,82 @@ describe('AI credit limits', () => {
       expect(limits.monthly.effective * limits.builderCount).toBeLessThanOrEqual(POOL.monthly);
     });
 
+    // Real transactions: inside the suite transaction every request shares one session and the advisory lock never blocks.
+    it('AC3: saves racing from no rows each see the one before (ENABLED logged once, UPDATED chained)', async () => {
+      await withRealTransactions(async () => {
+        const s = await seed(`ac3r${uuidv4().slice(0, 6)}`);
+        try {
+          licenseWith(app, { aiPlan: 'credits' });
+          stubGateway(gatewayFor(s.owner, POOL));
+          const values = [110, 120, 130, 140, 150];
+
+          const results = await Promise.all(
+            values.map((v) => putLimits(app, s.cookie, s.workspace.id, { enabled: true, defaults: customMonthly(v) }))
+          );
+
+          expect(results.map((r) => r.statusCode)).toEqual(values.map(() => 200));
+          await expectOneFlag(s.workspace.id);
+          await auditActions(s.workspace.id, values.length + 1);
+          await new Promise((r) => setTimeout(r, 500));
+          const rows = await auditActions(s.workspace.id, 0);
+          // Without the lock every save reads "off, equal share", so each logs ENABLED.
+          expect(rows.filter((r) => r.actionType === 'AI_CREDIT_LIMIT_ENABLED')).toHaveLength(1);
+          const updates = rows.filter((r) => r.actionType === 'AI_CREDIT_LIMIT_UPDATED');
+          expect(updates.filter((r) => r.metadata.before.monthly.mode === 'equal_share')).toHaveLength(1);
+        } finally {
+          await dropSeed(s.workspace.id, [s.admin, ...s.builders, s.endUser].map((u) => u.user.id));
+        }
+      });
+    });
+
+    it('saving defaults alone keeps limits as they are (off stays off)', async () => {
+      const s = await seed('defonly');
+      licenseWith(app, { aiPlan: 'credits' });
+      stubGateway(gatewayFor(s.owner, POOL));
+      await putLimits(app, s.cookie, s.workspace.id, { enabled: true });
+      await putLimits(app, s.cookie, s.workspace.id, { enabled: false });
+
+      const res = await putLimits(app, s.cookie, s.workspace.id, { defaults: customMonthly(120) });
+
+      expect(res.statusCode).toBe(200);
+      expect(await limitRows(s.workspace.id)).toEqual([
+        { pool: 'addon', mode: 'equal_share', value: null, enabled: false },
+        { pool: 'monthly', mode: 'custom', value: 120, enabled: false },
+      ]);
+    });
+
+    it('custom limits count before any default is saved and survive toggles and default saves (AC6)', async () => {
+      const s = await seed('ac6c');
+      licenseWith(app, { aiPlan: 'credits' });
+      stubGateway(gatewayFor(s.owner, POOL));
+      const customUser = s.builders[0].user.id;
+      await getDefaultDataSource().query(
+        `INSERT INTO ai_credit_limits (organization_id, user_id, pool, mode, value, enabled)
+         VALUES ($1, $2, 'monthly', 'custom', 400, true)`,
+        [s.workspace.id, customUser]
+      );
+      const customRows = () =>
+        getDefaultDataSource().query(
+          `SELECT user_id AS "userId", pool, mode, value FROM ai_credit_limits WHERE organization_id = $1 AND user_id IS NOT NULL`,
+          [s.workspace.id]
+        );
+      const seeded = await customRows();
+
+      const before = (await getUsage(app, s.cookie, s.workspace.id)).body;
+      expect(before.limits).toMatchObject({ customCount: 1, monthly: { max: 200, customTotal: 400 } });
+      expect(before.rows.find((r) => r.userId === customUser).limit).toEqual({ monthly: 400, addon: 25 });
+
+      await putLimits(app, s.cookie, s.workspace.id, { enabled: true, defaults: customMonthly(150) });
+      await putLimits(app, s.cookie, s.workspace.id, { enabled: false });
+      await putLimits(app, s.cookie, s.workspace.id, { enabled: true });
+      await putLimits(app, s.cookie, s.workspace.id, { defaults: customMonthly(200) });
+
+      expect(await customRows()).toEqual(seeded);
+      const after = (await getUsage(app, s.cookie, s.workspace.id)).body;
+      expect(after.limits).toMatchObject({ enabled: true, customCount: 1, monthly: { value: 200, effective: 200 } });
+      expect(after.rows.find((r) => r.userId === customUser).limit.monthly).toBe(400);
+    });
+
     it('AC4: a builder or end user gets 403 on save and toggle', async () => {
       const s = await seed('ac4');
       licenseWith(app, { aiPlan: 'credits' });
@@ -385,6 +478,8 @@ describe('AI credit limits', () => {
       expect(await limitRows(superAdmin.organization.id)).toEqual([]);
       const limits = (await getUsage(app, cookie, superAdmin.organization.id)).body.limits;
       expect(limits).toMatchObject({ enabled: true, builderCount: 2, monthly: { effective: 500 } });
+      const [enabled] = await auditActions(superAdmin.organization.id, 1);
+      expect(enabled.metadata).toMatchObject({ instance_level: true });
     });
 
     it('AC4: a workspace admin who is not a super admin gets 403', async () => {
