@@ -512,6 +512,9 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
       padding = 2 * MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
     }
   }
+  if (componentType === 'Table') {
+    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
+  }
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }

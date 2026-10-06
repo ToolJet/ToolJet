@@ -12,6 +12,7 @@ export const ExpandedRowContainer = ({
   top,
   darkMode,
   canvasWidth,
+  measuredWidth,
   expansionHeight = DEFAULT_EXPANSION_HEIGHT,
   virtualizer,
   virtualItemIndex,
@@ -33,8 +34,12 @@ export const ExpandedRowContainer = ({
 
   const containerPadding = useTableStore((state) => state.getTableStyles(tableId)?.containerPadding, shallow);
 
+  // measuredWidth (.jet-data-table's real, scrollbar-adjusted clientWidth) is preferred over the
+  // canvasWidth-derived estimate below: a vertical scrollbar reserving layout space (non-overlay
+  // scrollbar settings) shrinks the table's real content width in a way canvasWidth can't see,
+  // and every other row already tracks it via CSS (width: 100%) rather than a fixed px value.
   const containerWrapperStyle = {
-    width: containerPadding === 'default' ? `${canvasWidth - 2 * BOX_PADDING}px` : `${canvasWidth}px`,
+    width: `${measuredWidth ?? (containerPadding === 'default' ? canvasWidth - 2 * BOX_PADDING : canvasWidth)}px`,
     height: `${expansionHeight}px`,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     backgroundColor: containerBackgroundColor,
