@@ -26,7 +26,7 @@ export interface IWorkspaceBranchService {
     organizationId: string,
     dto: CreateBranchDto,
     user?: User
-  ): Promise<{ enqueued: boolean; isImport: boolean; branch?: { id: string; name: string } }>;
+  ): Promise<{ enqueued: boolean; isImport: boolean }>;
   switchBranch(
     organizationId: string,
     branchId: string,

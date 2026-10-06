@@ -159,7 +159,7 @@ describe('VersionUtilService.validateVersionCreate', () => {
     expect(branchId).toBeUndefined();
   });
 
-  it('rejects with "Version name already exists." on a name collision within the branch', async () => {
+  it('rejects with "Version name already exists." on a name collision in the same app', async () => {
     gitSyncConfigsUtilService.getDetails.mockResolvedValue({
       isEnabled: false,
       options: { defaultBranch: { id: 'b1' } },
