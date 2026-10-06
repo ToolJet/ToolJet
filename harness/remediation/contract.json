@@ -1,65 +1,17 @@
 {
   "allowedPaths": [
-    "plugins/package-lock.json",
-    "plugins/package.json",
-    "plugins/packages/airtable/package.json",
-    "plugins/packages/amazonses/package.json",
-    "plugins/packages/appwrite/package.json",
-    "plugins/packages/athena/package.json",
-    "plugins/packages/azureblobstorage/package.json",
-    "plugins/packages/baserow/package.json",
-    "plugins/packages/bigquery/package.json",
-    "plugins/packages/clickhouse/package.json",
-    "plugins/packages/common/package.json",
-    "plugins/packages/cosmosdb/package.json",
-    "plugins/packages/couchdb/package.json",
-    "plugins/packages/databricks/package.json",
-    "plugins/packages/dynamodb/package.json",
-    "plugins/packages/elasticsearch/package.json",
-    "plugins/packages/firestore/package.json",
-    "plugins/packages/gcs/package.json",
-    "plugins/packages/googlesheets/package.json",
-    "plugins/packages/graphql/package.json",
-    "plugins/packages/grpc/package.json",
-    "plugins/packages/grpcv2/package.json",
-    "plugins/packages/ibmdb/package.json",
-    "plugins/packages/influxdb/package.json",
-    "plugins/packages/mailgun/package.json",
-    "plugins/packages/mariadb/package.json",
-    "plugins/packages/minio/package.json",
-    "plugins/packages/mongodb/package.json",
-    "plugins/packages/mssql/package.json",
-    "plugins/packages/mysql/package.json",
-    "plugins/packages/n8n/package.json",
-    "plugins/packages/nocodb/package.json",
-    "plugins/packages/notion/package.json",
-    "plugins/packages/openapi/package.json",
-    "plugins/packages/oracledb/package.json",
-    "plugins/packages/postgresql/package.json",
-    "plugins/packages/redis/package.json",
-    "plugins/packages/restapi/package.json",
-    "plugins/packages/rethinkdb/package.json",
-    "plugins/packages/s3/package.json",
-    "plugins/packages/saphana/package.json",
-    "plugins/packages/sendgrid/package.json",
-    "plugins/packages/slack/package.json",
-    "plugins/packages/smtp/package.json",
-    "plugins/packages/snowflake/package.json",
-    "plugins/packages/stripe/package.json",
-    "plugins/packages/twilio/package.json",
-    "plugins/packages/typesense/package.json",
-    "plugins/packages/woocommerce/package.json",
-    "plugins/packages/zendesk/package.json"
+    "server/package-lock.json",
+    "server/package.json"
   ],
-  "baseSha": "56df76474016f755c5c4d1a535e58cf4aad13277",
+  "baseSha": "c7200b6a797981799cdd6b6fad8a3435d30e622c",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "e018aca9b9bf4299",
+    "id": "7acdd6bfd82d3c20",
     "lockArtifacts": [
-      "plugins/package-lock.json"
+      "server/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "plugins/package-lock.json"
+    "rootManifest": "server/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -77,7 +29,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
+  "remediationKey": "3eef067060c1fc8e152b1bc5454ef1e2c93fd285622f696158602c321c973ac9",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -86,12 +38,42 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "56df76474016f755c5c4d1a535e58cf4aad13277",
+  "scanSha": "c7200b6a797981799cdd6b6fad8a3435d30e622c",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "zktkxYvfTXinSAECjqMEWQ",
+  "stoExecutionId": "OEWBp1FtTX2If15PSPoCyw",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
+    {
+      "candidateVersions": [
+        "17.13.8"
+      ],
+      "coordinate": {
+        "normalisedName": "joi",
+        "purl": "pkg:npm/joi@17.13.3"
+      },
+      "fromVersion": "17.13.3",
+      "issueIds": [
+        "0ZVz7HtmcN0KUq5b6BVr_K"
+      ],
+      "minimumFixedVersion": "17.13.7",
+      "package": "joi"
+    },
+    {
+      "candidateVersions": [
+        "5.0.12"
+      ],
+      "coordinate": {
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@5.0.9"
+      },
+      "fromVersion": "5.0.9",
+      "issueIds": [
+        "qiFZO47GdGp2rvqEYT3dpq"
+      ],
+      "minimumFixedVersion": "5.0.10",
+      "package": "brace-expansion"
+    },
     {
       "candidateVersions": [
         "1.14.5"
@@ -109,33 +91,18 @@
     },
     {
       "candidateVersions": [
-        "1.1.21"
+        "11.2.7"
       ],
       "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@1.1.18"
+        "normalisedName": "@nestjs/microservices",
+        "purl": "pkg:npm/nestjs/microservices@11.1.24"
       },
-      "fromVersion": "1.1.18",
+      "fromVersion": "11.1.24",
       "issueIds": [
-        "Pl_259BKHv9l5XFbK9dPLi"
+        "hobNR6pTmK0pgqK2Q-jEqA"
       ],
-      "minimumFixedVersion": "1.1.19",
-      "package": "brace-expansion"
-    },
-    {
-      "candidateVersions": [
-        "5.0.12"
-      ],
-      "coordinate": {
-        "normalisedName": "brace-expansion",
-        "purl": "pkg:npm/brace-expansion@5.0.9"
-      },
-      "fromVersion": "5.0.9",
-      "issueIds": [
-        "qiFZO47GdGp2rvqEYT3dpq"
-      ],
-      "minimumFixedVersion": "5.0.10",
-      "package": "brace-expansion"
+      "minimumFixedVersion": "11.2.4",
+      "package": "@nestjs/microservices"
     }
   ]
 }
