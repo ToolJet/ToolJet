@@ -791,8 +791,7 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3c. Migration timing — times pending migrations on the S3 DB snapshot; only the
-  # PR's own can fail. Off until vars.MIGRATION_SNAPSHOT_BUCKET is set.
+  # 3c. Migration timing — times pending migrations
   # ---------------------------------------------------------------------------
   migration-timing:
     name: 'Migration timing'
