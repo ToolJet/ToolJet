@@ -25,8 +25,8 @@ jobs:
           && github.event.action == 'labeled'
           && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
     outputs:
-      server: ${{ steps.filter.outputs.server }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      server: ${{ (steps.filter.outputs.server == 'true' || steps.filter.outputs.root == 'true') && 'true' || 'false' }}
+      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.root == 'true') && 'true' || 'false' }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -55,6 +55,9 @@ jobs:
             marketplace:
               - 'marketplace/**'
               - '!**/*.md'
+            # toolchain / workflow changes affect every suite
+            root:
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
 
   # ---------------------------------------------------------------------------
   # 2. Build-check jobs — lint + build per folder
