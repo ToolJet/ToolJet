@@ -17,10 +17,19 @@ type ScheduleDetails = {
   dayOfWeek?: string;
 };
 
-/** Non-:00 times give a fractional hour and invalid cron; do not round, it changes live fire times. */
-function hourOffset(timeString: string): number {
+// /** Non-:00 times give a fractional hour and invalid cron; do not round, it changes live fire times. */
+// function hourOffset(timeString: string): number {
+//   const time = moment(timeString, 'h:mm A');
+//   return time.hours() + time.minutes() / 60;
+// }
+
+/**
+ * The "minute hour" cron fields for a stored "h:mm A" time. The previous `hours + minutes / 60` form made
+ * 9:30 AM into hour 9.5 — invalid cron, rejected on save and never fired. :00 times map exactly as before.
+ */
+function timeFields(timeString: string): string {
   const time = moment(timeString, 'h:mm A');
-  return time.hours() + time.minutes() / 60;
+  return `${time.minutes()} ${time.hours()}`;
 }
 
 export function scheduleToCron(schedule: ScheduleShape): string | null {
@@ -39,12 +48,18 @@ export function scheduleToCron(schedule: ScheduleShape): string | null {
       return '* * * * *';
     case 'hour':
       return `${details.minutes} * * * *`;
+    // case 'day':
+    //   return `0 ${hourOffset(details.hour)} * * *`;
+    // case 'week':
+    //   return `0 ${hourOffset(details.hour)} * * ${moment().day(details.day).day()}`;
+    // case 'month':
+    //   return `0 ${hourOffset(details.hour)} ${details.date} * *`;
     case 'day':
-      return `0 ${hourOffset(details.hour)} * * *`;
+      return `${timeFields(details.hour)} * * *`;
     case 'week':
-      return `0 ${hourOffset(details.hour)} * * ${moment().day(details.day).day()}`;
+      return `${timeFields(details.hour)} * * ${moment().day(details.day).day()}`;
     case 'month':
-      return `0 ${hourOffset(details.hour)} ${details.date} * *`;
+      return `${timeFields(details.hour)} ${details.date} * *`;
     default:
       return null;
   }

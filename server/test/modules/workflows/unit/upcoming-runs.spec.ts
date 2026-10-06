@@ -47,9 +47,22 @@ describe('toUpcomingRun', () => {
     expect(result.environment).toBeNull();
   });
 
+  // it('returns a row with no times when the schedule cannot be resolved', () => {
+  //   const result = toUpcomingRun(row({ details: { frequency: 'day', hour: '8:30 AM' } }), true, now, 3);
+  //   expect(result.nextRuns).toEqual([]);
+  //   expect(result.cadence).toBe('Daily at 8:30 AM');
+  // });
+
+  // 8:30 AM used to be the unresolvable example (fractional-hour cron); it now resolves, see the next test.
   it('returns a row with no times when the schedule cannot be resolved', () => {
-    const result = toUpcomingRun(row({ details: { frequency: 'day', hour: '8:30 AM' } }), true, now, 3);
+    const result = toUpcomingRun(row({ details: { frequency: 'fortnight' } }), true, now, 3);
     expect(result.nextRuns).toEqual([]);
+    expect(result.cadence).toBe('Unknown schedule');
+  });
+
+  it('lists the times of a schedule set to a half hour', () => {
+    const result = toUpcomingRun(row({ details: { frequency: 'day', hour: '8:30 AM' } }), true, now, 1);
+    expect(result.nextRuns).toEqual(['2026-09-25T08:30:00.000Z']);
     expect(result.cadence).toBe('Daily at 8:30 AM');
   });
 

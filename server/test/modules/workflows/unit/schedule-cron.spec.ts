@@ -40,8 +40,28 @@ describe('scheduleToCron', () => {
     ).toBe('30 2 * * 1');
   });
 
-  it('reproduces the half-hour offset quirk rather than papering over it', () => {
-    expect(scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '8:30 AM' } })).toBe('0 8.5 * * *');
+  // it('reproduces the half-hour offset quirk rather than papering over it', () => {
+  //   expect(scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '8:30 AM' } })).toBe('0 8.5 * * *');
+  // });
+
+  it('puts the minutes of a non-:00 time in the minute field instead of a fractional hour', () => {
+    expect(scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '8:30 AM' } })).toBe('30 8 * * *');
+    expect(scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '11:45 PM' } })).toBe('45 23 * * *');
+  });
+
+  it('keeps the minutes for weekly and monthly times too', () => {
+    expect(scheduleToCron({ type: 'interval', details: { frequency: 'week', day: 'Friday', hour: '6:15 PM' } })).toBe(
+      '15 18 * * 5'
+    );
+    expect(scheduleToCron({ type: 'interval', details: { frequency: 'month', date: 1, hour: '12:30 AM' } })).toBe(
+      '30 0 1 * *'
+    );
+  });
+
+  it('produces a cron that fires at the chosen half-hour', () => {
+    const cron = scheduleToCron({ type: 'interval', details: { frequency: 'day', hour: '9:30 AM' } });
+    const [first] = nextRuns(cron, 'Asia/Kolkata', 1, new Date('2026-09-25T00:00:00.000Z'));
+    expect(first.toISOString()).toBe('2026-09-25T04:00:00.000Z'); // 09:30 IST
   });
 
   it('returns null for a frequency it does not recognise', () => {
