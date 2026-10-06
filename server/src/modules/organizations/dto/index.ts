@@ -17,7 +17,8 @@ import { sanitizeInput } from '@helpers/utils.helper';
 export class AllowedCharactersValidator implements ValidatorConstraintInterface {
   private errorMsg: string;
 
-  validate(value: string) {
+  validate(value: unknown) {
+    if (typeof value !== 'string') return true; // @IsString reports non-strings
     if (value.match(/^[a-z0-9 -]+$/) === null) {
       if (/[A-Z]/.test(value)) {
         this.errorMsg = 'Only lowercase letters are accepted.';
