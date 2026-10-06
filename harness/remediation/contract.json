@@ -1,62 +1,65 @@
 {
   "allowedPaths": [
-    "marketplace/package-lock.json",
-    "marketplace/package.json",
-    "marketplace/plugins/aftership/package.json",
-    "marketplace/plugins/anthropic/package.json",
-    "marketplace/plugins/asana/package.json",
-    "marketplace/plugins/authorizenet/package.json",
-    "marketplace/plugins/aws-bedrock/package.json",
-    "marketplace/plugins/aws-lambda/package.json",
-    "marketplace/plugins/awsredshift/package.json",
-    "marketplace/plugins/azurerepos/package.json",
-    "marketplace/plugins/clickup/package.json",
-    "marketplace/plugins/cohere/package.json",
-    "marketplace/plugins/common/package.json",
-    "marketplace/plugins/couchbase/package.json",
-    "marketplace/plugins/easypost/package.json",
-    "marketplace/plugins/engagespot/package.json",
-    "marketplace/plugins/fedex/package.json",
-    "marketplace/plugins/gemini/package.json",
-    "marketplace/plugins/github/package.json",
-    "marketplace/plugins/gmail/package.json",
-    "marketplace/plugins/googlecalendar/package.json",
-    "marketplace/plugins/harperdb/package.json",
-    "marketplace/plugins/hubspot/package.json",
-    "marketplace/plugins/hugging_face/package.json",
-    "marketplace/plugins/intercom/package.json",
-    "marketplace/plugins/jira/package.json",
-    "marketplace/plugins/microsoft_graph/package.json",
-    "marketplace/plugins/mistral_ai/package.json",
-    "marketplace/plugins/openai/package.json",
-    "marketplace/plugins/pinecone/package.json",
-    "marketplace/plugins/plivo/package.json",
-    "marketplace/plugins/pocketbase/package.json",
-    "marketplace/plugins/portkey/package.json",
-    "marketplace/plugins/presto/package.json",
-    "marketplace/plugins/prometheus/package.json",
-    "marketplace/plugins/qdrant/package.json",
-    "marketplace/plugins/quickbooks/package.json",
-    "marketplace/plugins/s3/package.json",
-    "marketplace/plugins/salesforce/package.json",
-    "marketplace/plugins/servicenow/package.json",
-    "marketplace/plugins/sharepoint/package.json",
-    "marketplace/plugins/spanner/package.json",
-    "marketplace/plugins/supabase/package.json",
-    "marketplace/plugins/textract/package.json",
-    "marketplace/plugins/ups/package.json",
-    "marketplace/plugins/weaviate/package.json",
-    "marketplace/plugins/xero/package.json"
+    "plugins/package-lock.json",
+    "plugins/package.json",
+    "plugins/packages/airtable/package.json",
+    "plugins/packages/amazonses/package.json",
+    "plugins/packages/appwrite/package.json",
+    "plugins/packages/athena/package.json",
+    "plugins/packages/azureblobstorage/package.json",
+    "plugins/packages/baserow/package.json",
+    "plugins/packages/bigquery/package.json",
+    "plugins/packages/clickhouse/package.json",
+    "plugins/packages/common/package.json",
+    "plugins/packages/cosmosdb/package.json",
+    "plugins/packages/couchdb/package.json",
+    "plugins/packages/databricks/package.json",
+    "plugins/packages/dynamodb/package.json",
+    "plugins/packages/elasticsearch/package.json",
+    "plugins/packages/firestore/package.json",
+    "plugins/packages/gcs/package.json",
+    "plugins/packages/googlesheets/package.json",
+    "plugins/packages/graphql/package.json",
+    "plugins/packages/grpc/package.json",
+    "plugins/packages/grpcv2/package.json",
+    "plugins/packages/ibmdb/package.json",
+    "plugins/packages/influxdb/package.json",
+    "plugins/packages/mailgun/package.json",
+    "plugins/packages/mariadb/package.json",
+    "plugins/packages/minio/package.json",
+    "plugins/packages/mongodb/package.json",
+    "plugins/packages/mssql/package.json",
+    "plugins/packages/mysql/package.json",
+    "plugins/packages/n8n/package.json",
+    "plugins/packages/nocodb/package.json",
+    "plugins/packages/notion/package.json",
+    "plugins/packages/openapi/package.json",
+    "plugins/packages/oracledb/package.json",
+    "plugins/packages/postgresql/package.json",
+    "plugins/packages/redis/package.json",
+    "plugins/packages/restapi/package.json",
+    "plugins/packages/rethinkdb/package.json",
+    "plugins/packages/s3/package.json",
+    "plugins/packages/saphana/package.json",
+    "plugins/packages/sendgrid/package.json",
+    "plugins/packages/slack/package.json",
+    "plugins/packages/smtp/package.json",
+    "plugins/packages/snowflake/package.json",
+    "plugins/packages/stripe/package.json",
+    "plugins/packages/twilio/package.json",
+    "plugins/packages/typesense/package.json",
+    "plugins/packages/woocommerce/package.json",
+    "plugins/packages/zendesk/package.json"
   ],
-  "baseSha": "09bee386f7d6353001a998ee55648568f8e6074a",
+  "baseSha": "56df76474016f755c5c4d1a535e58cf4aad13277",
   "conflictDomain": {
     "ecosystem": "npm",
-    "id": "2341f09ad5001227",
+    "id": "e018aca9b9bf4299",
     "lockArtifacts": [
-      "marketplace/package-lock.json"
+      "plugins/package-lock.json"
     ],
     "proofClass": "LOCK_EXACT",
-    "rootManifest": "marketplace/package-lock.json"
+    "rootManifest": "plugins/package-lock.json"
   },
   "limits": {
     "maxChangedFiles": 10,
@@ -74,7 +77,7 @@
     "plugins/packages/googlesheetsv2",
     "server"
   ],
-  "remediationKey": "b16065c5499fcb676c93c42807a1bf88f685ad6b221cd13ebe7e2d055766861b",
+  "remediationKey": "8891e81e6de04096ca693e6d5448ede19b845d3094b8f370aec025e07113492d",
   "repository": "https://github.com/gregkroon/ToolJet",
   "rules": {
     "lockfileTextPatchForbidden": true,
@@ -83,12 +86,27 @@
     "securityControlModificationForbidden": true,
     "testModificationForbidden": true
   },
-  "scanSha": "09bee386f7d6353001a998ee55648568f8e6074a",
+  "scanSha": "56df76474016f755c5c4d1a535e58cf4aad13277",
   "schema": "harness.remediation/contract.v1",
-  "stoExecutionId": "GmWNBk5RS0qId4C2GgNDgg",
+  "stoExecutionId": "zktkxYvfTXinSAECjqMEWQ",
   "stoTargetId": "PLL-gMBBE8y8FqvfVKOobE",
   "targetBranch": "main",
   "units": [
+    {
+      "candidateVersions": [
+        "1.14.5"
+      ],
+      "coordinate": {
+        "normalisedName": "@grpc/grpc-js",
+        "purl": "pkg:npm/grpc/grpc-js@1.14.4"
+      },
+      "fromVersion": "1.14.4",
+      "issueIds": [
+        "mYMXbTKP7blnFFbYxuNyWi"
+      ],
+      "minimumFixedVersion": "1.14.5",
+      "package": "@grpc/grpc-js"
+    },
     {
       "candidateVersions": [
         "1.1.21"
@@ -102,6 +120,21 @@
         "Pl_259BKHv9l5XFbK9dPLi"
       ],
       "minimumFixedVersion": "1.1.19",
+      "package": "brace-expansion"
+    },
+    {
+      "candidateVersions": [
+        "5.0.12"
+      ],
+      "coordinate": {
+        "normalisedName": "brace-expansion",
+        "purl": "pkg:npm/brace-expansion@5.0.9"
+      },
+      "fromVersion": "5.0.9",
+      "issueIds": [
+        "qiFZO47GdGp2rvqEYT3dpq"
+      ],
+      "minimumFixedVersion": "5.0.10",
       "package": "brace-expansion"
     }
   ]
