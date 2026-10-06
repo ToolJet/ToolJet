@@ -367,6 +367,15 @@ describe('GET /api/ai/credits-usage', () => {
         organization: sales,
       });
       await createUser(app, { groups: ['end-user', 'builder'], organization: finance }, builder.user);
+      const logistics = (
+        await createUser(app, {
+          email: 'sh-log-admin@tooljet.io',
+          groups: ['end-user', 'admin'],
+          organizationName: 'Logistics',
+        })
+      ).organization;
+      // End user only in Logistics, so the workspace filter must not list them there.
+      await createUser(app, { groups: ['end-user'], organization: logistics }, builder.user);
 
       const unknownUserId = uuidv4();
       selfhostLicense();
@@ -411,7 +420,6 @@ describe('GET /api/ai/credits-usage', () => {
       expect(res.body.rows.find((r) => r.userId === builder.user.id)).toMatchObject({
         kind: 'builder',
         name: 'Priya Nair',
-        workspaceIds: expect.arrayContaining([sales.id, finance.id]),
         monthly: 100,
         addon: 0,
         byWorkspace: expect.arrayContaining([
@@ -419,6 +427,9 @@ describe('GET /api/ai/credits-usage', () => {
           { organizationId: finance.id, monthly: 40, addon: 0 },
         ]),
       });
+      expect([...res.body.rows.find((r) => r.userId === builder.user.id).workspaceIds].sort()).toEqual(
+        [sales.id, finance.id].sort()
+      );
       // Unknown spenders keep their workspace split so the workspace filter can place them.
       expect(res.body.rows.find((r) => r.userId === unknownUserId)).toMatchObject({
         kind: 'unknown',

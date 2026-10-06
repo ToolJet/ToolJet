@@ -42,7 +42,7 @@ export class CreditsUsageRowDto {
   @Expose() userId?: string;
   @Expose() name?: string;
   @Expose() email?: string;
-  /** Self-hosted only: workspaces the person belongs to (active memberships for builders). */
+  /** Self-hosted only: workspaces the person belongs to (for builders, only those they can edit). */
   @Expose() workspaceIds?: string[];
   @Expose() monthly: number;
   @Expose() addon: number;

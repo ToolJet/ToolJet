@@ -55,14 +55,14 @@ describe('builder usage calculations', () => {
   });
 
   describe('classifyPerson', () => {
-    it('is a builder with an active or invited admin/builder membership, counting only those workspaces', () => {
+    it('is a builder with an active or invited admin/builder membership, listing only the workspaces they can edit', () => {
       expect(
         classifyPerson([
           member({ workspaceId: 'ws-a' }),
           member({ workspaceId: 'ws-b', activeMember: false }),
           member({ workspaceId: 'ws-c', canEdit: false }),
         ])
-      ).toEqual({ kind: 'builder', workspaceIds: ['ws-a', 'ws-c'] });
+      ).toEqual({ kind: 'builder', workspaceIds: ['ws-a'] });
     });
 
     it('is archived when the user or every builder membership is archived', () => {
