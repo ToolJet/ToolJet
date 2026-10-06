@@ -100,6 +100,11 @@ psql_cmd() {
 # ---------------------------------------------------------------------------
 printf "\033[1m━━━ Pre-reset database ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n"
 NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/truncate-test-db.ts
+# Sequential mode reuses one shared TOOLJET_DB across all shards (unlike --ci,
+# which clones/drops a whole per-shard database) - SKIP_GLOBAL_SETUP=1 below
+# means jest's own globalSetup/globalTeardown snapshot+clean pair never runs,
+# so this brackets the run the same way at the script level instead.
+[ "$mode" = "sequential" ] && NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/reset-tooljet-db-schemas.ts snapshot
 printf "\n"
 
 # ---------------------------------------------------------------------------
@@ -111,7 +116,10 @@ SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
 [ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage --coverageReporters=json)
 
 SHARD_LOG_DIR=$(mktemp -d)
-trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
+trap '
+  rm -rf "$SHARD_LOG_DIR"
+  [ "$mode" = "sequential" ] && NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/reset-tooljet-db-schemas.ts clean
+' EXIT
 
 total_passed=0; total_failed=0; total_suites=0
 tests_passed=0; tests_failed=0

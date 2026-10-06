@@ -47,7 +47,9 @@ function DrawerFooter({
     };
 
     const formType = initiator;
-    if (formType.startsWith('Create') || formType.startsWith('Upload')) {
+    if (formType === 'SeedDataForm') {
+      // enter is a no-op
+    } else if (formType.startsWith('Create') || formType.startsWith('Upload')) {
       addEnterCallback(onCreate);
     } else if (formType.startsWith('Edit')) {
       addEnterCallback(onEdit);
@@ -241,7 +243,13 @@ function DrawerFooter({
                   }}
                   size="md"
                 >
-                  Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  {initiator === 'SeedDataForm' ? (
+                    'Seed'
+                  ) : (
+                    <>
+                      Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                    </>
+                  )}
                 </ButtonSolid>
               )}
             </>

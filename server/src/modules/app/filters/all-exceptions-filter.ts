@@ -41,6 +41,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       let errorResponse: ErrorResponse;
       const message = exception?.response?.message || exception.message;
       const code = exception?.code;
+      // Some HttpExceptions (e.g. promote's toPostgresError) put a `statement` alongside `message`
+      // on the response body — the failing SQL, useful only to the caller who can act on it.
+      const statement = exception?.response?.statement;
       const organizationSlug = INVITE_EXPIRY_MESSAGES.includes(message)
         ? exception?.response?.organizationSlug
         : undefined;
@@ -61,6 +64,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         path: request.url,
         message: errorResponse.message,
         code: code,
+        ...(statement && { statement }),
         ...(organizationSlug && { organizationSlug }),
       });
     } catch (error) {

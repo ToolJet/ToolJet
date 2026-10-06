@@ -17,6 +17,15 @@ interface Features {
   [FEATURE_KEY.ADD_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.UPDATE_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.DELETE_FOREIGN_KEY]: FeatureConfig;
+  [FEATURE_KEY.PROMOTE_TABLE]: FeatureConfig;
+  [FEATURE_KEY.PROMOTE_TABLE_PREVIEW]: FeatureConfig;
+  [FEATURE_KEY.REPAIR_BASELINE]: FeatureConfig;
+  [FEATURE_KEY.BASELINE_REPORT]: FeatureConfig;
+  [FEATURE_KEY.TABLE_MIGRATIONS]: FeatureConfig;
+  [FEATURE_KEY.TABLE_DEPENDENTS]: FeatureConfig;
+  [FEATURE_KEY.ADD_RAW_SQL_MIGRATION]: FeatureConfig;
+  [FEATURE_KEY.REVERT_MIGRATION]: FeatureConfig;
+  [FEATURE_KEY.SQL_EXECUTION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

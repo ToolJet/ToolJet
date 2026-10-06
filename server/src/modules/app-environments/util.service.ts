@@ -7,7 +7,6 @@ import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { FindOneOptions } from 'typeorm';
-import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
@@ -57,24 +56,6 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
           environmentId,
         },
         { options, updatedAt: new Date() }
-      );
-    }, manager);
-  }
-
-  async createDefaultEnvironments(organizationId: string, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await Promise.all(
-        defaultAppEnvironments.map(async (env) => {
-          const environment = manager.create(AppEnvironment, {
-            organizationId,
-            name: env.name,
-            isDefault: env.isDefault,
-            priority: env.priority,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-          await manager.save(environment);
-        })
       );
     }, manager);
   }
@@ -192,6 +173,11 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
    * Resolves the effective environment ID, respecting license restrictions.
    * Throws ForbiddenException if a non-dev environment is requested without multi-environment license.
    * If no environment is requested, defaults to the development environment.
+   *
+   * Deliberately does NOT check that requestedEnvironmentId belongs to organizationId: callers that
+   * join on it (TooljetDbRelationResolverService.resolve) rely on a foreign org's id simply matching
+   * no rows - fail-closed via absence, not a thrown error. See relation-resolver.service.spec.ts's
+   * "foreign workspace's environment id" case for the pinned contract.
    */
   async resolveEnvironmentId(
     organizationId: string,

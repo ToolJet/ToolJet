@@ -8,7 +8,7 @@ import {
   createApplicationVersion,
   getExternalApiAuthHeader,
   NONEXISTENT_UUID,
-} from 'test-helper';
+} from '../../../test.helper';
 
 /**
  * External API — POST /ext/import/workspace/:workspaceId/apps

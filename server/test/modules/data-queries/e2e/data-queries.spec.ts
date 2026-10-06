@@ -8,6 +8,7 @@ import {
   createAppWithDependencies,
   login,
   findEntityOrFail,
+  ensureAppEnvironments,
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 // EE-only import: resolves the real, edition-aware DI token registered by
@@ -208,6 +209,36 @@ describe('DataQueriesController', () => {
           // other failure (e.g. a flaky outbound call) is not what this test is checking.
           expect(err.message).not.toMatch(/Authentication required/);
         }
+      });
+    });
+
+    describe('POST /api/data-queries/:id/versions/:versionId/preview/:environmentId | Preview query', () => {
+      it('should not be able to preview a query using an environment id from another workspace', async () => {
+        // Regression test: EE's controller overrode only the run route with
+        // ValidateEnvironmentAccessGuard, leaving preview on CE's ungated handler. A foreign
+        // environment id used to fail deep inside the service (404) instead of at the guard (403).
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await login(app, adminUserData.user.email);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const { appVersion, dataQuery } = await createAppWithDependencies(app, adminUserData.user, {});
+        const foreignEnvironments = await ensureAppEnvironments(app, anotherOrgAdminUserData.user.organizationId);
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/data-queries/${dataQuery.id}/versions/${appVersion.id}/preview/${foreignEnvironments[0].id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({});
+
+        expect(response.statusCode).toBe(403);
       });
     });
   });
