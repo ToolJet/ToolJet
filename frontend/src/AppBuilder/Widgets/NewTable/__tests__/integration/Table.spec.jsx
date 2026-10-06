@@ -1270,6 +1270,20 @@ describe('Table: expandable rows', () => {
     expect(document.querySelector('.table-expanded-row-content').style.height).toBe('350px');
   });
 
+  test("[Table-BUG-031] an expanded row's content width tracks .jet-data-table's real clientWidth (e.g. after a vertical scrollbar reserves layout space), not a stale grid-width estimate", async () => {
+    widget.render({ properties: { enableExpandableRows: binding('{{true}}') } });
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+
+    // Simulate a vertical scrollbar reserving layout space: .jet-data-table's real clientWidth
+    // (excluding the scrollbar gutter) ends up narrower than the grid-width-based estimate.
+    const jetDataTable = document.querySelector('.jet-data-table');
+    Object.defineProperty(jetDataTable, 'clientWidth', { value: 300, configurable: true });
+
+    rtlFireEvent.click(expandButton(0));
+
+    await waitFor(() => expect(document.querySelector('.table-expanded-row-content').style.width).toBe('300px'));
+  });
+
   test('[Table-EXP-004] sorting, filtering, searching, or changing page each collapse every expanded row', async () => {
     widget.render({
       properties: {
