@@ -50,7 +50,7 @@ const RatingColumnProperties = ({
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
-          placeholder={'5'}
+          placeholder={'eg: 5'}
           onChange={handleMaxRatingChange}
           componentName={getPopoverFieldSource(column.columnType, 'maxRating')}
           popOverCallback={(showing) => {
@@ -66,7 +66,7 @@ const RatingColumnProperties = ({
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
-          placeholder={'3'}
+          placeholder={'eg: 3'}
           onChange={(value) => onColumnItemChange(index, 'defaultRating', value)}
           componentName={getPopoverFieldSource(column.columnType, 'defaultRating')}
           popOverCallback={(showing) => {
