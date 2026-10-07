@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { renderElement, validateStaticId, trimStaticId } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
@@ -43,6 +44,11 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
+  // Bumped per row (by `_key`) to force just that row's Id field to remount and re-seed.
+  const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
+  const bumpIdFieldResetKey = (itemKey) => {
+    setIdFieldResetKeys((prev) => ({ ...prev, [itemKey]: (prev[itemKey] || 0) + 1 }));
+  };
   let properties = [];
   let additionalActions = [];
 
@@ -65,6 +71,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     }
     return tabItems?.map((tabItem) => {
       const newTabItem = { ...tabItem };
+      // Stable row identity, independent of the editable `id`/`title`; backfilled for legacy items.
+      newTabItem._key = tabItem._key || uuidv4();
 
       Object.keys(tabItem)?.forEach((key) => {
         if (typeof tabItem[key]?.value === 'boolean') {
@@ -94,6 +102,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
       return {
         id,
+        _key: uuidv4(),
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
@@ -152,7 +161,22 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
-  const handleValueChange = (item, value, property, index) => {
+  const handleValueChange = (item, rawValue, property, index) => {
+    // Store id trimmed, matching what was validated.
+    const value = property === 'id' ? trimStaticId(rawValue) : rawValue;
+
+    // Reject a colliding id outright, even locally (matches Nav's fix), and bump
+    // the row's reset key so its Id field snaps back to the current id.
+    if (property === 'id') {
+      const [isValid] = validateTabId(value, item?.id);
+      if (!isValid) {
+        bumpIdFieldResetKey(item._key);
+        return;
+      }
+      // Nothing else would resync the field's own displayed text after a trim.
+      if (value !== rawValue) bumpIdFieldResetKey(item._key);
+    }
+
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
@@ -171,11 +195,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     setTabItems(updatedTabItems);
 
     if (property === 'id') {
-      const [isValid] = validateTabId(value, item?.id);
-      if (!isValid) {
-        return;
-      }
-
       const tabsComponentId = component.id;
       const oldTabId = item.id;
       const newTabId = value;
@@ -238,26 +257,17 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
-  const validateTabId = (value, currentItemId) => {
-    if (value === null || value === undefined || value === '') {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const stringValue = String(value);
-    const trimmedValue = stringValue.trim();
-
-    if (!trimmedValue) {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const duplicateTab = tabItems.find((tabItem) => tabItem.id === trimmedValue && tabItem.id !== currentItemId);
-
-    if (duplicateTab) {
-      return [false, 'Tab ID must be unique. This ID is already used by another tab.'];
-    }
-
-    return [true, null];
-  };
+  const validateTabId = (value, currentItemId) =>
+    validateStaticId(
+      value,
+      tabItems.map((tab) => tab.id),
+      currentItemId,
+      {
+        emptyMessage: 'Tab ID cannot be empty',
+        bindingMessage: 'Tab ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+        duplicateMessage: 'Tab ID must be unique. This ID is already used by another tab.',
+      }
+    );
 
   const areAllTabIdsValid = () => {
     const ids = tabItems.map((tab) => tab.id);
@@ -267,7 +277,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const updateAllTabItemsParams = (tabItems) => {
     if (areAllTabIdsValid()) {
-      paramUpdated({ name: 'tabItems' }, 'value', tabItems, 'properties', false);
+      // `_key` is render-only identity; strip before persisting.
+      const itemsToPersist = tabItems.map(({ _key, ...tabItem }) => tabItem);
+      paramUpdated({ name: 'tabItems' }, 'value', itemsToPersist, 'properties', false);
     }
   };
 
@@ -299,6 +311,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               {'Id'}
             </label>
             <CodeHinter
+              key={idFieldResetKeys[item._key] || 0}
               currentState={currentState}
               type={'basic'}
               initialValue={item?.id}
@@ -439,8 +452,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {tabItems?.map((item, index) => {
+                  const dragId = item._key || item.title + item.id;
                   return (
-                    <Draggable key={item.title + item.id} draggableId={item.title + item.id} index={index}>
+                    <Draggable key={dragId} draggableId={dragId} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -454,6 +468,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
+                            show={activeColumnPopoverIndex === index}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(show) => {
                               if (show) {

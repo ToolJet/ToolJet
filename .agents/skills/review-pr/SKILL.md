@@ -43,11 +43,11 @@ start of every review.
 Size is the sum of additions and deletions across the root PR and both submodule PRs. Thresholds
 are rough; pick the tier that matches the reading effort, not the number.
 
-| Tier | Size | Process |
-|---|---|---|
-| Small | under ~1k lines | Single pass in the main thread. No sections, no subagents. One report file. |
-| Medium | ~1k to ~8k | Two to five conceptual sections. Subagents optional, one per section when they are used. One report file with a section per concept. |
-| Large | above ~8k | One subagent per section. Index file with blocker table, one file per section, handoff doc for everything below the bar. If posting is later requested, Blocker and High only. |
+| Tier   | Size            | Process                                                                                                                                                                        |
+| ------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Small  | under ~1k lines | Single pass in the main thread. No sections, no subagents. One report file.                                                                                                    |
+| Medium | ~1k to ~8k      | Two to five conceptual sections. Subagents optional, one per section when they are used. One report file with a section per concept.                                           |
+| Large  | above ~8k       | One subagent per section. Index file with blocker table, one file per section, handoff doc for everything below the bar. If posting is later requested, Blocker and High only. |
 
 A small PR touching a migration or an auth path gets the large-tier lenses at small-tier mechanics.
 
@@ -70,11 +70,16 @@ A small PR touching a migration or an auth path gets the large-tier lenses at sm
    recorded head. An unanchored finding is an opinion and stays out.
 7. Consolidate. Two sections finding the same thing is signal, but only one entry carries it.
    Correct the first pass against what the section reads disproved.
-8. Write the report (Output contract below) and hand the path to the user. Stop there. Each
+8. Verify. A fresh subagent, given the report and the head files, tries to refute every finding:
+   the anchor lines, each factual claim, and reachability. A branch that exists but cannot
+   execute (its lookup can never match, a constraint blocks its input) is not a finding; that is
+   the miss a first pass makes most often, because it checks that code is present and not that
+   it runs. Withdraw what fails and say so in the report, with the evidence.
+9. Write the report (Output contract below) and hand the path to the user. Stop there. Each
    finding is already written as the comment it would become, so posting later is a copy, not a
    rewrite.
-9. Only when the user asks to post: confirm which findings, re-verify anchors against the
-   current heads, then follow `references/posting.md`.
+10. Only when the user asks to post: confirm which findings, re-verify anchors against the
+    current heads, then follow `references/posting.md`.
 
 ## Lenses
 
@@ -82,16 +87,16 @@ Cite the repo's own authority in the finding instead of restating the rule. Deta
 with what to look for and how to phrase it: `references/lenses.md`. Read it before the first
 section.
 
-| Lens | Authority |
-|---|---|
-| Correctness | Section's own contract, tests, `.agents/context/architecture-map.md` for cross-boundary flows. Every tenant, environment, edition. |
-| Tests | `server/docs/testing.md`: mutation heuristic, `toMatchObject` shape assertions, behavior matrix, boundary rule. `frontend/AGENTS.md` Testing context. |
-| Typing | `server/AGENTS.md` Design principles. No `any`; precise types or `unknown` casts. |
-| Comments | Default to no comment. One short WHY line when the reason is not obvious. Agent narration, rejected alternatives, cross-file reasoning, and private paths are findings. |
-| Design | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only. |
-| Conventions | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`. |
-| API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched. |
-| Security | `server/AGENTS.md` Security, `frontend/AGENTS.md` Security, root `AGENTS.md` Public/private boundary. |
+| Lens         | Authority                                                                                                                                                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Correctness  | Section's own contract, tests, `.agents/context/architecture-map.md` for cross-boundary flows. Every tenant, environment, edition.                                                                                                 |
+| Tests        | `server/docs/testing.md`: mutation heuristic, `toMatchObject` shape assertions, behavior matrix, boundary rule. `frontend/AGENTS.md` → Testing (names `src/test/README.md`; App Builder layer).                                    |
+| Typing       | `server/AGENTS.md` Design principles. No `any`; precise types or `unknown` casts.                                                                                                                                                  |
+| Comments     | Exhaustive sweep, one verdict per block the diff adds: DELETE (default), KEEP as one line only when the WHY is not deducible from code, symbol, or test name, AGENTS.md only for a general module rule. Deletion beats relocation. |
+| Design       | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only.                                                                                                     |
+| Conventions  | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`.                                                      |
+| API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched.                                                                                                   |
+| Security     | `server/AGENTS.md` Security, `frontend/AGENTS.md` Security, root `AGENTS.md` Public/private boundary.                                                                                                                              |
 
 ## Submodules
 
@@ -114,6 +119,11 @@ Standing tone rules, every finding, every tier:
 
 - Address the author, "we" voice, suggestion tone. `suggestion` blocks when the change sits on
   the anchored lines.
+- Plain English. Short paragraphs, simple words, domain terms from `UBIQUITOUS_LANGUAGE.md`,
+  anything else explained in plain words on first use. Bullets only for lists the reader scans.
+  A diagram (mermaid or ascii) whenever the point is a flow or two paths converging.
+- An `Impact.` paragraph, written as the scenario the user or operator hits, whenever the
+  finding reaches past the codebase. Omitted otherwise.
 - No em dashes. No meta-commentary about how the review was done. No praise padding; a decision
   worth affirming is a finding ("keep X, because Y").
 - One finding per entry. GitHub resolves per thread, so an entry that bundles two findings

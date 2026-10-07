@@ -28,20 +28,17 @@ Requires the `gh` CLI, authenticated against both ToolJet and the submodule repo
 
 ### Step 1: Branch and base detection
 
-Run these commands:
+Pick the base from what's known, in this order (the user input was: `$ARGUMENTS`):
+1. **The user input**, if given.
+2. **An existing PR for this branch:** keep its base (`gh pr view --json baseRefName`).
+3. **A stack:** the branch below it (`gh stack view`), or a base the user named earlier in the conversation.
+4. **Otherwise the remote's default branch (`main`).** Ask the remote, because a local `origin/HEAD` goes stale:
+
 ```bash
-git rev-parse --abbrev-ref HEAD
-```
-```bash
-git ls-remote --heads origin lts-3.16 develop main 2>/dev/null
+git ls-remote --symref origin HEAD | awk '/^ref:/ {sub("refs/heads/","",$2); print $2}'
 ```
 
-Base branch detection (if user did not provide one — the user input was: `$ARGUMENTS`):
-1. If `origin/lts-3.16` exists, use `lts-3.16`
-2. Else if `origin/develop` exists, use `develop`
-3. Else use `main`
-
-This ordering is repo policy: ToolJet's default base is `lts-3.16`, not `develop`.
+If these disagree, or the work clearly belongs on a release line (e.g. an `lts-*` backport), ask the user instead of guessing.
 
 ### Step 2: Gather commits and diff
 
@@ -110,88 +107,103 @@ Analyze the commits and diff to determine:
 - Keep change bullets short, one line each, past tense, max 5. Combine related items if needed
 - **Break up anything verbose.** A paragraph running past 2-3 lines, or a bullet carrying more than one idea, gets split into separate lines or sub-bullets — one idea per line. Reviewers skim; a wall of text hides the change instead of explaining it. If a section still reads long after splitting, it is saying too much — cut it, don't reformat it
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
-- Only add a Screenshots section if actual screenshots are being included — never add an empty Screenshots heading
+- Only include evidence that was actually produced: never add an empty or placeholder section
+- Separate block elements (paragraphs, labelled lines, lists, code) with a blank line. GitHub joins consecutive lines into one paragraph, so two labelled lines with no blank line between them render as one.
+- Don't use GitHub alert boxes (`> [!TIP]` and similar) for routine notes. Their built-in label ("Tip", "Note") reads as noise under a section heading.
 
-**Issue linking rules:**
-- Use `Closes #123` if the PR fully resolves the issue, `Relates to: #123` if partial
-- Multiple parents: `Relates to: #123, #456`
-- Sub-issues: list issue numbers ONLY — do NOT repeat the title after the number (GitHub auto-renders titles from issue references)
-  ```
-  Sub-issues:
-  - #124
-  - #125
-  ```
-- Multiple parents with sub-issues — nest under each:
-  ```
-  Sub-issues (#123):
-  - #124
-  - #125
+**Merge impact:** always state it, as a folded `<details>` block at the end of Changes. It tells the reviewer how hard to look.
+- The summary line is the only place the verdict appears, so it reads without expanding:
+  - `🟢 reversible` when a plain revert undoes the PR;
+  - `🔴 not reversible` for a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
+- Irreversible changes use `<details open>`, so the risk is never folded away.
+- Leave a blank line after `</summary>` and before `</details>`, or GitHub won't render the bullets.
+- **Can't undo:** irreversible changes only. What a revert leaves behind.
+- **Rollback:** irreversible changes only. The plan for recovering.
+- **Reach:** what the change can affect: editions (CE/EE/Cloud), tenants, modules, consumers of a contract, existing saved apps.
+- **Not included:** optional. Deliberate omissions or surprising decisions, so they aren't buried in the Changes bullets.
 
-  Sub-issues (#456):
-  - #457
-  ```
+**Sources:** a `📎 **Sources:**` label under the summary, then one bullet per item. Include only items with content, and drop the block when there are none:
+- **Issue:**
+  - `Closes #123` when the PR fully resolves the issue, `Relates to #123` when it only partly does.
+  - Issues in the private tracker (e.g. from `kickoff`) need the full reference, `ToolJet/tj-ee#123`. Use the reference only, never the issue title or body, in a public PR.
+- **PRD and design:** `PRD: [title](url)` and `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
+- **Sub-issues:** `Sub-issues: #124, #125`. Use numbers only, because GitHub renders the titles.
+  - With multiple parents, use one bullet each: `Sub-issues (#123): #124, #125`.
+  - Wrap the list in `<details>` when there are more than about 6.
 
-**Conditional sections — include ONLY when applicable:**
-- **References**: Include when PRD or design links (ClickUp, Figma, GitHub issue spec) are available from the conversation context. Skip if no external references exist.
-- **Architecture**: Include when the PR introduces new entities, permission models, complex flows, or changes relationships between entities. Use mermaid `erDiagram` for entity models and `sequenceDiagram` for flows. Skip for bug fixes, config changes, or UI-only work.
-- **API Reference**: Include when the PR adds or modifies HTTP endpoints. Use a markdown table with Method, Route, Permission, Request, Response columns. Skip for internal-only changes.
-- **Sub-issues**: Include when the PR relates to tracked GitHub sub-issues. Detect from branch name, commit messages, or conversation context.
-- **Screenshots**: Include when a dev server is running and pages can be captured with Playwright MCP. Take screenshots of key UI changes. Skip entirely if no dev server is available or the PR has no UI changes — never add an empty Screenshots heading.
+**Submodules:** a `**Submodules:**` label followed by one bullet per submodule PR: `- [ee-server #123](url)`. Leave out a submodule with no changes, and the whole block when neither changed.
 
-**Main PR body** — use this template EXACTLY as written, including the emoji prefixes in every heading. All sections after "What this does" are conditional — omit any that don't apply:
+**Conditional sections: include only when they apply.**
+- **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a refactor across files). Use the smallest view that makes the point, placed next to the sentence it supports:
+  - Mermaid for anything with steps or order: interactions, flows, lifecycles and entity models (`sequenceDiagram`, `flowchart`, `erDiagram`);
+  - an ASCII call tree, component tree or shallow file tree, only for a real hierarchy. Nodes are bare names, with a file path at most and no notes;
+  - a `diff` over the table, entity or type when the data shape changes;
+  - pseudocode for business logic.
+
+  Pick one or two, not all. Skip it for small fixes, config or copy changes. A note longer than a few words goes inside a Mermaid node or in the prose, not after an arrow in an ASCII block: packed annotations make the block hard to read.
+- **API Reference:** when HTTP endpoints are added or changed. A table with Method, Route, Permission, Request and Response columns.
+- **Evidence:** when runtime behaviour changes. Show proof it works, as before → after:
+  - a screenshot for visual changes (capture it with Playwright MCP when a dev server is running);
+  - otherwise the failing → passing test, or command output;
+  - for `kickoff` slices, link the verifier's report comment.
+
+  Skip it for docs, tooling, config or CI-only changes.
+- **How to test:** when there is runtime behaviour a reviewer can exercise. Skip it for docs, tooling, config or CI-only changes.
+
+**Main PR body:** use this template exactly as written, including the emoji prefixes. Every line and section after the summary is conditional; omit any that doesn't apply.
 ```
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
-- [ee-server](<PR url or "no changes">)
-- [ee-frontend](<PR url or "no changes">)
 
-## 📎 References
-<omit entire section if no PRD or design links available>
-- **PRD**: [title](url)
-- **Design**: [title](url)
+📎 **Sources:**
+- Closes <#issue>
+- PRD: [title](url)
+- Design: [title](url)
+- Sub-issues: <#num, #num>
 
-<Closes #issue OR Relates to: #issue — omit if no related issue>
-
-<Sub-issues: — omit if none>
-<- #num>
-
-## 🏗️ Architecture
-<omit entire section if no new entities, models, or flows>
-### Entity Model
-<mermaid erDiagram or bullet list>
-### Flows
-<mermaid sequenceDiagram or description>
-
-## 🔌 API Reference
-<omit entire section if no endpoint changes>
-| Method | Route | Permission | Request | Response |
-|--------|-------|------------|---------|----------|
-| **POST** | `/api/...` | `PERM` | `{ body }` | `{ response }` |
+**Submodules:**
+- [ee-server #<n>](<url>)
+- [ee-frontend #<n>](<url>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes, max 5 bullets>
 
-## 📸 Screenshots
-<omit entire section if no UI changes or no dev server available>
-<take screenshots with Playwright MCP if dev server is running>
+<details>
+<summary>🛡️ <b>Merge impact:</b> <🟢 reversible | 🔴 not reversible></summary>
+
+- **Can't undo:** <irreversible only: what a revert leaves behind>
+- **Rollback:** <irreversible only: plan>
+- **Reach:** <scope>
+- **Not included:** <optional: deliberate omissions or surprising decisions>
+
+</details>
+
+## 🏗️ Architecture
+<smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
+
+## 🔌 API Reference
+| Method | Route | Permission | Request | Response |
+|--------|-------|------------|---------|----------|
+| **POST** | `/api/...` | `PERM` | `{ body }` | `{ response }` |
+
+## 🧾 Evidence
+- **Before:** <screenshot / output / failing test>
+- **After:** <screenshot / output / passing test>
 
 ## 🧪 How to test
-<omit entire section for docs, tooling, config, or CI-only changes with no runtime behaviour to exercise>
 - [ ] <short action-first step>
 ```
-Omit the submodule links entirely if neither submodule has changes.
-Omit the References section if no PRD or design links are available.
-Omit the issue/sub-issues lines if there are no related issues.
-Omit Architecture if there are no new entities, models, or flows.
-Omit API Reference if there are no endpoint changes.
-Omit Screenshots if there are no UI changes or no dev server is available — never add an empty Screenshots heading.
-Omit How to test when there is no runtime behaviour to exercise (docs, tooling, config, CI) — verification for those is the reviewer reading the diff.
+Omit the Sources and Submodules blocks, or any bullet in them, when there's no content.
+
+The section order follows the questions a reviewer asks: why, how risky, what changed, how it fits, does it work, how do I try it. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
 
 **Submodule PR body** (for each submodule with changes) — simplified template, NO test plan, NO Submodules, NO Screenshots. Use headings EXACTLY as shown, including emoji prefixes:
 ```
 ## 📝 What this does
 <1-2 sentence summary>
-- [ToolJet](<main repo PR url or PENDING>)
+
+**Main PR:**
+- [ToolJet #<n>](<main repo PR url or PENDING>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes>
@@ -238,7 +250,7 @@ If a submodule has pointer changes but no branch in the submodule, skip the subm
 
 ### Step 3: Update the main PR body with submodule links
 
-Replace any `PENDING` placeholders in the Submodules section with the actual submodule PR URLs captured in Step 2.
+Fill in the main PR's Submodules block with the submodule PR URLs captured in Step 2. After the main PR exists, replace `PENDING` in each submodule PR's Main PR link with the main PR URL.
 
 ### Step 4: Create or update the main repo PR
 

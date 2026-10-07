@@ -39,7 +39,7 @@ Authority: `server/docs/testing.md`. Sections that matter most in review:
   service test proves nothing about the query.
 - "Edition and plan": CE tests verify gating, EE tests verify behavior.
 
-Frontend: `frontend/AGENTS.md` "Testing context" for what is and is not covered by Cypress.
+Frontend: `frontend/AGENTS.md` → Testing, and the guide it names (`src/test/README.md`), for Jest conventions and what belongs in Cypress.
 
 Specs are a place for concretion, not abstraction. A reader must understand the contract without
 opening a helper. Suggest rewording where the spec hides the detail that makes it pass.
@@ -53,16 +53,29 @@ API contract lens.
 
 ## Comments
 
-No repo file; rule as the user applies it. Default to no comment. When the WHY is not obvious,
-one short line, fragments allowed, no articles, no hedging. Findings:
+No repo file; rule as the user applies it. Default to no comment. Deletion beats relocation.
 
-- Narration of what the code does. The diff already says it.
-- History or agent narration: "previously this...", "we tried X and...", rejected alternatives.
-- Cross-file reasoning that belongs in the module's `AGENTS.md` instead.
-- Private paths, customer names, or internal ticket links in public code.
-- Multi-line blocks that collapse to one line or to nothing.
+The sweep is exhaustive. List every comment block the diff adds or changes, in code, tests and
+submodules, and record a verdict per block: DELETE, KEEP, or AGENTS.md. A partial pass feels
+complete and is not; the blocks not flagged go in "checked and clean" so the author can see the
+sweep was done.
 
-Suggest the one-line replacement in a `suggestion` block, or deletion.
+- DELETE is the default. Narration of what the code does; history ("previously", "the first
+  draft had", "was here and is gone"); measurements and anecdotes; rejected alternatives;
+  reviewer narration ("the reviewer's point"); restating a test name, a function name, or the
+  diff; cross-file pointers the reader gets by following the symbol; private paths, customer
+  names, internal ticket links.
+- KEEP only as one line, fragments allowed, no articles, no hedging, and only when the WHY is not
+  deducible from the code, the symbol it names, or the test name: a trap, an external constraint,
+  a removal condition. Argue against every keep before writing it.
+- AGENTS.md only when both hold: not deducible from the code, and a general rule of the module.
+  Phrase it as the rule sentence that would appear in the doc. If it can only be told as a story
+  about one line, it is DELETE, not a move.
+
+Finding shape: an empty `suggestion` block for DELETE, the one-line replacement in a
+`suggestion` block for KEEP, the rule sentence plus a living-docs finding for AGENTS.md. Where a
+block sits inside the anchor of another finding, fold its verdict into that finding's suggestion
+rather than opening an overlapping thread.
 
 ## Design
 
@@ -108,6 +121,13 @@ anonymous inline object, `decamelizeKeys` on output, untyped `@Query()` or `@Bod
 DTO, missing `ClassSerializerInterceptor`, missing `toMatchObject` shape test, dropped field with
 no consumer grep across `frontend/src` and `frontend/ee`. Anything under `external-apis/` is the
 public contract and a removed field needs a deprecation path.
+
+## Merge impact and evidence
+
+- **The reversible verdict must be honest.** A PR that drops or rewrites data, changes a public API or contract, or triggers a release or other external side effect is not reversible, whatever its description says. A "🟢 reversible" on such a change, or a folded block on an irreversible one, is a finding.
+- **Check the stated Reach against the diff:** editions, tenants, modules, contract consumers, and existing saved apps.
+- **An irreversible PR with no Rollback plan or no Evidence section** (before → after proof that it works) is a finding.
+- **A runtime change whose only evidence is "it should work"** is unverified. Ask for the test run or the screenshot.
 
 ## Security
 

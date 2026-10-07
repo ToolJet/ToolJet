@@ -30,12 +30,32 @@ Severity is the closed set from `references/lenses.md`.
 
 | Part | Rule |
 |---|---|
-| Why | One to three sentences, the causal chain only. `file:line` refs belong here. A short ascii flow where the chain crosses files. |
+| Why | Short paragraphs, one idea each, the causal chain only. `file:line` refs belong here. A `mermaid` fence (GitHub renders it) or an ascii flow whenever the point is a flow, an ordering, or two paths converging; prose otherwise. |
 | Proof | Repro, trace, error text, the exact mutation that left the suite green. Collapse in `<details>` past about 8 lines. |
+| Impact | Only when the finding reaches an end user or an operator. One short paragraph opening with bold `Impact.`, written as the scenario they hit ("the embedded app loads, then Logout returns 403"). Omit for developer-only findings; never write "none". |
 | Fix | Always visible, never collapsed. `suggestion` block when the change is on the anchored lines; before/after code when proposing a shorter form. "Could we" or "suggest" tone. |
 | `Related:` | One line, last. Cross-PR and cross-thread links. Nothing after it. |
 
 `<summary>` says what is inside, not "Details".
+
+### Plain English
+
+The author reads the comment once, between other work. Every sentence says what breaks for whom,
+in words the author would use on a call.
+
+- Simple words. Name the concrete thing: the field, the check, the branch, the route, the
+  table. Abstract nouns that describe the reviewer's model rather than the code are a sign the
+  finding is not yet understood in the author's terms.
+- Domain terms come from `UBIQUITOUS_LANGUAGE.md`: Workspace not Organization, Component not
+  Widget, End User not Viewer, Data Source never `ds`. A term the glossary does not have and the
+  code does not name is not shared vocabulary; say what it means in plain words the first time
+  or avoid it. That includes the PR author's own coinages from the description.
+- Paragraphs of one or two sentences, separated by a blank line. Bullets only for a list the
+  reader scans rather than reads: routes, files, parallel cases. A causal chain stays prose so
+  every "because" survives.
+- A diagram whenever the mechanism is a flow, an ordering, or two paths converging. Mermaid for
+  the PR (GitHub renders the fence); ascii where a fixed-width grid says it faster. If a sentence
+  says it faster, write the sentence.
 
 ### Length
 
@@ -114,6 +134,9 @@ Technical detail lives in the inline comments only.
 - Collapsing the fix. It is what the author opened the thread for.
 - Findings tables in root comments. The cells are sentences, and tables do not wrap on mobile.
 - Bullets throughout. The causal chains are the value, and bullets drop the "because" that makes
-  a finding survive a challenge.
+  a finding survive a challenge. Bullets are for lists the reader scans (routes, files, cases);
+  a chain of reasoning is short paragraphs.
+- "What a user sees" as the impact label. It reads as nonsense when the impact is silent or
+  deferred ("nothing today"). `Impact.` covers every case.
 - Severity tags on every review. On a ten-thread review the tag is noise; the consequence
   sentence already ranks itself.

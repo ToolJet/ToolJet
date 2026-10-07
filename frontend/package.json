@@ -95,7 +95,7 @@
     "papaparse": "^5.3.2",
     "path-browserify": "^1.0.1",
     "pdfjs-dist": "5.3.93",
-    "plotly.js-dist-min": "^2.29.1",
+    "plotly.js-dist-min": "^4.1.1",
     "posthog-js": "^1.255.1",
     "process": "^0.11.10",
     "psl": "^1.9.0",
@@ -291,9 +291,25 @@
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
-    }
+    },
+    "react-plotly.js": {
+      "plotly.js": "npm:plotly.js-dist-min@^4.1.1"
+    },
+    "@xmldom/xmldom": "^0.8.15",
+    "@svgr/plugin-svgo": {
+      "svgo": "^2.8.4"
+    },
+    "postcss-svgo": {
+      "svgo": "^4.1.0"
+    },
+    "js-yaml@3": "^3.15.2",
+    "js-yaml@4": "^4.3.2"
   },
   "scripts": {
+    "build:vendor": "node scripts/build-vendor-bundle.js",
+    "prestart": "npm run build:vendor",
+    "prebuild": "npm run build:vendor",
+    "prebuild:cloud": "npm run build:vendor",
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
     "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
@@ -310,11 +326,11 @@
     "test:unit": "jest",
     "test:unit:changed": "jest --onlyChanged",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:layout": "node scripts/validate-test-layout.js",
     "test:unit:only": "jest --testPathIgnorePatterns '/node_modules/' '/__tests__/integration/'",
     "test:integration": "jest --testPathPattern \"__tests__/integration\"",
-    "test:ci:changed": "jest --ci --coverage --onlyChanged",
+    "test:ci:changed": "jest --ci --coverage --onlyChanged --maxWorkers=2",
     "test:app-builder": "node scripts/run-app-builder-tests.js all",
     "test:app-builder:watch": "node scripts/run-app-builder-tests.js watch",
     "test:app-builder:contracts": "node scripts/run-app-builder-tests.js contracts --runInBand",
