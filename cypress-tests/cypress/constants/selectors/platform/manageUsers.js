@@ -1,4 +1,5 @@
 import { cyParamName } from "Selectors/common";
+import { bulkUserUpload } from "../../../support/utils/manageUsers";
 
 export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",
@@ -52,7 +53,8 @@ export const usersSelector = {
   },
   inviteBulkUserButton: '[data-cy="invite-bulk-user-button"]',
   bulkUserUploadPageTitle: '[data-cy="bulk-user-upload-page-title"]',
-  bulkUSerUploadInput: '[data-cy="bulk-user-upload-input"]',
+  bulkUUserUploadInput: '[data-cy="bulk-user-upload-input"]',
+  bulkUserUploadSuccess: '[data-cy="valid-file-success"]',
   buttonDownloadTemplate: '[data-cy="button-download-template"]',
   buttonUploadUsers: '[data-cy="button-upload-users"]',
   helperTextBulkUpload: '[data-cy="helper-text-bulk-upload"]',

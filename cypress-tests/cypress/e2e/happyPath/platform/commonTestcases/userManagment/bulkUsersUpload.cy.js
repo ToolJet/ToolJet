@@ -174,7 +174,7 @@ describe("Bulk User Upload", () => {
     });
 
     cy.get(usersSelector.uploadedFileData).should("contain", file.fileName);
-    cy.get('[data-cy="valid-file-success"]').should(
+    cy.get(usersSelector.bulkUserUploadSuccess).should(
       "contain",
       "Ready to upload:"
     );
