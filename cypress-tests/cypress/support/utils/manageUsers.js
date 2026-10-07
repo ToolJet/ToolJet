@@ -61,18 +61,11 @@ export const verifyManageUsersPageElements = () => {
 
   cy.get(usersSelector.userFilterInput).should("be.visible");
 
+  // "Add user" now opens the invite drawer directly (no "Invite with email" /
+  // "Upload CSV file" tabs). Bulk upload has its own header button and drawer.
   cy.get(usersSelector.buttonAddUsers)
     .verifyVisibleElement("have.text", usersText.buttonAddUsers)
     .click();
-
-  cy.get(usersSelector.buttonInviteWithEmail).verifyVisibleElement(
-    "have.text",
-    usersText.buttonInviteWithEmail
-  );
-  cy.get(usersSelector.buttonUploadCsvFile).verifyVisibleElement(
-    "have.text",
-    usersText.buttonUploadCsvFile
-  );
 
   cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
     "have.text",
@@ -112,53 +105,21 @@ export const verifyManageUsersPageElements = () => {
   cy.get(commonSelectors.closeButton).click();
   cy.get(usersSelector.addUsersCardTitle).should("not.exist");
 
-  cy.get(usersSelector.buttonAddUsers).click();
-  cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
+  // Bulk upload drawer (opened from its own header button).
+  cy.get(usersSelector.bulkUploadUsers).click();
+  cy.get(usersSelector.bulkUploadDrawerTitle).verifyVisibleElement(
     "have.text",
-    usersText.addUsersCardTitle
+    usersText.bulkUploadDrawerTitle
   );
-  cy.get(usersSelector.buttonUploadCsvFile).click();
-
-  if (envVar === "Enterprise") {
-    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-      "have.text",
-      "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. "
-    );
-  } else {
-    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-      "have.text",
-      usersText.helperTextBulkUpload
-    );
-  }
-  cy.get(usersSelector.buttonDownloadTemplate).verifyVisibleElement(
-    "have.text",
-    usersText.buttonDownloadTemplate
-  );
-  cy.exec("mkdir -p ./cypress/downloads/", { failOnNonZeroExit: false });
-  cy.wait(3000);
-  cy.exec("cd ./cypress/downloads/ && rm -rf *", { failOnNonZeroExit: false });
-  cy.wait(3000);
-  cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000);
-  cy.exec("ls ./cypress/downloads/").then((result) => {
-    const downloadedAppExportFileName = result.stdout.split("\n")[0];
-    expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
-  });
-
-  cy.get(usersSelector.iconBulkUpload).should("be.visible");
-  cy.get(usersSelector.helperTextSelectFile).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextSelectFile
-  );
-  cy.get(usersSelector.helperTextDropFile).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextDropFile
-  );
+  cy.get(usersSelector.buttonDownloadEmptyTemplate).should("be.visible");
+  cy.get(usersSelector.buttonDownloadCurrentUsers).should("be.visible");
   cy.get(usersSelector.inputFieldBulkUpload).should("exist");
   cy.get(usersSelector.buttonUploadUsers).verifyVisibleElement(
     "have.text",
     usersText.buttonUploadUsers
   );
+  cy.get(commonSelectors.closeButton).click();
+  cy.get(usersSelector.bulkUploadDrawerTitle).should("not.exist");
 };
 
 export const inviteUserToWorkspace = (firstName, email) => {
