@@ -11,10 +11,15 @@ import {
 } from 'test-helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { User } from '@entities/user.entity';
+import { AiUtilService } from '@ee/ai/util.service';
+import { AiController } from '@ee/ai/controller';
+import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
 
 const GATEWAY = 'http://gateway.test';
-const CYCLE_START = '2026-10-01T00:00:00.000Z';
-const NEW_CYCLE = '2026-10-15T09:00:00.000Z';
+// Notices show only when found in the current cycle, so cycle starts are in the past.
+const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
+const CYCLE_START = ago(10 * 24 * 3600_000);
+const NEW_CYCLE = ago(3600_000);
 const ADDON_END = '2026-10-20T00:00:00.000Z';
 
 /** Stubs fetch at the gateway HTTP boundary; every other URL goes to the real fetch. */
@@ -48,24 +53,30 @@ const wallet = (recurring: number, topup = 0) => ({ recurring, topup, total: rec
 interface Wallets {
   /** Plan sizes (wallet total_amount). */
   plan: { monthly: number; addon: number };
-  /** Remaining now; nothing spent this cycle, so this is also the cycle-start pool. */
+  /** The cycle-start pool; remaining = this − monthly spend. */
   remaining: { monthly: number; addon: number };
   cycleStart?: string;
   addonEndsAt?: string | null;
+  /** Monthly spend this cycle per user id. */
+  spend?: Record<string, number>;
 }
 
 function gatewayFor(ownerPath: string, w: Wallets) {
   const cycleStart = w.cycleStart ?? CYCLE_START;
-  const usage = { cycleStart, trackingSince: null, users: [], unattributed: wallet(0), pool: wallet(0) };
+  const users = Object.entries(w.spend ?? {}).map(([userId, monthly]) => ({ userId, ...wallet(monthly) }));
+  const used = users.reduce((acc, u) => acc + u.recurring, 0);
+  const remaining = wallet(w.remaining.monthly - used, w.remaining.addon);
+  const usage = { cycleStart, trackingSince: null, users, unattributed: wallet(0), pool: wallet(used) };
   return {
     [`${ownerPath}/balance`]: {
+      balance: remaining.total,
       plan: wallet(w.plan.monthly, w.plan.addon),
-      remaining: wallet(w.remaining.monthly, w.remaining.addon),
-      expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: w.addonEndsAt ?? null },
+      remaining,
+      expiry: { recurringExpiryDate: '2099-11-01T00:00:00.000Z', topupExpiryDate: w.addonEndsAt ?? null },
       cycleStart,
     },
     [`${ownerPath}/usage`]: usage,
-    [`${ownerPath}/usage?groupBy=organization`]: usage,
+    [`${ownerPath}/usage?groupBy=organization`]: { ...usage, users: users.map((u) => ({ ...u, byOrganization: [] })) },
   };
 }
 
@@ -104,6 +115,26 @@ const putLimits = (app: INestApplication, cookie: string[], organizationId: stri
     .set('Cookie', cookie)
     .send(body);
 
+const getMine = (app: INestApplication, cookie: string[], organizationId: string) =>
+  request(app.getHttpServer())
+    .get('/api/ai/credits-usage/me')
+    .set('tj-workspace-id', organizationId)
+    .set('Cookie', cookie);
+
+const postCopilot = (app: INestApplication, cookie: string[], organizationId: string) =>
+  request(app.getHttpServer())
+    .post('/api/ai/copilot')
+    .set('tj-workspace-id', organizationId)
+    .set('Cookie', cookie)
+    .send({ prompt: 'sum', context: '', language: 'javascript' });
+
+/** Agent calls end at the agent boundary (the util service the routes actually use). */
+const stubAgents = (app: INestApplication) => {
+  const util = (app.get(AiController) as unknown as { aiService: { aiUtilService: AiUtilService } }).aiService
+    .aiUtilService;
+  jest.spyOn(util, 'callAgentLegacy').mockResolvedValue([null, { assignments: [], newFolders: [], code: '' }]);
+};
+
 const customRows = (userId: string) =>
   getDefaultDataSource().query(`SELECT pool, value FROM ai_credit_limits WHERE user_id = $1 ORDER BY pool`, [userId]);
 
@@ -133,14 +164,16 @@ async function dropSeed(organizationId: string, userIds: string[]) {
 
 /** @group ai */
 describe('AI credit limits: pool changes', () => {
-  const previousGateway = process.env.TJ_AI_GATEWAY_URL;
+  const previous = { gateway: process.env.TJ_AI_GATEWAY_URL, features: process.env.ENABLE_AI_FEATURES };
 
   beforeAll(() => {
     process.env.TJ_AI_GATEWAY_URL = GATEWAY;
+    process.env.ENABLE_AI_FEATURES = 'true';
   });
 
   afterAll(() => {
-    process.env.TJ_AI_GATEWAY_URL = previousGateway;
+    process.env.TJ_AI_GATEWAY_URL = previous.gateway;
+    process.env.ENABLE_AI_FEATURES = previous.features;
   });
 
   afterEach(() => {
@@ -161,14 +194,14 @@ describe('AI credit limits: pool changes', () => {
 
     /** Admin + 3 builders = 4 builders. Builder 1 gets a custom monthly limit of 3,000 on a 10,000 pool. */
     async function seedWithCustom(prefix: string, wallets: Wallets = full(10_000)) {
-      const admin = await createUser(app, { email: `${prefix}-admin@tooljet.io`, groups: ['end-user', 'admin'] });
+      const admin = await createUser(app, { email: `${prefix}-admin@tooljet.io`, groups: ['admin'] });
       const workspace = admin.organization;
       const builders = [];
       for (const n of [1, 2, 3]) {
         builders.push(
           await createUser(app, {
             email: `${prefix}-b${n}@tooljet.io`,
-            groups: ['end-user', 'builder'],
+            groups: ['builder'],
             organization: workspace,
           })
         );
@@ -202,24 +235,42 @@ describe('AI credit limits: pool changes', () => {
       expect(entry.userId).toBeNull();
       expect(entry.metadata).toMatchObject({
         reason: 'plan_change',
-        defaultBefore: 2333,
-        defaultAfter: 500,
+        defaults: { monthly: { before: 2333, after: 500 } },
         customReduced: 1,
         builders: [{ builderId: s.builders[0].user.id, pool: 'monthly', before: 3000, after: null }],
       });
     });
 
-    it('AC2: a plan change shows a notice on every read until replaced', async () => {
+    it('AC2: a plan change shows a notice on every read in this cycle', async () => {
       const s = await seedWithCustom('pc2');
       stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
 
       const first = await getUsage(app, s.cookie, s.workspace.id);
       const second = await getUsage(app, s.cookie, s.workspace.id);
 
-      const notice = { kind: 'plan_change', on: NEW_CYCLE, defaultBefore: 2333, defaultAfter: 500, reduced: 1 };
+      const notice = {
+        kind: 'plan_change',
+        on: NEW_CYCLE,
+        detectedAt: expect.any(String),
+        defaults: { monthly: { before: 2333, after: 500 } },
+        reduced: 1,
+      };
       expect(first.body.notices).toEqual([notice]);
-      expect(second.body.notices).toEqual([notice]);
+      expect(second.body.notices).toEqual(first.body.notices);
       expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+    });
+
+    it('a notice found in an earlier cycle is not shown', async () => {
+      const s = await seedWithCustom('pc2b');
+      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+      expect((await getUsage(app, s.cookie, s.workspace.id)).body.notices).toHaveLength(1);
+      await getDefaultDataSource().query(
+        `UPDATE ai_credit_limits SET notice = jsonb_set(notice, '{detectedAt}', to_jsonb($2::text))
+          WHERE organization_id = $1 AND notice IS NOT NULL`,
+        [s.workspace.id, CYCLE_START]
+      );
+
+      expect((await getUsage(app, s.cookie, s.workspace.id)).body.notices).toEqual([]);
     });
 
     it('AC2: a renewal with overdraft carry-in changes nothing and shows no notice', async () => {
@@ -256,7 +307,13 @@ describe('AI credit limits: pool changes', () => {
 
       expect(await customRows(s.builders[0].user.id)).toEqual([{ pool: 'monthly', value: 3000 }]);
       expect(res.body.notices).toEqual([
-        { kind: 'addon_expiry', on: ADDON_END, defaultBefore: 166, defaultAfter: 0, reduced: 1 },
+        {
+          kind: 'addon_expiry',
+          on: ADDON_END,
+          detectedAt: expect.any(String),
+          defaults: { addon: { before: 166, after: 0 } },
+          reduced: 1,
+        },
       ]);
     });
 
@@ -271,6 +328,68 @@ describe('AI credit limits: pool changes', () => {
 
       expect(res.statusCode).toBe(200);
       expect(await customRows(s.builders[0].user.id)).toEqual([]);
+      const adjusted = await adjustedAudit(s.workspace.id, 1);
+      expect(adjusted).toHaveLength(1);
+      expect(adjusted[0].userId).toBeNull(); // system, not the admin who saved
+    });
+
+    // No dashboard read in between: the spend check itself finds the shrink.
+    it('the first AI action after a plan change is checked against the adjusted limit', async () => {
+      const s = await seedWithCustom('pc7');
+      const builder = s.builders[0].user;
+      stubAgents(app);
+      // 600 spent: under the stale 3,000, at the new default of 500.
+      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE, spend: { [builder.id]: 600 } })));
+
+      const res = await postCopilot(app, await sessionFor(builder, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(402);
+      expect(res.body.code).toBe('credit_limit_reached');
+      expect(await customRows(builder.id)).toEqual([]);
+      const [entry, ...rest] = await adjustedAudit(s.workspace.id, 1);
+      expect(rest).toEqual([]);
+      expect(entry).toMatchObject({ userId: null, metadata: { reason: 'plan_change', customReduced: 1 } });
+    });
+
+    it("a builder's own credits after a plan change show the adjusted limit", async () => {
+      const s = await seedWithCustom('pc8');
+      const builder = s.builders[0].user;
+      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+
+      const res = await getMine(app, await sessionFor(builder, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.monthly.limit).toBe(500);
+      expect(await customRows(builder.id)).toEqual([]);
+      expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+    });
+
+    it('a read holding an older balance does not write it back over a newer one', async () => {
+      const s = await seedWithCustom('pc9');
+      // A read began fetching the balance (still 10,000) before the plan change...
+      const staleReadAt = new Date();
+      const stale = gatewayFor(s.owner, full(10_000))[`${s.owner}/balance`];
+      // ...another read finds the shrink and adjusts...
+      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+      await getUsage(app, s.cookie, s.workspace.id);
+      // ...then the first read's limits read sees the new sizes, so it locks to record its 10,000 as growth.
+      const snapshot = {
+        enabled: true,
+        defaults: { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } },
+        custom: new Map(),
+        seen: { monthly: { plan: 2003, endsAt: null }, addon: { plan: 0, endsAt: null } },
+      };
+      const service = app.get(BuilderUsageService) as unknown as {
+        adjustIfPoolChanged: (...args: unknown[]) => Promise<unknown>;
+      };
+      await service.adjustIfPoolChanged(s.workspace.id, s.workspace.id, snapshot, {
+        balance: stale,
+        balanceReadAt: staleReadAt,
+        usage: { spend: [] },
+      });
+
+      await getUsage(app, s.cookie, s.workspace.id);
+
       expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
     });
 
@@ -315,11 +434,11 @@ describe('AI credit limits: pool changes', () => {
       const superAdmin = await createUser(app, {
         email: 'sh11-super@tooljet.io',
         userType: 'instance',
-        groups: ['end-user', 'admin'],
+        groups: ['admin'],
       });
       const builder = await createUser(app, {
         email: 'sh11-builder@tooljet.io',
-        groups: ['end-user', 'builder'],
+        groups: ['builder'],
         organization: superAdmin.organization,
       });
       licenseWith(app, {
@@ -339,7 +458,13 @@ describe('AI credit limits: pool changes', () => {
       const res = await getUsage(app, cookie, superAdmin.organization.id);
 
       expect(res.body.notices).toEqual([
-        { kind: 'plan_change', on: NEW_CYCLE, defaultBefore: 7000, defaultAfter: 500, reduced: 1 },
+        {
+          kind: 'plan_change',
+          on: NEW_CYCLE,
+          detectedAt: expect.any(String),
+          defaults: { monthly: { before: 7000, after: 500 } },
+          reduced: 1,
+        },
       ]);
       expect(await customRows(builder.user.id)).toEqual([]);
       const [entry] = await adjustedAudit(superAdmin.organization.id, 1);

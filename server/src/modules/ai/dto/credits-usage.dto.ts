@@ -91,15 +91,29 @@ export class CreditsUsageRowDto {
 }
 
 @Exclude()
+export class CreditsUsageNoticeDefaultDto {
+  @Expose() before: number;
+  @Expose() after: number;
+}
+
+@Exclude()
+export class CreditsUsageNoticeDefaultsDto {
+  @Expose() @Type(() => CreditsUsageNoticeDefaultDto) monthly?: CreditsUsageNoticeDefaultDto;
+  @Expose() @Type(() => CreditsUsageNoticeDefaultDto) addon?: CreditsUsageNoticeDefaultDto;
+}
+
 /** After a plan change or add-on expiry shrank the pool and limits were adjusted; dismissed per admin in the browser. */
+@Exclude()
 export class CreditsUsageNoticeDto {
   @Expose() kind: 'plan_change' | 'addon_expiry';
   @Expose() on: string | null;
-  @Expose() defaultBefore: number;
-  @Expose() defaultAfter: number;
+  @Expose() detectedAt: string;
+  /** Pools whose default fell or lost a custom limit. */
+  @Expose() @Type(() => CreditsUsageNoticeDefaultsDto) defaults: CreditsUsageNoticeDefaultsDto;
   @Expose() reduced: number;
 }
 
+@Exclude()
 export class CreditsUsageResponseDto {
   @Expose() @Type(() => CreditsUsageCycleDto) cycle: CreditsUsageCycleDto;
   @Expose() @Type(() => CreditsUsagePoolsDto) pools: CreditsUsagePoolsDto;

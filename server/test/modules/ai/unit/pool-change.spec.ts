@@ -1,13 +1,19 @@
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import {
   adjustToPool,
+  currentNotices,
   noLimits,
+  PoolChange,
+  PoolNotice,
   poolChange,
   poolsAdjustedEvent,
+  poolsBefore,
   sameSeen,
   ScopeLimits,
   SeenPools,
   seenPools,
 } from '@ee/ai/services/credit-limits';
+import { CreditsUsageResponseDto } from '@modules/ai/dto/credits-usage.dto';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `b${i}`);
 
@@ -24,6 +30,9 @@ const withCustom = (custom: [string, { monthly?: number; addon?: number }][], en
 
 const CYCLE = '2026-10-15T09:00:00.000Z';
 const ADDON_END = '2026-10-20T00:00:00.000Z';
+const DETECTED = '2026-10-15T09:05:00.000Z';
+const PLAN_CHANGE: PoolChange = { reason: 'plan_change', pools: ['monthly', 'addon'], shrunk: ['monthly'], on: CYCLE };
+const ADDON_EXPIRY: PoolChange = { reason: 'addon_expiry', pools: ['addon'], shrunk: ['addon'], on: ADDON_END };
 
 /** @group ai */
 describe('pool change (pure)', () => {
@@ -35,6 +44,15 @@ describe('pool change (pure)', () => {
           expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: ADDON_END },
         })
       ).toEqual(seen(8000, 500, ADDON_END));
+    });
+
+    it('a fractional plan size is floored (stored as integer; a failed write would fail every read)', () => {
+      expect(
+        seenPools({
+          plan: { recurring: 2003.75, topup: 0.5 },
+          expiry: { topupExpiryDate: null },
+        })
+      ).toEqual(seen(2003, 0));
     });
 
     it('an older gateway without plan sizes → null (nothing to compare)', () => {
@@ -53,19 +71,17 @@ describe('pool change (pure)', () => {
 
   describe('poolChange: what the pool did since last seen', () => {
     it('lower monthly plan = plan change: both pools checked, dated by the new cycle start', () => {
-      expect(poolChange(seen(10_000, 500), seen(4000, 500), CYCLE)).toEqual({
-        reason: 'plan_change',
-        pools: ['monthly', 'addon'],
-        on: CYCLE,
-      });
+      expect(poolChange(seen(10_000, 500), seen(4000, 500), CYCLE)).toEqual(PLAN_CHANGE);
     });
 
     it('lower add-on plan = add-on expiry: add-on only, dated by the expiry last seen', () => {
-      expect(poolChange(seen(10_000, 500, ADDON_END), seen(10_000, 0), CYCLE)).toEqual({
-        reason: 'addon_expiry',
-        pools: ['addon'],
-        on: ADDON_END,
-      });
+      expect(poolChange(seen(10_000, 500, ADDON_END), seen(10_000, 0), CYCLE)).toEqual(ADDON_EXPIRY);
+    });
+
+    it('plan change and add-on expiry between two reads → plan change with both pools shrunk, each at its old size', () => {
+      const change = poolChange(seen(5000, 500, ADDON_END), seen(2000, 0), CYCLE);
+      expect(change).toEqual({ ...PLAN_CHANGE, shrunk: ['monthly', 'addon'] });
+      expect(poolsBefore({ monthly: 2000, addon: 0 }, seen(5000, 500), change)).toEqual({ monthly: 5000, addon: 500 });
     });
 
     it('renewal (same plan, overdraft carry-in only lowers the balance) → no change', () => {
@@ -87,7 +103,8 @@ describe('pool change (pure)', () => {
         previousPools: { monthly: 10_000, addon: 0 },
         builderIds: ids(4),
         limits,
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
 
       expect(out.reset).toEqual([{ userId: 'b0', pool: 'monthly', before: 3000 }]);
@@ -95,8 +112,8 @@ describe('pool change (pure)', () => {
       expect(out.notice).toEqual({
         kind: 'plan_change',
         on: CYCLE,
-        defaultBefore: 2333,
-        defaultAfter: 500,
+        detectedAt: DETECTED,
+        defaults: { monthly: { before: 2333, after: 500 } },
         reduced: 1,
       });
       expect(limits.custom.get('b0')).toEqual({ monthly: 3000 }); // input untouched
@@ -108,7 +125,8 @@ describe('pool change (pure)', () => {
         previousPools: { monthly: 10_000, addon: 0 },
         builderIds: ids(4),
         limits: withCustom([['b0', { monthly: 2000 }]]),
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
       expect(out.reset).toEqual([]);
       expect(out.limits.custom.get('b0')).toEqual({ monthly: 2000 });
@@ -125,7 +143,8 @@ describe('pool change (pure)', () => {
           ['b1', { monthly: 700 }],
           ['b2', { monthly: 600 }],
         ]),
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
       expect(out.reset.map((r) => r.userId)).toEqual(['b1']);
       expect(out.notice.reduced).toBe(1);
@@ -140,7 +159,8 @@ describe('pool change (pure)', () => {
           ['b0', { monthly: 900, addon: 1500 }],
           ['b1', { addon: 300 }],
         ]),
-        change: { reason: 'addon_expiry', pools: ['addon'], on: ADDON_END },
+        change: ADDON_EXPIRY,
+        detectedAt: DETECTED,
       });
       expect(out.reset).toEqual([
         { userId: 'b0', pool: 'addon', before: 1500 },
@@ -148,7 +168,47 @@ describe('pool change (pure)', () => {
       ]);
       expect(out.limits.custom.get('b0')).toEqual({ monthly: 900 });
       expect(out.limits.custom.has('b1')).toBe(false);
-      expect(out.notice).toMatchObject({ kind: 'addon_expiry', on: ADDON_END, defaultAfter: 20, reduced: 2 });
+      expect(out.notice).toMatchObject({
+        kind: 'addon_expiry',
+        on: ADDON_END,
+        defaults: { addon: { after: 20 } },
+        reduced: 2,
+      });
+      expect(Object.keys(out.notice.defaults)).toEqual(['addon']);
+    });
+
+    it('AC3: add-on expiry leaves an over-allocated monthly custom limit alone (overdraft renewal)', () => {
+      // Monthly pool 1,000 after an overdraft renewal; b0's 1,500 is over its max but this event is add-on only.
+      const out = adjustToPool({
+        pools: { monthly: 1000, addon: 0 },
+        previousPools: { monthly: 1000, addon: 500 },
+        builderIds: ids(2),
+        limits: withCustom([['b0', { monthly: 1500, addon: 400 }]]),
+        change: ADDON_EXPIRY,
+        detectedAt: DETECTED,
+      });
+      expect(out.reset).toEqual([{ userId: 'b0', pool: 'addon', before: 400 }]);
+      expect(out.limits.custom.get('b0')).toEqual({ monthly: 1500 });
+    });
+
+    it('both pools shrank: one notice naming both defaults, counting every reset', () => {
+      // 3 builders; monthly 5,000 → 2,000, add-on 500 → 0. b0 add-on 400 no longer fits.
+      const out = adjustToPool({
+        pools: { monthly: 2000, addon: 0 },
+        previousPools: { monthly: 5000, addon: 500 },
+        builderIds: ids(3),
+        limits: withCustom([['b0', { addon: 400 }]]),
+        change: { ...PLAN_CHANGE, shrunk: ['monthly', 'addon'] },
+        detectedAt: DETECTED,
+      });
+      expect(out.reset).toEqual([{ userId: 'b0', pool: 'addon', before: 400 }]);
+      expect(out.notice).toEqual({
+        kind: 'plan_change',
+        on: CYCLE,
+        detectedAt: DETECTED,
+        defaults: { monthly: { before: 1666, after: 666 }, addon: { before: 50, after: 0 } },
+        reduced: 1,
+      });
     });
 
     it('custom rows of people who are not builders here are ignored', () => {
@@ -157,7 +217,8 @@ describe('pool change (pure)', () => {
         previousPools: { monthly: 5000, addon: 0 },
         builderIds: ids(2),
         limits: withCustom([['gone', { monthly: 4000 }]]),
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
       expect(out.reset).toEqual([]);
     });
@@ -168,7 +229,8 @@ describe('pool change (pure)', () => {
         previousPools: { monthly: 1000, addon: 0 },
         builderIds: ids(2),
         limits: withCustom([]),
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
       expect(out.notice).toBeNull();
     });
@@ -179,18 +241,57 @@ describe('pool change (pure)', () => {
         previousPools: { monthly: 4000, addon: 0 },
         builderIds: ids(2),
         limits: withCustom([]),
-        change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+        change: PLAN_CHANGE,
+        detectedAt: DETECTED,
       });
-      expect(out.notice).toMatchObject({ defaultBefore: 2000, defaultAfter: 500, reduced: 0 });
+      expect(out.notice).toMatchObject({ defaults: { monthly: { before: 2000, after: 500 } }, reduced: 0 });
     });
+  });
+
+  describe('currentNotices: only notices found in the current cycle', () => {
+    const notice = (detectedAt: string): PoolNotice => ({
+      kind: 'plan_change',
+      on: CYCLE,
+      detectedAt,
+      defaults: { monthly: { before: 2333, after: 500 } },
+      reduced: 1,
+    });
+
+    it('a notice from an earlier cycle is hidden; one from this cycle shows', () => {
+      const old = notice('2026-09-20T00:00:00.000Z');
+      const fresh = notice(DETECTED);
+      expect(currentNotices([old, fresh], CYCLE)).toEqual([fresh]);
+    });
+
+    it('cycle start unknown → shown', () => {
+      expect(currentNotices([notice(DETECTED)], null)).toHaveLength(1);
+    });
+  });
+
+  it('the usage response DTO serializes only exposed fields', () => {
+    const body = instanceToPlain(
+      plainToInstance(CreditsUsageResponseDto, {
+        trackingSince: null,
+        notices: [{ ...{ kind: 'plan_change', on: null, detectedAt: DETECTED, reduced: 0 }, secret: 1 }],
+        internal: 'leak',
+      })
+    );
+    expect(body).not.toHaveProperty('internal');
+    expect(body.notices[0]).not.toHaveProperty('secret');
   });
 
   it('poolsAdjustedEvent: system event with reason, pool sizes, default before/after and each reset', () => {
     const event = poolsAdjustedEvent({
-      change: { reason: 'plan_change', pools: ['monthly', 'addon'], on: CYCLE },
+      change: PLAN_CHANGE,
       previousPools: { monthly: 10_000, addon: 0 },
       pools: { monthly: 2003, addon: 0 },
-      notice: { kind: 'plan_change', on: CYCLE, defaultBefore: 2333, defaultAfter: 500, reduced: 1 },
+      notice: {
+        kind: 'plan_change',
+        on: CYCLE,
+        detectedAt: DETECTED,
+        defaults: { monthly: { before: 2333, after: 500 } },
+        reduced: 1,
+      },
       reset: [{ userId: 'b0', pool: 'monthly', before: 3000 }],
       emails: new Map([['b0', 'b0@tooljet.io']]),
     });
@@ -201,8 +302,7 @@ describe('pool change (pure)', () => {
         on: CYCLE,
         poolsBefore: { monthly: 10_000, addon: 0 },
         poolsAfter: { monthly: 2003, addon: 0 },
-        defaultBefore: 2333,
-        defaultAfter: 500,
+        defaults: { monthly: { before: 2333, after: 500 } },
         customReduced: 1,
         builders: [{ builderId: 'b0', builderEmail: 'b0@tooljet.io', pool: 'monthly', before: 3000, after: null }],
       },
