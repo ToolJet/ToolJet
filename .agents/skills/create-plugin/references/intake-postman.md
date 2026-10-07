@@ -5,18 +5,17 @@ Convert the collection to an OpenAPI 3.0 YAML spec, audit it, then continue with
 
 ## 1. Ingest
 
-- **Local file**: preferred. Read all of it, paging through large files.
-- **URL**: fetch it once, following redirects (share links usually redirect to the JSON). If the
-  result is not collection JSON (an HTML page, a login wall, an error), stop and ask the user to
-  export it: collection menu, Export, Collection v2.1. Do not retry with other fetchers and do
-  not fall back to docs intake.
-- Note the format from `info.schema` (v2.0 or v2.1). Both work.
+- **Local file** (preferred): read all of it, paging through large files.
+- **URL**: fetch once, following redirects. Not collection JSON (HTML, login wall, error) → stop
+  and ask the user to export it (collection menu, Export, Collection v2.1). Don't retry with
+  other fetchers or fall back to docs intake.
+- `info.schema` v2.0 and v2.1 both work.
 
 ## 2. Convert
 
-Run the converter in a temp directory outside the repo, then audit its output. The package's
-binary is `p2o`, so name it with `-p`. `replaceVars` fills `{{baseUrl}}`-style variables from the
-collection's `variable[]`; `operationId: auto` derives ids from request names.
+Run in a temp directory outside the repo. The package's binary is `p2o` (hence `-p`).
+`replaceVars` fills `{{baseUrl}}`-style variables from `variable[]`; `operationId: auto` derives
+ids from request names.
 
 ```bash
 echo '{"replaceVars":true,"operationId":"auto"}' > p2o-options.json
@@ -73,12 +72,11 @@ Check collection-level `auth` and per-request overrides. Uniform auth goes in to
 | `oauth1` | `type: http`, `scheme: OAuth`, plus a `description` of the signature method |
 | `noauth` | no `security` on those operations                                           |
 
-`type: http` takes any IANA-registered HTTP auth scheme (`basic`, `bearer`, `digest`, `OAuth`
-for 1.0a, …). `oauth2` is not one of them; OAuth 2.0 always uses `type: oauth2`.
+OAuth 2.0 always uses `type: oauth2`, never `type: http`.
 
 ## 5. Audit
 
-Before handing off, check and fix:
+Check and fix:
 
 - Every Postman request (method + normalized path) has an operation.
 - Every enabled query param appears.

@@ -10,7 +10,7 @@ description: >-
 
 # Recorder
 
-Scripted Playwright walkthroughs → small MP4s that play inline on GitHub. Every polish choice made after the first render means re-rendering every video, so settle them all in one brief.
+Scripted Playwright walkthroughs → small MP4s that play inline on GitHub. Settle every polish choice in one brief: changing one after the first render means re-rendering every video.
 
 ## 1. Prerequisites
 
@@ -25,7 +25,7 @@ Work in `<scratchpad>/demos/` with its own `package.json`; install nothing into 
 | Running instance | `tools/tj/bin/tj status --json` | `tools/tj/bin/tj start --json` |
 | Demo users + password | sign-in works | seed them; `DEMO_PASSWORD` env, never in a file |
 
-Why not `argo pipeline`: it records one uncut take (no pausing for seeding or reloads), and Homebrew's ffmpeg has no libass, so it can't burn subtitles. `rec.cjs` records CDP screencast segments, cuts between them with crossfades, and draws subtitles in the page; argo supplies only the cursor.
+Not `argo pipeline`: it records one uncut take (no pausing for seeding or reloads), and Homebrew's ffmpeg lacks libass for burned subtitles. `rec.cjs` records CDP screencast segments, crossfades between them and draws subtitles in the page; argo supplies only the cursor.
 
 ## 2. Brief: ask once, before recording
 
