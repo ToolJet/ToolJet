@@ -64,6 +64,7 @@ export const NumberColumn = ({
       searchText={searchText}
       SearchHighlightComponent={HighLightSearch}
       className="table-column-type-input-element"
+      validationConfig={column}
     />
   );
 };
