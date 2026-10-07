@@ -5963,11 +5963,11 @@ describeGitSync('GitSyncController', () => {
         ]);
         expect(await dsvCount(dsId, featBranchId)).toBe(0);
 
-        await depDs.query(
-          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
-             WHERE app_id = $1 AND branch_id = $2`,
-          [workflowId, featBranchId]
-        );
+        // Force the open-path hydrate: flip the linked draft version back to a stub. getOne only
+        // hydrates when a branch version has is_stub=true (apps/service.ts:276-310); a non-stub
+        // draft is served straight from the DB (the old git_tree_sha re-clone/compare is gone), so
+        // a git_tree_sha mismatch no longer triggers anything. This mirrors the app/module cases.
+        await depDs.query(`UPDATE app_versions SET is_stub = true WHERE id = $1`, [versionId]);
 
         const hydrateResp = await auth(agent().get(`/api/apps/${workflowId}`))
           .query({ branch_id: featBranchId })

@@ -46,9 +46,18 @@ export const CustomDropdownIndicator = (props) => {
 };
 
 export const CustomClearIndicator = (props) => {
+  const { ['aria-hidden']: _ariaHidden, className, ...innerProps } = props.innerProps;
   return (
-    <ClearIndicator {...props}>
-      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    <ClearIndicator
+      {...props}
+      innerProps={{
+        ...innerProps,
+        className: [className, 'clear-indicator'].filter(Boolean).join(' '),
+        role: 'button',
+        'aria-label': 'Clear selection',
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer" />
     </ClearIndicator>
   );
 };
@@ -424,8 +433,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -595,6 +604,7 @@ export const DropdownV2 = ({
             aria-busy={isDropdownLoading}
             aria-required={isMandatory}
             aria-invalid={!isValid}
+            aria-errormessage={userInteracted && !isValid ? `${id}-validation-error` : undefined}
             id={`component-${id}`}
             aria-labelledby={`${id}-label`}
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
@@ -645,6 +655,7 @@ export const DropdownV2 = ({
       </div>
       {userInteracted && visibility && !isValid && (
         <div
+          id={`${id}-validation-error`}
           className={'d-flex'}
           style={{
             color: errTextColor,

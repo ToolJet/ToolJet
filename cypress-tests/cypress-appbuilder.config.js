@@ -68,7 +68,12 @@ module.exports = defineConfig({
         },
       });
 
-      return require("./cypress/plugins/index.js")(on, config);
+      config = require("./cypress/plugins/index.js")(on, config);
+      // cypress-live-reporter — self-disables when no CLR sink is set in cypress env.
+      return require("cypress-live-reporter/plugin").livePlugin(on, config);
+    },
+    env: {
+      CLR_PROJECT_ID: "appbuilder",
     },
     downloadsFolder: "cypress/downloads",
     experimentalRunAllSpecs: true,

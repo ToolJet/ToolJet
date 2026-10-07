@@ -147,6 +147,8 @@ export const Html = function ({
         'jet-container-loading': exposedVariablesTemporaryState.isLoading,
       })}
       data-disabled={exposedVariablesTemporaryState.isDisabled}
+      aria-disabled={exposedVariablesTemporaryState.isDisabled}
+      inert={exposedVariablesTemporaryState.isDisabled ? '' : undefined}
       style={{
         background: exposedVariablesTemporaryState.isLoading && 'var(--cc-surface1-surface)',
         display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
