@@ -288,27 +288,7 @@ jobs:
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
         run: npm run test:layout
-      # Existing untouched widgets remain a report-only backfill. New widget
-      # definitions and modified widget tests must already have an approved
-      # behavior contract before CI accepts them.
-      
-      # TEMPORARILY DISABLED to unblock the lts-3.16 -> main merge (#18058): the
-      # changed-files check treats runtime code carried over from lts (e.g. the
-      # NumberInput fix) as an edit that violates `production_changes: forbidden`.
-      # Re-enable once the validator handles back-merge PRs.
-      # - name: Validate widget testing contracts
-      #   # explicit bash = pipefail; a failed gh api must not feed the validator empty stdin
-      #   shell: bash
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     if [ "${{ github.event_name }}" = "pull_request" ]; then
-      #       gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
-      #         --paginate --jq '.[] | [.status, .filename] | @tsv' | \
-      #         npm run validate:widget-testing-contracts -- --changed-files-stdin
-      #     else
-      #       npm run validate:widget-testing-contracts
-      #     fi
+      # Widget testing contracts are validated in the separate `widget-contracts` job below.
       - name: Run full test suite with coverage
         run: npm run test:ci
       # Fails if an App Builder source file is not assigned to a subsystem in
@@ -316,6 +296,57 @@ jobs:
       # runs in the full suite above via testMatch.
       - name: Validate App Builder coverage manifest
         run: npm run validate:app-builder-coverage-manifest
+
+  # Separate job, and therefore a separate status check, so a contract violation can't
+  # hide the frontend test result. Ported from lts-3.16 (#18166), where it replaced the
+  # step that was disabled here to unblock the lts-3.16 -> main merge (#18058).
+  #
+  # Label-gated rather than path-gated: the changed-file rules (production_changes,
+  # new-widget contracts) only mean something on a PR a person authored, so back-merge
+  # and release PRs don't carry the label. Without the label it never runs and reports
+  # nothing, so it is deliberately not in ci-gate's needs and must not be a required check.
+  # It also doesn't need detect-changes, which skips on any label other than run-ci.
+  widget-contracts:
+    name: 'Widget contracts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'run-validate-widget-contracts')
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      # Contracts live in the private frontend/ee submodule.
+      - name: Checkout EE submodules
+        working-directory: .
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci
+      # Existing untouched widgets remain a report-only backfill. New widget
+      # definitions and modified widget tests must already have an approved
+      # behavior contract before CI accepts them.
+      - name: Validate widget testing contracts
+        # explicit bash = pipefail; a failed gh api must not feed the validator empty stdin
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[] | [.status, .filename] | @tsv' | \
+              npm run validate:widget-testing-contracts -- --changed-files-stdin
+          else
+            npm run validate:widget-testing-contracts
+          fi
 
   # Unit and e2e run sequentially in one job, not two in parallel: cypress-platform
   # (~60min) is the run's real critical path, so serializing unit (~3-4min) ahead of
