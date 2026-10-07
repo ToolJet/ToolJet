@@ -6,13 +6,13 @@ export const usersText = {
     usersTableStatusColumnHeader: "STATUS",
     usersFilterLabel: "Showing",
   },
-  usersPageTitle: "users",
-  breadcrumbUsersPageTitle: "Users",
+  usersPageTitle: "Add user",
+  breadcrumbUsersPageTitle: "Add user",
   adminUserName: "The Developer",
   adminUserEmail: "dev@tooljet.io",
   adminUserState: "Archive",
-  buttonAddUsers: "Add users",
-  addUsersCardTitle: "Add users",
+  buttonAddUsers: "Users",
+  addUsersCardTitle: "Users",
   emailLabel: "Email address",
   cancelButton: "Cancel",
   buttonInviteUsers: "Invite users",
@@ -54,7 +54,7 @@ export const usersText = {
   buttonUploadUsers: "Upload users",
 
   buttonInviteWithEmail: " Invite with email",
-  buttonUploadCsvFile: "Upload CSV file",
+  // buttonUploadCsvFile: "Upload CSV file",
 
   helperTextBulkUpload:
     "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. ",

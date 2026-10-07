@@ -225,19 +225,27 @@ export default function BulkUploadUsersDrawer({ isOpen, onClose, onUploaded }) {
                     <IconFileTypeCsv size={20} />
                   </div>
                   <div className="bulk-upload-file-details">
-                    <span className="tj-text-sm font-weight-500 text-truncate">{file.name}</span>
+                    <span className="tj-text-sm font-weight-500 text-truncate" data-cy="uploaded-file-name">
+                      {file.name}
+                    </span>
                     {status === 'validating' && (
                       <span className="tj-text-xsm bulk-upload-muted d-flex align-items-center gap-1">
                         <Spinner animation="border" size="sm" /> Checking file…
                       </span>
                     )}
                     {status === 'invalid' && (
-                      <span className="tj-text-xsm bulk-upload-error d-flex align-items-center gap-1">
+                      <span
+                        className="tj-text-xsm bulk-upload-error d-flex align-items-center gap-1"
+                        data-cy="invalid-file-message"
+                      >
                         <IconAlertTriangleFilled size={14} /> Errors detected, resolve and re-upload
                       </span>
                     )}
                     {status === 'valid' && (
-                      <span className="tj-text-xsm bulk-upload-success d-flex align-items-center gap-1">
+                      <span
+                        className="tj-text-xsm bulk-upload-success d-flex align-items-center gap-1"
+                        data-cy="valid-file-success"
+                      >
                         <IconCircleCheckFilled size={14} /> {describeSummary(summary)}
                       </span>
                     )}
@@ -270,7 +278,9 @@ export default function BulkUploadUsersDrawer({ isOpen, onClose, onUploaded }) {
               <p className="tj-text-sm font-weight-500 bulk-upload-error mb-2">Errors ({errors.length})</p>
               <ul className="tj-text-xsm">
                 {errors.map((message, index) => (
-                  <li key={index}>{message}</li>
+                  <li key={index} data-cy="bulk-upload-error-message">
+                    {message}
+                  </li>
                 ))}
               </ul>
             </section>

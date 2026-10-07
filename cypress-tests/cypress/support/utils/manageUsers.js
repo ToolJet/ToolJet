@@ -238,16 +238,36 @@ export const bulkUserUpload = (
     force: true,
   });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
-  cy.get(usersSelector.buttonUploadUsers).click();
-  if (isDuplicate) {
-    cy.get(commonSelectors.modalMessage)
-      .should("be.visible")
-      .and("have.text", toastMessage);
-    cy.get(usersSelector.modalClose).click();
+
+  if (Cypress.env("environment") === "Community") {
+    cy.get(usersSelector.buttonUploadUsers).click();
+    if (isDuplicate) {
+      cy.get(commonSelectors.modalMessage)
+        .should("be.visible")
+        .and("have.text", toastMessage);
+      cy.get(usersSelector.modalClose).click();
+    } else {
+      cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
+      cy.get('[data-cy="toast-close-button"]').click();
+    }
   } else {
-    cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
-    cy.get('[data-cy="toast-close-button"]').click();
+    // EE: the file is validated on selection; errors are listed in the drawer
+    cy.get('[data-cy="invalid-file-message"]')
+      .should("be.visible")
+      .and("contain", "Errors detected, resolve and re-upload");
+    const errors = [].concat(toastMessage);
+    cy.get('[data-cy="bulk-upload-errors"]').should(
+      "contain",
+      `Errors (${errors.length})`
+    );
+    cy.get('[data-cy="bulk-upload-error-message"]')
+      .should("have.length", errors.length)
+      .each(($error, index) => {
+        cy.wrap($error).should("have.text", errors[index]);
+      });
+    cy.get(usersSelector.buttonUploadUsers).should("be.disabled");
   }
+
   cy.wait(1500);
 };
 
