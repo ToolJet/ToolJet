@@ -7,6 +7,7 @@ import {
   equalShare,
   isAtLimit,
   limitEvents,
+  logicalSplit,
   resolveLimits,
 } from '@ee/ai/services/credit-limits';
 
@@ -207,6 +208,39 @@ describe('credit limits (pure)', () => {
 
     it('a net refund counts as no spend', () => {
       expect(available({ monthly: -50, addon: 0 }, limit)).toEqual(limit);
+    });
+  });
+  describe('logicalSplit: the table and enforcement share it', () => {
+    const limit = { monthly: 2000, addon: 400 };
+
+    it('exactly at the monthly limit: all monthly, no add-on', () => {
+      expect(logicalSplit({ monthly: 1700, addon: 300 }, limit)).toEqual({ monthly: 2000, addon: 0 });
+    });
+
+    it('over monthly: the rest is add-on, whatever the wallet said', () => {
+      expect(logicalSplit({ monthly: 1700, addon: 340 }, limit)).toEqual({ monthly: 2000, addon: 40 });
+      expect(logicalSplit({ monthly: 0, addon: 600 }, limit)).toEqual({ monthly: 600, addon: 0 });
+    });
+
+    it('over both: monthly caps at its limit, add-on shows the real overshoot', () => {
+      expect(logicalSplit({ monthly: 2100, addon: 500 }, limit)).toEqual({ monthly: 2000, addon: 600 });
+    });
+
+    it('add-on limit 0: everything stays on monthly, overshoot included', () => {
+      expect(logicalSplit({ monthly: 1700, addon: 400 }, { monthly: 500, addon: 0 })).toEqual({
+        monthly: 2100,
+        addon: 0,
+      });
+      expect(available({ monthly: 2100, addon: 0 }, { monthly: 500, addon: 0 })).toEqual({ monthly: 0, addon: 0 });
+    });
+
+    it('zero spend', () => {
+      expect(logicalSplit({ monthly: 0, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 0 });
+    });
+
+    it('a net refund stays on monthly and add-on is 0; the split always sums to the spend', () => {
+      expect(logicalSplit({ monthly: -50, addon: 0 }, limit)).toEqual({ monthly: -50, addon: 0 });
+      expect(logicalSplit({ monthly: 500, addon: -100 }, limit)).toEqual({ monthly: 400, addon: 0 });
     });
   });
 });

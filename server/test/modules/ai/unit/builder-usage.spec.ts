@@ -211,5 +211,84 @@ describe('builder usage calculations', () => {
       expect(result.workspaces).toEqual([{ id: 'ws-a', name: 'Sales Ops' }]);
       expect(result.rows[0].workspaceIds).toEqual(['ws-a']);
     });
+    it('limits on: builder rows show the logical split, the workspace breakdown follows it by share of spend', () => {
+      const spend = [
+        {
+          userId: 'u1',
+          monthly: 1700,
+          addon: 340,
+          byWorkspace: [
+            { organizationId: 'ws-a', monthly: 1530, addon: 0 },
+            { organizationId: 'ws-b', monthly: 170, addon: 340 },
+          ],
+        },
+        { userId: 'end', monthly: 10, addon: 5 },
+      ];
+      const result = toCreditsUsage({
+        balance: { ...balance, remaining: totals(6290, 1255) },
+        usage: { cycleStart: null, trackingSince: null, spend },
+        memberships: [
+          member(),
+          member({ userId: 'u2' }),
+          member({ userId: 'u3' }),
+          member({ userId: 'u4' }),
+          member({ userId: 'end', canEdit: false }),
+        ],
+        workspaces: null,
+        limits: { ...noLimits(), enabled: true },
+      });
+
+      expect(result.pools.monthly).toMatchObject({ total: 8000, used: 1710 });
+      expect(result.pools.addon).toMatchObject({ total: 1600, used: 345 });
+      const [row] = result.rows;
+      expect(row).toMatchObject({ userId: 'u1', monthly: 2000, addon: 40, limit: { monthly: 2000, addon: 400 } });
+      // 2,040 spent: ws-a 1,530 (75%), ws-b 510 (25%), each split 2,000 : 40.
+      expect(row.byWorkspace).toEqual([
+        { organizationId: 'ws-a', monthly: 1500, addon: 30 },
+        { organizationId: 'ws-b', monthly: 500, addon: 10 },
+      ]);
+      // No limit to split against: wallet split.
+      expect(result.rows.find((r) => r.userId === 'end')).toMatchObject({ monthly: 10, addon: 5 });
+    });
+
+    it('limits on: the workspace breakdown sums exactly to the row (largest remainder)', () => {
+      const workspaceIds = ['ws-1', 'ws-2', 'ws-3', 'ws-4', 'ws-5', 'ws-6', 'ws-7'];
+      const spend = [
+        {
+          userId: 'u1',
+          monthly: 7,
+          addon: 0,
+          byWorkspace: workspaceIds.map((organizationId) => ({ organizationId, monthly: 1, addon: 0 })),
+        },
+      ];
+      const result = toCreditsUsage({
+        balance: { ...balance, remaining: totals(900, 1000) },
+        usage: { cycleStart: null, trackingSince: null, spend },
+        memberships: [member()],
+        workspaces: null,
+        limits: { ...noLimits(), enabled: true, custom: new Map([['u1', { monthly: 1, addon: 400 }]]) },
+      });
+
+      const [row] = result.rows;
+      expect(row).toMatchObject({ monthly: 1, addon: 6 });
+      const sum = sumRows(row.byWorkspace);
+      expect(sum.monthly).toBeCloseTo(1, 10);
+      expect(sum.addon).toBeCloseTo(6, 10);
+      for (const w of row.byWorkspace) {
+        expect(Math.round(w.monthly * 100) / 100).toBe(w.monthly);
+        expect(Math.round(w.addon * 100) / 100).toBe(w.addon);
+      }
+    });
+
+    it('limits off: builder rows keep the wallet split', () => {
+      const result = toCreditsUsage({
+        balance,
+        usage: { cycleStart: null, trackingSince: null, spend: [{ userId: 'u1', monthly: 1700, addon: 340 }] },
+        memberships: [member()],
+        workspaces: null,
+        limits: noLimits(),
+      });
+      expect(result.rows[0]).toMatchObject({ monthly: 1700, addon: 340 });
+    });
   });
 });
