@@ -298,6 +298,10 @@ describe('AI credit enforcement', () => {
         });
 
         expect(sseRefusal(message.text)).toBe('pool_empty');
+        // PRD builder copy, sentence-case title; buying stays on the admin's action button.
+        expect(message.text).toMatch(/Your (instance|workspace) is out of AI credits\. Ask your admin to add more\./);
+        expect(message.text).toContain('Out of AI credits');
+        expect(message.text).not.toContain('Insufficient Credits');
         expect(autosort.statusCode).toBe(402);
         expect(autosort.body.code).toBe('pool_empty');
         expectNoRunStarted();

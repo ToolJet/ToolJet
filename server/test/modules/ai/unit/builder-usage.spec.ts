@@ -141,6 +141,20 @@ describe('builder usage calculations', () => {
         endsAt: '2026-11-01',
       });
     });
+
+    it('a fractional spend never shrinks the pool or its default (gateway floors remaining)', () => {
+      const spend: BuilderSpend[] = [{ userId: 'a', monthly: 0.26, addon: 0 }];
+      const monthly = poolTotals(19_999, spend, 'monthly', null);
+
+      expect(monthly.total).toBe(20_000);
+      const builders = Array.from({ length: 10 }, (_, i) => member({ userId: `b${i}`, workspaceId: `ws-${i}` }));
+      const r = resolveScopeLimits({
+        pools: { monthly, addon: poolTotals(0, [], 'addon', null) },
+        memberships: builders,
+        limits: noLimits(),
+      });
+      expect(r.byBuilder.get('b0')).toEqual({ monthly: 2000, addon: 0 });
+    });
   });
 
   describe('resolveScopeLimits', () => {
