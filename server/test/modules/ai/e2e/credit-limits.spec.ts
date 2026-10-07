@@ -215,7 +215,7 @@ describe('AI credit limits', () => {
 
     const POOL = { monthly: 1000, addon: 100 };
 
-    it('AC7: a scope before any admin action has limits off and no rows', async () => {
+    it('a new workspace has limits on with equal share before any admin action', async () => {
       const s = await seed('ac7');
       licenseWith(app, { aiPlan: 'credits' });
       stubGateway(gatewayFor(s.owner, POOL));
@@ -224,15 +224,33 @@ describe('AI credit limits', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body.limits).toMatchObject({
-        enabled: false,
+        enabled: true,
         builderCount: 4,
         customCount: 0,
         monthly: { mode: 'equal_share', value: null, max: 250, effective: 250 },
         addon: { mode: 'equal_share', value: null, max: 25, effective: 25 },
       });
-      expect(await limitRows(s.workspace.id)).toEqual([]);
+      // The first read records the plan sizes; the rows it writes stay on.
+      for (const row of await limitRows(s.workspace.id)) expect(row).toMatchObject({ enabled: true });
       const builderRow = res.body.rows.find((r) => r.userId === s.builders[0].user.id);
       expect(builderRow.limit).toEqual({ monthly: 250, addon: 25 });
+    });
+
+    it('a new workspace turned off writes off rows and logs DISABLED only (no ENABLED for the default)', async () => {
+      const s = await seed('newoff');
+      licenseWith(app, { aiPlan: 'credits' });
+      stubGateway(gatewayFor(s.owner, POOL));
+
+      expect((await putLimits(app, s.cookie, s.workspace.id, { enabled: false })).statusCode).toBe(200);
+
+      expect(await limitRows(s.workspace.id)).toEqual([
+        { pool: 'addon', mode: 'equal_share', value: null, enabled: false },
+        { pool: 'monthly', mode: 'equal_share', value: null, enabled: false },
+      ]);
+      await auditActions(s.workspace.id, 1);
+      await new Promise((r) => setTimeout(r, 300));
+      expect((await auditActions(s.workspace.id, 0)).map((r) => r.actionType)).toEqual(['AI_CREDIT_LIMIT_DISABLED']);
+      expect((await getUsage(app, s.cookie, s.workspace.id)).body.limits.enabled).toBe(false);
     });
 
     it('AC2: a custom default reduces when a builder joins and returns when they leave', async () => {

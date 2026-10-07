@@ -257,6 +257,21 @@ describe('AI credit enforcement', () => {
       });
     });
 
+    it('a new workspace (no admin action) enforces equal share: a builder over it gets 402', async () => {
+      const s = await seed('newws');
+      stubAgents();
+      stubGateway(gatewayFor(s.owner, POOL, { [s.builder.id]: LIMIT }));
+
+      const res = await post(s.asBuilder, 'autosort', {
+        queries: [{ id: uuidv4(), name: 'q', kind: 'restapi' }],
+        folders: [],
+      });
+
+      expect(res.statusCode).toBe(402);
+      expect(res.body.code).toBe('credit_limit_reached');
+      expectNoRunStarted();
+    });
+
     it('AC2: a builder at 85% with nothing running sends a message', async () => {
       const s = await seed('ac2e');
       stubAgents();

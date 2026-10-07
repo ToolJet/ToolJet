@@ -282,7 +282,7 @@ describe('builder usage calculations', () => {
           balance: balance(1000, 200),
           usage: usage({}),
           memberships: builders,
-          limits: noLimits(),
+          limits: { ...noLimits(), enabled: false },
           userId: 'a',
         })
       ).toEqual({ enabled: false });

@@ -10,8 +10,10 @@ import {
   equalShare,
   isAtLimit,
   limitEvents,
+  loadScopeLimits,
   resolveLimits,
 } from '@ee/ai/services/credit-limits';
+import { EntityManager } from 'typeorm';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `b${i}`);
 
@@ -29,6 +31,13 @@ describe('credit limits (pure)', () => {
   it('noLimits() is a fresh value: a custom limit set on one never reaches another scope', () => {
     noLimits().custom.set('b0', { monthly: 1 });
     expect(noLimits().custom.size).toBe(0);
+  });
+
+  it('a scope with no rows (a new workspace) is on with equal share', async () => {
+    const equal = { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } };
+    expect(noLimits()).toMatchObject({ enabled: true, defaults: equal });
+    const empty = { query: async () => [] } as unknown as EntityManager;
+    expect(await loadScopeLimits(empty, 'org-1')).toMatchObject({ enabled: true, defaults: equal });
   });
 
   describe('AC1: equal share', () => {
@@ -162,7 +171,7 @@ describe('credit limits (pure)', () => {
   });
 
   describe('AC5: audit events for one save', () => {
-    const before = noLimits();
+    const before: ScopeLimits = { ...noLimits(), enabled: false };
     const values = { monthly: { mode: 'custom' as const, value: 1000 }, addon: { mode: 'equal_share' as const } };
 
     it('turning on with new values logs ENABLED with the count over, and UPDATED with before and after', () => {
