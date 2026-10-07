@@ -1325,6 +1325,28 @@ describe('Table: expandable rows', () => {
     rtlFireEvent.click(paginationButton('pagination-button-to-next'));
     await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([]));
   });
+
+  test('[Table-BUG-032] only the first expanded row is flagged as the editable drop target; every other expanded row is flagged read-only for drop/grid-overlay purposes', async () => {
+    widget.render({ properties: { enableExpandableRows: binding('{{true}}') } });
+    await waitFor(() => expect(expandButton(0)).toBeInTheDocument());
+
+    rtlFireEvent.click(expandButton(0));
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([0]));
+    // Row 0's expansion is now its own virtualized item, shifting every later row's rendered
+    // (data-cy) position by one - the second data row (row.index 1) is virtual position 2.
+    rtlFireEvent.click(expandButton(2));
+    await waitFor(() => expect(exposed('currentExpandedRows')).toEqual([0, 1]));
+
+    const expandedCanvases = document.querySelectorAll('.table-expanded-row-content .real-canvas');
+    await waitFor(() => expect(expandedCanvases).toHaveLength(2));
+
+    // Rendered in row-index order: row 0's sub-canvas is the editable template instance.
+    expect(expandedCanvases[0].getAttribute('data-row-scoped-readonly')).toBeNull();
+    // Row 1's sub-canvas shares the same container id as row 0 (one shared template,
+    // per-row rendering) but must be flagged read-only so it never accepts a drop or
+    // shows the grid overlay.
+    expect(expandedCanvases[1].getAttribute('data-row-scoped-readonly')).toBe('true');
+  });
 });
 
 describe('Table: inline cell editing', () => {
