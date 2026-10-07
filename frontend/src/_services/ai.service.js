@@ -10,6 +10,7 @@ export const aiService = {
   getCopilotSuggestion,
   getCreditBalance,
   getCreditsUsage,
+  getMyCredits,
   updateCreditLimits,
   updateBuilderLimit,
   fixWithAI,
@@ -276,6 +277,14 @@ async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
   return fetch(`${config.apiUrl}/ai/get-credits-balance`, requestOptions).then((response) =>
+    handleResponse(response, undefined, undefined, true)
+  );
+}
+
+// Caller's own numbers; scope from the session.
+async function getMyCredits() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/credits-usage/me`, requestOptions).then((response) =>
     handleResponse(response, undefined, undefined, true)
   );
 }

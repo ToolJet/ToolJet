@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { initTestApp, closeTestApp, createUser, buildTestSession } from 'test-helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { User } from '@entities/user.entity';
+import { AiUtilService } from '@ee/ai/util.service';
 
 const GATEWAY = 'http://gateway.test';
 const CYCLE_START = '2026-10-01T00:00:00.000Z';
@@ -99,16 +100,16 @@ describe('GET /api/ai/credits-usage/me', () => {
 
     // admin + 2 builders = 3 builders; pool 900/90 → 300/30 each
     async function seed(prefix: string) {
-      const admin = await createUser(app, { email: `${prefix}-admin@tooljet.io`, groups: ['end-user', 'admin'] });
+      const admin = await createUser(app, { email: `${prefix}-admin@tooljet.io`, groups: ['admin'] });
       const workspace = admin.organization;
       const a = await createUser(app, {
         email: `${prefix}-a@tooljet.io`,
-        groups: ['end-user', 'builder'],
+        groups: ['builder'],
         organization: workspace,
       });
       const b = await createUser(app, {
         email: `${prefix}-b@tooljet.io`,
-        groups: ['end-user', 'builder'],
+        groups: ['builder'],
         organization: workspace,
       });
       const endUser = await createUser(app, {
@@ -118,10 +119,14 @@ describe('GET /api/ai/credits-usage/me', () => {
       });
       licenseWith(app, { aiPlan: 'credits' });
       stubGateway(
-        gatewayFor(`/api/ai/organizations/${workspace.id}`, { monthly: 900, addon: 90 }, {
-          [a.user.id]: 250,
-          [b.user.id]: 40,
-        })
+        gatewayFor(
+          `/api/ai/organizations/${workspace.id}`,
+          { monthly: 900, addon: 90 },
+          {
+            [a.user.id]: 250,
+            [b.user.id]: 40,
+          }
+        )
       );
       return { admin, workspace, a, b, endUser, adminCookie: await sessionFor(admin.user, workspace.id) };
     }
@@ -166,8 +171,7 @@ describe('GET /api/ai/credits-usage/me', () => {
     it('AI not on ToolJet credits → enabled false', async () => {
       const s = await seed('mc4');
       await enableLimits(app, s.adminCookie, s.workspace.id);
-      jest.restoreAllMocks();
-      licenseWith(app, { aiPlan: 'byok' });
+      jest.spyOn(AiUtilService.prototype, 'isTooljetManagedAi').mockResolvedValue(false);
 
       const res = await getMine(app, await sessionFor(s.a.user, s.workspace.id), s.workspace.id);
 
@@ -201,11 +205,11 @@ describe('GET /api/ai/credits-usage/me', () => {
       const superAdmin = await createUser(app, {
         email: 'mc-sh-super@tooljet.io',
         userType: 'instance',
-        groups: ['end-user', 'admin'],
+        groups: ['admin'],
       });
       const builder = await createUser(app, {
         email: 'mc-sh-builder@tooljet.io',
-        groups: ['end-user', 'builder'],
+        groups: ['builder'],
         organization: superAdmin.organization,
       });
       licenseWith(app, { aiPlan: 'credits', aiEnabled: true, ai: { apiKey: 'k' }, metadata: { customerId } });
@@ -239,7 +243,7 @@ describe('GET /api/ai/credits-usage/me', () => {
     }, 60_000);
 
     it('returns 404', async () => {
-      const admin = await createUser(app, { email: 'mc-ce-admin@tooljet.io', groups: ['end-user', 'admin'] });
+      const admin = await createUser(app, { email: 'mc-ce-admin@tooljet.io', groups: ['admin'] });
 
       const res = await getMine(app, await sessionFor(admin.user, admin.organization.id), admin.organization.id);
 

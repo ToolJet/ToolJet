@@ -89,6 +89,12 @@ export class AiController implements IAiController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GET_MY_CREDITS)
+  @Get('/credits-usage/me')
+  async getMyCredits(@User() user) {
+    throw new NotFoundException();
+  }
+
   @InitFeature(FEATURE_KEY.UPDATE_CREDIT_LIMITS)
   @Put('/credits-usage/limits')
   async updateCreditLimits(@User() user, @Body() body) {

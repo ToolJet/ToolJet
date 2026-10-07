@@ -264,7 +264,13 @@ describe('builder usage calculations', () => {
 
     it('limits off → disabled', () => {
       expect(
-        toMyCredits({ balance: balance(1000, 200), usage: usage({}), memberships: builders, limits: noLimits(), userId: 'a' })
+        toMyCredits({
+          balance: balance(1000, 200),
+          usage: usage({}),
+          memberships: builders,
+          limits: noLimits(),
+          userId: 'a',
+        })
       ).toEqual({ enabled: false });
     });
 

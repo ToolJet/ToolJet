@@ -24,6 +24,7 @@ interface Features {
   [FEATURE_KEY.GET_LLM_PREFERENCE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: FeatureConfig;
   [FEATURE_KEY.GET_CREDITS_USAGE]: FeatureConfig;
+  [FEATURE_KEY.GET_MY_CREDITS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_CREDIT_LIMITS]: FeatureConfig;
 }
 
