@@ -93,6 +93,17 @@ const post = ({ app, cookie, organizationId }: Caller, path: string, body: objec
     .send(body);
 
 /** The persisted credits-error message an SSE route sends when it refuses. */
+/** The refusal message's copy from an SSE body; null when none. */
+const sseRefusalCopy = (text: string): string | null => {
+  for (const block of text.split('\n\n')) {
+    const data = block.split('\n').find((l) => l.startsWith('data: '));
+    if (!block.startsWith('event: message') || !data) continue;
+    const message = JSON.parse(data.slice(6));
+    if (message?.metadata?.creditsError) return message.content ?? null;
+  }
+  return null;
+};
+
 const sseRefusal = (text: string): string | null => {
   for (const block of text.split('\n\n')) {
     const data = block.split('\n').find((l) => l.startsWith('data: '));
@@ -300,6 +311,10 @@ describe('AI credit enforcement', () => {
         expect(sseRefusal(message.text)).toBe('pool_empty');
         expect(autosort.statusCode).toBe(402);
         expect(autosort.body.code).toBe('pool_empty');
+        // Same pool-empty copy whatever the toggle (PRD state table).
+        const copy = 'Your workspace is out of AI credits. Ask your admin to add more.';
+        expect(sseRefusalCopy(message.text)).toBe(copy);
+        expect(autosort.body.message).toBe(copy);
         expectNoRunStarted();
       }
     );
