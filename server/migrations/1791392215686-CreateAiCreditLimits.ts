@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // No FKs, like the credit history: limits are keyed by scope and user ids only.
-// organization_id NULL = self-hosted instance; user_id NULL = scope default. No rows = limits off.
+// organization_id NULL = self-hosted instance; user_id NULL = scope default. No rows = limits on (see AddOffLimitsForExistingScopes).
 export class CreateAiCreditLimits1791392215686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await withLockTimeout(

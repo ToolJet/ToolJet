@@ -2,7 +2,7 @@ import {
   available,
   builderLimitEvents,
   builderMax,
-  noLimits,
+  newScopeLimits,
   withBuilderLimit,
   ScopeLimits,
   countAtLimit,
@@ -17,7 +17,7 @@ import { EntityManager } from 'typeorm';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `b${i}`);
 
-const on = (defaults: ScopeLimits['defaults'] = noLimits().defaults): ScopeLimits => ({
+const on = (defaults: ScopeLimits['defaults'] = newScopeLimits().defaults): ScopeLimits => ({
   enabled: true,
   defaults,
   custom: new Map(),
@@ -28,14 +28,14 @@ const total = (r: ReturnType<typeof resolveLimits>, pool: 'monthly' | 'addon') =
 
 /** @group ai */
 describe('credit limits (pure)', () => {
-  it('noLimits() is a fresh value: a custom limit set on one never reaches another scope', () => {
-    noLimits().custom.set('b0', { monthly: 1 });
-    expect(noLimits().custom.size).toBe(0);
+  it('newScopeLimits() is a fresh value: a custom limit set on one never reaches another scope', () => {
+    newScopeLimits().custom.set('b0', { monthly: 1 });
+    expect(newScopeLimits().custom.size).toBe(0);
   });
 
   it('a scope with no rows (a new workspace) is on with equal share', async () => {
     const equal = { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } };
-    expect(noLimits()).toMatchObject({ enabled: true, defaults: equal });
+    expect(newScopeLimits()).toMatchObject({ enabled: true, defaults: equal });
     const empty = { query: async () => [] } as unknown as EntityManager;
     expect(await loadScopeLimits(empty, 'org-1')).toMatchObject({ enabled: true, defaults: equal });
   });
@@ -171,7 +171,7 @@ describe('credit limits (pure)', () => {
   });
 
   describe('AC5: audit events for one save', () => {
-    const before: ScopeLimits = { ...noLimits(), enabled: false };
+    const before: ScopeLimits = { ...newScopeLimits(), enabled: false };
     const values = { monthly: { mode: 'custom' as const, value: 1000 }, addon: { mode: 'equal_share' as const } };
 
     it('turning on with new values logs ENABLED with the count over, and UPDATED with before and after', () => {
@@ -248,7 +248,7 @@ describe('credit limits (pure)', () => {
     });
 
     it('max: a reduced custom default reserves what the others actually get, not the saved value', () => {
-      const limits = on({ ...noLimits().defaults, monthly: { mode: 'custom', value: 2000 } });
+      const limits = on({ ...newScopeLimits().defaults, monthly: { mode: 'custom', value: 2000 } });
       const builders = ids(45);
       expect(resolveLimits({ pools, builderIds: builders, limits }).defaults.monthly).toMatchObject({
         effective: 1777,

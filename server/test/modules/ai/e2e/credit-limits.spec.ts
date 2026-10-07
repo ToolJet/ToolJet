@@ -227,7 +227,6 @@ describe('AI credit limits', () => {
       const s = await seed('ac7');
       licenseWith(app, { aiPlan: 'credits' });
       const routes = gatewayFor(s.owner, POOL);
-      // Plan sizes on the balance: the first read records them, which writes the default rows.
       Object.assign(routes[`${s.owner}/balance`], { plan: wallet(POOL.monthly, POOL.addon) });
       stubGateway(routes);
 

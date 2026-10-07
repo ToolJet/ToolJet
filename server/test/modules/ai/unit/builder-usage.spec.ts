@@ -10,7 +10,7 @@ import {
   toCreditsUsage,
   toMyCredits,
 } from '@ee/ai/services/builder-usage.service';
-import { noLimits } from '@ee/ai/services/credit-limits';
+import { newScopeLimits } from '@ee/ai/services/credit-limits';
 
 const totals = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
 
@@ -151,7 +151,7 @@ describe('builder usage calculations', () => {
       const r = resolveScopeLimits({
         pools: { monthly, addon: poolTotals(0, [], 'addon', null) },
         memberships: builders,
-        limits: noLimits(),
+        limits: newScopeLimits(),
       });
       expect(r.byBuilder.get('b0')).toEqual({ monthly: 2000, addon: 0 });
     });
@@ -169,7 +169,7 @@ describe('builder usage calculations', () => {
           member({ userId: 'end', canEdit: false }),
           member({ userId: 'gone', userArchived: true }),
         ],
-        limits: noLimits(),
+        limits: newScopeLimits(),
       });
 
       expect([...r.byBuilder.keys()]).toEqual(['b1', 'b2']);
@@ -241,7 +241,7 @@ describe('builder usage calculations', () => {
         unattributed: totals(0),
         pool: totals(0),
       });
-    const on = () => ({ ...noLimits(), enabled: true });
+    const on = () => ({ ...newScopeLimits(), enabled: true });
     const builders = [member({ userId: 'a' }), member({ userId: 'b' })];
 
     it('limits on: own used, limit and left per pool with dates', () => {
@@ -283,7 +283,7 @@ describe('builder usage calculations', () => {
           balance: balance(1000, 200),
           usage: usage({}),
           memberships: builders,
-          limits: { ...noLimits(), enabled: false },
+          limits: { ...newScopeLimits(), enabled: false },
           userId: 'a',
         })
       ).toEqual({ enabled: false });

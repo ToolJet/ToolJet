@@ -2,7 +2,7 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import {
   adjustToPool,
   currentNotices,
-  noLimits,
+  newScopeLimits,
   PoolChange,
   PoolNotice,
   poolChange,
@@ -23,7 +23,7 @@ const seen = (monthly: number, addon: number, addonEndsAt: string | null = null)
 });
 
 const withCustom = (custom: [string, { monthly?: number; addon?: number }][], enabled = true): ScopeLimits => ({
-  ...noLimits(),
+  ...newScopeLimits(),
   enabled,
   custom: new Map(custom),
 });

@@ -1,10 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-// No default rows now means limits on (new workspaces start on). Every scope that already exists keeps today's
-// state: write its default rows off, equal share. One pair per workspace (Cloud scope) and, once any workspace
-// exists, one for the instance (self-hosted scope). Fresh install: no workspaces yet, no rows. Default rows
-// are always written in pairs, so ON CONFLICT leaves a configured scope alone. Data only, so down is a no-op:
-// off rows read as off either way.
+// Existing scopes keep today's state (off); no rows now means on. Default rows come in pairs, so ON CONFLICT skips configured scopes.
 export class AddOffLimitsForExistingScopes1791565015686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await withLockTimeout(
