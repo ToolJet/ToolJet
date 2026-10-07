@@ -1,4 +1,8 @@
 /** @group workflows */
+import * as ivm from 'isolated-vm';
+import { WorkflowExecutionsService } from '@ee/workflows/services/workflow-executions.service';
+import { WorkflowExecution } from '@entities/workflow_execution.entity';
+import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import {
   getIfConditionBranches,
   IfConditionDefinition,
@@ -94,5 +98,58 @@ describe('If condition node', () => {
 
     await expect(selectIfConditionBranch(definition, evaluate)).rejects.toThrow('Invalid condition');
     expect(evaluate).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('WorkflowExecutionsService.processIfConditionNode', () => {
+  let isolate: ivm.Isolate;
+  let context: ivm.Context;
+
+  beforeEach(() => {
+    isolate = new ivm.Isolate({ memoryLimit: 20 });
+    context = isolate.createContextSync();
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+    isolate.dispose();
+  });
+
+  const ifNode = {
+    id: 'if1',
+    type: 'if-condition',
+    definition: { nodeName: 'ifCondition1', conditions: [{ id: 'true', label: 'If', code: 'missingThing.x === 1' }] },
+  } as WorkflowExecutionNode;
+  const execution = { id: 'execution1', edges: [] } as unknown as WorkflowExecution;
+
+  it('persists a failed evaluation on the node so the editor shows it as failed, not as not run', async () => {
+    const service = Object.create(WorkflowExecutionsService.prototype) as WorkflowExecutionsService;
+    const completed = jest.spyOn(service, 'completeNodeExecution').mockResolvedValue(undefined);
+    const addLog = jest.fn();
+
+    const result = await service.processIfConditionNode(
+      ifNode,
+      execution,
+      {},
+      addLog,
+      [],
+      { startNode: null },
+      null,
+      isolate,
+      context
+    );
+
+    expect(result).toMatchObject({ status: 'failed' });
+    expect(completed).toHaveBeenCalledWith(
+      ifNode,
+      expect.stringContaining('missingThing is not defined'),
+      expect.objectContaining({ ifCondition1: expect.objectContaining({ status: 'failed' }) }),
+      expect.anything()
+    );
+    expect(addLog).toHaveBeenCalledWith(
+      expect.stringContaining('If condition evaluation failed: missingThing is not defined'),
+      'ifCondition1',
+      'failure',
+      expect.anything()
+    );
   });
 });
