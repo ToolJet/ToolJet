@@ -1043,6 +1043,11 @@ class BaseManageGroupPermissions extends React.Component {
               <div className="org-users-page-card-body">
                 {isLoading ? (
                   <Loader />
+                ) : !this.state.selectedGroupPermissionId ? (
+                  // a group admin whose last assignment was revoked mid-session has no group to show
+                  <div className="d-flex justify-content-center p-5 tj-text-xsm" data-cy="no-accessible-groups-info">
+                    You are not a group admin of any group.
+                  </div>
                 ) : (
                   <ManageGroupPermissionResources
                     key={this.state.selectedGroupPermissionId}
