@@ -238,6 +238,23 @@ describe('credit limits (pure)', () => {
       expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(80_000 - 3000 - 38 * 1000);
     });
 
+    it('max: a reduced custom default reserves what the others actually get, not the saved value', () => {
+      const limits = on({ ...noLimits().defaults, monthly: { mode: 'custom', value: 2000 } });
+      const builders = ids(45);
+      expect(resolveLimits({ pools, builderIds: builders, limits }).defaults.monthly).toMatchObject({
+        effective: 1777,
+        note: 'reduced',
+      });
+      const max = builderMax({ pools, builderIds: builders, limits, userId: 'b1' }).monthly;
+      expect(max).toBe(80_000 - 44 * 1777);
+      const after = resolveLimits({
+        pools,
+        builderIds: builders,
+        limits: withBuilderLimit(limits, 'b1', { monthly: max, addon: null }),
+      });
+      expect(after.defaults.monthly.effective).toBe(1777);
+    });
+
     it("max: the builder's own custom limit is not counted against them", () => {
       const limits = withBuilderLimit(daniel(), 'b1', { monthly: 5000, addon: null });
       expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(76_962);

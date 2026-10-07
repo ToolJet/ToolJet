@@ -11,6 +11,7 @@ import {
 } from 'test-helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { User } from '@entities/user.entity';
+import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
 
 const GATEWAY = 'http://gateway.test';
 const CYCLE_START = '2026-10-01T00:00:00.000Z';
@@ -507,7 +508,9 @@ describe('AI credit limits', () => {
         expect(over.statusCode).toBe(400);
         expect(over.body.message).toBe('Cannot allocate more than 997 per builder');
         for (const bad of [0, -5, 1.5]) {
-          expect((await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(bad))).statusCode).toBe(400);
+          const res = await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(bad));
+          expect(res.statusCode).toBe(400);
+          expect([res.body.message].flat()).toEqual(['Enter a whole number of 1 or more.']);
         }
         expect((await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(997))).statusCode).toBe(200);
         await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(null));
@@ -622,6 +625,110 @@ describe('AI credit limits', () => {
         // Admin + 2 builders left, no custom limits: 1,000 ÷ 3.
         const limits = (await getUsage(app, s.cookie, s.workspace.id)).body.limits;
         expect(limits).toMatchObject({ builderCount: 3, customCount: 0, monthly: { effective: 333 } });
+      });
+
+      it('AC4: a failing cleanup fails the archive and the role change loudly; nothing is half-applied', async () => {
+        await withRealTransactions(async () => {
+          const s = await seed(`s9fail${uuidv4().slice(0, 6)}`);
+          const demoted = await createUser(app, {
+            email: `s9fail-demoted-${uuidv4().slice(0, 6)}@tooljet.io`,
+            groups: ['builder'],
+            organization: s.workspace,
+          });
+          try {
+            licenseWith(app, { aiPlan: 'credits' });
+            stubGateway(gatewayFor(s.owner, POOL));
+            const [archived] = s.builders;
+            await putBuilderLimit(app, s.cookie, s.workspace.id, archived.user.id, custom(400));
+            await putBuilderLimit(app, s.cookie, s.workspace.id, demoted.user.id, custom(300));
+            jest
+              .spyOn(app.get(BuilderUsageService), 'removeLostBuilderLimits')
+              .mockRejectedValue(new Error('cleanup failed'));
+
+            const archive = await request(app.getHttpServer())
+              .post(`/api/organization-users/${archived.orgUser.id}/archive`)
+              .set('tj-workspace-id', s.workspace.id)
+              .set('Cookie', s.cookie)
+              .send({});
+            const demote = await request(app.getHttpServer())
+              .put('/api/v2/group-permissions/role/user')
+              .set('tj-workspace-id', s.workspace.id)
+              .set('Cookie', s.cookie)
+              .send({ newRole: 'end-user', userId: demoted.user.id });
+
+            expect(archive.statusCode).toBe(500);
+            expect(demote.statusCode).toBe(500);
+            const [orgUser] = await getDefaultDataSource().query(
+              'SELECT status FROM organization_users WHERE id = $1',
+              [archived.orgUser.id]
+            );
+            expect(orgUser.status).toBe('active');
+            expect(await builderRows(archived.user.id)).toHaveLength(1);
+            expect(await builderRows(demoted.user.id)).toHaveLength(1);
+            jest.restoreAllMocks();
+            licenseWith(app, { aiPlan: 'credits' });
+            stubGateway(gatewayFor(s.owner, POOL));
+            const limits = (await getUsage(app, s.cookie, s.workspace.id)).body.limits;
+            expect(limits).toMatchObject({ builderCount: 5, customCount: 2 });
+          } finally {
+            await dropSeed(
+              s.workspace.id,
+              [s.admin, ...s.builders, s.endUser, demoted].map((u) => u.user.id)
+            );
+          }
+        });
+      });
+
+      describe('external API', () => {
+        const env = { ...process.env };
+        beforeAll(() => {
+          process.env.ENABLE_EXTERNAL_API = 'true';
+          process.env.EXTERNAL_API_ACCESS_TOKEN = 's9-ext-token';
+        });
+        afterAll(() => {
+          process.env.ENABLE_EXTERNAL_API = env.ENABLE_EXTERNAL_API;
+          process.env.EXTERNAL_API_ACCESS_TOKEN = env.EXTERNAL_API_ACCESS_TOKEN;
+        });
+        const ext = (path: string, body: object | object[], method: 'patch' | 'put' = 'patch') =>
+          request(app.getHttpServer())[method](`/api/ext${path}`).set('Authorization', 'Basic s9-ext-token').send(body);
+
+        it('AC4: archiving a user (PATCH /ext/user/:id, also SCIM active=false and delete) removes the custom limit', async () => {
+          const s = await seed('s9ext');
+          licenseWith(app, { aiPlan: 'credits' });
+          stubGateway(gatewayFor(s.owner, POOL));
+          const target = s.builders[0].user.id;
+          await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(400));
+
+          expect((await ext(`/user/${target}`, { status: 'archived' })).statusCode).toBe(200);
+
+          expect(await builderRows(target)).toEqual([]);
+        });
+
+        it('AC4: archiving a user in a workspace (PATCH /ext/user/:id/workspace/:id) removes the custom limit', async () => {
+          const s = await seed('s9extws');
+          licenseWith(app, { aiPlan: 'credits' });
+          stubGateway(gatewayFor(s.owner, POOL));
+          const target = s.builders[0].user.id;
+          await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(400));
+
+          const res = await ext(`/user/${target}/workspace/${s.workspace.id}`, { status: 'archived' });
+          expect(res.statusCode).toBe(200);
+
+          expect(await builderRows(target)).toEqual([]);
+        });
+
+        it('AC4: replacing every membership (PUT /ext/user/:id/workspaces) as an end user removes the custom limit', async () => {
+          const s = await seed('s9extall');
+          licenseWith(app, { aiPlan: 'credits' });
+          stubGateway(gatewayFor(s.owner, POOL));
+          const target = s.builders[0].user.id;
+          await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(400));
+
+          const res = await ext(`/user/${target}/workspaces`, [{ id: s.workspace.id, role: 'end-user' }], 'put');
+          expect(res.statusCode).toBe(200);
+
+          expect(await builderRows(target)).toEqual([]);
+        });
       });
     });
   });

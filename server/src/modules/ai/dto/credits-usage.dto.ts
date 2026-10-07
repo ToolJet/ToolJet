@@ -130,8 +130,10 @@ export class UpdateCreditLimitsDto {
   defaults?: CreditLimitDefaultsDto;
 }
 
+const WHOLE_NUMBER = { message: 'Enter a whole number of 1 or more.' };
+
 /** One builder's custom limit per pool; null or omitted = use the default. Both null = Reset to default. */
 export class UpdateBuilderLimitDto {
-  @IsOptional() @IsInt() @Min(1) monthly?: number | null;
-  @IsOptional() @IsInt() @Min(1) addon?: number | null;
+  @IsOptional() @IsInt(WHOLE_NUMBER) @Min(1, WHOLE_NUMBER) monthly?: number | null;
+  @IsOptional() @IsInt(WHOLE_NUMBER) @Min(1, WHOLE_NUMBER) addon?: number | null;
 }
