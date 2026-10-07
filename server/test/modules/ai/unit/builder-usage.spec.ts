@@ -251,6 +251,35 @@ describe('builder usage calculations', () => {
       expect(result.rows.find((r) => r.userId === 'end')).toMatchObject({ monthly: 10, addon: 5 });
     });
 
+    it('limits on: the workspace breakdown sums exactly to the row (largest remainder)', () => {
+      const workspaceIds = ['ws-1', 'ws-2', 'ws-3', 'ws-4', 'ws-5', 'ws-6', 'ws-7'];
+      const spend = [
+        {
+          userId: 'u1',
+          monthly: 7,
+          addon: 0,
+          byWorkspace: workspaceIds.map((organizationId) => ({ organizationId, monthly: 1, addon: 0 })),
+        },
+      ];
+      const result = toCreditsUsage({
+        balance: { ...balance, remaining: totals(900, 1000) },
+        usage: { cycleStart: null, trackingSince: null, spend },
+        memberships: [member()],
+        workspaces: null,
+        limits: { ...noLimits(), enabled: true, custom: new Map([['u1', { monthly: 1, addon: 400 }]]) },
+      });
+
+      const [row] = result.rows;
+      expect(row).toMatchObject({ monthly: 1, addon: 6 });
+      const sum = sumRows(row.byWorkspace);
+      expect(sum.monthly).toBeCloseTo(1, 10);
+      expect(sum.addon).toBeCloseTo(6, 10);
+      for (const w of row.byWorkspace) {
+        expect(Math.round(w.monthly * 100) / 100).toBe(w.monthly);
+        expect(Math.round(w.addon * 100) / 100).toBe(w.addon);
+      }
+    });
+
     it('limits off: builder rows keep the wallet split', () => {
       const result = toCreditsUsage({
         balance,
