@@ -9,6 +9,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
+import toast from 'react-hot-toast';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
@@ -26,7 +27,12 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
       item: { componentType: component.component, component },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
-        const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
+        const { currentDragCanvasId, isHoveringRestrictedDropTarget, actions } = useGridStore.getState();
+        if (isHoveringRestrictedDropTarget) {
+          actions.setIsHoveringRestrictedDropTarget(false);
+          toast.error('Components can only be added to the first expanded row');
+          return;
+        }
         handleDrop(item, currentDragCanvasId);
       },
     }),
