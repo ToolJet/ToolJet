@@ -211,7 +211,8 @@ describe('builder usage calculations', () => {
             limit: { monthly: 1000, addon: 100 },
           },
         ],
-        limits: { enabled: false, builderCount: 1 },
+        // No stored limits = a new scope: on.
+        limits: { enabled: true, builderCount: 1 },
       });
     });
 

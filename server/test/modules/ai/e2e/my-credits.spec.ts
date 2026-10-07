@@ -64,12 +64,15 @@ const getMine = (app: INestApplication, cookie: string[], organizationId: string
     .set('tj-workspace-id', organizationId)
     .set('Cookie', cookie);
 
-const enableLimits = (app: INestApplication, cookie: string[], organizationId: string) =>
+const setLimits = (app: INestApplication, cookie: string[], organizationId: string, enabled: boolean) =>
   request(app.getHttpServer())
     .put('/api/ai/credits-usage/limits')
     .set('tj-workspace-id', organizationId)
     .set('Cookie', cookie)
-    .send({ enabled: true });
+    .send({ enabled });
+
+const enableLimits = (app: INestApplication, cookie: string[], organizationId: string) =>
+  setLimits(app, cookie, organizationId, true);
 
 /** @group ai */
 describe('GET /api/ai/credits-usage/me', () => {
@@ -179,6 +182,7 @@ describe('GET /api/ai/credits-usage/me', () => {
 
     it('limits off → enabled false', async () => {
       const s = await seed('mc3');
+      await setLimits(app, s.adminCookie, s.workspace.id, false);
 
       const res = await getMine(app, await sessionFor(s.a.user, s.workspace.id), s.workspace.id);
 

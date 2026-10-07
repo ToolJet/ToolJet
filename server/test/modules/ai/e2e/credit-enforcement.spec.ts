@@ -348,6 +348,7 @@ describe('AI credit enforcement', () => {
       const s = await seed('fx2c');
       stubAgents();
       stubGateway(gatewayFor(s.owner, { monthly: 2, addon: 0 }));
+      await setLimits(s.admin, false);
 
       const res = await post(s.asBuilder, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' });
 

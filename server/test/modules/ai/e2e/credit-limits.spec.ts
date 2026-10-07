@@ -94,6 +94,14 @@ const limitRows = (organizationId: string | null) =>
     [organizationId]
   );
 
+/** A scope that existed before limits went on by default: the migration left it off. */
+const existingScope = (organizationId: string | null) =>
+  getDefaultDataSource().query(
+    `INSERT INTO ai_credit_limits (organization_id, user_id, pool, mode, value, enabled)
+     SELECT $1::uuid, NULL, pool, 'equal_share', NULL, false FROM (VALUES ('monthly'), ('addon')) p(pool)`,
+    [organizationId]
+  );
+
 /** Both pool rows carry one flag; it must never diverge. */
 async function expectOneFlag(organizationId: string | null) {
   const flags = new Set((await limitRows(organizationId)).map((r) => r.enabled));
@@ -326,10 +334,11 @@ describe('AI credit limits', () => {
     });
 
     // Real transactions: inside the suite transaction every request shares one session and the advisory lock never blocks.
-    it('AC3: saves racing from no rows each see the one before (ENABLED logged once, UPDATED chained)', async () => {
+    it('AC3: saves racing from off each see the one before (ENABLED logged once, UPDATED chained)', async () => {
       await withRealTransactions(async () => {
         const s = await seed(`ac3r${uuidv4().slice(0, 6)}`);
         try {
+          await existingScope(s.workspace.id);
           licenseWith(app, { aiPlan: 'credits' });
           stubGateway(gatewayFor(s.owner, POOL));
           const values = [110, 120, 130, 140, 150];
@@ -421,6 +430,7 @@ describe('AI credit limits', () => {
 
     it('AC5: turning on with new values logs ENABLED with the count over and UPDATED; turning off logs DISABLED', async () => {
       const s = await seed('ac5');
+      await existingScope(s.workspace.id);
       licenseWith(app, { aiPlan: 'credits' });
       // Limit 100 + add-on 25; two builders already used 200.
       stubGateway(
@@ -481,11 +491,11 @@ describe('AI credit limits', () => {
       licenseWith(app, { aiPlan: 'credits' });
       stubGateway({ ...gatewayFor(a.owner, POOL), ...gatewayFor(b.owner, POOL) });
 
-      await putLimits(app, a.cookie, a.workspace.id, { enabled: true });
+      await putLimits(app, a.cookie, a.workspace.id, { enabled: false });
 
       expect(await limitRows(a.workspace.id)).toHaveLength(2);
       expect(await limitRows(b.workspace.id)).toEqual([]);
-      expect((await getUsage(app, b.cookie, b.workspace.id)).body.limits.enabled).toBe(false);
+      expect((await getUsage(app, b.cookie, b.workspace.id)).body.limits.enabled).toBe(true);
     });
 
     describe('s9: custom limit for one builder', () => {
@@ -787,6 +797,7 @@ describe('AI credit limits', () => {
       selfhostLicense();
       stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
       const cookie = await sessionFor(superAdmin.user, superAdmin.organization.id);
+      await existingScope(null);
 
       const res = await putLimits(app, cookie, superAdmin.organization.id, { enabled: true });
 
