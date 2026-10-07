@@ -506,6 +506,8 @@ describe('AI credit limits', () => {
       const row = async () =>
         (await getUsage(app, s.cookie, s.workspace.id)).body.rows.find((r) => r.userId === s.builders[0].user.id);
 
+      // New scopes start on: turn off to see the wallet split.
+      expect((await putLimits(app, s.cookie, s.workspace.id, { enabled: false })).statusCode).toBe(200);
       expect(await row()).toMatchObject({ monthly: 1700, addon: 340 });
 
       expect((await putLimits(app, s.cookie, s.workspace.id, { enabled: true })).statusCode).toBe(200);

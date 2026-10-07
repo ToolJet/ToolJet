@@ -206,8 +206,9 @@ describe('builder usage calculations', () => {
             userId: 'u1',
             name: 'Priya Nair',
             email: 'priya@acme.io',
-            monthly: 100,
-            addon: 20,
+            // Limits on: logical split, all 120 within the monthly limit.
+            monthly: 120,
+            addon: 0,
             limit: { monthly: 1000, addon: 100 },
           },
         ],
@@ -251,7 +252,7 @@ describe('builder usage calculations', () => {
           member({ userId: 'end', canEdit: false }),
         ],
         workspaces: null,
-        limits: { ...noLimits(), enabled: true },
+        limits: { ...newScopeLimits(), enabled: true },
       });
 
       expect(result.pools.monthly).toMatchObject({ total: 8000, used: 1710 });
@@ -282,7 +283,7 @@ describe('builder usage calculations', () => {
         usage: { cycleStart: null, trackingSince: null, spend },
         memberships: [member()],
         workspaces: null,
-        limits: { ...noLimits(), enabled: true, custom: new Map([['u1', { monthly: 1, addon: 400 }]]) },
+        limits: { ...newScopeLimits(), enabled: true, custom: new Map([['u1', { monthly: 1, addon: 400 }]]) },
       });
 
       const [row] = result.rows;
@@ -302,7 +303,7 @@ describe('builder usage calculations', () => {
         usage: { cycleStart: null, trackingSince: null, spend: [{ userId: 'u1', monthly: 1700, addon: 340 }] },
         memberships: [member()],
         workspaces: null,
-        limits: noLimits(),
+        limits: { ...newScopeLimits(), enabled: false },
       });
       expect(result.rows[0]).toMatchObject({ monthly: 1700, addon: 340 });
     });

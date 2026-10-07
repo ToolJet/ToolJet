@@ -199,7 +199,8 @@ describe('GET /api/ai/credits-usage', () => {
         monthly: 100,
         addon: 0,
       });
-      expect(byUser(seed.builderOne.user.id)).toMatchObject({ kind: 'builder', monthly: 50, addon: 20 });
+      // New scope: limits on, so the row is the logical split of 50 + 20.
+      expect(byUser(seed.builderOne.user.id)).toMatchObject({ kind: 'builder', monthly: 70, addon: 0 });
       expect(byUser(seed.builderTwo.user.id)).toMatchObject({ kind: 'builder', monthly: 30.5, addon: 0 });
       expect(byUser(seed.idleBuilder.user.id)).toMatchObject({ kind: 'builder', monthly: 0, addon: 0 });
       expect(byUser(seed.archivedBuilder.user.id)).toMatchObject({
@@ -214,8 +215,10 @@ describe('GET /api/ai/credits-usage', () => {
       expect(res.body.rows.find((r) => r.kind === 'unattributed')).toMatchObject({ monthly: 11, addon: 2 });
       expect(res.body.rows.filter((r) => r.kind === 'unattributed')).toHaveLength(1);
 
-      expect(sum(res.body.rows, 'monthly')).toBe(res.body.pools.monthly.used);
-      expect(sum(res.body.rows, 'addon')).toBe(res.body.pools.addon.used);
+      // Limits on: builder rows use the logical split, pool cards the wallet, so only the total reconciles.
+      expect(sum(res.body.rows, 'monthly') + sum(res.body.rows, 'addon')).toBe(
+        res.body.pools.monthly.used + res.body.pools.addon.used
+      );
 
       const gatewayCalls = fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.startsWith(GATEWAY));
       expect(gatewayCalls).toContain(`${GATEWAY}/api/ai/organizations/${orgId}/usage`);
