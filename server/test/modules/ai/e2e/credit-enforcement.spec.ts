@@ -379,8 +379,8 @@ describe('AI credit enforcement', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.pools.monthly).toMatchObject({ total: 2000, used: 2100, remaining: -100 });
       const row = res.body.rows.find((r) => r.userId === s.builder.id);
-      // Logical split: monthly caps at its limit, the overshoot shows on add-on (above its limit).
-      expect(row).toMatchObject({ monthly: 500, addon: 1600, limit: { monthly: 500, addon: 0 } });
+      // No add-on limit: the overshoot stays on monthly.
+      expect(row).toMatchObject({ monthly: 2100, addon: 0, limit: { monthly: 500, addon: 0 } });
     });
   });
 
