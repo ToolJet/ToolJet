@@ -35,7 +35,7 @@ describe('AI clarification presentation', () => {
     service = Object.create(AiService.prototype);
     Object.assign(service, {
       attachmentService: { retain: jest.fn() },
-      checkSpend: jest.fn().mockResolvedValue(null),
+      checkSpend: jest.fn().mockResolvedValue({ refusal: null }),
       sendSSE: jest.fn(),
       maybeSendBuildCompletionEmail: jest.fn(),
       generateErrorMessageForUser: jest.fn().mockResolvedValue({ content: 'Unexpected failure' }),

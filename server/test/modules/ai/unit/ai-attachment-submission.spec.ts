@@ -100,7 +100,7 @@ describe('AI eligibility precedes attachment storage', () => {
         retain: jest.fn(),
         discardFailedSubmission: jest.fn().mockResolvedValue(undefined),
       },
-      checkSpend: jest.fn().mockResolvedValue(null),
+      checkSpend: jest.fn().mockResolvedValue({ refusal: null }),
       generateErrorMessageForUser: jest.fn().mockResolvedValue({ content: 'Synthetic error' }),
       sendSSE: jest.fn(),
       aiConversationRepository: { findOne: jest.fn().mockResolvedValue({ archived: true, app: {} }) },
@@ -108,7 +108,7 @@ describe('AI eligibility precedes attachment storage', () => {
     response = { on: jest.fn(), end: jest.fn(), write: jest.fn() };
   });
   it('does not store files or start a run when the spend check refuses', async () => {
-    service.checkSpend.mockResolvedValue('pool_empty');
+    service.checkSpend.mockResolvedValue({ refusal: 'pool_empty' });
     await service.sendUserMessage(user, { conversationId: 'owned-chat', content: 'Read the bins.' }, response, files());
     expect(service.attachmentService.upload).not.toHaveBeenCalled();
     expect(service.aiUtilService.callAgent).not.toHaveBeenCalled();

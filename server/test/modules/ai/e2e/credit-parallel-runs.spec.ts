@@ -89,12 +89,16 @@ const post = ({ app, cookie, organizationId }: Caller, path: string, body: objec
 const autosort = (caller: Caller) =>
   post(caller, 'autosort', { queries: [{ id: uuidv4(), name: 'q', kind: 'restapi' }], folders: [] });
 
-const sseRefusal = (text: string): string | null => {
+const CAP_COPY = 'Finish one of your running AI actions first.';
+const HEADROOM_COPY = "You're close to your limit. Finish your running AI action first.";
+
+/** The credits-error message an SSE route sent, if any. */
+const sseRefusal = (text: string): { category: string; copy: string } | null => {
   for (const block of text.split('\n\n')) {
     const data = block.split('\n').find((l) => l.startsWith('data: '));
     if (!block.startsWith('event: message') || !data) continue;
-    const metadata = JSON.parse(data.slice(6))?.metadata;
-    if (metadata?.creditsError) return metadata.category ?? null;
+    const message = JSON.parse(data.slice(6));
+    if (message?.metadata?.creditsError) return { category: message.metadata.category, copy: message.content };
   }
   return null;
 };
@@ -115,10 +119,10 @@ const expectStarted = (res: request.Response, app: INestApplication) => {
   expect(routeUtil(app).callAgentLegacy).toHaveBeenCalled();
 };
 
-const expectRunInProgress = (res: request.Response, app: INestApplication) => {
+const expectRunInProgress = (res: request.Response, app: INestApplication, copy: string) => {
   expect(res.statusCode).toBe(409);
   expect(res.body.code).toBe('run_in_progress');
-  expect(res.body.message).toBe("You're close to your limit. Finish your running AI action first.");
+  expect(res.body.message).toBe(copy);
   expect(routeUtil(app).callAgentLegacy).not.toHaveBeenCalled();
 };
 
@@ -220,6 +224,50 @@ describe('Parallel AI actions with headroom', () => {
       return s;
     }
 
+    async function conversationFor(builder: User, type: 'generate' | 'learn') {
+      const aiApp = await createApplication(app, { name: `ai-${uuidv4().slice(0, 8)}`, user: builder });
+      const id = uuidv4();
+      await getDefaultDataSource().query(
+        'INSERT INTO ai_conversations (id, app_id, user_id, conversation_type) VALUES ($1, $2, $3, $4)',
+        [id, aiApp.id, builder.id, type]
+      );
+      return id;
+    }
+
+    const message = async (s: Seed) =>
+      post(s.asBuilder, 'conversation/message', {
+        conversationId: await conversationFor(s.builder, 'generate'),
+        content: 'build me an app',
+      });
+
+    // Every credit-spending route; dropping the run gate from any one turns its row red.
+    const routes: [string, (s: Seed) => Promise<request.Response>, 'sse' | 'http'][] = [
+      ['message', message, 'sse'],
+      [
+        'docs-message',
+        async (s) =>
+          post(s.asBuilder, 'conversation/docs-message', {
+            conversationId: await conversationFor(s.builder, 'learn'),
+            content: 'how do I add a table?',
+          }),
+        'sse',
+      ],
+      [
+        'fix-with-ai',
+        (s) => post(s.asBuilder, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' }),
+        'http',
+      ],
+      ['autosort', (s) => autosort(s.asBuilder), 'http'],
+      ['copilot', (s) => post(s.asBuilder, 'copilot', { prompt: 'sum', context: '', language: 'javascript' }), 'http'],
+    ];
+
+    const runCount = async (userId: string) =>
+      (
+        await getDefaultDataSource().query('SELECT count(*)::int AS count FROM ai_active_runs WHERE user_id = $1', [
+          userId,
+        ])
+      )[0].count;
+
     it('AC1: 50% left and one running build, a second action starts', async () => {
       const s = await given('ac1', { leftPercent: 50, running: 1 });
       expectStarted(await autosort(s.asBuilder), app);
@@ -227,47 +275,40 @@ describe('Parallel AI actions with headroom', () => {
 
     it('AC1 (SSE): 50% left and one running build, a second message starts', async () => {
       const s = await given('ac1s', { leftPercent: 50, running: 1 });
-      const aiApp = await createApplication(app, { name: `ai-${uuidv4().slice(0, 8)}`, user: s.builder });
-      const conversationId = uuidv4();
-      await getDefaultDataSource().query(
-        'INSERT INTO ai_conversations (id, app_id, user_id, conversation_type) VALUES ($1, $2, $3, $4)',
-        [conversationId, aiApp.id, s.builder.id, 'generate']
-      );
 
-      const res = await post(s.asBuilder, 'conversation/message', { conversationId, content: 'build me an app' });
+      const res = await message(s);
 
       expect(sseRefusal(res.text)).toBeNull();
       expect(res.text).toContain('event: generation');
     });
 
-    it('AC2: three running actions, a fourth is refused with run_in_progress', async () => {
-      const s = await given('ac2', { leftPercent: 90, running: 3 });
-      expectRunInProgress(await autosort(s.asBuilder), app);
-    });
+    it.each(routes)(
+      'AC2 (%s): three running actions, a fourth is refused at the cap, no run',
+      async (_n, call, shape) => {
+        const s = await given('ac2', { leftPercent: 90, running: 3 });
 
-    it('AC2 (SSE): three running actions, a fourth message is refused with run_in_progress and no run', async () => {
-      const s = await given('ac2s', { leftPercent: 90, running: 3 });
-      const aiApp = await createApplication(app, { name: `ai-${uuidv4().slice(0, 8)}`, user: s.builder });
-      const conversationId = uuidv4();
-      await getDefaultDataSource().query(
-        'INSERT INTO ai_conversations (id, app_id, user_id, conversation_type) VALUES ($1, $2, $3, $4)',
-        [conversationId, aiApp.id, s.builder.id, 'generate']
-      );
+        const res = await call(s);
 
-      const res = await post(s.asBuilder, 'conversation/message', { conversationId, content: 'build me an app' });
-
-      expect(sseRefusal(res.text)).toBe('run_in_progress');
-      expect(res.text).not.toContain('event: generation');
-      const [{ count }] = await getDefaultDataSource().query(
-        'SELECT count(*)::int AS count FROM ai_active_runs WHERE user_id = $1',
-        [s.builder.id]
-      );
-      expect(count).toBe(3);
-    });
+        if (shape === 'sse') {
+          expect(sseRefusal(res.text)).toEqual({ category: 'run_in_progress', copy: CAP_COPY });
+          expect(res.text).not.toContain('event: generation');
+        } else {
+          expectRunInProgress(res, app, CAP_COPY);
+        }
+        expect(routeUtil(app).callAgent).not.toHaveBeenCalled();
+        expect(await runCount(s.builder.id)).toBe(3);
+      }
+    );
 
     it('AC3: 15% left and one running action, a second is refused', async () => {
       const s = await given('ac3r', { leftPercent: 15, running: 1 });
-      expectRunInProgress(await autosort(s.asBuilder), app);
+      expectRunInProgress(await autosort(s.asBuilder), app, HEADROOM_COPY);
+    });
+
+    it('AC3 (SSE): 15% left and one running build, a second message is refused with the headroom copy', async () => {
+      const s = await given('ac3m', { leftPercent: 15, running: 1 });
+      expect(sseRefusal((await message(s)).text)).toEqual({ category: 'run_in_progress', copy: HEADROOM_COPY });
+      expect(await runCount(s.builder.id)).toBe(1);
     });
 
     it('AC3: 15% left and nothing running, it starts', async () => {
@@ -312,7 +353,26 @@ describe('Parallel AI actions with headroom', () => {
 
       it('three running, a fourth is refused', async () => {
         const s = await givenNoUsage('fob', 3);
-        expectRunInProgress(await autosort(s.asBuilder), app);
+        expectRunInProgress(await autosort(s.asBuilder), app, CAP_COPY);
+      });
+    });
+
+    describe('AC9: ops settings are read on each run start', () => {
+      afterEach(() => {
+        delete process.env.AI_CREDIT_MAX_PARALLEL_RUNS;
+        delete process.env.AI_CREDIT_PARALLEL_HEADROOM_PERCENT;
+      });
+
+      it('max 1: one running, a second is refused at the cap', async () => {
+        const s = await given('ac9c', { leftPercent: 90, running: 1 });
+        process.env.AI_CREDIT_MAX_PARALLEL_RUNS = '1';
+        expectRunInProgress(await autosort(s.asBuilder), app, CAP_COPY);
+      });
+
+      it('headroom 50%: 40% left and one running, a second is refused', async () => {
+        const s = await given('ac9h', { leftPercent: 40, running: 1 });
+        process.env.AI_CREDIT_PARALLEL_HEADROOM_PERCENT = '50';
+        expectRunInProgress(await autosort(s.asBuilder), app, HEADROOM_COPY);
       });
     });
 
@@ -447,7 +507,7 @@ describe('Parallel AI actions with headroom', () => {
         organizationId: workspaceB.id,
       });
 
-      expectRunInProgress(res, app);
+      expectRunInProgress(res, app, CAP_COPY);
     });
   });
 });
