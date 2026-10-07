@@ -397,7 +397,9 @@ describe('Parallel AI actions with headroom', () => {
       expect(first.statusCode).toBe(201);
       expect(next.statusCode).toBe(402);
       expect(next.body.code).toBe('credit_limit_reached');
-      expect(usage.body.rows.find((r: { userId: string }) => r.userId === s.builder.id).monthly).toBe(LIMIT + 40);
+      // Limits on: logical split, monthly caps at 250, the overshoot lands on add-on.
+      const row = usage.body.rows.find((r: { userId: string }) => r.userId === s.builder.id);
+      expect(row).toMatchObject({ monthly: 250, addon: LIMIT + 40 - 250 });
     });
 
     // Real transactions: inside the suite transaction every request shares one session and the lock never blocks.
