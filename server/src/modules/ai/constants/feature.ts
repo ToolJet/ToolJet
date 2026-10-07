@@ -72,6 +72,13 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_CREDIT_LIMITS]: {
       license: LICENSE_FIELD.AI_FEATURE,
       skipAuditLogs: true,
+      auditLogsKeys: [
+        'AI_CREDIT_LIMIT_ENABLED',
+        'AI_CREDIT_LIMIT_DISABLED',
+        'AI_CREDIT_LIMIT_UPDATED',
+        'AI_CREDIT_BUILDER_LIMIT_UPDATED',
+        'AI_CREDIT_LIMITS_ADJUSTED',
+      ],
     },
   },
 };

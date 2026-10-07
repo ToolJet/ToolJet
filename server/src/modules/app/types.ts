@@ -17,6 +17,8 @@ export interface UserAllPermissions {
 export interface FeatureConfig {
   license?: LICENSE_FIELD;
   auditLogsKey?: string;
+  /** Events the feature's service writes itself; listed in the audit log filters only. */
+  auditLogsKeys?: string[];
   skipAuditLogs?: boolean;
   isPublic?: boolean;
   isSuperAdminFeature?: boolean;

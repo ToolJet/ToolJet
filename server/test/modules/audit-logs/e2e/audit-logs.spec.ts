@@ -120,6 +120,26 @@ describe('AuditLogsController', () => {
       expect(Object.keys(response.body).length).toBeGreaterThan(0);
     });
 
+    it('lists the AI credit events the AI service writes itself, so they can be filtered', async () => {
+      const admin = await createAdmin(app, 'ai-credits-admin@tooljet.io');
+
+      const response = await request(app.getHttpServer())
+        .get('/api/audit-logs/resources')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .expect(200);
+
+      expect(response.body[MODULES.AI].map((e) => e.value)).toEqual(
+        expect.arrayContaining([
+          'AI_CREDIT_LIMIT_ENABLED',
+          'AI_CREDIT_LIMIT_DISABLED',
+          'AI_CREDIT_LIMIT_UPDATED',
+          'AI_CREDIT_BUILDER_LIMIT_UPDATED',
+          'AI_CREDIT_LIMITS_ADJUSTED',
+        ])
+      );
+    });
+
     it('should deny unauthenticated access (401)', async () => {
       await request(app.getHttpServer())
         .get('/api/audit-logs/resources')
