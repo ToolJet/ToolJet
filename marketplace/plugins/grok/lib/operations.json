@@ -1,0 +1,230 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Grok Datasource",
+  "description": "A schema defining Grok datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "chat",
+    "model": "grok-2-latest"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select the Grok operation to perform",
+      "list": [
+        { "value": "chat", "name": "Chat Completion" },
+        { "value": "chat_vision", "name": "Chat with Vision (Image Input)" },
+        { "value": "image_generation", "name": "Generate Image" },
+        { "value": "list_models", "name": "List Models" },
+        { "value": "get_model", "name": "Get Model" }
+      ]
+    },
+    "chat": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "dropdown",
+        "description": "Select Grok model",
+        "list": [
+          { "value": "grok-2-latest", "name": "grok-2-latest" },
+          { "value": "grok-2", "name": "grok-2" },
+          { "value": "grok-2-1212", "name": "grok-2-1212" },
+          { "value": "grok-beta", "name": "grok-beta" }
+        ]
+      },
+      "custom_model": {
+        "label": "Custom Model ID",
+        "key": "custom_model",
+        "type": "codehinter",
+        "description": "Specify a custom model ID (overrides model dropdown if provided)",
+        "placeholder": "e.g., grok-2-latest",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "system_prompt": {
+        "label": "System Prompt",
+        "key": "system_prompt",
+        "type": "codehinter",
+        "description": "Defines role and behavior of the model",
+        "placeholder": "You are a helpful assistant.",
+        "height": "80px",
+        "mandatory": false
+      },
+      "messages": {
+        "label": "Messages",
+        "key": "messages",
+        "type": "codehinter",
+        "description": "JSON array of message objects: [{\"role\": \"user\", \"content\": \"Hello\"}]",
+        "placeholder": "[{\n  \"role\": \"user\",\n  \"content\": \"Hello\"\n}]",
+        "height": "120px",
+        "mandatory": false
+      },
+      "prompt": {
+        "label": "User Message",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Prompt/question to send to the model",
+        "placeholder": "Enter your prompt here",
+        "height": "100px",
+        "mandatory": false
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "description": "Sampling temperature between 0 and 2",
+        "placeholder": "0.7",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "description": "Maximum number of tokens to generate",
+        "placeholder": "2048",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "top_p": {
+        "label": "Top P",
+        "key": "top_p",
+        "type": "codehinter",
+        "description": "Nucleus sampling probability mass",
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      }
+    },
+    "chat_vision": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "dropdown",
+        "description": "Select Grok vision model",
+        "list": [
+          { "value": "grok-2-vision-1212", "name": "grok-2-vision-1212" },
+          { "value": "grok-vision-beta", "name": "grok-vision-beta" },
+          { "value": "grok-2-latest", "name": "grok-2-latest" }
+        ]
+      },
+      "prompt": {
+        "label": "User Message / Question",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Question or prompt regarding the image",
+        "placeholder": "What is in this image?",
+        "height": "100px",
+        "mandatory": true
+      },
+      "image_url": {
+        "label": "Image URL",
+        "key": "image_url",
+        "type": "codehinter",
+        "description": "Public URL or Base64 data URI of the image",
+        "placeholder": "https://example.com/image.jpg",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": true
+      },
+      "detail": {
+        "label": "Detail Level",
+        "key": "detail",
+        "type": "dropdown",
+        "description": "Image resolution detail level",
+        "list": [
+          { "value": "auto", "name": "Auto" },
+          { "value": "high", "name": "High" },
+          { "value": "low", "name": "Low" }
+        ]
+      },
+      "system_prompt": {
+        "label": "System Prompt",
+        "key": "system_prompt",
+        "type": "codehinter",
+        "description": "Instructions to guide the behavior of the model",
+        "placeholder": "You are a visual assistant.",
+        "height": "80px",
+        "mandatory": false
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "placeholder": "0.7",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "placeholder": "2048",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      }
+    },
+    "image_generation": {
+      "prompt": {
+        "label": "Prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Text description of the desired image",
+        "placeholder": "A futuristic city skyline at sunset",
+        "height": "100px",
+        "mandatory": true
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "description": "Model for image generation",
+        "placeholder": "grok-2-image",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "n": {
+        "label": "Number of Images",
+        "key": "n",
+        "type": "codehinter",
+        "description": "Number of images to generate (default: 1)",
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
+      },
+      "response_format": {
+        "label": "Response Format",
+        "key": "response_format",
+        "type": "dropdown",
+        "description": "Format of the generated image",
+        "list": [
+          { "value": "url", "name": "URL" },
+          { "value": "b64_json", "name": "Base64 JSON" }
+        ]
+      }
+    },
+    "list_models": {},
+    "get_model": {
+      "model_id": {
+        "label": "Model ID",
+        "key": "model_id",
+        "type": "codehinter",
+        "description": "The ID of the model to retrieve",
+        "placeholder": "grok-2-latest",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": true
+      }
+    }
+  }
+}

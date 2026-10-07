@@ -391,5 +391,16 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "Grok",
+    "description": "Integrate with xAI Grok API to use Grok LLM models for chat, vision, and text capabilities",
+    "version": "1.0.0",
+    "id": "grok",
+    "author": "Tooljet",
+    "timestamp": "Wed, 07 Oct 2026 12:00:00 GMT",
+    "tags": [
+      "AI"
+    ]
   }
 ]
