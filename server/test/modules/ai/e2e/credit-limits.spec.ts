@@ -123,6 +123,39 @@ async function dropSeed(organizationId: string, userIds: string[]) {
   await db.query('DELETE FROM users WHERE id = ANY($1)', [userIds]);
 }
 
+const putBuilderLimit = (
+  app: INestApplication,
+  cookie: string[],
+  organizationId: string,
+  userId: string,
+  body: object
+) =>
+  request(app.getHttpServer())
+    .put(`/api/ai/credits-usage/limits/builders/${userId}`)
+    .set('tj-workspace-id', organizationId)
+    .set('Cookie', cookie)
+    .send(body);
+
+const builderRows = (userId: string) =>
+  getDefaultDataSource().query(
+    `SELECT organization_id AS "organizationId", pool, value FROM ai_credit_limits WHERE user_id = $1 ORDER BY pool`,
+    [userId]
+  );
+
+/** Builder-limit audit entries; written by an async listener, so wait for them. */
+async function builderAudit(organizationId: string, expected: number) {
+  for (let i = 0; i < 50; i++) {
+    const rows = await getDefaultDataSource().query(
+      `SELECT user_id AS "userId", metadata FROM audit_logs
+        WHERE organization_id = $1 AND action_type = 'AI_CREDIT_BUILDER_LIMIT_UPDATED' ORDER BY created_at`,
+      [organizationId]
+    );
+    if (rows.length >= expected) return rows;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error('audit entries not written');
+}
+
 const customMonthly = (value: number) => ({
   monthly: { mode: 'custom', value },
   addon: { mode: 'equal_share' },
@@ -435,6 +468,162 @@ describe('AI credit limits', () => {
       expect(await limitRows(b.workspace.id)).toEqual([]);
       expect((await getUsage(app, b.cookie, b.workspace.id)).body.limits.enabled).toBe(false);
     });
+
+    describe('s9: custom limit for one builder', () => {
+      // 4 builders on 1,000 monthly: equal share 250; max for one builder = 1,000 − 3 × 1.
+      const custom = (monthly: number | null, addon: number | null = null) => ({ monthly, addon });
+
+      it('AC1/AC3: a custom limit lowers the default, tags the row; Reset removes it and the default rises', async () => {
+        const s = await seed('s9ac1');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(s.owner, POOL));
+        const target = s.builders[0].user.id;
+
+        const saved = await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(400));
+        expect(saved.statusCode).toBe(200);
+        expect(await builderRows(target)).toEqual([{ organizationId: s.workspace.id, pool: 'monthly', value: 400 }]);
+
+        const after = (await getUsage(app, s.cookie, s.workspace.id)).body;
+        expect(after.limits).toMatchObject({ customCount: 1, monthly: { effective: 200 } });
+        const row = after.rows.find((r) => r.userId === target);
+        expect(row).toMatchObject({ customLimit: { monthly: 400 }, limit: { monthly: 400, addon: 25 } });
+        expect(after.rows.find((r) => r.userId === s.builders[1].user.id).customLimit).toBeUndefined();
+
+        const reset = await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(null));
+        expect(reset.statusCode).toBe(200);
+        expect(await builderRows(target)).toEqual([]);
+        const back = (await getUsage(app, s.cookie, s.workspace.id)).body;
+        expect(back.limits).toMatchObject({ customCount: 0, monthly: { effective: 250 } });
+        expect(back.rows.find((r) => r.userId === target).customLimit).toBeUndefined();
+      });
+
+      it('AC2: over max or not a whole number is a 400 with the design copy; nothing persists', async () => {
+        const s = await seed('s9ac2');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(s.owner, POOL));
+        const target = s.builders[0].user.id;
+
+        const over = await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(998));
+        expect(over.statusCode).toBe(400);
+        expect(over.body.message).toBe('Cannot allocate more than 997 per builder');
+        for (const bad of [0, -5, 1.5]) {
+          expect((await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(bad))).statusCode).toBe(400);
+        }
+        expect((await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(997))).statusCode).toBe(200);
+        await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(null));
+        expect((await putBuilderLimit(app, s.cookie, s.workspace.id, target, custom(998))).statusCode).toBe(400);
+        expect(await builderRows(target)).toEqual([]);
+      });
+
+      it('AC2: an end user, a builder of another workspace or an unknown id is a 404; nothing persists', async () => {
+        const a = await seed('s9ac2a');
+        const b = await seed('s9ac2b');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(a.owner, POOL));
+
+        const targets = [a.endUser.user.id, b.builders[0].user.id, uuidv4()];
+        for (const target of targets) {
+          const res = await putBuilderLimit(app, a.cookie, a.workspace.id, target, custom(100));
+          expect(res.statusCode).toBe(404);
+          expect(await builderRows(target)).toEqual([]);
+        }
+      });
+
+      it('AC2: a builder or end user cannot set a custom limit (403)', async () => {
+        const s = await seed('s9ac2r');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(s.owner, POOL));
+        for (const actor of [s.builders[1], s.endUser]) {
+          const cookie = await sessionFor(actor.user, s.workspace.id);
+          const res = await putBuilderLimit(app, cookie, s.workspace.id, s.builders[0].user.id, custom(100));
+          expect(res.statusCode).toBe(403);
+        }
+        expect(await builderRows(s.builders[0].user.id)).toEqual([]);
+      });
+
+      it('AC5: each changed pool logs BUILDER_LIMIT_UPDATED with actor, builder, pool, before and after', async () => {
+        const s = await seed('s9ac5');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(s.owner, POOL));
+        const target = s.builders[0];
+
+        await putBuilderLimit(app, s.cookie, s.workspace.id, target.user.id, custom(400));
+        await putBuilderLimit(app, s.cookie, s.workspace.id, target.user.id, custom(400, 20));
+        await putBuilderLimit(app, s.cookie, s.workspace.id, target.user.id, custom(400, 20));
+
+        const rows = await builderAudit(s.workspace.id, 2);
+        await new Promise((r) => setTimeout(r, 300));
+        expect(await builderAudit(s.workspace.id, 2)).toHaveLength(2);
+        const base = { builderId: target.user.id, builderEmail: target.user.email };
+        expect(rows.map((r) => r.userId)).toEqual([s.admin.user.id, s.admin.user.id]);
+        expect(rows[0].metadata).toMatchObject({ ...base, pool: 'monthly', before: null, after: 400 });
+        expect(rows[1].metadata).toMatchObject({ ...base, pool: 'addon', before: null, after: 20 });
+      });
+
+      it('AC4: a save racing an archive never leaves a custom limit behind', async () => {
+        await withRealTransactions(async () => {
+          const s = await seed(`s9race${uuidv4().slice(0, 6)}`);
+          try {
+            licenseWith(app, { aiPlan: 'credits' });
+            stubGateway(gatewayFor(s.owner, POOL));
+            const target = s.builders[0];
+
+            const [save, archive] = await Promise.all([
+              putBuilderLimit(app, s.cookie, s.workspace.id, target.user.id, custom(400)),
+              request(app.getHttpServer())
+                .post(`/api/organization-users/${target.orgUser.id}/archive`)
+                .set('tj-workspace-id', s.workspace.id)
+                .set('Cookie', s.cookie)
+                .send({}),
+            ]);
+
+            expect(archive.statusCode).toBe(201);
+            expect([200, 404]).toContain(save.statusCode);
+            expect(await builderRows(target.user.id)).toEqual([]);
+          } finally {
+            await dropSeed(
+              s.workspace.id,
+              [s.admin, ...s.builders, s.endUser].map((u) => u.user.id)
+            );
+          }
+        });
+      });
+
+      it('AC4: archiving the builder or making them an end user removes the custom limit and the default rises', async () => {
+        const s = await seed('s9ac4');
+        licenseWith(app, { aiPlan: 'credits' });
+        stubGateway(gatewayFor(s.owner, POOL));
+        const [archived] = s.builders;
+        // Seeded builders also sit in the end-user group; a real member has one role.
+        const demoted = await createUser(app, {
+          email: 's9ac4-demoted@tooljet.io',
+          groups: ['builder'],
+          organization: s.workspace,
+        });
+        await putBuilderLimit(app, s.cookie, s.workspace.id, archived.user.id, custom(400));
+        await putBuilderLimit(app, s.cookie, s.workspace.id, demoted.user.id, custom(300));
+
+        const archive = await request(app.getHttpServer())
+          .post(`/api/organization-users/${archived.orgUser.id}/archive`)
+          .set('tj-workspace-id', s.workspace.id)
+          .set('Cookie', s.cookie)
+          .send({});
+        expect(archive.statusCode).toBe(201);
+        expect(await builderRows(archived.user.id)).toEqual([]);
+
+        const demote = await request(app.getHttpServer())
+          .put('/api/v2/group-permissions/role/user')
+          .set('tj-workspace-id', s.workspace.id)
+          .set('Cookie', s.cookie)
+          .send({ newRole: 'end-user', userId: demoted.user.id });
+        expect(demote.statusCode).toBe(200);
+        expect(await builderRows(demoted.user.id)).toEqual([]);
+
+        // Admin + 2 builders left, no custom limits: 1,000 ÷ 3.
+        const limits = (await getUsage(app, s.cookie, s.workspace.id)).body.limits;
+        expect(limits).toMatchObject({ builderCount: 3, customCount: 0, monthly: { effective: 333 } });
+      });
+    });
   });
 
   describe('Self-hosted (ee)', () => {
@@ -485,6 +674,58 @@ describe('AI credit limits', () => {
       expect(enabled.metadata).toMatchObject({ instance_level: true });
     });
 
+    it('s9 AC4: archived in one of two workspaces keeps the custom limit; archived everywhere removes it', async () => {
+      const superAdmin = await createUser(app, {
+        email: 'sh9-super@tooljet.io',
+        userType: 'instance',
+        groups: ['end-user', 'admin'],
+      });
+      const other = await createUser(app, {
+        email: 'sh9-other@tooljet.io',
+        groups: ['end-user', 'admin'],
+        organizationName: 'Other s9',
+      });
+      const inHome = await createUser(app, {
+        email: 'sh9-builder@tooljet.io',
+        groups: ['end-user', 'builder'],
+        organization: superAdmin.organization,
+      });
+      const inOther = await createUser(
+        app,
+        { email: 'sh9-builder@tooljet.io', groups: ['end-user', 'builder'], organization: other.organization },
+        inHome.user
+      );
+      selfhostLicense();
+      stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+      const cookie = await sessionFor(superAdmin.user, superAdmin.organization.id);
+      const builderId = inHome.user.id;
+
+      const saved = await putBuilderLimit(app, cookie, superAdmin.organization.id, builderId, {
+        monthly: 400,
+        addon: null,
+      });
+      expect(saved.statusCode).toBe(200);
+      expect(await builderRows(builderId)).toEqual([{ organizationId: null, pool: 'monthly', value: 400 }]);
+
+      const archiveOne = await request(app.getHttpServer())
+        .post(`/api/organization-users/${inOther.orgUser.id}/archive`)
+        .set('tj-workspace-id', superAdmin.organization.id)
+        .set('Cookie', cookie)
+        .send({ organizationId: other.organization.id });
+      expect(archiveOne.statusCode).toBe(201);
+      expect(await builderRows(builderId)).toHaveLength(1);
+
+      const archiveAll = await request(app.getHttpServer())
+        .post(`/api/organization-users/${builderId}/archive-all`)
+        .set('tj-workspace-id', superAdmin.organization.id)
+        .set('Cookie', cookie)
+        .send({});
+      expect(archiveAll.statusCode).toBe(201);
+      expect(await builderRows(builderId)).toEqual([]);
+      const [entry] = await builderAudit(superAdmin.organization.id, 1);
+      expect(entry.metadata).toMatchObject({ instance_level: true, pool: 'monthly', after: 400 });
+    });
+
     it('AC4: a workspace admin who is not a super admin gets 403', async () => {
       const admin = await createUser(app, { email: 'sh6-ws-admin@tooljet.io', groups: ['end-user', 'admin'] });
       selfhostLicense();
@@ -509,6 +750,20 @@ describe('AI credit limits', () => {
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
+
+    it('s9: setting a builder limit returns 404', async () => {
+      const admin = await createUser(app, { email: 'ce9-admin@tooljet.io', groups: ['end-user', 'admin'] });
+
+      const res = await putBuilderLimit(
+        app,
+        await sessionFor(admin.user, admin.organization.id),
+        admin.organization.id,
+        admin.user.id,
+        { monthly: 1, addon: null }
+      );
+
+      expect(res.statusCode).toBe(404);
+    });
 
     it('saving limits returns 404', async () => {
       const admin = await createUser(app, { email: 'ce6-admin@tooljet.io', groups: ['end-user', 'admin'] });

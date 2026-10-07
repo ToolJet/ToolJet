@@ -1,6 +1,9 @@
 import {
   available,
+  builderLimitEvents,
+  builderMax,
   noLimits,
+  withBuilderLimit,
   ScopeLimits,
   countAtLimit,
   defaultError,
@@ -207,6 +210,66 @@ describe('credit limits (pure)', () => {
 
     it('a net refund counts as no spend', () => {
       expect(available({ monthly: -50, addon: 0 }, limit)).toEqual(limit);
+    });
+  });
+
+  describe('s9: custom limit for one builder', () => {
+    const pools = { monthly: 80_000, addon: 4_000 };
+    const builderIds = ids(40);
+    const daniel = (): ScopeLimits => ({ ...on(), custom: new Map([['b0', { monthly: 3000 }]]) });
+
+    it('withBuilderLimit sets, keeps the other pool, and null clears; the input is untouched', () => {
+      const before = daniel();
+      const after = withBuilderLimit(before, 'b1', { monthly: 3000, addon: null });
+      expect(after.custom.get('b1')).toEqual({ monthly: 3000 });
+      expect(before.custom.has('b1')).toBe(false);
+      expect(withBuilderLimit(after, 'b1', { monthly: null, addon: null }).custom.has('b1')).toBe(false);
+    });
+
+    it('max: equal-share default keeps 1 credit for every other builder (design: 80,000 − 3,000 − 38)', () => {
+      expect(builderMax({ pools, builderIds, limits: daniel(), userId: 'b1' })).toEqual({
+        monthly: 76_962,
+        addon: 4_000 - 39,
+      });
+    });
+
+    it('max: a custom default reserves that default for every other builder without a custom limit', () => {
+      const limits = { ...daniel(), defaults: { ...on().defaults, monthly: { mode: 'custom' as const, value: 1000 } } };
+      expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(80_000 - 3000 - 38 * 1000);
+    });
+
+    it("max: the builder's own custom limit is not counted against them", () => {
+      const limits = withBuilderLimit(daniel(), 'b1', { monthly: 5000, addon: null });
+      expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(76_962);
+    });
+
+    it('AC1: a second 3,000 custom limit lowers everyone else from 1,974 to 1,947 (the previewed value)', () => {
+      const before = resolveLimits({ pools, builderIds, limits: daniel() });
+      const after = resolveLimits({
+        pools,
+        builderIds,
+        limits: withBuilderLimit(daniel(), 'b1', { monthly: 3000, addon: null }),
+      });
+      expect(before.defaults.monthly.effective).toBe(1974);
+      expect(after.defaults.monthly.effective).toBe(equalShare(80_000, 6000, 38));
+      expect(after.defaults.monthly.effective).toBe(1947);
+      expect(after.byBuilder.get('b1')).toEqual({ monthly: 3000, addon: 100 });
+      expect(after.byBuilder.get('b2')).toEqual({ monthly: 1947, addon: 100 });
+    });
+
+    it('AC5: one BUILDER_LIMIT_UPDATED per changed pool with before and after; unchanged pool logs nothing', () => {
+      const builder = { id: 'b1', email: 'b1@x.io' };
+      expect(builderLimitEvents(builder, { monthly: 3000 }, { addon: 500 })).toEqual([
+        {
+          actionType: 'AI_CREDIT_BUILDER_LIMIT_UPDATED',
+          metadata: { builderId: 'b1', builderEmail: 'b1@x.io', pool: 'monthly', before: 3000, after: null },
+        },
+        {
+          actionType: 'AI_CREDIT_BUILDER_LIMIT_UPDATED',
+          metadata: { builderId: 'b1', builderEmail: 'b1@x.io', pool: 'addon', before: null, after: 500 },
+        },
+      ]);
+      expect(builderLimitEvents(builder, { monthly: 3000 }, { monthly: 3000 })).toEqual([]);
     });
   });
 });
