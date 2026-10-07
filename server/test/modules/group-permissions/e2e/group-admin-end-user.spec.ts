@@ -61,12 +61,12 @@ describe('End-user group admins', () => {
     const admin = await createAdmin(nestApp, email(`admin-${label}`));
     const endUserAdmin = await createEndUser(nestApp, email(`eu-admin-${label}`), { workspace: admin.workspace });
     const group = await createCustomGroup(admin.workspace.id, `group-${label}`, groupExtra);
-    await saveEntity(GroupAdmin, {
+    const groupAdminRow = await saveEntity(GroupAdmin, {
       userId: endUserAdmin.user.id,
       groupId: group.id,
       organizationId: admin.workspace.id,
     });
-    return { admin, endUserAdmin, group };
+    return { admin, endUserAdmin, group, groupAdminRow };
   }
 
   function as(user: { cookie: string[] }, workspaceId: string) {
@@ -76,6 +76,7 @@ describe('End-user group admins', () => {
       get: (url: string) => headers(request(server).get(url)),
       post: (url: string) => headers(request(server).post(url)),
       put: (url: string) => headers(request(server).put(url)),
+      delete: (url: string) => headers(request(server).delete(url)),
     };
   }
 
@@ -138,6 +139,31 @@ describe('End-user group admins', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.groupPermissions.map((g: { id: string }) => g.id)).toEqual([group.id]);
     });
+
+    it('end-user admin can view the group admins of their group → 200', async () => {
+      const { admin, endUserAdmin, group } = await setupEndUserGroupAdmin('view-admins');
+
+      const response = await as(endUserAdmin, admin.workspace.id).get(`/api/v2/group-permissions/${group.id}/admins`);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.map((ga: { userId: string }) => ga.userId)).toContain(endUserAdmin.user.id);
+    });
+
+    it('removing themselves from the group keeps their group-admin assignment', async () => {
+      const { admin, endUserAdmin, group, groupAdminRow } = await setupEndUserGroupAdmin('self-remove');
+      await as(endUserAdmin, admin.workspace.id)
+        .post(`/api/v2/group-permissions/${group.id}/users`)
+        .send({ userIds: [endUserAdmin.user.id], groupId: group.id });
+      const membership = await findEntity(GroupUsers, { groupId: group.id, userId: endUserAdmin.user.id });
+
+      const response = await as(endUserAdmin, admin.workspace.id).delete(
+        `/api/v2/group-permissions/users/${membership.id}`
+      );
+
+      expect(response.statusCode).toBe(200);
+      expect(await findEntity(GroupUsers, { id: membership.id })).toBeNull();
+      expect(await findEntity(GroupAdmin, { id: groupAdminRow.id })).not.toBeNull();
+    });
   });
 
   describe('access outside membership management → 403', () => {
@@ -182,6 +208,58 @@ describe('End-user group admins', () => {
         .send({ userId: other.user.id });
 
       expect(response.statusCode).toBe(403);
+    });
+
+    it('cannot revoke a group admin', async () => {
+      const { admin, endUserAdmin, group, groupAdminRow } = await setupEndUserGroupAdmin('revoke');
+
+      const response = await as(endUserAdmin, admin.workspace.id).delete(
+        `/api/v2/group-permissions/${group.id}/admins/${groupAdminRow.id}`
+      );
+
+      expect(response.statusCode).toBe(403);
+      expect(await findEntity(GroupAdmin, { id: groupAdminRow.id })).not.toBeNull();
+    });
+  });
+
+  describe('group admin lifecycle', () => {
+    it('archiving removes the assignment and unarchiving does not restore it', async () => {
+      const { admin, endUserAdmin, group } = await setupEndUserGroupAdmin('archive');
+      const where = { userId: endUserAdmin.user.id, groupId: group.id };
+
+      await as(admin, admin.workspace.id)
+        .post(`/api/organization-users/${endUserAdmin.orgUser.id}/archive`)
+        .send({})
+        .expect(201);
+      expect(await findEntity(GroupAdmin, where)).toBeNull();
+
+      await as(admin, admin.workspace.id)
+        .post(`/api/organization-users/${endUserAdmin.orgUser.id}/unarchive`)
+        .send({})
+        .expect(201);
+      expect(await findEntity(GroupAdmin, where)).toBeNull();
+    });
+
+    it('duplicating a group copies its group admins only when addGroupAdmins is set', async () => {
+      const { admin, endUserAdmin, group } = await setupEndUserGroupAdmin('duplicate');
+      const duplicate = (addGroupAdmins: boolean) =>
+        as(admin, admin.workspace.id).post(`/api/v2/group-permissions/${group.id}/duplicate`).send({
+          addPermission: false,
+          addApps: false,
+          addUsers: false,
+          addDataSource: false,
+          addGroupAdmins,
+        });
+
+      const withAdmins = await duplicate(true);
+      const withoutAdmins = await duplicate(false);
+
+      expect(withAdmins.statusCode).toBe(201);
+      expect(withoutAdmins.statusCode).toBe(201);
+      expect(
+        await findEntity(GroupAdmin, { groupId: withAdmins.body.id, userId: endUserAdmin.user.id })
+      ).not.toBeNull();
+      expect(await findEntity(GroupAdmin, { groupId: withoutAdmins.body.id, userId: endUserAdmin.user.id })).toBeNull();
     });
   });
 
