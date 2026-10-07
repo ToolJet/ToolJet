@@ -92,24 +92,13 @@ const post = ({ app, cookie, organizationId }: Caller, path: string, body: objec
     .set('Cookie', cookie)
     .send(body);
 
-/** The persisted credits-error message an SSE route sends when it refuses. */
-/** The refusal message's copy from an SSE body; null when none. */
-const sseRefusalCopy = (text: string): string | null => {
+/** The persisted credits-error message an SSE route sends when it refuses; null when none. */
+const sseRefusalMessage = (text: string): { content?: string; metadata: { category?: string } } | null => {
   for (const block of text.split('\n\n')) {
     const data = block.split('\n').find((l) => l.startsWith('data: '));
     if (!block.startsWith('event: message') || !data) continue;
     const message = JSON.parse(data.slice(6));
-    if (message?.metadata?.creditsError) return message.content ?? null;
-  }
-  return null;
-};
-
-const sseRefusal = (text: string): string | null => {
-  for (const block of text.split('\n\n')) {
-    const data = block.split('\n').find((l) => l.startsWith('data: '));
-    if (!block.startsWith('event: message') || !data) continue;
-    const metadata = JSON.parse(data.slice(6))?.metadata;
-    if (metadata?.creditsError) return metadata.category ?? null;
+    if (message?.metadata?.creditsError) return message;
   }
   return null;
 };
@@ -257,7 +246,7 @@ describe('AI credit enforcement', () => {
         const res = await call(s);
 
         if (shape === 'sse') {
-          expect(sseRefusal(res.text)).toBe('credit_limit_reached');
+          expect(sseRefusalMessage(res.text)?.metadata.category).toBe('credit_limit_reached');
           expect(res.text).not.toContain('event: generation');
         } else {
           expect(res.statusCode).toBe(402);
@@ -279,7 +268,7 @@ describe('AI credit enforcement', () => {
         content: 'build me an app',
       });
 
-      expect(sseRefusal(res.text)).toBeNull();
+      expect(sseRefusalMessage(res.text)).toBeNull();
       expect(res.text).toContain('event: generation');
     });
 
@@ -308,12 +297,12 @@ describe('AI credit enforcement', () => {
           folders: [],
         });
 
-        expect(sseRefusal(message.text)).toBe('pool_empty');
+        expect(sseRefusalMessage(message.text)?.metadata.category).toBe('pool_empty');
         expect(autosort.statusCode).toBe(402);
         expect(autosort.body.code).toBe('pool_empty');
         // Same pool-empty copy whatever the toggle (PRD state table).
         const copy = 'Your workspace is out of AI credits. Ask your admin to add more.';
-        expect(sseRefusalCopy(message.text)).toBe(copy);
+        expect(sseRefusalMessage(message.text)?.content).toBe(copy);
         expect(autosort.body.message).toBe(copy);
         expectNoRunStarted();
       }
@@ -333,7 +322,7 @@ describe('AI credit enforcement', () => {
         folders: [],
       });
 
-      expect(sseRefusal(message.text)).toBe('balance_unavailable');
+      expect(sseRefusalMessage(message.text)?.metadata.category).toBe('balance_unavailable');
       expect(message.text).not.toContain('event: error');
       expect(autosort.statusCode).toBe(503);
       expect(autosort.body.code).toBe('balance_unavailable');
