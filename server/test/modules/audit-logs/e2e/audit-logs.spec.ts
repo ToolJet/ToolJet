@@ -129,15 +129,13 @@ describe('AuditLogsController', () => {
         .set('Cookie', admin.cookie)
         .expect(200);
 
-      expect(response.body[MODULES.AI].map((e) => e.value)).toEqual(
-        expect.arrayContaining([
-          'AI_CREDIT_LIMIT_ENABLED',
-          'AI_CREDIT_LIMIT_DISABLED',
-          'AI_CREDIT_LIMIT_UPDATED',
-          'AI_CREDIT_BUILDER_LIMIT_UPDATED',
-          'AI_CREDIT_LIMITS_ADJUSTED',
-        ])
-      );
+      expect(response.body[MODULES.AI].map((e) => e.value)).toEqual([
+        'AI_CREDIT_LIMIT_ENABLED',
+        'AI_CREDIT_LIMIT_DISABLED',
+        'AI_CREDIT_LIMIT_UPDATED',
+        'AI_CREDIT_BUILDER_LIMIT_UPDATED',
+        'AI_CREDIT_LIMITS_ADJUSTED',
+      ]);
     });
 
     it('should deny unauthenticated access (401)', async () => {
