@@ -31,6 +31,7 @@ const withCustom = (custom: [string, { monthly?: number; addon?: number }][], en
 const CYCLE = '2026-10-15T09:00:00.000Z';
 const ADDON_END = '2026-10-20T00:00:00.000Z';
 const DETECTED = '2026-10-15T09:05:00.000Z';
+const AFTER_END = '2026-10-20T00:05:00.000Z';
 const PLAN_CHANGE: PoolChange = { reason: 'plan_change', pools: ['monthly', 'addon'], shrunk: ['monthly'], on: CYCLE };
 const ADDON_EXPIRY: PoolChange = { reason: 'addon_expiry', pools: ['addon'], shrunk: ['addon'], on: ADDON_END };
 
@@ -71,26 +72,30 @@ describe('pool change (pure)', () => {
 
   describe('poolChange: what the pool did since last seen', () => {
     it('lower monthly plan = plan change: both pools checked, dated by the new cycle start', () => {
-      expect(poolChange(seen(10_000, 500), seen(4000, 500), CYCLE)).toEqual(PLAN_CHANGE);
+      expect(poolChange(seen(10_000, 500), seen(4000, 500), CYCLE, DETECTED)).toEqual(PLAN_CHANGE);
     });
 
     it('lower add-on plan = add-on expiry: add-on only, dated by the expiry last seen', () => {
-      expect(poolChange(seen(10_000, 500, ADDON_END), seen(10_000, 0), CYCLE)).toEqual(ADDON_EXPIRY);
+      expect(poolChange(seen(10_000, 500, ADDON_END), seen(10_000, 0), CYCLE, AFTER_END)).toEqual(ADDON_EXPIRY);
+    });
+
+    it('add-on removed before its expiry → dated when found, never a future date', () => {
+      expect(poolChange(seen(10_000, 500, ADDON_END), seen(10_000, 0), CYCLE, DETECTED)).toEqual({ ...ADDON_EXPIRY, on: DETECTED });
     });
 
     it('plan change and add-on expiry between two reads → plan change with both pools shrunk, each at its old size', () => {
-      const change = poolChange(seen(5000, 500, ADDON_END), seen(2000, 0), CYCLE);
+      const change = poolChange(seen(5000, 500, ADDON_END), seen(2000, 0), CYCLE, DETECTED);
       expect(change).toEqual({ ...PLAN_CHANGE, shrunk: ['monthly', 'addon'] });
       expect(poolsBefore({ monthly: 2000, addon: 0 }, seen(5000, 500), change)).toEqual({ monthly: 5000, addon: 500 });
     });
 
     it('renewal (same plan, overdraft carry-in only lowers the balance) → no change', () => {
-      expect(poolChange(seen(10_000, 0), seen(10_000, 0), CYCLE)).toBeNull();
+      expect(poolChange(seen(10_000, 0), seen(10_000, 0), CYCLE, DETECTED)).toBeNull();
     });
 
     it('growth (upgrade, add-on purchase) and the first read → no change', () => {
-      expect(poolChange(seen(4000, 0), seen(10_000, 500), CYCLE)).toBeNull();
-      expect(poolChange(undefined, seen(10_000, 500), CYCLE)).toBeNull();
+      expect(poolChange(seen(4000, 0), seen(10_000, 500), CYCLE, DETECTED)).toBeNull();
+      expect(poolChange(undefined, seen(10_000, 500), CYCLE, DETECTED)).toBeNull();
     });
   });
 

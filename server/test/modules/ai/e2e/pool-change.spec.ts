@@ -20,7 +20,7 @@ const GATEWAY = 'http://gateway.test';
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 const CYCLE_START = ago(10 * 24 * 3600_000);
 const NEW_CYCLE = ago(3600_000);
-const ADDON_END = '2026-10-20T00:00:00.000Z';
+const ADDON_END = ago(60_000); // expired a minute ago
 
 /** Stubs fetch at the gateway HTTP boundary; every other URL goes to the real fetch. */
 function stubGateway(routes: Record<string, unknown>) {
