@@ -16,7 +16,7 @@ import {
 @InitModule(MODULES.EXTERNAL_APIS)
 @UseGuards(FeatureAbilityGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-export class ExternalApisAppVersionsControllerV2 implements IExternalApisVersionsControllerV2 {
+export class ExternalApisWorkflowVersionsControllerV2 implements IExternalApisVersionsControllerV2 {
   createVersion(
     workspaceIdentifier: string,
     resourceIdentifier: string,

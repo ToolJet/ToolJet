@@ -19,7 +19,11 @@ import {
   getDefaultDataSource,
   NONEXISTENT_UUID,
 } from 'test-helper';
+import { randomUUID } from 'crypto';
 import { APP_TYPES } from '@modules/apps/constants';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 
@@ -489,6 +493,99 @@ describe('ExternalApisModulesControllerV2 (EE enterprise)', () => {
         .get(`${base(otherOrg.id)}/${seeded.id}/export`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
+  });
+
+  describe('Correlation ids, single-version import and limits', () => {
+    async function exportedDefinition(workspaceId: string, moduleId: string) {
+      const res = await request(app.getHttpServer())
+        .get(`${base(workspaceId)}/${moduleId}/export`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      return res.body.definition;
+    }
+
+    it('should import a saved module as a single draft, and reject multi-version definitions', async () => {
+      const { user } = await createUser(app, { email: `mv2-imd-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `mv2-imd-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Saved Source Module', user, type: APP_TYPES.MODULE });
+      const version = await createApplicationVersion(app, seeded);
+      await getDefaultDataSource().getRepository(AppVersion).update(version.id, { status: AppVersionStatus.PUBLISHED });
+      const definition = await exportedDefinition(user.defaultOrganizationId, seeded.id);
+
+      const multiple = JSON.parse(JSON.stringify(definition));
+      const [only] = multiple.appV2.appVersions;
+      multiple.appV2.appVersions = [only, { ...only, id: randomUUID(), name: `${only.name}-copy` }];
+      await request(app.getHttpServer())
+        .post(`${base(otherOrg.id)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition: multiple })
+        .expect(422);
+
+      const imported = await request(app.getHttpServer())
+        .post(`${base(otherOrg.id)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition })
+        .expect(201);
+      expect(imported.body).toMatchObject({ name: 'Saved Source Module', correlation_id: expect.any(String) });
+      const statuses = (
+        await getDefaultDataSource()
+          .getRepository(AppVersion)
+          .find({ where: { appId: imported.body.id, isStub: false } })
+      ).map((v) => v.status);
+      expect(statuses).toEqual([AppVersionStatus.DRAFT]);
+    });
+
+    it('should block module changes when modules are not licensed, but keep reads available', async () => {
+      const { user } = await createUser(app, { email: `mv2-unlic-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Unlicensed Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, seeded);
+      const definition = await exportedDefinition(user.defaultOrganizationId, seeded.id);
+      definition.appV2.name = 'Unlicensed Import';
+
+      const licenseTermsService = app.get(LicenseTermsService, { strict: false });
+      const getLicenseTerms = licenseTermsService.getLicenseTerms.bind(licenseTermsService);
+      const spy = jest
+        .spyOn(licenseTermsService, 'getLicenseTerms')
+        .mockImplementation((type, organizationId) =>
+          type === LICENSE_FIELD.MODULES ? Promise.resolve(false) : getLicenseTerms(type, organizationId)
+        );
+      const ws = user.defaultOrganizationId;
+      const call = (method: 'get' | 'post' | 'patch' | 'delete', path: string, body?: object) =>
+        request(app.getHttpServer())[method](path).set('Authorization', getExtAuth()).send(body);
+      try {
+        await call('post', base(ws), { name: 'Blocked Module' }).expect(451);
+        await call('patch', `${base(ws)}/${seeded.id}`, { name: 'Blocked Rename' }).expect(451);
+        await call('get', `${base(ws)}/${seeded.id}/export`).expect(451);
+        await call('post', `${base(ws)}/import`, { definition }).expect(451);
+        await call('delete', `${base(ws)}/${seeded.id}`).expect(451);
+
+        await call('get', base(ws)).expect(200);
+        await call('get', `${base(ws)}/${seeded.id}`).expect(200);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('should not apply the app limit to modules', async () => {
+      const { user } = await createUser(app, { email: `mv2-lim-${Date.now()}@tooljet.io` });
+      const licenseTermsService = app.get(LicenseTermsService, { strict: false });
+      const getLicenseTerms = licenseTermsService.getLicenseTerms.bind(licenseTermsService);
+      const spy = jest
+        .spyOn(licenseTermsService, 'getLicenseTerms')
+        .mockImplementation((type, organizationId) =>
+          type === LICENSE_FIELD.APP_COUNT ? Promise.resolve(0) : getLicenseTerms(type, organizationId)
+        );
+      try {
+        const res = await request(app.getHttpServer())
+          .post(base(user.defaultOrganizationId))
+          .set('Authorization', getExtAuth())
+          .send({ name: 'Uncapped Module' })
+          .expect(201);
+        expect(res.body.correlation_id).toEqual(expect.any(String));
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 });

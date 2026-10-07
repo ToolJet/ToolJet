@@ -32,6 +32,7 @@ import {
   FolderV2ResponseDto,
   ListFoldersV2ResponseDto,
   ResourceExportV2ResponseDto,
+  ExportResourceV2QueryDto,
   ListEnvironmentsV2ResponseDto,
   CreateAppVersionV2Dto,
   UpdateAppVersionV2Dto,
@@ -39,6 +40,14 @@ import {
   ListAppVersionsV2QueryDto,
   AppVersionV2ResponseDto,
   ListAppVersionsV2ResponseDto,
+  ListDataSourcesV2QueryDto,
+  GetDataSourceV2QueryDto,
+  ListDataSourceQueriesV2QueryDto,
+  TestDataSourceConnectionV2Dto,
+  DataSourceV2ResponseDto,
+  ListDataSourcesV2ResponseDto,
+  ListDataSourceQueriesV2ResponseDto,
+  TestDataSourceConnectionV2ResponseDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -108,9 +117,7 @@ export interface IExternalApisAppsControllerV2 {
   exportApp(
     workspaceIdentifier: string,
     appIdentifier: string,
-    exportTjdb?: boolean,
-    appVersion?: string,
-    exportAllVersions?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto>;
 }
 
@@ -134,7 +141,7 @@ export interface IExternalApisModulesControllerV2 {
   exportModule(
     workspaceIdentifier: string,
     moduleIdentifier: string,
-    exportTjdb?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto>;
 }
 
@@ -158,9 +165,7 @@ export interface IExternalApisWorkflowsControllerV2 {
   exportWorkflow(
     workspaceIdentifier: string,
     workflowIdentifier: string,
-    exportTjdb?: boolean,
-    appVersion?: string,
-    exportAllVersions?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto>;
 }
 
@@ -186,42 +191,73 @@ export interface IExternalApisEnvironmentsControllerV2 {
   listEnvironments(workspaceIdentifier: string): Promise<ListEnvironmentsV2ResponseDto>;
 }
 
-export interface IExternalApisAppVersionsControllerV2 {
+// Shared by the App/Module/Workflow Versions controllers — the resource type is fixed per controller.
+export interface IExternalApisVersionsControllerV2 {
   createVersion(
     workspaceIdentifier: string,
-    appIdentifier: string,
+    resourceIdentifier: string,
     dto: CreateAppVersionV2Dto
   ): Promise<AppVersionV2ResponseDto>;
 
-  saveVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<AppVersionV2ResponseDto>;
+  saveVersion(
+    workspaceIdentifier: string,
+    resourceIdentifier: string,
+    versionId: string
+  ): Promise<AppVersionV2ResponseDto>;
 
   promoteVersion(
     workspaceIdentifier: string,
-    appIdentifier: string,
+    resourceIdentifier: string,
     versionId: string,
     dto: PromoteAppVersionV2Dto
   ): Promise<AppVersionV2ResponseDto>;
 
   releaseVersion(
     workspaceIdentifier: string,
-    appIdentifier: string,
+    resourceIdentifier: string,
     versionId: string
   ): Promise<AppVersionV2ResponseDto>;
 
   listVersions(
     workspaceIdentifier: string,
-    appIdentifier: string,
+    resourceIdentifier: string,
     query: ListAppVersionsV2QueryDto
   ): Promise<ListAppVersionsV2ResponseDto>;
 
-  getVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<AppVersionV2ResponseDto>;
+  getVersion(
+    workspaceIdentifier: string,
+    resourceIdentifier: string,
+    versionId: string
+  ): Promise<AppVersionV2ResponseDto>;
 
   updateVersion(
     workspaceIdentifier: string,
-    appIdentifier: string,
+    resourceIdentifier: string,
     versionId: string,
     dto: UpdateAppVersionV2Dto
   ): Promise<AppVersionV2ResponseDto>;
 
-  deleteVersion(workspaceIdentifier: string, appIdentifier: string, versionId: string): Promise<void>;
+  deleteVersion(workspaceIdentifier: string, resourceIdentifier: string, versionId: string): Promise<void>;
+}
+
+export interface IExternalApisDataSourcesControllerV2 {
+  listDataSources(workspaceIdentifier: string, query: ListDataSourcesV2QueryDto): Promise<ListDataSourcesV2ResponseDto>;
+
+  getDataSource(
+    workspaceIdentifier: string,
+    dataSourceId: string,
+    query: GetDataSourceV2QueryDto
+  ): Promise<DataSourceV2ResponseDto>;
+
+  listDataSourceQueries(
+    workspaceIdentifier: string,
+    dataSourceId: string,
+    query: ListDataSourceQueriesV2QueryDto
+  ): Promise<ListDataSourceQueriesV2ResponseDto>;
+
+  testConnection(
+    workspaceIdentifier: string,
+    dataSourceId: string,
+    dto: TestDataSourceConnectionV2Dto
+  ): Promise<TestDataSourceConnectionV2ResponseDto>;
 }

@@ -20,6 +20,7 @@ import {
   Max,
   IsNumber,
   IsPositive,
+  IsBoolean,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
@@ -676,6 +677,18 @@ export class ListAppsV2QueryDto {
   per_page?: number = 20;
 }
 
+export class ExportResourceV2QueryDto {
+  // Exactly one version is exported; defaults to the latest when omitted.
+  @IsOptional()
+  @IsUUID()
+  version_id?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
+  @IsBoolean()
+  exportTJDB?: boolean;
+}
+
 export class ImportAppV2Dto {
   // Matches Export v2's { definition } so an export re-imports unchanged
   @IsDefined()
@@ -876,6 +889,42 @@ export class ListAppVersionsV2QueryDto {
   per_page?: number = 20;
 }
 
+export class ListDataSourcesV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  kind?: string;
+
+  @IsOptional()
+  @IsUUID()
+  environment_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class GetDataSourceV2QueryDto extends PickType(ListDataSourcesV2QueryDto, ['environment_id'] as const) {}
+
+export class ListDataSourceQueriesV2QueryDto extends PickType(ListDataSourcesV2QueryDto, [
+  'page',
+  'per_page',
+] as const) {}
+
+export class TestDataSourceConnectionV2Dto extends PickType(ListDataSourcesV2QueryDto, ['environment_id'] as const) {}
+
 // --- v2 Response DTOs ---
 // Apps/Modules/Workflows/Folders v2 handlers build a plain object by hand (see service.ts) and
 // return it through these @Exclude-by-default DTOs via plainToInstance + ClassSerializerInterceptor,
@@ -900,6 +949,10 @@ export class AppV2ResponseDto {
 
   @Expose()
   name: string;
+
+  // Stable logical identity across environments and workspaces; not unique (git-sync branches share one).
+  @Expose({ name: 'correlation_id' })
+  correlationId: string;
 
   @Expose()
   slug: string;
@@ -926,6 +979,9 @@ export class ModuleV2ResponseDto {
 
   @Expose()
   name: string;
+
+  @Expose({ name: 'correlation_id' })
+  correlationId: string;
 }
 
 @Exclude()
@@ -946,6 +1002,9 @@ export class WorkflowV2ResponseDto {
 
   @Expose()
   name: string;
+
+  @Expose({ name: 'correlation_id' })
+  correlationId: string;
 
   @Expose({ name: 'folder_id' })
   folderId: string | null;
@@ -1049,4 +1108,95 @@ export class ListAppVersionsV2ResponseDto {
   @Expose()
   @Type(() => PaginationV2ResponseDto)
   pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class DataSourceOptionValueV2ResponseDto {
+  @Expose()
+  key: string;
+
+  // Encrypted values are always '**********'; plain values keep their stored shape (string, boolean, list, object).
+  @Expose()
+  value: unknown;
+
+  @Expose()
+  encrypted: boolean;
+}
+
+@Exclude()
+export class DataSourceEnvironmentOptionsV2ResponseDto {
+  @Expose({ name: 'environment_id' })
+  environmentId: string;
+
+  @Expose()
+  @Type(() => DataSourceOptionValueV2ResponseDto)
+  values: DataSourceOptionValueV2ResponseDto[];
+}
+
+@Exclude()
+export class DataSourceV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  kind: string;
+
+  @Expose({ name: 'correlation_id' })
+  correlationId: string | null;
+
+  @Expose()
+  @Type(() => DataSourceEnvironmentOptionsV2ResponseDto)
+  options: DataSourceEnvironmentOptionsV2ResponseDto[];
+}
+
+@Exclude()
+export class ListDataSourcesV2ResponseDto {
+  @Expose()
+  @Type(() => DataSourceV2ResponseDto)
+  data: DataSourceV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class DataSourceQueryV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose({ name: 'app_id' })
+  appId: string;
+
+  @Expose({ name: 'app_name' })
+  appName: string | null;
+
+  @Expose({ name: 'version_id' })
+  versionId: string;
+}
+
+@Exclude()
+export class ListDataSourceQueriesV2ResponseDto {
+  @Expose()
+  @Type(() => DataSourceQueryV2ResponseDto)
+  data: DataSourceQueryV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class TestDataSourceConnectionV2ResponseDto {
+  @Expose()
+  status: 'ok' | 'failed';
+
+  @Expose()
+  message?: string;
 }

@@ -26,6 +26,7 @@ import { OrganizationUsersModule } from '@modules/organization-users/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { DataSourcesModule } from '@modules/data-sources/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -48,6 +49,9 @@ export class ExternalApiModule extends SubModule {
       ExternalApisWorkflowFoldersControllerV2,
       ExternalApisEnvironmentsControllerV2,
       ExternalApisAppVersionsControllerV2,
+      ExternalApisModuleVersionsControllerV2,
+      ExternalApisWorkflowVersionsControllerV2,
+      ExternalApisDataSourcesControllerV2,
       ExternalApisTjdbController,
       ExternalApisBanController,
       ExternalApisAppExportController,
@@ -66,6 +70,9 @@ export class ExternalApiModule extends SubModule {
       'controllers/workflow-folders.controller.v2',
       'controllers/environments.controller.v2',
       'controllers/app-versions.controller.v2',
+      'controllers/module-versions.controller.v2',
+      'controllers/workflow-versions.controller.v2',
+      'controllers/data-sources.controller.v2',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
       'controllers/app-export.controller',
@@ -90,6 +97,7 @@ export class ExternalApiModule extends SubModule {
         await FolderAppsModule.register(configs),
         await FoldersModule.register(configs),
         await AppHistoryModule.register(configs),
+        await DataSourcesModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -121,6 +129,9 @@ export class ExternalApiModule extends SubModule {
             ExternalApisWorkflowFoldersControllerV2,
             ExternalApisEnvironmentsControllerV2,
             ExternalApisAppVersionsControllerV2,
+            ExternalApisModuleVersionsControllerV2,
+            ExternalApisWorkflowVersionsControllerV2,
+            ExternalApisDataSourcesControllerV2,
             ExternalApisTjdbController,
             ExternalApisBanController,
             ExternalApisAppExportController,

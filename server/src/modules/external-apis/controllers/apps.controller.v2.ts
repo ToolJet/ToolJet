@@ -11,6 +11,7 @@ import {
   AppV2ResponseDto,
   ListAppsV2ResponseDto,
   ResourceExportV2ResponseDto,
+  ExportResourceV2QueryDto,
 } from '../dto';
 
 @Controller({ path: 'ext', version: '2' })
@@ -39,9 +40,7 @@ export class ExternalApisAppsControllerV2 implements IExternalApisAppsController
   exportApp(
     workspaceIdentifier: string,
     appIdentifier: string,
-    exportTjdb?: boolean,
-    appVersion?: string,
-    exportAllVersions?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto> {
     throw new Error('Method not implemented.');
   }

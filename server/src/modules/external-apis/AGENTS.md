@@ -1,16 +1,16 @@
 # external-apis module
 
 Owns the **External API**: a machine-to-machine REST surface (`/api/ext/...`, `/api/v2/ext/...`)
-for managing Users, Workspaces, Apps, Modules, Workflows, their Folders, Environments (read-only)
-and App Versions from outside the
+for managing Users, Workspaces, Apps, Modules, Workflows, their Folders and Versions, and
+Environments and Data Sources (read-only) from outside the
 product, authenticated by a static bearer token rather than a user session.
 
 ## Domain terms
 
 - **v1** vs **v2** — v1 (`ExternalApisController`, `ExternalApisAppsController`, ...) is the
   original surface: git-sync operations, user/workspace management, curated app import/export.
-  v2 (`*ControllerV2`) is a newer, workspace-scoped CRUD surface for Apps/Modules/Workflows/Folders/
-  Environments/App Versions
+  v2 (`*ControllerV2`) is a newer, workspace-scoped CRUD surface for Apps/Modules/Workflows, their
+  Folders and Versions, and Environments
   under `/api/v2/ext/workspaces/:workspaceIdentifier/...` — a different resource model, not a
   breaking version of v1's routes. Both are mounted side by side; neither replaces the other.
 - **Identifier resolution** — every v2 `:xIdentifier` path param accepts an id, then falls back to
@@ -44,34 +44,37 @@ product, authenticated by a static bearer token rather than a user session.
 
 ## Invariants & gotchas
 
-- v2 actions run as **an arbitrary admin user of the workspace** (`validateAndGetAdminUser` picks
-  any admin via `GroupPermissionRepository.getAdminUserForOrg`), not as a specific authenticated
-  caller — there is no per-user CASL `AbilityGuard` check here the way the internal builder API
-  enforces per-app/per-resource permissions. Authorization is all-or-nothing at the
-  license/feature-key level, not resource-level.
-- Apps/Modules/Workflows share the `apps` table (`type` column); v2 endpoints for one type must
-  never cross-resolve into another (`resolveAppByIdentifier` enforces this after the lookup, not
-  as part of the query).
-- `AppsUtilService.create()`'s pre-flight name-uniqueness check throws `BadRequestException` (400)
-  by design for v1; v2's spec promises 409 for the same conflict, so v2 callers wrap that (and the
-  equivalent import-time collision) and translate to `ConflictException` via
-  `#toConflictIfNameTaken` — don't "fix" this by changing `AppsUtilService.create()` itself, that
-  would change v1's contract.
+- v2 actions run as **an arbitrary workspace admin** (`validateAndGetAdminUser`), not a specific
+  caller — no per-user CASL checks; authorization is all-or-nothing at the license/feature-key level.
+- Apps/Modules/Workflows share the `apps` table; v2 endpoints for one type must never cross-resolve
+  into another (`resolveAppByIdentifier` checks `type` after the lookup).
+- `AppsUtilService.create()` throws 400 on a name clash by design for v1; v2 translates it to 409 via
+  `#toConflictIfNameTaken` — don't change `AppsUtilService.create()` itself (v1 contract).
 - Modules v2 has no `folder_id` anywhere (request or response) — an explicit product decision, not
   a gap; don't add it without checking `api-spec-viewer.html` first.
-- `AppsUtilService.create()`/`update()` leave `apps.name`/`apps.slug` null for API-created
-  resources (the real name lives on `app_versions.app_name`) — every v2 create/import path patches
-  `.name` in memory afterward before returning it; missing this reintroduces a `name: null` regression.
-- App Versions v2: `status: released` is derived from `apps.current_version_id`, never read from
-  `app_versions.status` (the product never writes `RELEASED`). `published_at`/`released_at` are
-  written only by the v2 save/release paths. Release keeps the product's production gate (no
-  implicit promotion); promote accepts any higher environment. Promote/release logic is copied
-  from the EE `VersionService`/`AppsService` overrides into `util.service.ts`, since neither has an
-  exported util — keep it in sync with those sources.
+- `apps.name`/`apps.slug` stay null for API-created resources (the name lives on `app_versions.app_name`);
+  v2 create/import patch `.name` in memory before responding — skipping it returns `name: null`.
+- Create/import enforce the product's app/workflow caps (`assertResourceLimitV2`, mirroring the count
+  guards); module create/rename/delete/import/export need `LICENSE_FIELD.MODULES` (`assertModulesLicensedV2`).
+  Every license call passes the URL's workspace id — new create/import paths must call these first.
+- Import takes exactly one version (422 `MULTIPLE_VERSIONS_NOT_SUPPORTED`) and always lands as an
+  unreleased draft in the lowest environment; export returns one version (`?version_id=`, else latest).
+- Versions v2 (apps/modules/workflows share one type-parameterized flow): `status: released` is
+  derived from `apps.current_version_id`; `published_at`/`released_at` are written only by v2.
+  Release keeps the product's production gate; promote accepts any higher environment. Promote/
+  release are copied from the EE `VersionService`/`AppsService` overrides (no exported util) — keep
+  them in sync. Per type: modules list the default branch only and skip the nested-draft save check;
+  workflows skip git-sync filtering/tags, and deleting a version emits `app.deleted` to stop its
+  schedule jobs (the product leaves them orphaned).
+- Data Sources v2 read options through the default-branch DSV (`data_source_version_options`), list
+  only `default`/`sample` global sources (no static built-ins, git-sync dummies, or feature-branch-only
+  sources), and mask every encrypted value. Test-connection loads stored options itself (the internal
+  util tests body-supplied options), runs without a user, redacts secrets, and times out after 30s.
 
 ## Related modules
 
 - `apps`, `folders`, `folder-apps` — v2 delegates directly to these CE services/util-services
   rather than re-implementing app/folder persistence.
-- `versions`, `app-environments`, `app-history` — App Versions/Environments v2 reuse their exported
-  util services (`VersionUtilService`, `AppEnvironmentUtilService`, `AppHistoryUtilService`).
+- `versions`, `app-environments`, `app-history`, `data-sources` — Versions/Environments/Data Sources v2
+  reuse their exported utils (`VersionUtilService`, `AppEnvironmentUtilService`, `AppHistoryUtilService`,
+  `DataSourcesUtilService`, `PluginsServiceSelector`).

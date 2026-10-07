@@ -11,6 +11,7 @@ import {
   WorkflowV2ResponseDto,
   ListWorkflowsV2ResponseDto,
   ResourceExportV2ResponseDto,
+  ExportResourceV2QueryDto,
 } from '../dto';
 
 @Controller({ path: 'ext', version: '2' })
@@ -43,9 +44,7 @@ export class ExternalApisWorkflowsControllerV2 implements IExternalApisWorkflows
   exportWorkflow(
     workspaceIdentifier: string,
     workflowIdentifier: string,
-    exportTjdb?: boolean,
-    appVersion?: string,
-    exportAllVersions?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto> {
     throw new Error('Method not implemented.');
   }

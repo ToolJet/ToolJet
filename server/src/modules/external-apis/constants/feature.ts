@@ -337,5 +337,85 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.CREATE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.SAVE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.PROMOTE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.RELEASE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_MODULE_VERSIONS_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.UPDATE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_MODULE_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.CREATE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.SAVE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.PROMOTE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.RELEASE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_WORKFLOW_VERSIONS_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.UPDATE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_WORKFLOW_VERSION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_DATA_SOURCES_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_DATA_SOURCE_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_DATA_SOURCE_QUERIES_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.TEST_DATA_SOURCE_CONNECTION_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };

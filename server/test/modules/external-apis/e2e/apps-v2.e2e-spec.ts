@@ -23,8 +23,15 @@ import {
   findEntity,
   saveEntity,
   NONEXISTENT_UUID,
+  getDefaultDataSource,
 } from 'test-helper';
+import { randomUUID } from 'crypto';
 import { APP_TYPES } from '@modules/apps/constants';
+import { App } from '@entities/app.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { AppsUtilService } from '@ee/apps/util.service';
 
@@ -660,6 +667,142 @@ describe('ExternalApisAppsControllerV2 (EE enterprise)', () => {
         .get(`${base(otherOrg.id)}/${seeded.id}/export`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
+  });
+
+  describe('Correlation ids, single-version export/import and the app limit', () => {
+    const exportOf = (workspaceId: string, appId: string, query = '') =>
+      request(app.getHttpServer())
+        .get(`${base(workspaceId)}/${appId}/export${query}`)
+        .set('Authorization', getExtAuth());
+
+    it('should return the same correlation id on create, get and list', async () => {
+      const { user } = await createUser(app, { email: `av2-cor-${Date.now()}@tooljet.io` });
+      const created = await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Correlated App' })
+        .expect(201);
+      expect(created.body.correlation_id).toEqual(expect.any(String));
+
+      const fetched = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}/${created.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      const listed = await request(app.getHttpServer())
+        .get(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      expect(fetched.body.correlation_id).toBe(created.body.correlation_id);
+      expect(listed.body.data[0].correlation_id).toBe(created.body.correlation_id);
+    });
+
+    it('should export exactly the requested version, defaulting to the latest', async () => {
+      const { user } = await createUser(app, { email: `av2-exv-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Versioned Export App', user });
+      const older = await createApplicationVersion(app, seeded, { name: 'older' });
+      const newer = await createApplicationVersion(app, seeded, { name: 'newer' });
+
+      const requested = await exportOf(user.defaultOrganizationId, seeded.id, `?version_id=${older.id}`).expect(200);
+      expect(requested.body.definition.appV2.appVersions.map((v) => v.name)).toEqual([older.name]);
+
+      const latest = await exportOf(user.defaultOrganizationId, seeded.id).expect(200);
+      expect(latest.body.definition.appV2.appVersions.map((v) => v.name)).toEqual([newer.name]);
+
+      await exportOf(user.defaultOrganizationId, seeded.id, `?version_id=${randomUUID()}`).expect(404);
+      await exportOf(user.defaultOrganizationId, seeded.id, '?version_id=not-a-uuid').expect(400);
+    });
+
+    it('should reject importing a definition that carries more than one version', async () => {
+      const { user } = await createUser(app, { email: `av2-imv-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `av2-imv-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Two Version App', user });
+      await createApplicationVersion(app, seeded);
+      const { definition } = (await exportOf(user.defaultOrganizationId, seeded.id).expect(200)).body;
+      const [only] = definition.appV2.appVersions;
+      definition.appV2.appVersions = [only, { ...only, id: randomUUID(), name: `${only.name}-copy` }];
+
+      await request(app.getHttpServer())
+        .post(`${base(otherOrg.id)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition })
+        .expect(422);
+
+      const listed = await request(app.getHttpServer())
+        .get(base(otherOrg.id))
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(listed.body.pagination.total_count).toBe(0);
+    });
+
+    it('should import a released, promoted app as an unreleased draft in the lowest environment', async () => {
+      const ds = getDefaultDataSource();
+      const { user } = await createUser(app, { email: `av2-imd-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `av2-imd-other-${Date.now()}@tooljet.io` });
+      const production = await ds
+        .getRepository(AppEnvironment)
+        .findOneOrFail({ where: { organizationId: user.organizationId, isDefault: true } });
+      const seeded = await createApplication(app, { name: 'Released Source App', user });
+      const version = await createApplicationVersion(app, seeded, { currentEnvironmentId: production.id });
+      await ds.getRepository(AppVersion).update(version.id, { status: AppVersionStatus.PUBLISHED });
+      await ds.getRepository(App).update(seeded.id, { currentVersionId: version.id });
+      const { definition } = (await exportOf(user.defaultOrganizationId, seeded.id).expect(200)).body;
+
+      const imported = await request(app.getHttpServer())
+        .post(`${base(otherOrg.id)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition })
+        .expect(201);
+      expect(imported.body.correlation_id).toEqual(expect.any(String));
+
+      const lowest = await ds
+        .getRepository(AppEnvironment)
+        .findOneOrFail({ where: { organizationId: otherOrg.id, priority: 1 } });
+      const importedVersions = await ds
+        .getRepository(AppVersion)
+        .find({ where: { appId: imported.body.id, isStub: false } });
+      expect(importedVersions.map((v) => [v.status, v.currentEnvironmentId, v.releasedAt])).toEqual([
+        [AppVersionStatus.DRAFT, lowest.id, null],
+      ]);
+      const importedApp = await ds.getRepository(App).findOneOrFail({ where: { id: imported.body.id } });
+      expect(importedApp.currentVersionId).toBeNull();
+    });
+
+    it('should refuse to create or import an app once the app limit is reached', async () => {
+      const { user } = await createUser(app, { email: `av2-lim-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Limit Source App', user });
+      await createApplicationVersion(app, seeded);
+      const { definition } = (await exportOf(user.defaultOrganizationId, seeded.id).expect(200)).body;
+      definition.appV2.name = 'Limit Imported App';
+
+      const licenseTermsService = app.get(LicenseTermsService, { strict: false });
+      const getLicenseTerms = licenseTermsService.getLicenseTerms.bind(licenseTermsService);
+      const appsInUse = await getDefaultDataSource()
+        .getRepository(App)
+        .count({
+          where: { type: APP_TYPES.FRONT_END, organization: { status: 'active' } },
+          relations: ['organization'],
+        });
+      const spy = jest
+        .spyOn(licenseTermsService, 'getLicenseTerms')
+        .mockImplementation((type, organizationId) =>
+          type === LICENSE_FIELD.APP_COUNT ? Promise.resolve(appsInUse) : getLicenseTerms(type, organizationId)
+        );
+      try {
+        await request(app.getHttpServer())
+          .post(base(user.defaultOrganizationId))
+          .set('Authorization', getExtAuth())
+          .send({ name: 'One Too Many' })
+          .expect(451);
+        await request(app.getHttpServer())
+          .post(`${base(user.defaultOrganizationId)}/import`)
+          .set('Authorization', getExtAuth())
+          .send({ definition })
+          .expect(451);
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 });

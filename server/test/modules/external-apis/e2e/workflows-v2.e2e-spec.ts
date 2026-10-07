@@ -17,8 +17,13 @@ import {
   createApplicationVersion,
   createFolder,
   NONEXISTENT_UUID,
+  getDefaultDataSource,
 } from 'test-helper';
+import { randomUUID } from 'crypto';
 import { APP_TYPES } from '@modules/apps/constants';
+import { App } from '@entities/app.entity';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 jest.setTimeout(120_000);
 
@@ -586,6 +591,107 @@ describe('ExternalApisWorkflowsControllerV2 (EE enterprise)', () => {
         .get(`${base(otherOrg.id)}/${seeded.id}/export`)
         .set('Authorization', getExtAuth())
         .expect(404);
+    });
+  });
+
+  describe('Correlation ids, single-version import and the workflow limit', () => {
+    async function exportedDefinition(workspaceId: string, workflowId: string) {
+      const res = await request(app.getHttpServer())
+        .get(`${base(workspaceId)}/${workflowId}/export`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      return res.body.definition;
+    }
+
+    async function withWorkflowTerms(terms: object, run: () => Promise<void>) {
+      const licenseTermsService = app.get(LicenseTermsService, { strict: false });
+      const getLicenseTerms = licenseTermsService.getLicenseTerms.bind(licenseTermsService);
+      const spy = jest
+        .spyOn(licenseTermsService, 'getLicenseTerms')
+        .mockImplementation((type, organizationId) =>
+          type === LICENSE_FIELD.WORKFLOWS ? Promise.resolve(terms) : getLicenseTerms(type, organizationId)
+        );
+      try {
+        await run();
+      } finally {
+        spy.mockRestore();
+      }
+    }
+
+    it('should return the same correlation id on create and get', async () => {
+      const { user } = await createUser(app, { email: `wv2-cor-${Date.now()}@tooljet.io` });
+      const created = await request(app.getHttpServer())
+        .post(base(user.defaultOrganizationId))
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Correlated Workflow' })
+        .expect(201);
+      const fetched = await request(app.getHttpServer())
+        .get(`${base(user.defaultOrganizationId)}/${created.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      expect(created.body.correlation_id).toEqual(expect.any(String));
+      expect(fetched.body.correlation_id).toBe(created.body.correlation_id);
+    });
+
+    it('should reject importing a definition that carries more than one version', async () => {
+      const { user } = await createUser(app, { email: `wv2-imv-${Date.now()}@tooljet.io` });
+      const { organization: otherOrg } = await createUser(app, { email: `wv2-imv-other-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Two Version Workflow', user, type: APP_TYPES.WORKFLOW });
+      await createApplicationVersion(app, seeded);
+      const definition = await exportedDefinition(user.defaultOrganizationId, seeded.id);
+      const [only] = definition.appV2.appVersions;
+      definition.appV2.appVersions = [only, { ...only, id: randomUUID(), name: `${only.name}-copy` }];
+
+      await request(app.getHttpServer())
+        .post(`${base(otherOrg.id)}/import`)
+        .set('Authorization', getExtAuth())
+        .send({ definition })
+        .expect(422);
+    });
+
+    it('should refuse to create or import a workflow past the instance or workspace limit', async () => {
+      const { user } = await createUser(app, { email: `wv2-lim-${Date.now()}@tooljet.io` });
+      const seeded = await createApplication(app, { name: 'Limit Source Workflow', user, type: APP_TYPES.WORKFLOW });
+      await createApplicationVersion(app, seeded);
+      const definition = await exportedDefinition(user.defaultOrganizationId, seeded.id);
+      definition.appV2.name = 'Limit Imported Workflow';
+      const workflows = getDefaultDataSource().getRepository(App);
+      const instanceCount = await workflows.count({ where: { type: APP_TYPES.WORKFLOW } });
+      const workspaceCount = await workflows.count({
+        where: { type: APP_TYPES.WORKFLOW, organizationId: user.organizationId },
+      });
+
+      await withWorkflowTerms({ instance: { total: instanceCount } }, async () => {
+        const created = await request(app.getHttpServer())
+          .post(base(user.defaultOrganizationId))
+          .set('Authorization', getExtAuth())
+          .send({ name: 'One Too Many' })
+          .expect(451);
+        expect(created.body.message).toBe('Maximum workflow limit reached');
+        await request(app.getHttpServer())
+          .post(`${base(user.defaultOrganizationId)}/import`)
+          .set('Authorization', getExtAuth())
+          .send({ definition })
+          .expect(451);
+      });
+
+      await withWorkflowTerms({ workspace: { total: workspaceCount } }, async () => {
+        const created = await request(app.getHttpServer())
+          .post(base(user.defaultOrganizationId))
+          .set('Authorization', getExtAuth())
+          .send({ name: 'One Too Many' })
+          .expect(451);
+        expect(created.body.message).toBe('Maximum workflow limit reached for the current workspace');
+      });
+
+      await withWorkflowTerms({}, async () => {
+        await request(app.getHttpServer())
+          .post(base(user.defaultOrganizationId))
+          .set('Authorization', getExtAuth())
+          .send({ name: 'Not Licensed' })
+          .expect(404);
+      });
     });
   });
 });

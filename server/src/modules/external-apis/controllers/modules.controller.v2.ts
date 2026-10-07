@@ -11,6 +11,7 @@ import {
   ModuleV2ResponseDto,
   ListModulesV2ResponseDto,
   ResourceExportV2ResponseDto,
+  ExportResourceV2QueryDto,
 } from '../dto';
 
 @Controller({ path: 'ext', version: '2' })
@@ -43,7 +44,7 @@ export class ExternalApisModulesControllerV2 implements IExternalApisModulesCont
   exportModule(
     workspaceIdentifier: string,
     moduleIdentifier: string,
-    exportTjdb?: boolean
+    query: ExportResourceV2QueryDto
   ): Promise<ResourceExportV2ResponseDto> {
     throw new Error('Method not implemented.');
   }
