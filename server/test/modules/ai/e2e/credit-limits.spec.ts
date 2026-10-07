@@ -226,7 +226,10 @@ describe('AI credit limits', () => {
     it('a new workspace has limits on with equal share before any admin action', async () => {
       const s = await seed('ac7');
       licenseWith(app, { aiPlan: 'credits' });
-      stubGateway(gatewayFor(s.owner, POOL));
+      const routes = gatewayFor(s.owner, POOL);
+      // Plan sizes on the balance: the first read records them, which writes the default rows.
+      Object.assign(routes[`${s.owner}/balance`], { plan: wallet(POOL.monthly, POOL.addon) });
+      stubGateway(routes);
 
       const res = await getUsage(app, s.cookie, s.workspace.id);
 
@@ -239,7 +242,10 @@ describe('AI credit limits', () => {
         addon: { mode: 'equal_share', value: null, max: 25, effective: 25 },
       });
       // The first read records the plan sizes; the rows it writes stay on.
-      for (const row of await limitRows(s.workspace.id)) expect(row).toMatchObject({ enabled: true });
+      expect(await limitRows(s.workspace.id)).toEqual([
+        { pool: 'addon', mode: 'equal_share', value: null, enabled: true },
+        { pool: 'monthly', mode: 'equal_share', value: null, enabled: true },
+      ]);
       const builderRow = res.body.rows.find((r) => r.userId === s.builders[0].user.id);
       expect(builderRow.limit).toEqual({ monthly: 250, addon: 25 });
     });

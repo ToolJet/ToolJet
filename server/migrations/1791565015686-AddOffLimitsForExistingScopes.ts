@@ -2,8 +2,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // No default rows now means limits on (new workspaces start on). Every scope that already exists keeps today's
 // state: write its default rows off, equal share. One pair per workspace (Cloud scope) and, once any workspace
-// exists, one for the instance (self-hosted scope). Fresh install: no workspaces yet, no rows. Scopes that
-// already have default rows are left alone. Data only, so down is a no-op: off rows read as off either way.
+// exists, one for the instance (self-hosted scope). Fresh install: no workspaces yet, no rows. Default rows
+// are always written in pairs, so ON CONFLICT leaves a configured scope alone. Data only, so down is a no-op:
+// off rows read as off either way.
 export class AddOffLimitsForExistingScopes1791565015686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await withLockTimeout(
@@ -14,10 +15,6 @@ export class AddOffLimitsForExistingScopes1791565015686 implements MigrationInte
                UNION ALL
                SELECT NULL::uuid WHERE EXISTS (SELECT 1 FROM organizations)) scope
         CROSS JOIN (VALUES ('monthly'), ('addon')) pool(name)
-        WHERE NOT EXISTS (
-          SELECT 1 FROM ai_credit_limits l
-           WHERE l.organization_id IS NOT DISTINCT FROM scope.id AND l.user_id IS NULL
-        )
        ON CONFLICT DO NOTHING`
     );
   }
