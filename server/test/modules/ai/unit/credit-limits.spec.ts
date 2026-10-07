@@ -226,6 +226,14 @@ describe('credit limits (pure)', () => {
       expect(logicalSplit({ monthly: 2100, addon: 500 }, limit)).toEqual({ monthly: 2000, addon: 600 });
     });
 
+    it('add-on limit 0: everything stays on monthly, overshoot included', () => {
+      expect(logicalSplit({ monthly: 1700, addon: 400 }, { monthly: 500, addon: 0 })).toEqual({
+        monthly: 2100,
+        addon: 0,
+      });
+      expect(available({ monthly: 2100, addon: 0 }, { monthly: 500, addon: 0 })).toEqual({ monthly: 0, addon: 0 });
+    });
+
     it('zero spend', () => {
       expect(logicalSplit({ monthly: 0, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 0 });
     });
