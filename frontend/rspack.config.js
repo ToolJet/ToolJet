@@ -382,10 +382,17 @@ module.exports = {
     // is a filesystem probe on each extensionless import, so the list stays short.
     // Assets (.svg/.png/.wasm/...) are always imported with explicit extensions.
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+    // Resolve root-relative CSS urls (/assets/fonts/...) against frontend/, like webpack's
+    // default. They're then emitted as hashed assets with relative urls, so fonts still load
+    // when the app is served under a SUB_PATH (a root-relative /assets/... url would 404 there).
+    roots: [__dirname],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
-      '@cloud': path.resolve(__dirname, 'cloud/'),
+      // Only alias @cloud when the folder exists. Cloud builds (Cloudflare Pages, cloud Dockerfile)
+      // have no frontend/cloud/, and rspack, unlike webpack, errors on a missing alias target
+      // instead of falling through to resolve.fallback ('@cloud/modules' -> emptyModule).
+      ...(fs.existsSync(path.resolve(__dirname, 'cloud')) && { '@cloud': path.resolve(__dirname, 'cloud/') }),
       '@assets': path.resolve(__dirname, 'assets/'),
       '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
     },
@@ -476,10 +483,6 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              // Root-relative urls (/assets/fonts/...) are served by the dev-server
-              // static dir / deploy assets copy at runtime — never resolve them at
-              // build time (Rspack 2 tries to by default; v1/webpack passed through).
-              url: { filter: (url) => !url.startsWith('/') },
               // css-loader 7 defaults *.module.css to named exports only; the app
               // imports CSS modules as a default export (`import styles from ...`).
               // `auto` must be set explicitly: passing `modules` as an object leaves
@@ -501,10 +504,6 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              // Root-relative urls (/assets/fonts/...) are served by the dev-server
-              // static dir / deploy assets copy at runtime — never resolve them at
-              // build time (Rspack 2 tries to by default; v1/webpack passed through).
-              url: { filter: (url) => !url.startsWith('/') },
               // css-loader 7 defaults *.module.css to named exports only; the app
               // imports CSS modules as a default export (`import styles from ...`).
               // `auto` must be set explicitly: passing `modules` as an object leaves
