@@ -32,7 +32,18 @@ export class TypeormLoggerService implements Logger {
   private sanitizeParams(params?: unknown[]): string {
     if (!params || params.length === 0) return '';
     // Never log actual param values outside dev — tokens and secrets leak through here
-    if (this.isDev()) return ` -- PARAMETERS: ${JSON.stringify(params)}`;
+    if (this.isDev())
+      return ` -- PARAMETERS: ${JSON.stringify(params, (key, value) => {
+        if (key === 'base64Data' || Buffer.isBuffer(value) || value?.type === 'Buffer') return '[file content omitted]';
+        // JSON columns often reach TypeORM as serialized strings rather than objects.
+        if (
+          typeof value === 'string' &&
+          (value.includes('"base64Data"') || /data:image\/[\w.+-]+;base64,/.test(value))
+        ) {
+          return '[embedded file content omitted]';
+        }
+        return value;
+      })}`;
     return ` -- PARAMETERS: [${params.length} value(s)]`;
   }
 

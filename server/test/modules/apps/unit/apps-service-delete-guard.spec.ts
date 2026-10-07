@@ -16,6 +16,7 @@ import { BadRequestException } from '@nestjs/common';
 // ── Mock dbTransactionWrap before importing service ──────────────────────────
 
 const mockGetCount = jest.fn();
+const mockEmitAsync = jest.fn().mockResolvedValue([]);
 
 /**
  * dbTransactionWrap is called twice in AppsService.delete for a module:
@@ -104,7 +105,7 @@ function makeService(): AppsService {
     null as any, // organizationThemeUtilService
     null as any, // aiUtilService
     null as any, // componentsService
-    null as any, // eventEmitter
+    { emitAsync: mockEmitAsync } as any, // eventEmitter
     null as any, // abilityService
     null as any, // organizationGitRepository
     // delete() runs assertGitSyncEditAllowedForOrg against this — git off, unlocked
@@ -146,6 +147,7 @@ describe('AppsService.delete — module delete-in-use guard', () => {
       const user = makeUser();
 
       await expect(service.delete(moduleApp, user)).resolves.not.toThrow();
+      expect(mockEmitAsync).toHaveBeenCalledWith('ai.conversations.deleted', { organizationId: user.organizationId });
     });
   });
 
@@ -168,6 +170,7 @@ describe('AppsService.delete — module delete-in-use guard', () => {
       const user = makeUser();
 
       await expect(service.delete(moduleApp, user)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockEmitAsync).not.toHaveBeenCalled();
     });
   });
 

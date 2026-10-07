@@ -164,20 +164,18 @@ function renderWrapped({
   );
 }
 
-// Edit-mode WidgetWrapper suspends on ConfigHandle's lazy MentionComponentInChat; on a cold
-// Jest cache that first transform took over 20s, so it is preloaded once in beforeAll instead.
-const WRAPPER_MOUNT_TIMEOUT = 3000;
-const PRELOAD_TIMEOUT = 120000;
-
 function resetLibraryStore() {
   useCustomComponentLibrariesStore.setState({ devBundleUpdatedAt: {}, devPreviewEmailsByUserId: {} });
 }
 
 describe('LibraryComponent integration', () => {
-  beforeAll(() => import('@/AppBuilder/AppCanvas/ConfigHandle/MentionComponentInChat'), PRELOAD_TIMEOUT);
+  // Edit-mode WidgetWrapper renders ConfigHandle, whose lazy MentionComponentInChat pulls the whole
+  // AI chat tree. Loaded here, before any test, so no test's first render pays for it (see
+  // preloadLazyComponent in widgetHarness.js for why a load inside a test flakes).
+  beforeAll(() => import('@/AppBuilder/AppCanvas/ConfigHandle/MentionComponentInChat'));
 
-  beforeEach(() => {
-    widget.setup();
+  beforeEach(async () => {
+    await widget.setup();
     setPin('v1');
   });
   afterEach(() => {
@@ -241,15 +239,15 @@ describe('LibraryComponent integration', () => {
 
     // Still in the DOM (edit mode never unmounts a hidden widget — it collapses
     // it, see HIDDEN_COMPONENT_HEIGHT) — but collapsed to zero height.
-    expect(await screen.findByText('Slot', {}, { timeout: WRAPPER_MOUNT_TIMEOUT })).toBeInTheDocument();
-    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }), { timeout: WRAPPER_MOUNT_TIMEOUT });
+    expect(await screen.findByText('Slot')).toBeInTheDocument();
+    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }));
   });
 
   test('[LibraryComponent-LAYOUT-001] showOnDesktop / showOnMobile gate rendering per surface', async () => {
     // Break this catches: reading the wrong layout's flag (or none at all), which
     // would show a widget on a surface its builder explicitly hid it from.
     renderWrapped({ others: { showOnDesktop: binding('{{true}}') } });
-    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument(), { timeout: WRAPPER_MOUNT_TIMEOUT });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
 
     renderWrapped({ others: { showOnDesktop: binding('{{false}}') } });
     await waitFor(() => expect(getWrapperEl()).toBeNull());
@@ -264,11 +262,10 @@ describe('LibraryComponent integration', () => {
   test('[LibraryComponent-STYLE-001] visibility: false collapses a configured instance to zero height', async () => {
     // Break this catches: the configured iframe branch skipping the shared
     // visibility gate that every other widget goes through.
-    // See WRAPPER_MOUNT_TIMEOUT.
     renderWrapped({ properties: { visibility: binding('{{false}}') } });
 
-    await waitFor(() => expect(getIframe()).toBeInTheDocument(), { timeout: WRAPPER_MOUNT_TIMEOUT });
-    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }), { timeout: WRAPPER_MOUNT_TIMEOUT });
+    await waitFor(() => expect(getIframe()).toBeInTheDocument());
+    await waitFor(() => expect(getWrapperEl()).toHaveStyle({ height: '0px' }));
   });
 
   test('[LibraryComponent-STYLE-002] boxShadow applies to the iframe element', async () => {
@@ -814,8 +811,8 @@ describe('LibraryComponent integration', () => {
 });
 
 describe('LibraryComponent license gating', () => {
-  beforeEach(() => {
-    widget.setup();
+  beforeEach(async () => {
+    await widget.setup();
     setPin('v1');
   });
   afterEach(() => {
@@ -898,8 +895,8 @@ describe('LibraryComponent license gating', () => {
 });
 
 describe('LibraryComponent height clamp', () => {
-  beforeEach(() => {
-    shortWidget.setup();
+  beforeEach(async () => {
+    await shortWidget.setup();
     setPin('v1');
   });
   afterEach(() => shortWidget.teardown());
