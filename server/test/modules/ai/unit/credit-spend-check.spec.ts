@@ -111,12 +111,15 @@ describe('AI spend check (AC6)', () => {
     return { user: Object.assign(user, { organizationId: admin.organization.id }), owner };
   }
 
-  it('usage read times out: the action proceeds and the fail-open metric increments', async () => {
+  it('usage read times out: the action proceeds (run cap only) and the fail-open metric increments', async () => {
     const { user, owner } = await seedWithLimitsOn('ac6t');
     stubGateway(owner, { balance: 'ok', usage: 'hang' });
     setBudget(app, 50);
 
-    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBeNull();
+    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toEqual({
+      refusal: null,
+      gate: { leftPercent: null },
+    });
     expect(add).toHaveBeenCalledWith(1);
   });
 
@@ -124,16 +127,21 @@ describe('AI spend check (AC6)', () => {
     const { user, owner } = await seedWithLimitsOn('ac6l');
     stubGateway(owner, { balance: 'ok', usage: 'ok', spend: 500, userId: user.id });
 
-    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBe('credit_limit_reached');
+    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toMatchObject({
+      refusal: 'credit_limit_reached',
+    });
     expect(add).not.toHaveBeenCalled();
   });
 
-  it('limits read fails: the action proceeds and the fail-open metric increments', async () => {
+  it('limits read fails: the action proceeds (run cap only) and the fail-open metric increments', async () => {
     const { user, owner } = await seedWithLimitsOn('ac6s');
     stubGateway(owner, { balance: 'ok', usage: 'ok', spend: 500, userId: user.id });
     jest.spyOn(creditLimits, 'loadScopeLimits').mockRejectedValue(new Error('db down'));
 
-    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBeNull();
+    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toEqual({
+      refusal: null,
+      gate: { leftPercent: null },
+    });
     expect(add).toHaveBeenCalledWith(1);
   });
 

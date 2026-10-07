@@ -14,6 +14,8 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { User } from '@entities/user.entity';
 import { AiUtilService } from '@ee/ai/util.service';
 import { AiController } from '@ee/ai/controller';
+import { AiActiveRun } from '@entities/ai_active_run.entity';
+import { EntityManager } from 'typeorm';
 
 const GATEWAY = 'http://gateway.test';
 const CYCLE_START = '2026-10-01T00:00:00.000Z';
@@ -350,6 +352,16 @@ describe('Parallel AI actions with headroom', () => {
           let release: () => void;
           const held = new Promise<void>((r) => (release = r));
           const begin = jest.spyOn(util, 'beginActiveRun');
+          // Widen the count → insert window so unserialized starts all read 0.
+          const realCount = EntityManager.prototype.count;
+          jest.spyOn(EntityManager.prototype, 'count').mockImplementation(async function (
+            this: EntityManager,
+            ...args: Parameters<EntityManager['count']>
+          ) {
+            const n = await realCount.apply(this, args);
+            if (args[0] === AiActiveRun) await new Promise((r) => setTimeout(r, 300));
+            return n;
+          });
           jest.spyOn(util, 'callAgentLegacy').mockImplementation(async () => {
             await held;
             return [null, { assignments: [], newFolders: [] }];
@@ -410,7 +422,12 @@ describe('Parallel AI actions with headroom', () => {
         await createUser(app, { email: 'sh8-builder@tooljet.io', groups: ['builder'], organization: workspaceB })
       ).user as User;
       const workspaceA = (await createUser(app, { email: 'sh8-other@tooljet.io', groups: ['admin'] })).organization;
-      licenseWith(app, { aiPlan: 'credits', aiEnabled: true, ai: { apiKey: 'selfhost-key' }, metadata: { customerId } });
+      licenseWith(app, {
+        aiPlan: 'credits',
+        aiEnabled: true,
+        ai: { apiKey: 'selfhost-key' },
+        metadata: { customerId },
+      });
       stubGateway(() => gatewayFor(owner, { monthly: 1000, addon: 0 }));
       expect(
         (
@@ -424,7 +441,11 @@ describe('Parallel AI actions with headroom', () => {
       jest.spyOn(routeUtil(app), 'callAgentLegacy').mockResolvedValue([null, { assignments: [], newFolders: [] }]);
       await seedRuns(builder.id, workspaceA.id, 3);
 
-      const res = await autosort({ app, cookie: await sessionFor(builder, workspaceB.id), organizationId: workspaceB.id });
+      const res = await autosort({
+        app,
+        cookie: await sessionFor(builder, workspaceB.id),
+        organizationId: workspaceB.id,
+      });
 
       expectRunInProgress(res, app);
     });
