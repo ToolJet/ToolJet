@@ -6,7 +6,7 @@ description: >-
   Use when the user asks to create, open, make, submit, or update a PR or pull request in ToolJet.
 ---
 
-User input: `$ARGUMENTS` — empty: detect the base (Step 1); otherwise the whole input is the **base branch**.
+User input: `$ARGUMENTS` — `--demo [<recording path or URL>]` anywhere opts in to the Demo section; strip it first. Then empty: detect the base (Step 1); otherwise the rest is the **base branch**.
 
 Requires `gh`, authenticated for ToolJet and the submodule repos.
 
@@ -124,9 +124,14 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
   - otherwise the failing → passing test, or command output;
   - for `kickoff` slices, link the verifier's report comment.
 
-  Images and videos are opt-in because they cost tokens. Use the captures listed in the verifier's report when the plan's *Evidence* decision asked for them. With no earlier answer and a UI change in the diff, ask once before Step 5: "Add screenshots or a short recording to the PR?" Add them only on yes. Videos come from the `recorder` skill; upload with `gh pr edit <n> --body-file body.md --attach <file>` (gh 2.102+).
+  Images and videos are opt-in because they cost tokens. Use the captures listed in the verifier's report when the plan's *Evidence* decision asked for them. With no earlier answer and a UI change in the diff, ask once before Step 5: "Add screenshots or a short recording to the PR?" Add them only on yes. Upload with `gh pr edit <n> --body-file body.md --attach <file>` (gh 2.102+).
 
   Skip for docs, tooling, config or CI-only changes.
+- **Demo:** only when opted in: `--demo`, a yes to the evidence question that includes a recording, or the plan's *Evidence* decision asking for one. Right after Changes:
+  - **Overview:** 1-3 short lines on what the recording walks through, in order.
+  - **Recording:** the one given with `--demo`; otherwise one made with the `recorder` skill. Uploaded into the body, never a local path.
+
+  No recording to show: drop the section rather than leave a placeholder. Screenshots stay in Evidence.
 - **How to test:** when there is runtime behaviour a reviewer can exercise. Skip for docs, tooling, config or CI-only changes.
 
 **Main PR body:** this template exactly, emoji prefixes included. Everything after the summary is conditional; omit what doesn't apply, including empty Sources/Submodules blocks or bullets.
@@ -157,6 +162,11 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 
 </details>
 
+## 🎬 Demo
+<1-3 lines: what the recording walks through>
+
+<recording>
+
 ## 🏗️ Architecture
 <smallest view that fits: mermaid / ASCII tree / diff sketch / pseudocode>
 
@@ -177,7 +187,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 </details>
 ```
 
-Section order follows the reviewer's questions: why, how risky, what changed, how it fits, how to try it, proof. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
+Section order follows the reviewer's questions: why, how risky, what changed, what it looks like, how it fits, how to try it, proof. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
 
 **Submodule PR body** (each submodule with changes) — no How to test, no Submodules, no Evidence. Headings EXACTLY as shown, emoji included:
 ```
