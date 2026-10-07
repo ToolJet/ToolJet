@@ -1,0 +1,17 @@
+{
+  "name": "Print shop management",
+  "description": "Run print jobs from proof approval to production and dispatch, with costs and quantities kept on one job ticket.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "print-shop-management",
+  "category": "manufacturing-and-production"
+}
