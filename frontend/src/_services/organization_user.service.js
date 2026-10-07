@@ -11,6 +11,8 @@ export const organizationUserService = {
   create,
   //changeRole,
   inviteBulkUsers,
+  validateBulkUpload,
+  exportUsersCsv,
   updateOrgUser,
   getUsers,
 };
@@ -23,6 +25,20 @@ function create(id, body) {
 function inviteBulkUsers(formData) {
   const requestOptions = { method: 'POST', headers: authHeader(true), body: formData, credentials: 'include' };
   return fetch(`${config.apiUrl}/organization-users/upload-csv`, requestOptions).then(handleResponse);
+}
+
+// Downloads the workspace's users in the bulk upload CSV format (EE only).
+function exportUsersCsv() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-users/export-csv`, requestOptions).then((response) =>
+    response.ok ? response.blob() : handleResponse(response)
+  );
+}
+
+// Dry run of inviteBulkUsers: returns what the file would change without writing anything (EE only).
+function validateBulkUpload(formData) {
+  const requestOptions = { method: 'POST', headers: authHeader(true), body: formData, credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-users/upload-csv/validate`, requestOptions).then(handleResponse);
 }
 
 // Deprecated
