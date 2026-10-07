@@ -148,6 +148,19 @@ async function editCellTo(cellEl, text) {
   rtlFireEvent.blur(editable);
 }
 
+/** Enters edit mode and types a draft value without blurring (no store commit). Returns the editable node. */
+async function typeIntoCellWithoutBlur(cellEl, text) {
+  clickToEdit(cellEl);
+  const editable = await waitFor(() => {
+    const el = cellEl.querySelector('[contenteditable="true"]');
+    if (!el) throw new Error('not editing yet');
+    return el;
+  });
+  editable.textContent = text;
+  rtlFireEvent.input(editable);
+  return editable;
+}
+
 describe('Table: default rendering and data source', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -2378,6 +2391,36 @@ describe('Table: per-column-type rendering', () => {
     await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).toBeInTheDocument());
   });
 
+  test('[Table-COLTYPE-STRING-002] an editable string column shows is-invalid against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed store value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'name',
+              key: 'name',
+              id: 'col-name',
+              columnType: 'string',
+              columnSize: 120,
+              isEditable: true,
+              regex: '^[A-Z].*',
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('name', 0)?.querySelector('.long-text-input')).toBeInTheDocument());
+
+    const editable = await typeIntoCellWithoutBlur(cell('name', 0), 'lowercase');
+    await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).toBeInTheDocument());
+
+    editable.textContent = 'Uppercase';
+    rtlFireEvent.input(editable);
+    await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).not.toBeInTheDocument());
+  });
+
   test('[Table-COLTYPE-TEXT-001] a text column renders its value and enforces minLength/maxLength validation when editable', async () => {
     widget.render({
       properties: {
@@ -2400,6 +2443,36 @@ describe('Table: per-column-type rendering', () => {
 
     await editCellTo(cell('name', 0), 'toolong');
     await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-COLTYPE-TEXT-002] an editable text column shows is-invalid against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed store value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'name',
+              key: 'name',
+              id: 'col-name',
+              columnType: 'text',
+              columnSize: 120,
+              isEditable: true,
+              maxLength: 3,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(cell('name', 0)?.querySelector('.long-text-input')).toBeInTheDocument());
+
+    const editable = await typeIntoCellWithoutBlur(cell('name', 0), 'toolong');
+    await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).toBeInTheDocument());
+
+    editable.textContent = 'ok';
+    rtlFireEvent.input(editable);
+    await waitFor(() => expect(cell('name', 0).querySelector('.is-invalid')).not.toBeInTheDocument());
   });
 
   test('[Table-COLTYPE-NUMBER-001] a number column renders/edits with decimalPlaces and enforces minValue/maxValue validation', async () => {
@@ -2428,6 +2501,38 @@ describe('Table: per-column-type rendering', () => {
     rtlFireEvent.change(ageInput, { target: { value: '99' } });
     rtlFireEvent.blur(ageInput);
     await waitFor(() => expect(cell('age', 0).querySelector('.is-invalid')).toBeInTheDocument());
+  });
+
+  test('[Table-COLTYPE-NUMBER-002] an editable number column shows is-invalid against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed store value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    widget.render({
+      properties: {
+        columns: {
+          value: [
+            {
+              name: 'age',
+              key: 'age',
+              id: 'col-age',
+              columnType: 'number',
+              columnSize: 80,
+              isEditable: true,
+              minValue: 0,
+              maxValue: 40,
+            },
+          ],
+        },
+      },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    const ageInput = cell('age', 0).querySelector('input');
+    rtlFireEvent.focus(ageInput);
+    rtlFireEvent.change(ageInput, { target: { value: '99' } });
+    await waitFor(() => expect(cell('age', 0).querySelector('.is-invalid')).toBeInTheDocument());
+
+    rtlFireEvent.change(ageInput, { target: { value: '20' } });
+    await waitFor(() => expect(cell('age', 0).querySelector('.is-invalid')).not.toBeInTheDocument());
   });
 
   test('[Table-COLTYPE-DATEPICKER-001] a datepicker column renders a configured date per dateFormat/isTimeChecked', async () => {
