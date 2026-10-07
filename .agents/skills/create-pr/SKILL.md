@@ -187,7 +187,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 </details>
 ```
 
-Section order follows the reviewer's questions: why, how risky, what changed, what it looks like, how it fits, how to try it, proof. The Evidence and Merge impact ideas and the "smallest view that fits" visuals are adapted from Matt Pocock's `pr` skill and HumanLayer's `show-me` and `visual-pr` skills by Dex Horthy (both MIT).
+Section order follows the reviewer's questions: why, how risky, what changed, what it looks like, how it fits, how to try it, proof.
 
 **Submodule PR body** (each submodule with changes) — no How to test, no Submodules, no Evidence. Headings EXACTLY as shown, emoji included:
 ```
