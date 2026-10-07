@@ -18,6 +18,16 @@ export const useResetZIndex = ({ showModal, id, mode }) => {
       }
     }
   }, [showModal, id, mode]);
+
+  // If the modal unmounts while still open (e.g. a page switch fired from inside it), the effect above never
+  // sees showModal flip to false. Clear the stale id, otherwise Grid keeps hiding every widget's resize controls.
+  useEffect(() => {
+    return () => {
+      if (useGridStore.getState().openModalWidgetId === id) {
+        useGridStore.getState().actions.setOpenModalWidgetId(null);
+      }
+    };
+  }, [id]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
   return {
