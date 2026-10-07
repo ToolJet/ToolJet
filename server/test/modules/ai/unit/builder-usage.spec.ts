@@ -251,7 +251,7 @@ describe('builder usage calculations', () => {
       expect(result.rows.find((r) => r.userId === 'end')).toMatchObject({ monthly: 10, addon: 5 });
     });
 
-    it('limits on: the workspace breakdown sums exactly to the row (largest remainder)', () => {
+    it('limits on: the workspace breakdown sums exactly to the row (remainder on the largest share)', () => {
       const workspaceIds = ['ws-1', 'ws-2', 'ws-3', 'ws-4', 'ws-5', 'ws-6', 'ws-7'];
       const spend = [
         {
