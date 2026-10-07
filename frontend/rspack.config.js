@@ -205,7 +205,18 @@ const optimization = isProductionMode
             // ecma 5 in BOTH compress and format so the minifier never
             // re-introduces syntax newer than the ie11 floor (its default
             // compresses functions back into arrow syntax)
-            compress: { ecma: 5, arrows: false, drop_debugger: true, drop_console: true },
+            // keep_fnames/keep_classnames must be set on compress too, not just mangle (Terser's
+            // top-level option covers both). withEditionSpecificComponent resolves EE components
+            // by BaseComponent.name; without this the compressor drops inferred names and every
+            // EE override silently falls back to its CE base in production builds.
+            compress: {
+              ecma: 5,
+              arrows: false,
+              drop_debugger: true,
+              drop_console: true,
+              keep_fnames: true,
+              keep_classnames: true,
+            },
             format: { ecma: 5 },
             mangle: { keep_classnames: true, keep_fnames: true },
           },
