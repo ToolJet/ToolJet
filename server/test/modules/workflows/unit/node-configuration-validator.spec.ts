@@ -14,6 +14,19 @@ describe('validateReachedNodeConfiguration', () => {
     ],
     [{ type: 'if-condition', definition: { code: '   ' } }, 'If condition "If" cannot be empty'],
     [
+      // Saved before branch names were renumbered: the survivor of a removed middle Else if still says "Else if 2".
+      {
+        type: 'if-condition',
+        definition: {
+          conditions: [
+            { id: 'true', label: 'If', code: '1 === 2' },
+            { id: 'else-if-2', label: 'Else if 2', code: '  ' },
+          ],
+        },
+      },
+      'If condition "Else if 1" cannot be empty',
+    ],
+    [
       {
         type: 'filter',
         definition: { inputExpression: 'items.data', predicateExpression: 'value' },

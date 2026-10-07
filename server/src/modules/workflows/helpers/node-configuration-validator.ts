@@ -30,10 +30,11 @@ export function validateReachedNodeConfiguration({
         throw new WorkflowNodeConfigurationError('If requires at least one condition');
       }
 
-      for (const condition of conditions) {
+      for (const [index, condition] of conditions.entries()) {
         const branch = condition && typeof condition === 'object' ? condition : {};
         if (!isNonBlankString(branch.code)) {
-          const label = isNonBlankString(branch.label) ? branch.label : 'If';
+          // Name by position, as the canvas does; stored labels can be stale.
+          const label = index === 0 ? 'If' : `Else if ${index}`;
           throw new WorkflowNodeConfigurationError(`If condition "${label}" cannot be empty`);
         }
       }
