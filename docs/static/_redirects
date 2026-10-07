@@ -129,3 +129,33 @@
 /docs/deployment/docker /docs/setup/docker/ 301
 /docs/deployment/docker/ /docs/setup/docker/ 301
 /img/redis/connect.png /img/datasource-reference/redis/connect.png 301
+
+# Restore migrated docs linked from current ToolJet articles.
+/docs/beta/widgets/modal /docs/widgets/modal-v2/ 301
+/docs/beta/widgets/modal/ /docs/widgets/modal-v2/ 301
+/docs/build-with-ai /docs/build-with-ai/overview/ 301
+/docs/build-with-ai/ /docs/build-with-ai/overview/ 301
+/docs/development-lifecycle/gitsync /docs/development-lifecycle/gitsync/overview/ 301
+/docs/development-lifecycle/gitsync/ /docs/development-lifecycle/gitsync/overview/ 301
+/docs/org-management/workspaces/workspace_constants /docs/security/constants/ 301
+/docs/org-management/workspaces/workspace_constants/ /docs/security/constants/ 301
+/docs/rbac /docs/user-management/role-based-access/access-control/ 301
+/docs/rbac/ /docs/user-management/role-based-access/access-control/ 301
+/docs/security/overview /docs/security/compliance/ 301
+/docs/security/overview/ /docs/security/compliance/ 301
+/docs/setup/overview /docs/setup/ 301
+/docs/setup/overview/ /docs/setup/ 301
+/docs/tooljet-concepts/integrating-data /docs/data-sources/overview/#connecting-data-sources 301
+/docs/tooljet-concepts/integrating-data/ /docs/data-sources/overview/#connecting-data-sources 301
+/docs/tutorial/creating-app /docs/getting-started/quickstart-guide/#1-create-your-first-application 301
+/docs/tutorial/creating-app/ /docs/getting-started/quickstart-guide/#1-create-your-first-application 301
+/docs/tutorial/pages /docs/app-builder/building-ui/pages/ 301
+/docs/tutorial/pages/ /docs/app-builder/building-ui/pages/ 301
+/docs/version-control/git-sync /docs/development-lifecycle/gitsync/overview/ 301
+/docs/version-control/git-sync/ /docs/development-lifecycle/gitsync/overview/ 301
+/docs/version-control/overview /docs/development-lifecycle/release/version-control/ 301
+/docs/version-control/overview/ /docs/development-lifecycle/release/version-control/ 301
+/docs/widgets /docs/app-builder/building-ui/component-library/ 301
+/docs/widgets/ /docs/app-builder/building-ui/component-library/ 301
+/docs/workflows /docs/workflows/overview/ 301
+/docs/workflows/ /docs/workflows/overview/ 301
