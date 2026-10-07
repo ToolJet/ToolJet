@@ -20,6 +20,7 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import cx from 'classnames';
+import { placeCaretAtEnd } from '@/AppBuilder/Shared/DataTypes/utils';
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -68,10 +69,15 @@ const KeyValueRow = ({
   }, []);
 
   const handleEditClick = () => {
-    if (isEditable) {
+    // Only the click entering edit mode should force the caret to the end; a later click while
+    // already editing must reposition it normally, like Table's string column.
+    if (isEditable && !isEditing) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById(`${componentId}-${fieldKey}`)?.focus();
+        const node = document.getElementById(`${componentId}-${fieldKey}`);
+        if (!node) return;
+        node.focus();
+        placeCaretAtEnd(node);
       }, 0);
     }
   };
