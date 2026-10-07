@@ -391,5 +391,13 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "cloudflare_workers_ai",
+    "description": "api plugin from cloudflare_workers_ai",
+    "version": "1.0.0",
+    "id": "cloudflare_workers_ai",
+    "author": "Tooljet",
+    "timestamp": "Wed, 07 Oct 2026 02:46:01 GMT"
   }
 ]

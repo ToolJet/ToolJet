@@ -1,0 +1,141 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Cloudflare Workers AI datasource",
+  "description": "Run Cloudflare Workers AI models from ToolJet.",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select the Cloudflare Workers AI operation.",
+      "list": [
+        {
+          "value": "run_model",
+          "name": "Run Model"
+        },
+        {
+          "value": "text_generation",
+          "name": "Text Generation"
+        },
+        {
+          "value": "text_embeddings",
+          "name": "Text Embeddings"
+        },
+        {
+          "value": "text_to_image",
+          "name": "Text-to-Image"
+        },
+        {
+          "value": "speech_recognition",
+          "name": "Speech Recognition"
+        },
+        {
+          "value": "translation",
+          "name": "Translation"
+        },
+        {
+          "value": "list_models",
+          "name": "List/Search Models"
+        }
+      ]
+    },
+    "model": {
+      "label": "Model ID",
+      "key": "model",
+      "type": "codehinter",
+      "description": "Cloudflare Workers AI model ID."
+    },
+    "input": {
+      "label": "JSON Input",
+      "key": "input",
+      "type": "codehinter",
+      "description": "JSON input sent directly to the selected Workers AI model."
+    },
+    "prompt": {
+      "label": "Prompt",
+      "key": "prompt",
+      "type": "codehinter",
+      "description": "Prompt for text generation or image generation."
+    },
+    "text": {
+      "label": "Text",
+      "key": "text",
+      "type": "codehinter",
+      "description": "Text input."
+    },
+    "texts": {
+      "label": "Texts",
+      "key": "texts",
+      "type": "codehinter",
+      "description": "JSON array of texts for embedding models."
+    },
+    "audio": {
+      "label": "Audio Base64",
+      "key": "audio",
+      "type": "codehinter",
+      "description": "Base64 encoded audio for speech recognition."
+    },
+    "audioContentType": {
+      "label": "Audio Content Type",
+      "key": "audioContentType",
+      "type": "codehinter",
+      "description": "MIME type of the supplied audio."
+    },
+    "language": {
+      "label": "Source Language",
+      "key": "language",
+      "type": "codehinter",
+      "description": "Source language for translation."
+    },
+    "targetLanguage": {
+      "label": "Target Language",
+      "key": "targetLanguage",
+      "type": "codehinter",
+      "description": "Target language for translation."
+    },
+    "imageOptions": {
+      "label": "Image Options",
+      "key": "imageOptions",
+      "type": "codehinter",
+      "description": "Optional JSON options for text-to-image models."
+    },
+    "search": {
+      "label": "Model Search",
+      "key": "search",
+      "type": "codehinter",
+      "description": "Optional model search text."
+    },
+    "task": {
+      "label": "Task",
+      "key": "task",
+      "type": "codehinter",
+      "description": "Optional model task filter."
+    },
+    "page": {
+      "label": "Page",
+      "key": "page",
+      "type": "codehinter",
+      "description": "Model list page number."
+    },
+    "perPage": {
+      "label": "Models Per Page",
+      "key": "perPage",
+      "type": "codehinter",
+      "description": "Number of models returned per page."
+    },
+    "hideExperimental": {
+      "label": "Hide Experimental",
+      "key": "hideExperimental",
+      "type": "toggle",
+      "description": "Hide experimental models."
+    },
+    "includeDeprecated": {
+      "label": "Include Deprecated",
+      "key": "includeDeprecated",
+      "type": "toggle",
+      "description": "Include deprecated models."
+    }
+  }
+}
