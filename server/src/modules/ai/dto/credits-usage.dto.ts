@@ -43,6 +43,12 @@ export class CreditsUsageLimitDto {
   @Expose() addon: number;
 }
 
+@Exclude()
+export class CreditsUsageCustomLimitDto {
+  @Expose() monthly?: number;
+  @Expose() addon?: number;
+}
+
 /** One pool's default limit, resolved for the current builders. */
 @Exclude()
 export class CreditsUsagePoolDefaultDto {
@@ -80,6 +86,8 @@ export class CreditsUsageRowDto {
   @Expose() @Type(() => CreditsUsageWorkspaceSplitDto) byWorkspace?: CreditsUsageWorkspaceSplitDto[];
   /** Builders only: effective limit per pool, also while limits are off. */
   @Expose() @Type(() => CreditsUsageLimitDto) limit?: CreditsUsageLimitDto;
+  /** Builders only: pools with a custom limit; absent = default for both. */
+  @Expose() @Type(() => CreditsUsageCustomLimitDto) customLimit?: CreditsUsageCustomLimitDto;
 }
 
 @Exclude()
@@ -120,4 +128,10 @@ export class UpdateCreditLimitsDto {
   @ValidateNested()
   @Type(() => CreditLimitDefaultsDto)
   defaults?: CreditLimitDefaultsDto;
+}
+
+/** One builder's custom limit per pool; null or omitted = use the default. Both null = Reset to default. */
+export class UpdateBuilderLimitDto {
+  @IsOptional() @IsInt() @Min(1) monthly?: number | null;
+  @IsOptional() @IsInt() @Min(1) addon?: number | null;
 }

@@ -11,6 +11,7 @@ export const aiService = {
   getCreditBalance,
   getCreditsUsage,
   updateCreditLimits,
+  updateBuilderLimit,
   fixWithAI,
   updateKey,
   getKeySettings,
@@ -287,6 +288,11 @@ async function getCreditsUsage() {
 async function updateCreditLimits(body) {
   const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/credits-usage/limits`, requestOptions).then(handleResponse);
+}
+
+async function updateBuilderLimit(userId, body) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/credits-usage/limits/builders/${userId}`, requestOptions).then(handleResponse);
 }
 
 async function fixWithAI(body) {

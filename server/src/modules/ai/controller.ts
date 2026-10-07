@@ -95,6 +95,12 @@ export class AiController implements IAiController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_CREDIT_LIMITS)
+  @Put('/credits-usage/limits/builders/:userId')
+  async updateBuilderLimit(@User() user, @Param('userId') userId: string, @Body() body) {
+    throw new NotFoundException();
+  }
+
   @InitFeature(FEATURE_KEY.GET_CONVERSATION)
   @Get('conversation/:conversationId')
   async getConversationById(@User() user, @Param('conversationId') conversationId: string) {

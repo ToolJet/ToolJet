@@ -2,10 +2,11 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { USER_STATUS } from '@modules/users/constants/lifecycle';
+import { BUILDER_ACCESS_LOST, USER_STATUS } from '@modules/users/constants/lifecycle';
 import { GROUP_PERMISSIONS_TYPE, ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EntityManager, In } from 'typeorm';
 import { EditUserRoleDto } from './dto';
 import { App } from '@entities/app.entity';
@@ -19,6 +20,9 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class RolesUtilService implements IRolesUtilService {
+  // Property injection: keeps the constructor (and the EE subclass) unchanged.
+  @Inject(EventEmitter2) protected eventEmitter: EventEmitter2;
+
   constructor(
     protected groupPermissionsRepository: GroupPermissionsRepository,
     protected roleRepository: RolesRepository,
@@ -142,6 +146,9 @@ export class RolesUtilService implements IRolesUtilService {
 
       // Add to new Role
       await this.addUserRole(organizationId, { role: newRole, userId }, manager);
+      if (newRole === USER_ROLE.END_USER) {
+        await this.eventEmitter.emitAsync(BUILDER_ACCESS_LOST, { userId, organizationId, manager });
+      }
     }, manager);
   }
 
@@ -196,8 +203,9 @@ export class RolesUtilService implements IRolesUtilService {
         (permissions) => permissions.type === ResourceType.DATA_SOURCE
       ).length;
       // Modules are never assignable to end-users, regardless of canView/canEdit - any module permission makes the group builder-level.
-      const hasModulePermissions = allPermission.filter((permissions) => permissions.type === ResourceType.MODULE)
-        .length;
+      const hasModulePermissions = allPermission.filter(
+        (permissions) => permissions.type === ResourceType.MODULE
+      ).length;
       return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions || hasModulePermissions;
     }, manager);
   }
