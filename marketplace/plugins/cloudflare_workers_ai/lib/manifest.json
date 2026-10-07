@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Cloudflare Workers AI plugin",
+  "description": "Connect to Cloudflare Workers AI and run AI models from ToolJet.",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Cloudflare Workers AI",
+    "kind": "cloudflare_workers_ai",
+    "type": "ai"
+  },
+  "properties": {
+    "apiToken": {
+      "type": "string",
+      "title": "API Token",
+      "description": "Cloudflare API token with Workers AI permissions."
+    },
+    "accountId": {
+      "type": "string",
+      "title": "Account ID",
+      "description": "Your Cloudflare account ID."
+    }
+  },
+  "tj:encrypted": [
+    "apiToken"
+  ],
+  "required": [
+    "apiToken",
+    "accountId"
+  ],
+  "tj:ui:properties": {
+    "apiToken": {
+      "order": 10,
+      "$ref": "#/properties/apiToken",
+      "key": "apiToken",
+      "label": "API Token",
+      "widget": "password-v3",
+      "placeholder": "Cloudflare API token"
+    },
+    "accountId": {
+      "order": 20,
+      "$ref": "#/properties/accountId",
+      "key": "accountId",
+      "label": "Account ID",
+      "widget": "text",
+      "placeholder": "Cloudflare Account ID"
+    }
+  }
+}
