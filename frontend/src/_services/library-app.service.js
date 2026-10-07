@@ -6,6 +6,7 @@ export const libraryAppService = {
   templateManifests,
   createSampleApp,
   findDependentPluginsInTemplate,
+  defaultAppName,
 };
 
 function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false, branchId = null) {
@@ -34,4 +35,13 @@ function createSampleApp() {
 function findDependentPluginsInTemplate(identifier) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/library_apps/${identifier}/plugins`, requestOptions).then(handleResponse);
+}
+
+function defaultAppName(identifier, branchId = null) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
+  return fetch(
+    `${config.apiUrl}/library_apps/${encodeURIComponent(identifier)}/default-name${query}`,
+    requestOptions
+  ).then(handleResponse);
 }
