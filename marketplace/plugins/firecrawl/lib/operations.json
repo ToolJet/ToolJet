@@ -1,0 +1,169 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Firecrawl Datasource",
+  "description": "A schema defining Firecrawl datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "scrape"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        {
+          "value": "scrape",
+          "name": "Scrape URL"
+        },
+        {
+          "value": "search",
+          "name": "Search the web"
+        },
+        {
+          "value": "map",
+          "name": "Map site URLs"
+        },
+        {
+          "value": "start_crawl",
+          "name": "Start crawl"
+        },
+        {
+          "value": "crawl_status",
+          "name": "Get crawl status"
+        }
+      ]
+    },
+    "scrape": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "description": "Enter the URL to scrape.",
+        "placeholder": "https://example.com",
+        "height": "36px"
+      },
+      "formats": {
+        "label": "Formats",
+        "key": "formats",
+        "type": "codehinter",
+        "description": "Enter the formats to return as a JSON array. Defaults to markdown.",
+        "placeholder": "[\"markdown\", \"links\"]",
+        "height": "36px"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "description": "Enter additional scrape options as a JSON object",
+        "placeholder": "{ \"onlyMainContent\": false, \"waitFor\": 1000 }",
+        "height": "36px"
+      }
+    },
+    "search": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter the search query.",
+        "placeholder": "firecrawl web scraping",
+        "height": "36px"
+      },
+      "sources": {
+        "label": "Sources",
+        "key": "sources",
+        "type": "codehinter",
+        "description": "Enter the sources to search as a JSON array. Defaults to web.",
+        "placeholder": "[\"web\", \"news\"]",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Enter the maximum number of results per source",
+        "placeholder": "5",
+        "height": "36px"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "description": "Enter additional search options as a JSON object",
+        "placeholder": "{ \"tbs\": \"qdr:w\", \"location\": \"Germany\" }",
+        "height": "36px"
+      }
+    },
+    "map": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "description": "Enter the site URL to map.",
+        "placeholder": "https://example.com",
+        "height": "36px"
+      },
+      "search": {
+        "label": "Search",
+        "key": "search",
+        "type": "codehinter",
+        "description": "Enter a term to rank the discovered URLs by (optional)",
+        "placeholder": "pricing",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Enter the maximum number of URLs to return",
+        "placeholder": "100",
+        "height": "36px"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "description": "Enter additional map options as a JSON object",
+        "placeholder": "{ \"includeSubdomains\": true, \"sitemap\": \"include\" }",
+        "height": "36px"
+      }
+    },
+    "start_crawl": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "description": "Enter the site URL to crawl.",
+        "placeholder": "https://example.com",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Enter the maximum number of pages to crawl. Defaults to 50, and each page crawled costs a credit.",
+        "placeholder": "50",
+        "height": "36px"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "description": "Enter additional crawl options as a JSON object",
+        "placeholder": "{ \"includePaths\": [\"^/blog/.*$\"], \"maxDiscoveryDepth\": 2 }",
+        "height": "36px"
+      }
+    },
+    "crawl_status": {
+      "jobId": {
+        "label": "Job ID",
+        "key": "jobId",
+        "type": "codehinter",
+        "description": "Enter the crawl job ID returned by Start crawl.",
+        "placeholder": "{{queries.startCrawl.data.id}}",
+        "height": "36px"
+      }
+    }
+  }
+}

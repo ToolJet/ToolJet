@@ -391,5 +391,14 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "Firecrawl",
+    "description": "Scrape, search, map and crawl the web with Firecrawl",
+    "version": "1.0.0",
+    "id": "firecrawl",
+    "author": "Tooljet",
+    "timestamp": "Sun, 16 Aug 2026 10:00:00 GMT",
+    "tags": ["Web Data"]
   }
 ]
