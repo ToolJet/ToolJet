@@ -3,7 +3,10 @@ import { usersSelector } from "Selectors/platform/manageUsers";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
-import { bulkUserUpload } from "Support/utils/manageUsers";
+import {
+  bulkUserUpload,
+  verifyBulkUploadDrawerElements,
+} from "Support/utils/manageUsers";
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 // Helper to resolve correct test data based on env
@@ -140,6 +143,13 @@ describe("Bulk User Upload", () => {
     cy.visit(`${workspaceName}`);
     common.navigateToManageUsers();
     cy.apiConfigureSmtp(smtpConfig);
+  });
+
+  it("Should verify the bulk upload drawer UI and CSV downloads", () => {
+    cy.get(usersSelector.bulkUploadUsers).click();
+    verifyBulkUploadDrawerElements();
+    cy.get(commonSelectors.closeButton).click();
+    cy.get(usersSelector.bulkUploadDrawerTitle).should("not.exist");
   });
 
   it("Should validate error cases for invalid bulk user uploads", () => {

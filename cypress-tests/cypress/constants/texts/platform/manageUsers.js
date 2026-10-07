@@ -11,8 +11,15 @@ export const usersText = {
   adminUserName: "The Developer",
   adminUserEmail: "dev@tooljet.io",
   adminUserState: "Archive",
-  buttonAddUsers: "Users",
-  addUsersCardTitle: "Users",
+  buttonAddUsers: "Add user",
+  addUsersCardTitle: "Invite user",
+  bulkUploadDrawerTitle: "Bulk upload users via CSV",
+  buttonDownloadEmptyTemplate: "Empty template",
+  buttonDownloadCurrentUsers: "Current users list",
+  buttonReadDocs: "Read docs",
+  emptyTemplateFileName: "sample_upload.csv",
+  currentUsersFileName: "users.csv",
+  bulkUploadCsvHeader: "First Name,Last Name,Email,User Role,Group,Metadata,Status",
   emailLabel: "Email address",
   cancelButton: "Cancel",
   buttonInviteUsers: "Invite users",
@@ -53,7 +60,6 @@ export const usersText = {
   buttonDownloadTemplate: "Download Template",
   buttonUploadUsers: "Upload users",
 
-  buttonInviteWithEmail: " Invite with email",
   // buttonUploadCsvFile: "Upload CSV file",
 
   helperTextBulkUpload:
