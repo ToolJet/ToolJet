@@ -42,7 +42,7 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
           padding: width > 650 ? '6px 16px' : 0,
           backgroundColor: 'var(--cc-primary-brand)',
         }}
-        leftIcon="IconDeviceFloppy"
+        leftIcon={width > 650 ? '' : 'IconDeviceFloppy'}
         fill="var(--cc-surface1-surface)"
         iconWidth="16"
         isTablerIcon={true}
