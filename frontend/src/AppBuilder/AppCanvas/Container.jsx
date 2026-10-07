@@ -75,12 +75,13 @@ const Container = React.memo(
     );
     const isFlexContainer = componentType === 'FlexContainer';
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+    const setIsHoveringRestrictedDropTarget = useGridStore((state) => state.actions.setIsHoveringRestrictedDropTarget);
     const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
     const flexDirection = useStore(
-      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.direction ?? 'column' : 'column'),
+      (state) => (isFlexContainer ? (state.getResolvedComponent?.(id)?.properties?.direction ?? 'column') : 'column'),
       shallow
     );
-    const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -105,8 +106,16 @@ const Container = React.memo(
         if (isFlexContainer) {
           setFlexContainerDropTarget(null);
         }
+        setIsHoveringRestrictedDropTarget(false);
       }
-    }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget]);
+    }, [
+      id,
+      isDragging,
+      deactivateMoveableGhost,
+      isFlexContainer,
+      setFlexContainerDropTarget,
+      setIsHoveringRestrictedDropTarget,
+    ]);
 
     useEffect(() => {
       if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
@@ -150,20 +159,40 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
+    // Table/Listview/Kanban expandable/row-scoped containers share one container id across every
+    // row instance (one template, rendered per row) - only the index-0 instance is the editable
+    // template; every other row instance is a read-only clone.
+    const isRowScopedNonEditableInstance = useMemo(
+      () => index !== null && index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType),
+      [index, componentType]
+    );
+
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
-    }, [index, componentType, currentMode]);
+      return isRowScopedNonEditableInstance || currentMode === 'view';
+    }, [isRowScopedNonEditableInstance, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
       canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
-        if (isContainerReadOnly) return;
+        if (isContainerReadOnly) {
+          if (isRowScopedNonEditableInstance) {
+            const clientOffset = monitor.getClientOffset();
+            if (clientOffset) {
+              const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+              if (canvasId === id) {
+                setIsHoveringRestrictedDropTarget(true);
+              }
+            }
+          }
+          return;
+        }
         const clientOffset = monitor.getClientOffset();
 
         if (clientOffset) {
           const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
           if (canvasId === id) {
+            setIsHoveringRestrictedDropTarget(false);
             setCurrentDragCanvasId(id);
 
             // FlexContainer: compute and publish insertion index (rAF-throttled)
@@ -281,8 +310,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-              ? canvasBgColor
-              : '#f0f0f0',
+                ? canvasBgColor
+                : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -311,6 +340,7 @@ const Container = React.memo(
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
         data-parentId={id}
+        data-row-scoped-readonly={isRowScopedNonEditableInstance || undefined}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
         component-type={componentType}

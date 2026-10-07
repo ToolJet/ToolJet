@@ -411,6 +411,11 @@ export function showGridLines() {
     ) {
       return false;
     }
+    // Row-scoped (Table/Listview/Kanban) containers other than the index-0 editable template
+    // instance are read-only clones - never show the grid/drop-pattern overlay on them.
+    if (element.getAttribute('data-row-scoped-readonly') === 'true') {
+      return false;
+    }
     return true;
   });
   elementsArray.forEach(function (element) {

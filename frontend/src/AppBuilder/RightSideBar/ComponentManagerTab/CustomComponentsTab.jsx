@@ -6,6 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
+import toast from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
@@ -210,7 +211,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {isDevPin ? 'dev' : current ?? 'Select version'}
+            {isDevPin ? 'dev' : (current ?? 'Select version')}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
@@ -313,7 +314,12 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
       item: { componentType: 'LibraryComponent', component: dragComponent },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item) => {
-        const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
+        const { currentDragCanvasId, isHoveringRestrictedDropTarget, actions } = useGridStore.getState();
+        if (isHoveringRestrictedDropTarget) {
+          actions.setIsHoveringRestrictedDropTarget(false);
+          toast.error('Components can only be added to the first expanded row');
+          return;
+        }
         handleDrop(item, currentDragCanvasId);
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};

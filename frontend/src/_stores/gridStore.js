@@ -16,6 +16,7 @@ const initialState = {
   virtualTarget: null,
   currentDragCanvasId: null,
   ghostDragPosition: null,
+  isHoveringRestrictedDropTarget: false,
 };
 
 export const useGridStore = create(
@@ -36,6 +37,10 @@ export const useGridStore = create(
           set({ currentDragCanvasId: canvasId });
         },
         setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
+        setIsHoveringRestrictedDropTarget: (isHoveringRestrictedDropTarget) => {
+          if (get().isHoveringRestrictedDropTarget === isHoveringRestrictedDropTarget) return;
+          set({ isHoveringRestrictedDropTarget });
+        },
       },
       setMoveableRef: (ref) => set({ moveableRef: ref }),
       getGhostDragPosition: () => get().ghostDragPosition,
