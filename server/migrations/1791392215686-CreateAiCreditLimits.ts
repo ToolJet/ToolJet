@@ -4,9 +4,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 // organization_id NULL = self-hosted instance; user_id NULL = scope default. No rows = limits off.
 export class CreateAiCreditLimits1791392215686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      SET LOCAL lock_timeout = '5s';
-      CREATE TABLE IF NOT EXISTS ai_credit_limits (
+    await withLockTimeout(
+      queryRunner,
+      `CREATE TABLE IF NOT EXISTS ai_credit_limits (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         organization_id uuid,
         user_id uuid,
@@ -22,11 +22,20 @@ export class CreateAiCreditLimits1791392215686 implements MigrationInterface {
         COALESCE(organization_id, '00000000-0000-0000-0000-000000000000'::uuid),
         COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::uuid),
         pool
-      );
-    `);
+      );`
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS ai_credit_limits;`);
+    await withLockTimeout(queryRunner, `DROP TABLE IF EXISTS ai_credit_limits;`);
   }
+}
+
+// Every migration of a deploy shares one transaction: give up on the table lock after 5s, then put the
+// previous lock_timeout back so later migrations don't inherit it.
+async function withLockTimeout(queryRunner: QueryRunner, sql: string): Promise<void> {
+  const [{ lock_timeout: previous }] = await queryRunner.query('SHOW lock_timeout');
+  await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
+  await queryRunner.query(sql);
+  await queryRunner.query(`SELECT set_config('lock_timeout', $1, true)`, [previous]);
 }
