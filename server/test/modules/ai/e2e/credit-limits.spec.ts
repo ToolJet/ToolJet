@@ -44,12 +44,20 @@ function licenseWith(app: INestApplication, overrides: Record<string, unknown>) 
 const wallet = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
 
 /** Gateway stubs for one owner: pool sizes are remaining + spend, so remaining = pool − Σ spend. */
-function gatewayFor(ownerPath: string, pool: { monthly: number; addon: number }, spend: Record<string, number> = {}) {
-  const users = Object.entries(spend).map(([userId, monthly]) => ({ userId, ...wallet(monthly) }));
+function gatewayFor(
+  ownerPath: string,
+  pool: { monthly: number; addon: number },
+  spend: Record<string, number | [number, number]> = {}
+) {
+  const users = Object.entries(spend).map(([userId, s]) => {
+    const [recurring, topup = 0] = [s].flat();
+    return { userId, ...wallet(recurring, topup) };
+  });
   const used = users.reduce((acc, u) => acc + u.recurring, 0);
+  const addonUsed = users.reduce((acc, u) => acc + u.topup, 0);
   return {
     [`${ownerPath}/balance`]: {
-      remaining: wallet(pool.monthly - used, pool.addon),
+      remaining: wallet(pool.monthly - used, pool.addon - addonUsed),
       expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: null },
       cycleStart: CYCLE_START,
     },
@@ -58,14 +66,14 @@ function gatewayFor(ownerPath: string, pool: { monthly: number; addon: number },
       trackingSince: null,
       users,
       unattributed: wallet(0),
-      pool: wallet(used),
+      pool: wallet(used, addonUsed),
     },
     [`${ownerPath}/usage?groupBy=organization`]: {
       cycleStart: CYCLE_START,
       trackingSince: null,
       users: users.map((u) => ({ ...u, byOrganization: [] })),
       unattributed: wallet(0),
-      pool: wallet(used),
+      pool: wallet(used, addonUsed),
     },
   };
 }
@@ -421,6 +429,28 @@ describe('AI credit limits', () => {
         monthly: { mode: 'custom', value: 120, effective: 120 },
         addon: { mode: 'equal_share' },
       });
+    });
+
+    it("the usage table splits a builder's spend logically with limits on, by wallet with limits off", async () => {
+      const s = await seed('split');
+      licenseWith(app, { aiPlan: 'credits' });
+      // 4 builders: equal share 2,000 monthly / 400 add-on. Wallet split 1,700 + 340 = 2,040.
+      stubGateway(gatewayFor(s.owner, { monthly: 8000, addon: 1600 }, { [s.builders[0].user.id]: [1700, 340] }));
+      const row = async () =>
+        (await getUsage(app, s.cookie, s.workspace.id)).body.rows.find((r) => r.userId === s.builders[0].user.id);
+
+      expect(await row()).toMatchObject({ monthly: 1700, addon: 340 });
+
+      expect((await putLimits(app, s.cookie, s.workspace.id, { enabled: true })).statusCode).toBe(200);
+      const res = await getUsage(app, s.cookie, s.workspace.id);
+      expect(res.body.rows.find((r) => r.userId === s.builders[0].user.id)).toMatchObject({
+        monthly: 2000,
+        addon: 40,
+        limit: { monthly: 2000, addon: 400 },
+      });
+      // Pool cards keep real wallet numbers.
+      expect(res.body.pools.monthly).toMatchObject({ total: 8000, used: 1700 });
+      expect(res.body.pools.addon).toMatchObject({ total: 1600, used: 340 });
     });
 
     it("scopes are separate: workspace A's save never touches workspace B", async () => {
