@@ -56,10 +56,6 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
-:::tip
-If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
-:::
-
 ## ToolJet Database
 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/2.50.0-LTS/setup/env-vars#enable-tooljet-database--optional-) for additional environment variables configuration to be done.
