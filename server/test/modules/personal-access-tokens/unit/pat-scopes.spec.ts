@@ -21,6 +21,9 @@ import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
 import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
+import { FEATURE_KEY as DATA_SOURCE_FEATURE } from '@modules/data-sources/constants';
+import { FEATURE_KEY as DATA_QUERY_FEATURE } from '@modules/data-queries/constants';
+import { FEATURE_KEY as APP_ENVIRONMENT_FEATURE } from '@modules/app-environments/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -368,14 +371,42 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
 
   it('reaches what the editor actually needs to paint', () => {
     expect(run(MODULES.APP, APP_FEATURE.GET_ONE)).toBe('HANDLED');
-    for (const module of [
-      MODULES.APP_ENVIRONMENTS,
-      MODULES.DATA_QUERY,
-      MODULES.GLOBAL_DATA_SOURCE,
-      MODULES.CUSTOM_STYLES,
+    expect(run(MODULES.APP_ENVIRONMENTS, APP_ENVIRONMENT_FEATURE.INIT)).toBe('HANDLED');
+    expect(run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.GET)).toBe('HANDLED');
+    expect(run(MODULES.GLOBAL_DATA_SOURCE, DATA_SOURCE_FEATURE.GET_FOR_APP)).toBe('HANDLED');
+    expect(run(MODULES.CUSTOM_STYLES)).toBe('HANDLED');
+  });
+
+  it('cannot enumerate the workspace datasource list', () => {
+    /* GET /data-sources/:organizationId carries no app id, so the pin never fires on it and a
+       render session could read every datasource in the workspace. The editor does not need it:
+       the datasource store calls getForApp, and globalDatasourceService.getAll has no caller. */
+    expect(() => run(MODULES.GLOBAL_DATA_SOURCE, DATA_SOURCE_FEATURE.GET)).toThrow(ForbiddenException);
+  });
+
+  it('can list queries but cannot run one', () => {
+    /* The run routes are exempt from the read-only rule and execute whatever the query contains, so
+       withholding them is what stops merely opening an app from changing customer data. */
+    expect(run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.GET)).toBe('HANDLED');
+    for (const feature of [
+      DATA_QUERY_FEATURE.RUN_EDITOR,
+      DATA_QUERY_FEATURE.RUN_VIEWER,
+      DATA_QUERY_FEATURE.PREVIEW,
+      DATA_QUERY_FEATURE.LIST_TABLES,
     ]) {
-      expect(run(module)).toBe('HANDLED');
+      expect(() => run(MODULES.DATA_QUERY, feature)).toThrow(ForbiddenException);
     }
+  });
+
+  it('reaches only the environment reads the boot makes', () => {
+    expect(run(MODULES.APP_ENVIRONMENTS, APP_ENVIRONMENT_FEATURE.GET_ALL)).toBe('HANDLED');
+    expect(() => run(MODULES.APP_ENVIRONMENTS, APP_ENVIRONMENT_FEATURE.POST_ACTION)).toThrow(ForbiddenException);
+  });
+
+  it('a module with an allowlist denies a request carrying no feature', () => {
+    /* Fails closed: every route on these controllers carries @InitFeature, so a request without one
+       is a route nobody reviewed against this scope. */
+    expect(() => run(MODULES.GLOBAL_DATA_SOURCE, undefined)).toThrow(ForbiddenException);
   });
 
   it('does not reach what the editor asked for but the render does not need', () => {
@@ -409,7 +440,7 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
       run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
     ).toThrow(ForbiddenException);
     expect(() =>
-      run(MODULES.DATA_QUERY, undefined, {
+      run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.RUN_VIEWER, {
         method: 'POST',
         originalUrl: '/api/data-queries/abc-123/run',
         tj_app: { id: OTHER_APP_ID },
@@ -426,23 +457,26 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     );
   });
 
-  it("is read-only, except for running the app's queries", () => {
+  it('is read-only, and cannot run the app\'s queries either', () => {
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'POST' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'DELETE' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'PUT' })).toThrow(ForbiddenException);
-    expect(run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe(
-      'HANDLED'
-    );
-    // The BUILDER run route, the one the render check uses: an unreleased app opens only in the editor.
-    expect(
-      run(MODULES.DATA_QUERY, undefined, {
+    expect(() =>
+      run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.RUN_VIEWER, {
+        method: 'POST',
+        originalUrl: '/api/data-queries/abc-123/run',
+      })
+    ).toThrow(ForbiddenException);
+    // The builder run route: an unreleased app opens only in the editor.
+    expect(() =>
+      run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.RUN_EDITOR, {
         method: 'POST',
         originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
       })
-    ).toBe('HANDLED');
-    expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
-      ForbiddenException
-    );
+    ).toThrow(ForbiddenException);
+    expect(() =>
+      run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.CREATE, { method: 'POST', originalUrl: '/api/data-queries' })
+    ).toThrow(ForbiddenException);
   });
 
   it('fails closed on a route with no module metadata', () => {
