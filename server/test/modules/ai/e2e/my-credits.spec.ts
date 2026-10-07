@@ -45,6 +45,7 @@ function gatewayFor(ownerPath: string, pool: { monthly: number; addon: number },
   const usage = { cycleStart: CYCLE_START, trackingSince: null, unattributed: wallet(0), pool: wallet(used) };
   return {
     [`${ownerPath}/balance`]: {
+      balance: pool.monthly - used + pool.addon,
       remaining: wallet(pool.monthly - used, pool.addon),
       expiry: { recurringExpiryDate: RENEWS, topupExpiryDate: EXPIRES },
       cycleStart: CYCLE_START,
@@ -72,14 +73,16 @@ const enableLimits = (app: INestApplication, cookie: string[], organizationId: s
 
 /** @group ai */
 describe('GET /api/ai/credits-usage/me', () => {
-  const previousGateway = process.env.TJ_AI_GATEWAY_URL;
+  const previous = { gateway: process.env.TJ_AI_GATEWAY_URL, features: process.env.ENABLE_AI_FEATURES };
 
   beforeAll(() => {
     process.env.TJ_AI_GATEWAY_URL = GATEWAY;
+    process.env.ENABLE_AI_FEATURES = 'true';
   });
 
   afterAll(() => {
-    process.env.TJ_AI_GATEWAY_URL = previousGateway;
+    process.env.TJ_AI_GATEWAY_URL = previous.gateway;
+    process.env.ENABLE_AI_FEATURES = previous.features;
   });
 
   afterEach(() => {
@@ -118,7 +121,7 @@ describe('GET /api/ai/credits-usage/me', () => {
         organization: workspace,
       });
       licenseWith(app, { aiPlan: 'credits' });
-      stubGateway(
+      const gateway = stubGateway(
         gatewayFor(
           `/api/ai/organizations/${workspace.id}`,
           { monthly: 900, addon: 90 },
@@ -128,14 +131,17 @@ describe('GET /api/ai/credits-usage/me', () => {
           }
         )
       );
-      return { admin, workspace, a, b, endUser, adminCookie: await sessionFor(admin.user, workspace.id) };
+      return { admin, workspace, a, b, endUser, gateway, adminCookie: await sessionFor(admin.user, workspace.id) };
     }
 
+    // The get-credits-balance body, so the client needs one call.
+    const pool = expect.objectContaining({ aiFeaturesEnabled: true, aiPlan: 'credits', balance: 700 });
     const aNumbers = {
       enabled: true,
       cycleStart: CYCLE_START,
       monthly: { used: 250, limit: 300, left: 50, renewsOn: RENEWS },
       addon: { used: 0, limit: 30, left: 30, expiresOn: EXPIRES },
+      pool,
     };
 
     it('AC1: builder A gets only their own numbers', async () => {
@@ -146,6 +152,18 @@ describe('GET /api/ai/credits-usage/me', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(aNumbers);
+    });
+
+    it('reads the gateway balance once per call', async () => {
+      const s = await seed('mc6');
+      await enableLimits(app, s.adminCookie, s.workspace.id);
+      s.gateway.mockClear();
+
+      await getMine(app, await sessionFor(s.a.user, s.workspace.id), s.workspace.id);
+
+      const paths = s.gateway.mock.calls.map(([url]) => String(url)).filter((url) => url.startsWith(GATEWAY));
+      expect(paths.filter((url) => url.endsWith('/balance'))).toHaveLength(1);
+      expect(paths.filter((url) => url.includes('/usage'))).toHaveLength(1);
     });
 
     it("AC1: asking for another user's numbers is ignored", async () => {
@@ -165,7 +183,7 @@ describe('GET /api/ai/credits-usage/me', () => {
       const res = await getMine(app, await sessionFor(s.a.user, s.workspace.id), s.workspace.id);
 
       expect(res.statusCode).toBe(200);
-      expect(res.body).toEqual({ enabled: false });
+      expect(res.body).toEqual({ enabled: false, pool });
     });
 
     it('AI not on ToolJet credits → enabled false', async () => {
@@ -176,7 +194,7 @@ describe('GET /api/ai/credits-usage/me', () => {
       const res = await getMine(app, await sessionFor(s.a.user, s.workspace.id), s.workspace.id);
 
       expect(res.statusCode).toBe(200);
-      expect(res.body).toEqual({ enabled: false });
+      expect(res.body).toEqual({ enabled: false, pool });
     });
 
     it('end user gets 403', async () => {
@@ -226,6 +244,7 @@ describe('GET /api/ai/credits-usage/me', () => {
         enabled: true,
         monthly: { used: 100, limit: 500, left: 400 },
         addon: { used: 0, limit: 0, left: 0 },
+        pool: expect.objectContaining({ aiFeaturesEnabled: true, aiPlan: 'credits', balance: 900 }),
       });
     });
   });
