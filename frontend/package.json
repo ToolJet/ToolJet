@@ -357,7 +357,7 @@
       "dompurify": "^3.2.5"
     },
     "launch-editor": {
-      "shell-quote": "1.10.0"
+      "shell-quote": "1.12.0"
     },
     "lerna": {
       "js-yaml": "4.3.2"
@@ -417,7 +417,7 @@
       "react-dom": "$react-dom"
     },
     "react-devtools-core": {
-      "shell-quote": "1.10.0",
+      "shell-quote": "1.12.0",
       "ws": "7.5.13"
     },
     "react-google-login": {
