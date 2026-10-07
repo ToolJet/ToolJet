@@ -112,6 +112,34 @@ export class CreditsUsageResponseDto {
   @Expose() @Type(() => CreditsUsageRowDto) rows: CreditsUsageRowDto[];
 }
 
+@Exclude()
+export class MyCreditsMonthlyDto {
+  @Expose() used: number;
+  @Expose() limit: number;
+  @Expose() left: number;
+  @Expose() renewsOn: string | null;
+}
+
+@Exclude()
+export class MyCreditsAddonDto {
+  /** Can exceed `limit`: the overshoot. */
+  @Expose() used: number;
+  @Expose() limit: number;
+  @Expose() left: number;
+  @Expose() expiresOn: string | null;
+}
+
+/** `enabled: false` (limits off, not a builder, AI not on credits) carries no numbers. */
+@Exclude()
+export class MyCreditsResponseDto {
+  @Expose() enabled: boolean;
+  @Expose() cycleStart?: string | null;
+  @Expose() @Type(() => MyCreditsMonthlyDto) monthly?: MyCreditsMonthlyDto;
+  @Expose() @Type(() => MyCreditsAddonDto) addon?: MyCreditsAddonDto;
+  /** The get-credits-balance body, so the client reads both in one call. */
+  @Expose() pool?: Record<string, unknown>;
+}
+
 export class CreditLimitDefaultDto {
   @IsIn(['equal_share', 'custom'])
   mode: 'equal_share' | 'custom';
