@@ -11,7 +11,7 @@ Canonical contracts live in the EE submodule; untouched widgets remain queued in
 
 ## Validation commands
 
-Run from the repository root with both contract statuses set to the candidate next state:
+Run from the repository root with the manifest `status` set to the candidate next state:
 
 | Purpose | Command |
 | --- | --- |
