@@ -8,6 +8,7 @@ import {
   resolveScopeLimits,
   toBuilderUsage,
   toCreditsUsage,
+  toMyCredits,
 } from '@ee/ai/services/builder-usage.service';
 import { noLimits } from '@ee/ai/services/credit-limits';
 
@@ -210,6 +211,73 @@ describe('builder usage calculations', () => {
 
       expect(result.workspaces).toEqual([{ id: 'ws-a', name: 'Sales Ops' }]);
       expect(result.rows[0].workspaceIds).toEqual(['ws-a']);
+    });
+  });
+  describe('toMyCredits', () => {
+    const balance = (monthly: number, addon: number): GatewayBalance => ({
+      remaining: totals(monthly, addon),
+      expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: '2027-08-02T00:00:00.000Z' },
+      cycleStart: '2026-10-01T00:00:00.000Z',
+    });
+    const usage = (spend: Record<string, [number, number]>) =>
+      toBuilderUsage({
+        cycleStart: '2026-10-01T00:00:00.000Z',
+        users: Object.entries(spend).map(([userId, [r, t]]) => ({ userId, ...totals(r, t) })),
+        unattributed: totals(0),
+        pool: totals(0),
+      });
+    const on = () => ({ ...noLimits(), enabled: true });
+    const builders = [member({ userId: 'a' }), member({ userId: 'b' })];
+
+    it('limits on: own used, limit and left per pool with dates', () => {
+      // pools 1000/200 at cycle start → 500/100 each
+      const r = toMyCredits({
+        balance: balance(1000 - 450, 200),
+        usage: usage({ a: [400, 0], b: [50, 0] }),
+        memberships: builders,
+        limits: on(),
+        userId: 'a',
+      });
+
+      expect(r).toEqual({
+        enabled: true,
+        cycleStart: '2026-10-01T00:00:00.000Z',
+        monthly: { used: 400, limit: 500, left: 100, renewsOn: '2026-11-01T00:00:00.000Z' },
+        addon: { used: 0, limit: 100, left: 100, expiresOn: '2027-08-02T00:00:00.000Z' },
+      });
+    });
+
+    it('splits logically: monthly spend past the monthly limit counts as add-on, overshoot stays visible', () => {
+      const r = toMyCredits({
+        balance: balance(1000 - 650, 200),
+        usage: usage({ a: [650, 0] }),
+        memberships: builders,
+        limits: on(),
+        userId: 'a',
+      });
+
+      expect(r.enabled && [r.monthly, r.addon]).toEqual([
+        { used: 500, limit: 500, left: 0, renewsOn: '2026-11-01T00:00:00.000Z' },
+        { used: 150, limit: 100, left: 0, expiresOn: '2027-08-02T00:00:00.000Z' },
+      ]);
+    });
+
+    it('limits off → disabled', () => {
+      expect(
+        toMyCredits({ balance: balance(1000, 200), usage: usage({}), memberships: builders, limits: noLimits(), userId: 'a' })
+      ).toEqual({ enabled: false });
+    });
+
+    it('not a builder in scope → disabled', () => {
+      expect(
+        toMyCredits({
+          balance: balance(1000, 200),
+          usage: usage({}),
+          memberships: [...builders, member({ userId: 'end', canEdit: false })],
+          limits: on(),
+          userId: 'end',
+        })
+      ).toEqual({ enabled: false });
     });
   });
 });
