@@ -64,6 +64,7 @@ export const StringColumn = ({
       isEditing={isEditing}
       setIsEditing={setIsEditing}
       enableTabNavigation
+      validationConfig={column}
     />
   );
 };

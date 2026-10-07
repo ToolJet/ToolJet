@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { noop } from 'lodash';
 import { ValidationErrorTooltip } from '../ValidationErrorTooltip';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * Utility function to generate input step for decimal places
@@ -52,6 +53,8 @@ const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
  * @param {string} props.validationError - Validation error message
  * @param {string} props.searchText - Search text for highlighting
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
+ * @param {Object} props.validationConfig - Validation rule config (regex/minValue/maxValue/customRule),
+ *                  used to validate the in-progress draft value while editing, ahead of the commit on blur.
  */
 export const NumberRenderer = ({
   value: initialValue,
@@ -70,12 +73,30 @@ export const NumberRenderer = ({
   id,
   className,
   widgetType,
+  validationConfig,
 }) => {
   const cellValue = decimalPlaces !== null ? removingExcessDecimalPlaces(initialValue, decimalPlaces) : initialValue;
   const [displayValue, setDisplayValue] = useState(cellValue);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const ref = useRef(null);
+
+  const draftValidation =
+    isFocused && validationConfig
+      ? useStore.getState().validateWidget({
+          validationObject: {
+            regex: { value: validationConfig?.regex },
+            minValue: { value: validationConfig?.minValue },
+            maxValue: { value: validationConfig?.maxValue },
+            customRule: { value: validationConfig?.customRule },
+          },
+          widgetValue: displayValue,
+          customResolveObjects: { cellValue: displayValue },
+        })
+      : null;
+  const effectiveIsValid = draftValidation ? draftValidation.isValid : isValid;
+  const effectiveValidationError = draftValidation ? draftValidation.validationError : validationError;
 
   useEffect(() => {
     setDisplayValue(cellValue);
@@ -155,7 +176,7 @@ export const NumberRenderer = ({
             background: 'inherit',
             paddingRight: '20px',
           }}
-          className={`${className} input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
+          className={`${className} input-number h-100 ${!effectiveIsValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
           step={getInputStep(decimalPlaces)}
@@ -168,11 +189,15 @@ export const NumberRenderer = ({
           }}
           onBlur={() => {
             setIsEditing(false); // Required for KeyValuePair
+            setIsFocused(false);
             if (displayValue !== cellValue) {
               handleValueChange(displayValue);
             }
           }}
-          onFocus={(e) => e.stopPropagation()}
+          onFocus={(e) => {
+            e.stopPropagation();
+            setIsFocused(true);
+          }}
         />
         <div className="arror-container">
           <div onMouseDown={handleIncrement}>
@@ -194,7 +219,9 @@ export const NumberRenderer = ({
             />
           </div>
         </div>
-        {!isValid && widgetType !== 'KeyValuePair' && <ValidationErrorTooltip message={validationError} />}
+        {!effectiveIsValid && widgetType !== 'KeyValuePair' && (
+          <ValidationErrorTooltip message={effectiveValidationError} />
+        )}
       </div>
     );
   }
