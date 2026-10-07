@@ -49,7 +49,14 @@ const useAppData = (
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, environmentName, versionId, componentName, currentVersionId: releasedVersionIdPointer } = {},
+  {
+    environmentId,
+    environmentName,
+    versionId,
+    componentName,
+    currentVersionId: releasedVersionIdPointer,
+    appDataRevision,
+  } = {},
   moduleMode = false,
   isModuleEditor = false,
   appSlug
@@ -390,7 +397,7 @@ const useAppData = (
         // releasedVersionIdPointer is only ever populated for the plain released-app viewer link
         // (validateReleasedApp) — absent for preview/edit, so this never engages there.
         appDataPromise = releasedVersionIdPointer
-          ? getCachedAppDefinition(releasedVersionIdPointer).then((cached) => {
+          ? getCachedAppDefinition(releasedVersionIdPointer, appDataRevision).then((cached) => {
               if (cached) {
                 appDefinitionCacheHit = true;
                 return cached;
@@ -808,25 +815,28 @@ const useAppData = (
 
         // Use versionId from URL if available (preview mode), otherwise use editing version
         const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
-        // Dependency-graph cache: PUBLISHED-only, viewer-only — a released version is immutable,
-        // so a versionId-keyed cache entry never goes stale. Draft/edit-mode always rebuilds.
-        const isCacheableView = mode !== 'edit' && appData.editing_version?.status === 'PUBLISHED' && !!versionIdToInit;
+        // Released-app link only: preview/edit loads have no appDataRevision, so they never cache.
+        const isCacheableView =
+          mode !== 'edit' && appData.editing_version?.status === 'PUBLISHED' && !!versionIdToInit && !!appDataRevision;
         if (isCacheableView && !appDefinitionCacheHit) {
           // Fire-and-forget — persisting the raw response must not delay render. Cached under the
           // authoritative post-fetch versionId, not the pre-fetch currentVersionId prop (same value
           // for this flow, but this is the one actually confirmed PUBLISHED).
-          setCachedAppDefinition(appId, versionIdToInit, result);
+          setCachedAppDefinition(appId, versionIdToInit, appDataRevision, result);
         }
-        // Keyed by (versionId, startingPage.id) — the dependency graph is built from whichever
-        // page this load lands on (home page or a deep-linked handle), not the whole app, so a
-        // versionId-only key would serve one page's state to a load that starts on another page.
         const cachedDependencyGraph = isCacheableView
-          ? await getCachedDependencyGraph(versionIdToInit, startingPage.id)
+          ? await getCachedDependencyGraph(versionIdToInit, appDataRevision, startingPage.id)
           : undefined;
         const freshDependencyGraphSnapshot = initDependencyGraph(moduleId, cachedDependencyGraph);
         if (isCacheableView && freshDependencyGraphSnapshot) {
           // Fire-and-forget — persisting the snapshot must not delay render.
-          setCachedDependencyGraph(appId, versionIdToInit, startingPage.id, freshDependencyGraphSnapshot);
+          setCachedDependencyGraph(
+            appId,
+            versionIdToInit,
+            appDataRevision,
+            startingPage.id,
+            freshDependencyGraphSnapshot
+          );
         }
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 

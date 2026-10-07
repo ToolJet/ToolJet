@@ -2,10 +2,17 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { User as UserEntity } from '@entities/user.entity';
 import { App as AppEntity } from '@entities/app.entity';
 import { PromoteVersionDto } from '../dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 export interface IVersionControllerV2 {
-  getVersion(user: UserEntity, app: AppEntity, mode: string, res: Response): Promise<any>;
+  getVersion(
+    user: UserEntity,
+    app: AppEntity,
+    versionId: string,
+    mode: string,
+    req: Request,
+    res: Response
+  ): Promise<any>;
   getModuleVersionByStableIds(
     user: UserEntity,
     coRelationId: string,

@@ -27,6 +27,7 @@ export const Viewer = ({
   environmentName,
   versionId,
   currentVersionId,
+  appDataRevision,
   moduleMode = false,
   isHydrating = false,
   slug: appSlug,
@@ -39,7 +40,7 @@ export const Viewer = ({
     moduleId,
     darkMode,
     'view',
-    { environmentId, environmentName, versionId, componentName, currentVersionId },
+    { environmentId, environmentName, versionId, componentName, currentVersionId, appDataRevision },
     moduleMode,
     false,
     appSlug

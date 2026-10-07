@@ -1,12 +1,10 @@
 import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys, createStore, UseStore } from 'idb-keyval';
 
-// Shared IndexedDB store: LRU per app (keep last N *versions*, grouped — not raw entries) plus
-// opportunistic quota eviction. Used by both the dependency-graph cache (keyed by versionId:pageId,
-// since the dependency graph is per-page) and the app-definition cache (keyed by versionId alone).
-// Grouping eviction by versionId (not by raw storage key) matters because the dependency-graph
-// cache can have many entries — one per page — sharing the same versionId; without grouping,
-// visiting several pages of the *same* version would evict each other instead of only evicting
-// once a genuinely older version shows up.
+// Shared IndexedDB store for the viewer caches. Keeps the last N versions per app (all pages of
+// a version are evicted together) and evicts when storage is nearly full.
+
+// Bump to reset both caches when widget defaults/config or dependency-graph building change.
+const VIEWER_CACHE_VERSION = 1;
 
 const MAX_VERSIONS_PER_APP = 2;
 const QUOTA_EVICTION_THRESHOLD = 0.8;
@@ -32,7 +30,7 @@ export function createVersionedStore<T extends Entry>(storeName: string) {
   // createStore() opens IndexedDB without an explicit version, so onupgradeneeded only fires
   // for the first store name ever created under a given DB name — a second store name sharing
   // that DB silently never gets created, and reads/writes against it fail forever.
-  const dbName = `tj-app-cache-${storeName}`;
+  const dbName = `tj-app-cache-${storeName}-v${VIEWER_CACHE_VERSION}`;
   registeredDbNames.push(dbName);
   const dbStore: UseStore = createStore(dbName, storeName);
 

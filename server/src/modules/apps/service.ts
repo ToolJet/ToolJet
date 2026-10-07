@@ -23,6 +23,7 @@ import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { App } from '@entities/app.entity';
+import { getAppDataRevision } from './app-data-revision';
 import { AppBase } from '@entities/app_base.entity';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -307,7 +308,10 @@ export class AppsService implements IAppsService {
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
 
-  validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string; currentVersionId: string } {
+  async validateReleasedApp(
+    ability: AppAbility,
+    app: App
+  ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }> {
     if (!app.currentVersionId) {
       // ability is undefined for unauthenticated visitors on a public app - the guard
       // lets them through without computing one. No ability means no edit permission.
@@ -320,7 +324,12 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return { id: app.id, slug: app.slug, currentVersionId: app.currentVersionId };
+    return {
+      id: app.id,
+      slug: app.slug,
+      currentVersionId: app.currentVersionId,
+      appDataRevision: await getAppDataRevision(this.appRepository.manager, app),
+    };
   }
 
   async getAppAuthenticationConfig(slug: string) {
