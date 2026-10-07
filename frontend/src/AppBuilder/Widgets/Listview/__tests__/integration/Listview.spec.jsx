@@ -119,6 +119,187 @@ const counting = (eventId, key) => ({
 const BOTH_EVENTS = [counting('onRecordClicked', 'rec'), counting('onRowClicked', 'row')];
 const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
 
+/**
+ * A nested List View: the outer rows each hold their own inner List View, whose data is
+ * `{{listItem.items}}` — a different answer per outer row. The inner Text then reads the INNER
+ * record, so a row's text depends on two row numbers, not one.
+ */
+const NESTED_RECORDS = `{{[{ name: 'o1', items: [{ name: 'a' }, { name: 'b' }] }, { name: 'o2', items: [{ name: 'c' }, { name: 'd' }] }]}}`;
+
+function innerListview() {
+  const definition = componentDefinition('lv2', 'listview2', 'Listview', {
+    dataSourceSelector: binding('rawJson'),
+    data: binding('{{listItem.items}}'),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('100'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  });
+  definition.component.parent = ID;
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+function innerText() {
+  const definition = componentDefinition('txt2', 'text2', 'Text', {
+    text: binding(`{{listItem.name + (variables.sfx ?? '')}}`),
+  });
+  definition.component.parent = 'lv2';
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const nestedWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(NESTED_RECORDS),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('250'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { lv2: innerListview(), txt2: innerText() },
+  capabilities: { dnd: true },
+  widgetHeight: 600,
+  widgetWidth: 600,
+});
+
+function innerContainer() {
+  const definition = componentDefinition('cont1', 'container1', 'Container', {});
+  definition.component.parent = 'lv2';
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+function containedText() {
+  const definition = componentDefinition('txt3', 'text3', 'Text', { text: binding('{{listItem.name}}') });
+  definition.component.parent = 'cont1';
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const containerWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(NESTED_RECORDS),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('250'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { lv2: innerListview(), cont1: innerContainer(), txt3: containedText() },
+  capabilities: { dnd: true },
+  widgetHeight: 600,
+  widgetWidth: 600,
+});
+
+describe('Listview: a bad record does not destroy the good ones', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-003] a null among the records still renders the records around it', async () => {
+    // Break this catches: rejecting the whole array because one entry is not an object, so a query
+    // returning a single null row empties a list that had valid rows either side of it.
+    await mount({ properties: { data: binding(`{{[{ text: 'Alpha' }, null, { text: 'Gamma' }]}}`) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(rowTexts()).toEqual(['Alpha', '', 'Gamma']);
+  });
+});
+
+describe('Listview: a Container inside a nested row', () => {
+  beforeEach(containerWidget.setup);
+  afterEach(containerWidget.teardown);
+
+  test('[Listview-BUG-002] a Container between the inner list and its Text does not break the row scope', async () => {
+    // Break this catches: a child nested behind a plain Container resolving against the OUTER list,
+    // so every inner row shows the outer record instead of its own.
+    containerWidget.render({ currentMode: 'view' });
+
+    await waitFor(() =>
+      expect([...document.querySelectorAll('.list-item .list-item')].map((n) => n.textContent)).toHaveLength(4)
+    );
+    expect([...document.querySelectorAll('.list-item .list-item')].map((n) => n.textContent)).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+    ]);
+  });
+});
+
+describe('Listview: a nested list keeps its rows when something outside changes', () => {
+  beforeEach(nestedWidget.setup);
+  afterEach(nestedWidget.teardown);
+
+  const innerTexts = () => [...document.querySelectorAll('.list-item .list-item')].map((node) => node.textContent);
+
+  test('[Listview-BUG-001] setting a variable does not blank the inner rows', async () => {
+    // Break this catches: re-resolving a nested row with the caller's row position instead of the
+    // row's own. The caller is a button on the canvas with no position, so the lookup reads the
+    // group of records where a single record was wanted and every inner row renders empty.
+    nestedWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(innerTexts()).toEqual(['a', 'b', 'c', 'd']));
+
+    await nestedWidget.session.store.act(() => {
+      store().setVariable('sfx', '!', MODULE_ID);
+    });
+
+    await waitFor(() => expect(innerTexts()).toEqual(['a!', 'b!', 'c!', 'd!']));
+  });
+});
+
 describe('Listview: rendering records', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);

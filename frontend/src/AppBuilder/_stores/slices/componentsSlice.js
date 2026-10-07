@@ -2701,6 +2701,28 @@ export const createComponentsSlice = (set, get) => ({
     const { containerChildrenMapping } = get();
     return containerChildrenMapping[id] || [];
   },
+  // Row expansion must reach a child behind a plain wrapper (Container, Form) too, but stop at a
+  // nested row-scoped widget, which expands its own rows against its own records.
+  getRowScopedDescendants: (parentId, moduleId = 'canvas') => {
+    const { getContainerChildrenMapping, getComponentDefinition } = get();
+    const slotsOf = (id) => [id, `${id}-header`, `${id}-footer`, `${id}-modal`];
+    const collected = [];
+    const seen = new Set();
+    const walk = (id) => {
+      slotsOf(id).forEach((slotId) =>
+        getContainerChildrenMapping(slotId, moduleId).forEach((childId) => {
+          if (seen.has(childId)) return;
+          seen.add(childId);
+          collected.push(childId);
+          const type = getComponentDefinition(childId, moduleId)?.component?.component;
+          if (!ROW_SCOPED_WIDGET_TYPES.includes(type)) walk(childId);
+        })
+      );
+    };
+    walk(parentId);
+    return collected;
+  },
+
   getChildComponents: (parentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents } = get();
     const allComponents = getCurrentPageComponents(moduleId);
@@ -2892,6 +2914,15 @@ export const createComponentsSlice = (set, get) => ({
     return component?.component?.parent;
   },
 
+  // A nested list files its records per outer row; a flat one stores an array and yields no paths.
+  enumerateOuterRowPaths: function walk(stored) {
+    if (!stored || Array.isArray(stored) || typeof stored !== 'object') return [];
+    return Object.keys(stored).flatMap((key) => {
+      const deeper = walk(stored[key]);
+      return deeper.length > 0 ? deeper.map((rest) => [Number(key), ...rest]) : [[Number(key)]];
+    });
+  },
+
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
     const {
       getCustomResolvables,
@@ -2912,6 +2943,15 @@ export const createComponentsSlice = (set, get) => ({
     const resolvableParentId = nearestListviewId || parentId;
     const unResolvedValue = getNodeData(dependency, moduleId);
     const shouldValidate = entityType === 'components' && entityId;
+
+    // A variable or query has no row position, so expand it; else a nested row reads a group, not a record.
+    if (parentIndices.length === 0) {
+      const outerPaths = get().enumerateOuterRowPaths(getCustomResolvables(resolvableParentId, null, moduleId, []));
+      if (outerPaths.length > 0) {
+        outerPaths.forEach((p) => get().updateChildComponentResolvedValues(dependency, path, length, moduleId, p));
+        return;
+      }
+    }
 
     // Collect all resolved values first, then apply in a single batched store update.
     //

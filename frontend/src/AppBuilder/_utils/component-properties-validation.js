@@ -12,6 +12,7 @@ const {
   coerce,
   create,
   never,
+  literal,
 } = require('superstruct');
 
 import { validateMultilineCode } from '@/_helpers/utility';
@@ -73,6 +74,12 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
       );
       schema = type(obJectSchema);
 
+      break;
+    }
+
+    // Lets a schema say "or an empty slot", so one null row cannot invalidate the rows around it.
+    case 'null': {
+      schema = literal(null);
       break;
     }
 

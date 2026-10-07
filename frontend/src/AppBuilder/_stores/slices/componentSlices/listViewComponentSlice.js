@@ -237,8 +237,8 @@ export const listViewComponentSlice = (set, get) => {
 
     // Initialize exposed value arrays for all children of a ListView
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping } = get();
-      const childComponents = getContainerChildrenMapping(listviewId, moduleId);
+      const { getRowScopedDescendants } = get();
+      const childComponents = getRowScopedDescendants(listviewId, moduleId);
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         childComponents.forEach((childId) => {
