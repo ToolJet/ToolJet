@@ -457,23 +457,23 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     );
   });
 
-  it("is read-only, except for running the app's queries", () => {
+  it('is read-only, and cannot run the app\'s queries either', () => {
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'POST' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'DELETE' })).toThrow(ForbiddenException);
     expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'PUT' })).toThrow(ForbiddenException);
-    expect(
+    expect(() =>
       run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.RUN_VIEWER, {
         method: 'POST',
         originalUrl: '/api/data-queries/abc-123/run',
       })
-    ).toBe('HANDLED');
-    // The BUILDER run route, the one the render check uses: an unreleased app opens only in the editor.
-    expect(
+    ).toThrow(ForbiddenException);
+    // The builder run route: an unreleased app opens only in the editor.
+    expect(() =>
       run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.RUN_EDITOR, {
         method: 'POST',
         originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
       })
-    ).toBe('HANDLED');
+    ).toThrow(ForbiddenException);
     expect(() =>
       run(MODULES.DATA_QUERY, DATA_QUERY_FEATURE.CREATE, { method: 'POST', originalUrl: '/api/data-queries' })
     ).toThrow(ForbiddenException);
