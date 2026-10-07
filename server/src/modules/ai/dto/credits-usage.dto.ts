@@ -91,11 +91,21 @@ export class CreditsUsageRowDto {
 }
 
 @Exclude()
+/** After a plan change or add-on expiry shrank the pool and limits were adjusted; dismissed per admin in the browser. */
+export class CreditsUsageNoticeDto {
+  @Expose() kind: 'plan_change' | 'addon_expiry';
+  @Expose() on: string | null;
+  @Expose() defaultBefore: number;
+  @Expose() defaultAfter: number;
+  @Expose() reduced: number;
+}
+
 export class CreditsUsageResponseDto {
   @Expose() @Type(() => CreditsUsageCycleDto) cycle: CreditsUsageCycleDto;
   @Expose() @Type(() => CreditsUsagePoolsDto) pools: CreditsUsagePoolsDto;
   /** First attributed ledger row, all time; null until one exists. */
   @Expose() trackingSince: string | null;
+  @Expose() @Type(() => CreditsUsageNoticeDto) notices: CreditsUsageNoticeDto[];
   /** Self-hosted only: the instance's active workspaces. */
   @Expose() @Type(() => CreditsUsageWorkspaceDto) workspaces?: CreditsUsageWorkspaceDto[];
   @Expose() @Type(() => CreditsUsageLimitsDto) limits: CreditsUsageLimitsDto;

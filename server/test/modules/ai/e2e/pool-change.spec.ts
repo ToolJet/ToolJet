@@ -226,7 +226,11 @@ describe('AI credit limits: pool changes', () => {
       const s = await seedWithCustom('pc3');
       // Same plan; 9,000 overdraft carried in, so the new cycle starts with 1,000.
       stubGateway(
-        gatewayFor(s.owner, { plan: { monthly: 10_000, addon: 0 }, remaining: { monthly: 1000, addon: 0 }, cycleStart: NEW_CYCLE })
+        gatewayFor(s.owner, {
+          plan: { monthly: 10_000, addon: 0 },
+          remaining: { monthly: 1000, addon: 0 },
+          cycleStart: NEW_CYCLE,
+        })
       );
 
       const res = await getUsage(app, s.cookie, s.workspace.id);
@@ -318,7 +322,12 @@ describe('AI credit limits: pool changes', () => {
         groups: ['end-user', 'builder'],
         organization: superAdmin.organization,
       });
-      licenseWith(app, { aiPlan: 'credits', aiEnabled: true, ai: { apiKey: 'selfhost-key' }, metadata: { customerId } });
+      licenseWith(app, {
+        aiPlan: 'credits',
+        aiEnabled: true,
+        ai: { apiKey: 'selfhost-key' },
+        metadata: { customerId },
+      });
       const gateway = stubGateway(gatewayFor(owner, full(10_000)));
       const cookie = await sessionFor(superAdmin.user, superAdmin.organization.id);
       expect(
