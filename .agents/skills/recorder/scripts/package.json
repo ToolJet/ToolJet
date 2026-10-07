@@ -1,0 +1,6 @@
+{
+  "name": "recorder-workspace",
+  "private": true,
+  "description": "Copy this file into a scratch workspace and run npm i there (never in the repo).",
+  "dependencies": { "playwright": "^1.63.0", "@argo-video/cli": "0.41.0", "kokoro-js": "^1", "@huggingface/transformers": "^3" }
+}

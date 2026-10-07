@@ -1,43 +1,43 @@
 // Recorder: CDP screencast segments joined with crossfades, Kokoro voiceover per line,
-// argo human cursor, subtitle pill (exact narration) + soft SRT, chapters, logo intro/outro.
-// Env: REC_OUT (default ./out), REC_LOGO (default <git root>/frontend/assets/images/logo-dark.svg),
-//      REC_MAX_MB (default 9). ffmpeg/ffprobe come from PATH.
+// argo human cursor, burned subtitle pill + soft SRT, chapters, branded intro/outro.
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const OUT = path.resolve(process.env.REC_OUT || 'out');
+const FF = 'ffmpeg', FP = 'ffprobe'; // from PATH
+const OUT = path.resolve(process.env.DEMO_OUT || 'out');
+fs.mkdirSync(OUT, { recursive: true });
 const W = 1440, H = 900, F = 0.6; // crossfade seconds
-const LINGER = 1.5; // emphasis stays this long after the line ends
-const MAX = Number(process.env.REC_MAX_MB || 9) * 1024 * 1024;
 const FONT = `'IBM Plex Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+// Wordmark that reads on navy: TJ_LOGO=<repo>/frontend/assets/images/logo-dark.svg (scripts run from a scratch copy).
+if (!process.env.TJ_LOGO) throw new Error('set TJ_LOGO to <repo>/frontend/assets/images/logo-dark.svg');
+const LOGO = fs.readFileSync(process.env.TJ_LOGO, 'utf8');
 const NAVY = '#0b1222';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const ff = (args) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args]);
-const probe = (f) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { encoding: 'utf8' }));
-const logo = () => {
-  const f = process.env.REC_LOGO || path.join(execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim(), 'frontend/assets/images/logo-dark.svg');
-  return fs.readFileSync(f, 'utf8');
-};
 let argo; const A = async () => (argo ||= await import('@argo-video/cli'));
-let tts; const T = async () => (tts ||= await import('./tts.mjs'));
+let tts; const T = async () => (tts ||= await import(path.join(__dirname, 'tts.mjs')));
 
-// Injected into every page: subtitle pill, hidden scrollbars, argo cursor kept outside <body> so zoom doesn't move it.
 const INIT = `(() => {
   const css = \`
 #__demo_sub{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:2147483645;pointer-events:none;
  background:rgba(12,16,26,.78);color:#fff;font:600 23px/1.35 ${FONT};padding:9px 22px;border-radius:999px;
  max-width:1100px;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.22);letter-spacing:.1px;backdrop-filter:blur(4px)}
 #__demo_sub:empty{display:none}
+#__demo_l3{position:fixed;left:28px;top:24px;z-index:2147483645;pointer-events:none;background:rgba(12,16,26,.78);color:#fff;
+ font:600 15px/1.2 ${FONT};padding:7px 14px;border-radius:8px;letter-spacing:.3px}
+#__demo_l3:empty{display:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 *{scrollbar-width:none!important}
 html{scroll-behavior:smooth}\`;
   const ensure = () => {
     const root = document.documentElement; if (!root) return;
     if (!document.getElementById('__demo_style')) { const st = document.createElement('style'); st.id = '__demo_style'; st.textContent = css; root.appendChild(st); }
-    let s = document.getElementById('__demo_sub');
-    if (!s) { s = document.createElement('div'); s.id = '__demo_sub'; root.appendChild(s); }
-    const t = sessionStorage.getItem('__demo_sub') || '';
-    if (s.textContent !== t) s.textContent = t;
+    for (const [id, key] of [['__demo_sub', '__demo_sub'], ['__demo_l3', '__demo_l3']]) {
+      let s = document.getElementById(id);
+      if (!s) { s = document.createElement('div'); s.id = id; root.appendChild(s); }
+      const t = sessionStorage.getItem(key) || '';
+      if (s.textContent !== t) s.textContent = t;
+    }
+    // argo cursor nodes live outside <body> so a zoomed body never displaces them
     if (document.body) for (const n of [...document.body.children]) if (/argo/.test(n.id || '') || /argo/.test(String(n.className || ''))) root.appendChild(n);
   };
   window.__demoEnsure = ensure;
@@ -57,26 +57,13 @@ class Rec {
     this.name = name; this.seed = seed || name;
     this.dir = path.join(OUT, name + '.frames');
     fs.rmSync(this.dir, { recursive: true, force: true }); fs.mkdirSync(this.dir, { recursive: true });
-    this.n = 0; this.acc = 0; this.segStart = 0; this.rec = false;
+    this.n = 0; this.acc = 0; this.segStart = 0; this.speed = 1; this.rec = false;
     this.segs = []; this.latest = null; this.lastCut = -99;
     this.cues = []; this.audio = []; this.chapters = []; this.cursors = new Map();
   }
-  // Call on every BrowserContext before opening pages.
   static async prep(context) { await context.addInitScript(INIT); }
-  // Over 11 words: split once at the pause nearest the middle (sentence end, then : ;, then comma).
-  static split(text) {
-    if (text.split(/\s+/).length <= 11) return [text];
-    const mid = text.length / 2;
-    for (const re of [/[.!?]\s/g, /[:;]\s/g, /,\s/g]) {
-      let best = null;
-      for (const m of text.matchAll(re)) { const i = m.index + 1; if (i > 8 && text.length - i > 8 && (best === null || Math.abs(i - mid) < Math.abs(best - mid))) best = i; }
-      if (best !== null) return [text.slice(0, best).trim(), text.slice(best).trim()];
-    }
-    return [text];
-  }
-  now() { return this.rec ? this.acc + (Date.now() - this.segStart) / 1000 : this.acc; }
-  // Generate every voice clip before recording so synthesis time isn't on camera.
-  async prewarm(lines) { const { say } = await T(); for (const l of lines) for (const p of Rec.split(l)) await say(p); }
+  now() { return this.rec ? this.acc + (Date.now() - this.segStart) / 1000 / this.speed : this.acc; }
+  async prewarm(lines) { const { say } = await T(); for (const l of lines) if (l) await say(l); }
 
   async attach(page, { cursor = true } = {}) {
     if (this.cdp) { await this.cdp.send('Page.stopScreencast').catch(() => {}); this.cdp.removeAllListeners(); await this.cdp.detach().catch(() => {}); }
@@ -88,6 +75,7 @@ class Rec {
       await cursorHighlight(page, { mode: 'click' });
       this.cursors.set(page, await createHumanCursor(page, { seed: this.seed, size: 30 }));
     }
+    if (process.env.DRY) return;
     this.cdp = await page.context().newCDPSession(page);
     this.cdp.on('Page.screencastFrame', ({ data, sessionId }) => {
       this.cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {});
@@ -100,32 +88,48 @@ class Rec {
     await this.poke();
   }
   get cursor() { return this.cursors.get(this.page); }
-  // Screencast only emits on paint; force one.
   async poke() {
     await this.page.evaluate(() => { document.documentElement.dataset.pk = String(Date.now()); window.__demoEnsure && window.__demoEnsure(); }).catch(() => {});
     await sleep(150);
   }
   async resume() {
     await this.poke();
-    this.segStart = Date.now(); this.rec = true;
+    this.speed = 1; this.segStart = Date.now(); this.rec = true;
     this.segs.push({ start: this.acc, frames: this.latest ? [{ file: this.latest, t: this.acc }] : [] });
     this.lastCut = this.acc;
   }
   pause() { if (!this.rec) return; this.acc = this.now(); this.rec = false; this.segs[this.segs.length - 1].end = this.acc; }
-  // Run fn off camera (reloads, seeding, waits); the next segment crossfades in.
   async cut(fn) { const was = this.rec; this.pause(); const r = await fn(); await sleep(200); if (was) await this.resume(); return r; }
+  setSpeed(s) { if (this.rec) { this.acc = this.now(); this.segStart = Date.now(); } this.speed = s; }
+  async fast(fn, s = 2) { this.setSpeed(s); try { return await fn(); } finally { this.setSpeed(1); } }
   async hold(ms) { await sleep(ms); }
   chapter(title) { this.chapters.push({ title, t: this.now() }); }
-  async setSub(text) { await this.page.evaluate((x) => { sessionStorage.setItem('__demo_sub', x || ''); window.__demoEnsure && window.__demoEnsure(); }, text || '').catch(() => {}); }
 
-  // One narrated beat: each cue is the exact spoken text, shown for its own clip. fn runs while the
-  // voice plays; zoom/spotlight/circle linger LINGER s past the voice, then ease out.
+  async setSub(text) { await this.page.evaluate((x) => { sessionStorage.setItem('__demo_sub', x || ''); window.__demoEnsure && window.__demoEnsure(); }, text || '').catch(() => {}); }
+  async lowerThird(text) { await this.page.evaluate((x) => { sessionStorage.setItem('__demo_l3', x || ''); window.__demoEnsure && window.__demoEnsure(); }, text || '').catch(() => {}); }
+
+  // One narrated beat: subtitle + voice start together (after any crossfade), fn runs while it plays,
+  // then hold until the clip has finished (+ tail).
+  // Split a narration line into ≤2 cues at a natural pause (sentence end, then colon/semicolon, then comma).
+  static split(text) {
+    if (text.split(/\s+/).length <= 11) return [text];
+    const mid = text.length / 2;
+    for (const re of [/[.!?]\s/g, /[:;]\s/g, /,\s/g]) {
+      let best = null;
+      for (const m of text.matchAll(re)) { const i = m.index + 1; if (i > 8 && text.length - i > 8 && (best === null || Math.abs(i - mid) < Math.abs(best - mid))) best = i; }
+      if (best !== null) return [text.slice(0, best).trim(), text.slice(best).trim()];
+    }
+    return [text];
+  }
+  // One narrated beat. Subtitle cues = the exact spoken text, each timed to its own TTS clip.
+  // fn runs while the voice plays; any zoom/spotlight/circle lingers 1.6s past the voice, then eases out.
   async line(narr, fn, { tail = 0.35, min = 0 } = {}) {
     const wait = this.lastCut + F + 0.05 - this.now();
     if (wait > 0) await sleep(wait * 1000);
     const { say } = await T();
+    const parts = Rec.split(narr);
     const clips = [];
-    for (const t of Rec.split(narr)) clips.push({ text: t, ...(await say(t)) });
+    for (const t of parts) clips.push({ text: t, ...(await say(t)) });
     const GAP = 0.12;
     const start = this.now();
     let off = 0;
@@ -143,7 +147,8 @@ class Rec {
     if (fn) await fn();
     const need = start + Math.max(spoken + tail, min) - this.now();
     if (need > 0) await sleep(need * 1000);
-    if (this.emph) { await sleep(LINGER * 1000); await this.unmark(); if (this.zoomed) await this.unzoom(); this.emph = false; }
+    if (process.env.DRY) { this.dn = (this.dn || 0) + 1; await this.page.screenshot({ path: `${OUT}/dry-${this.name}-${String(this.dn).padStart(2, '0')}.png` }).catch(() => {}); }
+    if (this.emph) { await sleep(1500); await this.unmark(); if (this.zoomed) await this.unzoom(); this.emph = false; }
     for (const t of timers) clearTimeout(t);
     await this.setSub('');
   }
@@ -152,7 +157,6 @@ class Rec {
     this.pause();
     const p = await context.newPage();
     await p.setViewportSize({ width: W, height: H });
-    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const html = `<!doctype html><html><head><style>
       html,body{margin:0;height:100%;background:radial-gradient(1200px 700px at 50% 40%, #16223f 0%, ${NAVY} 70%);overflow:hidden}
       .wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:${FONT};color:#fff}
@@ -162,8 +166,8 @@ class Rec {
       p{font-size:22px;margin:0;color:#aeb8d6;opacity:0;transform:translateY(8px);animation:up .6s ease-out .75s forwards}
       .rule{width:56px;height:3px;border-radius:2px;background:#4368e3;margin-top:22px;opacity:0;animation:up .6s ease-out .9s forwards}
       @keyframes in{to{opacity:1;transform:scale(1)}} @keyframes up{to{opacity:1;transform:none}}
-    </style></head><body><div class="wrap"><div class="logo">${logo()}</div>
-      ${title ? `<h1>${esc(title)}</h1>` : ''}${subtitle ? `<p>${esc(subtitle)}</p>` : ''}${outro ? '' : '<div class="rule"></div>'}</div></body></html>`;
+    </style></head><body><div class="wrap"><div class="logo">${LOGO}</div>
+      ${title ? `<h1>${title}</h1>` : ''}${subtitle ? `<p>${subtitle}</p>` : ''}${outro ? '' : '<div class="rule"></div>'}</div></body></html>`;
     await p.setContent(html);
     await sleep(100);
     const prev = this.page;
@@ -174,9 +178,8 @@ class Rec {
     if (prev) await prev.bringToFront();
     return p;
   }
-  // After intro/outro, attach() back to the app page before resume().
   async intro(context, title, subtitle, ms) { this.chapters.push({ title: 'Intro', t: this.acc }); return this.card(context, { title, subtitle, ms }); }
-  async outro(context, title, subtitle) { this.chapters.push({ title: 'Outro', t: this.acc }); await this.setSub(''); return this.card(context, { title, subtitle, ms: 1700, outro: true }); }
+  async outro(context, title = process.env.DEMO_OUTRO_TITLE || 'ToolJet', subtitle = process.env.DEMO_OUTRO_SUB || '') { this.chapters.push({ title: 'Outro', t: this.acc }); await this.setSub(''); return this.card(context, { title, subtitle, ms: 1700, outro: true }); }
 
   async zoom(target, scale = 1.6) {
     const b = target.boundingBox ? await target.boundingBox() : target;
@@ -190,7 +193,7 @@ class Rec {
   }
   async unzoom() { await this.page.evaluate(() => { const b = document.body; b.style.transition = 'transform .6s cubic-bezier(.45,0,.25,1)'; b.style.transform = ''; }); this.zoomed = false; await sleep(650); }
 
-  // Emphasis: 'spot' dims everything else; 'circle' draws a hand-drawn ring. Tracks the element; cleared at line end.
+  // Emphasis: spotlight (dim the rest) or hand-drawn circle; tracks the element (scroll/zoom), cleared at line end.
   async mark(locator, kind = 'spot') {
     await locator.evaluate((el, kind) => {
       const root = document.documentElement;
@@ -213,10 +216,12 @@ class Rec {
         Object.assign(node.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
         if (kind !== 'spot') {
           node.setAttribute('viewBox', `0 0 ${w} ${h}`);
+          const path = node.querySelector('path');
           const rx = w / 2, ry = h / 2, cx = w / 2, cy = h / 2;
-          const pts = []; // imperfect ellipse, overshoots the join a little
+          // imperfect ellipse: start upper-left, overshoot the join a little
+          const pts = [];
           for (let i = 0; i <= 64; i++) { const a = -2.4 + (i / 64) * (Math.PI * 2 + 0.35); const k = 1 + 0.03 * Math.sin(i / 5); pts.push([cx + rx * k * Math.cos(a), cy + ry * k * Math.sin(a)]); }
-          node.querySelector('path').setAttribute('d', 'M' + pts.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join(' L'));
+          path.setAttribute('d', 'M' + pts.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join(' L'));
         }
       };
       place();
@@ -236,16 +241,22 @@ class Rec {
   async unmark() {
     await this.page.evaluate(() => { const n = document.getElementById('__demo_mark'); if (n) { n.style.transition = 'opacity .4s ease'; n.style.opacity = '0'; setTimeout(() => n.remove(), 450); } }).catch(() => {});
   }
+  // for elements that never settle (Playwright 'stable' check): glide by coordinates, click there
+  async clickXY(locator) {
+    const b = await locator.boundingBox();
+    await this.page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 18 }); await sleep(150);
+    await this.page.mouse.down(); await this.page.mouse.up(); await sleep(200);
+  }
   async point(locator, ms = 550) { await this.cursor.moveTo(locator, { durationMs: ms }); }
   async click(locator) { await this.cursor.click(locator, { durationMs: 550 }); }
-  // Real-time typing; never sped up.
   async type(locator, text) { await this.cursor.click(locator, { durationMs: 500 }); await locator.pressSequentially(text, { delay: 45 }); }
   async scrollTo(locator) { await locator.evaluate((e) => e.scrollIntoView({ behavior: 'smooth', block: 'center' })); await sleep(900); }
 
   async stop() {
-    this.pause();
+    if (process.env.DRY) return { dry: true, lines: this.dn, chapters: this.chapters.map((c) => c.title) };
+    const end = this.now(); this.pause();
     if (this.cdp) await this.cdp.send('Page.stopScreencast').catch(() => {});
-    return this.encode();
+    return this.encode(end);
   }
   segVideo(seg, i, pad) {
     const fr = seg.frames.filter((f, k, a) => k === a.length - 1 || a[k + 1].t > f.t + 1e-6);
@@ -258,31 +269,34 @@ class Rec {
     list += `file '${fr[fr.length - 1].file}'\n`;
     const lf = path.join(this.dir, `seg${i}.txt`); fs.writeFileSync(lf, list);
     const out = path.join(this.dir, `seg${i}.mp4`);
-    ff(['-f', 'concat', '-safe', '0', '-i', lf, '-vf', `fps=30,scale=${W}:${H}:flags=lanczos,format=yuv420p`,
+    execFileSync(FF, ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lf, '-vf', `fps=30,scale=${W}:${H}:flags=lanczos,format=yuv420p`,
       '-c:v', 'libx264', '-preset', 'fast', '-crf', '16', '-t', (end - seg.start).toFixed(3), out]);
     return { out, len: end - seg.start };
   }
-  encode() {
+  encode(end) {
     const segs = this.segs.filter((s) => s.frames.length && s.end > s.start);
     if (segs.length !== this.segs.length) console.warn('dropped segments', this.segs.length - segs.length);
     const parts = segs.map((s, i) => this.segVideo(s, i, i < segs.length - 1 ? F : 0));
-    // Segment k starts F before the padded tail of k-1 ends, so the timeline (and audio cues) stays aligned.
+    // crossfade chain: segment k starts F before the padded tail of k-1 ends → original timeline kept
     const video = path.join(this.dir, 'video.mp4');
     if (parts.length === 1) fs.copyFileSync(parts[0].out, video);
     else {
+      const inputs = parts.flatMap((p) => ['-i', p.out]);
       let fc = '', cur = parts[0].len, last = '[0:v]';
       for (let k = 1; k < parts.length; k++) {
         const o = k === parts.length - 1 ? '[v]' : `[x${k}]`;
         fc += `${last}[${k}:v]xfade=transition=fade:duration=${F}:offset=${(cur - F).toFixed(3)}${o};`;
         cur = cur + parts[k].len - F; last = o;
       }
-      ff([...parts.flatMap((p) => ['-i', p.out]), '-filter_complex', fc.slice(0, -1), '-map', '[v]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', video]);
+      execFileSync(FF, ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', fc.slice(0, -1), '-map', '[v]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', video]);
     }
-    const vdur = probe(video);
-    const audio = path.join(this.dir, 'audio.m4a'); // each clip at its cue start, loudness -16 LUFS
+    const vdur = Number(execFileSync(FP, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', video], { encoding: 'utf8' }));
+    // narration: each clip at its line start; normalised to -16 LUFS
+    const audio = path.join(this.dir, 'audio.m4a');
+    const ain = this.audio.flatMap((a) => ['-i', a.file]);
     const af = this.audio.map((a, k) => `[${k}:a]adelay=${Math.round(a.t * 1000)}:all=1[a${k}]`).join(';') +
       `;${this.audio.map((_, k) => `[a${k}]`).join('')}amix=inputs=${this.audio.length}:normalize=0,apad,atrim=0:${vdur.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11[a]`;
-    ff([...this.audio.flatMap((a) => ['-i', a.file]), '-filter_complex', af, '-map', '[a]', '-ar', '48000', '-c:a', 'aac', '-b:a', '96k', audio]);
+    execFileSync(FF, ['-y', '-loglevel', 'error', ...ain, '-filter_complex', af, '-map', '[a]', '-ar', '48000', '-c:a', 'aac', '-b:a', '96k', audio]);
     const srt = path.join(OUT, `${this.name}.srt`);
     fs.writeFileSync(srt, this.cues.map((c, i) => `${i + 1}\n${srtTime(c.start)} --> ${srtTime(c.end)}\n${c.text}\n`).join('\n'));
     const meta = path.join(OUT, `${this.name}.chapters.txt`);
@@ -293,11 +307,11 @@ class Rec {
     });
     fs.writeFileSync(meta, m);
     const final = path.join(OUT, `${this.name}.mp4`);
-    const enc = (crf) => ff(['-i', video, '-i', audio, '-i', srt, '-i', meta, '-map', '0:v', '-map', '1:a', '-map', '2:s', '-map_metadata', '3', '-map_chapters', '3',
+    const enc = (crf) => execFileSync(FF, ['-y', '-loglevel', 'error', '-i', video, '-i', audio, '-i', srt, '-i', meta, '-map', '0:v', '-map', '1:a', '-map', '2:s', '-map_metadata', '3', '-map_chapters', '3',
       '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-tune', 'stillimage', '-pix_fmt', 'yuv420p', '-maxrate', '2200k', '-bufsize', '4400k',
       '-c:a', 'copy', '-c:s', 'mov_text', '-metadata:s:s:0', 'language=eng', '-metadata:s:a:0', 'language=eng', '-movflags', '+faststart', final]);
     let crf = 23; enc(crf);
-    while (fs.statSync(final).size > MAX && crf < 33) { crf += 2; enc(crf); }
+    while (fs.statSync(final).size > 9 * 1024 * 1024 && crf < 33) { crf += 2; enc(crf); }
     return { final, duration: vdur, size: fs.statSync(final).size, crf, segments: parts.length, cues: this.cues.length };
   }
 }
