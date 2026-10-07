@@ -28,6 +28,8 @@ export const usersSelector = {
   bulkUploadDrawerTitle: '[data-cy="bulk-upload-drawer-title"]',
   buttonDownloadEmptyTemplate: '[data-cy="button-download-empty-template"]',
   buttonDownloadCurrentUsers: '[data-cy="button-download-current-users"]',
+  bulkUploadDropzone: '[data-cy="bulk-upload-dropzone"]',
+  buttonReadDocs: '[data-cy="button-read-docs"]',
   fullNameError: '[data-cy="error-message-fullname"]',
   emailError: '[data-cy="error-message-email"]',
   pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
