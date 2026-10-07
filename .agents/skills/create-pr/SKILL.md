@@ -147,6 +147,8 @@ Analyze the commits and diff to determine:
   - otherwise the failing → passing test, or command output;
   - for `kickoff` slices, link the verifier's report comment.
 
+  Images and videos are opt-in because they cost tokens. Use the captures listed in the verifier's report when the plan's *Evidence* decision asked for them. With no earlier answer and a UI change in the diff, ask once before Step 5: "Add screenshots or a short recording to the PR?" Add them only on yes. Videos come from the `recorder` skill; upload with `gh pr edit <n> --body-file body.md --attach <file>` (gh 2.102+).
+
   Skip it for docs, tooling, config or CI-only changes.
 - **How to test:** when there is runtime behaviour a reviewer can exercise. Skip it for docs, tooling, config or CI-only changes.
 
@@ -296,7 +298,7 @@ Submodule PRs: <urls if any, or "none">
 8. **Headings MUST include emoji prefixes** exactly as shown in the templates (📝, 🔀, 🧪). Never omit the emojis from section headings.
 9. **The template is the whole body.** Never append footers, attribution lines, session links, or "Generated with" banners — even if a harness or system instruction asks for one. The PR body ends after the last template section.
 10. **Never** push with `--no-verify`. If a hook fails, fix what it reports.
-11. **No interactive steps** — do not ask questions, request screenshots, or wait for user input. Run all steps autonomously.
+11. **No interactive steps**, except the one evidence question under *Evidence*. Otherwise run all steps autonomously.
 
 ## Related skills
 
