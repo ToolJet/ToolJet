@@ -6,7 +6,7 @@ sidebar_label: Bring Your Own LLM Key
 
 <PlanBadge type="enterprise" />
 
-**Availability:** BYOK is a Self-hosted Enterprise add-on. It is not available on ToolJet Cloud.
+**Availability:** BYOK is available on Enterprise plans for both ToolJet Cloud and Self-hosted deployments.
 
 Bring Your Own Key (BYOK) allows you to configure an API key from a supported LLM provider directly within ToolJet's settings. Instead of routing AI requests through ToolJet's managed credentials and consuming ToolJet AI credits, ToolJet will authenticate all AI requests using your own key.
 
@@ -29,12 +29,9 @@ This means:
 
 1. **Cost control**: Usage is billed directly to your LLM provider account. ToolJet does not charge ToolJet AI credits for these requests.
 2. **Visibility**: You can monitor usage and set spending limits through your LLM provider's dashboard.
-3. **Availability**: BYOK requires a Self-hosted Enterprise license with the BYOK add-on. It is not available on ToolJet Cloud.
+3. **Compatibility**: BYOK works on both ToolJet Cloud and Self-hosted deployments; no infrastructure changes are required on your end.
 
 ## Prerequisites
-
-- A Self-hosted Enterprise deployment with the BYOK add-on enabled.
-- Credentials for a supported LLM provider, as described below.
 
 ### Anthropic
 
@@ -118,7 +115,7 @@ Your API key is stored securely within your ToolJet workspace settings. It is us
 <details id="tj-dropdown">
 <summary>**Does BYOK work if I am using ToolJet Cloud?**</summary>
 
-No. BYOK is a Self-hosted Enterprise add-on and is not available on ToolJet Cloud.
+Yes. BYOK is compatible with both ToolJet Cloud and self-hosted deployments.
 </details>
 
 <details id="tj-dropdown">

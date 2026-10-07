@@ -39,4 +39,4 @@ With this setup, each user can pick which LLM provider powers their own AI chats
 
 ## Switching to a Different Setup
 
-BYOK is not available on ToolJet Cloud. To use your own LLM provider API key for AI app building, evaluate a Self-hosted Enterprise deployment with the [BYOK add-on](/docs/setup/tooljet-ai/bring-your-own-key).
+On ToolJet Cloud Enterprise, you can use your own LLM API key so usage is billed directly by your provider instead of consuming ToolJet AI credits. See [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
