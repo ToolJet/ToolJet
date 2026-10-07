@@ -69,11 +69,6 @@ function gatewayFor(ownerPath: string, pool: { monthly: number; addon: number },
 const sessionFor = async (user: User, organizationId: string) =>
   (await buildTestSession(user, organizationId)).tokenCookie;
 
-const activeRuns = async (userId: string) =>
-  Number(
-    (await getDefaultDataSource().query('SELECT count(*) FROM ai_active_runs WHERE user_id = $1', [userId]))[0].count
-  );
-
 async function conversationFor(app: INestApplication, user: User, type: 'generate' | 'learn') {
   const aiApp = await createApplication(app, { name: `ai-${uuidv4().slice(0, 8)}`, user });
   const id = uuidv4();
@@ -189,11 +184,19 @@ describe('AI credit enforcement', () => {
         ).statusCode
       ).toBe(200);
 
-    /** Agent calls end at the agent boundary so routes that proceed finish quickly. */
+    /** Agent calls end at the agent boundary so routes that proceed finish quickly; run starts are watched. */
     const stubAgents = () => {
       const util = routeUtil(app);
       jest.spyOn(util, 'callAgentLegacy').mockResolvedValue([null, { assignments: [], newFolders: [], code: '' }]);
       jest.spyOn(util, 'callAgent').mockResolvedValue([new Error('agent stubbed'), null]);
+      jest.spyOn(util, 'beginActiveRun');
+      jest.spyOn(util, 'withActiveRun');
+    };
+
+    /** A refused action never starts a run (runs delete themselves, so a row count can't prove this). */
+    const expectNoRunStarted = () => {
+      expect(routeUtil(app).beginActiveRun).not.toHaveBeenCalled();
+      expect(routeUtil(app).withActiveRun).not.toHaveBeenCalled();
     };
 
     describe('AC1: a builder at their limit is refused on every route with no active run', () => {
@@ -249,7 +252,7 @@ describe('AI credit enforcement', () => {
           expect(res.statusCode).toBe(402);
           expect(res.body.code).toBe('credit_limit_reached');
         }
-        expect(await activeRuns(s.builder.id)).toBe(0);
+        expectNoRunStarted();
         expect(routeUtil(app).callAgentLegacy).not.toHaveBeenCalled();
       });
     });
@@ -297,9 +300,41 @@ describe('AI credit enforcement', () => {
         expect(sseRefusal(message.text)).toBe('pool_empty');
         expect(autosort.statusCode).toBe(402);
         expect(autosort.body.code).toBe('pool_empty');
-        expect(await activeRuns(s.builder.id)).toBe(0);
+        expectNoRunStarted();
       }
     );
+
+    it('balance read fails: SSE routes persist a balance_unavailable message, HTTP routes return 503', async () => {
+      const s = await seed('ac6r');
+      stubAgents();
+      stubGateway({});
+
+      const message = await post(s.asBuilder, 'conversation/message', {
+        conversationId: await conversationFor(app, s.builder, 'generate'),
+        content: 'build me an app',
+      });
+      const autosort = await post(s.asBuilder, 'autosort', {
+        queries: [{ id: uuidv4(), name: 'q', kind: 'restapi' }],
+        folders: [],
+      });
+
+      expect(sseRefusal(message.text)).toBe('balance_unavailable');
+      expect(message.text).not.toContain('event: error');
+      expect(autosort.statusCode).toBe(503);
+      expect(autosort.body.code).toBe('balance_unavailable');
+      expectNoRunStarted();
+    });
+
+    it('fix-with-ai has no floor of its own: 2 credits left is not a credits refusal', async () => {
+      const s = await seed('fx2c');
+      stubAgents();
+      stubGateway(gatewayFor(s.owner, { monthly: 2, addon: 0 }));
+
+      const res = await post(s.asBuilder, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' });
+
+      expect(res.statusCode).not.toBe(402);
+      expect(routeUtil(app).withActiveRun).toHaveBeenCalled();
+    });
 
     it('AC4: limits off, a builder over the default proceeds while the pool has credits', async () => {
       const s = await seed('ac4e');

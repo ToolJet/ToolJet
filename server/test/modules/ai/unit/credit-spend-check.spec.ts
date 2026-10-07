@@ -7,14 +7,15 @@ import { User } from '@entities/user.entity';
 import { AiController } from '@ee/ai/controller';
 import { AiService } from '@ee/ai/service';
 import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
+import * as creditLimits from '@ee/ai/services/credit-limits';
 
 const GATEWAY = 'http://gateway.test';
 const wallet = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
 
-/** Gateway stub: balance answers or fails; usage hangs forever when asked to. */
+/** Gateway stub: balance answers, fails or hangs; usage hangs forever when asked to. */
 function stubGateway(
   owner: string,
-  opts: { balance: 'ok' | 'down'; usage: 'ok' | 'hang'; spend?: number; userId?: string }
+  opts: { balance: 'ok' | 'down' | 'hang'; usage: 'ok' | 'hang'; spend?: number; userId?: string }
 ) {
   const realFetch = global.fetch;
   return jest.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
@@ -25,6 +26,7 @@ function stubGateway(
     const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
     if (path === `${owner}/balance`) {
       if (opts.balance === 'down') throw new TypeError('fetch failed');
+      if (opts.balance === 'hang') return new Promise<Response>(() => undefined);
       return json({ balance: 1000 - spent, remaining: wallet(1000 - spent), expiry: {}, cycleStart: null });
     }
     if (path === `${owner}/usage`) {
@@ -40,16 +42,28 @@ function stubGateway(
 const routeServices = (app: INestApplication) =>
   app.get(AiController) as unknown as { aiService: AiService; builderUsageService: BuilderUsageService };
 
+const setBudget = (app: INestApplication, ms: number) =>
+  ((routeServices(app).builderUsageService as unknown as { spendCheckTimeoutMs: number }).spendCheckTimeoutMs = ms);
+
 /** @group ai */
 describe('AI spend check (AC6)', () => {
   let app: INestApplication;
+  let budget: number;
   const previous = { gateway: process.env.TJ_AI_GATEWAY_URL, features: process.env.ENABLE_AI_FEATURES };
+  // The fail-open counter is created once and cached, so every test shares one fake.
+  const add = jest.fn();
 
   beforeAll(async () => {
     process.env.TJ_AI_GATEWAY_URL = GATEWAY;
     process.env.ENABLE_AI_FEATURES = 'true';
     ({ app } = await initTestApp({ edition: 'cloud', plan: 'enterprise' }));
     process.env.TOOLJET_EDITION = 'cloud';
+    budget = (routeServices(app).builderUsageService as unknown as { spendCheckTimeoutMs: number }).spendCheckTimeoutMs;
+  });
+
+  beforeEach(() => {
+    add.mockClear();
+    jest.spyOn(metrics, 'getMeter').mockReturnValue({ createCounter: () => ({ add }) } as unknown as Meter);
   });
 
   afterAll(async () => {
@@ -60,6 +74,7 @@ describe('AI spend check (AC6)', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    setBudget(app, budget);
   });
 
   /** Admin + 1 builder share a 1,000 pool: limit 500 each. */
@@ -99,9 +114,7 @@ describe('AI spend check (AC6)', () => {
   it('usage read times out: the action proceeds and the fail-open metric increments', async () => {
     const { user, owner } = await seedWithLimitsOn('ac6t');
     stubGateway(owner, { balance: 'ok', usage: 'hang' });
-    const add = jest.fn();
-    jest.spyOn(metrics, 'getMeter').mockReturnValue({ createCounter: () => ({ add }) } as unknown as Meter);
-    (routeServices(app).builderUsageService as unknown as { usageReadTimeoutMs: number }).usageReadTimeoutMs = 50;
+    setBudget(app, 50);
 
     await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBeNull();
     expect(add).toHaveBeenCalledWith(1);
@@ -110,17 +123,38 @@ describe('AI spend check (AC6)', () => {
   it('usage read answers in time: a builder at the limit is refused, no metric', async () => {
     const { user, owner } = await seedWithLimitsOn('ac6l');
     stubGateway(owner, { balance: 'ok', usage: 'ok', spend: 500, userId: user.id });
-    const add = jest.fn();
-    jest.spyOn(metrics, 'getMeter').mockReturnValue({ createCounter: () => ({ add }) } as unknown as Meter);
 
     await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBe('credit_limit_reached');
     expect(add).not.toHaveBeenCalled();
   });
 
-  it('balance read fails: the action is refused', async () => {
+  it('limits read fails: the action proceeds and the fail-open metric increments', async () => {
+    const { user, owner } = await seedWithLimitsOn('ac6s');
+    stubGateway(owner, { balance: 'ok', usage: 'ok', spend: 500, userId: user.id });
+    jest.spyOn(creditLimits, 'loadScopeLimits').mockRejectedValue(new Error('db down'));
+
+    await expect(routeServices(app).aiService.checkSpend(user)).resolves.toBeNull();
+    expect(add).toHaveBeenCalledWith(1);
+  });
+
+  it('balance read fails: the action is refused with 503', async () => {
     const { user, owner } = await seedWithLimitsOn('ac6b');
     stubGateway(owner, { balance: 'down', usage: 'ok' });
 
-    await expect(routeServices(app).aiService.checkSpend(user)).rejects.toThrow();
+    await expect(routeServices(app).aiService.checkSpend(user)).rejects.toMatchObject({
+      status: 503,
+      code: 'balance_unavailable',
+    });
   });
+
+  it('balance read hangs: refused with 503 within the budget', async () => {
+    const { user, owner } = await seedWithLimitsOn('ac6h');
+    stubGateway(owner, { balance: 'hang', usage: 'ok' });
+    setBudget(app, 50);
+
+    await expect(routeServices(app).aiService.checkSpend(user)).rejects.toMatchObject({
+      status: 503,
+      code: 'balance_unavailable',
+    });
+  }, 3_000);
 });
