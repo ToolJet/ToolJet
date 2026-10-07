@@ -187,8 +187,12 @@ function inferWidgetFromTestPath(relative, widgets) {
   );
 }
 
+function stripFrontend(relative) {
+  return relative.replace(/^frontend\//, '');
+}
+
 function isWidgetProductionPath(relative, widget, definitionPath) {
-  const normalizedPath = relative.replace(/^frontend\//, '');
+  const normalizedPath = stripFrontend(relative);
   if (normalizedPath === definitionPath) return true;
   if (!normalizedPath.startsWith('src/AppBuilder/Widgets/') || /\/(?:__tests__|test)\//.test(normalizedPath)) {
     return false;
@@ -413,31 +417,18 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], desig
     const scenarioIds = new Set();
     const scenariosById = new Map(contract.scenarios.map((scenario) => [scenario.id, scenario]));
     const decisionsById = new Map(contract.decisions.map((decision) => [decision.id, decision]));
-    const specGated =
-      SPEC_GATED_STATUSES.has(widget.status) || SPEC_GATED_STATUSES.has(contract.metadata.contract_status);
-    const approved =
-      APPROVED_CONTRACT_STATUSES.has(widget.status) &&
-      APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status);
+    // widget-testing-manifest.json is the single source for a contract's status and its
+    // component type. The contract file used to restate both, which bought nothing but a
+    // pair of rules policing the copies and an OR/AND split here to cope with them
+    // disagreeing.
+    const specGated = SPEC_GATED_STATUSES.has(widget.status);
+    const approved = APPROVED_CONTRACT_STATUSES.has(widget.status);
     const taggedSpecs = specs.filter(({ source }) => source.includes(`[${widget.componentType}-`));
 
-    if (contract.metadata.component_type !== widget.componentType) {
-      errors.push(`${widget.componentType}: contract component_type does not match the manifest`);
-    }
     if (contract.metadata.baseline !== manifest.baseline) {
       errors.push(`${widget.componentType}: contract baseline does not match the manifest`);
     }
-    if (!CONTRACT_STATUSES.has(contract.metadata.contract_status)) {
-      errors.push(`${widget.componentType}: unknown contract_status ${contract.metadata.contract_status}`);
-    }
-    if (contract.metadata.contract_status !== widget.status) {
-      errors.push(
-        `${widget.componentType}: contract_status ${contract.metadata.contract_status} does not match manifest status ${widget.status}`
-      );
-    }
-    const needsApproval =
-      APPROVED_CONTRACT_STATUSES.has(widget.status) ||
-      APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status);
-    if (needsApproval) {
+    if (approved) {
       for (const field of ['product_approval', 'test_design_approval']) {
         if (!contract.metadata[field])
           errors.push(`${widget.componentType}: ${widget.status} contract requires ${field}`);
@@ -467,17 +458,31 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], desig
         `${widget.componentType}: ${widget.status} contract requires production_changes to be forbidden or allowed`
       );
     }
+    const definitionPath = registeredByType.get(widget.componentType)?.definition;
+    const changedProduction = changedFiles.filter((changedFile) =>
+      isWidgetProductionPath(changedFile.path, widget, definitionPath)
+    );
     if (contract.metadata.production_changes === 'forbidden') {
-      const definitionPath = registeredByType.get(widget.componentType)?.definition;
-      for (const changedFile of changedFiles) {
-        if (isWidgetProductionPath(changedFile.path, widget, definitionPath)) {
-          scopeErrors.push(
-            `${widget.componentType}: production_changes is forbidden but ${changedFile.path.replace(
-              /^frontend\//,
-              ''
-            )} was ${changedFile.status}`
-          );
-        }
+      for (const changedFile of changedProduction) {
+        scopeErrors.push(
+          `${widget.componentType}: production_changes is forbidden but ${stripFrontend(changedFile.path)} was ${
+            changedFile.status
+          }`
+        );
+      }
+    } else if (approved && changedProduction.length) {
+      // A behavior change that adds no registered surface key slips past every other rule in this
+      // file: the disposition table is already complete and every scenario still has its test. The
+      // contract then keeps asserting behavior the fix already changed — which is how deferred
+      // scenarios go stale. Requiring the contract in the same change forces a human to look; it
+      // does not judge what they wrote.
+      const contractChanged = changedFiles.some((changedFile) => stripFrontend(changedFile.path) === widget.contract);
+      if (!contractChanged) {
+        scopeErrors.push(
+          `${widget.componentType}: ${stripFrontend(changedProduction[0].path)} changed but ${
+            widget.contract
+          } was not updated in the same change — record the behavior change and re-check deferred scenarios`
+        );
       }
     }
 
@@ -563,11 +568,7 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], desig
           `${widget.componentType}: ${scenario.id} is still ${scenario.fields.status} in a ${widget.status} contract`
         );
       }
-      if (
-        IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status) &&
-        (!APPROVED_CONTRACT_STATUSES.has(widget.status) ||
-          !APPROVED_CONTRACT_STATUSES.has(contract.metadata.contract_status))
-      ) {
+      if (IMPLEMENTED_SCENARIO_STATUSES.has(scenario.fields.status) && !approved) {
         errors.push(
           `${widget.componentType}: ${scenario.id} is ${scenario.fields.status} before approval (TDD before approval)`
         );
