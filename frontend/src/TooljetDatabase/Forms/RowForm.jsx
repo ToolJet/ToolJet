@@ -1,8 +1,9 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { postgresErrorCode, renderDatatypeIcon } from '../constants';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -17,7 +18,6 @@ import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDataba
 import { getLocalTimeZone, getUTCOffset } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
-import _ from 'lodash';
 
 const compareValueInObject = (currentValue, defaultValue) => {
   try {
@@ -30,7 +30,7 @@ const compareValueInObject = (currentValue, defaultValue) => {
     }
 
     // Step 2: Use Lodash's isEqual for a deep comparison
-    return _.isEqual(cv, defaultVal);
+    return isEqual(cv, defaultVal);
   } catch (error) {
     return false;
   }
@@ -52,8 +52,7 @@ const RowForm = ({
   shouldResetRowForm,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } = useTooljetDatabaseContext();
   const inputRefs = useRef({});
   const primaryKeyColumns = [];
   const nonPrimaryKeyColumns = [];

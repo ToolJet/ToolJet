@@ -6,7 +6,8 @@ const { validateWidgetTestingContracts } = require('../widgetContractValidator')
 
 const temporaryRoots = [];
 const SPEC = 'src/AppBuilder/Widgets/DropdownV2/__tests__/integration/DropdownV2.spec.jsx';
-const DEFINITION = 'src/AppBuilder/WidgetManager/widgets/dropdownV2.js';
+// Repo-relative: definitions live in packages/, next to frontend/.
+const DEFINITION = 'packages/widget-definitions/src/widgets/dropdownV2.js';
 
 function write(root, relative, contents) {
   const absolute = path.join(root, relative);
@@ -74,11 +75,12 @@ ${decisions}
 }
 
 function createFixture(overrides = {}) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'widget-contract-validator-'));
-  temporaryRoots.push(root);
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'widget-contract-validator-'));
+  temporaryRoots.push(repo);
+  const root = path.join(repo, 'frontend');
   write(root, 'src/AppBuilder/WidgetManager/configs/widgetConfig.js', `export const widgets = [dropdownV2Config];\n`);
   write(
-    root,
+    repo,
     DEFINITION,
     `export const dropdownV2Config = {\n  component: 'DropdownV2',\n  properties: {\n    options: {},\n  },\n  styles: {\n    textColor: {},\n  },\n};\n`
   );
@@ -147,9 +149,10 @@ function cliFixture() {
     `module.exports = require(${JSON.stringify(require.resolve('../widgetContractValidator'))});`
   );
   write(root, 'src/AppBuilder/Widgets/DropdownV2/DropdownV2.jsx', 'export const value = 1;\n');
-  git(root, 'init', '-q');
-  git(root, 'add', '.');
-  git(root, 'commit', '-qm', 'fixture');
+  const repo = path.dirname(root);
+  git(repo, 'init', '-q');
+  git(repo, 'add', '.');
+  git(repo, 'commit', '-qm', 'fixture');
   return root;
 }
 
@@ -186,6 +189,16 @@ describe('widget testing contract command', () => {
     const result = cli(root);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`production_changes is forbidden but ${target} was`);
+  });
+
+  test.each(['unstaged', 'staged'])('checks %s changes to the shared widget definition', (state) => {
+    const root = cliFixture();
+    const repo = path.dirname(root);
+    write(repo, DEFINITION, `export const dropdownV2Config = {\n  component: 'DropdownV2',\n  properties: {},\n};\n`);
+    if (state === 'staged') git(repo, 'add', DEFINITION);
+    const result = cli(root);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`production_changes is forbidden but ${DEFINITION} was modified`);
   });
 
   test('checks committed changes against an explicit base and counts deletion in renames', () => {
@@ -279,7 +292,7 @@ describe('widget testing contract command', () => {
     ]) {
       expect(cli(root, [...modeArgs, ...args]).status).toBe(1);
     }
-    fs.rmSync(path.join(root, '.git'), { recursive: true });
+    fs.rmSync(path.join(path.dirname(root), '.git'), { recursive: true });
     const result = cli(root, modeArgs);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('Git change discovery failed');
@@ -534,7 +547,7 @@ describe('widget testing contract validator', () => {
     ).toContain(`Modified widget test ${SPEC} requires an approved DropdownV2 contract`);
     expect(
       run(unapproved, {
-        changedFiles: [{ status: 'added', path: `frontend/${DEFINITION}` }],
+        changedFiles: [{ status: 'added', path: DEFINITION }],
       }).errors
     ).toContain('New widget DropdownV2 requires an approved testing contract');
     expect(run({}, { changedFiles: [{ status: 'modified', path: `frontend/${SPEC}` }] }).errors).toEqual([]);

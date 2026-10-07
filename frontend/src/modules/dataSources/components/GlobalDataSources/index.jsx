@@ -19,7 +19,7 @@ import { SegregatedList } from '../SegregatedList';
 import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { BreadCrumbContext } from '@/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';

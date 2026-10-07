@@ -12,7 +12,10 @@ export interface IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ): Promise<ValidateAppAccessResponseDto>;
-  validateReleasedApp(ability: any, app: App): { id: string; slug: string };
+  validateReleasedApp(
+    ability: any,
+    app: App
+  ): Promise<{ id: string; slug: string; currentVersionId: string; appDataRevision: string | null }>;
   update(app: App, appUpdateDto: AppUpdateDto, user: User): Promise<any>;
   delete(app: App, user: User): Promise<void>;
   getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any>;

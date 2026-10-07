@@ -511,7 +511,7 @@ describe('ModalV2: component-specific actions', () => {
     renderModal();
     await waitFor(() => expect(triggerButton()).toBeInTheDocument());
 
-    // Exactly the `actions` list in WidgetManager/widgets/modalV2.js.
+    // Exactly the `actions` list in packages/widget-definitions/src/widgets/modalV2.js.
     for (const handle of ['open', 'close', 'setVisibility', 'setDisableTrigger', 'setDisableModal', 'setLoading']) {
       await waitFor(() => expect(typeof exposed(handle)).toBe('function'));
     }

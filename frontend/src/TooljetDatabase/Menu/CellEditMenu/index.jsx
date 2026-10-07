@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -12,7 +12,7 @@ import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
-import { TooljetDatabaseContext } from '@/TooljetDatabase';
+import { useTooljetDatabaseContext } from '@/TooljetDatabase/TooljetDatabaseContext';
 import { getLocalTimeZone } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { CellHinterWrapper } from './CellHinterWrapper';
 
@@ -51,7 +51,7 @@ export const CellEditMenu = ({
     label: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
   });
 
-  const { getConfigurationProperty } = useContext(TooljetDatabaseContext);
+  const { getConfigurationProperty } = useTooljetDatabaseContext();
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {

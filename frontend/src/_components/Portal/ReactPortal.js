@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 
 export function ReactPortal({ children, parent, className, componentName }) {
   // Must attach here, not in the effect below: react-rnd measures itself on mount, and a detached node reads every rect as 0.
@@ -23,5 +23,5 @@ export function ReactPortal({ children, parent, className, componentName }) {
     };
   }, [el, parent, className, componentName]);
 
-  return ReactDOM.createPortal(children, el);
+  return createPortal(children, el);
 }

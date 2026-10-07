@@ -120,12 +120,12 @@ export const updateFormFieldComponent = (updatedField, currentField, parentId, n
 
   // Update mandatory status
   if (updatedField.mandatory !== currentField.mandatory) {
-    set(updatedComponent.component.definition.validation, 'mandatory', updatedField.mandatory);
+    set(updatedComponent.component.definition.validation, 'mandatory.value', updatedField.mandatory);
   }
 
   // Update visibility status
   if (updatedField.visibility !== currentField.visibility) {
-    set(updatedComponent.component.definition.properties, 'visibility', updatedField.visibility);
+    set(updatedComponent.component.definition.properties, 'visibility.value', updatedField.visibility);
   }
 
   // Update component type specific properties

@@ -1,17 +1,16 @@
-import React, { useContext } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { operators } from '@/TooljetDatabase/constants';
+import React from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
+import { operators } from '@/_helpers/constants';
 import { v4 as uuidv4 } from 'uuid';
-import _, { isEmpty } from 'lodash';
+import { isEmpty, isObject } from 'lodash';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
-import cx from 'classnames';
 
 export const UpdateRows = React.memo(({ darkMode }) => {
-  const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
+  const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useToolJetDbOperationsContext();
 
   function handleColumnOptionChange(columnOptions) {
     handleUpdateRowsOptionsChange('columns', columnOptions);
@@ -237,7 +236,7 @@ const RenderColumnOptions = ({
   removeColumnOptionsPair,
 }) => {
   const filteredColumns = columns.filter(({ column_default }) =>
-    _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
+    isObject(column_default) ? true : !column_default?.startsWith('nextval(')
   );
 
   const existingColumnOptions = Object.values(updateRowsOptions?.columns).map(({ column }) => column);

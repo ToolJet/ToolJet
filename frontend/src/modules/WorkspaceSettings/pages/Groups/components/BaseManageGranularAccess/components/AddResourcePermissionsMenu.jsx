@@ -2,7 +2,7 @@ import React from 'react';
 import '../../../resources/styles/group-permissions.styles.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { RESOURCE_TYPE } from '../../../index';
+import { RESOURCE_TYPE } from '../../../constants';
 
 function AddResourcePermissionsMenu({
   openAddPermissionModal,

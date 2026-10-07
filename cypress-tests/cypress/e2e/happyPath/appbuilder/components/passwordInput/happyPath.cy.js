@@ -22,7 +22,7 @@ import { passwordInputText } from "Texts/appBuilder/components/passwordInput";
 // already-green datePickerHappyPath rewrite.
 //
 // Surface source of truth:
-//   frontend/src/AppBuilder/WidgetManager/widgets/passwordInput.js (passinputConfig)
+//   packages/widget-definitions/src/widgets/passwordInput.js (passinputConfig)
 //   frontend/src/AppBuilder/Widgets/PasswordInput.jsx
 //   frontend/src/AppBuilder/Widgets/BaseComponents/BaseInput.jsx
 //

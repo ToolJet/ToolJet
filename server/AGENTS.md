@@ -75,9 +75,9 @@ modules/{feature}/
 - **Enum `ADD VALUE` + same-deploy use (conditional atomicity):** PostgreSQL forbids using an enum value in the transaction that added it via `ALTER TYPE ... ADD VALUE` (55P04) — with **no** exemption for a type created in that same transaction (verified on PG 13). So "add a value in a schema migration, read/write it in a data migration" cannot be one transaction. `run-all-migrations.ts` reconciles this: `planEnumAdditions` scans pending schema migrations for `ALTER TYPE ... ADD VALUE` and checks whether each target type already exists. (a) All target types exist (**upgrade**) → pre-commit those values on a separate connection *before* the shared transaction, then run schema+data atomically. (b) Any target type does **not** exist yet — fresh install / `db:reset`, or a brand-new enum type introduced this run → fall back to two separate transactions (schema commits, then data), the enum-safe ordering; atomicity is lost only for that run (a fresh DB has no data to protect, and PG offers no atomic alternative). Keep new enum additions as literal `ALTER TYPE ... ADD VALUE IF NOT EXISTS '<value>'` SQL so the scanner finds them and the migration's own statement no-ops after pre-commit. Extraction logic + test: `src/migration-helpers/enum-value-additions.ts`, `test/modules/migrations/unit/enum-value-additions.spec.ts`.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
-### Widget config sync (CRITICAL)
+### Widget config (CRITICAL)
 
-Server widget config (`src/modules/apps/services/widget-config/`) and frontend config (`frontend/src/AppBuilder/WidgetManager/widgets/`) must change together. If a config change moves, renames, or removes a key, write a migration.
+Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write a migration.
 
 ### Security
 
