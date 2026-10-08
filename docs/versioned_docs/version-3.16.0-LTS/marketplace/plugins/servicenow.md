@@ -39,6 +39,15 @@ To connect to your ServiceNow instance, the following details are required:
 To use OAuth 2.0, create an **Application Registry** in ServiceNow (**System OAuth > Application Registry > New > Create an OAuth API endpoint for external clients**) and set its **Redirect URL** to the callback URL shown on ToolJet's data source configuration page.
 :::
 
+:::info OAuth authorization modes
+When **Authentication required for all users** is available in your OAuth 2.0 authorization-code configuration, it controls whose ServiceNow token is used:
+
+- **Enabled**: Each signed-in app user completes ServiceNow OAuth authorization when they first run a query that requires it. ToolJet stores and selects that user's token for the data source.
+- **Disabled**: Queries use the token authorized for the shared connection, which can represent a different account from the signed-in ToolJet user.
+
+Basic auth uses the configured ServiceNow username and password. ServiceNow applies the permissions of the account represented by the credentials or token. Signing in to ToolJet does not, by itself, change that ServiceNow identity.
+:::
+
 ### Optional settings
 
 These fields are only required if you plan to use the workflow-related operations:
