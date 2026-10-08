@@ -1753,11 +1753,13 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       // Live getters so that after an `await` (e.g. `await components.modal1.open()`)
-      // each component reflects the current store, including children mounted meanwhile.
+      // each component reflects the current store, including actions of children mounted meanwhile.
       // Falls back to the start-of-run value if the component is no longer in the store.
+      // Keys are only the components that had a value at the start of the run, so loops over
+      // `components` don't hit undefined entries (e.g. children of a collapsed Table row).
       const componentNameIdMapping = get().modules[moduleId]?.componentNameIdMapping ?? {};
       const componentsInResolvedState = {};
-      for (const name of new Set([...Object.keys(resolvedState.components), ...Object.keys(componentNameIdMapping)])) {
+      for (const name of Object.keys(resolvedState.components)) {
         const componentId = componentNameIdMapping[name];
         Object.defineProperty(componentsInResolvedState, name, {
           get: () =>

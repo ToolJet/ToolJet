@@ -126,6 +126,26 @@ describe('RunJS components', () => {
     expect(result).toEqual({ status: 'ok', data: ['before', 'after'] });
   });
 
+  test('looping over `components` skips components that have no value yet (e.g. in a collapsed Table row)', async () => {
+    const rowChild = componentDefinition('rowtext1', 'rowtext1', 'Text');
+    rowChild.component.parent = 'table1';
+    seedApp(
+      {
+        textinput1: componentDefinition('textinput1', 'textinput1', 'TextInput'),
+        table1: componentDefinition('table1', 'table1', 'Table'),
+        rowtext1: rowChild,
+      },
+      { moduleId: MODULE_ID }
+    );
+    state().setCurrentMode('view', MODULE_ID);
+
+    const result = await runJs(`return Object.values(components).map((c) => c.id);`);
+
+    expect(result.status).toBe('ok');
+    expect(result.data).toEqual(expect.arrayContaining(['textinput1', 'table1']));
+    expect(result.data).not.toContain('rowtext1');
+  });
+
   test('assigning into `components` does not replace a component', async () => {
     seedModalWithChild();
     mountTextInput('kept');

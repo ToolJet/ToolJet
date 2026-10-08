@@ -105,43 +105,49 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children
+  // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children.
+  // It resolves to true if the modal opened, or false if it was closed or unmounted before it finished opening.
   const pendingOpensRef = useRef([]);
   const hasEnteredRef = useRef(false);
 
-  const settleOpens = (opens) => {
+  const settleOpens = (opens, opened) => {
     if (!opens.length) return;
-    useStore.getState().flushImplicitBatchEntries();
-    opens.forEach(({ resolve, timer }) => {
-      clearTimeout(timer);
-      resolve();
-    });
+    try {
+      useStore.getState().flushImplicitBatchEntries();
+    } finally {
+      // The entries are already removed, so they must settle here even if the flush throws
+      opens.forEach(({ resolve, timer }) => {
+        clearTimeout(timer);
+        resolve(opened);
+      });
+    }
   };
 
-  const resolvePendingOpens = () => {
+  const resolvePendingOpens = (opened) => {
     const pending = pendingOpensRef.current;
     pendingOpensRef.current = [];
-    settleOpens(pending);
+    settleOpens(pending, opened);
   };
 
   // Resolves only this open, so an earlier open's timeout can't resolve a later one early
   const resolveOpen = (open) => {
     if (!pendingOpensRef.current.includes(open)) return;
     pendingOpensRef.current = pendingOpensRef.current.filter((pending) => pending !== open);
-    settleOpens([open]);
+    // Timed out while still entering: the modal is on its way open, so report it as opened
+    settleOpens([open], true);
   };
 
   const onModalEntered = () => {
     hasEnteredRef.current = true;
-    resolvePendingOpens();
+    resolvePendingOpens(true);
   };
 
   function hideModal() {
     hasEnteredRef.current = false;
-    resolvePendingOpens();
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
+    resolvePendingOpens(false);
   }
 
   function openModal() {
@@ -153,7 +159,7 @@ export const ModalV2 = function Modal({
     });
     setExposedVariable('show', true);
     if (hasEnteredRef.current) {
-      resolvePendingOpens();
+      resolvePendingOpens(true);
     } else {
       setShowModal(true);
     }
@@ -198,7 +204,7 @@ export const ModalV2 = function Modal({
   // the next page unscrollable.
   useEffect(() => {
     return () => {
-      resolvePendingOpens();
+      resolvePendingOpens(false);
       if (showModalRef.current) {
         onHideSideEffects();
       }
