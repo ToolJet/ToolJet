@@ -54,6 +54,7 @@ const widget = createWidgetHarness({
     fieldDeletionHistory: binding([]),
     dynamicHeight: binding('{{false}}'),
     showUpdateActions: binding('{{true}}'),
+    disableSaveChanges: binding('{{false}}'),
     loadingState: binding('{{false}}'),
     visibility: binding('{{true}}'),
     disabledState: binding('{{false}}'),
@@ -268,6 +269,81 @@ describe('KeyValuePair: inline editing and changeset', () => {
     await widget.act('resetChanges');
 
     await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  const REGEX_FIELDS = [field({ key: 'name', name: 'Name', fieldType: 'string', isEditable: true, regex: '^[A-Z].*' })];
+
+  test('[KeyValuePair-EDIT-013] isValid is true at idle - no changeSet entries', async () => {
+    widget.render();
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    expect(exposed('isValid')).toBe(true);
+  });
+
+  test('[KeyValuePair-EDIT-014] isValid reflects the changeSet own per-field validity', async () => {
+    widget.render({ properties: { fields: binding(REGEX_FIELDS), data: binding({ name: 'Ada Lovelace' }) } });
+    await waitFor(() => expect(rows()).toHaveLength(1));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'lowercase';
+    input.blur();
+    await waitFor(() => expect(exposed('isValid')).toBe(false));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input2 = await waitFor(() => document.getElementById(`${ID}-name`));
+    input2.textContent = 'Uppercase';
+    input2.blur();
+    await waitFor(() => expect(exposed('isValid')).toBe(true));
+  });
+
+  test('[KeyValuePair-EDIT-015] disableSaveChanges disables the Save-changes button whenever the toggle is on, regardless of changeSet validity', async () => {
+    widget.render({ properties: { disableSaveChanges: binding('{{true}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    expect(saveButton()).toBeDisabled();
+  });
+
+  test('[KeyValuePair-EDIT-016] disableSaveChanges set falsy preserves the unconditional-enabled Save-changes button', async () => {
+    widget.render({ properties: { disableSaveChanges: binding('{{false}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    await waitFor(() => expect(saveButton()).toBeInTheDocument());
+    expect(saveButton()).not.toBeDisabled();
+
+    await widget.session.user.click(saveButton());
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  test('[KeyValuePair-EDIT-017] disableSaveChanges disabled-gate is independent of showUpdateActions popover-mount gate', async () => {
+    widget.render({
+      properties: { showUpdateActions: binding('{{true}}'), disableSaveChanges: binding('{{true}}') },
+    });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+
+    const button = await waitFor(() => {
+      const el = saveButton();
+      if (!el) throw new Error('save button not rendered');
+      return el;
+    });
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
   });
 });
 
