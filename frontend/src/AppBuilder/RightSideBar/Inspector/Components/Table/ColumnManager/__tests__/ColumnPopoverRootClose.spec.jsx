@@ -182,3 +182,24 @@ describe.each([
     expect(isPopoverOpen()).toBe(true);
   });
 });
+
+describe('Disabled dates placeholder', () => {
+  test('[KeyValuePair-DATE-002] hints at the date-string array format', () => {
+    const session = new AppBuilderTestSession({ scenario });
+    session.render(
+      <ValidationProperties
+        item={buildDatepickerColumn()}
+        itemType="datepicker"
+        index={0}
+        darkMode={false}
+        currentState={{}}
+        onColumnItemChange={() => {}}
+        getPopoverFieldSource={() => 'table1_column_due_date'}
+        setColumnPopoverRootCloseBlocker={() => {}}
+      />
+    );
+
+    const field = screen.getByText('Disabled dates').closest('.field');
+    expect(field.querySelector('[aria-placeholder]')).toHaveAttribute('aria-placeholder', '{{["MM/DD/YYYY"]}}');
+  });
+});
