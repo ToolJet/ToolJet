@@ -1,5 +1,5 @@
 import { APP_TYPES } from '@modules/apps/constants';
-import { FolderAccess, folderVisibilityPredicate, GitState } from './actions';
+import { FolderAccess, folderVisibilityPredicate, GitState, likePattern } from './actions';
 import { SqlParams } from './sql-params';
 
 export type ActivityColumn = 'last_viewed_at' | 'last_edited_at';
@@ -166,5 +166,43 @@ export function folderPageQuery(s: DashboardScope, folderId: string, limit: numb
     ) e
     ORDER BY ${PIN_ORDER}, ${ENTRY_ORDER}
     LIMIT ${p.add(limit)} OFFSET ${p.add(offset)}`;
+  return { sql, params: p.values };
+}
+
+// Pinned matches (by position), then folders (by rank), then apps grouped by their folder
+// (folder rank, name, id), strays last.
+function searchMatchesCte(search: string, p: SqlParams): string {
+  const pattern = p.add(likePattern(search));
+  return `matches AS (
+    SELECT ${FOLDER_COLUMNS}, 0 AS kind_order, NULL::timestamp AS group_rank, NULL::text AS group_name,
+           pins.position AS pin_position
+    FROM visible_folders vf LEFT JOIN pins ON pins.folder_id = vf.id
+    WHERE vf.name ILIKE ${pattern} ESCAPE '\\'
+    UNION ALL
+    SELECT ${APP_COLUMNS}, 1, gf.activity_at, LOWER(gf.name), pins.position
+    FROM visible_apps va
+    LEFT JOIN visible_folders gf ON gf.id = va.folder_id
+    LEFT JOIN pins ON pins.app_id = va.id
+    WHERE va.name ILIKE ${pattern} ESCAPE '\\'
+  )`;
+}
+
+export function searchPageQuery(s: DashboardScope, search: string, limit: number, offset: number): BuiltQuery {
+  const p = new SqlParams();
+  const sql = `${dashboardCtes(s, p)}, ${searchMatchesCte(search, p)}
+    SELECT *, pin_position IS NOT NULL AS pinned FROM matches
+    ORDER BY ${PIN_ORDER}, kind_order, (folder_id IS NULL), group_rank DESC NULLS LAST, group_name, folder_id, ${ENTRY_ORDER}
+    LIMIT ${p.add(limit)} OFFSET ${p.add(offset)}`;
+  return { sql, params: p.values };
+}
+
+// counts.folders / counts.apps are unpinned only; total = pinned + folders + apps.
+export function searchCountsQuery(s: DashboardScope, search: string): BuiltQuery {
+  const p = new SqlParams();
+  const sql = `${dashboardCtes(s, p)}, ${searchMatchesCte(search, p)}
+    SELECT COUNT(*) FILTER (WHERE pin_position IS NOT NULL)::int AS pinned,
+           COUNT(*) FILTER (WHERE pin_position IS NULL AND kind = 'folder')::int AS folders,
+           COUNT(*) FILTER (WHERE pin_position IS NULL AND kind = 'app')::int AS apps
+    FROM matches`;
   return { sql, params: p.values };
 }
