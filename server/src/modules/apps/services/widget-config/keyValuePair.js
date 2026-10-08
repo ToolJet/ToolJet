@@ -301,6 +301,14 @@ export const keyValuePairConfig = {
       displayName: 'Set loading',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+    {
+      handle: 'saveChanges',
+      displayName: 'Save changes',
+    },
+    {
+      handle: 'resetChanges',
+      displayName: 'Reset changes',
+    },
   ],
   definition: {
     others: {
