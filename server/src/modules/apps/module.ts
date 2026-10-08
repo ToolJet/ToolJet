@@ -30,6 +30,10 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DashboardActivityService } from './dashboard/activity.service';
 import { DashboardActivityInterceptor } from './dashboard/activity.interceptor';
+import { DashboardAppsController } from './dashboard/dashboard.controller';
+import { DashboardService } from './dashboard/dashboard.service';
+import { DataSource } from 'typeorm';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -62,6 +66,7 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
       'subscribers/apps.subscriber',
     ]);
+    const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
 
     return this.cacheModule(cacheKey, {
       module: AppsModule,
@@ -79,7 +84,7 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
       ],
-      controllers: isMainImport ? [AppsController, WorkflowController] : [],
+      controllers: isMainImport ? [AppsController, WorkflowController, DashboardAppsController] : [],
       providers: [
         AppsService,
         WorkflowService,
@@ -101,6 +106,13 @@ export class AppsModule extends SubModule {
         UserRepository,
         GroupPermissionsRepository,
         DashboardActivityService,
+        // Factory: the service is CE-only, but its deps must be the edition-resolved classes.
+        {
+          provide: DashboardService,
+          useFactory: (dataSource, abilityService, appsUtilService, gitSyncConfigsUtilService) =>
+            new DashboardService(dataSource, abilityService, appsUtilService, gitSyncConfigsUtilService),
+          inject: [DataSource, AbilityService, AppsUtilService, GitSyncConfigsUtilService],
+        },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
       exports: [AppsUtilService, AppImportExportService],
