@@ -104,7 +104,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - **Not included:** optional. Deliberate omissions or surprising decisions.
 
 **Sources:** `📎 **Sources:**` under the summary, one bullet per item with content; drop the block when empty:
-- **Issue:** `Closes #123` when fully resolved, `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR.
+- **Issue:** `Closes #123` when fully resolved, `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand in the issue's *Development* panel.
 - **PRD and design:** `PRD: [title](url)`, `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
 - **Sub-issues:** `Sub-issues: #124, #125` — numbers only (GitHub renders titles). Multiple parents: one bullet each, `Sub-issues (#123): #124, #125`. More than ~6 → wrap in `<details>`.
 
