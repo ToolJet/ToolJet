@@ -391,5 +391,19 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "Smartsheet",
+    "description": "Plugin for Smartsheet APIs - connect to sheets, rows, columns, reports, folders, workspaces, users, and more",
+    "version": "1.0.0",
+    "id": "smartsheet",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Oct 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "Spreadsheet",
+      "Project Management",
+      "Collaboration"
+    ]
   }
 ]
