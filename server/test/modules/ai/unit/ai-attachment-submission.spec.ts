@@ -122,7 +122,7 @@ describe('AI eligibility precedes attachment storage', () => {
     expect(service.aiUtilService.callAgent).not.toHaveBeenCalled();
   });
   it('cleans up a partial batch when a later upload fails', async () => {
-    service.aiConversationRepository.findOne.mockResolvedValue({ app: {} });
+    service.aiConversationRepository.findOne.mockResolvedValue({ app: { editingVersion: {} } });
     service.attachmentService.upload
       .mockResolvedValueOnce({ id: 'first-original' })
       .mockRejectedValueOnce(new Error('Synthetic storage failure'));
@@ -175,7 +175,7 @@ describe('AI eligibility precedes attachment storage', () => {
 
   it('keeps the preparation run alive and cancels an in-flight upload before saving', async () => {
     jest.useFakeTimers();
-    service.aiConversationRepository.findOne.mockResolvedValue({ app: {} });
+    service.aiConversationRepository.findOne.mockResolvedValue({ app: { editingVersion: {} } });
     service.aiUtilService.touchActiveRun = jest.fn();
     service.aiUtilService.isCancellationRequested = jest.fn().mockResolvedValue(false);
     let uploadStarted;
