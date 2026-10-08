@@ -1,11 +1,8 @@
 import { cyParamName } from "Selectors/common";
 
 export const dashboardSelector = {
-  emptyPageImage: '[data-cy="empty-home-page-image"]',
-  emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
-  emptyPageDescription: "[data-cy=empty-homepage-description]",
+  appsEmptyState: '[data-cy="apps-empty-state"]',
   createAppButton: "[data-cy=create-new-application]",
-  importAppButton: '[data-cy="button-import-an-app"]',
   chooseFromTemplate: "[data-cy=choose-from-template]",
   modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
@@ -24,7 +21,6 @@ export const dashboardSelector = {
   moveAppText: "[data-cy=move-selected-app-to-text]",
   selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
   addToFolderButton: "[data-cy=add-to-folder-button]",
-  appTemplateRow: '[data-cy="app-template-row"]',
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',

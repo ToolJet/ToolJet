@@ -149,7 +149,15 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-  if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
+  if (typeof initialValue === 'number' || typeof initialValue === 'boolean') {
+    // A code field can receive a raw scalar from a non-UI writer (MCP, REST API, app import). The editor
+    // only renders strings (the typeof guard in the effect below bails on anything else), so a raw
+    // number/boolean would otherwise render blank — coerce it to its string form so the value shows.
+    newInitialValue = String(initialValue);
+  } else if (
+    typeof initialValue === 'string' &&
+    (initialValue?.includes('components') || initialValue?.includes('queries'))
+  ) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
 

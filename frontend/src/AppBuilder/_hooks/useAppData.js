@@ -396,8 +396,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -427,15 +427,44 @@ const useAppData = (
           const taggedResources = state?.taggedResources;
           const hasTaggedResources =
             taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
-          sendMessage(state.prompt, {}, hasTaggedResources ? { taggedResources } : {}, moduleId);
+          const clearKickoffDraft = () => {
+            const {
+              prompt: _prompt,
+              taggedResources: _taggedResources,
+              attachments: _attachments,
+              kickoffAttempted: _kickoffAttempted,
+              ...restUsrState
+            } = window.history.state?.usr || {};
+            window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
+          };
+          if (state.kickoffAttempted) {
+            // A reload restores an unaccepted draft for explicit retry, never silently resubmits it.
+            useStore.setState((draft) => {
+              draft.ai.failedSubmission = {
+                conversationId: conversation.id,
+                content: state.prompt,
+                attachments: state.attachments || [],
+              };
+            });
+          } else {
+            window.history.replaceState(
+              { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
+              '',
+              window.location.href
+            );
+            sendMessage(
+              state.prompt,
+              {},
+              {
+                ...(hasTaggedResources ? { taggedResources } : {}),
+                attachments: state.attachments,
+                restoreDraftOnFailure: true,
+                onAccepted: clearKickoffDraft,
+              },
+              moduleId
+            );
+          }
           setIsQueryPaneExpanded(false);
-          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
-          const {
-            prompt: _prompt,
-            taggedResources: _taggedResources,
-            ...restUsrState
-          } = window.history.state?.usr || {};
-          window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
         if (initialLoadRef.current) {
@@ -819,8 +848,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

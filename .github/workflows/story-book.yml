@@ -1,7 +1,11 @@
 name: Render PR for Story Book
 on:
-  pull_request_target:
-    types: [labeled, unlabeled, closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "lts-3.16"
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
