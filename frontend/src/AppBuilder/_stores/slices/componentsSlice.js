@@ -110,6 +110,11 @@ const hasDynamicValue = (value) => {
 // Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
 const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
 
+// KeyValuePair field validation rules reference `cellValue`, which only exists when the field is validated,
+// so they must reach the adapter unresolved (like Table column rules) instead of collapsing to '' here.
+const isKeyValuePairFieldCustomRule = (componentType, property) =>
+  componentType === 'KeyValuePair' && /^fields\[\d+\]\.customRule$/.test(property);
+
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
 // and `.value` access fails. Spreading `{ ...state, components: scopeCtx.scoped }`
@@ -550,7 +555,10 @@ export const createComponentsSlice = (set, get) => ({
         lodashSet(
           componentResolvedValues,
           [componentId, idx, paramType, ...keys],
-          getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+          getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+            isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+            ? value
+            : resolvedValue
         );
       } else {
         componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
@@ -578,7 +586,10 @@ export const createComponentsSlice = (set, get) => ({
           lodashSet(
             componentResolvedValues,
             [componentId, paramType, ...keys],
-            getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
+            getComponentTypeFromId(componentId, moduleId) === 'Table' ||
+              isKeyValuePairFieldCustomRule(getComponentTypeFromId(componentId, moduleId), property)
+              ? value
+              : resolvedValue
           );
         } else {
           componentResolvedValues[componentId][paramType][property] = resolvedValue;
@@ -2512,11 +2523,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    set((state) => {
+    (set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } };
+      { type: 'setFocusedParentId', payload: { parentId } });
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -2785,6 +2796,7 @@ export const createComponentsSlice = (set, get) => ({
     // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
     if (hasArrayNotation(key)) {
       const keys = parsePropertyPath(key);
+      if (isKeyValuePairFieldCustomRule(getComponentTypeFromId(entityId, moduleId), key)) return;
       // Triggering a re-render of the table component if any of the dependent component is updated
       // This is done to calculate the callValues in the table component
       // Need to find a better way to handle this
@@ -3205,13 +3217,13 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
     const resolvedLabelType = labelType
-      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
+      ? (resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto')
       : undefined;
     const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
     const resolvedLegacyInputSize =
       resolvedStyleLegacyInputSize ??
       (legacyInputSizeProperty
-        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
+        ? (resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false)
         : false);
 
     const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
