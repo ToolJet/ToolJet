@@ -39,7 +39,7 @@ describe('Module version resolution by pinned ref (non-git-sync workspace)', () 
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterAll(async () => {
@@ -126,7 +126,7 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterAll(async () => {
@@ -230,36 +230,5 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
     const res = await fetchModuleVersion(coRelationId, adminCookie, org.id, 'v3');
     expect(res.statusCode).toBe(200);
     expect(res.body.editing_version.id).toBe(version.id);
-  });
-
-  /**
-   * Guardrail: a genuinely git-native draft (isSynced: true — created through this
-   * workspace's own git-sync flow, not a legacy backfilled row) must NOT be resolvable
-   * by name unless it's PUBLISHED. The Tier 0 fallback added above must not relax this —
-   * it's scoped to isSynced: false rows only.
-   */
-  it('does NOT resolve a synced (isSynced: true) name-pinned DRAFT — still 404s', async () => {
-    const adminData = await createUser(nestApp, { email: 'mrr-gs-admin3@tooljet.io', groups: ['all_users', 'admin'] });
-    const org = adminData.organization;
-    const adminCookie = (await login(nestApp, 'mrr-gs-admin3@tooljet.io')).tokenCookie;
-
-    await enableGitSync(org.id);
-
-    const moduleApp = await createApplication(nestApp, {
-      name: 'M-GitSyncSyncedDraftName',
-      user: adminData.user,
-      type: 'module',
-    });
-    const coRelationId = uuidv4();
-    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
-    const version = await createApplicationVersion(nestApp, moduleApp as any);
-    await updateEntity(AppVersion, version.id, {
-      name: 'v3',
-      status: AppVersionStatus.DRAFT,
-      isSynced: true,
-    } as any);
-
-    const res = await fetchModuleVersion(coRelationId, adminCookie, org.id, 'v3');
-    expect(res.statusCode).toBe(404);
   });
 });

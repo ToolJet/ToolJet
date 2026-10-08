@@ -1,0 +1,47 @@
+name: 🚀 Feature request
+description: Suggest an improvement or a new capability
+type: Feature
+labels: ["feature request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](../issues?q=is%3Aissue) first. For a new data source or API connector, use **Marketplace plugin request** instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who is affected and what can't they do today?
+      placeholder: As a builder, I can't ... so I have to ...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: What done looks like
+      description: Observable outcomes that show it works. One per line.
+      placeholder: |
+        Given a table with 10,000 rows, when I search, then results appear in under a second.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you use today, or other approaches.
+  - type: textarea
+    id: sources
+    attributes:
+      label: Mockups or references
+      description: Screenshots, designs, or links to similar features elsewhere.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to submit a pull request for this
