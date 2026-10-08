@@ -60,14 +60,34 @@ const runCount = async (userId: string) =>
   )[0].count;
 
 /** The credits-error message an SSE route sends when it refuses an action; null when it sent none. */
-function sseRefusal(text: string): { category: string; content: string } | null {
+function sseRefusal(
+  text: string
+): { category: string; content: string; runningApp?: { id: string; name: string } } | null {
   for (const block of text.split('\n\n')) {
     const data = block.split('\n').find((line) => line.startsWith('data: '));
     if (!block.startsWith('event: message') || !data) continue;
     const message = JSON.parse(data.slice(6));
-    if (message?.metadata?.creditsError) return { category: message.metadata.category, content: message.content };
+    if (message?.metadata?.creditsError)
+      return {
+        category: message.metadata.category,
+        content: message.content,
+        ...(message.metadata.runningApp && { runningApp: message.metadata.runningApp }),
+      };
   }
   return null;
+}
+
+/** A running action in an AI conversation of the given app. */
+async function seedRunInApp(userId: string, organizationId: string, appId: string) {
+  const conversationId = uuidv4();
+  await getDefaultDataSource().query(
+    'INSERT INTO ai_conversations (id, app_id, user_id, conversation_type) VALUES ($1, $2, $3, $4)',
+    [conversationId, appId, userId, 'generate']
+  );
+  await getDefaultDataSource().query(
+    'INSERT INTO ai_active_runs (user_id, organization_id, conversation_id, started_at, heartbeat_at) VALUES ($1, $2, $3, $4, $4)',
+    [userId, organizationId, conversationId, new Date()]
+  );
 }
 
 /** @group ai */
@@ -449,6 +469,48 @@ describe('AI credit enforcement', () => {
       });
     });
 
+    describe('with 15% of their limit left and one action already running in the Orders app', () => {
+      it(`should refuse a second with "You're close to your limit. Finish your running AI action in Orders first." and the app over HTTP and SSE`, async () => {
+        const s = await seed('sales');
+        stubAgents(app);
+        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 234 }));
+        const orders = await createApplication(app, { name: 'Orders', user: s.builder });
+        await seedRunInApp(s.builder.id, s.workspace.id, orders.id);
+
+        const sorted = await autosort(s);
+        const sent = await message(s);
+
+        const copy = "You're close to your limit. Finish your running AI action in Orders first.";
+        expect(sorted.statusCode).toBe(409);
+        expect(sorted.body).toMatchObject({
+          code: 'run_in_progress',
+          message: copy,
+          runningApp: { id: orders.id, name: 'Orders' },
+        });
+        expect(sseRefusal(sent.text)).toEqual({
+          category: 'run_in_progress',
+          content: copy,
+          runningApp: { id: orders.id, name: 'Orders' },
+        });
+      });
+    });
+
+    describe('with three actions already running in the Orders app', () => {
+      it('should refuse a fourth with "Finish one of your running AI actions first." and no app', async () => {
+        const s = await seed('sales');
+        stubAgents(app);
+        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        const orders = await createApplication(app, { name: 'Orders', user: s.builder });
+        for (let i = 0; i < 3; i++) await seedRunInApp(s.builder.id, s.workspace.id, orders.id);
+
+        const res = await autosort(s);
+
+        expect(res.statusCode).toBe(409);
+        expect(res.body.message).toBe('Finish one of your running AI actions first.');
+        expect(res.body.runningApp).toBeUndefined();
+      });
+    });
+
     describe('with three actions running in another workspace', () => {
       it('should not count them toward the cap', async () => {
         const s = await seed('sales');
@@ -634,6 +696,23 @@ describe('AI credit enforcement', () => {
 
         expect(res.statusCode).toBe(402);
         expect(res.body.code).toBe('credit_limit_reached');
+      });
+    });
+
+    describe('with 10% of their limit left and one action running in an app of another workspace', () => {
+      it(`should refuse with "You're close to your limit. Finish your running AI action first." and no app`, async () => {
+        const s = await seed();
+        // The other workspace's admin makes 3 builders on the instance: 333 each. 300 spent leaves 33, 9.9%.
+        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [s.builder.id]: 300 }));
+        const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
+        const elsewhere = await createApplication(app, { name: 'Elsewhere', user: other.user });
+        await seedRunInApp(s.builder.id, other.organization.id, elsewhere.id);
+
+        const res = await autosort(s);
+
+        expect(res.statusCode).toBe(409);
+        expect(res.body.message).toBe("You're close to your limit. Finish your running AI action first.");
+        expect(res.body.runningApp).toBeUndefined();
       });
     });
 

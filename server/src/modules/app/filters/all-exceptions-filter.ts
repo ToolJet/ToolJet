@@ -61,6 +61,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message: errorResponse.message,
         code: code,
         ...(organizationSlug && { organizationSlug }),
+        // AI parallel-run refusal: app of the running action
+        ...(exception?.runningApp && { runningApp: exception.runningApp }),
       });
     } catch (error) {
       this.logger.error('Error while processing uncaught exception', (error as any).stack);
