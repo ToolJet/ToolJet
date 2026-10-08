@@ -387,7 +387,8 @@ export const DatePickerRenderer = ({
           }}
           onCalendarClose={() => {
             // Only handle input date change if onChange wasn't already called
-            if (isInputFocused && !dateChangeHandledRef.current) {
+            const isInputEdited = inputValue !== computeDateString(date);
+            if (isInputFocused && isInputEdited && !dateChangeHandledRef.current) {
               handleInputDateChange(inputValue);
             }
             setIsInputFocused(false);
