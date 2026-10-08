@@ -38,7 +38,12 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
 import { useLicenseStore } from '@/_stores/licenseStore';
-import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
+import {
+  getFolderGroupPermissions,
+  appTypeToDisplayNameMapping,
+  getFolderPermissionField,
+  isAppNameTakenError,
+} from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
@@ -780,13 +785,11 @@ class HomePageComponent extends React.Component {
       this.eraseAIOnboardingRelatedCookies();
     } catch (e) {
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
-      toast.error(e.error);
       this.eraseAIOnboardingRelatedCookies();
-      if (e.statusCode === 409) {
-        return false;
-      } else {
-        return e;
-      }
+      // false keeps the name modal open and shows the error there, so no toast
+      if (isAppNameTakenError(e)) return false;
+      toast.error(e.error);
+      return e;
     }
   };
 
