@@ -391,5 +391,15 @@
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
     "tags": ["Collaboration"]
+  },
+  {
+    "name": "ElevenLabs",
+    "description": "AI audio platform for text to speech, speech to text, voice changing, sound effects and voice cloning",
+    "version": "1.0.0",
+    "id": "elevenlabs",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Oct 2026 06:46:31 GMT",
+    "repo": "",
+    "tags": ["AI"]
   }
 ]
