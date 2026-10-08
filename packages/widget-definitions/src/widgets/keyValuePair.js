@@ -71,6 +71,14 @@ export const keyValuePairConfig = {
         defaultValue: true,
       },
     },
+    disableSaveChanges: {
+      type: 'toggle',
+      displayName: 'Disable save changes button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -274,6 +282,7 @@ export const keyValuePairConfig = {
   exposedVariables: {
     data: {},
     changeSet: {},
+    isValid: true,
     lastClickedField: {},
   },
   actions: [
@@ -477,6 +486,7 @@ export const keyValuePairConfig = {
       tooltipFormat: { value: 'plainText' },
       fieldDeletionHistory: { value: [] },
       showUpdateActions: { value: '{{true}}' },
+      disableSaveChanges: { value: '{{false}}' },
     },
     events: [],
     styles: {

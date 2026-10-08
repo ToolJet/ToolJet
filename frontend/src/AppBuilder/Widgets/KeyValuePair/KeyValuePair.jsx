@@ -9,6 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { isEditedDataValid } from './_utils/fieldValidity';
 
 // Below this width, Cancel/Save fall back to icon-only (same pattern as Table's ChangeSetUI).
 const CTA_TEXT_MIN_WIDTH = 250;
@@ -46,6 +47,7 @@ export const KeyValuePair = ({
     disabledState = false,
     dynamicHeight = false,
     showUpdateActions = true,
+    disableSaveChanges = false,
   } = properties;
 
   const data = dataSourceSelector === 'rawJson' ? properties?.data : dataSourceSelector;
@@ -166,6 +168,16 @@ export const KeyValuePair = ({
     id,
   });
 
+  // isValid is true only while every field currently in the changeSet passes its own
+  // validation (the same check each field adapter already runs for its own inline
+  // error, see fieldValidity.js).
+  const isValid = useMemo(() => isEditedDataValid(editedData, resolvedFields), [editedData, resolvedFields]);
+  const isSaveChangesDisabled = disableSaveChanges;
+
+  useEffect(() => {
+    setExposedVariables({ isValid });
+  }, [isValid, setExposedVariables]);
+
   // Calculate max label width when autoLabelWidth is enabled
   useLayoutEffect(() => {
     if (!autoLabelWidth || !containerRef.current || alignment === 'top') {
@@ -264,6 +276,7 @@ export const KeyValuePair = ({
                 onClick={saveChanges}
                 data-cy="kv-button-save-changes"
                 aria-label="Save changes"
+                disabled={isSaveChangesDisabled}
               >
                 {showCtaText ? 'Save changes' : <Save size={14} />}
               </button>
