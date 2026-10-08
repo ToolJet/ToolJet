@@ -103,12 +103,21 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - **Reach:** what it can affect: editions (CE/EE/Cloud), tenants, modules, contract consumers, existing saved apps.
 - **Not included:** optional. Deliberate omissions or surprising decisions.
 
+**Stack** (optional, feature PRs only): when the PR lands a feature branch built from stacked layer PRs, a folded `<details>` right after Merge impact, so the final PR traces back to each layer.
+- Summary line: `📚 <b>Stack:</b> <n> layers, each merged from its own PR`.
+- Table `Change (in stack order) | PR | Sub-issue`, one row per layer in stack order. In the main PR, one PR column per repo.
+- Describe each layer in plain words. No slice codes like `s5`.
+- Leave Sub-issue blank for layers without one.
+- End with `Each layer was reviewed and verified in its own PR; this PR is their sum plus <trunk>.`
+
 **Sources:** under the summary, no emoji. One item → one line, `**Issue:** Closes #123` (or `**PRD:** …`); two or more → `**Sources:**` with one bullet per item; none → drop it:
 - **Issue:** `Closes #123` when fully resolved, `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand in the issue's *Development* panel.
 - **PRD and design:** `PRD: [title](url)`, `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
 - **Sub-issues:** `Sub-issues: #124, #125` — numbers only (GitHub renders titles). Multiple parents: one bullet each, `Sub-issues (#123): #124, #125`. More than ~6 → wrap in `<details>`.
 
 **Submodules:** one line right after Sources, `**Submodules:** [ee-server #123](url) · [ee-frontend #124](url)`. When Sources is a single line, end it with `\` so the two render as separate lines. Omit unchanged submodules, and the line when neither changed. Emoji go on `##` headings only, never on these meta lines.
+
+**Related:** for a feature spanning repos outside ToolJet's three, one more line `**Related:** [<repo> #<n>](<url>) · …` listing the sibling PRs. Each sibling links back to this one. A parent issue stays `Relates to` until its last PR merges; `Closes` goes on the PR that finishes it.
 
 **Conditional sections — only when they apply:**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a cross-file refactor). Smallest view that makes the point, next to the sentence it supports; pick one or two:
@@ -134,7 +143,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
   No recording to show: drop the section rather than leave a placeholder. Screenshots stay in Evidence.
 - **How to test:** when there is runtime behaviour a reviewer can exercise. Skip for docs, tooling, config or CI-only changes.
 
-**Main PR body:** this template exactly, emoji prefixes included. Everything after the summary is conditional; omit what doesn't apply, including empty Sources/Submodules blocks or bullets.
+**Main PR body:** this template exactly, emoji prefixes included (`**Related:**` and the Stack block only when they apply). Everything after the summary is conditional; omit what doesn't apply, including empty Sources/Submodules blocks or bullets.
 ```
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
@@ -152,6 +161,17 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - **Rollback:** <irreversible only: plan>
 - **Reach:** <scope>
 - **Not included:** <optional: deliberate omissions or surprising decisions>
+
+</details>
+
+<details>
+<summary>📚 <b>Stack:</b> <n> layers, each merged from its own PR</summary>
+
+| Change (in stack order) | PR | Sub-issue |
+|---|---|---|
+| <what the layer adds, plain words> | #<n> | <#issue or blank> |
+
+Each layer was reviewed and verified in its own PR; this PR is their sum plus <trunk>.
 
 </details>
 
@@ -182,7 +202,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 
 Section order follows the reviewer's questions: why, how risky, what changed, what it looks like, how it fits, how to try it, proof.
 
-**Submodule PR body** (each submodule with changes) — no How to test, no Submodules, no Evidence. Headings EXACTLY as shown, emoji included:
+**Submodule PR body** (each submodule with changes) — no How to test, no Submodules, no Evidence. Headings EXACTLY as shown, emoji included. Exception: when private detail can't go in the public main PR (EE architecture, API, data model, a demo of EE screens), the submodule PR carries those sections after Changes, in the main template's order.
 ```
 ## 📝 What this does
 <1-2 sentence summary>
