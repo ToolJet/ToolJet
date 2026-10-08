@@ -122,6 +122,8 @@ export class CreditsUsageResponseDto {
   @Expose() @Type(() => CreditsUsageNoticeDto) notices: CreditsUsageNoticeDto[];
   /** Self-hosted only: the instance's active workspaces. */
   @Expose() @Type(() => CreditsUsageWorkspaceDto) workspaces?: CreditsUsageWorkspaceDto[];
+  /** The licence has per-builder limits (Enterprise, trial). False: `limits.enabled` is false and saves get 451. */
+  @Expose() limitsAvailable: boolean;
   @Expose() @Type(() => CreditsUsageLimitsDto) limits: CreditsUsageLimitsDto;
   @Expose() @Type(() => CreditsUsageRowDto) rows: CreditsUsageRowDto[];
 }

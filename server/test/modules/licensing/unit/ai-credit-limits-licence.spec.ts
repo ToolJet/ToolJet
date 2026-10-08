@@ -59,10 +59,10 @@ describe('Per-builder AI credit limits licence gate', () => {
     });
   });
 
-  it('an expired or missing licence (basic plan) has no limits, even with an enterprise type', () => {
+  // A missing licence can't be built here: NODE_ENV=test turns a licence without data into a test enterprise one.
+  it('an expired licence (basic plan) has no limits, even with an enterprise type', () => {
     expect(limits(selfHosted(withType(LICENSE_TYPE.ENTERPRISE), inDays(-1)))).toBe(false);
     expect(limits(cloud(withType(LICENSE_TYPE.ENTERPRISE), 'team', inDays(-1)))).toBe(false);
-    expect(limits(new OrganizationLicense())).toBe(false);
   });
 
   it('Cloud plans as written by checkout and trial signup', () => {
