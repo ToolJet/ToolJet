@@ -196,106 +196,17 @@ export class AbilityUtilService {
     appType: APP_TYPES = APP_TYPES.FRONT_END,
     ownerGetsViewAccess = false
   ): Promise<UserAppsPermissions> {
-    const userAppsPermissions: UserAppsPermissions = {
-      editableAppsId: [],
-      isAllEditable: false,
-      viewableAppsId: [],
-      isAllViewable: false,
-      hiddenAppsId: [],
-      hideAll: false,
-      ownedAppsId: [],
-      environmentAccess: {
-        development: false,
-        staging: false,
-        production: false,
-        released: false,
-      },
-      appSpecificEnvironmentAccess: {},
-    };
-
-    const defaultGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === true);
-    const customGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === false);
-
-    defaultGroupPermissions.forEach((permission) => {
-      const appsPermission = permission?.appsGroupPermissions;
-      if (!appsPermission) {
-        return;
-      }
-
-      userAppsPermissions.isAllEditable = userAppsPermissions.isAllEditable || appsPermission.canEdit;
-      userAppsPermissions.isAllViewable = userAppsPermissions.isAllViewable || appsPermission.canView;
-      userAppsPermissions.hideAll = userAppsPermissions.hideAll || appsPermission.hideFromDashboard;
-
-      // Merge default environment permissions (UNION logic - OR)
-      if (!userAppsPermissions.environmentAccess) {
-        userAppsPermissions.environmentAccess = {
-          development: false,
-          staging: false,
-          production: false,
-          released: false,
-        };
-      }
-      userAppsPermissions.environmentAccess.development ||= appsPermission.canAccessDevelopment ?? false;
-      userAppsPermissions.environmentAccess.staging ||= appsPermission.canAccessStaging ?? false;
-      userAppsPermissions.environmentAccess.production ||= appsPermission.canAccessProduction ?? false;
-      userAppsPermissions.environmentAccess.released ||= appsPermission.canAccessReleased ?? false;
-    });
-
-    customGroupPermissions.forEach((permission) => {
-      const appsPermission = permission?.appsGroupPermissions;
-      const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
-
-      if (!appsPermission || !groupApps.length) {
-        return;
-      }
-
-      if (appsPermission.canEdit) {
-        userAppsPermissions.editableAppsId = Array.from(new Set([...userAppsPermissions.editableAppsId, ...groupApps]));
-      }
-      if (appsPermission.canView) {
-        userAppsPermissions.viewableAppsId = Array.from(new Set([...userAppsPermissions.viewableAppsId, ...groupApps]));
-      }
-      if (appsPermission.hideFromDashboard) {
-        userAppsPermissions.hiddenAppsId = Array.from(new Set([...userAppsPermissions.hiddenAppsId, ...groupApps]));
-      }
-
-      for (const appId of groupApps) {
-        const isNewApp = !userAppsPermissions.appSpecificEnvironmentAccess![appId];
-
-        if (isNewApp) {
-          userAppsPermissions.appSpecificEnvironmentAccess![appId] = {
-            development: false,
-            staging: false,
-            production: false,
-            released: false,
-          };
-        }
-
-        const existing = userAppsPermissions.appSpecificEnvironmentAccess![appId];
-        existing.development ||= appsPermission.canAccessDevelopment ?? false;
-        existing.staging ||= appsPermission.canAccessStaging ?? false;
-        existing.production ||= appsPermission.canAccessProduction ?? false;
-        existing.released ||= appsPermission.canAccessReleased ?? false;
-      }
-    });
-
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const appsOwnedByUser = await manager.find(AppBase, {
+    const appsOwnedByUser = await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(AppBase, {
         where: { userId: user.id, organizationId: user.organizationId, type: appType },
       });
-
-      const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);
-      userAppsPermissions.ownedAppsId = appsIdOwnedByUser;
-      userAppsPermissions.editableAppsId = Array.from(
-        new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
-      );
-      // Modules: the creator irrevocably gets Build-with (view) in addition to Edit.
-      if (ownerGetsViewAccess) {
-        userAppsPermissions.viewableAppsId = Array.from(
-          new Set([...userAppsPermissions.viewableAppsId, ...appsIdOwnedByUser])
-        );
-      }
     }, manager);
+
+    const userAppsPermissions = this.buildUserAppsPermissions(
+      appsGranularPermissions,
+      appsOwnedByUser.map((app) => app.id),
+      ownerGetsViewAccess
+    );
 
     // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
     // Folders are environment-agnostic: any folder-derived access — edit or view — grants full
@@ -437,6 +348,104 @@ export class AbilityUtilService {
           released: true,
         };
       }
+    }
+
+    return userAppsPermissions;
+  }
+
+  private buildUserAppsPermissions(
+    appsGranularPermissions: GranularPermissions[],
+    ownedAppsId: string[] = [],
+    ownerGetsViewAccess = false
+  ): UserAppsPermissions {
+    const userAppsPermissions: UserAppsPermissions = {
+      editableAppsId: [],
+      isAllEditable: false,
+      viewableAppsId: [],
+      isAllViewable: false,
+      hiddenAppsId: [],
+      hideAll: false,
+      ownedAppsId: [],
+      environmentAccess: {
+        development: false,
+        staging: false,
+        production: false,
+        released: false,
+      },
+      appSpecificEnvironmentAccess: {},
+    };
+
+    const defaultGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === true);
+    const customGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === false);
+
+    defaultGroupPermissions.forEach((permission) => {
+      const appsPermission = permission?.appsGroupPermissions;
+      if (!appsPermission) {
+        return;
+      }
+
+      userAppsPermissions.isAllEditable = userAppsPermissions.isAllEditable || appsPermission.canEdit;
+      userAppsPermissions.isAllViewable = userAppsPermissions.isAllViewable || appsPermission.canView;
+      userAppsPermissions.hideAll = userAppsPermissions.hideAll || appsPermission.hideFromDashboard;
+
+      // Merge default environment permissions (UNION logic - OR)
+      if (!userAppsPermissions.environmentAccess) {
+        userAppsPermissions.environmentAccess = {
+          development: false,
+          staging: false,
+          production: false,
+          released: false,
+        };
+      }
+      userAppsPermissions.environmentAccess.development ||= appsPermission.canAccessDevelopment ?? false;
+      userAppsPermissions.environmentAccess.staging ||= appsPermission.canAccessStaging ?? false;
+      userAppsPermissions.environmentAccess.production ||= appsPermission.canAccessProduction ?? false;
+      userAppsPermissions.environmentAccess.released ||= appsPermission.canAccessReleased ?? false;
+    });
+
+    customGroupPermissions.forEach((permission) => {
+      const appsPermission = permission?.appsGroupPermissions;
+      const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
+
+      if (!appsPermission || !groupApps.length) {
+        return;
+      }
+
+      if (appsPermission.canEdit) {
+        userAppsPermissions.editableAppsId = Array.from(new Set([...userAppsPermissions.editableAppsId, ...groupApps]));
+      }
+      if (appsPermission.canView) {
+        userAppsPermissions.viewableAppsId = Array.from(new Set([...userAppsPermissions.viewableAppsId, ...groupApps]));
+      }
+      if (appsPermission.hideFromDashboard) {
+        userAppsPermissions.hiddenAppsId = Array.from(new Set([...userAppsPermissions.hiddenAppsId, ...groupApps]));
+      }
+
+      for (const appId of groupApps) {
+        const isNewApp = !userAppsPermissions.appSpecificEnvironmentAccess![appId];
+
+        if (isNewApp) {
+          userAppsPermissions.appSpecificEnvironmentAccess![appId] = {
+            development: false,
+            staging: false,
+            production: false,
+            released: false,
+          };
+        }
+
+        const existing = userAppsPermissions.appSpecificEnvironmentAccess![appId];
+        existing.development ||= appsPermission.canAccessDevelopment ?? false;
+        existing.staging ||= appsPermission.canAccessStaging ?? false;
+        existing.production ||= appsPermission.canAccessProduction ?? false;
+        existing.released ||= appsPermission.canAccessReleased ?? false;
+      }
+    });
+
+    userAppsPermissions.ownedAppsId = ownedAppsId;
+    userAppsPermissions.editableAppsId = Array.from(new Set([...userAppsPermissions.editableAppsId, ...ownedAppsId]));
+    // Modules: the creator irrevocably gets Build-with (view) in addition to Edit.
+    if (ownerGetsViewAccess) {
+      userAppsPermissions.viewableAppsId = Array.from(new Set([...userAppsPermissions.viewableAppsId, ...ownedAppsId]));
     }
 
     return userAppsPermissions;
