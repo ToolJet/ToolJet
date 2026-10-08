@@ -394,7 +394,9 @@ export const DatePickerRenderer = ({
             dateChangeHandledRef.current = false;
           }}
         />
-        {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
+        {isEditable && !isValid && widgetType !== 'KeyValuePair' && (
+          <div className="invalid-feedback-date text-truncate">{validationError}</div>
+        )}
       </div>
     </OverlayTrigger>
   );
