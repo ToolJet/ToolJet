@@ -156,7 +156,7 @@ export const ValidationProperties = ({
           property: 'disabledDates',
           dateCy: 'input-and-label-custom-rule',
           label: 'Disabled dates',
-          placeholder: '{{[]}}',
+          placeholder: '{{["MM/DD/YYYY"]}}',
         });
 
         properties.push({
