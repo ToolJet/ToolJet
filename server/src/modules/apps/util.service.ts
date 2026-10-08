@@ -31,7 +31,7 @@ import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
 import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
-import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
+import { UserAppsPermissions, UserPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
@@ -1246,6 +1246,26 @@ export class AppsUtilService implements IAppsUtilService {
       type,
       branchId
     ).getCount();
+  }
+
+  // Dashboard v2 reuses the v1 root-list visibility rule (incl. EE override) as an id list.
+  // ponytail: materialises ids; switch to a subquery if orgs reach ~10k apps per type.
+  async findVisibleAppIds(
+    user: User,
+    type: APP_TYPES,
+    permissions: UserPermissions,
+    manager: EntityManager
+  ): Promise<string[]> {
+    const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
+    const apps = await this.viewableAppsQueryUsingPermissions(
+      user,
+      permissions[resourceType],
+      manager,
+      undefined,
+      ['id'],
+      type
+    ).getMany();
+    return apps.map((app) => app.id);
   }
 
   mergeDefaultComponentData(pages) {
