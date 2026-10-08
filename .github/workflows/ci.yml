@@ -4,11 +4,18 @@ on:
   push:
     branches: [develop, main, 'release/**']
   pull_request:
-    types: [labeled]
+    # labeled = manual trigger (any base); the rest auto-run full CI on PRs into main
+    types: [labeled, opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # no-op runs (other labels, non-main pushes) get their own group so they never cancel a real run
+  group: >-
+    ci-${{ github.event.pull_request.number || github.ref }}${{
+      (github.event_name == 'pull_request'
+        && !(github.event.action == 'labeled' && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
+        && !(github.event.action != 'labeled' && github.event.pull_request.base.ref == 'main'))
+      && format('-noop-{0}', github.run_id) || '' }}${{ github.run_attempt > 1 && format('-rerun-{0}', github.run_id) || '' }}
   # cancel superseded PR runs (last label wins); never kill a push-validation run
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -24,9 +31,14 @@ jobs:
       || (github.event_name == 'pull_request'
           && github.event.action == 'labeled'
           && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
+      || (github.event_name == 'pull_request'
+          && github.event.action != 'labeled'
+          && github.event.pull_request.base.ref == 'main'
+          && !github.event.pull_request.draft
+          && github.event.pull_request.head.repo.full_name == github.repository)
     outputs:
-      server: ${{ steps.filter.outputs.server }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      server: ${{ (steps.filter.outputs.server == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.server == 'true') && 'true' || 'false' }}
+      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -46,15 +58,50 @@ jobs:
             server:
               - 'server/**'
               - '!**/*.md'
+              - '!server/ee'
             frontend:
               - 'frontend/**'
               - '!**/*.md'
+              - '!frontend/ee'
             plugins:
               - 'plugins/**'
               - '!**/*.md'
             marketplace:
               - 'marketplace/**'
               - '!**/*.md'
+            # toolchain / workflow changes affect every suite
+            root:
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
+      # a submodule bump counts only if the EE diff touches more than docs/skills;
+      # any lookup failure counts as changed
+      - name: Detect EE submodule changes
+        id: sub
+        env:
+          GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          mark() { echo "$1=$2" >> "$GITHUB_OUTPUT"; }
+          if [[ -z "$BASE" || "$BASE" =~ ^0+$ ]] \
+            || ! base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq .merge_base_commit.sha); then
+            mark server true; mark frontend true; exit 0
+          fi
+          pin() { gh api "repos/$GITHUB_REPOSITORY/contents/$1?ref=$2" --jq .sha; }
+          check() {
+            local old new files
+            old=$(pin "$1" "$base") && new=$(pin "$1" "$HEAD") || { mark "$3" true; return; }
+            [[ "$old" == "$new" ]] && { mark "$3" false; return; }
+            # compare is three-dot: a pin that isn't strictly ahead hides the commits it drops
+            files=$(gh api "repos/ToolJet/$2/compare/$old...$new" --jq 'select(.status == "ahead") | .files[].filename') || { mark "$3" true; return; }
+            # compare API caps at 300 files
+            if [[ $(grep -c . <<<"$files") -ge 300 ]] || grep -qvE '\.md$|^\.agents/' <<<"$files"; then
+              mark "$3" true
+            else
+              mark "$3" false
+            fi
+          }
+          check server/ee ee-server server
+          check frontend/ee ee-frontend frontend
 
   # ---------------------------------------------------------------------------
   # 2. Build-check jobs — lint + build per folder

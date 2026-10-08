@@ -63,7 +63,7 @@ The validator cannot see `plugin-spec.json` or the PRD. Check by reading:
 ## 5. UI check (optional)
 
 Needs a browser automation tool, a ToolJet already running from this checkout with the server
-started by `npm run start:dev`, and an admin or builder login. Skip, saying which is missing, if
+started by `npm run start:dev` (or `tools/tj/bin/tj start`), and an admin or builder login. Skip, saying which is missing, if
 any is absent, if the frontend is unreachable, or on the Cloud edition (no marketplace). Never
 block the run on it. Install facts: `marketplace/AGENTS.md`, Local install. Set
 `ENABLE_MARKETPLACE_DEV_MODE=true` in the root `.env` and restart the server first. The frontend

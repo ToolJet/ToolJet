@@ -68,7 +68,7 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Schema migrations** (`migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
 - **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
 - Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
 - **Runner / atomicity:** `db:migrate` (and `:prod`) run through `src/migration-helpers/run-all-migrations.ts`, which normally executes all schema migrations then all data migrations in **one transaction** via two `MigrationExecutor` passes sharing a single query runner. A failure in either phase rolls back both — schema no longer commits ahead of a failing data migration. (Exception: enum additions on a fresh install force a two-transaction fallback — see the enum bullet below.) Don't merge the two migration globs into one datasource: TypeORM sorts by class-name timestamp and schema/data timestamps interleave, which would break the all-schema-before-all-data ordering. Keep long-running backfills mindful of `statement_timeout` — the schema locks are held for the whole combined transaction in atomic mode.
@@ -116,11 +116,12 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
-- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
+- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`../scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
+- Test DB: a stale schema fails with `column ... does not exist`. Use `tools/tj/bin/tj db migrate --test`. `NODE_ENV=test npm run db:migrate` is a silent no-op, and the root `.env` overrides shell vars. In a `tj wt add` worktree the test DB is isolated per branch.
 
 ## Module context files
 
-Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, versions, workflows.
+Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, personal-access-tokens, versions, workflows.
 
 **Maintenance rule:** meaningfully changing a module (new service, changed invariant, renamed concept, discovered gotcha) means updating its `AGENTS.md` in the same PR. No file yet? Create one from `docs/agents-module-template.md`. Keep them ≤80 lines — pointers and invariants, not prose dumps.
