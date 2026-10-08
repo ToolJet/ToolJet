@@ -12,6 +12,10 @@
 // line and the previous one (the first is measured from the "are new" anchor).
 // The final COMMIT of migrationsTransactionMode 'all' is reported as its own row.
 //
+// The migration output is NOT echoed: this repo's Actions logs are public, and query
+// logs carry row data as parameters. Only the timing table and error lines (with
+// parameters cut off) are printed.
+//
 // Env: JUDGE                         comma-separated 13-digit timestamps from the class
 //                                    names of the PR's migrations (TypeORM records the
 //                                    class timestamp, not the filename's); only these
@@ -57,6 +61,14 @@ export function timeMigrations(stamped, { judged = new Set(), limit = 30 } = {})
   return rows;
 }
 
+// Error lines from the migration output, safe for a public log: query parameters cut off
+export function errorLines(lines) {
+  return lines
+    .map(stripAnsi)
+    .filter((l) => /error|failed/i.test(l))
+    .map((l) => l.replace(/PARAMETERS:.*$/, 'PARAMETERS: [hidden]'));
+}
+
 export function renderSummary(rows, limit) {
   const status = (r) => (!r.judged ? (r.name === '(commit)' ? 'not judged' : 'merged earlier, not judged') : r.slow ? `❌ over ${limit}s limit` : '✅');
   return [
@@ -75,10 +87,11 @@ async function main() {
   const stamped = [];
   for await (const line of readline.createInterface({ input: process.stdin })) {
     stamped.push({ t: performance.now() / 1000, line });
-    console.log(line); // keep the migration log readable in the job output
   }
+  for (const l of errorLines(stamped.map((s) => s.line))) console.log(l);
   const rows = timeMigrations(stamped, { judged, limit });
   const summary = rows.length ? renderSummary(rows, limit) : '### Migration timing\n\nNo pending migrations.\n';
+  console.log(summary);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
   const slow = rows.filter((r) => r.slow);
   for (const r of slow) console.log(`::error::${r.name} took ${r.seconds.toFixed(2)}s, over the ${limit}s limit`);

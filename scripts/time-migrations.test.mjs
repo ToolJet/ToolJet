@@ -1,7 +1,7 @@
 // Run: node --test scripts/time-migrations.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { timeMigrations, renderSummary } from './time-migrations.mjs';
+import { timeMigrations, renderSummary, errorLines } from './time-migrations.mjs';
 
 const at = (t, line) => ({ t, line });
 const NEW = (n) => `${n} migrations are new migrations must be executed.`;
@@ -83,4 +83,21 @@ test('summary marks over-limit, within-limit and merged-earlier rows', () => {
   assert.match(md, /\| Slow1790000000001 \| 48\.07s \| ❌ over 30s limit \|/);
   assert.match(md, /\| Fast1790000000002 \| 0\.04s \| ✅ \|/);
   assert.match(md, /\| Old1790000000000 \| 3\.00s \| merged earlier, not judged \|/);
+});
+
+test('keeps only error lines, with query parameters cut off', () => {
+  assert.deepEqual(
+    errorLines([
+      'query: SELECT * FROM data_source_options -- PARAMETERS: ["secret-token"]',
+      'Migration MoveOauthTokens1785950000000 has been executed successfully.',
+      '\u001b[31mquery failed: UPDATE credentials SET value = $1 -- PARAMETERS: ["decrypted"]\u001b[0m',
+      'Migration "MoveOauthTokens1785950000000" failed, error: Unsupported state or unable to authenticate data',
+      '    driverError: error: duplicate key value violates unique constraint',
+    ]),
+    [
+      'query failed: UPDATE credentials SET value = $1 -- PARAMETERS: [hidden]',
+      'Migration "MoveOauthTokens1785950000000" failed, error: Unsupported state or unable to authenticate data',
+      '    driverError: error: duplicate key value violates unique constraint',
+    ]
+  );
 });
