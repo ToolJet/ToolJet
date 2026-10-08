@@ -1183,3 +1183,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 [data-theme='dark'] .mcp-logo--light-art {
   filter: none;
 }
+
+/* AI model guide: let the model tabs wrap instead of scrolling sideways */
+.model-tabs {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
