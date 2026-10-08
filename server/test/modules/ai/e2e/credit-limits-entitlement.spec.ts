@@ -195,7 +195,7 @@ describe('Per-builder AI credit limits are Enterprise-only', () => {
       gateway.mockRestore();
 
       // Downgraded to Team, then the plan shrinks below the custom limit.
-      const NEW_CYCLE = '2026-10-15T00:00:00.000Z';
+      const NEW_CYCLE = new Date(Date.now() - 3600_000).toISOString();
       licenceOfType(app, edition, LICENSE_TYPE.BUSINESS);
       gateway = stubGateway(withPlan(2003, NEW_CYCLE));
       const team = await s.asAdmin.get('/api/ai/credits-usage');

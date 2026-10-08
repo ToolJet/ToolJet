@@ -186,6 +186,7 @@ describe('builder usage calculations', () => {
 
     it('falls back to the balance cycle start and omits workspaces on Cloud', () => {
       const result = toCreditsUsage({
+        limitsAvailable: true,
         balance,
         usage: { cycleStart: null, trackingSince: null, spend: [{ userId: 'u1', monthly: 100, addon: 20 }] },
         memberships: [member()],
@@ -219,6 +220,7 @@ describe('builder usage calculations', () => {
 
     it('includes workspaces and memberships on self-hosted', () => {
       const result = toCreditsUsage({
+        limitsAvailable: true,
         balance,
         usage: { cycleStart: null, trackingSince: null, spend: [] },
         memberships: [member()],
@@ -242,6 +244,7 @@ describe('builder usage calculations', () => {
         { userId: 'end', monthly: 10, addon: 5 },
       ];
       const result = toCreditsUsage({
+        limitsAvailable: true,
         balance: { ...balance, remaining: totals(6290, 1255) },
         usage: { cycleStart: null, trackingSince: null, spend },
         memberships: [
@@ -279,6 +282,7 @@ describe('builder usage calculations', () => {
         },
       ];
       const result = toCreditsUsage({
+        limitsAvailable: true,
         balance: { ...balance, remaining: totals(900, 1000) },
         usage: { cycleStart: null, trackingSince: null, spend },
         memberships: [member()],
@@ -299,6 +303,7 @@ describe('builder usage calculations', () => {
 
     it('limits off: builder rows keep the wallet split', () => {
       const result = toCreditsUsage({
+        limitsAvailable: true,
         balance,
         usage: { cycleStart: null, trackingSince: null, spend: [{ userId: 'u1', monthly: 1700, addon: 340 }] },
         memberships: [member()],

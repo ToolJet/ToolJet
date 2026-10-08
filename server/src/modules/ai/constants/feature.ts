@@ -78,7 +78,6 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.AI_FEATURE,
     },
     // One save can log ENABLED and UPDATED, so the service writes audit entries itself.
-    // Per-builder limits are Enterprise-only (licence getter `aiCreditLimits`; needs the AI feature too).
     [FEATURE_KEY.UPDATE_CREDIT_LIMITS]: {
       license: LICENSE_FIELD.AI_CREDIT_LIMITS,
       skipAuditLogs: true,
