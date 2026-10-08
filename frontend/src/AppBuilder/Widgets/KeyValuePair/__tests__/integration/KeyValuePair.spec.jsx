@@ -863,4 +863,28 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     await waitFor(() => expect(document.querySelector('.react-datepicker__time-container')).toBeInTheDocument());
     expect(document.querySelector('.react-datepicker__month')).not.toBeInTheDocument();
   });
+
+  test.each([
+    ['markdown', '**bold text**', '[data-testid="react-markdown"]'],
+    ['html', '<em>italic text</em>', '.html-cell em'],
+  ])(
+    '[KeyValuePair-BUG-FIELDCLICK-001] %s field: the first click on the rendered content exposes lastClickedField and fires onFieldClick',
+    async (fieldType, value, renderedTag) => {
+      // Break this catches: focus on the contentEditable flips isEditing and swaps the rendered markup for raw text
+      // between mousedown and mouseup, so the pressed element is detached and the click never reaches the row.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType, isEditable: true })]),
+          data: binding({ v: value }),
+        },
+        events: setVariableOn(ID, 'onFieldClick'),
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.click(valueContainer(rows()[0]).querySelector(renderedTag));
+
+      await waitFor(() => expect(exposed('lastClickedField')).toEqual({ key: 'v', value }));
+      expect(store().getVariable('seen', MODULE_ID)).toBe('YES');
+    }
+  );
 });
