@@ -63,14 +63,17 @@ describe('Per-builder AI credit limits licence gate', () => {
   it('an expired licence (basic plan) has no limits, even with an enterprise type', () => {
     expect(limits(selfHosted(withType(LICENSE_TYPE.ENTERPRISE), inDays(-1)))).toBe(false);
     expect(limits(cloud(withType(LICENSE_TYPE.ENTERPRISE), 'team', inDays(-1)))).toBe(false);
+    const explicitOn = withType(LICENSE_TYPE.ENTERPRISE, { ai: { creditLimits: true } } as Partial<Terms>);
+    expect(limits(selfHosted(explicitOn, inDays(-1)))).toBe(false);
+    expect(limits(cloud(explicitOn, 'team', inDays(-1)))).toBe(false);
   });
 
   it('Cloud plans as written by checkout and trial signup', () => {
-    // organization-payments: every self-serve plan (starter, basicplus, pro, team) is type business.
+    // Cloud self-serve plans carry type business.
     expect(limits(cloud({ ...(TEAM_PLAN_TERMS_CLOUD as Partial<Terms>), type: LICENSE_TYPE.BUSINESS }, 'team'))).toBe(
       false
     );
-    // licensing util generateCloudTrialLicense: type trial, features without `ai` (absent = on).
+    // Cloud trial: type trial, no ai feature key (absent = on).
     expect(limits(cloud({ type: LICENSE_TYPE.TRIAL, features: { oidc: true } }))).toBe(true);
   });
 

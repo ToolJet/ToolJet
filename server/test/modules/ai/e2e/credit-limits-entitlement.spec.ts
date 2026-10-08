@@ -166,6 +166,60 @@ describe('Per-builder AI credit limits are Enterprise-only', () => {
       };
     }
 
+    it('a pool shrink on Team leaves stored limits alone (no reset, audit or notice); after an upgrade it applies once', async () => {
+      const s = await seed('shrink');
+      /** Balance with plan sizes, so a plan change is detectable. */
+      const withPlan = (monthly: number, cycleStart: string) => {
+        const routes = gatewayFor(s.owner, { monthly, addon: 0 });
+        Object.assign(routes[`${s.owner}/balance`], { plan: wallet(monthly), cycleStart });
+        for (const path of [`${s.owner}/usage`, `${s.owner}/usage?groupBy=organization`]) {
+          Object.assign(routes[path], { cycleStart });
+        }
+        return routes;
+      };
+      const adjusted = () =>
+        getDefaultDataSource().query(
+          `SELECT id FROM audit_logs WHERE organization_id = $1 AND action_type = 'AI_CREDIT_LIMITS_ADJUSTED'`,
+          [s.workspace.id]
+        );
+      const custom = () =>
+        getDefaultDataSource().query(`SELECT pool, value FROM ai_credit_limits WHERE user_id = $1`, [s.builder.id]);
+
+      // Enterprise: limits on, builder on a custom 3,000 of 10,000; the save records the plan sizes.
+      licenceOfType(app, edition, LICENSE_TYPE.ENTERPRISE);
+      let gateway = stubGateway(withPlan(10_000, CYCLE_START));
+      expect((await s.asAdmin.put('/api/ai/credits-usage/limits', { enabled: true })).statusCode).toBe(200);
+      expect(
+        (await s.asAdmin.put(`/api/ai/credits-usage/limits/builders/${s.builder.id}`, { monthly: 3000 })).statusCode
+      ).toBe(200);
+      gateway.mockRestore();
+
+      // Downgraded to Team, then the plan shrinks below the custom limit.
+      const NEW_CYCLE = '2026-10-15T00:00:00.000Z';
+      licenceOfType(app, edition, LICENSE_TYPE.BUSINESS);
+      gateway = stubGateway(withPlan(2003, NEW_CYCLE));
+      const team = await s.asAdmin.get('/api/ai/credits-usage');
+
+      expect(team.statusCode).toBe(200);
+      expect(team.body.notices).toEqual([]);
+      expect(await custom()).toEqual([{ pool: 'monthly', value: 3000 }]);
+      await new Promise((r) => setTimeout(r, 500));
+      expect(await adjusted()).toEqual([]);
+      gateway.mockRestore();
+
+      // Back on Enterprise: the shrink is found and applied once.
+      licenceOfType(app, edition, LICENSE_TYPE.ENTERPRISE);
+      stubGateway(withPlan(2003, NEW_CYCLE));
+      const enterprise = await s.asAdmin.get('/api/ai/credits-usage');
+      await s.asAdmin.get('/api/ai/credits-usage');
+
+      expect(enterprise.body.notices).toHaveLength(1);
+      expect(await custom()).toEqual([]);
+      for (let i = 0; i < 50 && (await adjusted()).length < 1; i++) await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 300));
+      expect(await adjusted()).toHaveLength(1);
+    });
+
     describe.each(TYPES)('licence type %s (limits available: %s)', (type, available) => {
       it('GET usage reports the flag; a new scope (no rows) starts on only when available', async () => {
         const s = await seed(`u-${type}`);
