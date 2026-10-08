@@ -827,4 +827,21 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     await waitFor(() => expect(rows()).toHaveLength(1));
     await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
   });
+
+  test.each([
+    ['datepicker', { parseDateFormat: 'YYYY-MM-DD' }, '2024-01-15', "{{cellValue === '2024-01-15' ? 'Bad date' : ''}}"],
+    ['string', {}, 'abc', "{{cellValue === 'abc' ? 'Bad string' : ''}}"],
+    ['number', {}, 7, '{{cellValue === 7 ? "Bad number" : ""}}'],
+  ])(
+    '[KeyValuePair-BUG-CUSTOMRULE-001] %s field: a customRule referencing {{cellValue}} surfaces a row validation error',
+    async (fieldType, extra, value, customRule) => {
+      // Break this catches: field customRule is resolved at store-resolution time, before `cellValue`
+      // exists, collapsing to '' so the rule can never fail (Table keeps column rules unresolved).
+      renderField({ fieldType, isEditable: true, customRule, ...extra }, { v: value });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+      expect(document.querySelector('.kv-row-validation-error').textContent).toMatch(/^Bad /);
+    }
+  );
 });
