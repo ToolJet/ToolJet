@@ -27,7 +27,7 @@ export const DatepickerField = ({
   const dateDisplayFormat = field?.dateFormat;
   const isTimeChecked = field?.isTimeChecked || false;
   const isTwentyFourHrFormatEnabled = field?.isTwentyFourHrFormatEnabled || false;
-  const isDateSelectionEnabled = field?.isDateSelectionEnabled || true;
+  const isDateSelectionEnabled = field?.isDateSelectionEnabled ?? true;
 
   // Same validateDates store action the Table widget's Datepicker column uses, keeping
   // minDate/maxDate/minTime/maxTime behavior identical across both widgets.
