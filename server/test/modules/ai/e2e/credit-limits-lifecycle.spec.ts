@@ -232,6 +232,50 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
       });
     });
 
+    describe('a builder joins after a seat is bought', () => {
+      it('should keep the default share when the pool grows by 2,000 for the new builder', async () => {
+        const ws = await seedWsSales();
+        await createUser(app, { email: 'mei@tooljet.io', groups: ['builder'], organization: ws.workspace });
+        const routes = gatewayFor(
+          ws.owner,
+          { monthly: 10_000, addon: 0 },
+          {},
+          { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
+        );
+        stubGateway(routes);
+        const before = await getUsage(ws);
+
+        // A seat is bought: the plan and balance grow to 12,000 and the cycle restarts, so nothing is spent yet.
+        Object.assign(
+          routes,
+          gatewayFor(
+            ws.owner,
+            { monthly: 12_000, addon: 0 },
+            {},
+            { plan: { monthly: 12_000, addon: 0 }, cycleStart: NEW_CYCLE }
+          )
+        );
+        await createUser(app, {
+          email: 'kenji@tooljet.io',
+          groups: ['builder'],
+          organization: ws.workspace,
+          status: 'invited',
+        });
+        const after = await getUsage(ws);
+
+        // 10,000 ÷ 5 = 2,000; then 12,000 ÷ 6 = 2,000.
+        expect(before.body.limits).toMatchObject({
+          builderCount: 5,
+          monthly: { mode: 'equal_share', effective: 2000 },
+        });
+        expect(after.body.limits).toMatchObject({
+          builderCount: 6,
+          monthly: { mode: 'equal_share', effective: 2000 },
+        });
+        expect(after.body.notices).toEqual([]);
+      });
+    });
+
     describe("a refund lowers a builder's spend", () => {
       it('should give Priya back the refunded credits', async () => {
         const ws = await seedWsSales();
