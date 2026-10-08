@@ -262,3 +262,42 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
     );
   });
 });
+
+/** @group workflows */
+describe('WorkflowExecutionsService.resolveHumanDescription', () => {
+  const makeService = (resolve: (params: any) => any) => {
+    const svc: any = Object.create(WorkflowExecutionsService.prototype);
+    svc.logger = { log: jest.fn(), error: jest.fn(), warn: jest.fn() };
+    svc.resolveWorkflowParameters = jest.fn(async (params: any) => resolve(params));
+    return svc as WorkflowExecutionsService & any;
+  };
+
+  it('should resolve {{ }} in the description against the run state', async () => {
+    const svc = makeService(() => ({ description: 'Amount 42' }));
+
+    const description = await svc.resolveHumanDescription(
+      'Amount {{startTrigger.params.amount}}',
+      { startTrigger: { params: { amount: 42 } } },
+      'org-1',
+      'development'
+    );
+
+    expect(description).toBe('Amount 42');
+  });
+
+  it('should return plain text without resolving it', async () => {
+    const svc = makeService(() => ({ description: 'changed' }));
+
+    expect(await svc.resolveHumanDescription('Please review', {}, 'org-1', 'development')).toBe('Please review');
+    expect(svc.resolveWorkflowParameters).not.toHaveBeenCalled();
+  });
+
+  it('should keep the raw text when resolving fails', async () => {
+    const svc = makeService(() => {
+      throw new Error('bad expression');
+    });
+
+    expect(await svc.resolveHumanDescription('Amount {{oops(}}', {}, 'org-1', 'development')).toBe('Amount {{oops(}}');
+    expect(svc.logger.warn).toHaveBeenCalled();
+  });
+});
