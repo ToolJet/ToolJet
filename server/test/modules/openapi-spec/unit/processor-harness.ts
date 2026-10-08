@@ -23,7 +23,7 @@ export async function loadProcessor(): Promise<void> {
 export const DATA_SOURCE_ID = 'ds-1';
 export const DATA_SOURCE_VERSION_OPTIONS_ID = 'dsvo-1';
 
-export function makeManager() {
+export function makeManager({ existingOptions = {} }: { existingOptions?: Record<string, any> } = {}) {
   const saved: Record<string, any>[] = [];
   const updates: Record<string, any>[] = [];
   const manager = {
@@ -33,8 +33,9 @@ export function makeManager() {
       return rows;
     }),
     // Always "found" (with an id) so updateSpecOptions takes the update-existing-row branch, not
-    // the create branch - matches the steady-state case these tests exercise.
-    findOne: jest.fn().mockResolvedValue({ id: DATA_SOURCE_VERSION_OPTIONS_ID, options: {} }),
+    // the create branch - matches the steady-state case these tests exercise. existingOptions lets
+    // a test pre-seed e.g. a stored spec_checksum for the checksum-backstop skip path.
+    findOne: jest.fn().mockResolvedValue({ id: DATA_SOURCE_VERSION_OPTIONS_ID, options: existingOptions }),
     update: jest.fn(async (_entity: unknown, where: Record<string, any>, patch: Record<string, any>) => {
       updates.push({ where, ...patch });
     }),

@@ -243,6 +243,46 @@ describe('OpenApiSpecProcessor', () => {
     });
   });
 
+  describe('checksum backstop', () => {
+    it('should skip delete/rebuild and mark ready when the stored checksum matches the freshly computed one', async () => {
+      const definition = JSON.stringify(petStoreOpenApi3());
+      const checksum = createHash('sha256').update(definition).digest('hex');
+      harness = makeManager({ existingOptions: { spec_checksum: { value: checksum, encrypted: false } } });
+
+      await expect(makeProcessor().processor.process(definitionJob(definition))).resolves.toBe(OpenApiSpecStatus.READY);
+
+      expect(harness.manager.delete).not.toHaveBeenCalled();
+      expect(harness.manager.save).not.toHaveBeenCalled();
+      expect(harness.updates).toMatchObject([
+        {
+          where: { id: DATA_SOURCE_VERSION_OPTIONS_ID },
+          options: {
+            spec_status: { value: OpenApiSpecStatus.READY, encrypted: false },
+            spec_error: { value: null, encrypted: false },
+          },
+        },
+      ]);
+    });
+
+    it('should run the full delete/rebuild when the stored checksum does not match', async () => {
+      const definition = JSON.stringify(petStoreOpenApi3());
+      harness = makeManager({ existingOptions: { spec_checksum: { value: 'stale-hash', encrypted: false } } });
+
+      await expect(makeProcessor().processor.process(definitionJob(definition))).resolves.toBe(OpenApiSpecStatus.READY);
+
+      expect(harness.manager.delete).toHaveBeenCalled();
+      expect(harness.saved.length).toBeGreaterThan(0);
+      expect(harness.updates).toMatchObject([
+        {
+          options: {
+            spec_status: { value: OpenApiSpecStatus.READY },
+            spec_checksum: { value: createHash('sha256').update(definition).digest('hex') },
+          },
+        },
+      ]);
+    });
+  });
+
   describe('termination and failure', () => {
     it('should mark the spec cancelled when termination is requested between batches', async () => {
       const { processor, terminationRegistry } = makeProcessor();

@@ -162,6 +162,22 @@ export class OpenApiSpecProcessor extends WorkerHost {
       const checksum = createHash('sha256').update(rawSpec).digest('hex');
       const specSecurity = parsedInput.security || [];
 
+      const storedChecksums = await Promise.all(
+        environmentIds.map((environmentId) => this.getStoredChecksum(dataSourceVersionId, environmentId))
+      );
+      if (storedChecksums.every((stored) => stored === checksum)) {
+        for (const environmentId of environmentIds) {
+          await this.updateSpecOptions(dataSourceVersionId, environmentId, {
+            [OPENAPI_SPEC_OPTION_KEYS.STATUS]: OpenApiSpecStatus.READY,
+            [OPENAPI_SPEC_OPTION_KEYS.ERROR]: null,
+          });
+        }
+        this.logger.log(
+          `[openapi-spec:${job.id}] spec unchanged (checksum match) for datasource ${dataSourceId} - skipped delete/rebuild`
+        );
+        return OpenApiSpecStatus.READY;
+      }
+
       const batches = chunk(this.extractPathItems(parsedInput), DEFAULT_OPENAPI_SPEC_BATCH_SIZE);
       let operationCount = 0;
 
@@ -504,6 +520,16 @@ export class OpenApiSpecProcessor extends WorkerHost {
       } else {
         await manager.save(manager.create(DataSourceVersionOptions, { dataSourceVersionId, environmentId, options }));
       }
+    });
+  }
+
+  // Read-only - no lock needed, this only decides whether the delete+rebuild below is skippable.
+  private async getStoredChecksum(dataSourceVersionId: string, environmentId: string): Promise<string | null> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const existing = await manager.findOne(DataSourceVersionOptions, {
+        where: { dataSourceVersionId, environmentId },
+      });
+      return existing?.options?.[OPENAPI_SPEC_OPTION_KEYS.CHECKSUM]?.value ?? null;
     });
   }
 }
