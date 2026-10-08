@@ -21,6 +21,7 @@
 import React from 'react';
 import { waitFor, fireEvent } from '@testing-library/react';
 import useStore from '@/AppBuilder/_stores/store';
+import { widgets } from '@/AppBuilder/WidgetManager/configs/widgetConfig';
 import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
 
 const ID = 'kv1';
@@ -544,6 +545,56 @@ describe('KeyValuePair: CSA actions', () => {
     await widget.act('setLoading', true);
 
     await waitFor(() => expect(document.querySelector('.key-value-pair-loading')).toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-CSA-004] resetChanges is a declared component-specific action', () => {
+    // Break this catches: resetChanges stays callable at runtime but is missing from the widget's declared
+    // actions, so the "Control component" event picker never offers it.
+    const { actions } = widgets.find((w) => w.component === 'KeyValuePair');
+
+    expect(actions).toContainEqual({ handle: 'resetChanges', displayName: 'Reset changes' });
+  });
+
+  test('[KeyValuePair-CSA-005] saveChanges is a declared component-specific action', () => {
+    // Break this catches: saveChanges is callable at runtime but missing from the declared actions, so the
+    // "Control component" event picker never offers it.
+    const { actions } = widgets.find((w) => w.component === 'KeyValuePair');
+
+    expect(actions).toContainEqual({ handle: 'saveChanges', displayName: 'Save changes' });
+  });
+
+  const editNameField = async () => {
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-name`));
+    input.textContent = 'Grace Hopper';
+    input.blur();
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ name: 'Grace Hopper' }));
+  };
+
+  test('[KeyValuePair-CSA-006] saveChanges fires onSaveKeyValuePairChanges and clears the changeSet', async () => {
+    // Break this catches: the action clears the changeSet without firing the save event (or vice versa).
+    widget.render({ events: setVariableOn(ID, 'onSaveKeyValuePairChanges') });
+    await editNameField();
+
+    await widget.act('saveChanges');
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
+  });
+
+  test('[KeyValuePair-CSA-007] saveChanges still saves while disableSaveChanges is on', async () => {
+    // Break this catches: the action inherits the Save button's disableSaveChanges guard and silently no-ops.
+    widget.render({
+      properties: { disableSaveChanges: binding('{{true}}') },
+      events: setVariableOn(ID, 'onSaveKeyValuePairChanges'),
+    });
+    await editNameField();
+
+    await widget.act('saveChanges');
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('YES'));
+    await waitFor(() => expect(exposed('changeSet')).toEqual({}));
   });
 });
 
