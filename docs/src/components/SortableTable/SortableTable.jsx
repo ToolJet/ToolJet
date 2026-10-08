@@ -47,7 +47,8 @@ export default function SortableTable({ columns, rows, defaultSort, note }) {
             <tr key={row[columns[0].key]}>
               {columns.map((col, i) => {
                 const v = row[col.key];
-                const text = v === null || v === undefined ? row.missingText && i === 1 ? row.missingText : '' : col.format ? col.format(v) : v;
+                const shown = row[`${col.key}Display`];
+                const text = v === null || v === undefined ? row.missingText && i === 1 ? row.missingText : '' : shown ?? (col.format ? col.format(v) : v);
                 return (
                   <td key={col.key} style={i === 0 ? { whiteSpace: 'nowrap' } : undefined}>
                     {i === 0 ? (

@@ -30,8 +30,8 @@ AI models differ in how much of an app they finish, how the app looks, how long 
     { model: 'Claude Opus 5.5', provider: 'anthropic', features: 22, actions: 6, design: 8, credits: 445, minutes: 18.9 },
     { model: 'Claude Sonnet 5.5', provider: 'anthropic', features: 21.5, actions: 6, design: 7, credits: 343, minutes: 19.6 },
     { model: 'Claude Fable 5.1', provider: 'anthropic', features: 21.5, actions: 6, design: 7, credits: 1320, minutes: 26.1 },
-    { model: 'GPT-6.1 Sol', provider: 'openai', features: 20.5, actions: 2.5, design: 6, credits: 87, minutes: 12.0 },
-    { model: 'GPT-6 Astra', provider: 'openai', features: 20.5, actions: 2.5, design: 7, credits: 442, minutes: 13.3 },
+    { model: 'GPT-6.1 Sol', provider: 'openai', features: 20.5, actions: 5, actionsDisplay: '5*', design: 6, credits: 87, minutes: 12.0 },
+    { model: 'GPT-6 Astra', provider: 'openai', features: 20.5, actions: 4.5, actionsDisplay: '4.5*', design: 7, credits: 442, minutes: 13.3 },
     { model: 'GPT-6 Luna', provider: 'openai', features: 20, actions: 6, design: 7, credits: 21, minutes: 25.9 },
     { model: 'Claude Haiku 5.5', provider: 'anthropic', features: 20, actions: 6, design: 6, credits: 85, minutes: 14.1 },
     { model: 'DeepSeek Flash', provider: 'deepseek', features: 20, actions: 5.5, design: 7, credits: 37, minutes: 52.0 },
@@ -43,7 +43,9 @@ AI models differ in how much of an app they finish, how the app looks, how long 
 
 **Features** counts the 22 things the prompt asked for that were present and working on screen. **Actions** counts six things we did in each finished app and then checked in its database: raising a request, approval routing, approving and rejecting with a comment, recording a renewal decision, and the request filter and vendor detail. **Design** is a score out of 10 for layout, consistency and formatting. **Credits** is what the build used; 1 credit is 1/100 of a US dollar at provider list price.
 
-GPT-6.1 Sol and GPT-6 Astra built approval controls that only work for members of workspace groups the apps expect, such as Finance Approvers, and contract owners with made-up email addresses. Those groups did not exist, so their approve, reject and renewal actions stayed disabled; their Actions score reflects the apps as built. Grok 4.7 did not finish the app in two attempts: both builds stopped before creating any pages.
+\*GPT-6.1 Sol and GPT-6 Astra built real access control: approvals only work for members of workspace groups the apps expect, such as Finance Approvers and VP Approvers, and renewal decisions only for each contract's owner. Out of the box, with no such groups, their approve, reject and renewal actions stayed disabled and both scored 2.5. The scores shown are after creating the groups the apps expect and adding the user to them, the setup a team would do before using either app. ToolJet's builder did not create these groups or tell the user to.
+
+Grok 4.7 did not finish the app in two attempts: both builds stopped before creating any pages.
 
 ## Recommended models
 
@@ -53,7 +55,7 @@ GPT-6.1 Sol and GPT-6 Astra built approval controls that only work for members o
 | **A one-page tool or dashboard** | <ModelName provider="openai">GPT-6 Luna</ModelName> or <ModelName provider="openai">GPT-6.1 Sol</ModelName> | A one-page booking desk took 4.8 min and 3 credits with Luna, and 3.8 min and 23 credits with Sol |
 | **A multi-page business app where completeness matters** | <ModelName provider="anthropic">Claude Opus 5.5</ModelName> | The only model to deliver all 22 features of the six-page app, with all 6 actions working and the most polished pages |
 | **A multi-page app for less** | <ModelName provider="anthropic">Claude Sonnet 5.5</ModelName> | 21.5 of 22 features for about three quarters of Opus's credits |
-| **A multi-page app, fast** | <ModelName provider="openai">GPT-6.1 Sol</ModelName> | 20.5 of 22 features in 12 minutes for 87 credits, the fastest six-page build. Its approval actions need the workspace groups the app expects |
+| **A multi-page app, fast** | <ModelName provider="openai">GPT-6.1 Sol</ModelName> | 20.5 of 22 features in 12 minutes for 87 credits, the fastest six-page build. Set up the workspace groups the app expects before using its approvals |
 | **A large app on a tight credit budget** | <ModelName provider="openai">GPT-6 Luna</ModelName> | 20 of 22 features and all 6 actions working for 21 credits, if you can wait about 25 minutes |
 | **A quick, low-cost first version** | <ModelName provider="anthropic">Claude Haiku 5.5</ModelName> | 20 of 22 features in 14 minutes for 85 credits |
 | **An app on live external data, such as ServiceNow** | <ModelName provider="openai">GPT-6 Luna</ModelName> | In a separate four-page ServiceNow test, Luna got every headline number right for 14 credits |
@@ -270,11 +272,11 @@ All six actions worked end to end, with routing enforced step by step. Fable mat
 
 ### GPT-6.1 Sol
 
-Sol built approval controls for workspace groups the app expects (department managers, Finance approvers and VP approvers) and limited renewal decisions to each contract's owner. Those groups and owners did not exist in our workspace, so approve, reject and renewal stayed disabled until they are set up; raising a request, the filter and vendor detail worked. Sol was the fastest build and one of the best values. All six pages worked, with a consistent indigo theme and charts with legends. Weak points: no request detail panel on the Requests page, contract dates without years, and committed spend showing $0 for most departments.
+Sol built approval controls for workspace groups the app expects (department managers, Finance approvers and VP approvers) and limited renewal decisions to each contract's owner. Out of the box those groups did not exist, so approve, reject and renewal stayed disabled. After creating the groups, rejecting worked, and a Finance approver could assign a contract to themselves and record the renewal decision; approvals were recorded, but a request never reached Approved because each step jumped straight to Complete. Sol was the fastest build and one of the best values. All six pages worked, with a consistent indigo theme and charts with legends. Weak points: no request detail panel on the Requests page, contract dates without years, and committed spend showing $0 for most departments.
 
 ### GPT-6 Astra
 
-Like Sol, Astra tied approvals to workspace groups and renewals to contract owners that did not exist yet, so those actions stayed disabled; raising a request, the filter and vendor detail worked. Astra built all six pages in 13 minutes, with a strong Overview: five KPIs, each compared with last quarter, and three charts with legends. Weak points: the Requests and Approvals pages show no detail panel or approve and reject controls until a row is selected, several tables stop at five rows with empty space below, two vendor flag chips are cut off, and the monthly spend chart shows spend for only two departments.
+Like Sol, Astra tied approvals to workspace groups and renewals to contract owners. Out of the box those actions stayed disabled. After creating the groups, approvals moved correctly from manager to Finance to VP, each recorded in the audit log, and rejecting worked; renewal decisions still need the named contract owner to sign in, since the app offers no way to reassign an owner. Astra built all six pages in 13 minutes, with a strong Overview: five KPIs, each compared with last quarter, and three charts with legends. Weak points: the Requests and Approvals pages show no detail panel or approve and reject controls until a row is selected, several tables stop at five rows with empty space below, two vendor flag chips are cut off, and the monthly spend chart shows spend for only two departments.
 
 ### GPT-6 Luna
 
@@ -365,7 +367,7 @@ Every model received the prompt below, unchanged, through the ToolJet AI app bui
 
 We then opened every page of each app and checked it against a 22-item list taken from the prompt: five KPIs with comparisons and three charts on the Overview; the request table, filters, form and detail panel; the approval queue, approval rules, approve and reject with a comment, and recorded decisions; the vendor list, compliance flags and vendor detail; the contract list, renewal timeline and renewal decision; and the budget comparison and audit log. Each item scored 1 if it was present, populated and plausible, 0.5 if it was present but partly broken, and 0 if it was missing. Design was scored separately, out of 10.
 
-We then used each finished app the way a procurement team would, through its own screens, and checked the result in the app's database: we raised a $62,000 request and checked its approval route, approved one request and rejected another with a comment, recorded a contract renewal decision, and used the request filter and vendor detail. Each of these six actions scored 1 if it worked and was saved correctly, 0.5 if it partly worked, and 0 if it failed. The workspace was used as it was, with the tester signed in as a workspace admin; we did not create any groups or users an app expected.
+We then used each finished app the way a procurement team would, through its own screens, and checked the result in the app's database: we raised a $62,000 request and checked its approval route, approved one request and rejected another with a comment, recorded a contract renewal decision, and used the request filter and vendor detail. Each of these six actions scored 1 if it worked and was saved correctly, 0.5 if it partly worked, and 0 if it failed. The tester was signed in as a workspace admin. Two apps, built by GPT-6.1 Sol and GPT-6 Astra, limited approvals to workspace groups that did not exist; for those two we also created the groups each app expected, added the tester to them and repeated the approval, rejection and renewal checks. The table shows those results, marked with an asterisk.
 
 The **design-focused test** used the one-page yacht charter prompt shown in that section, built once by every model on 7 October 2026 and graded blind for design. The ServiceNow row in **Recommended models** draws on a separate same-prompt test: a four-page IT operations app on live ServiceNow data, built on 6 October 2026.
 
