@@ -1,5 +1,16 @@
 // Manifest rules for the template gallery. Pure; scripts/generate-template-assets.ts applies them to every template.
-import { TemplateDefinition } from './wireframe';
+
+// Only the parts of definition.json the manifest rules read
+export interface TemplateDefinition {
+  app: Array<{
+    definition: {
+      appV2: {
+        dataSources?: Array<{ id: string; kind: string }>;
+        dataQueries?: Array<{ dataSourceId: string }>;
+      };
+    };
+  }>;
+}
 
 export interface TemplateSource {
   id: string;

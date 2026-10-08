@@ -22,8 +22,8 @@ shared import pipeline (`import-export-resources`), then has its tables seeded f
 | `server/scripts/compress-templates.js` | Docker builds minify and Brotli-compress definitions to `.json.br`; `readTemplateJson` prefers them |
 | `frontend/assets/custom-components/templates/<id>.html` | Preview shown in the template library, one per template |
 | `server/templates/categories.json` | Category id → display title for the gallery; every manifest `category` must be a key here |
-| `server/scripts/generate-template-assets.ts` | Writes card wireframes (`<id>.svg`, `<id>-dark.svg`) and manifest `sources` from each definition; `--check` runs in CI |
-| `wireframe.ts`, `template-assets.ts` | Pure logic behind the generator: definition → SVG, data-source derivation, manifest validation |
+| `server/scripts/generate-template-assets.ts` | Writes manifest `sources` from each definition and validates every manifest; `--check` runs in CI |
+| `template-assets.ts` | Pure logic behind the generator: data-source derivation, manifest validation |
 
 ## Edition split
 
@@ -49,13 +49,8 @@ shared import pipeline (`import-export-resources`), then has its tables seeded f
   always filters by the caller's workspace.
 - Template id = folder name = `manifest.json` `id` = preview file name. Nothing maps them.
 - After adding or editing a template, run `cd server && npm run templates:generate` and commit its output. CI fails on stale
-  wireframes or `sources`, and on invalid manifests (missing fields, unknown category, name over 90 characters, no preview).
+  `sources`, and on invalid manifests (missing fields, unknown category, name over 90 characters, no preview).
 - Manifest `sources` is generated from the data sources the queries use; do not edit it by hand.
-- Wireframes (`wireframe.ts`) are layout only, no text. Top-level home-page components are drawn with one layer of direct
-  children: a child's `parent` is the parent id, plus `-<tabIndex>` (Tabs, only tab `-0` is drawn) or `-header`; child
-  `left`/`width` are columns of the parent's 43-column grid, `top` is px from the parent's top, clipped to the parent.
-  Grandchildren, modals and hidden components are skipped. Bar widths come from a hash of the box geometry, not
-  `Math.random`, so output is stable and `--check` stays deterministic. Changing the drawing changes every SVG: regenerate.
 
 ## Related modules
 

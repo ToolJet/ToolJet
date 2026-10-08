@@ -57,7 +57,7 @@ jobs:
           filters: |
             server:
               # braces: with the 'every' quantifier each list item must match, so extra paths cannot be extra items.
-              # the template wireframes and plugin manifests are inputs of server's templates:generate --check
+              # the template preview HTML and plugin manifests are inputs of server's templates:generate --check
               - '{server/**,frontend/assets/custom-components/templates/**,plugins/packages/*/lib/manifest.json}'
               - '!**/*.md'
               - '!server/ee'

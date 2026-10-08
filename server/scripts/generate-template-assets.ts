@@ -1,24 +1,19 @@
-// Generates the template gallery's derived files from server/templates:
-// - card wireframes <id>.svg and <id>-dark.svg next to the preview HTML in frontend/assets/custom-components/templates
-// - each manifest's `sources`, from the data sources its queries use
-// It also validates every manifest. With --check it writes nothing and exits 1 if any output is out of date (CI).
+// Generates each template manifest's `sources` from the data sources its queries use, and validates every manifest.
+// With --check it writes nothing and exits 1 if any manifest is out of date (CI).
 // Run from server/: npm run templates:generate [-- --check]
-import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import {
-  accentColour,
-  extractHomeBlocks,
-  renderWireframe,
+  deriveSources,
   TemplateDefinition,
-  WireframeTheme,
-} from '../src/modules/templates/wireframe';
-import { deriveSources, TemplateManifest, validateManifest } from '../src/modules/templates/template-assets';
+  TemplateManifest,
+  validateManifest,
+} from '../src/modules/templates/template-assets';
 
 const SERVER_DIR = join(__dirname, '..');
 const TEMPLATES_DIR = join(SERVER_DIR, 'templates');
 const ASSETS_DIR = join(SERVER_DIR, '..', 'frontend', 'assets', 'custom-components', 'templates');
 const PLUGINS_DIR = join(SERVER_DIR, '..', 'plugins', 'packages');
-const THEMES: WireframeTheme[] = ['light', 'dark'];
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf-8')) as T;
 
@@ -27,9 +22,6 @@ function pluginName(kind: string): string | undefined {
   if (!existsSync(manifestPath)) return undefined;
   return readJson<{ 'tj:source'?: { name?: string } }>(manifestPath)['tj:source']?.name;
 }
-
-const wireframePath = (id: string, theme: WireframeTheme) =>
-  join(ASSETS_DIR, `${id}${theme === 'dark' ? '-dark' : ''}.svg`);
 
 function main() {
   const check = process.argv.includes('--check');
@@ -56,11 +48,6 @@ function main() {
     } catch (error) {
       errors.push(`${folder}: ${(error as Error).message}`);
     }
-
-    const blocks = extractHomeBlocks(definition);
-    for (const theme of THEMES) {
-      expected.set(wireframePath(folder, theme), renderWireframe(blocks, theme, accentColour(definition, theme)));
-    }
   }
 
   if (errors.length) {
@@ -72,23 +59,19 @@ function main() {
     ([path, content]) => !existsSync(path) || readFileSync(path, 'utf-8') !== content
   );
   const changedPaths = changed.map(([path]) => path);
-  const stale = readdirSync(ASSETS_DIR)
-    .filter((file) => file.endsWith('.svg') && !expected.has(join(ASSETS_DIR, file)))
-    .map((file) => join(ASSETS_DIR, file));
 
   if (check) {
-    if (changedPaths.length || stale.length) {
-      console.error('Template assets are out of date. Run: cd server && npm run templates:generate');
-      [...changedPaths, ...stale].forEach((path) => console.error(`  ${path}`));
+    if (changedPaths.length) {
+      console.error('Template manifests are out of date. Run: cd server && npm run templates:generate');
+      changedPaths.forEach((path) => console.error(`  ${path}`));
       process.exit(1);
     }
-    console.log(`Template assets are up to date (${folders.length} templates).`);
+    console.log(`Template manifests are up to date (${folders.length} templates).`);
     return;
   }
 
   changed.forEach(([path, content]) => writeFileSync(path, content));
-  stale.forEach((path) => unlinkSync(path));
-  console.log(`Wrote ${changed.length} file(s), removed ${stale.length} stale wireframe(s).`);
+  console.log(`Wrote ${changed.length} file(s).`);
 }
 
 main();

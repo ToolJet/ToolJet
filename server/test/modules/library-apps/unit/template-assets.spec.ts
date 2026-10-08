@@ -1,5 +1,9 @@
-import { deriveSources, TemplateManifest, validateManifest } from '@modules/templates/template-assets';
-import { TemplateDefinition } from '@modules/templates/wireframe';
+import {
+  deriveSources,
+  TemplateDefinition,
+  TemplateManifest,
+  validateManifest,
+} from '@modules/templates/template-assets';
 
 function definitionWith(
   dataSources: Array<{ id: string; kind: string }>,
