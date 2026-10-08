@@ -173,7 +173,7 @@ export class PageService implements IPageService {
     const result = await dbTransactionWrap(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
       const savedPage = await manager.save(Page, newPage);
-      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!page.isPageGroup);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!savedPage.isPageGroup);
       return savedPage;
     });
 
@@ -232,6 +232,7 @@ export class PageService implements IPageService {
       newPage.pageFooter = pageToClone.pageFooter;
 
       clonedPage = await manager.save(newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, false);
 
       await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 

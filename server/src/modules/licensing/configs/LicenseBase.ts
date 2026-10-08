@@ -250,7 +250,7 @@ export default class LicenseBase {
 
   public get appPagesLimit(): number | string {
     if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.app?.pages?.count || 5;
+      return this.BASIC_PLAN_TERMS.app?.pages?.count || LICENSE_LIMIT.UNLIMITED;
     }
     if (!this._app || this._app['pages']?.count === undefined) {
       return ''; //Not passed set to infinite for older licenses and trial
@@ -260,7 +260,7 @@ export default class LicenseBase {
 
   public get appPageGroupsLimit(): number | string {
     if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || 5;
+      return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || LICENSE_LIMIT.UNLIMITED;
     }
     if (!this._app || this._app['pages']?.groupCount === undefined) {
       return ''; //Not passed set to infinite for older licenses and trial

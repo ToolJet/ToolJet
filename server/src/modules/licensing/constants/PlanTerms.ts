@@ -30,7 +30,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     scim: false,
     mfa: false,
     observability: false,
-    automaticSsoLogin: false,
+    automaticSsoLogin: true,
   },
   domains: [],
   workflows: {
@@ -52,8 +52,8 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   app: {
     pages: {
       enabled: false,
-      count: '',
-      groupCount: '',
+      count: LICENSE_LIMIT.UNLIMITED,
+      groupCount: LICENSE_LIMIT.UNLIMITED,
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
