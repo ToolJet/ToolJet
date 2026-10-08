@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NumberRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/NumberRenderer';
 import { useNumberValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
 
@@ -20,12 +20,9 @@ export const NumberField = ({
   id,
   onValidationChange,
 }) => {
+  // Committed-value fallback; NumberRenderer itself reports the effective (draft-while-focused,
+  // committed otherwise) validation state back via onValidationChange.
   const { isValid, validationError } = useNumberValidation(field, value);
-
-  // Expose validation state to parent
-  useEffect(() => {
-    onValidationChange?.({ isValid, validationError });
-  }, [isValid, validationError, onValidationChange]);
 
   return (
     <NumberRenderer
@@ -43,6 +40,8 @@ export const NumberField = ({
       id={id}
       className={'kv-number-field-input'}
       widgetType="KeyValuePair"
+      validationConfig={field}
+      onValidationChange={onValidationChange}
     />
   );
 };
