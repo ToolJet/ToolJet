@@ -18,6 +18,8 @@ import {
   folderPageQuery,
   rootCountsQuery,
   rootPageQuery,
+  searchCountsQuery,
+  searchPageQuery,
 } from './queries';
 import { DashboardEntryDto, ListAppsV2QueryDto, ListAppsV2ResponseDto, RefDto } from './dto/list.dto';
 
@@ -78,6 +80,7 @@ export class DashboardService {
   async list(user: User, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
     const { scope, permissions } = await this.resolveScope(user, query.type, query.branch_id);
     const ctx = { scope, permissions };
+    if (query.search) return this.search(ctx, query);
     if (query.folder_id) return this.folder(ctx, query);
     return this.root(ctx, query);
   }
@@ -108,6 +111,19 @@ export class DashboardService {
       total: header.total,
       counts: { pinned: header.pinned, folders: 0, apps: header.total - header.pinned },
       folder: { id: header.id, name: header.name },
+    });
+  }
+
+  private async search(ctx: EntryContext, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
+    const [[counts], rows] = await Promise.all([
+      this.run<Counts>(searchCountsQuery(ctx.scope, query.search)),
+      this.run<EntryRow>(searchPageQuery(ctx.scope, query.search, query.page_size, this.offset(query))),
+    ]);
+    return this.response(query, {
+      items: await this.toEntries(rows, ctx),
+      total: counts.pinned + counts.folders + counts.apps,
+      counts,
+      folder: null,
     });
   }
 
