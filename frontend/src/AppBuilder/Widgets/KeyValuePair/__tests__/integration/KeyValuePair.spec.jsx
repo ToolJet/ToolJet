@@ -844,4 +844,23 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
       expect(document.querySelector('.kv-row-validation-error').textContent).toMatch(/^Bad /);
     }
   );
+
+  test('[KeyValuePair-BUG-DATE-007] datepicker: with date disabled and time enabled the field is time-only', async () => {
+    // Break this catches: DatepickerFieldAdapter does `field.isDateSelectionEnabled || true`, so a saved `false`
+    // is forced back to true and a bare time value is parsed with the date+time format ("Invalid date").
+    renderField(
+      { fieldType: 'datepicker', isEditable: true, isTimeChecked: true, isDateSelectionEnabled: false },
+      { v: '09:30 AM' }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await waitFor(() => expect(valueContainer(rows()[0]).textContent).toContain('9:30 AM'));
+    expect(valueContainer(rows()[0]).textContent).not.toContain('Invalid date');
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.querySelector('.react-datepicker__input-container input')).toBeInTheDocument());
+    await widget.session.user.click(document.querySelector('.react-datepicker__input-container input'));
+    await waitFor(() => expect(document.querySelector('.react-datepicker__time-container')).toBeInTheDocument());
+    expect(document.querySelector('.react-datepicker__month')).not.toBeInTheDocument();
+  });
 });
