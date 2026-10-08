@@ -4,8 +4,7 @@
   "description": "A schema defining Grok datasource",
   "type": "api",
   "defaults": {
-    "operation": "chat",
-    "model": "grok-2-latest"
+    "operation": "chat"
   },
   "properties": {
     "operation": {
@@ -25,14 +24,15 @@
       "model": {
         "label": "Model",
         "key": "model",
-        "type": "dropdown",
-        "description": "Select Grok model",
-        "list": [
-          { "value": "grok-2-latest", "name": "grok-2-latest" },
-          { "value": "grok-2", "name": "grok-2" },
-          { "value": "grok-2-1212", "name": "grok-2-1212" },
-          { "value": "grok-beta", "name": "grok-beta" }
-        ]
+        "type": "dynamic-selector",
+        "description": "Select Grok model fetched dynamically from xAI",
+        "operation": {
+          "invokeMethod": "listModels",
+          "label": "Fetch Models"
+        },
+        "autoFetch": true,
+        "fxEnabled": true,
+        "placeholder": "Select model or switch to fx mode"
       },
       "custom_model": {
         "label": "Custom Model ID",
@@ -66,7 +66,7 @@
         "label": "User Message",
         "key": "prompt",
         "type": "codehinter",
-        "description": "Prompt/question to send to the model",
+        "description": "Prompt/question to send to the model (used if Messages is omitted)",
         "placeholder": "Enter your prompt here",
         "height": "100px",
         "mandatory": false
@@ -106,13 +106,25 @@
       "model": {
         "label": "Model",
         "key": "model",
-        "type": "dropdown",
-        "description": "Select Grok vision model",
-        "list": [
-          { "value": "grok-2-vision-1212", "name": "grok-2-vision-1212" },
-          { "value": "grok-vision-beta", "name": "grok-vision-beta" },
-          { "value": "grok-2-latest", "name": "grok-2-latest" }
-        ]
+        "type": "dynamic-selector",
+        "description": "Select Grok vision model fetched dynamically from xAI",
+        "operation": {
+          "invokeMethod": "listModels",
+          "label": "Fetch Models"
+        },
+        "autoFetch": true,
+        "fxEnabled": true,
+        "placeholder": "Select model or switch to fx mode"
+      },
+      "custom_model": {
+        "label": "Custom Model ID",
+        "key": "custom_model",
+        "type": "codehinter",
+        "description": "Specify a custom model ID (overrides model dropdown if provided)",
+        "placeholder": "e.g., grok-2-vision-1212",
+        "width": "320px",
+        "height": "36px",
+        "mandatory": false
       },
       "prompt": {
         "label": "User Message / Question",
@@ -157,6 +169,7 @@
         "label": "Temperature",
         "key": "temperature",
         "type": "codehinter",
+        "description": "Sampling temperature between 0 and 2",
         "placeholder": "0.7",
         "width": "320px",
         "height": "36px",
@@ -166,6 +179,7 @@
         "label": "Max Tokens",
         "key": "max_tokens",
         "type": "codehinter",
+        "description": "Maximum number of tokens to generate",
         "placeholder": "2048",
         "width": "320px",
         "height": "36px",
@@ -186,7 +200,7 @@
         "label": "Model",
         "key": "model",
         "type": "codehinter",
-        "description": "Model for image generation",
+        "description": "Model for image generation (default: grok-2-image)",
         "placeholder": "grok-2-image",
         "width": "320px",
         "height": "36px",
