@@ -1,0 +1,157 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Smartsheet datasource",
+  "description": "A schema defining Smartsheet datasource",
+  "type": "api",
+  "source": {
+    "name": "Smartsheet",
+    "kind": "smartsheet",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": false,
+    "options": {
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "access_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "region": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2 personal_access_token"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "redirect_url": {
+      "value": ""
+    },
+    "scopes": {
+      "value": "READ_SHEETS WRITE_SHEETS CREATE_SHEETS READ_USERS ADMIN_USERS READ_CONTACTS ADMIN_WEBHOOKS"
+    },
+    "region": {
+      "value": "us"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Choose how ToolJet authenticates with Smartsheet",
+      "list": [
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        },
+        {
+          "value": "personal_access_token",
+          "name": "API Access Token"
+        }
+      ],
+      "commonFields": {
+        "region": {
+          "label": "Region",
+          "key": "region",
+          "type": "dropdown",
+          "description": "Select the Smartsheet region",
+          "list": [
+            {
+              "name": "US",
+              "value": "us"
+            },
+            {
+              "name": "EU",
+              "value": "eu"
+            },
+            {
+              "name": "AU",
+              "value": "au"
+            }
+          ]
+        }
+      }
+    },
+    "oauth2": {
+      "client_id": {
+        "label": "Client ID",
+        "key": "client_id",
+        "type": "text",
+        "description": "Enter the Smartsheet OAuth client ID"
+      },
+      "client_secret": {
+        "label": "Client Secret",
+        "key": "client_secret",
+        "type": "password",
+        "description": "Enter the Smartsheet OAuth client secret",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "label": "Redirect URL",
+        "key": "redirect_url",
+        "type": "text",
+        "description": "Copy this redirect URL into your Smartsheet app"
+      },
+      "access_token_url": {
+        "label": "Access token URL",
+        "key": "access_token_url",
+        "type": "text",
+        "description": "Smartsheet token endpoint. Leave blank to use the endpoint of the selected region."
+      },
+      "auth_url": {
+        "label": "Authorization URL",
+        "key": "auth_url",
+        "type": "text",
+        "description": "Smartsheet authorization endpoint. Leave blank to use the endpoint of the selected region."
+      },
+      "scopes": {
+        "label": "Scopes",
+        "key": "scopes",
+        "type": "text",
+        "description": "Space-separated Smartsheet OAuth scopes"
+      }
+    },
+    "personal_access_token": {
+      "access_token": {
+        "label": "API Access Token",
+        "key": "access_token",
+        "type": "password",
+        "description": "Enter a Smartsheet API token",
+        "encrypted": true
+      }
+    }
+  },
+  "required": []
+}
