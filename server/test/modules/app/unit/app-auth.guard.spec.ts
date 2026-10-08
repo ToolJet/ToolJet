@@ -10,6 +10,7 @@ describe('AppAuthGuard', () => {
   let mockAppRepository: { findAppBySlug: jest.Mock };
   let mockOrgRepository: { findOne: jest.Mock; touchLastAccessedAt: jest.Mock };
   let mockAppUtilService: { getAppOrganizationDetails: jest.Mock };
+  let mockLicenseTermsService: { getLicenseTerms: jest.Mock };
 
   const makeContext = (slug: string): ExecutionContext => {
     const request: Record<string, any> = { params: { slug }, headers: {} };
@@ -36,11 +37,13 @@ describe('AppAuthGuard', () => {
     mockAppRepository = { findAppBySlug: jest.fn() };
     mockOrgRepository = { findOne: jest.fn(), touchLastAccessedAt: jest.fn() };
     mockAppUtilService = { getAppOrganizationDetails: jest.fn() };
+    mockLicenseTermsService = { getLicenseTerms: jest.fn().mockResolvedValue(true) };
     guard = new AppAuthGuard(
       mockAppUtilService as any,
       mockOrgRepository as any,
       mockAppRepository as any,
-      { getRepository: () => ({ findOne: jest.fn().mockResolvedValue(null) }) } as any
+      { getRepository: () => ({ findOne: jest.fn().mockResolvedValue(null) }) } as any,
+      mockLicenseTermsService as any
     );
   });
 
@@ -94,6 +97,23 @@ describe('AppAuthGuard', () => {
       await guard.canActivate(makeContext('my-app'));
 
       expect(mockOrgRepository.touchLastAccessedAt).toHaveBeenCalledWith('org-uuid-1');
+    });
+
+    it('demotes the app to private in-memory and falls back to JWT auth when the license no longer covers public apps', async () => {
+      const app = makeApp({ isPublic: true });
+      mockAppRepository.findAppBySlug.mockResolvedValue(app);
+      mockOrgRepository.findOne.mockResolvedValue(makeOrg());
+      mockLicenseTermsService.getLicenseTerms.mockResolvedValue(false);
+      const parentSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
+        .mockResolvedValue(true);
+
+      const result = await guard.canActivate(makeContext('my-app'));
+
+      expect(app.isPublic).toBe(false);
+      expect(parentSpy).toHaveBeenCalled();
+      expect(mockOrgRepository.touchLastAccessedAt).not.toHaveBeenCalled();
+      expect(result).toBe(true);
     });
   });
 

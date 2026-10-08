@@ -29,6 +29,7 @@ export const appsService = {
   getTables,
   getWorkflows,
   getAppsLimit,
+  getPagesLimit,
   getWorkflowLimit,
   releaseVersion,
 };
@@ -48,6 +49,11 @@ function getWorkflows(id) {
 function getAppsLimit() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/apps/limits`, requestOptions).then(handleResponse);
+}
+
+function getPagesLimit() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/pages/limits`, requestOptions).then(handleResponse);
 }
 
 function validateReleasedApp(slug) {

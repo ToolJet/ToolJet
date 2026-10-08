@@ -32,7 +32,7 @@ export class VersionRepository extends Repository<AppVersion> {
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // moduleReferenceId is module-only; look up parent app type once and gate.
-      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type'] });
+      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type', 'organizationId'] });
       const isModule = parentApp?.type === APP_TYPES.MODULE;
       return catchDbException(() => {
         return manager.save(

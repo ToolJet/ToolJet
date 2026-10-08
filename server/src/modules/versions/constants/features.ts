@@ -1,7 +1,6 @@
 import { FEATURE_KEY } from './index';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeaturesConfig } from '../types';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.VERSION]: {
@@ -20,7 +19,6 @@ export const FEATURES: FeaturesConfig = {
       auditLogsKey: 'APP_UPDATE',
     },
     [FEATURE_KEY.PROMOTE]: {
-      license: LICENSE_FIELD.VALID,
       auditLogsKey: 'APP_PROMOTE',
     },
     [FEATURE_KEY.CREATE_COMPONENTS]: {},
