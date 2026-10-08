@@ -3,6 +3,7 @@ name: Release
 # START:  Actions tab -> Release -> Run workflow, pick main or lts-3.16
 #         (optionally type a tag; empty = bump the version automatically).
 # FINISH: runs by itself when a lead merges the version bump PR this workflow opened.
+#         If that ever does not start, Run workflow again with "finish_release" ticked.
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +12,11 @@ on:
         required: false
         default: ""
         type: string
+      finish_release:
+        description: "Only if a version bump PR was merged but the release was not published: tick this to finish that release now."
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main, lts-3.16]
     paths: ['.version']
@@ -23,7 +29,7 @@ jobs:
   # ---------------------------------------------------------------- START ---
   # 1. Only the leads for the chosen branch may start a release
   authorize:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && !inputs.finish_release
     runs-on: ubuntu-latest
     steps:
       - name: Check branch and lead list
@@ -53,7 +59,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -259,7 +265,7 @@ jobs:
           } > release-notes.md
 
           # A draft cannot be marked "latest"; the publish step does that for LTS
-          args=(--draft --target "$GITHUB_REF_NAME" --title "Release $TAG" --notes-file release-notes.md)
+          args=(--draft --target "$GITHUB_REF_NAME" --title "$TAG" --notes-file release-notes.md)
           [[ "$TAG" != *"lts"* ]] && args+=(--prerelease)
 
           url=$(gh release create "$TAG" "${args[@]}")
@@ -298,28 +304,49 @@ jobs:
   # --------------------------------------------------------------- FINISH ---
   # 3. Did this push come from the version bump PR that the workflow opened?
   detect-bump:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || inputs.finish_release
     runs-on: ubuntu-latest
     outputs:
       is_bump: ${{ steps.find.outputs.is_bump }}
+      sha: ${{ steps.find.outputs.sha }}
+      pr: ${{ steps.find.outputs.pr }}
+      merged_by: ${{ steps.find.outputs.merged_by }}
     steps:
       - name: Find the merged PR
         id: find
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          author=""; head=""
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            SHA="$GITHUB_SHA"
+          else
+            # Finishing by hand: the last commit on this branch that changed .version
+            SHA=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$GITHUB_REF_NAME&path=.version&per_page=1" --jq '.[0].sha')
+            echo "Last .version change on $GITHUB_REF_NAME: $SHA"
+          fi
+          # A commit can belong to several PRs (e.g. an open PR from this branch to another one).
+          # Look through all of them for the merged version bump PR into this branch.
+          bump=""; prs=""
           for attempt in 1 2 3; do
-            read -r author head <<< "$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-              --jq '.[0] | [.user.login, .head.ref] | join(" ")' 2>/dev/null || true)"
-            [ -n "$author" ] && break
+            prs=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" \
+              --jq '.[] | "#\(.number) \(.user.login) \(.head.ref) -> \(.base.ref) merged=\(.merged_at != null) \(.merge_commit_sha)"' 2>/dev/null || true)
+            bump=$(printf '%s\n' "$prs" | awk -v b="$GITHUB_REF_NAME" \
+              '$2=="github-actions[bot]" && $3 ~ /^version-bump-v/ && $5==b && $6=="merged=true" {print $3, $7, substr($1,2); exit}')
+            [ -n "$bump" ] && break
             sleep 5
           done
-          if [ "$author" = "github-actions[bot]" ] && [[ "$head" == version-bump-v* ]]; then
-            echo "Version bump PR merged ($head)"
+          if [ -n "$bump" ]; then
+            read -r bump_branch merge_sha pr_number <<< "$bump"
+            # Who merged this exact PR - not who started this run
+            merged_by=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" --jq '.merged_by.login // empty')
+            echo "Version bump PR #$pr_number merged ($bump_branch) as $merge_sha by ${merged_by:-unknown}"
             echo "is_bump=true" >> $GITHUB_OUTPUT
+            echo "sha=$merge_sha" >> $GITHUB_OUTPUT
+            echo "pr=$pr_number" >> $GITHUB_OUTPUT
+            echo "merged_by=$merged_by" >> $GITHUB_OUTPUT
           else
-            echo "Not a release version bump (PR author: ${author:-none}, branch: ${head:-none}) - nothing to do"
+            echo "Not a release version bump - nothing to do. PRs found for this commit:"
+            printf '%s\n' "${prs:-  (none)}"
             echo "is_bump=false" >> $GITHUB_OUTPUT
           fi
 
@@ -331,21 +358,30 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      # The rule: the person who MERGED the bump PR must be a release lead.
+      # Re-running or using finish_release does not change who that is.
       - name: Check a release lead merged the bump PR
         env:
           RELEASE_LEADS: ${{ secrets.RELEASE_LEADS }}
-          ACTOR: ${{ github.triggering_actor }}
+          PR: ${{ needs.detect-bump.outputs.pr }}
+          MERGED_BY: ${{ needs.detect-bump.outputs.merged_by }}
         run: |
-          match=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$ACTOR" \
-            '(.[$b] // {}) | keys[] | select(ascii_downcase == ($a | ascii_downcase))')
-          if [ -z "$match" ]; then
-            echo "::error::$ACTOR merged the version bump but is not a release lead for $GITHUB_REF_NAME. Nothing was published. Ask a lead to re-run this job."
+          if [ -z "$MERGED_BY" ]; then
+            echo "::error::Could not find who merged version bump PR #$PR. Nothing was published."
             exit 1
           fi
-          echo "Approved by $ACTOR"
+          match=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$MERGED_BY" \
+            '(.[$b] // {}) | keys[] | select(ascii_downcase == ($a | ascii_downcase))')
+          if [ -z "$match" ]; then
+            echo "::error::Version bump PR #$PR was merged by $MERGED_BY, who is not a release lead for $GITHUB_REF_NAME. Nothing was published."
+            exit 1
+          fi
+          echo "PR #$PR merged by release lead $MERGED_BY - approved"
 
       - name: Checkout merged version bump
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.detect-bump.outputs.sha }}
 
       - name: Read release details
         id: release
@@ -377,10 +413,20 @@ jobs:
           FRONTEND_SHA: ${{ steps.release.outputs.frontend_sha }}
         run: |
           tag_repo() {
-            local repo="$1" sha="$2"
+            local repo="$1" sha="$2" ref type obj
             [ -n "$sha" ] || { echo "::error::No commit recorded for $repo"; exit 1; }
-            if gh api "repos/ToolJet/$repo/git/ref/tags/$TAG" >/dev/null 2>&1; then
-              echo "$repo already has $TAG"; return 0
+            if ref=$(gh api "repos/ToolJet/$repo/git/ref/tags/$TAG" --jq '"\(.object.type) \(.object.sha)"' 2>/dev/null); then
+              # The tag already exists: accept it only if it points at the commit this release pins
+              read -r type obj <<< "$ref"
+              if [ "$type" = "tag" ]; then
+                # Annotated tag (e.g. made by tag-and-push.sh): look through to its commit
+                obj=$(gh api "repos/ToolJet/$repo/git/tags/$obj" --jq .object.sha)
+              fi
+              if [ "$obj" = "$sha" ]; then
+                echo "$repo already has $TAG at the right commit ($sha)"; return 0
+              fi
+              echo "::error::$repo already has $TAG, but it points at $obj, not $sha (the commit this release pins). Nothing was published. Check which one is right, delete the wrong tag, then re-run."
+              exit 1
             fi
             gh api -X POST "repos/ToolJet/$repo/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" >/dev/null
             echo "Tagged $repo at $sha"
