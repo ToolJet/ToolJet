@@ -1,169 +1,35 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  initTestApp,
-  closeTestApp,
-  createUser,
-  buildTestSession,
-  getDefaultDataSource,
-  withRealTransactions,
-} from 'test-helper';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { initTestApp, closeTestApp, createUser, getDefaultDataSource, withRealTransactions } from 'test-helper';
 import { User } from '@entities/user.entity';
-import { AiUtilService } from '@ee/ai/util.service';
 import { AiController } from '@ee/ai/controller';
+import { AiUtilService } from '@ee/ai/util.service';
 import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
+import {
+  GATEWAY,
+  SELF_HOSTED_CUSTOMER,
+  SELF_HOSTED_TERMS,
+  TEAM_TERMS,
+  auditRows,
+  dropSeed,
+  gatewayFor,
+  sessionFor,
+  stubGateway,
+  useLicence,
+} from './credits-gateway';
 
-const GATEWAY = 'http://gateway.test';
-// Notices show only when found in the current cycle, so cycle starts are in the past.
+// Notices show only when found in the current cycle, so cycles start in the past.
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 const CYCLE_START = ago(10 * 24 * 3600_000);
 const NEW_CYCLE = ago(3600_000);
-const ADDON_END = ago(60_000); // expired a minute ago
-
-/** Stubs fetch at the gateway HTTP boundary; every other URL goes to the real fetch. */
-function stubGateway(routes: Record<string, unknown>) {
-  const realFetch = global.fetch;
-  return jest.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
-    const url = String(input);
-    if (!url.startsWith(GATEWAY)) return realFetch(input, init);
-    const path = url.slice(GATEWAY.length);
-    if (!(path in routes)) return new Response(JSON.stringify({ message: 'not stubbed' }), { status: 404 });
-    return new Response(JSON.stringify(routes[path]), { status: 200, headers: { 'content-type': 'application/json' } });
-  });
-}
-
-function licenseWith(app: INestApplication, overrides: Record<string, unknown>) {
-  const lts = app.get(LicenseTermsService);
-  const original = lts.getLicenseTerms.bind(lts);
-  jest.spyOn(lts, 'getLicenseTerms').mockImplementation(async (fields: unknown, organizationId?: string) => {
-    const base = await original(fields, organizationId);
-    if (Array.isArray(fields)) {
-      const merged = { ...(base as Record<string, unknown>) };
-      for (const f of fields) if (f in overrides) merged[f] = overrides[f];
-      return merged;
-    }
-    return typeof fields === 'string' && fields in overrides ? overrides[fields] : base;
-  });
-}
-
-const wallet = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
-
-interface Wallets {
-  /** Plan sizes (wallet total_amount). */
-  plan: { monthly: number; addon: number };
-  /** The cycle-start pool; remaining = this − monthly spend. */
-  remaining: { monthly: number; addon: number };
-  cycleStart?: string;
-  addonEndsAt?: string | null;
-  /** Monthly spend this cycle per user id. */
-  spend?: Record<string, number>;
-}
-
-function gatewayFor(ownerPath: string, w: Wallets) {
-  const cycleStart = w.cycleStart ?? CYCLE_START;
-  const users = Object.entries(w.spend ?? {}).map(([userId, monthly]) => ({ userId, ...wallet(monthly) }));
-  const used = users.reduce((acc, u) => acc + u.recurring, 0);
-  const remaining = wallet(w.remaining.monthly - used, w.remaining.addon);
-  const usage = { cycleStart, trackingSince: null, users, unattributed: wallet(0), pool: wallet(used) };
-  return {
-    [`${ownerPath}/balance`]: {
-      balance: remaining.total,
-      plan: wallet(w.plan.monthly, w.plan.addon),
-      remaining,
-      expiry: { recurringExpiryDate: '2099-11-01T00:00:00.000Z', topupExpiryDate: w.addonEndsAt ?? null },
-      cycleStart,
-    },
-    [`${ownerPath}/usage`]: usage,
-    [`${ownerPath}/usage?groupBy=organization`]: { ...usage, users: users.map((u) => ({ ...u, byOrganization: [] })) },
-  };
-}
-
-const full = (monthly: number, addon = 0, extra: Partial<Wallets> = {}): Wallets => ({
-  plan: { monthly, addon },
-  remaining: { monthly, addon },
-  ...extra,
-});
-
-const sessionFor = async (user: User, organizationId: string) =>
-  (await buildTestSession(user, organizationId)).tokenCookie;
-
-const getUsage = (app: INestApplication, cookie: string[], organizationId: string) =>
-  request(app.getHttpServer())
-    .get('/api/ai/credits-usage')
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie);
-
-const putBuilderLimit = (
-  app: INestApplication,
-  cookie: string[],
-  organizationId: string,
-  userId: string,
-  body: object
-) =>
-  request(app.getHttpServer())
-    .put(`/api/ai/credits-usage/limits/builders/${userId}`)
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie)
-    .send(body);
-
-const putLimits = (app: INestApplication, cookie: string[], organizationId: string, body: object) =>
-  request(app.getHttpServer())
-    .put('/api/ai/credits-usage/limits')
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie)
-    .send(body);
-
-const getMine = (app: INestApplication, cookie: string[], organizationId: string) =>
-  request(app.getHttpServer())
-    .get('/api/ai/credits-usage/me')
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie);
-
-const postCopilot = (app: INestApplication, cookie: string[], organizationId: string) =>
-  request(app.getHttpServer())
-    .post('/api/ai/copilot')
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie)
-    .send({ prompt: 'sum', context: '', language: 'javascript' });
-
-/** Agent calls end at the agent boundary (the util service the routes actually use). */
-const stubAgents = (app: INestApplication) => {
-  const util = (app.get(AiController) as unknown as { aiService: { aiUtilService: AiUtilService } }).aiService
-    .aiUtilService;
-  jest.spyOn(util, 'callAgentLegacy').mockResolvedValue([null, { assignments: [], newFolders: [], code: '' }]);
-};
+const ADDON_END = ago(60_000);
 
 const customRows = (userId: string) =>
-  getDefaultDataSource().query(`SELECT pool, value FROM ai_credit_limits WHERE user_id = $1 ORDER BY pool`, [userId]);
-
-/** Written by an async listener; wait, then give stragglers a moment so counts are final. */
-async function adjustedAudit(organizationId: string, expected: number) {
-  const read = () =>
-    getDefaultDataSource().query(
-      `SELECT user_id AS "userId", metadata FROM audit_logs
-        WHERE organization_id = $1 AND action_type = 'AI_CREDIT_LIMITS_ADJUSTED' ORDER BY created_at`,
-      [organizationId]
-    );
-  for (let i = 0; i < 50 && (await read()).length < expected; i++) await new Promise((r) => setTimeout(r, 100));
-  await new Promise((r) => setTimeout(r, 300));
-  return read();
-}
-
-/** Committed seed (outside the suite transaction) has to be deleted by hand. */
-async function dropSeed(organizationId: string, userIds: string[]) {
-  const db = getDefaultDataSource();
-  for (const table of ['ai_credit_limits', 'audit_logs', 'data_sources']) {
-    await db.query(`DELETE FROM ${table} WHERE organization_id = $1`, [organizationId]);
-  }
-  await db.query('DELETE FROM ai_credit_limits WHERE user_id = ANY($1)', [userIds]);
-  await db.query('DELETE FROM organizations WHERE id = $1', [organizationId]);
-  await db.query('DELETE FROM users WHERE id = ANY($1)', [userIds]);
-}
+  getDefaultDataSource().query('SELECT pool, value FROM ai_credit_limits WHERE user_id = $1 ORDER BY pool', [userId]);
 
 /** @group ai */
-describe('AI credit limits: pool changes', () => {
+describe('AI credit limits adjust when the pool shrinks', () => {
   const previous = { gateway: process.env.TJ_AI_GATEWAY_URL, features: process.env.ENABLE_AI_FEATURES };
 
   beforeAll(() => {
@@ -182,72 +48,86 @@ describe('AI credit limits: pool changes', () => {
 
   describe('Cloud', () => {
     let app: INestApplication;
+    let restoreLicence: (() => void) | undefined;
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'cloud', plan: 'enterprise' }));
       process.env.TOOLJET_EDITION = 'cloud';
     });
 
+    afterEach(() => {
+      restoreLicence?.();
+      restoreLicence = undefined;
+    });
+
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
 
-    /** Admin + 3 builders = 4 builders. Builder 1 gets a custom monthly limit of 3,000 on a 10,000 pool. */
-    async function seedWithCustom(prefix: string, wallets: Wallets = full(10_000)) {
-      const admin = await createUser(app, { email: `${prefix}-admin@tooljet.io`, groups: ['admin'] });
+    /**
+     * Admin + 3 builders = 4 builders on a 10,000 monthly plan; builder 1 holds a custom 3,000, so the others get
+     * (10,000 − 3,000) ÷ 3 = 2,333. The save records the plan sizes.
+     */
+    async function seed(name: string, addon = 0) {
+      const admin = await createUser(app, { email: `${name}-admin@tooljet.io`, groups: ['admin'] });
       const workspace = admin.organization;
-      const builders = [];
+      const builders: User[] = [];
       for (const n of [1, 2, 3]) {
         builders.push(
-          await createUser(app, {
-            email: `${prefix}-b${n}@tooljet.io`,
-            groups: ['builder'],
-            organization: workspace,
-          })
+          (await createUser(app, { email: `${name}-b${n}@tooljet.io`, groups: ['builder'], organization: workspace }))
+            .user as User
         );
       }
-      const cookie = await sessionFor(admin.user, workspace.id);
       const owner = `/api/ai/organizations/${workspace.id}`;
-      licenseWith(app, { aiPlan: 'credits' });
-      const gateway = stubGateway(gatewayFor(owner, wallets));
-      expect((await putLimits(app, cookie, workspace.id, { enabled: true })).statusCode).toBe(200);
-      expect(
-        (await putBuilderLimit(app, cookie, workspace.id, builders[0].user.id, { monthly: 3000 })).statusCode
-      ).toBe(200);
+      const cookie = await sessionFor(admin.user, workspace.id);
+      const pool = { monthly: 10_000, addon };
+      const gateway = stubGateway(
+        gatewayFor(owner, pool, {}, { plan: pool, cycleStart: CYCLE_START, addonEndsAt: addon ? ADDON_END : null })
+      );
+      await request(app.getHttpServer())
+        .put(`/api/ai/credits-usage/limits/builders/${builders[0].id}`)
+        .set('tj-workspace-id', workspace.id)
+        .set('Cookie', cookie)
+        .send({ monthly: 3000, addon: addon ? 1500 : null })
+        .expect(200);
       gateway.mockRestore();
-      return { admin, workspace, builders, cookie, owner, userIds: [admin, ...builders].map((u) => u.user.id) };
+      return { workspace, builders, owner, cookie, userIds: [admin.user.id, ...builders.map((b) => b.id)] };
     }
 
-    it('AC1: a plan change that makes the max 2,000 turns a 3,000 custom limit into the default, audited by the system', async () => {
-      const s = await seedWithCustom('pc1');
-      // 4 builders on 2,003: builder 1 may hold 2,003 − 3 = 2,000.
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
-
-      const res = await getUsage(app, s.cookie, s.workspace.id);
-
-      expect(res.statusCode).toBe(200);
-      expect(await customRows(s.builders[0].user.id)).toEqual([]);
-      const row = res.body.rows.find((r) => r.userId === s.builders[0].user.id);
-      expect(row.customLimit).toBeUndefined();
-      expect(row.limit.monthly).toBe(500);
-      const [entry, ...rest] = await adjustedAudit(s.workspace.id, 1);
-      expect(rest).toEqual([]);
-      expect(entry.userId).toBeNull();
-      expect(entry.metadata).toMatchObject({
-        reason: 'plan_change',
-        defaults: { monthly: { before: 2333, after: 500 } },
-        customReduced: 1,
-        builders: [{ builderId: s.builders[0].user.id, pool: 'monthly', before: 3000, after: null }],
+    /** The plan dropped to 2,003 at a new cycle: builder 1 may now hold 2,003 − 3 × 1 = 2,000. */
+    const smallerPlan = (owner: string, spend: Record<string, number> = {}) =>
+      gatewayFor(owner, { monthly: 2003, addon: 0 }, spend, {
+        plan: { monthly: 2003, addon: 0 },
+        cycleStart: NEW_CYCLE,
       });
-    });
 
-    it('AC2: a plan change shows a notice on every read in this cycle', async () => {
-      const s = await seedWithCustom('pc2');
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+    const getUsage = (cookie: string[], organizationId: string) =>
+      request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', organizationId)
+        .set('Cookie', cookie);
 
-      const first = await getUsage(app, s.cookie, s.workspace.id);
-      const second = await getUsage(app, s.cookie, s.workspace.id);
+    const copilot = (cookie: string[], organizationId: string) =>
+      request(app.getHttpServer())
+        .post('/api/ai/copilot')
+        .set('tj-workspace-id', organizationId)
+        .set('Cookie', cookie)
+        .send({ prompt: 'sum', context: '', language: 'javascript' });
 
+    const stubAgents = () => {
+      const util = (app.get(AiController) as unknown as { aiService: { aiUtilService: AiUtilService } }).aiService
+        .aiUtilService;
+      jest.spyOn(util, 'callAgentLegacy').mockResolvedValue([null, { assignments: [], newFolders: [], code: '' }]);
+    };
+
+    it('a plan change that drops the max to 2,000 resets a 3,000 custom limit to the default, audited as the system, with a notice on every read', async () => {
+      const s = await seed('sales');
+      stubGateway(smallerPlan(s.owner));
+
+      const first = await getUsage(s.cookie, s.workspace.id);
+      const second = await getUsage(s.cookie, s.workspace.id);
+
+      expect(first.statusCode).toBe(200);
       const notice = {
         kind: 'plan_change',
         on: NEW_CYCLE,
@@ -256,56 +136,59 @@ describe('AI credit limits: pool changes', () => {
         reduced: 1,
       };
       expect(first.body.notices).toEqual([notice]);
-      expect(second.body.notices).toEqual(first.body.notices);
-      expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+      expect(second.body.notices).toEqual([notice]);
+      const row = first.body.rows.find((r) => r.userId === s.builders[0].id);
+      expect(row.customLimit).toBeUndefined();
+      expect(row.limit.monthly).toBe(500);
+      expect(await customRows(s.builders[0].id)).toEqual([]);
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toEqual([
+        {
+          userId: null,
+          metadata: expect.objectContaining({
+            reason: 'plan_change',
+            defaults: { monthly: { before: 2333, after: 500 } },
+            customReduced: 1,
+            builders: [
+              {
+                builderId: s.builders[0].id,
+                builderEmail: 'sales-b1@tooljet.io',
+                pool: 'monthly',
+                before: 3000,
+                after: null,
+              },
+            ],
+          }),
+        },
+      ]);
     });
 
-    it('a notice found in an earlier cycle is not shown', async () => {
-      const s = await seedWithCustom('pc2b');
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
-      expect((await getUsage(app, s.cookie, s.workspace.id)).body.notices).toHaveLength(1);
-      await getDefaultDataSource().query(
-        `UPDATE ai_credit_limits SET notice = jsonb_set(notice, '{detectedAt}', to_jsonb($2::text))
-          WHERE organization_id = $1 AND notice IS NOT NULL`,
-        [s.workspace.id, CYCLE_START]
-      );
-
-      expect((await getUsage(app, s.cookie, s.workspace.id)).body.notices).toEqual([]);
-    });
-
-    it('AC2: a renewal with overdraft carry-in changes nothing and shows no notice', async () => {
-      const s = await seedWithCustom('pc3');
+    it('a renewal that only carries in overdraft changes no limit and shows no notice', async () => {
+      const s = await seed('sales');
       // Same plan; 9,000 overdraft carried in, so the new cycle starts with 1,000.
       stubGateway(
-        gatewayFor(s.owner, {
-          plan: { monthly: 10_000, addon: 0 },
-          remaining: { monthly: 1000, addon: 0 },
-          cycleStart: NEW_CYCLE,
-        })
+        gatewayFor(
+          s.owner,
+          { monthly: 1000, addon: 0 },
+          {},
+          { plan: { monthly: 10_000, addon: 0 }, cycleStart: NEW_CYCLE }
+        )
       );
 
-      const res = await getUsage(app, s.cookie, s.workspace.id);
+      const res = await getUsage(s.cookie, s.workspace.id);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.notices).toEqual([]);
-      expect(await customRows(s.builders[0].user.id)).toEqual([{ pool: 'monthly', value: 3000 }]);
-      expect(await adjustedAudit(s.workspace.id, 0)).toEqual([]);
+      expect(await customRows(s.builders[0].id)).toEqual([{ pool: 'monthly', value: 3000 }]);
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 0)).toEqual([]);
     });
 
-    it('AC3: an add-on expiry reduces add-on limits only, dated by the expiry', async () => {
-      const s = await seedWithCustom('pc4', full(10_000, 2000, { addonEndsAt: ADDON_END }));
-      stubGateway(gatewayFor(s.owner, full(10_000, 2000, { addonEndsAt: ADDON_END })));
-      expect(
-        (await putBuilderLimit(app, s.cookie, s.workspace.id, s.builders[0].user.id, { monthly: 3000, addon: 1500 }))
-          .statusCode
-      ).toBe(200);
-      jest.restoreAllMocks();
-      licenseWith(app, { aiPlan: 'credits' });
-      stubGateway(gatewayFor(s.owner, full(10_000, 0)));
+    it('an add-on expiry lowers add-on limits only, dated by the expiry', async () => {
+      // Builder 1 holds 3,000 monthly and 1,500 of a 2,000 add-on; the others get 500 ÷ 3 = 166 add-on.
+      const s = await seed('sales', 2000);
+      stubGateway(gatewayFor(s.owner, { monthly: 10_000, addon: 0 }, {}, { plan: { monthly: 10_000, addon: 0 } }));
 
-      const res = await getUsage(app, s.cookie, s.workspace.id);
+      const res = await getUsage(s.cookie, s.workspace.id);
 
-      expect(await customRows(s.builders[0].user.id)).toEqual([{ pool: 'monthly', value: 3000 }]);
       expect(res.body.notices).toEqual([
         {
           kind: 'addon_expiry',
@@ -315,147 +198,192 @@ describe('AI credit limits: pool changes', () => {
           reduced: 1,
         },
       ]);
+      expect(await customRows(s.builders[0].id)).toEqual([{ pool: 'monthly', value: 3000 }]);
     });
 
-    it('a save after a shrink sees the adjusted limits first', async () => {
-      const s = await seedWithCustom('pc5');
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+    it('a save after a shrink adjusts the limits first, audited as the system', async () => {
+      const s = await seed('sales');
+      stubGateway(smallerPlan(s.owner));
 
-      // Without the adjustment builder 1's stale 3,000 would make any custom default over the max.
-      const res = await putLimits(app, s.cookie, s.workspace.id, {
-        defaults: { monthly: { mode: 'custom', value: 500 }, addon: { mode: 'equal_share' } },
-      });
+      // Without the adjustment builder 1's 3,000 would make any custom default over the max.
+      const res = await request(app.getHttpServer())
+        .put('/api/ai/credits-usage/limits')
+        .set('tj-workspace-id', s.workspace.id)
+        .set('Cookie', s.cookie)
+        .send({ defaults: { monthly: { mode: 'custom', value: 500 }, addon: { mode: 'equal_share' } } });
 
       expect(res.statusCode).toBe(200);
-      expect(await customRows(s.builders[0].user.id)).toEqual([]);
-      const adjusted = await adjustedAudit(s.workspace.id, 1);
-      expect(adjusted).toHaveLength(1);
-      expect(adjusted[0].userId).toBeNull(); // system, not the admin who saved
+      expect(await customRows(s.builders[0].id)).toEqual([]);
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toEqual([
+        { userId: null, metadata: expect.objectContaining({ reason: 'plan_change', customReduced: 1 }) },
+      ]);
     });
 
     // No dashboard read in between: the spend check itself finds the shrink.
     it('the first AI action after a plan change is checked against the adjusted limit', async () => {
-      const s = await seedWithCustom('pc7');
-      const builder = s.builders[0].user;
-      stubAgents(app);
-      // 600 spent: under the stale 3,000, at the new default of 500.
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE, spend: { [builder.id]: 600 } })));
+      const s = await seed('sales');
+      const builder = s.builders[0];
+      stubAgents();
+      // 600 spent: under the old 3,000, over the new default of 500.
+      stubGateway(smallerPlan(s.owner, { [builder.id]: 600 }));
 
-      const res = await postCopilot(app, await sessionFor(builder, s.workspace.id), s.workspace.id);
+      const res = await copilot(await sessionFor(builder, s.workspace.id), s.workspace.id);
 
       expect(res.statusCode).toBe(402);
       expect(res.body.code).toBe('credit_limit_reached');
       expect(await customRows(builder.id)).toEqual([]);
-      const [entry, ...rest] = await adjustedAudit(s.workspace.id, 1);
-      expect(rest).toEqual([]);
-      expect(entry).toMatchObject({ userId: null, metadata: { reason: 'plan_change', customReduced: 1 } });
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toHaveLength(1);
     });
 
     it("a builder's own credits after a plan change show the adjusted limit", async () => {
-      const s = await seedWithCustom('pc8');
-      const builder = s.builders[0].user;
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+      const s = await seed('sales');
+      const builder = s.builders[0];
+      stubGateway(smallerPlan(s.owner));
 
-      const res = await getMine(app, await sessionFor(builder, s.workspace.id), s.workspace.id);
+      const res = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage/me')
+        .set('tj-workspace-id', s.workspace.id)
+        .set('Cookie', await sessionFor(builder, s.workspace.id));
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.monthly.limit).toBe(500);
+      expect(res.body.monthly).toMatchObject({ used: 0, limit: 500, left: 500 });
       expect(await customRows(builder.id)).toEqual([]);
-      expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toHaveLength(1);
     });
 
     it('a read holding an older balance does not write it back over a newer one', async () => {
-      const s = await seedWithCustom('pc9');
-      // A read began fetching the balance (still 10,000) before the plan change...
-      const staleReadAt = new Date();
-      const stale = gatewayFor(s.owner, full(10_000))[`${s.owner}/balance`];
-      // ...another read finds the shrink and adjusts...
-      stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
-      await getUsage(app, s.cookie, s.workspace.id);
-      // ...then the first read's limits read sees the new sizes, so it locks to record its 10,000 as growth.
-      const snapshot = {
-        enabled: true,
-        defaults: { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } },
-        custom: new Map(),
-        seen: { monthly: { plan: 2003, endsAt: null }, addon: { plan: 0, endsAt: null } },
-      };
-      const service = app.get(BuilderUsageService) as unknown as {
-        adjustIfPoolChanged: (...args: unknown[]) => Promise<unknown>;
-      };
-      await service.adjustIfPoolChanged(s.workspace.id, s.workspace.id, snapshot, {
-        balance: stale,
-        balanceReadAt: staleReadAt,
-        usage: { spend: [] },
+      const s = await seed('sales');
+      const builder = s.builders[0];
+      stubAgents();
+      const usageService = (app.get(AiController) as unknown as { builderUsageService: BuilderUsageService })
+        .builderUsageService;
+      // Long enough for the dashboard read below to finish while the action waits on its balance.
+      jest.replaceProperty(usageService, 'spendCheckTimeoutMs', 10_000);
+      const older = gatewayFor(s.owner, { monthly: 10_000, addon: 0 }, {}, { plan: { monthly: 10_000, addon: 0 } });
+      const newer = smallerPlan(s.owner);
+      let olderAsked: () => void;
+      const asked = new Promise<void>((resolve) => (olderAsked = resolve));
+      let releaseOlder: () => void;
+      const released = new Promise<void>((resolve) => (releaseOlder = resolve));
+      let balanceReads = 0;
+      stubGateway({
+        ...newer,
+        // The first balance read is answered late, with the balance from before the plan change.
+        [`${s.owner}/balance`]: async () => {
+          if (++balanceReads > 1) return newer[`${s.owner}/balance`];
+          olderAsked();
+          await released;
+          return older[`${s.owner}/balance`];
+        },
       });
 
-      await getUsage(app, s.cookie, s.workspace.id);
+      // An AI action reads the balance just before the plan change lands...
+      const action = copilot(await sessionFor(builder, s.workspace.id), s.workspace.id).then((res) => res);
+      await asked;
+      // ...a dashboard read sees the smaller plan and adjusts...
+      await getUsage(s.cookie, s.workspace.id).expect(200);
+      // ...then the action's older balance arrives, and another read follows.
+      releaseOlder();
+      await action;
+      await getUsage(s.cookie, s.workspace.id).expect(200);
 
-      expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+      // Writing the older 10,000 back would make the next read find the shrink again and log it twice.
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toHaveLength(1);
     });
 
-    // Real transactions: inside the suite transaction every request shares one session and the lock never blocks.
+    // Real transactions: inside the suite transaction every request shares one session, so the lock never blocks.
     it('two reads detecting the same shrink adjust once and log once', async () => {
       await withRealTransactions(async () => {
-        const s = await seedWithCustom(`pc6${uuidv4().slice(0, 6)}`);
+        const s = await seed(`race-${uuidv4().slice(0, 6)}`);
         try {
-          stubGateway(gatewayFor(s.owner, full(2003, 0, { cycleStart: NEW_CYCLE })));
+          stubGateway(smallerPlan(s.owner));
 
           const results = await Promise.all([
-            getUsage(app, s.cookie, s.workspace.id),
-            getUsage(app, s.cookie, s.workspace.id),
-            getUsage(app, s.cookie, s.workspace.id),
+            getUsage(s.cookie, s.workspace.id),
+            getUsage(s.cookie, s.workspace.id),
+            getUsage(s.cookie, s.workspace.id),
           ]);
 
           expect(results.map((r) => r.statusCode)).toEqual([200, 200, 200]);
-          expect(await customRows(s.builders[0].user.id)).toEqual([]);
-          expect(await adjustedAudit(s.workspace.id, 1)).toHaveLength(1);
+          expect(await customRows(s.builders[0].id)).toEqual([]);
+          expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toHaveLength(1);
         } finally {
           await dropSeed(s.workspace.id, s.userIds);
         }
       });
     });
+
+    it('on a Team licence a shrink leaves limits alone; after an upgrade it is applied once', async () => {
+      const s = await seed('team');
+      stubGateway(smallerPlan(s.owner));
+
+      restoreLicence = useLicence(app, TEAM_TERMS);
+      const team = await getUsage(s.cookie, s.workspace.id);
+      const rowsOnTeam = await customRows(s.builders[0].id);
+      const auditOnTeam = await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 0);
+      restoreLicence();
+      const enterprise = await getUsage(s.cookie, s.workspace.id);
+      await getUsage(s.cookie, s.workspace.id);
+
+      expect(team.statusCode).toBe(200);
+      expect(team.body.notices).toEqual([]);
+      expect(rowsOnTeam).toEqual([{ pool: 'monthly', value: 3000 }]);
+      expect(auditOnTeam).toEqual([]);
+      expect(enterprise.body.notices).toHaveLength(1);
+      expect(await customRows(s.builders[0].id)).toEqual([]);
+      expect(await auditRows(s.workspace.id, 'AI_CREDIT_LIMITS_ADJUSTED', 1)).toHaveLength(1);
+    });
   });
 
   describe('Self-hosted (ee)', () => {
     let app: INestApplication;
-    const customerId = 'cust-s11';
-    const owner = `/api/ai/selfhost-customers/${customerId}`;
+    let restoreLicence: () => void;
+    const owner = `/api/ai/selfhost-customers/${SELF_HOSTED_CUSTOMER}`;
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
       process.env.TOOLJET_EDITION = 'ee';
+      restoreLicence = useLicence(app, SELF_HOSTED_TERMS);
     });
 
     afterAll(async () => {
+      restoreLicence();
       await closeTestApp(app);
     }, 60_000);
 
     it('a plan change adjusts the instance-wide limits; the audit entry is instance-level', async () => {
-      const superAdmin = await createUser(app, {
-        email: 'sh11-super@tooljet.io',
-        userType: 'instance',
-        groups: ['admin'],
-      });
+      const superAdmin = await createUser(app, { email: 'super@tooljet.io', userType: 'instance', groups: ['admin'] });
       const builder = await createUser(app, {
-        email: 'sh11-builder@tooljet.io',
+        email: 'builder@tooljet.io',
         groups: ['builder'],
         organization: superAdmin.organization,
       });
-      licenseWith(app, {
-        aiPlan: 'credits',
-        aiEnabled: true,
-        ai: { apiKey: 'selfhost-key' },
-        metadata: { customerId },
-      });
-      const gateway = stubGateway(gatewayFor(owner, full(10_000)));
-      const cookie = await sessionFor(superAdmin.user, superAdmin.organization.id);
-      expect(
-        (await putBuilderLimit(app, cookie, superAdmin.organization.id, builder.user.id, { monthly: 3000 })).statusCode
-      ).toBe(200);
+      const workspaceId = superAdmin.organization.id;
+      const cookie = await sessionFor(superAdmin.user, workspaceId);
+      const gateway = stubGateway(
+        gatewayFor(
+          owner,
+          { monthly: 10_000, addon: 0 },
+          {},
+          { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
+        )
+      );
+      await request(app.getHttpServer())
+        .put(`/api/ai/credits-usage/limits/builders/${builder.user.id}`)
+        .set('tj-workspace-id', workspaceId)
+        .set('Cookie', cookie)
+        .send({ monthly: 3000 })
+        .expect(200);
       gateway.mockRestore();
-      stubGateway(gatewayFor(owner, full(1000, 0, { cycleStart: NEW_CYCLE })));
+      // 2 builders on 1,000: builder may hold 999, so the 3,000 goes; the default falls from 7,000 to 500.
+      stubGateway(
+        gatewayFor(owner, { monthly: 1000, addon: 0 }, {}, { plan: { monthly: 1000, addon: 0 }, cycleStart: NEW_CYCLE })
+      );
 
-      const res = await getUsage(app, cookie, superAdmin.organization.id);
+      const res = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', workspaceId)
+        .set('Cookie', cookie);
 
       expect(res.body.notices).toEqual([
         {
@@ -467,7 +395,7 @@ describe('AI credit limits: pool changes', () => {
         },
       ]);
       expect(await customRows(builder.user.id)).toEqual([]);
-      const [entry] = await adjustedAudit(superAdmin.organization.id, 1);
+      const [entry] = await auditRows(workspaceId, 'AI_CREDIT_LIMITS_ADJUSTED', 1);
       expect(entry.metadata).toMatchObject({ instance_level: true, reason: 'plan_change' });
     });
   });

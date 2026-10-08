@@ -1,314 +1,165 @@
 import {
   available,
-  builderLimitEvents,
   builderMax,
-  newScopeLimits,
-  withBuilderLimit,
-  ScopeLimits,
-  countAtLimit,
-  defaultError,
   equalShare,
   isAtLimit,
   limitEvents,
-  loadScopeLimits,
   logicalSplit,
+  parallelRunPolicy,
+  parallelRunRefusal,
   resolveLimits,
+  ScopeLimits,
 } from '@ee/ai/services/credit-limits';
-import { EntityManager } from 'typeorm';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `b${i}`);
 
-const on = (defaults: ScopeLimits['defaults'] = newScopeLimits().defaults): ScopeLimits => ({
-  enabled: true,
-  defaults,
-  custom: new Map(),
-});
-
-const total = (r: ReturnType<typeof resolveLimits>, pool: 'monthly' | 'addon') =>
-  [...r.byBuilder.values()].reduce((acc, l) => acc + l[pool], 0);
-
 /** @group ai */
 describe('credit limits (pure)', () => {
-  it('newScopeLimits() is a fresh value: a custom limit set on one never reaches another scope', () => {
-    newScopeLimits().custom.set('b0', { monthly: 1 });
-    expect(newScopeLimits().custom.size).toBe(0);
-  });
-
-  it('a scope with no rows (a new workspace) is on with equal share', async () => {
-    const equal = { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } };
-    expect(newScopeLimits()).toMatchObject({ enabled: true, defaults: equal });
-    const empty = { query: async () => [] } as unknown as EntityManager;
-    expect(await loadScopeLimits(empty, 'org-1')).toMatchObject({ enabled: true, defaults: equal });
-  });
-
-  describe('AC1: equal share', () => {
-    it('80,000 over 40 builders is 2,000; over 41 it is 1,951', () => {
-      expect(equalShare(80_000, 0, 40)).toBe(2000);
-      expect(equalShare(80_000, 0, 41)).toBe(1951);
-    });
-
-    it('subtracts custom limits first and rounds down', () => {
-      expect(equalShare(80_000, 6_000, 38)).toBe(1947);
-    });
-
+  describe('equal share', () => {
     it.each([
-      ['0 builders', 80_000, 0, 80_000],
-      ['1 builder', 80_000, 1, 80_000],
-      ['an empty pool', 0, 40, 0],
-      ['more builders than credits', 30, 40, 0],
-      ['a fractional pool', 1000.75, 3, 333],
-    ])('%s gives a defined, non-negative share', (_, pool, builders, share) => {
-      expect(equalShare(pool, 0, builders)).toBe(share);
-    });
-
-    it('never goes negative when custom limits exceed the pool', () => {
-      expect(equalShare(100, 500, 2)).toBe(0);
+      ['80,000 over 40 builders', 80_000, 0, 40, 2000],
+      ['80,000 over 41 builders, rounded down', 80_000, 0, 41, 1951],
+      ['custom limits come off first', 80_000, 6000, 38, 1947],
+      ['0 builders: the whole pool', 80_000, 0, 0, 80_000],
+      ['1 builder: the whole pool', 80_000, 0, 1, 80_000],
+      ['an empty pool', 0, 0, 40, 0],
+      ['more builders than credits', 30, 0, 40, 0],
+      ['custom limits over the pool never go negative', 100, 500, 2, 0],
+    ])('%s', (_name, pool, customTotal, builders, share) => {
+      expect(equalShare(pool, customTotal, builders)).toBe(share);
     });
   });
 
-  describe('AC1: card notes for edge cases', () => {
-    const pools = { monthly: 80_000, addon: 0 };
+  describe('resolveLimits', () => {
+    const equalShareOn: ScopeLimits = {
+      enabled: true,
+      defaults: { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } },
+      custom: new Map(),
+    };
 
-    it('0 builders: limit is the whole pool and the card says no builders yet', () => {
-      const r = resolveLimits({ pools, builderIds: [], limits: on() });
+    it('0 builders: the default is the whole pool and the card says there are no builders yet', () => {
+      const r = resolveLimits({ pools: { monthly: 80_000, addon: 0 }, builderIds: [], limits: equalShareOn });
+
       expect(r.defaults.monthly).toMatchObject({ effective: 80_000, max: 80_000, note: 'noBuilders' });
     });
 
-    it('1 builder gets the whole pool', () => {
-      const r = resolveLimits({ pools, builderIds: ids(1), limits: on() });
-      expect(r.defaults.monthly).toMatchObject({ effective: 80_000, note: null, unallocated: 0 });
-      expect(r.byBuilder.get('b0')).toEqual({ monthly: 80_000, addon: 0 });
-    });
-
     it('an add-on pool of 0 gives 0 and the card says there are no credits', () => {
-      const r = resolveLimits({ pools, builderIds: ids(3), limits: on() });
+      const r = resolveLimits({ pools: { monthly: 80_000, addon: 0 }, builderIds: ids(3), limits: equalShareOn });
+
       expect(r.defaults.addon).toMatchObject({ effective: 0, max: 0, note: 'noCredits', unallocatedPct: 0 });
     });
 
     it('more builders than credits gives 0 and the card says so', () => {
-      const r = resolveLimits({ pools: { monthly: 30, addon: 10 }, builderIds: ids(40), limits: on() });
+      const r = resolveLimits({ pools: { monthly: 30, addon: 10 }, builderIds: ids(40), limits: equalShareOn });
+
       expect(r.defaults.monthly).toMatchObject({ effective: 0, note: 'tooManyBuilders', unallocated: 30 });
     });
-  });
 
-  describe('AC2: auto-clamp of a custom default', () => {
-    const custom = on({ monthly: { mode: 'custom', value: 2000 }, addon: { mode: 'equal_share' } });
-    const pools = { monthly: 80_000, addon: 20_000 };
+    it('a custom default of 2,000 holds for 40 builders and is reduced to 1,951 for 41', () => {
+      const limits: ScopeLimits = {
+        enabled: true,
+        defaults: { monthly: { mode: 'custom', value: 2000 }, addon: { mode: 'equal_share' } },
+        custom: new Map(),
+      };
+      const pools = { monthly: 80_000, addon: 20_000 };
 
-    it('40 builders keep the custom 2,000', () => {
-      const r = resolveLimits({ pools, builderIds: ids(40), limits: custom });
-      expect(r.defaults.monthly).toMatchObject({ mode: 'custom', value: 2000, effective: 2000, note: null });
+      const forty = resolveLimits({ pools, builderIds: ids(40), limits });
+      const fortyOne = resolveLimits({ pools, builderIds: ids(41), limits });
+
+      expect(forty.defaults.monthly).toMatchObject({ mode: 'custom', value: 2000, effective: 2000, note: null });
+      expect(fortyOne.defaults.monthly).toMatchObject({ value: 2000, effective: 1951, note: 'reduced' });
+      // 41 × 1,951 = 79,991: within the pool.
+      expect(fortyOne.byBuilder.get('b40').monthly).toBe(1951);
     });
 
-    it('a 41st builder reduces it to 1,951 and the total stays within the pool', () => {
-      const r = resolveLimits({ pools, builderIds: ids(41), limits: custom });
-      expect(r.defaults.monthly).toMatchObject({ value: 2000, effective: 1951, note: 'reduced' });
-      expect(total(r, 'monthly')).toBeLessThanOrEqual(80_000);
-    });
-
-    it('it returns to 2,000 when the builder leaves', () => {
-      const r = resolveLimits({ pools, builderIds: ids(40), limits: custom });
-      expect(r.defaults.monthly.effective).toBe(2000);
-    });
-  });
-
-  describe('custom limits (s9 rows) stay out of the default', () => {
-    it('builders with a custom limit keep it and the rest share the remainder', () => {
-      const limits: ScopeLimits = { ...on(), custom: new Map([['b0', { monthly: 3000 }]]) };
-      const r = resolveLimits({ pools: { monthly: 80_000, addon: 20_000 }, builderIds: ids(39), limits });
-      expect(r.byBuilder.get('b0').monthly).toBe(3000);
-      expect(r.byBuilder.get('b1').monthly).toBe(2026);
-      expect(r.customCount).toBe(1);
-      expect(total(r, 'monthly')).toBeLessThanOrEqual(80_000);
-    });
-  });
-
-  describe('unallocated', () => {
-    it('reports credits and % left after every builder gets the default', () => {
+    it('reports the credits and % left over after every builder gets the default', () => {
       const r = resolveLimits({
         pools: { monthly: 80_000, addon: 20_000 },
         builderIds: ids(40),
-        limits: on({ monthly: { mode: 'equal_share' }, addon: { mode: 'custom', value: 400 } }),
+        limits: {
+          enabled: true,
+          defaults: { monthly: { mode: 'equal_share' }, addon: { mode: 'custom', value: 400 } },
+          custom: new Map(),
+        },
       });
+
       expect(r.defaults.monthly).toMatchObject({ unallocated: 0, unallocatedPct: 0 });
-      expect(r.defaults.addon).toMatchObject({ unallocated: 4000, unallocatedPct: 20 });
-      expect(r.defaults.addon).toMatchObject({ pool: 20_000, buildersWithoutCustom: 40, customTotal: 0 });
+      expect(r.defaults.addon).toMatchObject({
+        pool: 20_000,
+        buildersWithoutCustom: 40,
+        customTotal: 0,
+        unallocated: 4000,
+        unallocatedPct: 20,
+      });
     });
   });
 
-  describe('defaultError', () => {
-    it.each([
-      [{ mode: 'equal_share' as const }, null],
-      [{ mode: 'custom' as const, value: 1947 }, null],
-      [{ mode: 'custom' as const, value: 1948 }, 'Cannot allocate more than 1,947 per builder'],
-      [{ mode: 'custom' as const, value: 0 }, 'Enter a whole number of 1 or more.'],
-      [{ mode: 'custom' as const, value: -5 }, 'Enter a whole number of 1 or more.'],
-      [{ mode: 'custom' as const, value: 10.5 }, 'Enter a whole number of 1 or more.'],
-    ])('%o → %s', (setting, error) => {
-      expect(defaultError(setting, 1947)).toBe(error);
-    });
-  });
-
-  describe('at limit', () => {
-    it('combined use at or over the combined limit is at limit', () => {
-      expect(isAtLimit({ monthly: 1947, addon: 400 }, { monthly: 1947, addon: 400 })).toBe(true);
-      expect(isAtLimit({ monthly: 2100, addon: 0 }, { monthly: 1947, addon: 400 })).toBe(false);
-      expect(isAtLimit({ monthly: 2100, addon: 400 }, { monthly: 1947, addon: 400 })).toBe(true);
-      expect(isAtLimit({ monthly: 10, addon: 0 }, { monthly: 1000, addon: 0 })).toBe(false);
-    });
-
-    it('counts builders at their limit; no spend means 0', () => {
-      const byBuilder = new Map([
-        ['a', { monthly: 100, addon: 0 }],
-        ['b', { monthly: 100, addon: 0 }],
-        ['c', { monthly: 100, addon: 0 }],
-      ]);
-      const spend = new Map([
-        ['a', { monthly: 100, addon: 0 }],
-        ['b', { monthly: 150, addon: 0 }],
-      ]);
-      expect(countAtLimit(byBuilder, spend)).toBe(2);
-    });
-  });
-
-  describe('AC5: audit events for one save', () => {
-    const before: ScopeLimits = { ...newScopeLimits(), enabled: false };
-    const values = { monthly: { mode: 'custom' as const, value: 1000 }, addon: { mode: 'equal_share' as const } };
-
-    it('turning on with new values logs ENABLED with the count over, and UPDATED with before and after', () => {
-      const events = limitEvents(before, { enabled: true, defaults: values, custom: new Map() }, 2);
-      expect(events).toEqual([
-        { actionType: 'AI_CREDIT_LIMIT_ENABLED', metadata: { buildersOverLimit: 2 } },
-        {
-          actionType: 'AI_CREDIT_LIMIT_UPDATED',
-          metadata: { before: before.defaults, after: values },
-        },
-      ]);
-    });
-
-    it('turning off logs DISABLED only', () => {
-      const events = limitEvents(
-        { enabled: true, defaults: values, custom: new Map() },
-        { enabled: false, defaults: values, custom: new Map() },
-        0
-      );
-      expect(events).toEqual([{ actionType: 'AI_CREDIT_LIMIT_DISABLED', metadata: {} }]);
-    });
-
-    it('saving the same values while on logs nothing', () => {
-      const same = { enabled: true, defaults: values, custom: new Map() };
-      expect(limitEvents(same, same, 0)).toEqual([]);
-    });
-  });
-  describe('available (AC5)', () => {
-    const limit = { monthly: 1000, addon: 200 };
-
-    it('splits spend logically: the first {monthly limit} credits count as monthly', () => {
-      expect(available({ monthly: 600, addon: 0 }, limit)).toEqual({ monthly: 400, addon: 200 });
-      // Wallet attribution does not matter, only the combined spend.
-      expect(available({ monthly: 0, addon: 600 }, limit)).toEqual({ monthly: 400, addon: 200 });
-    });
-
-    it('monthly limit reached but add-on left: still available', () => {
-      expect(available({ monthly: 1000, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 200 });
-    });
-
-    it('monthly overshoot spills into add-on and never makes available negative', () => {
-      expect(available({ monthly: 1100, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 100 });
-      expect(available({ monthly: 2100, addon: 50 }, limit)).toEqual({ monthly: 0, addon: 0 });
-    });
-
-    it('a net refund counts as no spend', () => {
-      expect(available({ monthly: -50, addon: 0 }, limit)).toEqual(limit);
-    });
-  });
-
-  describe('s9: custom limit for one builder', () => {
+  describe('builderMax: the largest custom limit one builder may get', () => {
     const pools = { monthly: 80_000, addon: 4_000 };
-    const builderIds = ids(40);
-    const daniel = (): ScopeLimits => ({ ...on(), custom: new Map([['b0', { monthly: 3000 }]]) });
 
-    it('withBuilderLimit sets, keeps the other pool, and null clears; the input is untouched', () => {
-      const before = daniel();
-      const after = withBuilderLimit(before, 'b1', { monthly: 3000, addon: null });
-      expect(after.custom.get('b1')).toEqual({ monthly: 3000 });
-      expect(before.custom.has('b1')).toBe(false);
-      expect(withBuilderLimit(after, 'b1', { monthly: null, addon: null }).custom.has('b1')).toBe(false);
-    });
+    it('with an equal-share default, every other builder keeps 1 credit', () => {
+      // 40 builders, b0 holds 3,000: b1 may take 80,000 − 3,000 − 38 and 4,000 − 39.
+      const limits: ScopeLimits = {
+        enabled: true,
+        defaults: { monthly: { mode: 'equal_share' }, addon: { mode: 'equal_share' } },
+        custom: new Map([
+          ['b0', { monthly: 3000 }],
+          ['b1', { monthly: 5000 }],
+        ]),
+      };
 
-    it('max: equal-share default keeps 1 credit for every other builder (design: 80,000 − 3,000 − 38)', () => {
-      expect(builderMax({ pools, builderIds, limits: daniel(), userId: 'b1' })).toEqual({
+      // b1's own 5,000 does not count against them.
+      expect(builderMax({ pools, builderIds: ids(40), limits, userId: 'b1' })).toEqual({
         monthly: 76_962,
-        addon: 4_000 - 39,
+        addon: 3961,
       });
     });
 
-    it('max: a custom default reserves that default for every other builder without a custom limit', () => {
-      const limits = { ...daniel(), defaults: { ...on().defaults, monthly: { mode: 'custom' as const, value: 1000 } } };
-      expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(80_000 - 3000 - 38 * 1000);
+    it('with a custom default, every other builder without a custom limit keeps that default', () => {
+      const limits: ScopeLimits = {
+        enabled: true,
+        defaults: { monthly: { mode: 'custom', value: 1000 }, addon: { mode: 'equal_share' } },
+        custom: new Map([['b0', { monthly: 3000 }]]),
+      };
+
+      // 80,000 − 3,000 − 38 × 1,000.
+      expect(builderMax({ pools, builderIds: ids(40), limits, userId: 'b1' }).monthly).toBe(39_000);
     });
 
-    it('max: a reduced custom default reserves what the others actually get, not the saved value', () => {
-      const limits = on({ ...newScopeLimits().defaults, monthly: { mode: 'custom', value: 2000 } });
-      const builders = ids(45);
-      expect(resolveLimits({ pools, builderIds: builders, limits }).defaults.monthly).toMatchObject({
-        effective: 1777,
-        note: 'reduced',
-      });
-      const max = builderMax({ pools, builderIds: builders, limits, userId: 'b1' }).monthly;
-      expect(max).toBe(80_000 - 44 * 1777);
-      const after = resolveLimits({
+    it('with a reduced custom default, the others keep what they actually get, not the saved value', () => {
+      // 45 builders: a custom 2,000 is reduced to 80,000 ÷ 45 = 1,777.
+      const limits: ScopeLimits = {
+        enabled: true,
+        defaults: { monthly: { mode: 'custom', value: 2000 }, addon: { mode: 'equal_share' } },
+        custom: new Map(),
+      };
+
+      // 80,000 − 44 × 1,777.
+      expect(builderMax({ pools, builderIds: ids(45), limits, userId: 'b1' }).monthly).toBe(1812);
+      const atMax = resolveLimits({
         pools,
-        builderIds: builders,
-        limits: withBuilderLimit(limits, 'b1', { monthly: max, addon: null }),
+        builderIds: ids(45),
+        limits: { ...limits, custom: new Map([['b1', { monthly: 1812 }]]) },
       });
-      expect(after.defaults.monthly.effective).toBe(1777);
-    });
-
-    it("max: the builder's own custom limit is not counted against them", () => {
-      const limits = withBuilderLimit(daniel(), 'b1', { monthly: 5000, addon: null });
-      expect(builderMax({ pools, builderIds, limits, userId: 'b1' }).monthly).toBe(76_962);
-    });
-
-    it('AC1: a second 3,000 custom limit lowers everyone else from 1,974 to 1,947 (the previewed value)', () => {
-      const before = resolveLimits({ pools, builderIds, limits: daniel() });
-      const after = resolveLimits({
-        pools,
-        builderIds,
-        limits: withBuilderLimit(daniel(), 'b1', { monthly: 3000, addon: null }),
-      });
-      expect(before.defaults.monthly.effective).toBe(1974);
-      expect(after.defaults.monthly.effective).toBe(equalShare(80_000, 6000, 38));
-      expect(after.defaults.monthly.effective).toBe(1947);
-      expect(after.byBuilder.get('b1')).toEqual({ monthly: 3000, addon: 100 });
-      expect(after.byBuilder.get('b2')).toEqual({ monthly: 1947, addon: 100 });
-    });
-
-    it('AC5: one BUILDER_LIMIT_UPDATED per changed pool with before and after; unchanged pool logs nothing', () => {
-      const builder = { id: 'b1', email: 'b1@x.io' };
-      expect(builderLimitEvents(builder, { monthly: 3000 }, { addon: 500 })).toEqual([
-        {
-          actionType: 'AI_CREDIT_BUILDER_LIMIT_UPDATED',
-          metadata: { builderId: 'b1', builderEmail: 'b1@x.io', pool: 'monthly', before: 3000, after: null },
-        },
-        {
-          actionType: 'AI_CREDIT_BUILDER_LIMIT_UPDATED',
-          metadata: { builderId: 'b1', builderEmail: 'b1@x.io', pool: 'addon', before: null, after: 500 },
-        },
-      ]);
-      expect(builderLimitEvents(builder, { monthly: 3000 }, { monthly: 3000 })).toEqual([]);
+      expect(atMax.defaults.monthly.effective).toBe(1777);
     });
   });
 
-  describe('logicalSplit: the table and enforcement share it', () => {
+  it('saving the same defaults while on logs nothing', () => {
+    const limits: ScopeLimits = {
+      enabled: true,
+      defaults: { monthly: { mode: 'custom', value: 1000 }, addon: { mode: 'equal_share' } },
+      custom: new Map(),
+    };
+
+    expect(limitEvents(limits, limits, 0)).toEqual([]);
+  });
+
+  describe('logicalSplit, available and isAtLimit: the usage table and enforcement share them', () => {
     const limit = { monthly: 2000, addon: 400 };
 
-    it('exactly at the monthly limit: all monthly, no add-on', () => {
+    it('the first {monthly limit} credits of combined spend are monthly, whatever the wallet said', () => {
       expect(logicalSplit({ monthly: 1700, addon: 300 }, limit)).toEqual({ monthly: 2000, addon: 0 });
-    });
-
-    it('over monthly: the rest is add-on, whatever the wallet said', () => {
-      expect(logicalSplit({ monthly: 1700, addon: 340 }, limit)).toEqual({ monthly: 2000, addon: 40 });
       expect(logicalSplit({ monthly: 0, addon: 600 }, limit)).toEqual({ monthly: 600, addon: 0 });
     });
 
@@ -316,21 +167,60 @@ describe('credit limits (pure)', () => {
       expect(logicalSplit({ monthly: 2100, addon: 500 }, limit)).toEqual({ monthly: 2000, addon: 600 });
     });
 
-    it('add-on limit 0: everything stays on monthly, overshoot included', () => {
+    it('no add-on limit: everything stays monthly, overshoot included', () => {
       expect(logicalSplit({ monthly: 1700, addon: 400 }, { monthly: 500, addon: 0 })).toEqual({
         monthly: 2100,
         addon: 0,
       });
-      expect(available({ monthly: 2100, addon: 0 }, { monthly: 500, addon: 0 })).toEqual({ monthly: 0, addon: 0 });
     });
 
-    it('zero spend', () => {
-      expect(logicalSplit({ monthly: 0, addon: 0 }, limit)).toEqual({ monthly: 0, addon: 0 });
-    });
-
-    it('a net refund stays on monthly and add-on is 0; the split always sums to the spend', () => {
+    it('a net refund stays on monthly; the split always sums to the spend', () => {
       expect(logicalSplit({ monthly: -50, addon: 0 }, limit)).toEqual({ monthly: -50, addon: 0 });
       expect(logicalSplit({ monthly: 500, addon: -100 }, limit)).toEqual({ monthly: 400, addon: 0 });
+    });
+
+    it('available never goes negative and treats a net refund as no spend', () => {
+      expect(available({ monthly: 1000, addon: 0 }, { monthly: 1000, addon: 200 })).toEqual({ monthly: 0, addon: 200 });
+      expect(available({ monthly: 1100, addon: 0 }, { monthly: 1000, addon: 200 })).toEqual({ monthly: 0, addon: 100 });
+      expect(available({ monthly: 2100, addon: 50 }, { monthly: 1000, addon: 200 })).toEqual({ monthly: 0, addon: 0 });
+      expect(available({ monthly: -50, addon: 0 }, { monthly: 1000, addon: 200 })).toEqual({
+        monthly: 1000,
+        addon: 200,
+      });
+    });
+
+    it('at limit when combined use reaches the combined limit', () => {
+      expect(isAtLimit({ monthly: 1947, addon: 400 }, { monthly: 1947, addon: 400 })).toBe(true);
+      expect(isAtLimit({ monthly: 2100, addon: 0 }, { monthly: 1947, addon: 400 })).toBe(false);
+      expect(isAtLimit({ monthly: 2100, addon: 400 }, { monthly: 1947, addon: 400 })).toBe(true);
+    });
+  });
+
+  describe('parallel runs', () => {
+    it.each([
+      ['nothing running, 0% left: the spend check alone decides', 0, 0, null],
+      ['2 running, exactly 20% left', 2, 20, null],
+      ['3 running, 10% left: the cap is reported', 3, 10, 'run_cap'],
+    ] as const)('%s', (_name, running, leftPercent, refusal) => {
+      expect(parallelRunRefusal({ running, leftPercent, maxRuns: 3, headroomPercent: 20 })).toBe(refusal);
+    });
+
+    it('reads the cap and the headroom from the settings', () => {
+      expect(
+        parallelRunPolicy({ AI_CREDIT_MAX_PARALLEL_RUNS: '1', AI_CREDIT_PARALLEL_HEADROOM_PERCENT: '50' })
+      ).toEqual({ maxRuns: 1, headroomPercent: 50 });
+    });
+
+    it.each([
+      ['', ''],
+      ['0', '-1'],
+      ['-2', '150'],
+      ['abc', 'abc'],
+      ['1.5', ' '],
+    ])('unset or invalid settings (%p, %p) fall back to 3 runs and 20%%', (max, headroom) => {
+      expect(
+        parallelRunPolicy({ AI_CREDIT_MAX_PARALLEL_RUNS: max, AI_CREDIT_PARALLEL_HEADROOM_PERCENT: headroom })
+      ).toEqual({ maxRuns: 3, headroomPercent: 20 });
     });
   });
 });

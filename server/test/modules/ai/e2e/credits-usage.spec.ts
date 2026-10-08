@@ -1,82 +1,34 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { initTestApp, closeTestApp, createUser, buildTestSession, getDefaultDataSource } from 'test-helper';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { initTestApp, closeTestApp, createUser, getDefaultDataSource, ENTERPRISE_TEST_TERMS } from 'test-helper';
 import { OrganizationAiKey } from '@entities/organization_ai_key.entity';
-import { User } from '@entities/user.entity';
-
-const GATEWAY = 'http://gateway.test';
-const CYCLE_START = '2026-10-01T00:00:00.000Z';
-const RENEWS = '2026-11-01T00:00:00.000Z';
-const TOPUP_EXPIRES = '2027-08-02T00:00:00.000Z';
-const TRACKING_SINCE = '2026-10-03T09:00:00.000Z';
-
-type GatewayRoutes = Record<string, unknown>;
-
-/** Stubs fetch at the gateway HTTP boundary; every other URL goes to the real fetch. */
-function stubGateway(routes: GatewayRoutes) {
-  const realFetch = global.fetch;
-  return jest.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
-    const url = String(input);
-    if (!url.startsWith(GATEWAY)) return realFetch(input, init);
-    const path = url.slice(GATEWAY.length);
-    if (!(path in routes)) return new Response(JSON.stringify({ message: 'not stubbed' }), { status: 404 });
-    return new Response(JSON.stringify(routes[path]), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-    });
-  });
-}
-
-/** Overrides selected licence terms; everything else keeps the plan mock's value. */
-function licenseWith(app: INestApplication, overrides: Record<string, unknown>) {
-  const lts = app.get(LicenseTermsService);
-  const original = lts.getLicenseTerms.bind(lts);
-  jest.spyOn(lts, 'getLicenseTerms').mockImplementation(async (fields: unknown, organizationId?: string) => {
-    const base = await original(fields, organizationId);
-    if (Array.isArray(fields)) {
-      const merged = { ...(base as Record<string, unknown>) };
-      for (const f of fields) if (f in overrides) merged[f] = overrides[f];
-      return merged;
-    }
-    return typeof fields === 'string' && fields in overrides ? overrides[fields] : base;
-  });
-}
-
-const balance = (recurring: { plan: number; remaining: number }, topup: { plan: number; remaining: number }) => ({
-  balance: recurring.remaining + topup.remaining,
-  plan: { recurring: recurring.plan, topup: topup.plan, total: recurring.plan + topup.plan },
-  remaining: { recurring: recurring.remaining, topup: topup.remaining, total: recurring.remaining + topup.remaining },
-  expiry: { recurringExpiryDate: RENEWS, topupExpiryDate: TOPUP_EXPIRES },
-  cycleStart: CYCLE_START,
-});
-
-const sessionFor = async (user: User, organizationId: string) =>
-  (await buildTestSession(user, organizationId)).tokenCookie;
-
-const getUsage = (app: INestApplication, cookie: string[], organizationId: string) =>
-  request(app.getHttpServer())
-    .get('/api/ai/credits-usage')
-    .set('tj-workspace-id', organizationId)
-    .set('Cookie', cookie);
-
-/** Gateway WalletTotals for one person or workspace. */
-const spent = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
-
-const sum = (rows: { monthly: number; addon: number }[], key: 'monthly' | 'addon') =>
-  Math.round(rows.reduce((acc, r) => acc + r[key], 0) * 100) / 100;
+import { Terms } from '@modules/licensing/interfaces/terms';
+import {
+  CYCLE_START,
+  GATEWAY,
+  RENEWS,
+  SELF_HOSTED_CUSTOMER,
+  SELF_HOSTED_TERMS,
+  TEAM_TERMS,
+  gatewayFor,
+  sessionFor,
+  stubGateway,
+  useLicence,
+} from './credits-gateway';
 
 /** @group ai */
-describe('GET /api/ai/credits-usage', () => {
-  const previousGateway = process.env.TJ_AI_GATEWAY_URL;
+describe('AI credits usage: GET /api/ai/credits-usage and /api/ai/credits-usage/me', () => {
+  const previous = { gateway: process.env.TJ_AI_GATEWAY_URL, features: process.env.ENABLE_AI_FEATURES };
 
   beforeAll(() => {
     process.env.TJ_AI_GATEWAY_URL = GATEWAY;
+    process.env.ENABLE_AI_FEATURES = 'true';
   });
 
   afterAll(() => {
-    process.env.TJ_AI_GATEWAY_URL = previousGateway;
+    process.env.TJ_AI_GATEWAY_URL = previous.gateway;
+    process.env.ENABLE_AI_FEATURES = previous.features;
   });
 
   afterEach(() => {
@@ -85,325 +37,406 @@ describe('GET /api/ai/credits-usage', () => {
 
   describe('Cloud', () => {
     let app: INestApplication;
+    let restoreLicence: (() => void) | undefined;
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'cloud', plan: 'enterprise' }));
       process.env.TOOLJET_EDITION = 'cloud';
     });
 
+    afterEach(() => {
+      restoreLicence?.();
+      restoreLicence = undefined;
+    });
+
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
 
-    async function seedWorkspace(prefix: string) {
+    /** Admin + 2 builders = 3 builders, plus an end user. */
+    async function seed(name: string) {
       const admin = await createUser(app, {
-        email: `${prefix}-admin@tooljet.io`,
+        email: `${name}-admin@tooljet.io`,
         firstName: 'Ada',
         lastName: 'Admin',
-        groups: ['end-user', 'admin'],
+        groups: ['admin'],
       });
       const workspace = admin.organization;
       const builderOne = await createUser(app, {
-        email: `${prefix}-b1@tooljet.io`,
-        firstName: 'Bea',
-        lastName: 'One',
-        groups: ['end-user', 'builder'],
+        email: `${name}-b1@tooljet.io`,
+        groups: ['builder'],
         organization: workspace,
       });
       const builderTwo = await createUser(app, {
-        email: `${prefix}-b2@tooljet.io`,
-        firstName: 'Ben',
-        lastName: 'Two',
-        groups: ['end-user', 'builder'],
+        email: `${name}-b2@tooljet.io`,
+        groups: ['builder'],
         organization: workspace,
-      });
-      const idleBuilder = await createUser(app, {
-        email: `${prefix}-idle@tooljet.io`,
-        firstName: 'Ida',
-        lastName: 'Idle',
-        groups: ['end-user', 'builder'],
-        organization: workspace,
-        status: 'invited',
       });
       const endUser = await createUser(app, {
-        email: `${prefix}-end@tooljet.io`,
+        email: `${name}-end@tooljet.io`,
         firstName: 'Eve',
         lastName: 'End',
         groups: ['end-user'],
         organization: workspace,
       });
-      const archivedBuilder = await createUser(app, {
-        email: `${prefix}-archived@tooljet.io`,
-        firstName: 'Noah',
-        lastName: 'Williams',
-        groups: ['end-user', 'builder'],
-        organization: workspace,
-        status: 'archived',
-      });
-      return { workspace, admin, builderOne, builderTwo, idleBuilder, endUser, archivedBuilder };
-    }
-
-    function usageFor(
-      seed: Awaited<ReturnType<typeof seedWorkspace>>,
-      unknownUserId: string,
-      trackingSince: string | null
-    ) {
       return {
-        since: CYCLE_START,
-        cycleStart: CYCLE_START,
-        trackingSince,
-        users: [
-          { userId: seed.admin.user.id, ...spent(100) },
-          { userId: seed.builderOne.user.id, ...spent(50, 20) },
-          { userId: seed.builderTwo.user.id, ...spent(30.5) },
-          { userId: seed.endUser.user.id, ...spent(5) },
-          { userId: unknownUserId, ...spent(7) },
-          { userId: seed.archivedBuilder.user.id, ...spent(9) },
-        ],
-        unattributed: { recurring: 11, topup: 2, total: 13 },
-        pool: { recurring: 212.5, topup: 22, total: 234.5 },
+        workspace,
+        admin,
+        builderOne,
+        builderTwo,
+        endUser,
+        owner: `/api/ai/organizations/${workspace.id}`,
+        adminCookie: await sessionFor(admin.user, workspace.id),
       };
     }
 
-    it('AC1 AC5 AC6: admin gets pool totals and one row per builder, archived, end user, unknown user and unattributed spend', async () => {
-      const seed = await seedWorkspace('ac1');
+    const getUsage = (cookie: string[], organizationId: string) =>
+      request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', organizationId)
+        .set('Cookie', cookie);
+
+    const getMine = (cookie: string[], organizationId: string, query = '') =>
+      request(app.getHttpServer())
+        .get(`/api/ai/credits-usage/me${query}`)
+        .set('tj-workspace-id', organizationId)
+        .set('Cookie', cookie);
+
+    it('an admin gets pool totals and a row per builder, archived builder, end user who spent, unknown user and unattributed spend', async () => {
+      const s = await seed('sales');
+      const idle = await createUser(app, {
+        email: 'sales-idle@tooljet.io',
+        groups: ['builder'],
+        organization: s.workspace,
+        status: 'invited',
+      });
+      const archived = await createUser(app, {
+        email: 'sales-archived@tooljet.io',
+        firstName: 'Noah',
+        lastName: 'Williams',
+        groups: ['builder'],
+        organization: s.workspace,
+        status: 'archived',
+      });
       const unknownUserId = uuidv4();
-      const orgId = seed.workspace.id;
-      licenseWith(app, { aiPlan: 'credits' });
-      const fetchSpy = stubGateway({
-        [`/api/ai/organizations/${orgId}/balance`]: balance(
-          { plan: 1000, remaining: 787.5 },
-          { plan: 100, remaining: 78 }
-        ),
-        [`/api/ai/organizations/${orgId}/usage`]: usageFor(seed, unknownUserId, TRACKING_SINCE),
+      stubGateway({
+        [`${s.owner}/balance`]: {
+          balance: 865.5,
+          remaining: { recurring: 787.5, topup: 78, total: 865.5 },
+          expiry: { recurringExpiryDate: RENEWS, topupExpiryDate: '2027-08-02T00:00:00.000Z' },
+          cycleStart: CYCLE_START,
+        },
+        [`${s.owner}/usage`]: {
+          cycleStart: CYCLE_START,
+          trackingSince: '2026-10-03T09:00:00.000Z',
+          users: [
+            { userId: s.admin.user.id, recurring: 100, topup: 0, total: 100 },
+            { userId: s.builderOne.user.id, recurring: 50, topup: 20, total: 70 },
+            { userId: s.builderTwo.user.id, recurring: 30.5, topup: 0, total: 30.5 },
+            { userId: s.endUser.user.id, recurring: 5, topup: 0, total: 5 },
+            { userId: unknownUserId, recurring: 7, topup: 0, total: 7 },
+            { userId: archived.user.id, recurring: 9, topup: 0, total: 9 },
+          ],
+          unattributed: { recurring: 11, topup: 2, total: 13 },
+          pool: { recurring: 212.5, topup: 22, total: 234.5 },
+        },
       });
 
-      const res = await getUsage(app, await sessionFor(seed.admin.user, orgId), orgId);
+      const res = await getUsage(s.adminCookie, s.workspace.id);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toMatchObject({
         cycle: { start: CYCLE_START, end: RENEWS },
-        trackingSince: TRACKING_SINCE,
+        trackingSince: '2026-10-03T09:00:00.000Z',
         pools: {
           monthly: { total: 1000, remaining: 787.5, used: 212.5, endsAt: RENEWS },
-          addon: { total: 100, remaining: 78, used: 22, endsAt: TOPUP_EXPIRES },
+          addon: { total: 100, remaining: 78, used: 22, endsAt: '2027-08-02T00:00:00.000Z' },
         },
       });
       expect(res.body.workspaces).toBeUndefined();
-
       const byUser = (id: string) => res.body.rows.find((r) => r.userId === id);
-      expect(byUser(seed.admin.user.id)).toMatchObject({
+      expect(byUser(s.admin.user.id)).toMatchObject({
         kind: 'builder',
         name: 'Ada Admin',
-        email: 'ac1-admin@tooljet.io',
+        email: 'sales-admin@tooljet.io',
         monthly: 100,
         addon: 0,
       });
-      // New scope: limits on, so the row is the logical split of 50 + 20.
-      expect(byUser(seed.builderOne.user.id)).toMatchObject({ kind: 'builder', monthly: 70, addon: 0 });
-      expect(byUser(seed.builderTwo.user.id)).toMatchObject({ kind: 'builder', monthly: 30.5, addon: 0 });
-      expect(byUser(seed.idleBuilder.user.id)).toMatchObject({ kind: 'builder', monthly: 0, addon: 0 });
-      expect(byUser(seed.archivedBuilder.user.id)).toMatchObject({
-        kind: 'archived',
-        name: 'Noah Williams',
-        monthly: 9,
-        addon: 0,
-      });
-      expect(byUser(seed.endUser.user.id)).toMatchObject({ kind: 'nonBuilder', name: 'Eve End', monthly: 5 });
-      expect(byUser(unknownUserId)).toMatchObject({ kind: 'unknown', monthly: 7, addon: 0 });
-      expect(byUser(unknownUserId).name).toBeUndefined();
-      expect(res.body.rows.find((r) => r.kind === 'unattributed')).toMatchObject({ monthly: 11, addon: 2 });
-      expect(res.body.rows.filter((r) => r.kind === 'unattributed')).toHaveLength(1);
+      // Limits are on in a new workspace: 50 + 20 is within the monthly limit, so all of it is monthly.
+      expect(byUser(s.builderOne.user.id)).toMatchObject({ kind: 'builder', monthly: 70, addon: 0 });
+      expect(byUser(s.builderTwo.user.id)).toMatchObject({ kind: 'builder', monthly: 30.5, addon: 0 });
+      expect(byUser(idle.user.id)).toMatchObject({ kind: 'builder', monthly: 0, addon: 0 });
+      expect(byUser(archived.user.id)).toMatchObject({ kind: 'archived', name: 'Noah Williams', monthly: 9 });
+      expect(byUser(s.endUser.user.id)).toMatchObject({ kind: 'nonBuilder', name: 'Eve End', monthly: 5 });
+      expect(byUser(unknownUserId)).toEqual({ kind: 'unknown', userId: unknownUserId, monthly: 7, addon: 0 });
+      expect(res.body.rows.filter((r) => r.kind === 'unattributed')).toEqual([
+        { kind: 'unattributed', monthly: 11, addon: 2 },
+      ]);
+    });
 
-      // Limits on: builder rows use the logical split, pool cards the wallet, so only the total reconciles.
-      expect(sum(res.body.rows, 'monthly') + sum(res.body.rows, 'addon')).toBe(
-        res.body.pools.monthly.used + res.body.pools.addon.used
+    it('a builder cannot read workspace usage (403)', async () => {
+      const s = await seed('sales');
+      stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
+
+      const res = await getUsage(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it("an admin only sees their own workspace's people, even when the gateway names someone from another", async () => {
+      const sales = await seed('sales');
+      const finance = await seed('finance');
+      const gateway = stubGateway(
+        gatewayFor(finance.owner, { monthly: 1000, addon: 0 }, { [sales.builderOne.user.id]: 100 })
       );
 
-      const gatewayCalls = fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.startsWith(GATEWAY));
-      expect(gatewayCalls).toContain(`${GATEWAY}/api/ai/organizations/${orgId}/usage`);
-    });
-
-    it('returns a null trackingSince when the gateway has no attributed row yet', async () => {
-      const seed = await seedWorkspace('nulltrack');
-      const orgId = seed.workspace.id;
-      licenseWith(app, { aiPlan: 'credits' });
-      stubGateway({
-        [`/api/ai/organizations/${orgId}/balance`]: balance({ plan: 1000, remaining: 1000 }, { plan: 0, remaining: 0 }),
-        [`/api/ai/organizations/${orgId}/usage`]: {
-          since: CYCLE_START,
-          cycleStart: CYCLE_START,
-          trackingSince: null,
-          users: [],
-          unattributed: { recurring: 0, topup: 0, total: 0 },
-          pool: { recurring: 0, topup: 0, total: 0 },
-        },
-      });
-
-      const res = await getUsage(app, await sessionFor(seed.admin.user, orgId), orgId);
+      const res = await getUsage(finance.adminCookie, finance.workspace.id);
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.trackingSince).toBeNull();
-    });
-
-    it('AC2: a builder gets 403', async () => {
-      const seed = await seedWorkspace('ac2');
-      const orgId = seed.workspace.id;
-      licenseWith(app, { aiPlan: 'credits' });
-      stubGateway({});
-
-      const res = await getUsage(app, await sessionFor(seed.builderOne.user, orgId), orgId);
-
-      expect(res.statusCode).toBe(403);
-    });
-
-    it("AC3: workspace B's admin only reaches workspace B and never sees A's people", async () => {
-      const a = await seedWorkspace('ac3a');
-      const b = await seedWorkspace('ac3b');
-      licenseWith(app, { aiPlan: 'credits' });
-      const fetchSpy = stubGateway({
-        [`/api/ai/organizations/${b.workspace.id}/balance`]: balance(
-          { plan: 1000, remaining: 900 },
-          { plan: 0, remaining: 0 }
-        ),
-        // A gateway answer that wrongly names A's builder must not reveal who that is.
-        [`/api/ai/organizations/${b.workspace.id}/usage`]: {
-          since: CYCLE_START,
-          cycleStart: CYCLE_START,
-          trackingSince: null,
-          users: [{ userId: a.builderOne.user.id, ...spent(100) }],
-          unattributed: { recurring: 0, topup: 0, total: 0 },
-          pool: { recurring: 100, topup: 0, total: 100 },
-        },
+      const gatewayUrls = gateway.mock.calls.map(([url]) => String(url)).filter((url) => url.startsWith(GATEWAY));
+      expect(gatewayUrls.every((url) => url.includes(finance.workspace.id))).toBe(true);
+      expect(res.body.rows.find((r) => r.userId === sales.builderOne.user.id)).toEqual({
+        kind: 'unknown',
+        userId: sales.builderOne.user.id,
+        monthly: 100,
+        addon: 0,
       });
-
-      const res = await getUsage(app, await sessionFor(b.admin.user, b.workspace.id), b.workspace.id);
-
-      expect(res.statusCode).toBe(200);
-      const gatewayCalls = fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.startsWith(GATEWAY));
-      expect(gatewayCalls.every((u) => u.includes(b.workspace.id))).toBe(true);
-      const body = JSON.stringify(res.body);
-      for (const seeded of [a.admin, a.builderOne, a.builderTwo, a.endUser]) {
-        expect(body).not.toContain(seeded.user.email);
-      }
-      expect(res.body.rows.find((r) => r.userId === a.builderOne.user.id)).toMatchObject({ kind: 'unknown' });
+      expect(JSON.stringify(res.body)).not.toContain('sales-');
     });
 
-    it('AC4: a BYOK workspace on its own provider gets 403', async () => {
-      const seed = await seedWorkspace('ac4byok');
-      const orgId = seed.workspace.id;
+    it('a workspace using its own AI provider key gets 403 on usage and no limits of its own', async () => {
+      const s = await seed('byok');
       await getDefaultDataSource()
         .getRepository(OrganizationAiKey)
-        .save({ organizationId: orgId, encryptedKey: 'x', provider: 'anthropic' });
-      licenseWith(app, { aiPlan: 'byok' });
-      stubGateway({});
+        .save({ organizationId: s.workspace.id, encryptedKey: 'x', provider: 'anthropic' });
+      restoreLicence = useLicence(app, { ...ENTERPRISE_TEST_TERMS, ai: { plan: 'byok' } } as Partial<Terms>);
+      stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
 
-      const res = await getUsage(app, await sessionFor(seed.admin.user, orgId), orgId);
+      const usage = await getUsage(s.adminCookie, s.workspace.id);
+      const mine = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
 
-      expect(res.statusCode).toBe(403);
+      expect(usage.statusCode).toBe(403);
+      expect(mine.statusCode).toBe(200);
+      expect(mine.body.enabled).toBe(false);
     });
 
-    it('AC4: a BYOK workspace that falls back to ToolJet credits gets the page', async () => {
-      const seed = await seedWorkspace('ac4fallback');
-      const orgId = seed.workspace.id;
-      licenseWith(app, { aiPlan: 'byok' });
-      stubGateway({
-        [`/api/ai/organizations/${orgId}/balance`]: balance({ plan: 1000, remaining: 1000 }, { plan: 0, remaining: 0 }),
-        [`/api/ai/organizations/${orgId}/usage`]: {
-          since: CYCLE_START,
-          cycleStart: CYCLE_START,
-          trackingSince: null,
-          users: [],
-          unattributed: { recurring: 0, topup: 0, total: 0 },
-          pool: { recurring: 0, topup: 0, total: 0 },
-        },
-      });
+    it('a BYOK workspace with no key of its own falls back to ToolJet credits and gets the page', async () => {
+      const s = await seed('fallback');
+      restoreLicence = useLicence(app, { ...ENTERPRISE_TEST_TERMS, ai: { plan: 'byok' } } as Partial<Terms>);
+      stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
 
-      const res = await getUsage(app, await sessionFor(seed.admin.user, orgId), orgId);
+      const res = await getUsage(s.adminCookie, s.workspace.id);
 
       expect(res.statusCode).toBe(200);
+      expect(res.body.pools.monthly).toMatchObject({ total: 1000, used: 0 });
+    });
+
+    it("limits off: a builder's row shows spend by wallet; limits on: the first {monthly limit} counts as monthly", async () => {
+      const s = await seed('split');
+      // 3 builders on 6,000 + 1,200: limit 2,000 + 400 each. The builder spent 1,700 monthly + 340 add-on.
+      stubGateway(
+        gatewayFor(
+          s.owner,
+          { monthly: 6000, addon: 1200 },
+          { [s.builderOne.user.id]: 1700 },
+          { addonSpend: { [s.builderOne.user.id]: 340 } }
+        )
+      );
+      const setLimits = (enabled: boolean) =>
+        request(app.getHttpServer())
+          .put('/api/ai/credits-usage/limits')
+          .set('tj-workspace-id', s.workspace.id)
+          .set('Cookie', s.adminCookie)
+          .send({ enabled })
+          .expect(200);
+
+      await setLimits(false);
+      const off = await getUsage(s.adminCookie, s.workspace.id);
+      await setLimits(true);
+      const on = await getUsage(s.adminCookie, s.workspace.id);
+
+      expect(off.body.rows.find((r) => r.userId === s.builderOne.user.id)).toMatchObject({ monthly: 1700, addon: 340 });
+      expect(on.body.rows.find((r) => r.userId === s.builderOne.user.id)).toMatchObject({
+        monthly: 2000,
+        addon: 40,
+        limit: { monthly: 2000, addon: 400 },
+      });
+      // Pool cards always show the wallets.
+      expect(on.body.pools.monthly).toMatchObject({ total: 6000, used: 1700 });
+      expect(on.body.pools.addon).toMatchObject({ total: 1200, used: 340 });
+    });
+
+    it("an overdrawn pool shows negative remaining; with no add-on limit the overshoot stays on the builder's monthly", async () => {
+      const s = await seed('overdrawn');
+      // 3 builders on 1,500: limit 500 each. The builder's last action overshot to 1,600.
+      stubGateway(gatewayFor(s.owner, { monthly: 1500, addon: 0 }, { [s.builderOne.user.id]: 1600 }));
+
+      const res = await getUsage(s.adminCookie, s.workspace.id);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.pools.monthly).toMatchObject({ total: 1500, used: 1600, remaining: -100 });
+      expect(res.body.rows.find((r) => r.userId === s.builderOne.user.id)).toMatchObject({
+        monthly: 1600,
+        addon: 0,
+        limit: { monthly: 500, addon: 0 },
+      });
+    });
+
+    it('on a Team licence limits are not available, but pool cards and rows are still served', async () => {
+      const s = await seed('team');
+      restoreLicence = useLicence(app, TEAM_TERMS);
+      stubGateway(gatewayFor(s.owner, { monthly: 1500, addon: 0 }, { [s.builderOne.user.id]: 600 }));
+
+      const usage = await getUsage(s.adminCookie, s.workspace.id);
+      const mine = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
+
+      expect(usage.statusCode).toBe(200);
+      expect(usage.body).toMatchObject({ limitsAvailable: false, limits: { enabled: false } });
+      expect(usage.body.pools.monthly).toMatchObject({ total: 1500, used: 600 });
+      expect(usage.body.rows.find((r) => r.userId === s.builderOne.user.id)).toMatchObject({ monthly: 600 });
+      expect(mine.statusCode).toBe(200);
+      expect(mine.body.enabled).toBe(false);
+    });
+
+    it('a builder gets their own used, limit and left per pool, and the pool balance', async () => {
+      const s = await seed('mine');
+      // 3 builders on 900 + 90: limit 300 + 30 each.
+      stubGateway(
+        gatewayFor(s.owner, { monthly: 900, addon: 90 }, { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 })
+      );
+
+      const res = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        enabled: true,
+        cycleStart: CYCLE_START,
+        monthly: { used: 250, limit: 300, left: 50, renewsOn: RENEWS },
+        addon: { used: 0, limit: 30, left: 30, expiresOn: null },
+        pool: expect.objectContaining({ aiFeaturesEnabled: true, aiPlan: 'credits', balance: 700 }),
+      });
+    });
+
+    it('a userId in the query is ignored: a builder always gets their own numbers', async () => {
+      const s = await seed('mine');
+      stubGateway(
+        gatewayFor(s.owner, { monthly: 900, addon: 90 }, { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 })
+      );
+
+      const res = await getMine(
+        await sessionFor(s.builderOne.user, s.workspace.id),
+        s.workspace.id,
+        `?userId=${s.builderTwo.user.id}`
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.monthly).toEqual({ used: 250, limit: 300, left: 50, renewsOn: RENEWS });
+    });
+
+    it('limits off: a builder gets enabled false and the pool balance', async () => {
+      const s = await seed('mine');
+      stubGateway(gatewayFor(s.owner, { monthly: 900, addon: 90 }));
+      await request(app.getHttpServer())
+        .put('/api/ai/credits-usage/limits')
+        .set('tj-workspace-id', s.workspace.id)
+        .set('Cookie', s.adminCookie)
+        .send({ enabled: false })
+        .expect(200);
+
+      const res = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual({
+        enabled: false,
+        pool: expect.objectContaining({ aiFeaturesEnabled: true, aiPlan: 'credits', balance: 990 }),
+      });
+    });
+
+    it('an end user cannot read their own credits (403)', async () => {
+      const s = await seed('mine');
+      stubGateway(gatewayFor(s.owner, { monthly: 900, addon: 90 }));
+
+      const res = await getMine(await sessionFor(s.endUser.user, s.workspace.id), s.workspace.id);
+
+      expect(res.statusCode).toBe(403);
     });
   });
 
   describe('Self-hosted (ee)', () => {
     let app: INestApplication;
-    const customerId = 'cust-s5';
+    let restoreLicence: () => void;
+    const owner = `/api/ai/selfhost-customers/${SELF_HOSTED_CUSTOMER}`;
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
       process.env.TOOLJET_EDITION = 'ee';
+      restoreLicence = useLicence(app, SELF_HOSTED_TERMS);
     });
 
     afterAll(async () => {
+      restoreLicence();
       await closeTestApp(app);
     }, 60_000);
 
-    const selfhostLicense = () =>
-      licenseWith(app, {
-        aiPlan: 'credits',
-        aiEnabled: true,
-        ai: { apiKey: 'selfhost-key' },
-        metadata: { customerId },
-      });
-
-    it('super admin gets instance-wide rows with workspace memberships, a per-workspace split and the workspace list', async () => {
+    it('a super admin gets instance-wide rows with workspace memberships, a per-workspace split and the workspace list', async () => {
       const superAdmin = await createUser(app, {
-        email: 'sh-super@tooljet.io',
-        firstName: 'Sam',
-        lastName: 'Super',
+        email: 'super@tooljet.io',
         userType: 'instance',
-        groups: ['end-user', 'admin'],
+        groups: ['admin'],
       });
       const sales = superAdmin.organization;
       const finance = (
         await createUser(app, {
-          email: 'sh-fin-admin@tooljet.io',
-          groups: ['end-user', 'admin'],
+          email: 'finance-admin@tooljet.io',
+          groups: ['admin'],
           organizationName: 'Finance Tools',
         })
       ).organization;
-      const builder = await createUser(app, {
-        email: 'sh-builder@tooljet.io',
-        firstName: 'Priya',
-        lastName: 'Nair',
-        groups: ['end-user', 'builder'],
-        organization: sales,
-      });
-      await createUser(app, { groups: ['end-user', 'builder'], organization: finance }, builder.user);
       const logistics = (
         await createUser(app, {
-          email: 'sh-log-admin@tooljet.io',
-          groups: ['end-user', 'admin'],
+          email: 'logistics-admin@tooljet.io',
+          groups: ['admin'],
           organizationName: 'Logistics',
         })
       ).organization;
-      // End user only in Logistics, so the workspace filter must not list them there.
+      const builder = await createUser(app, {
+        email: 'priya@tooljet.io',
+        firstName: 'Priya',
+        lastName: 'Nair',
+        groups: ['builder'],
+        organization: sales,
+      });
+      await createUser(app, { groups: ['builder'], organization: finance }, builder.user);
+      // An end user in Logistics: the workspace filter must not list them there.
       await createUser(app, { groups: ['end-user'], organization: logistics }, builder.user);
-
       const unknownUserId = uuidv4();
-      selfhostLicense();
-      const fetchSpy = stubGateway({
-        [`/api/ai/selfhost-customers/${customerId}/balance`]: balance(
-          { plan: 80000, remaining: 79900 },
-          { plan: 0, remaining: 0 }
-        ),
-        [`/api/ai/selfhost-customers/${customerId}/usage?groupBy=organization`]: {
-          since: CYCLE_START,
+      stubGateway({
+        [`${owner}/balance`]: {
+          balance: 79_900,
+          remaining: { recurring: 79_900, topup: 0, total: 79_900 },
+          expiry: { recurringExpiryDate: RENEWS, topupExpiryDate: null },
           cycleStart: CYCLE_START,
-          trackingSince: TRACKING_SINCE,
+        },
+        [`${owner}/usage?groupBy=organization`]: {
+          cycleStart: CYCLE_START,
+          trackingSince: null,
           users: [
             {
               userId: builder.user.id,
-              ...spent(100),
+              recurring: 100,
+              topup: 0,
+              total: 100,
               byOrganization: [
-                { organizationId: sales.id, ...spent(60) },
-                { organizationId: finance.id, ...spent(40) },
+                { organizationId: sales.id, recurring: 60, topup: 0, total: 60 },
+                { organizationId: finance.id, recurring: 40, topup: 0, total: 40 },
               ],
             },
             {
               userId: unknownUserId,
-              ...spent(7),
-              byOrganization: [{ organizationId: finance.id, ...spent(7) }],
+              recurring: 7,
+              topup: 0,
+              total: 7,
+              byOrganization: [{ organizationId: finance.id, recurring: 7, topup: 0, total: 7 }],
             },
           ],
           unattributed: { recurring: 0, topup: 0, total: 0 },
@@ -411,45 +444,69 @@ describe('GET /api/ai/credits-usage', () => {
         },
       });
 
-      const res = await getUsage(app, await sessionFor(superAdmin.user, sales.id), sales.id);
+      const res = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', sales.id)
+        .set('Cookie', await sessionFor(superAdmin.user, sales.id));
 
       expect(res.statusCode).toBe(200);
       expect(res.body.workspaces).toEqual(
         expect.arrayContaining([
           { id: sales.id, name: sales.name },
           { id: finance.id, name: 'Finance Tools' },
+          { id: logistics.id, name: 'Logistics' },
         ])
       );
-      expect(res.body.rows.find((r) => r.userId === builder.user.id)).toMatchObject({
-        kind: 'builder',
-        name: 'Priya Nair',
-        monthly: 100,
-        addon: 0,
-        byWorkspace: expect.arrayContaining([
+      const row = res.body.rows.find((r) => r.userId === builder.user.id);
+      expect(row).toMatchObject({ kind: 'builder', name: 'Priya Nair', monthly: 100, addon: 0 });
+      expect(row.byWorkspace).toEqual(
+        expect.arrayContaining([
           { organizationId: sales.id, monthly: 60, addon: 0 },
           { organizationId: finance.id, monthly: 40, addon: 0 },
-        ]),
-      });
-      expect([...res.body.rows.find((r) => r.userId === builder.user.id).workspaceIds].sort()).toEqual(
-        [sales.id, finance.id].sort()
+        ])
       );
+      expect([...row.workspaceIds].sort()).toEqual([sales.id, finance.id].sort());
       // Unknown spenders keep their workspace split so the workspace filter can place them.
       expect(res.body.rows.find((r) => r.userId === unknownUserId)).toMatchObject({
         kind: 'unknown',
         byWorkspace: [{ organizationId: finance.id, monthly: 7, addon: 0 }],
       });
-      const gatewayCalls = fetchSpy.mock.calls.map(([url]) => String(url)).filter((u) => u.startsWith(GATEWAY));
-      expect(gatewayCalls).toContain(`${GATEWAY}/api/ai/selfhost-customers/${customerId}/usage?groupBy=organization`);
     });
 
-    it('AC2: a workspace admin who is not a super admin gets 403', async () => {
-      const admin = await createUser(app, { email: 'sh-ws-admin@tooljet.io', groups: ['end-user', 'admin'] });
-      selfhostLicense();
-      stubGateway({});
+    it('a workspace admin who is not a super admin gets 403', async () => {
+      const admin = await createUser(app, { email: 'admin@tooljet.io', groups: ['admin'] });
+      stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
 
-      const res = await getUsage(app, await sessionFor(admin.user, admin.organization.id), admin.organization.id);
+      const res = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', admin.organization.id)
+        .set('Cookie', await sessionFor(admin.user, admin.organization.id));
 
       expect(res.statusCode).toBe(403);
+    });
+
+    it('a builder gets their own instance-wide numbers', async () => {
+      const superAdmin = await createUser(app, { email: 'super@tooljet.io', userType: 'instance', groups: ['admin'] });
+      const builder = await createUser(app, {
+        email: 'builder@tooljet.io',
+        groups: ['builder'],
+        organization: superAdmin.organization,
+      });
+      // 2 builders on 1,000: limit 500 each.
+      stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [builder.user.id]: 100 }));
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage/me')
+        .set('tj-workspace-id', superAdmin.organization.id)
+        .set('Cookie', await sessionFor(builder.user, superAdmin.organization.id));
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toMatchObject({
+        enabled: true,
+        monthly: { used: 100, limit: 500, left: 400 },
+        addon: { used: 0, limit: 0, left: 0 },
+        pool: expect.objectContaining({ aiFeaturesEnabled: true, aiPlan: 'credits', balance: 900 }),
+      });
     });
   });
 
@@ -465,12 +522,21 @@ describe('GET /api/ai/credits-usage', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('AC2: returns 404', async () => {
-      const admin = await createUser(app, { email: 'ce-admin@tooljet.io', groups: ['end-user', 'admin'] });
+    it('usage endpoints are not served (404)', async () => {
+      const admin = await createUser(app, { email: 'admin@tooljet.io', groups: ['admin'] });
+      const cookie = await sessionFor(admin.user, admin.organization.id);
 
-      const res = await getUsage(app, await sessionFor(admin.user, admin.organization.id), admin.organization.id);
+      const usage = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage')
+        .set('tj-workspace-id', admin.organization.id)
+        .set('Cookie', cookie);
+      const mine = await request(app.getHttpServer())
+        .get('/api/ai/credits-usage/me')
+        .set('tj-workspace-id', admin.organization.id)
+        .set('Cookie', cookie);
 
-      expect(res.statusCode).toBe(404);
+      expect(usage.statusCode).toBe(404);
+      expect(mine.statusCode).toBe(404);
     });
   });
 });

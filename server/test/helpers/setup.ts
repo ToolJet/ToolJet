@@ -299,7 +299,7 @@ export async function withRealTransactions(fn: () => Promise<void>) {
  * Defined here so enterprise tests go through the same LicenseBase parsing path
  * as every other plan — no test-mode shortcuts.
  */
-const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
+export const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   apps: 'UNLIMITED',
   workspaces: 'UNLIMITED',
   users: { total: 'UNLIMITED', editor: 'UNLIMITED', viewer: 'UNLIMITED', superadmin: 'UNLIMITED' },

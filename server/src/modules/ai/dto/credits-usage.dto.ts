@@ -156,13 +156,15 @@ export class MyCreditsResponseDto {
   @Expose() pool?: Record<string, unknown>;
 }
 
+const WHOLE_NUMBER = { message: 'Enter a whole number of 1 or more.' };
+
 export class CreditLimitDefaultDto {
   @IsIn(['equal_share', 'custom'])
   mode: 'equal_share' | 'custom';
 
   @ValidateIf((o: CreditLimitDefaultDto) => o.mode === 'custom')
-  @IsInt()
-  @Min(1)
+  @IsInt(WHOLE_NUMBER)
+  @Min(1, WHOLE_NUMBER)
   value?: number;
 }
 
@@ -183,8 +185,6 @@ export class UpdateCreditLimitsDto {
   @Type(() => CreditLimitDefaultsDto)
   defaults?: CreditLimitDefaultsDto;
 }
-
-const WHOLE_NUMBER = { message: 'Enter a whole number of 1 or more.' };
 
 /** One builder's custom limit per pool; null or omitted = use the default. Both null = Reset to default. */
 export class UpdateBuilderLimitDto {
