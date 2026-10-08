@@ -72,8 +72,17 @@
       cursor: pointer;
       white-space: nowrap;
 
-      &:hover {
+      &:hover:not(:disabled) {
         opacity: 0.9;
+      }
+
+      // Matches the shared .tj-base-btn:disabled convention (AppButton.scss) that
+      // Table's own Save/Discard buttons already get for free - this widget's
+      // Save/Cancel are plain buttons, not ButtonSolid, so they need it explicitly.
+      &:disabled {
+        background: var(--slate6);
+        color: var(--slate9);
+        cursor: not-allowed;
       }
     }
 
