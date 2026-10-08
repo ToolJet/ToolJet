@@ -1,107 +1,100 @@
 # Comment format
 
-A comment fails when nothing in it is ranked, ordered, or bounded, not when it is long. The
-opening line carries the verdict, the body carries the causal chain in a fixed order, and one
-thread carries one finding.
+A comment fails when nothing in it is ranked, ordered, or bounded, not when it is long. Line 1
+carries the verdict, the body carries the causal chain in a fixed order, one thread carries one
+finding.
 
 ## Inline comments
 
 ### Line 1
 
-The opening line is the triage surface. GitHub's notification list, the email subject and the
-collapsed Files-changed view all show roughly this line, so it names the consequence, never the
-code. No file paths, no symbol names. Under about 120 characters, blank line after it. If it
-cannot be written without a path in it, the finding is not understood yet.
+The triage surface: notifications, email subject and the collapsed Files-changed view show about
+this line. Name the consequence, never the code: no file paths, no symbol names. Under ~120
+characters, blank line after. If it cannot be written without a path, the finding is not
+understood yet.
 
-Small and medium tiers: a plain consequence sentence, "we" voice, no tag.
+Small and medium tiers: plain consequence sentence, "we" voice, no tag.
 
 ```
 Two builders saving the same version at once leaves the second save silently dropped.
 ```
 
-Large tier: severity first, because the author is triaging many threads without opening them.
-Severity is the closed set from `references/lenses.md`.
+Large tier: severity first (closed set in `references/lenses.md`), since the author triages many
+threads without opening them.
 
 ```
 **Blocker** - Two builders saving the same version at once leaves the second save silently dropped.
 ```
 
-### Body, in this order, omitting anything with nothing to say
+### Body, in this order, omitting empty parts
 
 | Part | Rule |
 |---|---|
-| Why | Short paragraphs, one idea each, the causal chain only. `file:line` refs belong here. A `mermaid` fence (GitHub renders it) or an ascii flow whenever the point is a flow, an ordering, or two paths converging; prose otherwise. |
-| Proof | Repro, trace, error text, the exact mutation that left the suite green. Collapse in `<details>` past about 8 lines. |
-| Impact | Only when the finding reaches an end user or an operator. One short paragraph opening with bold `Impact.`, written as the scenario they hit ("the embedded app loads, then Logout returns 403"). Omit for developer-only findings; never write "none". |
-| Fix | Always visible, never collapsed. `suggestion` block when the change is on the anchored lines; before/after code when proposing a shorter form. "Could we" or "suggest" tone. |
+| Why | Short paragraphs, one idea each, the causal chain only. `file:line` refs go here. A `mermaid` fence or ascii flow whenever the point is a flow, an ordering, or two paths converging; prose otherwise. |
+| Proof | Repro, trace, error text, the exact mutation that left the suite green. Collapse in `<details>` past ~8 lines. |
+| Impact | Only when it reaches an end user or operator. One short paragraph opening with bold `Impact.`, as the scenario they hit ("the embedded app loads, then Logout returns 403"). Omit for developer-only findings; never write "none". |
+| Fix | Always visible, never collapsed. `suggestion` block when the change is on the anchored lines; before/after code for a shorter form. "Could we" or "suggest" tone. |
 | `Related:` | One line, last. Cross-PR and cross-thread links. Nothing after it. |
 
 `<summary>` says what is inside, not "Details".
 
 ### Plain English
 
-The author reads the comment once, between other work. Every sentence says what breaks for whom,
-in words the author would use on a call.
+The author reads it once, between other work. Every sentence says what breaks for whom, in words
+the author would use on a call.
 
-- Simple words. Name the concrete thing: the field, the check, the branch, the route, the
-  table. Abstract nouns that describe the reviewer's model rather than the code are a sign the
-  finding is not yet understood in the author's terms.
-- Domain terms come from `UBIQUITOUS_LANGUAGE.md`: Workspace not Organization, Component not
-  Widget, End User not Viewer, Data Source never `ds`. A term the glossary does not have and the
-  code does not name is not shared vocabulary; say what it means in plain words the first time
-  or avoid it. That includes the PR author's own coinages from the description.
-- Paragraphs of one or two sentences, separated by a blank line. Bullets only for a list the
-  reader scans rather than reads: routes, files, parallel cases. A causal chain stays prose so
-  every "because" survives.
-- A diagram whenever the mechanism is a flow, an ordering, or two paths converging. Mermaid for
-  the PR (GitHub renders the fence); ascii where a fixed-width grid says it faster. If a sentence
-  says it faster, write the sentence.
+- Simple words; name the concrete thing (field, check, branch, route, table). Abstract nouns
+  describing the reviewer's model signal the finding is not yet in the author's terms.
+- Domain terms from `UBIQUITOUS_LANGUAGE.md`: Workspace not Organization, Component not Widget,
+  End User not Viewer, Data Source never `ds`. A term neither the glossary nor the code names
+  (including the author's own coinages from the description) gets plain words on first use, or is
+  avoided.
+- Paragraphs of one or two sentences, blank line between. Bullets only for scanned lists (routes,
+  files, parallel cases). A causal chain stays prose so every "because" survives.
+- Diagram whenever the mechanism is a flow, an ordering, or two paths converging: mermaid for the
+  PR, ascii where a fixed-width grid is faster. If a sentence is faster, write the sentence.
 
 ### Length
 
-- Under 12 rendered lines: line 1, then body. No `<details>`, no labels. Ordering carries it.
-- Over 12: labels appear. A `<details>` appears only when a single proof block is over about 8
-  lines. Total length never triggers a disclosure on its own. At most one disclosure.
-- Over about 35 with the disclosure closed: it is two findings. Split.
+- Under 12 rendered lines: line 1, then body. No `<details>`, no labels; ordering carries it.
+- Over 12: labels appear. `<details>` only when a single proof block exceeds ~8 lines; total
+  length never triggers one. At most one disclosure.
+- Over ~35 with the disclosure closed: it is two findings. Split.
 
 ### One finding per thread
 
-GitHub resolves per thread. Two findings in one thread means one is lost the moment the author
-replies to the first.
+GitHub resolves per thread; a second finding is lost once the author replies to the first.
 
-- Split when the second finding has a different anchor, a different fix, or a different severity.
-- Keep in-thread under a bold `Also on these lines.` when it shares the anchor and the author
-  would fix both in one edit. Never more than one such tail.
+- Split when the second finding has a different anchor, fix, or severity.
+- Keep in-thread under a bold `Also on these lines.` when it shares the anchor and the author would
+  fix both in one edit. At most one such tail.
 
-When editing already-posted comments, a split needs a new comment and a PATCH cannot make one.
-Default to the `Also` tail, and open new threads only where the second finding is Blocker or High,
-or sits in a different file.
+Editing posted comments: a PATCH cannot create a split. Default to the `Also` tail; open new
+threads only where the second finding is Blocker or High, or in a different file.
 
-Severity decides the split, so severity comes from the section review, not from the agent doing
-the formatting.
+Severity decides the split, so it comes from the section review, not the formatting agent.
 
-A precondition of a fix is not a second finding. Where applying one comment's fix breaks
-something else, that belongs in the Fix section of the comment causing it. The person who needs
-the warning is the person reading the fix.
+A fix's precondition is not a second finding. If applying one fix breaks something else, say so in
+that comment's Fix section, where the person applying it reads it.
 
 ### Banned
 
 - Em dashes.
-- Bold on its own line as a section header. The ordering is the structure.
-- `###` headings. They render at document scale inside a comment.
+- Bold on its own line as a section header. Ordering is the structure.
+- `###` headings (render at document scale in a comment).
 - More than one `<details>`, or nested.
-- `suggestion` inside `<details>`. Batch-apply needs it expanded.
-- Restating what the code does before saying what is wrong with it.
+- `suggestion` inside `<details>` (batch-apply needs it expanded).
+- Restating what the code does before saying what is wrong.
 - Opening with "This file", "This helper", "The guard", "The comment at".
-- Severity emoji or any emoji.
+- Any emoji, including severity emoji.
 - Meta-commentary about the review: "traced all exits", "verified with", "suite: n passed",
   "carried over from", "the agent found". The comment is the user's own words.
 - Praise. A decision worth affirming is a finding ("keep X, because Y").
-- Line 1 in the small and medium tiers carrying a severity tag.
+- A severity tag on line 1 in small and medium tiers.
 
 ## Root comments (large tier only)
 
-Different job. A root comment is the triage index for its section, not a finding.
+The triage index for its section, not a finding.
 
 ```
 **<Section title> (n of N)** - Request changes: <X> blockers, <Y> others.
@@ -109,34 +102,32 @@ Different job. A root comment is the triage index for its section, not a finding
 
 Then, in order:
 
-1. Blockers. One line each, pointing at its inline thread. No explanation, the thread holds it.
+1. Blockers. One line each, pointing at its inline thread; the thread holds the explanation.
 2. Other threads. One line each, or omit for a small section.
-3. Not raised as threads. What went to the handoff doc instead, cited by `file:line`.
-4. Checked and clean. Inside `<details>`. It is reassurance, not action, and it is the only
-   thing telling the author where not to look. Collapse it, never cut it.
+3. Not raised as threads: what went to the handoff doc, cited by `file:line`.
+4. Checked and clean, inside `<details>`. It tells the author where not to look: collapse it, never
+   cut it.
 
-No opening appraisal paragraph. Never cite comments by number; "comments 1 and 2" points at
-threads that do not exist once only the top severities are posted. Cite `file:line`.
+No opening appraisal paragraph. Cite `file:line`, never comment numbers ("comments 1 and 2" point
+at threads that may not be posted).
 
-## Review body (when the user asks for one)
+## Review body (only when the user asks for one)
 
-Plain human language: what the user of the product would experience, no line numbers, no
-jargon. "Details inline, but in short:" then bullets, then out-of-diff asks, then tests.
-Technical detail lives in the inline comments only.
+Plain language about what the product's user would experience; no line numbers, no jargon.
+"Details inline, but in short:" then bullets, then out-of-diff asks, then tests. Technical detail
+lives only in inline comments.
 
 ## Rejected, with reasons
 
-- `<details>` hurting email. Clients without the widget show summary and body together, so the
-  reader loses the compression and no content. The constraint it does impose: collapsed content
-  must read in sequence when forced open, which Why / Proof / Fix satisfies.
-- A rigid skeleton on every comment. A four line comment with four labelled parts is more markup
-  than content. Ordering is mandatory, labels appear only past 12 lines.
+- Avoiding `<details>` for email. Clients without the widget show summary and body together, so
+  nothing is lost. Constraint: collapsed content must read in sequence when forced open, which
+  Why / Proof / Fix satisfies.
+- A rigid labelled skeleton on every comment. On a four-line comment it is more markup than
+  content. Ordering is mandatory; labels only past 12 lines.
 - Collapsing the fix. It is what the author opened the thread for.
-- Findings tables in root comments. The cells are sentences, and tables do not wrap on mobile.
-- Bullets throughout. The causal chains are the value, and bullets drop the "because" that makes
-  a finding survive a challenge. Bullets are for lists the reader scans (routes, files, cases);
-  a chain of reasoning is short paragraphs.
-- "What a user sees" as the impact label. It reads as nonsense when the impact is silent or
-  deferred ("nothing today"). `Impact.` covers every case.
-- Severity tags on every review. On a ten-thread review the tag is noise; the consequence
-  sentence already ranks itself.
+- Findings tables in root comments. Cells are sentences, and tables do not wrap on mobile.
+- Bullets throughout. They drop the "because" that makes a finding survive a challenge.
+- "What a user sees" as the impact label. Reads as nonsense for silent or deferred impact;
+  `Impact.` covers every case.
+- Severity tags on every review. On a ten-thread review the consequence sentence already ranks
+  itself.

@@ -70,6 +70,15 @@ export const doctor: Command = {
     add({ name: 'redis', ok: await reachable(env.REDIS_HOST || 'localhost', Number(env.REDIS_PORT || 6379)), level: 'warn', detail: redis, hint: 'docker compose up -d redis (needed by tj start)' });
     const gh = await capture('gh', ['auth', 'status'], { cwd: repo.root });
     add({ name: 'gh auth', ok: gh.code === 0, level: 'warn', detail: gh.code === 0 ? 'logged in' : 'not logged in', hint: 'gh auth login' });
+    const ghVersion = (await capture('gh', ['--version'], { cwd: repo.root })).out.match(/(\d+)\.(\d+)/);
+    const [ghMajor, ghMinor] = ghVersion ? [Number(ghVersion[1]), Number(ghVersion[2])] : [0, 0];
+    add({
+      name: 'gh --attach',
+      ok: ghMajor > 2 || (ghMajor === 2 && ghMinor >= 102),
+      level: 'warn',
+      detail: ghVersion ? `gh ${ghVersion[0]}` : 'gh missing',
+      hint: 'brew upgrade gh  (2.102+ uploads images with --attach)',
+    });
     const stack = await capture('gh', ['stack', '--help'], { cwd: repo.root });
     add({ name: 'gh stack', ok: stack.code === 0, level: 'warn', detail: stack.code === 0 ? 'installed' : 'missing', hint: 'gh extension install github/gh-stack' });
     const localHead = (await capture('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: repo.root })).out;
