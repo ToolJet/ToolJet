@@ -686,4 +686,18 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     fireEvent.change(input, { target: { value: '20' } });
     await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
   });
+
+  test('[KeyValuePair-FIELDTYPE-016] datepicker: honors configured minDate/maxDate and surfaces a row validation error for an out-of-range value', async () => {
+    // Break this catches: field.minDate/maxDate are saved on the field config but never read by
+    // DatepickerFieldAdapter, so an out-of-range date never surfaces a row error (silently accepted).
+    renderField(
+      { fieldType: 'datepicker', isEditable: true, parseDateFormat: 'YYYY-MM-DD', minDate: '02/01/2024' },
+      {
+        v: '2024-01-15',
+      }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+  });
 });
