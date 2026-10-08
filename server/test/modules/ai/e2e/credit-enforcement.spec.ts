@@ -11,6 +11,7 @@ import {
   getDefaultDataSource,
   withRealTransactions,
   GATEWAY,
+  GatewayRoute,
   SELF_HOSTED_CUSTOMER,
   SELF_HOSTED_TERMS,
   TEAM_TERMS,
@@ -292,7 +293,7 @@ describe('AI credit enforcement', () => {
       it('should refuse the action with 503 balance_unavailable within the read budget', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 });
+        const routes: Record<string, GatewayRoute> = gatewayFor(s.owner, { monthly: 1000, addon: 100 });
         routes[`${s.owner}/balance`] = () => new Promise(() => undefined);
         stubGateway(routes);
         jest.replaceProperty(routeServices(app).builderUsageService, 'spendCheckTimeoutMs', 50);
@@ -309,7 +310,11 @@ describe('AI credit enforcement', () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         // At the limit: if the usage read answered, this would be refused.
-        const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 });
+        const routes: Record<string, GatewayRoute> = gatewayFor(
+          s.owner,
+          { monthly: 1000, addon: 100 },
+          { [s.builder.id]: 275 }
+        );
         routes[`${s.owner}/usage`] = () => new Promise(() => undefined);
         stubGateway(routes);
         jest.replaceProperty(routeServices(app).builderUsageService, 'spendCheckTimeoutMs', 50);

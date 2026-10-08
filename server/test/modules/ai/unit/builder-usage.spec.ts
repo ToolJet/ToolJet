@@ -21,6 +21,7 @@ const builder = (userId: string, workspaceId = 'ws-sales'): Membership => ({
 });
 
 const balance = (remainingMonthly: number, remainingAddon: number): GatewayBalance => ({
+  balance: remainingMonthly + remainingAddon,
   remaining: { recurring: remainingMonthly, topup: remainingAddon, total: remainingMonthly + remainingAddon },
   expiry: { recurringExpiryDate: '2026-11-01T00:00:00.000Z', topupExpiryDate: '2027-08-02T00:00:00.000Z' },
   cycleStart: '2026-10-01T00:00:00.000Z',

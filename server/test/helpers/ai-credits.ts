@@ -7,6 +7,7 @@ import { BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { LICENSE_TYPE } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import { User } from '@entities/user.entity';
+import type { GatewayBalance, GatewayUsage } from '@ee/ai/services/builder-usage.service';
 
 export const GATEWAY = 'http://gateway.test';
 export const CYCLE_START = '2026-10-01T00:00:00.000Z';
@@ -16,7 +17,10 @@ export const RENEWS = '2026-11-01T00:00:00.000Z';
  * Fakes the AI gateway at its HTTP boundary; other URLs reach the real fetch. A route may be a function, called
  * per request (a never-settling promise = a hung gateway; a throw = a network error). Unknown paths answer 404.
  */
-export function stubGateway(routes: Record<string, unknown>) {
+type GatewayResponse = GatewayBalance | GatewayUsage;
+export type GatewayRoute = GatewayResponse | (() => Promise<GatewayResponse>);
+
+export function stubGateway(routes: Record<string, GatewayRoute>) {
   const realFetch = global.fetch;
   return jest.spyOn(global, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input);
@@ -46,7 +50,7 @@ export function gatewayFor(
     cycleStart?: string;
     addonEndsAt?: string | null;
   } = {}
-) {
+): Record<string, GatewayResponse> {
   const { addonSpend = {}, plan, cycleStart = CYCLE_START, addonEndsAt = null } = more;
   const userIds = [...new Set([...Object.keys(spend), ...Object.keys(addonSpend)])];
   const users = userIds.map((userId) => ({ userId, ...wallet(spend[userId] ?? 0, addonSpend[userId] ?? 0) }));
@@ -66,7 +70,7 @@ export function gatewayFor(
     },
     [`${owner}/usage`]: usage,
     [`${owner}/usage?groupBy=organization`]: { ...usage, users: users.map((u) => ({ ...u, byOrganization: [] })) },
-  } as Record<string, unknown>;
+  };
 }
 
 export const sessionFor = async (user: User, organizationId: string) =>
