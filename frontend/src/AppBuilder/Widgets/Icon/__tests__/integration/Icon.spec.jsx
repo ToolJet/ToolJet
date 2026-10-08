@@ -147,6 +147,41 @@ describe('Icon widget', () => {
     }
   });
 
+  test('[Icon-EVT-003] Clicking the widget box outside the SVG fires onClick once', async () => {
+    // Break this catches: binding onClick to the SVG only, so the padding/alignment space around
+    // the glyph (which shows the pointer cursor and fires onHover) swallows clicks.
+    const bodyClick = jest.fn();
+    document.body.addEventListener('click', bodyClick);
+    try {
+      const { container } = widget.render({ events: countClicks() });
+      await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+
+      await widget.session.user.click(root(container));
+      await waitFor(() => expect(widget.variables().clickCount).toBe(1));
+      expect(bodyClick).not.toHaveBeenCalled();
+
+      await widget.session.user.click(iconSvg(container));
+      await waitFor(() => expect(widget.variables().clickCount).toBe(2));
+    } finally {
+      document.body.removeEventListener('click', bodyClick);
+    }
+  });
+
+  test('[Icon-EVT-002] A pointer cursor is shown only on an Icon with an onClick event', async () => {
+    // Break this catches: the Sprint-19 rewrite that left `'cursor-pointer': false` hard-coded,
+    // so a clickable Icon gives no affordance; and the reverse, a pointer on a hover-only icon.
+    const { container } = widget.render({
+      extraComponents: { [ID2]: iconDefinition(ID2, HANDLE2) },
+      also: [{ id: ID2, componentType: 'Icon', widgetHeight: 48, widgetWidth: 200 }],
+      events: [...countClicks(ID), ...countHovers(ID2)],
+    });
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    await waitFor(() => expect(iconSvg(container, HANDLE2)).toBeInTheDocument());
+
+    expect(root(container)).toHaveClass('cursor-pointer');
+    expect(root(container, HANDLE2)).not.toHaveClass('cursor-pointer');
+  });
+
   test('[Icon-API-001] Mount publishes the Icon state and action API', async () => {
     // Break this catches: leaving the registered exposedVariables map empty at runtime, or
     // omitting a shipped CSA/state key from the public component handle.
@@ -361,6 +396,24 @@ describe('Icon widget', () => {
       width: '80px',
       height: 'auto',
     });
+  });
+
+  test('[Icon-SIZ-002] The root centres the icon vertically and follows alignment in any slot', async () => {
+    // Break this catches: a text-align-only root, which leaves the SVG hugging the top of a
+    // tall slot (width:<px>; height:auto never fills the height), and alignment that does not
+    // carry into the flex axis.
+    const { container } = widget.render({
+      extraComponents: { [ID2]: iconDefinition(ID2, HANDLE2, {}, { iconAlign: binding('right') }) },
+      also: [{ id: ID2, componentType: 'Icon', widgetHeight: 84, widgetWidth: 80 }],
+    });
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    await waitFor(() => expect(iconSvg(container, HANDLE2)).toBeInTheDocument());
+
+    expect(root(container)).toHaveStyle({ display: 'flex', alignItems: 'center', justifyContent: 'center' });
+    expect(root(container, HANDLE2)).toHaveStyle({ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' });
+
+    await setStyle('iconAlign', 'left', ID2);
+    await waitFor(() => expect(root(container, HANDLE2)).toHaveStyle({ justifyContent: 'flex-start' }));
   });
 
   test('[Icon-ASY-001] Lazy icon completion cannot restore a stale glyph after change or unmount', async () => {
