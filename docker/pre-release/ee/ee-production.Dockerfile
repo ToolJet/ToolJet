@@ -68,6 +68,7 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
 

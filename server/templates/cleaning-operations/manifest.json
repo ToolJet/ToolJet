@@ -1,0 +1,21 @@
+{
+  "name": "Cleaning operations",
+  "description": "Plan cleaning visits by site and crew, and track each service day through to completion.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "cleaning-operations",
+  "category": "property-and-facilities"
+}

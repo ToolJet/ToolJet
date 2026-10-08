@@ -1,0 +1,17 @@
+{
+  "name": "HVAC service management",
+  "description": "Dispatch HVAC service jobs, balance technician workload and record the work done at each customer site.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "hvac-service-management",
+  "category": "field-services"
+}

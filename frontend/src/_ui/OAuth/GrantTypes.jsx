@@ -19,7 +19,8 @@ const CommonOAuthFields = ({
   isFieldAllowed,
 }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
-  const { client_id, client_secret, client_auth, company_id, site_url } = clientConfig;
+  const { client_id, client_secret, client_auth, company_id, site_url, code_verifier, code_challenge_method } =
+    clientConfig;
   const { scopes } = authConfig;
   const { optionchanged, optionsChanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -184,6 +185,40 @@ const CommonOAuthFields = ({
             value={site_url}
             workspaceConstants={workspaceConstants}
             placeholder="https://your-site.atlassian.net"
+          />
+        </div>
+      )}
+      {isFieldAllowed('code_challenge_method', grant_type, oauth_configs) && (
+        <div className="col-md-12" data-cy="code-challenge-method-section">
+          <label className="form-label mt-3" data-cy="label-code-challenge-method">
+            Code challenge method
+          </label>
+          <Select
+            options={[
+              { name: 'SHA-256', value: 'S256' },
+              { name: 'Plain', value: 'plain' },
+            ]}
+            value={code_challenge_method || 'S256'}
+            onChange={(value) => optionchanged('code_challenge_method', value)}
+            width={'100%'}
+            useMenuPortal={false}
+            dataCy="code-challenge-method"
+          />
+        </div>
+      )}
+      {isFieldAllowed('code_verifier', grant_type, oauth_configs) && (
+        <div className="col-md-12" data-cy="code-verifier-section">
+          <label className="form-label mt-3" data-cy="label-code-verifier">
+            Code verifier
+          </label>
+          <Input
+            data-cy="code-verifier-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('code_verifier', e.target.value)}
+            value={code_verifier}
+            workspaceConstants={workspaceConfig.workspaceConstants}
+            placeholder="43-128 characters (A-Z, a-z, 0-9, - . _ ~)"
           />
         </div>
       )}
@@ -376,6 +411,7 @@ const OAuthConfiguration = ({
   const grantTypeOptions = () => {
     const options = [
       { name: 'Authorization code', value: 'authorization_code' },
+      { name: 'Authorization code with PKCE', value: 'authorization_code_pkce' },
       { name: 'Client credentials', value: 'client_credentials' },
     ];
 

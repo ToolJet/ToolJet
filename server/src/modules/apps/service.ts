@@ -381,6 +381,8 @@ export class AppsService implements IAppsService {
       await manager.delete(App, { id, organizationId });
     });
 
+    await this.eventEmitter.emitAsync('ai.conversations.deleted', { organizationId });
+
     //APP_DELETE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,

@@ -54,6 +54,15 @@ export const htmlConfig = {
   },
   events: {},
   styles: {
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+      accordian: 'container',
+    },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
@@ -118,6 +127,7 @@ export const htmlConfig = {
     events: [],
     styles: {
       padding: { value: 'default' },
+      backgroundColor: { value: '' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

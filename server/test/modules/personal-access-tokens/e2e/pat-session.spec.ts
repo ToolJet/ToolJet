@@ -9,6 +9,7 @@ import {
   ensureAppEnvironments,
   createGroupPermission,
 } from 'test-helper';
+import { createApplication } from '../../../helpers/seed';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
@@ -26,6 +27,7 @@ describe('Personal access token session exchange', () => {
   let tokenCookie: string[];
   let orgId: string;
   let userId: string;
+  let owner: User;
 
   const futureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 
@@ -44,6 +46,22 @@ describe('Personal access token session exchange', () => {
     return { token: res.body.token, id: res.body.id };
   };
 
+  const createApp = async (name: string): Promise<string> => {
+    const application = await createApplication(app, { name, user: owner });
+    return application.id;
+  };
+
+  const createAppInOtherWorkspace = async (): Promise<string> => {
+    const { user: outsider } = await createUser(app, {
+      email: 'outsider@tooljet.io',
+      firstName: 'other',
+      lastName: 'workspace',
+      organizationName: 'Other workspace',
+    });
+    const application = await createApplication(app, { name: 'foreign-app', user: outsider });
+    return application.id;
+  };
+
   const exchange = (token: string) =>
     request
       .agent(app.getHttpServer())
@@ -59,6 +77,9 @@ describe('Personal access token session exchange', () => {
     });
     orgId = organization.id;
     userId = user.id;
+    // organizationId is in-memory only; a findOne-loaded user lacks it, apps.organization_id NOT NULL
+    owner = user;
+    owner.organizationId = orgId;
     await ensureAppEnvironments(app, orgId);
     ({ tokenCookie } = await login(app));
   });
@@ -99,6 +120,51 @@ describe('Personal access token session exchange', () => {
       expect(payload.appId).toBeUndefined();
       // Attribution: PAT-driven writes must be distinguishable from a human's in audit logs.
       expect(payload.tj_api_source).toBe('personal_access_token');
+    });
+
+    it('should mint an app-scoped session for an app in the token workspace', async () => {
+      const { token } = await createPat('app-scoped');
+      const appId = await createApp('render-target');
+
+      const res = await exchange(token).send({ appId }).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      // patScope stays 'workspace': pinning to an app must not hand it the embed flow's exemption.
+      expect(payload).toMatchObject({ isPATLogin: true, appId, organizationIds: [orgId], patScope: 'workspace' });
+    });
+
+    it('should reject a malformed appId with 400, not 500', async () => {
+      const { token } = await createPat('bad-app-id');
+      await exchange(token).send({ appId: 'not-a-uuid' }).expect(400);
+    });
+
+    it('should refuse an app in another workspace', async () => {
+      const { token } = await createPat('foreign-app');
+      const foreignAppId = await createAppInOtherWorkspace();
+
+      await exchange(token).send({ appId: foreignAppId }).expect(404);
+    });
+
+    it.each(['workflow', 'module'])('should refuse a %s id in place of an app', async (type) => {
+      const { token } = await createPat(`not-an-app-${type}`);
+      const resource = await createApplication(app, { name: `pinned-${type}`, user: owner, type });
+
+      await exchange(token).send({ appId: resource.id }).expect(404);
+    });
+
+    it('should refuse an app that does not exist', async () => {
+      const { token } = await createPat('missing-app');
+      await exchange(token).send({ appId: '00000000-0000-0000-0000-000000000000' }).expect(404);
+    });
+
+    it('should still mint a workspace session when no app is named', async () => {
+      const { token } = await createPat('no-app-named');
+      const res = await exchange(token).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      expect(payload.appId).toBeUndefined();
+      expect(payload.scope).toBeUndefined();
+      expect(payload.patScope).toBe('workspace');
     });
 
     it('should reject an expired token', async () => {
@@ -242,8 +308,7 @@ describe('Personal access token session exchange', () => {
     });
 
     it('should execute a workflow and read its status and nodes with a workspace PAT session', async () => {
-      const user = await getDefaultDataSource().getRepository(User).findOneByOrFail({ id: userId });
-      const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, owner, {
         name: 'PAT execution',
         nodes: [
           {

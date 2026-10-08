@@ -19,7 +19,9 @@ describe("License - App & Workflow Limits", () => {
     const app1Name = `${fake.companyName}-Limit-1`;
     const app2Name = `${fake.companyName}-Limit-2`;
 
-    cy.apiCreateApp(app1Name);
+    for (let i = 0; i < 9; i++) {
+      cy.apiCreateApp(`${app1Name}-${i}`);
+    }
     cy.visit("/my-workspace");
 
     cy.wait("@getLicenseAccess");
@@ -28,8 +30,8 @@ describe("License - App & Workflow Limits", () => {
     verifyResourceLimit("apps", "basic");
 
     getCurrentCountFromBanner("apps").then((counts) => {
-      expect(counts.current).to.be.gte(1);
-      expect(counts.total).to.equal(2);
+      expect(counts.current).to.be.gte(9);
+      expect(counts.total).to.equal(10);
     });
 
     cy.apiCreateApp(app2Name);
@@ -42,12 +44,12 @@ describe("License - App & Workflow Limits", () => {
     cy.get(commonSelectors.appCreateButton).should("be.disabled");
 
     // Step 5: Verify clone button disabled at limit (Bug)
-    // cy.contains(app1Name).parents('[data-cy="app-card"]').within(() => {
+    // cy.contains(`${app1Name}-0`).parents('[data-cy="app-card"]').within(() => {
     //   cy.get('[data-cy="app-card-menu-icon"]').click();
     // });
     // cy.get('[data-cy="app-card-clone-option"]').should("be.disabled");
 
-    cy.apiGetAppIdByName(app1Name).then((id) => {
+    cy.apiGetAppIdByName(`${app1Name}-5`).then((id) => {
       cy.apiDeleteApp(id);
     });
     cy.get(commonSelectors.homePageIcon).click();
@@ -55,18 +57,20 @@ describe("License - App & Workflow Limits", () => {
 
     cy.get(commonSelectors.appCreateButton).should("be.enabled");
     getCurrentCountFromBanner("apps").then((counts) => {
-      expect(counts.current).to.equal(1);
-      expect(counts.total).to.equal(2);
+      expect(counts.current).to.equal(9);
+      expect(counts.total).to.equal(10);
     });
     cy.apiGetAppIdByName(app2Name).then((id) => {
       cy.apiDeleteApp(id);
     });
+    cy.apiDeleteAllApps();
   });
 
   it("should verify workflow limit progression, enforce API limit, validate deletion", () => {
     const workflow1Name = `${fake.companyName}-Workflow-1`;
     const workflow2Name = `${fake.companyName}-Workflow-2`;
 
+    cy.apiDeleteAllWorkflows();
     cy.apiCreateWorkflow(workflow1Name);
     cy.visit("my-workspace/workflows");
 

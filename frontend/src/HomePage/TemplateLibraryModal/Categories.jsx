@@ -2,17 +2,29 @@ import React from 'react';
 import FolderList from '@/_ui/FolderList/FolderList';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
-const categoryTitles = {
+export const categoryTitles = {
   all: 'All categories',
-  'customer-support': 'Customer support',
-  'data-and-analytics': 'Data and analytics',
-  'developer-utilities': 'Developer utilities',
-  'educational-technology': 'Educational technology',
-  'financial-services': 'Financial services',
-  'human-resources': 'Human resources',
-  operations: 'Operations',
-  'product-management': 'Product management',
-  'sales-and-marketing': 'Sales and marketing',
+  'it-operations': 'IT operations',
+  'it-assets-and-access': 'IT assets & access',
+  'status-pages': 'Status pages',
+  'risk-and-compliance': 'Risk & compliance',
+  contracts: 'Contracts',
+  'finance-and-accounting': 'Finance & accounting',
+  'procurement-and-suppliers': 'Procurement & suppliers',
+  'people-and-hr': 'People & HR',
+  'projects-and-resourcing': 'Projects & resourcing',
+  'customer-service': 'Customer service',
+  'sales-and-bids': 'Sales & bids',
+  'field-services': 'Field services',
+  'property-and-facilities': 'Property & facilities',
+  'construction-and-installation': 'Construction & installation',
+  'manufacturing-and-production': 'Manufacturing & production',
+  'inventory-orders-and-fleet': 'Inventory, orders & fleet',
+  rentals: 'Rentals',
+  'local-services': 'Local services',
+  'education-and-training': 'Education & training',
+  'hospitality-and-events': 'Hospitality & events',
+  'productivity-and-community': 'Productivity & community',
 };
 
 export default function Categories(props) {
