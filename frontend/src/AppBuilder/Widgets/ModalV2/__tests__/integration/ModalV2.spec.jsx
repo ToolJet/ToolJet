@@ -26,7 +26,8 @@
  * prefix, per the widget-testing-contract validator.
  */
 import React from 'react';
-import { waitFor, fireEvent as rtlFireEvent, act, screen } from '@testing-library/react';
+import { waitFor, fireEvent as rtlFireEvent, act, screen, render } from '@testing-library/react';
+import useKeyHooks from '@/_hooks/useKeyHooks';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { getModalBodyHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
@@ -274,6 +275,24 @@ describe('ModalV2: Escape key', () => {
   afterEach(widget.teardown);
 
   test('[ModalV2-ESC-001] hideOnEsc: true closes the modal on Escape', async () => {
+    renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
+    await openModal();
+
+    rtlFireEvent.keyDown(modalBody(), { key: 'Escape', code: 'Escape' });
+
+    await waitFor(() => expect(exposed()).toBe(false));
+  });
+
+  test('[ModalV2-ESC-003] Escape still closes the modal when the editor hotkeys are mounted', async () => {
+    // Break this catches: the editor's useKeyHooks default-preventing Escape before the
+    // modal sees it, which makes Components/Modal.jsx's `if (e.defaultPrevented) return`
+    // guard (meant for a nested Radix overlay) swallow every Escape in edit mode.
+    const EditorHotkeys = () => {
+      useKeyHooks(['esc'], () => {});
+      return null;
+    };
+    // Mounted first, as HotkeyProvider is in the real editor, so its document listener runs first.
+    render(<EditorHotkeys />);
     renderModal({ properties: { hideOnEsc: binding('{{true}}') } });
     await openModal();
 

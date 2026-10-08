@@ -252,7 +252,8 @@ describe('Link widget', () => {
     await widget.act('setDisable', true);
     expect(widget.exposed().isDisabled).toBe(true);
     expect(root(container)).toHaveStyle({ opacity: '0.5', pointerEvents: 'none' });
-    expect(anchor(container)).toHaveAttribute('disabled');
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'true');
+    expect(anchor(container)).toHaveAttribute('tabindex', '-1');
 
     await widget.act('setLoading', true);
     expect(widget.exposed().isLoading).toBe(true);
@@ -414,8 +415,15 @@ describe('Link widget', () => {
     expect(anchor(container).hasAttribute('rel')).toBe(false);
     expect(anchor(container).hasAttribute('role')).toBe(false);
 
+    // Disabled is expressed as aria-disabled + tabindex=-1 (D-12); `disabled` is a no-op on <a>.
     await widget.act('setDisable', true);
-    expect(anchor(container)).toHaveAttribute('disabled');
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'true');
+    expect(anchor(container)).toHaveAttribute('tabindex', '-1');
+    expect(anchor(container)).not.toHaveAttribute('disabled');
+
+    await widget.act('setDisable', false);
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'false');
+    expect(anchor(container)).not.toHaveAttribute('tabindex');
   });
 
   test('[Link-ISO-001] Instances isolate text, href, and flags', async () => {
