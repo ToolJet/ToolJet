@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Breadcrumb,
@@ -18,23 +18,24 @@ import { toDataCy } from './filterTemplates';
 export function TemplateBreadcrumb({ template, onBack }) {
   const { t } = useTranslation();
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    <Breadcrumb className="tw-min-w-0">
+      <BreadcrumbList className="tw-m-0 tw-flex-nowrap tw-gap-3 tw-p-0">
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
+          <BreadcrumbLink asChild className="tw-text-text-default hover:tw-text-text-default">
             <button
               type="button"
               onClick={onBack}
-              className="tw-cursor-pointer tw-border-0 tw-bg-transparent tw-p-0"
+              className="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-border-0 tw-bg-transparent tw-p-0 tw-font-title-default"
               data-cy="all-templates-breadcrumb"
             >
+              <ArrowLeft className="tw-size-5 tw-text-icon-default" />
               {t('homePage.templateLibraryModal.allTemplates', 'All templates')}
             </button>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{template.name}</BreadcrumbPage>
+        <BreadcrumbSeparator className="tw-font-title-default tw-text-text-placeholder">/</BreadcrumbSeparator>
+        <BreadcrumbItem className="tw-min-w-0">
+          <BreadcrumbPage className="tw-truncate tw-font-title-heavy-x-large">{template.name}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

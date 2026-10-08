@@ -477,6 +477,7 @@
             "noResults": "No templates match",
             "noResultsHint": "Try another search or clear the filters.",
             "clearFilters": "Clear filters",
+            "clearFiltersCount": "Clear filters ({{count}})",
             "loadError": "Could not load templates",
             "loadErrorHint": "Check your connection and try again.",
             "retry": "Retry"

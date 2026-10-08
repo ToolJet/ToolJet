@@ -52,6 +52,9 @@ const GalleryView = forwardRef(function GalleryView(
     trackSearch(query.trim().length, visible.length);
   }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The search text counts as one filter because Clear filters resets it too
+  const appliedFilterCount = categories.size + sources.size + (query.trim() ? 1 : 0);
+
   const clearFilters = () => {
     setQuery('');
     setCategories(new Set());
@@ -99,13 +102,28 @@ const GalleryView = forwardRef(function GalleryView(
             data-cy="search-input-field"
           />
           {loadStatus === 'loaded' && (
-            <span className="tw-font-body-large tw-text-text-placeholder" data-cy="templates-count">
-              {t('homePage.templateLibraryModal.templateCount', {
-                count: visible.length,
-                defaultValue_one: '{{count}} template',
-                defaultValue_other: '{{count}} templates',
-              })}
-            </span>
+            <div className="tw-flex tw-items-center tw-gap-2">
+              <span className="tw-font-body-large tw-text-text-placeholder" data-cy="templates-count">
+                {t('homePage.templateLibraryModal.templateCount', {
+                  count: visible.length,
+                  defaultValue_one: '{{count}} template',
+                  defaultValue_other: '{{count}} templates',
+                })}
+              </span>
+              {appliedFilterCount > 0 && (
+                <>
+                  <span aria-hidden="true" className="tw-text-text-placeholder">
+                    •
+                  </span>
+                  <Button variant="ghostBrand" size="medium" onClick={clearFilters} data-cy="clear-filters-link">
+                    {t('homePage.templateLibraryModal.clearFiltersCount', {
+                      count: appliedFilterCount,
+                      defaultValue: 'Clear filters ({{count}})',
+                    })}
+                  </Button>
+                </>
+              )}
+            </div>
           )}
         </div>
         {loadStatus === 'loading' && (

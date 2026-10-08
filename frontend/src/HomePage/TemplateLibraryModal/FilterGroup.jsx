@@ -24,7 +24,7 @@ export default function FilterGroup({
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder}
       />
-      <ul className="tw-m-0 tw-flex tw-min-h-0 tw-flex-col tw-gap-1 tw-overflow-y-auto tw-p-0">
+      <ul className="tw-m-0 tw-flex tw-min-h-0 tw-flex-col tw-gap-1 tw-overflow-y-auto tw-p-0 tw-pr-3 [scrollbar-gutter:stable]">
         {visible.map((option) => {
           const count = counts[option.id] ?? 0;
           const id = `template-filter-${dataCySuffix}-${option.id}`;
