@@ -227,7 +227,11 @@
       // resize: vertical;
       // overflow-y: auto;
       position: absolute;
-      z-index: 99999 !important;
+      // Must stay below .kv-changeset-popover's z-index (10): this field and the popover share the
+      // same stacking context (no row/value wrapper between them sets its own z-index), so a value
+      // copied from Table's expanding cell-editor overlay (99999) let an actively-edited field (e.g.
+      // an HTML field with long unbreakable text) paint over the Save/Cancel buttons.
+      z-index: 1 !important;
       align-items: flex-start !important;
       // padding: 8px !important;
     }
