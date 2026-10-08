@@ -166,7 +166,7 @@ export const DatetimePickerV2 = ({
   };
 
   const handleClear = () => {
-    setInputValue(null);
+    setInputValue(null, null, null, true);
     setDisplayTimestamp('');
   };
 
@@ -300,15 +300,18 @@ export const DatetimePickerV2 = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, null, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, null, true);
       },
       setValueInTimestamp: (timeStamp) => {
-        setInputValue(timeStamp);
+        setInputValue(timeStamp, null, null, true);
       },
       setDate: (date, format) => {
         const momentObj = moment(date, [format ? format : dateFormat, displayFormat]);
@@ -326,7 +329,6 @@ export const DatetimePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
       setTime: (time, format) => {
         const momentObj = moment(time, [format ? format : timeFormat, displayFormat]);
@@ -343,7 +345,6 @@ export const DatetimePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
     });
   }, [
@@ -405,7 +406,7 @@ export const DatetimePickerV2 = ({
     dateFormat,
   ]);
 
-  useFormClear(() => setInputValue(null));
+  useFormClear(() => setInputValue(null, null, null, true));
 
   const isTwentyFourHourMode = is24HourFormat(displayFormat);
 
@@ -433,7 +434,8 @@ export const DatetimePickerV2 = ({
     dateFormat,
     displayFormat,
     timeFormat,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showTimeInput: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',
     showYearPicker: datepickerMode === 'year',

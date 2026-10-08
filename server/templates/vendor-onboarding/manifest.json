@@ -1,0 +1,19 @@
+{
+  "name": "Vendor onboarding",
+  "description": "Qualify new vendors against clear requirements. Collect evidence, review each vendor and track their status.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "vendor-onboarding",
+  "category": "procurement-and-suppliers"
+}
