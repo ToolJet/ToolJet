@@ -1,10 +1,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { initTestApp, closeTestApp, createUser, getDefaultDataSource, ENTERPRISE_TEST_TERMS } from 'test-helper';
-import { OrganizationAiKey } from '@entities/organization_ai_key.entity';
-import { Terms } from '@modules/licensing/interfaces/terms';
 import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  getDefaultDataSource,
+  ENTERPRISE_TEST_TERMS,
   CYCLE_START,
   GATEWAY,
   RENEWS,
@@ -15,7 +17,9 @@ import {
   sessionFor,
   stubGateway,
   useLicence,
-} from './credits-gateway';
+} from 'test-helper';
+import { OrganizationAiKey } from '@entities/organization_ai_key.entity';
+import { Terms } from '@modules/licensing/interfaces/terms';
 
 /** @group ai */
 describe('AI credits usage', () => {

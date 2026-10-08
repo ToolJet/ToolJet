@@ -1,12 +1,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { initTestApp, closeTestApp, createUser, getDefaultDataSource, withRealTransactions } from 'test-helper';
-import { User } from '@entities/user.entity';
-import { AiController } from '@ee/ai/controller';
-import { AiUtilService } from '@ee/ai/util.service';
-import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
 import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  getDefaultDataSource,
+  withRealTransactions,
   GATEWAY,
   SELF_HOSTED_CUSTOMER,
   SELF_HOSTED_TERMS,
@@ -17,7 +17,11 @@ import {
   sessionFor,
   stubGateway,
   useLicence,
-} from './credits-gateway';
+} from 'test-helper';
+import { User } from '@entities/user.entity';
+import { AiController } from '@ee/ai/controller';
+import { AiUtilService } from '@ee/ai/util.service';
+import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
 
 // Notices show only when found in the current cycle, so cycles start in the past.
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString();

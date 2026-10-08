@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
-import { buildTestSession, getDefaultDataSource, ENTERPRISE_TEST_TERMS } from 'test-helper';
+import { buildTestSession } from './api';
+import { getDefaultDataSource, ENTERPRISE_TEST_TERMS } from './setup';
 import LicenseBase from '@modules/licensing/configs/LicenseBase';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';

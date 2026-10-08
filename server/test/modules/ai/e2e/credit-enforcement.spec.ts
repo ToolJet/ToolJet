@@ -10,14 +10,6 @@ import {
   createApplication,
   getDefaultDataSource,
   withRealTransactions,
-} from 'test-helper';
-import { User } from '@entities/user.entity';
-import { AiActiveRun } from '@entities/ai_active_run.entity';
-import { AiUtilService } from '@ee/ai/util.service';
-import { AiController } from '@ee/ai/controller';
-import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
-import * as creditLimits from '@ee/ai/services/credit-limits';
-import {
   GATEWAY,
   SELF_HOSTED_CUSTOMER,
   SELF_HOSTED_TERMS,
@@ -27,7 +19,13 @@ import {
   sessionFor,
   stubGateway,
   useLicence,
-} from './credits-gateway';
+} from 'test-helper';
+import { User } from '@entities/user.entity';
+import { AiActiveRun } from '@entities/ai_active_run.entity';
+import { AiUtilService } from '@ee/ai/util.service';
+import { AiController } from '@ee/ai/controller';
+import { BuilderUsageService } from '@ee/ai/services/builder-usage.service';
+import * as creditLimits from '@ee/ai/services/credit-limits';
 
 /** The services the routes use (the module graph holds more than one instance of each). */
 const routeServices = (app: INestApplication) =>

@@ -20,3 +20,6 @@ export * from './helpers/workflows';
 
 // --- Custom Component Libraries: entity factories, PAT minting, upload fixtures ---
 export * from './helpers/custom-component-libraries';
+
+// --- AI credits: gateway stub, licence swaps and audit reads for the AI credit specs ---
+export * from './helpers/ai-credits';
