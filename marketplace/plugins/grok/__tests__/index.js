@@ -187,6 +187,31 @@ describe('GrokService', () => {
       );
     });
 
+    it('should prepend system prompt when messages array is provided without a system message', async () => {
+      mockOpenAIInstance.chat.completions.create.mockResolvedValueOnce({ id: 'chatcmpl-sys-history' });
+      jest.spyOn(grokService, 'getConnection').mockResolvedValue(mockOpenAIInstance);
+
+      const history = [{ role: 'user', content: 'What is 2+2?' }];
+
+      await grokService.run(
+        { apiKey: 'xai-valid-key' },
+        {
+          operation: 'chat',
+          system_prompt: 'Be concise.',
+          messages: history,
+        }
+      );
+
+      expect(mockOpenAIInstance.chat.completions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: [
+            { role: 'system', content: 'Be concise.' },
+            { role: 'user', content: 'What is 2+2?' },
+          ],
+        })
+      );
+    });
+
     it('should throw error if both prompt and messages are missing', async () => {
       jest.spyOn(grokService, 'getConnection').mockResolvedValue(mockOpenAIInstance);
 

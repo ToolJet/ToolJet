@@ -13,7 +13,7 @@ function sanitizeError(error: any, apiKey?: string): { message: string; details:
   if (apiKey && apiKey.length > 5) {
     rawMessage = rawMessage.split(apiKey).join('[REDACTED]');
   }
-  rawMessage = rawMessage.replace(/Bearer\s+[A-Za-z0-9_\-\.]+/gi, 'Bearer [REDACTED]');
+  rawMessage = rawMessage.replace(/Bearer\s+[A-Za-z0-9_.-]+/gi, 'Bearer [REDACTED]');
 
   const status = error?.status || error?.statusCode || null;
   let userFriendlyMessage = rawMessage;
@@ -70,6 +70,13 @@ export default class GrokService implements QueryService {
           if (queryOptions.messages) {
             messages =
               typeof queryOptions.messages === 'string' ? JSON.parse(queryOptions.messages) : queryOptions.messages;
+            if (
+              queryOptions.system_prompt?.trim() &&
+              Array.isArray(messages) &&
+              !messages.some((m: any) => m?.role === 'system')
+            ) {
+              messages.unshift({ role: 'system', content: queryOptions.system_prompt.trim() });
+            }
           } else {
             if (queryOptions.system_prompt) {
               messages.push({ role: 'system', content: queryOptions.system_prompt });
